@@ -335,6 +335,9 @@ export class AudioEngine implements IAudioEngine {
 
         this.onAudioUnlockedObservable.clear();
         this.onAudioLockedObservable.clear();
+
+        this._audioContext?.close();
+        this._audioContext = null;
     }
 
     /**

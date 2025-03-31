@@ -4,6 +4,9 @@
 struct lightingInfo
 {
     diffuse: vec3f,
+    #ifdef SS_TRANSLUCENCY
+        transmission: vec3f,
+    #endif
     #ifdef SPECULARTERM
         specular: vec3f,
     #endif
@@ -47,7 +50,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 }
 
 #ifdef SS_TRANSLUCENCY
-    fn computeDiffuseAndTransmittedLighting(info: preLightingInfo, lightColor: vec3f, transmittance: vec3f, transmittanceIntensity: f32, surfaceAlbedo: vec3f) -> vec3f {
+    fn computeTransmittedLighting(info: preLightingInfo, lightColor: vec3f, transmittance: vec3f) -> vec3f {
         var transmittanceNdotL = vec3f(0.0);
         var NdotL: f32 = absEps(info.NdotLUnclamped);
         if (info.NdotLUnclamped < 0.0) {
@@ -59,9 +62,8 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             transmittanceNdotL = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
         }
 
-        var diffuseTerm: f32 = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
         // Note: we use a Lambert BRDF for the transmitted term.
-        return (transmittanceNdotL / PI + (1.0 - transmittanceIntensity) * diffuseTerm * surfaceAlbedo * info.NdotL) * info.attenuation * lightColor;
+        return (transmittanceNdotL / PI) * info.attenuation * lightColor;
     }
 #endif
 
