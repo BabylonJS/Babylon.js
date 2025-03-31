@@ -61,89 +61,6 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-const customGroundVertexShader = `
-precision highp float;
-
-// Attributes
-attribute vec3 position;
-attribute vec2 uv;
-
-// Uniforms
-uniform mat4 worldViewProjection;
-
-// Varying
-varying vec2 vUV;
-
-void main(void) {
-    gl_Position = worldViewProjection * vec4(position, 1.0);
-    vUV = uv;
-}
-`;
-
-const customGroundFragmentShader = `
-precision highp float;
-
-// Sampler
-uniform sampler2D shadowTexture;
-uniform vec2 renderTargetSize;
-uniform float shadowOpacity;
-// Varying
-varying vec2 vUV;
-
-void main(void) {
-    float uvBasedOpacity = clamp(length(vUV * vec2(2.0) - vec2(1.0)), 0.0, 1.0);
-    uvBasedOpacity = uvBasedOpacity * uvBasedOpacity;
-    uvBasedOpacity = 1.0 - uvBasedOpacity;
-
-    vec2 screenUv = gl_FragCoord.xy / renderTargetSize;
-    vec3 shadowValue = texture2D(shadowTexture, screenUv).rrr;
-
-    float totalOpacity = shadowOpacity * uvBasedOpacity;
-    vec3 invertedShadowValue = vec3(1.0) - shadowValue;
-
-    gl_FragColor.rgb = shadowValue; 
-    gl_FragColor.a = invertedShadowValue.r * totalOpacity; 
-}
-`;
-
-const customGroundVertexShaderWgsl = `
-attribute position: vec3f;
-attribute uv: vec2f;
-
-uniform viewProjection: mat4x4f;
-uniform worldViewProjection: mat4x4f;
-
-// Output
-varying vUV: vec2f;
-
-@vertex
-fn main(input : VertexInputs) -> FragmentInputs {
-    vertexOutputs.position = uniforms.worldViewProjection * vec4f(input.position, 1.0);
-    vertexOutputs.vUV = input.uv;
-}
-`;
-
-const customGroundFragmentShaderWgsl = `
-
-var shadowTextureSampler: sampler;
-var shadowTexture : texture_2d<f32>;
-
-uniform shadowOpacity : f32;
-uniform renderTargetSize: vec2<f32>;
-
-@fragment
-fn main(input: FragmentInputs) -> FragmentOutputs {
-    let uvBasedOpacity = 1.0 - pow(clamp(length(input.vUV * vec2<f32>(2.0) - vec2<f32>(1.0)), 0.0, 1.0), 2.0);
-    let screenUv = fragmentInputs.position.xy / uniforms.renderTargetSize;
-    
-    let shadowValue = textureSampleLevel(shadowTexture, shadowTextureSampler, screenUv, 0.0).rrr;
-    let totalOpacity = uniforms.shadowOpacity * uvBasedOpacity;
-    let finalShadowValue = mix(vec3<f32>(1.0), shadowValue, totalOpacity);
-    let invertedShadowValue = vec3(1.0) - shadowValue;
-    fragmentOutputs.color = vec4f(finalShadowValue, invertedShadowValue.r * totalOpacity);
-}
-`;
-
 type UpdateModelOptions = {
     /**
      * The default animation index.
@@ -1460,28 +1377,21 @@ export class Viewer implements IDisposable {
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
                 samplers: ["shadowTexture"],
                 shaderLanguage,
+                extraInitializationsAsync: async () => {
+                    if (shaderLanguage === ShaderLanguage.WGSL) {
+                        await Promise.all([import("core/ShadersWGSL/customGround.vertex"), import("core/ShadersWGSL/customGround.fragment")]);
+                    } else {
+                        await Promise.all([import("core/Shaders/customGround.vertex"), import("core/Shaders/customGround.fragment")]);
+                    }
+                },
             };
 
             if (isWebGPU) {
-                this._groundShadowMaterial = new ShaderMaterial(
-                    "customGroundMaterial",
-                    this._scene,
-                    {
-                        vertexSource: customGroundVertexShaderWgsl,
-                        fragmentSource: customGroundFragmentShaderWgsl,
-                    },
-                    options
-                );
+                // await import("./ShadersWGSL/customGroundShader");
+                this._groundShadowMaterial = new ShaderMaterial("customGroundMaterial", this._scene, "customGround", options);
             } else {
-                this._groundShadowMaterial = new ShaderMaterial(
-                    "customGroundMaterial",
-                    this._scene,
-                    {
-                        vertexSource: customGroundVertexShader,
-                        fragmentSource: customGroundFragmentShader,
-                    },
-                    options
-                );
+                // await import("./Shaders/customGroundShader");
+                this._groundShadowMaterial = new ShaderMaterial("customGroundMaterial", this._scene, "customGround", options);
             }
 
             this._iblShadowsRenderPipeline.onShadowTextureReadyObservable.addOnce(() => {
