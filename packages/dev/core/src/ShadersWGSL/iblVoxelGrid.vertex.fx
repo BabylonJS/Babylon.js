@@ -1,16 +1,33 @@
 attribute position: vec3f;
-attribute normal: vec3f;
 
 varying vNormalizedPosition: vec3f;
 
-uniform world: mat4x4f;
+#include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
+#include<instancesDeclaration>
+
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
 uniform invWorldScale: mat4x4f;
 uniform viewMatrix: mat4x4f;
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
+	var positionUpdated = vertexInputs.position;
+
+    #include<morphTargetsVertexGlobal>
+    #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
+    #include<instancesVertex>
+
+    #include<bonesVertex>
+    #include<bakedVertexAnimation>
+
+	let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
+
     // inverse scale this by world scale to put in 0-1 space.
-    vertexOutputs.position = uniforms.viewMatrix * uniforms.invWorldScale * uniforms.world *  vec4f(input.position, 1.);
+    vertexOutputs.position = uniforms.viewMatrix * uniforms.invWorldScale * worldPos;
     // vertexOutputs.position.xyz = vertexOutputs.position.zyx;
     vertexOutputs.vNormalizedPosition = vertexOutputs.position.xyz * 0.5 + 0.5;
     // vNormalizedPosition.xyz = vNormalizedPosition.zyx;
