@@ -19,6 +19,7 @@ import type {
     Observer,
     PickingInfo,
     ShaderMaterial,
+    Engine,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
@@ -53,7 +54,6 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { Constants } from "core/Engines/constants";
-import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -684,6 +684,7 @@ export class Viewer implements IDisposable {
     private _shadowGround: Nullable<Mesh> = null;
     private _groundShadowMaterial: Nullable<ShaderMaterial> = null;
     private _shadowLight: Nullable<SpotLight> = null;
+    private _resizeShadowObserver: Nullable<Observer<Engine>> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -753,12 +754,6 @@ export class Viewer implements IDisposable {
                     camera.restoreState();
                 }
             }, PointerEventTypes.POINTERDOUBLETAP);
-
-            this._engine.onResizeObservable.add(() => {
-                if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
-                    this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-                }
-            });
 
             this._scene = scene;
             this._camera = camera;
@@ -876,58 +871,17 @@ export class Viewer implements IDisposable {
     }
 
     public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
-        // For now, we disable environment shadows when using WebGPU as there is some issue.
-        const isWebGPU = this._scene.getEngine().isWebGPU;
-        if (!value.type) {
-            if (this._shadowGenerator) {
-                this._shadowGenerator?.dispose();
-                this._shadowLight?.dispose();
-                this._shadowGenerator = null;
-                this._shadowLight = null;
+        this._disposeShadows();
+
+        if (value.type) {
+            if (!this._shadowGround) {
+                this._createGround();
             }
-
-            if (this._shadowGround) {
-                this._shadowGround?.dispose();
-                this._shadowGround = null;
+            if (value.type === "classic") {
+                this._updateClassicShadow();
+            } else if (value.type === "environment") {
+                this._updateEnvironmentShadow();
             }
-
-            if (this._iblShadowsRenderPipeline) {
-                this._loadedModelsBacking.forEach((model) => {
-                    const meshes = model.assetContainer.meshes as Mesh[];
-                    meshes.forEach((mesh) => {
-                        this._iblShadowsRenderPipeline?.removeShadowCastingMesh(mesh);
-                        if (mesh.material) {
-                            this._iblShadowsRenderPipeline?.removeShadowReceivingMaterial(mesh.material);
-                        }
-                    });
-                });
-
-                this._groundShadowMaterial?.dispose(false, true);
-                this._iblShadowsRenderPipeline.dispose();
-                this._iblShadowsRenderPipeline = null;
-            }
-            this._snapshotHelper.enableSnapshotRendering();
-
-            return;
-        }
-
-        this._snapshotHelper.disableSnapshotRendering();
-
-        if (value.type === "classic") {
-            if (this._iblShadowsRenderPipeline) {
-                this._iblShadowsRenderPipeline.toggleShadow(false);
-            }
-
-            this._updateClassicShadow();
-        } else if (value.type === "environment") {
-            if (this._shadowGenerator) {
-                this._shadowGenerator?.dispose();
-                this._shadowLight?.dispose();
-                this._shadowGenerator = null;
-                this._shadowLight = null;
-            }
-
-            this._updateEnvironmentShadow();
         }
 
         this.onShadowsConfigurationChanged.notifyObservers();
@@ -1443,22 +1397,18 @@ export class Viewer implements IDisposable {
     }
 
     private _createGround() {
-        // const ground = CreateGround("ground", { width: 50, height: 50 }, this._scene);
-        const ground = CreateDisc("ground", { radius: 25, tessellation: 64 }, this._scene);
-        this._shadowGround = ground;
-        ground.rotation.x = Math.PI / 2;
-        ground.receiveShadows = true;
-        ground.position.y = 0;
+        this._snapshotHelper.disableSnapshotRendering();
+
+        this._shadowGround = CreateDisc("ground", { radius: 25, tessellation: 64 }, this._scene);
+        this._shadowGround.rotation.x = Math.PI / 2;
+        this._shadowGround.receiveShadows = true;
+        this._shadowGround.position.y = 0;
+
+        this._snapshotHelper.enableSnapshotRendering();
+        this._markSceneMutated();
     }
 
-    /**
-     * Updates the shadows configuration.
-     * @param type The type of shadows to use.
-     */
     private async _updateEnvironmentShadow() {
-        // await import("core/Materials/standardMaterial");
-        // await import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent");
-
         await Promise.all([
             import("core/Materials/standardMaterial"),
             import("core/Rendering/geometryBufferRendererSceneComponent"),
@@ -1474,10 +1424,6 @@ export class Viewer implements IDisposable {
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { ShaderMaterial } = await import("core/Materials/shaderMaterial");
-
-        if (!this._shadowGround) {
-            this._createGround();
-        }
 
         if (!this._iblShadowsRenderPipeline) {
             this._iblShadowsRenderPipeline = new IblShadowsRenderPipeline(
@@ -1548,6 +1494,7 @@ export class Viewer implements IDisposable {
                 this._shadowGround.material = this._groundShadowMaterial;
             }
 
+            this._snapshotHelper.disableSnapshotRendering();
             this._loadedModelsBacking.forEach((model) => {
                 const meshes = model.assetContainer.meshes as Mesh[];
 
@@ -1559,27 +1506,29 @@ export class Viewer implements IDisposable {
                     }
                 });
             });
-
             this._iblShadowsRenderPipeline.updateSceneBounds();
             this._iblShadowsRenderPipeline.updateVoxelization();
-
-            return;
+            this._snapshotHelper.enableSnapshotRendering();
         } else {
+            this._snapshotHelper.disableSnapshotRendering();
             if (this._shadowGround) {
                 this._shadowGround.material = this._groundShadowMaterial;
             }
+            this._snapshotHelper.enableSnapshotRendering();
             this._iblShadowsRenderPipeline.toggleShadow(true);
         }
+
+        this._resizeShadowObserver = this._engine.onResizeObservable.add(() => {
+            if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
+                this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+            }
+        });
     }
 
     private async _updateClassicShadow() {
         await import("core/Lights/Shadows/shadowGeneratorSceneComponent");
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
-
-        if (!this._shadowGround) {
-            this._createGround();
-        }
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
 
@@ -1591,9 +1540,11 @@ export class Viewer implements IDisposable {
         const max = Vector3.FromArray(worldBounds.extents.max);
         const size = max.subtract(min);
         const maxRadius = size.length();
-        this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius * 4, maxRadius * 4, maxRadius * 4), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
 
+        this._snapshotHelper.disableSnapshotRendering();
+        this._shadowLight = new SpotLight("spotLight", new Vector3(maxRadius * 4, maxRadius * 4, maxRadius * 4), new Vector3(-1, -1, -1), Math.PI / 2, 1, this._scene);
         this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
+        const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
 
         this._loadedModelsBacking.forEach((model) => {
             const mesh = model.assetContainer.meshes[0];
@@ -1606,7 +1557,6 @@ export class Viewer implements IDisposable {
             shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
         }
 
-        const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
         shadowMaterial.activeLight = this._shadowLight;
         if (this._shadowGround) {
             this._shadowGround.material = shadowMaterial;
@@ -1625,6 +1575,41 @@ export class Viewer implements IDisposable {
         this._shadowGenerator.useKernelBlur = true;
         this._shadowGenerator.blurScale = 1;
         this._shadowGenerator.blurKernel = 8;
+        this._snapshotHelper.enableSnapshotRendering();
+    }
+
+    private _disposeShadows() {
+        this._snapshotHelper.disableSnapshotRendering();
+
+        this._shadowGenerator?.dispose();
+        this._shadowLight?.dispose();
+        this._shadowGenerator = null;
+        this._shadowLight = null;
+
+        this._loadedModelsBacking.forEach((model) => {
+            const meshes = model.assetContainer.meshes as Mesh[];
+
+            const mesh = model.assetContainer.meshes[0];
+            this._shadowGenerator?.addShadowCaster(mesh, true);
+            mesh.receiveShadows = true;
+
+            meshes.forEach((mesh) => {
+                this._iblShadowsRenderPipeline?.removeShadowCastingMesh(mesh);
+                if (mesh.material) {
+                    this._iblShadowsRenderPipeline?.removeShadowReceivingMaterial(mesh.material);
+                }
+            });
+        });
+
+        this._resizeShadowObserver?.remove();
+        this._groundShadowMaterial?.dispose();
+        this._iblShadowsRenderPipeline?.dispose();
+        this._iblShadowsRenderPipeline = null;
+
+        this._shadowGround?.dispose();
+        this._shadowGround = null;
+
+        this._snapshotHelper.enableSnapshotRendering();
     }
 
     /**
