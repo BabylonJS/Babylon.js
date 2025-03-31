@@ -75,7 +75,8 @@ export class FlowGraphCoordinator {
 
     private _disposeObserver: Observer<Scene>;
     private _onBeforeRenderObserver: Observer<Scene>;
-    private _executeOnNextFrame: { id: string; data?: any }[] = [];
+    private _executeOnNextFrame: { id: string; data?: any; uniqueId: number }[] = [];
+    private _eventUniqueId: number = 0;
 
     public constructor(
         /**
@@ -91,12 +92,18 @@ export class FlowGraphCoordinator {
         this._onBeforeRenderObserver = this.config.scene.onBeforeRenderObservable.add(() => {
             // Reset the event execution counter at the beginning of each frame.
             this._eventExecutionCounter.clear();
-            if (this._executeOnNextFrame.length) {
+            // duplicate the _executeOnNextFrame array to avoid modifying it while iterating over it
+            const executeOnNextFrame = this._executeOnNextFrame.slice(0);
+            if (executeOnNextFrame.length) {
                 // Execute the events that were triggered on the next frame.
-                this._executeOnNextFrame.forEach((event) => {
+                executeOnNextFrame.forEach((event) => {
                     this.notifyCustomEvent(event.id, event.data, false);
+                    // remove the event from the array
+                    const index = this._executeOnNextFrame.findIndex((e) => e.uniqueId === event.uniqueId);
+                    if (index !== -1) {
+                        this._executeOnNextFrame.splice(index, 1);
+                    }
                 });
-                this._executeOnNextFrame.length = 0;
             }
         });
 
@@ -196,7 +203,7 @@ export class FlowGraphCoordinator {
      */
     public notifyCustomEvent(id: string, data: any, async: boolean = !this.dispatchEventsSynchronously) {
         if (async) {
-            this._executeOnNextFrame.push({ id, data });
+            this._executeOnNextFrame.push({ id, data, uniqueId: this._eventUniqueId++ });
             return;
         }
         // check if we are not exceeding the max number of events
