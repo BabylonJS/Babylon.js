@@ -1699,6 +1699,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
+                    defines.USEIRRADIANCEMAP = false;
 
                     if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
                         defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
