@@ -1,5 +1,5 @@
 /* eslint-disable import/no-internal-modules */
-import type { Scene, AbstractEngine, FrameGraphTask, Nullable } from "core/index";
+import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
@@ -35,6 +35,11 @@ export class FrameGraph {
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
 
     /**
+     * Name of the frame graph
+     */
+    public name = "Frame Graph";
+
+    /**
      * Gets or sets a boolean indicating that texture allocation should be optimized (that is, reuse existing textures when possible to limit GPU memory usage) (default: true)
      */
     public optimizeTextureAllocation = true;
@@ -66,16 +71,39 @@ export class FrameGraph {
     }
 
     /**
+     * Gets the node render graph linked to the frame graph (if any)
+     * @returns the linked node render graph or null if none
+     */
+    public getLinkedNodeRenderGraph(): Nullable<NodeRenderGraph> {
+        return this._linkedNodeRenderGraph;
+    }
+
+    /**
      * Constructs the frame graph
      * @param scene defines the scene the frame graph is associated with
      * @param debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector (default is false)
+     * @param _linkedNodeRenderGraph defines the linked node render graph (if any)
      */
-    constructor(scene: Scene, debugTextures = false) {
+    constructor(
+        scene: Scene,
+        debugTextures = false,
+        private readonly _linkedNodeRenderGraph: Nullable<NodeRenderGraph> = null
+    ) {
         this._scene = scene;
         this._engine = scene.getEngine();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext();
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
+
+        this._scene.frameGraphs.push(this);
+    }
+
+    /**
+     * Gets the class name of the frame graph
+     * @returns the class name
+     */
+    public getClassName() {
+        return "FrameGraph";
     }
 
     /**
@@ -286,5 +314,10 @@ export class FrameGraph {
         this.clear();
         this.textureManager._dispose();
         this._renderContext._dispose();
+
+        const index = this._scene.frameGraphs.indexOf(this);
+        if (index !== -1) {
+            this._scene.frameGraphs.splice(index, 1);
+        }
     }
 }

@@ -1458,6 +1458,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
     }
 
+    /**
+     * List of frame graphs associated with the scene
+     */
+    public frameGraphs: FrameGraph[] = [];
+
     // Physics
     /**
      * Gets or sets a boolean indicating if physic engines are enabled on this scene
@@ -3516,6 +3521,21 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 if (this.geometries[index].uniqueId === uniqueId) {
                     return this.geometries[index];
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a frame graph using its name
+     * @param name defines the frame graph's name
+     * @returns the frame graph or null if none found.
+     */
+    public getFrameGraphByName(name: string): Nullable<FrameGraph> {
+        for (let index = 0; index < this.frameGraphs.length; index++) {
+            if (this.frameGraphs[index].name === name) {
+                return this.frameGraphs[index];
             }
         }
 

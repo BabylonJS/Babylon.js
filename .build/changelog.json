@@ -1,6 +1,603 @@
 {
-    "fromTag": "7.54.0",
+    "fromTag": "8.0.1",
     "changelog": {
+        "8.0.2": [
+            {
+                "pr": "16426",
+                "title": "Enable asynchronous glTF interactivity events",
+                "description": "Modify the event handling in the FlowGraphCoordinator to support asynchronous execution of glTF interactivity events as per specs",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16427",
+                "title": "Viewer: Fix trying to use a disposed env texture in a PBR material",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16425",
+                "title": "IBL shadows: add support for instances, thin instances, skinning and morphing",
+                "description": "See https://forum.babylonjs.com/t/ibl-shadows-pipeline-and-instancing/57458",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/Shaders/iblVoxelGrid.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelGrid.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "16428",
+                "title": "Cloning instanced meshes: don't try to clone the geometry object",
+                "description": "See https://forum.babylonjs.com/t/spamming-warning-on-instancedmesh-clone/57520",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16423",
+                "title": "PBR: Fix wrong diffuse from hemispherical/area lights when translucency is enabled",
+                "description": "See https://forum.babylonjs.com/t/why-are-the-grapes-i-made-with-pbrmaterial-a-different-color-than-before/57482\r\n\r\nDraft request for the time being, so that it's not merged too fast.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidParticleSystem.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-codecoverage3.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16422",
+                "title": "Fix the correct link for guiEditor",
+                "description": "Change the correct guiEditor link from `https://doc.babylonjs.com/toolsAndResources/tools/guiEditor` to `https://doc.babylonjs.com/toolsAndResources/guiEditor`",
+                "author": {
+                    "name": "gsw945",
+                    "url": "https://github.com/gsw945"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16419",
+                "title": "Fix bug when update sampling was not taking mip map generation in acc…",
+                "description": "…ount",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16421",
+                "title": "fix: mark iblShadowsTexture as \"serializeAsTexture\" and not \"serializ…",
+                "description": "…e\" in IBLShadowsPluginMaterial",
+                "author": {
+                    "name": "julien-moreau",
+                    "url": "https://github.com/julien-moreau"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16420",
+                "title": "Better fix!",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalFinal.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16417",
+                "title": "Fix pbr mirror",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pbr-mirror.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16416",
+                "title": "FrameGraph: Fix code generated for input blocks by NRGE",
+                "description": "See https://forum.babylonjs.com/t/cannot-connect-these-two-connectors-when-generate-code/57466",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16412",
+                "title": "Cleanup legacy audio engine's audio context in `dispose()`",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/mockedAudioObjects.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16413",
+                "title": "Add global default for APPLY_ALBEDO_AFTERSUBSURFACE back compat flag",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "8.0.1": [
+            {
+                "pr": "16411",
+                "title": "Remove weird loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16410",
+                "title": "PBR sub-surface: Add switch for back compatibility",
+                "description": "#16337 was a bug fix but a breaking change, so we're adding a toggle to be able to revert to the old buggy behavior in case it's easier for people than to fix their setup.\r\n\r\nJust set `mat.subSurface.applyAlbedoAfterSubSurface = true` to switch to the old behavior.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            }
+        ],
+        "8.0.0": [
+            {
+                "pr": "16408",
+                "title": "Prepare playground for version 8.0.0",
+                "description": "Update the versioning structure to include version 7.54.2 and remove outdated entries for version 4.2.1\n\nPlease wait with merging this",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": []
+            }
+        ],
+        "7.54.3": [
+            {
+                "pr": "16407",
+                "title": "Fix dynamicTexture resize losing track of readiness state",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16406",
+                "title": "Increase effect compilation timeout",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16398",
+                "title": "Mesh picking: Fix calculation of the world normal when picking thin instances",
+                "description": "See https://forum.babylonjs.com/t/wrong-result-of-pickinginfo-getnormal-with-thin-instances/57393",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "picking"
+                ]
+            }
+        ],
+        "7.54.2": [
+            {
+                "pr": "16404",
+                "title": "Replace pure SVG by img svg for perf",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16397",
+                "title": "FrameGraph: make frame graphs available in the inspector",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/clearTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/frameGraphs/frameGraphPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/frameGraphTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/ic_fluent_flow_24_filled.svg",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorer.scss",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemLabelComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSpecializedComponent.tsx",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss"
+                ],
+                "tags": [
+                    "enhancement",
+                    "skip changelog",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16403",
+                "title": "Update dependencies pre-release",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16401",
+                "title": "NME: Fix crash when iridescence and clearcoat are used at the same time",
+                "description": "See https://forum.babylonjs.com/t/node-material-compilation-error-with-iridescence-block/57401",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/iridescenceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockIridescence.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockIridescence.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16400",
+                "title": "NME: Make the iridescence block available in menus",
+                "description": "See https://forum.babylonjs.com/t/no-iridescence-block-in-node-material-editor/57396/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/index.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "nme",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16399",
+                "title": "Playground: Fix crash in 4.2.1",
+                "description": "See https://forum.babylonjs.com/t/playground-window-engine-getcreationoptions-is-not-a-function/57395",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "Playground",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16391",
+                "title": "Some fixes before release for glTF interactivity",
+                "description": "Improve transformation handling by using `Matrix.Compose` in the matrix getter and correct input processing to utilize `dataInputs` instead of `signalInputs`.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/objectModelMapping.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16396",
+                "title": "Change static sound `playbackRate` and `pitch` settings API",
+                "description": "The static sound `playbackRate` and `pitch` options are confusing when it comes to sound instances. Changing those options on a sound with multiple instances playing only updates the most recent instance, but it should update all instances.\r\n\r\nSimilarly, allowing the `playbackRate` and `pitch` options to be set in the `play` function is confusing because the parent sound's properties will override the new instance's option set by the `play` function, which will cause the playback rate and pitch to change unexpectedly when the sound's properties are changed.\r\n\r\nThis change fixes these issues by making the static sound's `playbackRate` and `pitch` properties apply to all playing instances, and by removing the `playbackRate` and `pitch` options from the `play` function.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16386",
+                "title": "Fix: avoid alpha check when texture is not ready",
+                "description": "Adds a guard in `SpriteManager._checkTextureAlpha()` to skip alpha checking if the texture isn't ready. This prevents picking errors.\r\n\r\nFixes the following WebGL error:\r\n\r\n//[.WebGL-0x12c00c41100] GL_INVALID_FRAMEBUFFER_OPERATION: Framebuffer is incomplete: Attachment has zero size.\r\n",
+                "author": {
+                    "name": "jstroh",
+                    "url": "https://github.com/jstroh"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16395",
+                "title": "Use correct options type for `_WebAudioEngine.createSoundBufferAsync`",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16394",
+                "title": "Fix ace items not being pickable",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16393",
+                "title": "Fix adaptive scaling setting in AdvancedDynamicTexture's CreateFullscreenUI",
+                "description": "Adjust the adaptive scaling setting to properly reflect the engine's hardware scaling level.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16388",
+                "title": "Arc rotate restore stop",
+                "description": "rotation quaternion of the form (a,b,c,d) is the same as (-a,-b,-c,-d) but comparison didn't take care of that.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16392",
+                "title": "Update NGE doc link",
+                "description": "I don't think this path existed, so just updating the link rather than creating a redirect.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16384",
+                "title": "GRL colorsTexture fix",
+                "description": "https://forum.babylonjs.com/t/greased-line-disposal-not-working-as-expected/57326\r\n\r\nOnly simple material was affected by this bug.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "7.54.1": [
             {
                 "pr": "16387",

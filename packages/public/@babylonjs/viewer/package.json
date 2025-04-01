@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "7.54.1",
+    "version": "8.0.2",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
@@ -31,12 +31,12 @@
         "lit": "^3.2.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.23.1",
-        "@babylonjs/loaders": "^7.23.1"
+        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/loaders": "^8.0.0"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.54.1",
-        "@babylonjs/loaders": "^7.54.1",
+        "@babylonjs/core": "^8.0.2",
+        "@babylonjs/loaders": "^8.0.2",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-commonjs": "^26.0.1",

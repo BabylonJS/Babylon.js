@@ -8,5 +8,9 @@
 #endif
 
 #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
-    normalW = gl_FrontFacing ? normalW : -normalW;
+    #if defined(MIRRORED)
+        normalW = gl_FrontFacing ? -normalW : normalW;
+    #else
+        normalW = gl_FrontFacing ? normalW : -normalW;
+    #endif
 #endif

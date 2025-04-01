@@ -562,6 +562,7 @@ export class InstancedMesh extends AbstractMesh {
                 "worldMatrixFromCache",
                 "hasThinInstances",
                 "hasBoundingInfo",
+                "geometry",
             ],
             []
         );
