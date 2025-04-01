@@ -220,7 +220,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     shaderName,
-                    <IEffectCreationOptions>{
+                    {
                         attributes: attribs,
                         uniformsNames: uniforms,
                         uniformBuffersNames: uniformBuffers,

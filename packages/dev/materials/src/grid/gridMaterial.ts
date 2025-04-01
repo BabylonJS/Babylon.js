@@ -26,7 +26,6 @@ import {
     PrepareDefinesForMisc,
 } from "core/Materials/materialHelper.functions";
 import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
-import type { IEffectCreationOptions } from "core/Materials/effect";
 
 class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
@@ -251,12 +250,13 @@ export class GridMaterial extends PushMaterial {
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     "grid",
-                    <IEffectCreationOptions>{
+                    {
                         attributes: attribs,
                         uniformsNames: uniforms,
                         uniformBuffersNames: ["Scene"],
                         samplers: ["opacitySampler"],
                         defines: join,
+                        fallbacks: null,
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                     },
