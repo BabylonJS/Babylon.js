@@ -675,6 +675,7 @@ export abstract class EffectLayer {
     public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
         const effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
     }
 }

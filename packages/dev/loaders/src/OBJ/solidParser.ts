@@ -82,7 +82,7 @@ export class SolidParser {
     private _wrappedNormalsForBabylon: Array<Vector3> = []; //Array with all value of normals to match with the indices
     private _tuplePosNorm: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }> = []; //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
     private _curPositionInIndices = 0;
-    private _hasMeshes: Boolean = false; //Meshes are defined in the file
+    private _hasMeshes: booslean = false; //Meshes are defined in the file
     private _unwrappedPositionsForBabylon: Array<number> = []; //Value of positionForBabylon w/o Vector3() [x,y,z]
     private _unwrappedColorsForBabylon: Array<number> = []; // Value of colorForBabylon w/o Color4() [r,g,b,a]
     private _unwrappedNormalsForBabylon: Array<number> = []; //Value of normalsForBabylon w/o Vector3()  [x,y,z]

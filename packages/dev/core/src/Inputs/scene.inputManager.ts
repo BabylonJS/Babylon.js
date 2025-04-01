@@ -631,7 +631,7 @@ export class InputManager {
 
                 // If we have a delayed click, we need to resolve the TAP event
                 if (this._delayedClicks[btn]) {
-                    const evt = this._delayedClicks[btn]!.evt;
+                    const evt = this._delayedClicks[btn].evt;
                     const type = PointerEventTypes.POINTERTAP;
                     const pi = new PointerInfo(type, evt, this._currentPickResult);
                     if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {

@@ -534,7 +534,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             this._tmpQuaternion.conjugateInPlace();
                         }
                         this._tmpQuaternion.normalize();
-                        this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
+                        this._anchorMesh.rotationQuaternion.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion);
                         this._anchorMesh.rotationQuaternion.normalize();
                         this._anchorMesh.removeChild(this.attachedMesh);
                         this.attachedMesh.setParent(originalParent);
@@ -689,7 +689,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         totalRelativeDragDistance = 0;
                         previousScale = 0;
                         this._incrementalStartupValue.copyFrom(this.attachedMesh!.scaling);
-                        this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh!.scaling);
+                        this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh.scaling);
                     });
                     scaleBoxesDragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
@@ -724,7 +724,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                     pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
-                    delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
+                    pointerIds.splice((<IPointerEvent>pointerInfo.event).pointerId, 1);
                     this.onHoverEndObservable.notifyObservers();
                     this._isHovered = false;
                 }
@@ -762,7 +762,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             return this._cornerMesh!;
         }
 
-        return this._cornerMesh!.clone();
+        return this._cornerMesh.clone();
     }
     protected override _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {

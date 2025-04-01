@@ -21,6 +21,7 @@ import { Light } from "../Lights/light";
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GizmoAxisCache {
     /** Mesh used to render the Gizmo */
     gizmoMeshes: Mesh[];
@@ -433,7 +434,7 @@ export class Gizmo implements IGizmo {
         if ((<Camera>this._attachedNode)._isCamera) {
             const camera = this._attachedNode as Camera;
             let worldMatrix;
-            let worldMatrixUC;
+            let worldMatrixUc;
             if (camera.parent) {
                 const parentInv = TmpVectors.Matrix[1];
                 camera.parent._worldMatrix.invertToRef(parentInv);
@@ -446,12 +447,12 @@ export class Gizmo implements IGizmo {
             if (camera.getScene().useRightHandedSystem) {
                 // avoid desync with RH matrix computation. Otherwise, rotation of PI around Y axis happens each frame resulting in axis flipped because worldMatrix is computed as inverse of viewMatrix.
                 this._rightHandtoLeftHandMatrix.multiplyToRef(worldMatrix, TmpVectors.Matrix[1]);
-                worldMatrixUC = TmpVectors.Matrix[1];
+                worldMatrixUc = TmpVectors.Matrix[1];
             } else {
-                worldMatrixUC = worldMatrix;
+                worldMatrixUc = worldMatrix;
             }
 
-            worldMatrixUC.decompose(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
+            worldMatrixUc.decompose(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
 
             const inheritsTargetCamera =
                 this._attachedNode.getClassName() === "FreeCamera" ||
@@ -669,7 +670,7 @@ export class Gizmo implements IGizmo {
             }
         });
 
-        return pointerObserver!;
+        return pointerObserver;
     }
 
     /**

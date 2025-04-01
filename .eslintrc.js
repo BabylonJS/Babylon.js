@@ -85,6 +85,7 @@ const rules = {
                 "@typescript-eslint/unbound-method": "off",
                 "@typescript-eslint/prefer-promise-reject-errors": "warn",
                 "@typescript-eslint/only-throw-error": "warn",
+                "@typescript-eslint/no-for-in-array": "warn",
                 // till here
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],

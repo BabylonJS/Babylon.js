@@ -351,7 +351,7 @@ export class SkeletonViewer {
         return this._utilityLayer;
     }
     /** Checks Ready Status. */
-    get isReady(): Boolean {
+    get isReady(): boolean {
         return this._ready;
     }
     /** Sets Ready Status. */

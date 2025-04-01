@@ -65,6 +65,7 @@ export interface IPositionGizmo extends IGizmo {
 /**
  * Additional options for the position gizmo
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PositionGizmoOptions {
     /**
      * Additional transform applied to the gizmo.

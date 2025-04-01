@@ -35,12 +35,12 @@ export class ScrollViewer extends Rectangle {
     private _verticalBarBackgroundImage: Image;
     private _barSize: number = 20;
     private _window: _ScrollViewerWindow;
-    private _pointerIsOver: Boolean = false;
+    private _pointerIsOver: boolean = false;
     private _wheelPrecision: number = 0.05;
     private _onWheelObserver: Nullable<Observer<Vector2>>;
     private _clientWidth: number;
     private _clientHeight: number;
-    private _useImageBar: Boolean;
+    private _useImageBar: boolean;
     private _thumbLength: number = 0.5;
     private _thumbHeight: number = 1;
     private _barImageHeight: number = 1;

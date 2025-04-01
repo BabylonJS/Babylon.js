@@ -33,6 +33,7 @@ import { ThinHighlightLayer } from "./thinHighlightLayer";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Return a the first highlight layer of the scene with a given name.
@@ -111,6 +112,7 @@ class GlowBlurPostProcess extends PostProcess {
  * Highlight layer options. This helps customizing the behaviour
  * of the highlight layer.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHighlightLayerOptions extends IThinHighlightLayerOptions {}
 
 /**

@@ -300,7 +300,7 @@ export class ActionManager extends AbstractActionManager {
      * @param action defines the action to be unregistered
      * @returns a boolean indicating whether the action has been unregistered
      */
-    public unregisterAction(action: IAction): Boolean {
+    public unregisterAction(action: IAction): boolean {
         const index = this.actions.indexOf(action);
         if (index !== -1) {
             this.actions.splice(index, 1);
