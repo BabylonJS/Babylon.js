@@ -786,6 +786,7 @@ export class Viewer implements IDisposable {
             this._reflectionsIntensity = value;
 
             this._snapshotHelper.disableSnapshotRendering();
+            this._scene.environmentIntensity = this._reflectionsIntensity;
             if (this._skyboxTexture) {
                 this._skyboxTexture.level = this._reflectionsIntensity;
             }
