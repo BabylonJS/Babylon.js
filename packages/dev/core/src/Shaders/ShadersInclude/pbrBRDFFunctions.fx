@@ -446,6 +446,9 @@ float E_FON_approx(float mu, float roughness)
 
 vec3 diffuseBRDF_EON(vec3 albedo, float roughness, float NdotL, float NdotV, float LdotV)
 {
+    // Because surface albedo is applied later in the shader, it is awkward to
+    // include it here only for EON. Instead, we use an implicit albedo of 0.5
+    // and then divide by it at the end.
     vec3 rho = vec3(0.5);
     float sigma = roughness;                            // FON sigma prime
     float mu_i = NdotL;                            // input angle cos
