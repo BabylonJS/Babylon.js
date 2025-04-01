@@ -63,12 +63,18 @@ export async function CreateViewerForCanvas(
     options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
 ): Promise<Viewer> {
     if (options) {
-        if (options.antialias === undefined) {
-            options.antialias = defaultCanvasViewerOptions.antialias;
-        }
-        if (options.adaptToDeviceRatio === undefined) {
-            options.adaptToDeviceRatio = defaultCanvasViewerOptions.adaptToDeviceRatio;
-        }
+        options = new Proxy(options, {
+            get(target, prop: keyof CanvasViewerOptions) {
+                switch (prop) {
+                    case "antialias":
+                        return target.antialias ?? defaultCanvasViewerOptions.antialias;
+                    case "adaptToDeviceRatio":
+                        return target.adaptToDeviceRatio ?? defaultCanvasViewerOptions.adaptToDeviceRatio;
+                    default:
+                        return target[prop];
+                }
+            },
+        });
     } else {
         options = defaultCanvasViewerOptions;
     }
