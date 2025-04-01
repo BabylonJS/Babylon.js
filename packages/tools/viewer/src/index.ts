@@ -2,7 +2,7 @@ export type { CameraAutoOrbit, EnvironmentOptions, LoadModelOptions, Model, Post
 export type { CanvasViewerOptions } from "./viewerFactory";
 export type { ViewerElementEventMap } from "./viewerElement";
 
-export { CreateHotSpotFromCamera, HotSpot, Viewer, ViewerHotSpotResult } from "./viewer";
+export { CreateHotSpotFromCamera, DefaultViewerOptions, HotSpot, Viewer, ViewerHotSpotResult } from "./viewer";
 export { HTML3DElement, ViewerElement } from "./viewerElement";
 export { CreateViewerForCanvas as createViewerForCanvas } from "./viewerFactory";
 export { HTML3DAnnotationElement } from "./viewerAnnotationElement";

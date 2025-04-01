@@ -404,7 +404,7 @@ export type ViewerOptions = Partial<{
     useRightHandedSystem: boolean;
 }>;
 
-export const ViewerOptions = {
+export const DefaultViewerOptions = {
     clearColor: [0, 0, 0, 0] as const,
     autoSuspendRendering: true,
     environmentConfig: {
@@ -699,19 +699,19 @@ export class Viewer implements IDisposable {
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
     private _skybox: Nullable<Mesh> = null;
-    private _skyboxBlur = this._options?.environmentConfig?.blur ?? ViewerOptions.environmentConfig.blur;
-    private _skyboxVisible = this._options?.environmentConfig?.visible ?? ViewerOptions.environmentConfig.visible;
+    private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
+    private _skyboxVisible = this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
-    private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? ViewerOptions.environmentConfig.intensity;
-    private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? ViewerOptions.environmentConfig.rotation;
+    private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
+    private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
     private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
 
-    private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? ViewerOptions.autoSuspendRendering;
+    private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
@@ -730,7 +730,7 @@ export class Viewer implements IDisposable {
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
-    private _animationSpeed = this._options?.animationSpeed ?? ViewerOptions.animationSpeed;
+    private _animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
 
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
@@ -742,7 +742,7 @@ export class Viewer implements IDisposable {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
-            scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? ViewerOptions.useRightHandedSystem;
+            scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -1658,12 +1658,12 @@ export class Viewer implements IDisposable {
         }
 
         if (flags.length === 0 || flags.includes("environment")) {
-            this._scene.clearColor = new Color4(...(this._options?.clearColor ?? ViewerOptions.clearColor));
+            this._scene.clearColor = new Color4(...(this._options?.clearColor ?? DefaultViewerOptions.clearColor));
             this.environmentConfig = {
-                intensity: this._options?.environmentConfig?.intensity ?? ViewerOptions.environmentConfig.intensity,
-                blur: this._options?.environmentConfig?.blur ?? ViewerOptions.environmentConfig.blur,
-                rotation: this._options?.environmentConfig?.rotation ?? ViewerOptions.environmentConfig.rotation,
-                visible: this._options?.environmentConfig?.visible ?? ViewerOptions.environmentConfig.visible,
+                intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
+                blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
+                rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
+                visible: this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible,
             };
             if (this._options?.environmentLighting === this._options?.environmentSkybox) {
                 handleLoadError(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
@@ -1674,7 +1674,7 @@ export class Viewer implements IDisposable {
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
-            this.animationSpeed = this._options?.animationSpeed ?? ViewerOptions.animationSpeed;
+            this.animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
             this.selectedAnimation = this._options?.selectedAnimation ?? 0;
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
@@ -1702,17 +1702,17 @@ export class Viewer implements IDisposable {
                 isNaN(targetZ) ? undefined : targetZ
             );
             this.cameraAutoOrbit = {
-                enabled: this._options?.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
-                speed: this._options?.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
-                delay: this._options?.cameraAutoOrbit?.delay ?? ViewerOptions.cameraAutoOrbit.delay,
+                enabled: this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+                speed: this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+                delay: this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
             };
         }
 
         if (flags.length === 0 || flags.includes("post-processing")) {
             this.postProcessing = {
-                toneMapping: this._options?.postProcessing?.toneMapping ?? ViewerOptions.postProcessing.toneMapping,
-                contrast: this._options?.postProcessing?.contrast ?? ViewerOptions.postProcessing.contrast,
-                exposure: this._options?.postProcessing?.exposure ?? ViewerOptions.postProcessing.exposure,
+                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
+                contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
+                exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
             };
         }
 

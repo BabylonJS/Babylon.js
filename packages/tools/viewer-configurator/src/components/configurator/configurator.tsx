@@ -2,7 +2,7 @@ import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { HotSpot, PostProcessing, ToneMapping, Viewer, ViewerDetails, ViewerElement } from "viewer/index";
+import type { HotSpot, PostProcessing, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -24,7 +24,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
-import { ViewerOptions } from "viewer/viewer";
+import { DefaultViewerOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
@@ -402,8 +402,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, [syncEnvironment, lightingUrlConfig.configuredState, skyboxUrlConfig.configuredState]);
 
     const skyboxBlurConfig = useConfiguration(
-        ViewerOptions.environmentConfig.blur,
-        viewerOptions.environmentConfig?.blur ?? ViewerOptions.environmentConfig.blur,
+        DefaultViewerOptions.environmentConfig.blur,
+        viewerOptions.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
         (blur) => (viewer.environmentConfig = { blur }),
         undefined,
@@ -412,8 +412,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const environmentIntensityConfig = useConfiguration(
-        ViewerOptions.environmentConfig.intensity,
-        viewerOptions.environmentConfig?.intensity ?? ViewerOptions.environmentConfig.intensity,
+        DefaultViewerOptions.environmentConfig.intensity,
+        viewerOptions.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
         () => viewer.environmentConfig.intensity,
         (intensity) => (viewer.environmentConfig = { intensity }),
         undefined,
@@ -422,8 +422,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const environmentRotationConfig = useConfiguration(
-        ViewerOptions.environmentConfig.rotation,
-        viewerOptions.environmentConfig?.rotation ?? ViewerOptions.environmentConfig.rotation,
+        DefaultViewerOptions.environmentConfig.rotation,
+        viewerOptions.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
         () => viewer.environmentConfig.rotation,
         (rotation) => (viewer.environmentConfig = { rotation }),
         undefined,
@@ -433,7 +433,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
 
     const clearColorConfig = useConfiguration(
         viewerDetails.scene.clearColor,
-        new Color4(...(viewerOptions.clearColor ? viewerOptions.clearColor : ViewerOptions.clearColor)),
+        new Color4(...(viewerOptions.clearColor ? viewerOptions.clearColor : DefaultViewerOptions.clearColor)),
         () => viewerDetails.scene.clearColor,
         (color) => (viewerDetails.scene.clearColor = color),
         (baseState, configuredState) => baseState.equals(configuredState),
@@ -501,8 +501,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const toneMappingConfig = useConfiguration(
-        ViewerOptions.postProcessing.toneMapping,
-        viewerOptions.postProcessing?.toneMapping ?? ViewerOptions.postProcessing.toneMapping,
+        DefaultViewerOptions.postProcessing.toneMapping,
+        viewerOptions.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
         (toneMapping) => (viewer.postProcessing = { toneMapping }),
         undefined,
@@ -515,8 +515,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, [toneMappingConfig.configuredState]);
 
     const contrastConfig = useConfiguration(
-        ViewerOptions.postProcessing.contrast,
-        viewerOptions.postProcessing?.contrast ?? ViewerOptions.postProcessing.contrast,
+        DefaultViewerOptions.postProcessing.contrast,
+        viewerOptions.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
         (contrast) => (viewer.postProcessing = { contrast }),
         undefined,
@@ -525,8 +525,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const exposureConfig = useConfiguration(
-        ViewerOptions.postProcessing.exposure,
-        viewerOptions.postProcessing?.exposure ?? ViewerOptions.postProcessing.exposure,
+        DefaultViewerOptions.postProcessing.exposure,
+        viewerOptions.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
         (exposure) => (viewer.postProcessing = { exposure }),
         undefined,
@@ -535,8 +535,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const autoOrbitConfig = useConfiguration(
-        ViewerOptions.cameraAutoOrbit.enabled,
-        viewerOptions.cameraAutoOrbit?.enabled ?? ViewerOptions.cameraAutoOrbit.enabled,
+        DefaultViewerOptions.cameraAutoOrbit.enabled,
+        viewerOptions.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
         () => viewer.cameraAutoOrbit.enabled,
         (enabled) => (viewer.cameraAutoOrbit = { enabled }),
         undefined,
@@ -545,8 +545,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const autoOrbitSpeedConfig = useConfiguration(
-        ViewerOptions.cameraAutoOrbit.speed,
-        viewerOptions.cameraAutoOrbit?.speed ?? ViewerOptions.cameraAutoOrbit.speed,
+        DefaultViewerOptions.cameraAutoOrbit.speed,
+        viewerOptions.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
         () => viewer.cameraAutoOrbit.speed,
         (speed) => (viewer.cameraAutoOrbit = { speed }),
         undefined,
@@ -555,8 +555,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const autoOrbitDelayConfig = useConfiguration(
-        ViewerOptions.cameraAutoOrbit.delay,
-        viewerOptions.cameraAutoOrbit?.delay ?? ViewerOptions.cameraAutoOrbit.delay,
+        DefaultViewerOptions.cameraAutoOrbit.delay,
+        viewerOptions.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
         () => viewer.cameraAutoOrbit.delay,
         (delay) => (viewer.cameraAutoOrbit = { delay }),
         undefined,
@@ -566,11 +566,11 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
 
     const animationStateConfig = useConfiguration(
         {
-            animationSpeed: ViewerOptions.animationSpeed,
+            animationSpeed: DefaultViewerOptions.animationSpeed,
             selectedAnimation: 0,
         },
         {
-            animationSpeed: viewerOptions.animationSpeed ?? ViewerOptions.animationSpeed,
+            animationSpeed: viewerOptions.animationSpeed ?? DefaultViewerOptions.animationSpeed,
             selectedAnimation: viewerOptions.selectedAnimation ?? 0,
         },
         () => {
@@ -602,8 +602,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const animationAutoPlayConfig = useConfiguration(
-        ViewerOptions.animationAutoPlay,
-        viewerOptions.animationAutoPlay ?? ViewerOptions.animationAutoPlay,
+        DefaultViewerOptions.animationAutoPlay,
+        viewerOptions.animationAutoPlay ?? DefaultViewerOptions.animationAutoPlay,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
             //viewerElement.animationAutoPlay = autoPlay;
