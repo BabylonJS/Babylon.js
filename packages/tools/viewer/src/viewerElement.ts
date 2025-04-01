@@ -267,6 +267,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static override get observedAttributes(): string[] {
+        // These attributes don't have corresponding properties, so they are managed directly.
         return [...super.observedAttributes, "camera-orbit", "camera-target"];
     }
 
@@ -861,6 +862,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
     /**
      * Determines the behavior of the reset function, and the associated default reset button.
+     * @remarks
+     * - "auto" - Resets the camera to the initial pose if it makes sense given other viewer state, such as the selected animation.
+     * - "reframe" - Reframes the camera based on the current viewer state (ignores the initial pose).
+     * - [ResetFlag] - A space separated list of reset flags that reset various aspects of the viewer state.
      */
     @property({ attribute: "reset-mode", converter: coerceResetMode })
     public resetMode: "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]] = "auto";
