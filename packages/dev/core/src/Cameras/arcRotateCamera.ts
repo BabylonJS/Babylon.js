@@ -927,8 +927,8 @@ export class ArcRotateCamera extends TargetCamera {
         this._goalAlpha = checkNaN(alpha, this._goalAlpha);
         this._goalBeta = checkNaN(beta, this._goalBeta);
         this._goalRadius = checkNaN(radius, this._goalRadius);
-        this._goalTarget.set(checkNaN(target?.x, this._goalTarget.x), checkNaN(target?.y, this._goalTarget.y), checkNaN(target?.z, this._goalTarget.z));
-        this._goalTargetScreenOffset.set(checkNaN(targetScreenOffset?.x, this._goalTargetScreenOffset.x), checkNaN(targetScreenOffset?.y, this._goalTargetScreenOffset.y));
+        this._goalTarget.set(checkNaN(target.x, this._goalTarget.x), checkNaN(target.y, this._goalTarget.y), checkNaN(target.z, this._goalTarget.z));
+        this._goalTargetScreenOffset.set(checkNaN(targetScreenOffset.x, this._goalTargetScreenOffset.x), checkNaN(targetScreenOffset.y, this._goalTargetScreenOffset.y));
 
         this._goalAlpha = Clamp(this._goalAlpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
         this._goalBeta = Clamp(this._goalBeta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
