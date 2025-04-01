@@ -469,12 +469,14 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         (cameraState) => {
             if (!cameraState || (isNaN(cameraState.alpha) && isNaN(cameraState.beta) && isNaN(cameraState.radius))) {
                 viewerElement.removeAttribute("camera-orbit");
+                delete viewerOptions.cameraOrbit;
             } else {
                 viewerElement.setAttribute("camera-orbit", `${cameraState.alpha} ${cameraState.beta} ${cameraState.radius}`);
             }
 
             if (!cameraState || (isNaN(cameraState.target.x) && isNaN(cameraState.target.y) && isNaN(cameraState.target.z))) {
                 viewerElement.removeAttribute("camera-target");
+                delete viewerOptions.cameraTarget;
             } else {
                 viewerElement.setAttribute("camera-target", `${cameraState.target.x} ${cameraState.target.y} ${cameraState.target.z}`);
             }

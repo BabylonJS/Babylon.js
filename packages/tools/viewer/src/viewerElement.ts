@@ -893,6 +893,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private _reset(mode: ResetMode) {
         switch (mode) {
             case "auto":
+                this._viewerDetails?.viewer.resetCamera(undefined);
+                break;
             case "reframe":
                 this._viewerDetails?.viewer.resetCamera(true);
                 break;
