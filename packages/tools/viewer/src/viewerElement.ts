@@ -58,7 +58,7 @@ function coerceEngineAttribute(value: string | null): ViewerElement["engine"] {
     if (value === "WebGL" || value === "WebGPU") {
         return value;
     }
-    return GetDefaultEngine();
+    return undefined;
 }
 
 function coerceNumericAttribute(value: string | null): Nullable<number> {
@@ -603,7 +603,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The engine to use for rendering.
      */
     @property({ converter: coerceEngineAttribute })
-    public engine: NonNullable<CanvasViewerOptions["engine"]> = this._options.engine ?? GetDefaultEngine();
+    public engine: CanvasViewerOptions["engine"] = this._options.engine;
 
     /**
      * When true, the scene will be rendered even if no scene state has changed.
@@ -954,7 +954,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             this._hotSpotSelect.value = "";
         }
 
-        if (changedProperties.get("engine") || changedProperties.get("renderWhenIdle") != null) {
+        let needsReload = false;
+        if (changedProperties.get("renderWhenIdle") != null) {
+            needsReload = true;
+        } else if (changedProperties.has("engine")) {
+            const previous = changedProperties.get("engine") ?? GetDefaultEngine();
+            if (this.engine !== previous) {
+                needsReload = true;
+            }
+        }
+
+        if (needsReload) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
@@ -1279,7 +1289,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     const viewerElement = this;
                     const viewer = await this._createViewer(canvas, {
                         get engine() {
-                            return coerceEngineAttribute(viewerElement.getAttribute("engine")) ?? viewerElement._options.engine;
+                            return viewerElement.engine ?? viewerElement._options.engine;
                         },
                         get autoSuspendRendering() {
                             return !(viewerElement.hasAttribute("render-when-idle") || viewerElement._options.autoSuspendRendering === false);
