@@ -75,6 +75,14 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             transmittanceNdotL = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
+        var diffuseTerm : vec3f = vec3f(1.0 / PI);
+#if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+        diffuseTerm = vec3f(diffuseBRDF_Burley(
+            info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+#elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+        diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness,
+                                      info.NdotL, info.NdotV, info.LdotV);
+#endif
 
         return (transmittanceNdotL / PI) * info.attenuation * lightColor;
     #endif
