@@ -608,7 +608,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         viewerOptions.animationAutoPlay ?? DefaultViewerOptions.animationAutoPlay,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
-            //viewerElement.animationAutoPlay = autoPlay;
             if (autoPlay) {
                 viewerElement.setAttribute("animation-auto-play", "");
             } else {
