@@ -1605,9 +1605,16 @@ export class Viewer implements IDisposable {
 
     /**
      * Resets the camera to its initial pose.
-     * @param reframe If true, the camera will be reframed to fit the model bounds. Otherwise, it will use the default camera pose passed in with the options to the constructor (if present).
+     * @param reframe If true, the camera will be reframed to fit the model bounds. If false, it will use the default camera pose passed in with the options to the constructor (if present).
+     *                If undefined, default to false if other viewer state matches the default state (such as the selected animation), otherwise true.
      */
-    public resetCamera(reframe = true): void {
+    public resetCamera(reframe?: boolean): void {
+        if (reframe == undefined) {
+            // If the selected animation is different from the default, there is a good chance the default explicit camera framing won't make sense
+            // and the model may not even be in view. So when this is the case, by default we reframe the camera.
+            reframe = this.selectedAnimation !== (this._options?.selectedAnimation ?? 0);
+        }
+
         if (reframe) {
             this._reframeCamera(true);
         } else {
