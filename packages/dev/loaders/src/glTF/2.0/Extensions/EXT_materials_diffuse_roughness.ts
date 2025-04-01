@@ -7,7 +7,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Constants } from "core/Engines";
+import { Constants } from "core/Engines/constants";
 
 const NAME = "EXT_materials_diffuse_roughness";
 
