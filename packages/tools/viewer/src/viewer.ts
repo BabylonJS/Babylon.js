@@ -1514,6 +1514,7 @@ export class Viewer implements IDisposable {
                 if (options.lighting) {
                     this._reflectionTexture?.dispose();
                     this._reflectionTexture = null;
+                    this._scene.environmentTexture = null;
                 }
                 if (options.skybox) {
                     this._skybox?.dispose(undefined, true);
