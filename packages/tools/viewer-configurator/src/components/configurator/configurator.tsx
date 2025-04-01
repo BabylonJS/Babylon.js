@@ -1203,7 +1203,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     <div className="flexColumn">
                         <div style={{ flex: 1 }}>
                             <OptionsLine
-                                label="Output Type"
+                                label="Format"
                                 valuesAreStrings={true}
                                 options={outputOptions}
                                 target={outputFormatWrapper}
