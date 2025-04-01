@@ -1135,8 +1135,6 @@ export class ArcRotateCamera extends TargetCamera {
 
             // Interpolate the target if we haven't reached the goal yet.
             if (!isNaN(this._goalTarget.x) || !isNaN(this._goalTarget.y) || !isNaN(this._goalTarget.z)) {
-                isInterpolating = true;
-
                 const goalTarget = TmpVectors.Vector3[0].set(
                     checkNaN(this._goalTarget.x, this._target.x),
                     checkNaN(this._goalTarget.y, this._target.y),
@@ -1149,13 +1147,13 @@ export class ArcRotateCamera extends TargetCamera {
                 if ((Vector3.Distance(this.target, goalTarget) * 10) / goalRadius < Epsilon) {
                     this._goalTarget.set(NaN, NaN, NaN);
                     this.setTarget(goalTarget.clone(), undefined, undefined, true);
+                } else {
+                    isInterpolating = true;
                 }
             }
 
             // Interpolate the rotation if we haven't reached the goal yet.
             if (!isNaN(this._goalAlpha) || !isNaN(this._goalBeta)) {
-                isInterpolating = true;
-
                 // Using quaternion for smoother interpolation (and no Euler angles modulo)
                 const goalRotation = Quaternion.RotationAlphaBetaGammaToRef(
                     checkNaN(this._goalAlpha, this.alpha),
@@ -1177,26 +1175,26 @@ export class ArcRotateCamera extends TargetCamera {
                     const goalAlphaBetaGamma = goalRotation.toAlphaBetaGammaToRef(TmpVectors.Vector3[0]);
                     this.alpha = goalAlphaBetaGamma.x;
                     this.beta = goalAlphaBetaGamma.y;
+                } else {
+                    isInterpolating = true;
                 }
             }
 
             // Interpolate the radius if we haven't reached the goal yet.
             if (!isNaN(this._goalRadius)) {
-                isInterpolating = true;
-
                 this.radius += (goalRadius - this.radius) * t;
 
                 // Terminate the radius interpolation when we are 99.9% of the way to the goal radius, at which point it is visually indistinguishable from the goal.
                 if (Math.abs(goalRadius / this.radius - 1) < Epsilon) {
                     this._goalRadius = NaN;
                     this.radius = goalRadius;
+                } else {
+                    isInterpolating = true;
                 }
             }
 
             // Interpolate the target screen offset if we haven't reached the goal yet.
             if (!isNaN(this._goalTargetScreenOffset.x) || !isNaN(this._goalTargetScreenOffset.y)) {
-                isInterpolating = true;
-
                 const goalTargetScreenOffset = TmpVectors.Vector2[0].set(
                     checkNaN(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
                     checkNaN(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
@@ -1207,6 +1205,8 @@ export class ArcRotateCamera extends TargetCamera {
                 if (Vector2.Distance(this.targetScreenOffset, goalTargetScreenOffset) < Epsilon) {
                     this._goalTargetScreenOffset.set(NaN, NaN);
                     this.targetScreenOffset.copyFrom(goalTargetScreenOffset);
+                } else {
+                    isInterpolating = true;
                 }
             }
 
