@@ -100,6 +100,11 @@ export default defineConfig({
             testMatch: "packages/tools/viewer/test/viewer.test.ts",
             use: getUseDefinition("Viewer"),
         },
+        {
+            name: "webxr",
+            testMatch: "**/*.webxr.test.ts",
+            use: getUseDefinition("WebXR"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",

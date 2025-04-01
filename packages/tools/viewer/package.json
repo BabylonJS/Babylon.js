@@ -12,6 +12,8 @@
         "build": "npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
+        "watch": "npm run compile -- -w",
+        "watch:dev": "npm run watch",
         "bundle:analyze": "rimraf dist/analyze && rollup -c rollup.config.analyze.mjs",
         "bundle:coverage": "rimraf dist/coverage && rollup -c rollup.config.coverage.mjs",
         "analyze": "npm run bundle:analyze && node ../../../scripts/folderSizeFlameChart.mjs dist/analyze \"**/*.js\" dist/analyze/flameChart",
@@ -39,6 +41,6 @@
         "rollup": "^4.18.0",
         "rollup-plugin-minify-template-literals": "^1.1.7",
         "rollup-plugin-visualizer": "^5.12.0",
-        "vite": "^5.3.3"
+        "vite": "^6.2.1"
     }
 }

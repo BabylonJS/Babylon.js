@@ -1090,6 +1090,13 @@ export class ThinEngine extends AbstractEngine {
         this.wipeCaches();
     }
 
+    public override setStateCullFaceType(cullBackFaces?: boolean, force?: boolean): void {
+        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
+        if (this._depthCullingState.cullFace !== cullFace || force) {
+            this._depthCullingState.cullFace = cullFace;
+        }
+    }
+
     /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
@@ -1107,10 +1114,7 @@ export class ThinEngine extends AbstractEngine {
         }
 
         // Cull face
-        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
-        if (this._depthCullingState.cullFace !== cullFace || force) {
-            this._depthCullingState.cullFace = cullFace;
-        }
+        this.setStateCullFaceType(cullBackFaces, force);
 
         // Z offset
         this.setZOffset(zOffset);
@@ -2766,10 +2770,11 @@ export class ThinEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number; hasMipMaps: boolean } {
         const gl = this._gl;
         let magFilter: GLenum = gl.NEAREST;
         let minFilter: GLenum = gl.NEAREST;
+        let hasMipMaps = false;
 
         switch (samplingMode) {
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
@@ -2782,6 +2787,7 @@ export class ThinEngine extends AbstractEngine {
                 break;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
                 magFilter = gl.LINEAR;
+                hasMipMaps = true;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
                 } else {
@@ -2789,6 +2795,7 @@ export class ThinEngine extends AbstractEngine {
                 }
                 break;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                hasMipMaps = true;
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -2813,6 +2820,7 @@ export class ThinEngine extends AbstractEngine {
                 }
                 break;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                hasMipMaps = true;
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -2837,6 +2845,7 @@ export class ThinEngine extends AbstractEngine {
                 }
                 break;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                hasMipMaps = true;
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -2857,6 +2866,7 @@ export class ThinEngine extends AbstractEngine {
         return {
             min: minFilter,
             mag: magFilter,
+            hasMipMaps: hasMipMaps,
         };
     }
 
@@ -3245,7 +3255,7 @@ export class ThinEngine extends AbstractEngine {
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
 
-        if (generateMipMaps) {
+        if (generateMipMaps && filters.hasMipMaps) {
             texture.generateMipMaps = true;
             this._gl.generateMipmap(target);
         }
@@ -4496,12 +4506,21 @@ export class ThinEngine extends AbstractEngine {
      * @param height defines the height of the rectangle where pixels must be read
      * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const numChannels = hasAlpha ? 4 : 3;
         const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
-        const data = new Uint8Array(height * width * numChannels);
+
+        const dataLength = width * height * numChannels;
+        if (!data) {
+            data = new Uint8Array(dataLength);
+        } else if (data.length < dataLength) {
+            Logger.Error(`Data buffer is too small to store the read pixels (${data.length} should be more than ${dataLength})`);
+            return Promise.resolve(data);
+        }
+
         if (flushRenderer) {
             this.flushFramebuffer();
         }

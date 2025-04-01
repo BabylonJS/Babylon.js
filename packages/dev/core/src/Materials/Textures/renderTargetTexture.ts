@@ -233,6 +233,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
+     * If true, all objects will be rendered in linear space (default: false)
+     */
+    public get renderInLinearSpace() {
+        return this._objectRenderer.renderInLinearSpace;
+    }
+
+    public set renderInLinearSpace(value: boolean) {
+        this._objectRenderer.renderInLinearSpace = value;
+    }
+
+    /**
      * Override the mesh isReady function with your own one.
      */
     public get customIsReadyFunction(): (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean {

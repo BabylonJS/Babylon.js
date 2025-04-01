@@ -25,6 +25,8 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Material } from "core/Materials/material";
 import { Observable } from "core/Misc/observable";
+import "../geometryBufferRendererSceneComponent";
+import "../iblCdfGeneratorSceneComponent";
 
 interface IblShadowsSettings {
     /**
@@ -150,6 +152,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Observable that triggers when a new IBL is set and the importance sampling is ready
      */
     public onNewIblReadyObservable: Observable<void> = new Observable<void>();
+
+    /**
+     * Observable that triggers when the voxelization is complete
+     */
+    public onVoxelizationCompleteObservable: Observable<void> = new Observable<void>();
 
     /**
      * The current world-space size of that the voxel grid covers in the scene.
@@ -685,6 +692,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._voxelRenderer.updateVoxelGrid(this._shadowCastingMeshes);
+        this._voxelRenderer.onVoxelizationCompleteObservable.addOnce(() => {
+            this.onVoxelizationCompleteObservable.notifyObservers();
+        });
         this._updateSSShadowParams();
     }
 
@@ -738,22 +748,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         // Setup the geometry buffer target formats
         const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
-        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
-            textureFormat: Constants.TEXTUREFORMAT_R,
-            textureType: Constants.TEXTURETYPE_FLOAT,
-        };
-        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
-            textureFormat: Constants.TEXTUREFORMAT_RG,
-            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
-        };
-        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = {
-            textureFormat: Constants.TEXTUREFORMAT_RGBA,
-            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
-        };
-        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = {
-            textureFormat: Constants.TEXTUREFORMAT_RGBA,
-            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
-        };
+        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_R, textureType: Constants.TEXTURETYPE_FLOAT };
+        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RG, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
+        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RGBA, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
+        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = { textureFormat: Constants.TEXTUREFORMAT_RGBA, textureType: Constants.TEXTURETYPE_HALF_FLOAT };
         const geometryBufferRenderer = scene.enableGeometryBufferRenderer(undefined, Constants.TEXTUREFORMAT_DEPTH32_FLOAT, textureTypesAndFormats);
         if (!geometryBufferRenderer) {
             Logger.Error("Geometry buffer renderer is required for IBL shadows to work.");

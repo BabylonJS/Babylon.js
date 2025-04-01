@@ -180,4 +180,9 @@ export function registerBuiltInGLTFExtensions() {
         const { KHR_node_hoverability } = await import("./KHR_node_hoverability");
         return new KHR_node_hoverability(loader);
     });
+
+    registerGLTFExtension("KHR_node_selectability", true, async (loader) => {
+        const { KHR_node_selectability } = await import("./KHR_node_selectability");
+        return new KHR_node_selectability(loader);
+    });
 }

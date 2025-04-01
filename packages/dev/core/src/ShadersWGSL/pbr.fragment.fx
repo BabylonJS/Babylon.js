@@ -406,6 +406,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef CLEARCOAT
                 , NdotVUnclamped
+                , uniforms.vClearCoatParams
                 #ifdef CLEARCOAT_TEXTURE
                     , clearCoatMapData
                 #endif
@@ -514,6 +515,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
             var translucencyColorMap: vec4f = textureSample(translucencyColorSampler, translucencyColorSamplerSampler, fragmentInputs.vTranslucencyColorUV + uvOffset);
+            #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA
+                translucencyColorMap = toLinearSpaceVec4(translucencyColorMap);
+            #endif
         #endif
 
         subSurfaceOut = subSurfaceBlock(

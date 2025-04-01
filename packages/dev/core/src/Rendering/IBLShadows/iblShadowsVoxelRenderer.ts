@@ -11,6 +11,7 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
+import { Observable } from "../../Misc/observable";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
@@ -24,7 +25,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
  * @internal
- * #8R5SSE#222
+ * @see https://playground.babylonjs.com/#8R5SSE#222
  */
 export class _IblShadowsVoxelRenderer {
     private _scene: Scene;
@@ -51,6 +52,11 @@ export class _IblShadowsVoxelRenderer {
             return this._voxelGridZaxis;
         }
     }
+
+    /**
+     * Observable that triggers when the voxelization is complete
+     */
+    public onVoxelizationCompleteObservable: Observable<void> = new Observable<void>();
 
     /**
      * The debug pass post process
@@ -655,9 +661,12 @@ export class _IblShadowsVoxelRenderer {
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
-                this._copyMipMaps();
-                this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
-                this._voxelizationInProgress = false;
+                this._copyMipEffectWrapper.effect.whenCompiledAsync().then(() => {
+                    this._copyMipMaps();
+                    this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);
+                    this._voxelizationInProgress = false;
+                    this.onVoxelizationCompleteObservable.notifyObservers();
+                });
             }
         }
     }

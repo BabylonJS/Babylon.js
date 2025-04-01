@@ -23,9 +23,9 @@ import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask"
  */
 export class FrameGraphObjectRendererTask extends FrameGraphTask {
     /**
-     * The destination texture where the objects will be rendered.
+     * The target texture where the objects will be rendered.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle;
 
     /**
      * The depth attachment texture where the objects will be rendered (optional).
@@ -72,8 +72,13 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public disableShadows = false;
 
     /**
+     * If the rendering should be done in linear space (default is false).
+     */
+    public renderInLinearSpace = false;
+
+    /**
      * The output texture.
-     * This texture will point to the same texture than the destinationTexture property if it is set.
+     * This texture will point to the same texture than the targetTexture property if it is set.
      * Note, however, that the handle itself will be different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;
@@ -144,27 +149,28 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     }
 
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
-        if (this.destinationTexture === undefined || this.objectList === undefined) {
-            throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
+        if (this.targetTexture === undefined || this.objectList === undefined) {
+            throw new Error(`FrameGraphObjectRendererTask ${this.name}: targetTexture and objectList are required`);
         }
 
         // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
+        this._renderer.renderInLinearSpace = this.renderInLinearSpace;
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.targetTexture);
 
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
-            if (this.depthTexture === backbufferDepthStencilTextureHandle && this.destinationTexture !== backbufferColorTextureHandle) {
+            if (this.depthTexture === backbufferDepthStencilTextureHandle && this.targetTexture !== backbufferColorTextureHandle) {
                 throw new Error(
                     `FrameGraphObjectRendererTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
                 );
             }
-            if (this.depthTexture !== backbufferDepthStencilTextureHandle && this.destinationTexture === backbufferColorTextureHandle) {
+            if (this.depthTexture !== backbufferDepthStencilTextureHandle && this.targetTexture === backbufferColorTextureHandle) {
                 throw new Error(
-                    `FrameGraphObjectRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
+                    `FrameGraphObjectRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the target is the back buffer color`
                 );
             }
 
@@ -176,7 +182,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             depthEnabled = true;
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
         if (this.depthTexture !== undefined) {
             this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
@@ -188,11 +194,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.setRenderTarget(this.destinationTexture);
+        pass.setRenderTarget(this.targetTexture);
         pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+            this._renderer.renderInLinearSpace = this.renderInLinearSpace;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             context.render(this._renderer, this._textureWidth, this._textureHeight);
@@ -203,7 +210,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-            passDisabled.setRenderTarget(this.destinationTexture);
+            passDisabled.setRenderTarget(this.targetTexture);
             passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
         }

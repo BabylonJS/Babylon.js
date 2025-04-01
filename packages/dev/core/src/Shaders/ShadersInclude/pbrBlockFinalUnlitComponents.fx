@@ -1,6 +1,9 @@
 // _____________________________ Diffuse ________________________________________
 vec3 finalDiffuse = diffuseBase;
-finalDiffuse *= surfaceAlbedo.rgb;
+finalDiffuse *= surfaceAlbedo;
+#if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
+    finalDiffuse += transmissionBase;
+#endif
 finalDiffuse = max(finalDiffuse, 0.0);
 finalDiffuse *= vLightingIntensity.x;
 

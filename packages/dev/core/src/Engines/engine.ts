@@ -48,7 +48,6 @@ import {
     _CommonInit,
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
-import "../Audio/audioEngine";
 import { _retryWithInterval } from "core/Misc/timingTools";
 
 /**

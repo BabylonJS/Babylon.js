@@ -27,9 +27,21 @@ export class NodeMaterialBuildStateSharedData {
     public varyings: string[] = [];
 
     /**
-     * Gets the varying declaration string
+     * Gets the varying declaration string (for vertex shader)
      */
     public varyingDeclaration = "";
+
+    /**
+     * Gets the varying declaration string (for fragment shader)
+     * This is potentially different from varyingDeclaration only in WebGPU
+     */
+    public varyingDeclarationFragment = "";
+
+    /**
+     * Gets the varying initialization string (for fragment shader)
+     * Only used in WebGPU, to reconstruct the varying values from the vertex shader if their types is mat4x4f
+     */
+    public varyingInitializationsFragment = "";
 
     /**
      * List of the fragment output nodes

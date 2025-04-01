@@ -108,6 +108,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
     private _rootChildrenHaveChanged: boolean = false;
+    private _adjustToEngineHardwareScalingLevel = false;
 
     /** @internal */
     public _capturedPointerIds = new Set<number>();
@@ -180,6 +181,23 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * If set to true, the POINTERTAP event type will be used for "click", instead of POINTERUP
      */
     public usePointerTapForClickEvent = false;
+
+    /**
+     * If set to true, the renderScale will be adjusted automatically to the engine's hardware scaling
+     * If this is set to true, manually setting the renderScale will be ignored
+     * This is useful when the engine's hardware scaling is set to a value other than 1
+     */
+    public get adjustToEngineHardwareScalingLevel(): boolean {
+        return this._adjustToEngineHardwareScalingLevel;
+    }
+
+    public set adjustToEngineHardwareScalingLevel(value: boolean) {
+        if (this._adjustToEngineHardwareScalingLevel === value) {
+            return;
+        }
+        this._adjustToEngineHardwareScalingLevel = value;
+        this._onResize();
+    }
     /**
      * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
      * Useful when you want more antialiasing
@@ -697,6 +715,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onGuiReadyObservable.clear();
         super.dispose();
     }
+
+    private _alreadyRegisteredForRender = false;
     private _onResize(): void {
         const scene = this.getScene();
         if (!scene) {
@@ -704,6 +724,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         // Check size
         const engine = scene.getEngine();
+        if (this.adjustToEngineHardwareScalingLevel) {
+            // force the renderScale to the engine's hardware scaling level
+            this._renderScale = engine.getHardwareScalingLevel();
+        }
         const textureSize = this.getSize();
         let renderWidth = engine.getRenderWidth() * this._renderScale;
         let renderHeight = engine.getRenderHeight() * this._renderScale;
@@ -722,6 +746,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
+            }
+            if (!this._alreadyRegisteredForRender) {
+                this._alreadyRegisteredForRender = true;
+                Tools.SetImmediate(() => {
+                    // We want to force an update so the texture can be set as ready
+                    this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+                    this._alreadyRegisteredForRender = false;
+                });
             }
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
@@ -1658,11 +1690,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             layer.layerMask = 0;
         }
 
-        if (adaptiveScaling && resultScene) {
-            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
-            result._rootContainer.scaleX = newScale;
-            result._rootContainer.scaleY = newScale;
-        }
+        result.adjustToEngineHardwareScalingLevel = adaptiveScaling;
 
         // Attach
         result.attach();

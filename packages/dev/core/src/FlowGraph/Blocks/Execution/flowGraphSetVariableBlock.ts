@@ -1,59 +1,99 @@
-import { RichTypeAny } from "../../flowGraphRichTypes";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import type { FlowGraphContext } from "../../flowGraphContext";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
+import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 
 /**
- * @experimental
- * The variable block configuration.
+ * The configuration of the FlowGraphGetVariableBlock.
  */
 export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The name of the variable to set.
      */
-    variableName: string;
+    variable?: string;
+
+    /**
+     * The name of the variables to set.
+     */
+    variables?: string[];
 }
 
 /**
- * Block to set a variable.
- * @experimental
+ * This block will set a variable on the context.
  */
 export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The value to set on the variable.
-     */
-    public readonly input: FlowGraphDataConnection<T>;
-
-    constructor(
-        /**
-         * the configuration of the block
-         */
-        public override config: IFlowGraphSetVariableBlockConfiguration
-    ) {
+    constructor(config: IFlowGraphSetVariableBlockConfiguration) {
         super(config);
-
-        this.input = this.registerDataInput(config.variableName, RichTypeAny);
+        // check if the variable is defined
+        if (!config.variable && !config.variables) {
+            throw new Error("FlowGraphSetVariableBlock: variable/variables is not defined");
+        }
+        // check if the variable is an array
+        if (config.variables && config.variable) {
+            throw new Error("FlowGraphSetVariableBlock: variable and variables are both defined");
+        }
+        // check if we have either a variable or variables. If we have variables, set the inputs correctly
+        if (config.variables) {
+            for (const variable of config.variables) {
+                this.registerDataInput(variable, RichTypeAny);
+            }
+        } else {
+            this.registerDataInput("value", RichTypeAny);
+        }
     }
 
-    public _execute(context: FlowGraphContext): void {
-        const variableNameValue = this.config.variableName;
-        const inputValue = this.input.getValue(context);
-        context.setVariable(variableNameValue, inputValue);
+    public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+        if (this.config?.variables) {
+            for (const variable of this.config.variables) {
+                this._saveVariable(context, variable);
+            }
+        } else {
+            this._saveVariable(context, this.config?.variable!, "value");
+        }
         this.out._activateSignal(context);
     }
 
-    /**
-     * @returns class name of the block.
-     */
-    public override getClassName(): string {
-        return FlowGraphSetVariableBlock.ClassName;
+    private _saveVariable(context: FlowGraphContext, variableName: string, inputName?: string): void {
+        // check if there is an animation(group) running on this variable. If there is, stop the animation - a value was force-set.
+        const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
+        for (const animationUniqueId of currentlyRunningAnimationGroups) {
+            const animation = context.assetsContext.animationGroups[animationUniqueId];
+            // check if there is a target animation that has the target set to be the context
+            for (const targetAnimation of animation.targetedAnimations) {
+                if (targetAnimation.target === context) {
+                    // check if the target property is the variable we are setting
+                    if (targetAnimation.target === context) {
+                        // check the variable name
+                        if (targetAnimation.animation.targetProperty === variableName) {
+                            // stop the animation
+                            animation.stop();
+                            // remove the animation from the currently running animations
+                            const index = currentlyRunningAnimationGroups.indexOf(animationUniqueId);
+                            if (index > -1) {
+                                currentlyRunningAnimationGroups.splice(index, 1);
+                            }
+                            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        const value = this.getDataInput(inputName || variableName)?.getValue(context);
+        context.setVariable(variableName, value);
     }
 
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSetVariableBlock";
+    public override getClassName(): string {
+        return FlowGraphBlockNames.SetVariable;
+    }
+
+    public override serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.variable = this.config?.variable;
+    }
 }
-RegisterClass(FlowGraphSetVariableBlock.ClassName, FlowGraphSetVariableBlock);
+
+RegisterClass(FlowGraphBlockNames.SetVariable, FlowGraphSetVariableBlock);

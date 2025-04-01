@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem } from "core/index";
+import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh } from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -120,6 +120,23 @@ export class ObjectRenderer {
      */
     public cameraForLOD: Nullable<Camera>;
 
+    private _renderInLinearSpace = false;
+    /**
+     * If true, the object renderer will render all objects in linear space (default: false)
+     */
+    public get renderInLinearSpace() {
+        return this._renderInLinearSpace;
+    }
+
+    public set renderInLinearSpace(value: boolean) {
+        if (value === this._renderInLinearSpace) {
+            return;
+        }
+
+        this._renderInLinearSpace = value;
+        this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_ImageProcessingDirtyFlag);
+    }
+
     /**
      * Override the mesh isReady function with your own one.
      */
@@ -168,6 +185,7 @@ export class ObjectRenderer {
     public _waitingRenderList?: string[];
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
+    protected _currentApplyByPostProcessSetting = false;
 
     /**
      * The options used by the object renderer
@@ -234,7 +252,11 @@ export class ObjectRenderer {
         }
         for (let j = 0; j < meshes.length; ++j) {
             for (let i = 0; i < this.options.numPasses; ++i) {
-                meshes[j].setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
+                let mesh = meshes[j];
+                if (meshes[j].isAnInstance) {
+                    mesh = (meshes[j] as InstancedMesh).sourceMesh;
+                }
+                mesh.setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
             }
         }
     }
@@ -381,6 +403,10 @@ export class ObjectRenderer {
                 }
             }
         }
+
+        this._currentApplyByPostProcessSetting = this._scene.imageProcessingConfiguration.applyByPostProcess;
+        // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
+        this._scene.imageProcessingConfiguration._applyByPostProcess = !!this._renderInLinearSpace;
     }
 
     private _defaultRenderListPrepared: boolean;
@@ -414,6 +440,7 @@ export class ObjectRenderer {
     public finishRender() {
         const scene = this._scene;
 
+        scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
         scene.activeCamera = this._currentSceneCamera;
         if (this._currentSceneCamera) {
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {

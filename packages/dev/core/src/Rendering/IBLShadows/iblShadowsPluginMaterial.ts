@@ -6,7 +6,7 @@ import { Constants } from "core/Engines/constants";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import { expandToProperty, serialize } from "core/Misc/decorators";
+import { expandToProperty, serialize, serializeAsTexture } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -30,7 +30,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     /**
      * The texture containing the contribution from IBL shadows.
      */
-    @serialize()
+    @serializeAsTexture()
     public iblShadowsTexture: InternalTexture;
 
     /**
@@ -144,16 +144,20 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    #ifdef REFLECTION
-                        #ifdef COLORED_IBL_SHADOWS
-                            var shadowValue: vec3f = computeIndirectShadow();
-                            finalIrradiance *= shadowValue;
-                            finalRadianceScaled *= mix(vec3f(1.0), shadowValue, roughness);
-                        #else
-                            var shadowValue: vec2f = computeIndirectShadow();
-                            finalIrradiance *= vec3f(shadowValue.x);
-                            finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
+                    #ifndef UNLIT
+                        #ifdef REFLECTION
+                            #ifdef COLORED_IBL_SHADOWS
+                                var shadowValue: vec3f = computeIndirectShadow();
+                                finalIrradiance *= shadowValue;
+                                finalRadianceScaled *= mix(vec3f(1.0), shadowValue, roughness);
+                            #else
+                                var shadowValue: vec2f = computeIndirectShadow();
+                                finalIrradiance *= vec3f(shadowValue.x);
+                                finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
+                            #endif
                         #endif
+                    #else
+                        finalDiffuse *= computeIndirectShadow().x;
                     #endif
                 #endif
             `;
@@ -197,16 +201,20 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    #ifdef REFLECTION
-                        #ifdef COLORED_IBL_SHADOWS
-                            vec3 shadowValue = computeIndirectShadow();
-                            finalIrradiance.rgb *= shadowValue.rgb;
-                            finalRadianceScaled *= mix(vec3(1.0), shadowValue.rgb, roughness);
-                        #else
-                            vec2 shadowValue = computeIndirectShadow();
-                            finalIrradiance *= shadowValue.x;
-                            finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
+                    #ifndef UNLIT
+                        #ifdef REFLECTION
+                            #ifdef COLORED_IBL_SHADOWS
+                                vec3 shadowValue = computeIndirectShadow();
+                                finalIrradiance.rgb *= shadowValue.rgb;
+                                finalRadianceScaled *= mix(vec3(1.0), shadowValue.rgb, roughness);
+                            #else
+                                vec2 shadowValue = computeIndirectShadow();
+                                finalIrradiance *= shadowValue.x;
+                                finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
+                            #endif
                         #endif
+                    #else
+                        finalDiffuse *= computeIndirectShadow().x;
                     #endif
                 #endif
             `;

@@ -4,7 +4,7 @@ import type { PerfCounter } from "../Misc/perfCounter";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ICanvas, IImage } from "./ICanvas";
+import type { ICanvas, IImage, IPath2D } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -1309,6 +1309,13 @@ export abstract class AbstractEngine {
     public abstract enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
 
     /**
+     * Sets the type of faces to cull
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param force defines if states must be applied even if cache is up to date
+     */
+    public abstract setStateCullFaceType(cullBackFaces?: boolean, force?: boolean): void;
+
+    /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
@@ -1473,6 +1480,15 @@ export abstract class AbstractEngine {
      */
     public createCanvasImage(): IImage {
         return document.createElement("img");
+    }
+
+    /**
+     * Create a 2D path to use with canvas
+     * @returns IPath2D interface
+     * @param d SVG path string
+     */
+    public createCanvasPath2D(d?: string): IPath2D {
+        return new Path2D(d);
     }
 
     /**
@@ -1693,7 +1709,8 @@ export abstract class AbstractEngine {
                         onInternalError,
                         scene ? scene.offlineProvider : null,
                         mimeType,
-                        texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                        texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined,
+                        this
                     );
                 }
             } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
@@ -1703,7 +1720,8 @@ export abstract class AbstractEngine {
                     onInternalError,
                     scene ? scene.offlineProvider : null,
                     mimeType,
-                    texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                    texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined,
+                    this
                 );
             } else if (buffer) {
                 onload(buffer);
@@ -1863,14 +1881,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.50.0";
+        return "babylonjs@8.0.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.50.0";
+        return "8.0.2";
     }
 
     /**
@@ -1892,6 +1910,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the audio context specified in engine initialization options
+     * @deprecated please use AudioEngineV2 instead
      * @returns an Audio Context
      */
     public getAudioContext(): Nullable<AudioContext> {
@@ -1900,6 +1919,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the audio destination specified in engine initialization options
+     * @deprecated please use AudioEngineV2 instead
      * @returns an audio destination node
      */
     public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
@@ -2008,7 +2028,6 @@ export abstract class AbstractEngine {
         options.deterministicLockstep = options.deterministicLockstep ?? false;
         options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
         options.timeStep = options.timeStep ?? 1 / 60;
-        options.audioEngine = options.audioEngine ?? true;
         options.stencil = options.stencil ?? true;
 
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
@@ -2048,15 +2067,9 @@ export abstract class AbstractEngine {
         if (IsWindowObjectExist() && IsDocumentAvailable()) {
             // make sure it is a Node object, and is a part of the document.
             if (this._renderingCanvas) {
-                const boundingRect = this._renderingCanvas.getBoundingClientRect
-                    ? this._renderingCanvas.getBoundingClientRect()
-                    : {
-                          // fallback to last solution in case the function doesn't exist
-                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
-                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
-                      };
-                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
-                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
+                const boundingRect = this._renderingCanvas.getBoundingClientRect?.();
+                width = this._renderingCanvas.clientWidth || boundingRect?.width || this._renderingCanvas.width * this._hardwareScalingLevel || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect?.height || this._renderingCanvas.height * this._hardwareScalingLevel || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;
@@ -2538,6 +2551,7 @@ export abstract class AbstractEngine {
      * @param offlineProvider offline provider for caching
      * @param mimeType optional mime type
      * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
+     * @param engine the engine instance to use
      * @returns the HTMLImageElement of the loaded image
      * @internal
      */
@@ -2547,7 +2561,8 @@ export abstract class AbstractEngine {
         onError: (message?: string, exception?: any) => void,
         offlineProvider: Nullable<IOfflineProvider>,
         mimeType?: string,
-        imageBitmapOptions?: ImageBitmapOptions
+        imageBitmapOptions?: ImageBitmapOptions,
+        engine?: AbstractEngine
     ): Nullable<HTMLImageElement> {
         throw _WarnImport("FileTools");
     }
@@ -2711,6 +2726,7 @@ export abstract class AbstractEngine {
     /**
      * Gets the audio engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+     * @deprecated please use AudioEngineV2 instead
      * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -2719,6 +2735,7 @@ export abstract class AbstractEngine {
     /**
      * Default AudioEngine factory responsible of creating the Audio Engine.
      * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
+     * @deprecated please use AudioEngineV2 instead
      */
     public static AudioEngineFactory: (
         hostElement: Nullable<HTMLElement>,
