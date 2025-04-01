@@ -1,22 +1,19 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Camera, Nullable, Observable } from "core/index";
-import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
-
+import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { EnvironmentOptions, Model, ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
-import { LitElement, css, defaultConverter, html } from "lit";
+import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { ref } from "lit/directives/ref.js";
 
 import { Color4 } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsToneMapping, Viewer, ViewerHotSpotResult } from "./viewer";
+import { IsToneMapping, Viewer } from "./viewer";
 import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -55,61 +52,49 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
 
-export type HotSpot = ViewerHotSpotQuery & {
-    /**
-     * An optional camera pose to associate with the hotspot.
-     */
-    cameraOrbit?: [alpha: number, beta: number, radius: number];
-};
+type ResetMode = "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]];
 
-/**
- * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
- *
- * The target point is determined using the camera's forward ray:
- *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
- *   - If no intersection is found, a fallback target is calculated by projecting the distance
- *     between the camera and the model's center along the camera's forward direction.
- *
- * @param model The reference model used to determine the target point.
- * @param camera The camera from which the HotSpot is generated.
- * @returns A HotSpot object.
- */
-export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
-    await import("core/Culling/ray");
-    const scene = model.assetContainer.scene;
-    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
-    const camGlobalPos = camera.globalPosition.clone();
+function coerceEngineAttribute(value: string | null): ViewerElement["engine"] {
+    if (value === "WebGL" || value === "WebGPU") {
+        return value;
+    }
+    return undefined;
+}
 
-    // Target
-    let radius: number = 0.0001; // Just to avoid division by zero
-    const targetPoint = Vector3.Zero();
-    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
-    if (pickingInfo && pickingInfo.hit) {
-        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
-    } else {
-        const worldBounds = model.getWorldBounds();
-        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
-        const distancePoint = Vector3.FromArray(centerArray);
-        const direction = ray.direction.clone();
-        targetPoint.copyFrom(camGlobalPos);
-        radius = Vector3.Distance(camGlobalPos, distancePoint);
-        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
+function coerceNumericAttribute(value: string | null): Nullable<number> {
+    return value == null ? null : Number(value);
+}
+
+function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, number, number]> {
+    if (!value) {
+        return null;
     }
 
-    const computationVector = Vector3.Zero();
-    camGlobalPos.subtractToRef(targetPoint, computationVector);
-
-    // Radius
-    if (pickingInfo && pickingInfo.hit) {
-        radius = computationVector.length();
+    const array = value.trim().split(/\s+/);
+    if (array.length !== 3) {
+        throw new Error(`Camera orbit and target should be defined as three space separated numbers, but was specified as "${value}".`);
     }
 
-    // Alpha and Beta
-    const alpha = ComputeAlpha(computationVector);
-    const beta = ComputeBeta(computationVector.y, radius);
+    return array.map((value) => Number(value)) as CameraOrbit;
+}
 
-    const targetArray = targetPoint.asArray();
-    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
+function coerceToneMapping(value: string | null): Nullable<ToneMapping> {
+    if (!value || !IsToneMapping(value)) {
+        return null;
+    }
+    return value;
+}
+
+function coerceResetMode(value: string | null): ResetMode {
+    if (!value || value === "auto") {
+        return "auto";
+    }
+
+    if (value === "reframe") {
+        return "reframe";
+    }
+
+    return value.trim().split(/\s+/) as ResetMode;
 }
 
 // Custom events for the HTML3DElement.
@@ -156,7 +141,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private readonly _viewerLock = new AsyncLock();
     private _animationSliderResizeObserver: Nullable<ResizeObserver> = null;
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
-    private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
     /**
      * @experimental
@@ -266,7 +250,26 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (details.viewer.selectedMaterialVariant = this.selectedMaterialVariant ?? details.viewer.selectedMaterialVariant ?? ""),
             (details) => (this.selectedMaterialVariant = details.viewer.selectedMaterialVariant)
         ),
+        this._createPropertyBinding(
+            "hotSpots",
+            (details) => details.viewer.onHotSpotsChanged,
+            (details) => (details.viewer.hotSpots = this.hotSpots ?? details.viewer.hotSpots),
+            (details) => (this.hotSpots = details.viewer.hotSpots)
+        ),
+        this._createPropertyBinding(
+            "camerasAsHotSpots",
+            (details) => details.viewer.onCamerasAsHotSpotsChanged,
+            (details) => (details.viewer.camerasAsHotSpots = this.camerasAsHotSpots ?? details.viewer.camerasAsHotSpots),
+            (details) => (this.camerasAsHotSpots = details.viewer.camerasAsHotSpots)
+        ),
     ] as const;
+
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static override get observedAttributes(): string[] {
+        // These attributes don't have corresponding properties, so they are managed directly.
+        return [...super.observedAttributes, "camera-orbit", "camera-target"];
+    }
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -571,19 +574,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns world position, world normal and screen space coordinates
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
-        return this._queryHotSpot(name, result) != null;
-    }
-
-    private _queryHotSpot(name: string, result: ViewerHotSpotResult): Nullable<HotSpot> {
         if (this._viewerDetails) {
-            const hotSpot = this.hotSpots?.[name];
-            if (hotSpot) {
-                if (this._viewerDetails.viewer.getHotSpotToRef(hotSpot, result)) {
-                    return hotSpot;
-                }
-            }
+            return this._viewerDetails.viewer.queryHotSpot(name, result) != null;
         }
-        return null;
+        return false;
     }
 
     /**
@@ -592,18 +586,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns true if the hotspot was found and the camera was updated, false otherwise.
      */
     public focusHotSpot(name: string): boolean {
-        const result = new ViewerHotSpotResult();
-        const query = this._queryHotSpot(name, result);
-        if (query && this._viewerDetails) {
-            this._viewerDetails.viewer.pauseAnimation();
-            const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
-            this._viewerDetails.camera.interpolateTo(
-                cameraOrbit[0],
-                cameraOrbit[1],
-                cameraOrbit[2],
-                new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2])
-            );
-            return true;
+        if (this._viewerDetails) {
+            return this._viewerDetails.viewer.focusHotSpot(name);
         }
         return false;
     }
@@ -618,27 +602,20 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * The engine to use for rendering.
      */
-    @property({
-        converter: (value: string | null): ViewerElement["engine"] => {
-            if (value === "WebGL" || value === "WebGPU") {
-                return value;
-            }
-            return GetDefaultEngine();
-        },
-    })
-    public engine: NonNullable<CanvasViewerOptions["engine"]> = GetDefaultEngine();
+    @property({ converter: coerceEngineAttribute })
+    public engine: CanvasViewerOptions["engine"] = this._options.engine;
 
     /**
      * When true, the scene will be rendered even if no scene state has changed.
      */
     @property({ attribute: "render-when-idle", type: Boolean })
-    public renderWhenIdle = false;
+    public renderWhenIdle: boolean = this._options.autoSuspendRendering === false;
 
     /**
      * The model URL.
      */
     @property()
-    public source: Nullable<string> = null;
+    public source: Nullable<string> = this._options.source ?? null;
 
     /**
      * Forces the model to be loaded with the specified extension.
@@ -668,19 +645,19 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The texture URL for lighting.
      */
     @property({ attribute: "environment-lighting" })
-    public environmentLighting: Nullable<string> = null;
+    public environmentLighting: Nullable<string> = this._options.environmentLighting ?? null;
 
     /**
      * The texture URL for the skybox.
      */
     @property({ attribute: "environment-skybox" })
-    public environmentSkybox: Nullable<string> = null;
+    public environmentSkybox: Nullable<string> = this._options.environmentSkybox ?? null;
 
     /**
      * A value between 0 and 2 that specifies the intensity of the environment lighting.
      */
     @property({ type: Number, attribute: "environment-intensity" })
-    public environmentIntensity: Nullable<number> = null;
+    public environmentIntensity: Nullable<number> = this._options.environmentConfig?.intensity ?? null;
 
     /**
      * A value in radians that specifies the rotation of the environment.
@@ -689,7 +666,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         type: Number,
         attribute: "environment-rotation",
     })
-    public environmentRotation: Nullable<number> = null;
+    public environmentRotation: Nullable<number> = this._options.environmentConfig?.rotation ?? null;
 
     /**
      * Wether or not the environment is visible.
@@ -697,7 +674,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     @property({
         attribute: "environment-visible",
     })
-    public environmentVisible: Nullable<boolean> = null;
+    public environmentVisible: Nullable<boolean> = this._options.environmentConfig?.visible ?? null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -717,7 +694,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * A value between 0 and 1 that specifies how much to blur the skybox.
      */
     @property({ attribute: "skybox-blur" })
-    public skyboxBlur: Nullable<number> = null;
+    public skyboxBlur: Nullable<number> = this._options.environmentConfig?.blur ?? null;
 
     /**
      * The tone mapping to use for rendering the scene.
@@ -731,32 +708,33 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return value;
         },
     })
-    public toneMapping: Nullable<ToneMapping> = null;
+    public toneMapping: Nullable<ToneMapping> = this._options.postProcessing?.toneMapping ?? null;
 
     /**
      * The contrast applied to the scene.
      */
     @property()
-    public contrast: Nullable<number> = null;
+    public contrast: Nullable<number> = this._options.postProcessing?.contrast ?? null;
 
     /**
      * The exposure applied to the scene.
      */
     @property()
-    public exposure: Nullable<number> = null;
+    public exposure: Nullable<number> = this._options.postProcessing?.exposure ?? null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
      */
     @property({
         attribute: "clear-color",
-        reflect: true,
         converter: {
             fromAttribute: parseColor,
             toAttribute: (color: Nullable<Color4>) => (color ? color.toHexString() : null),
         },
     })
-    public clearColor: Nullable<Color4> = null;
+    public clearColor: Nullable<Color4> = this._options.clearColor
+        ? new Color4(this._options.clearColor[0], this._options.clearColor[1], this._options.clearColor[2], this._options.clearColor[3] ?? 1)
+        : null;
 
     /**
      * Enables or disables camera auto-orbit.
@@ -765,7 +743,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "camera-auto-orbit",
         type: Boolean,
     })
-    public cameraAutoOrbit = false;
+    public cameraAutoOrbit = this._options.cameraAutoOrbit?.enabled ?? false;
 
     /**
      * The speed at which the camera auto-orbits around the target.
@@ -774,7 +752,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "camera-auto-orbit-speed",
         type: Number,
     })
-    public cameraAutoOrbitSpeed: Nullable<number> = null;
+    public cameraAutoOrbitSpeed: Nullable<number> = this._options.cameraAutoOrbit?.speed ?? null;
 
     /**
      * The delay in milliseconds before the camera starts auto-orbiting.
@@ -783,68 +761,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "camera-auto-orbit-delay",
         type: Number,
     })
-    public cameraAutoOrbitDelay: Nullable<number> = null;
+    public cameraAutoOrbitDelay: Nullable<number> = this._options.cameraAutoOrbit?.delay ?? null;
 
     /**
-     * Camera orbit can only be set as an attribute, and is set on the camera each time a new model is loaded.
-     * For access to the real time camera properties, use viewerDetails.camera.
-     */
-    @property({
-        attribute: "camera-orbit",
-        converter: (value) => {
-            if (!value) {
-                return null;
-            }
-
-            const array = value.trim().split(/\s+/);
-            if (array.length !== 3) {
-                throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
-            }
-
-            return (camera: ArcRotateCamera) => {
-                for (const [index, property] of (["alpha", "beta", "radius"] as const).entries()) {
-                    const value = array[index];
-                    if (value !== "auto") {
-                        camera[property] = Number(value);
-                    }
-                }
-            };
-        },
-    })
-    private _cameraOrbitCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
-
-    /**
-     * Camera target can only be set as an attribute, and is set on the camera each time a new model is loaded.
-     * For access to the real time camera properties, use viewerDetails.camera.
-     */
-    @property({
-        attribute: "camera-target",
-        converter: (value) => {
-            if (!value) {
-                return null;
-            }
-
-            const array = value.trim().split(/\s+/);
-            if (array.length !== 3) {
-                throw new Error("cameraTarget should be defined as 'x y z'");
-            }
-
-            return (camera: ArcRotateCamera) => {
-                const target = camera.target;
-                for (const [index, property] of (["x", "y", "z"] as const).entries()) {
-                    const value = array[index];
-                    if (value !== "auto") {
-                        target[property] = Number(value);
-                    }
-                }
-                camera.target = target.clone();
-            };
-        },
-    })
-    private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
-
-    /**
-     * A string value that encodes one or more hotspots.
+     * The set of defined hot spots.
      */
     @property({
         attribute: "hotspots",
@@ -856,7 +776,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             return JSON.parse(value);
         },
     })
-    public hotSpots: Record<string, HotSpot> = {};
+    public hotSpots: Record<string, HotSpot> = this._options.hotSpots ?? {};
 
     /**
      * @experimental
@@ -869,8 +789,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * True if the default animation should play automatically when a model is loaded.
      */
-    @property({ attribute: "animation-auto-play", reflect: true, type: Boolean })
-    public animationAutoPlay = false;
+    @property({ attribute: "animation-auto-play", type: Boolean })
+    public animationAutoPlay: boolean = !!this._options.animationAutoPlay;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -891,7 +811,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The currently selected animation index.
      */
     @property({ attribute: "selected-animation", type: Number })
-    public selectedAnimation: Nullable<number> = null;
+    public selectedAnimation: Nullable<number> = this._options.selectedAnimation ?? null;
 
     /**
      * True if an animation is currently playing.
@@ -904,7 +824,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The speed scale at which animations are played.
      */
     @property({ attribute: "animation-speed" })
-    public animationSpeed = 1;
+    public animationSpeed = this._options.animationSpeed ?? 1;
 
     /**
      * The current point on the selected animation timeline, normalized between 0 and 1.
@@ -932,13 +852,23 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * The currently selected material variant.
      */
     @property({ attribute: "material-variant" })
-    public selectedMaterialVariant: Nullable<string> = null;
+    public selectedMaterialVariant: Nullable<string> = this._options.selectedMaterialVariant ?? null;
 
     /**
      * True if scene cameras should be used as hotspots.
      */
-    @property({ attribute: "cameras-as-hotspots", reflect: true, type: Boolean })
+    @property({ attribute: "cameras-as-hotspots", type: Boolean })
     public camerasAsHotSpots = false;
+
+    /**
+     * Determines the behavior of the reset function, and the associated default reset button.
+     * @remarks
+     * - "auto" - Resets the camera to the initial pose if it makes sense given other viewer state, such as the selected animation.
+     * - "reframe" - Reframes the camera based on the current viewer state (ignores the initial pose).
+     * - [ResetFlag] - A space separated list of reset flags that reset various aspects of the viewer state.
+     */
+    @property({ attribute: "reset-mode", converter: coerceResetMode })
+    public resetMode: "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]] = "auto";
 
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
@@ -954,10 +884,31 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
+     * Resets the Viewer state based on the @see resetMode property.
+     */
+    public reset() {
+        this._reset(this.resetMode);
+    }
+
+    private _reset(mode: ResetMode) {
+        switch (mode) {
+            case "auto":
+                this._viewerDetails?.viewer.resetCamera(undefined);
+                break;
+            case "reframe":
+                this._viewerDetails?.viewer.resetCamera(true);
+                break;
+            default:
+                this._viewerDetails?.viewer.reset(...mode);
+                break;
+        }
+    }
+
+    /**
      * Resets the camera to its initial pose.
      */
     public resetCamera() {
-        this._viewerDetails?.viewer.resetCamera();
+        this._reset("reframe");
     }
 
     /** @internal */
@@ -974,6 +925,30 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
+    public override attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+        super.attributeChangedCallback(name, oldValue, newValue);
+
+        if (this.hasUpdated) {
+            if (name == "camera-orbit") {
+                const value = coerceCameraOrbitOrTarget(newValue);
+                if (value) {
+                    this._viewerDetails?.viewer.updateCamera({ alpha: value[0], beta: value[1], radius: value[2] });
+                } else {
+                    this._viewerDetails?.viewer.resetCamera(false);
+                }
+            } else if (name == "camera-target") {
+                const value = coerceCameraOrbitOrTarget(newValue);
+                if (value) {
+                    this._viewerDetails?.viewer.updateCamera({ targetX: value[0], targetY: value[1], targetZ: value[2] });
+                } else {
+                    this._viewerDetails?.viewer.resetCamera(false);
+                }
+            }
+        }
+    }
+
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
 
@@ -981,7 +956,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             this._hotSpotSelect.value = "";
         }
 
-        if (changedProperties.get("engine") || changedProperties.get("renderWhenIdle") != null) {
+        let needsReload = false;
+        if (changedProperties.get("renderWhenIdle") != null) {
+            needsReload = true;
+        } else if (changedProperties.has("engine")) {
+            const previous = changedProperties.get("engine") ?? GetDefaultEngine();
+            if (this.engine !== previous) {
+                needsReload = true;
+            }
+        }
+
+        if (needsReload) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
@@ -997,10 +982,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     skybox: changedProperties.has("environmentSkybox"),
                 });
             }
-        }
-
-        if (changedProperties.has("camerasAsHotSpots")) {
-            this._toggleCamerasAsHotSpots();
         }
     }
 
@@ -1097,7 +1078,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
             // Always include a button to reset the camera pose.
             toolbarControls.push(html`
-                <button aria-label="Reset Camera Pose" @click="${this.resetCamera}">
+                <button aria-label="Reset Camera Pose" @click="${this.reset}">
                     <svg viewBox="0 0 24 24">
                         <path d="${arrowResetFilledIcon}" fill="currentColor"></path>
                     </svg>
@@ -1287,56 +1268,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     updateViewer(this._viewerDetails);
                 }
             },
-            // Called to re-sync the HTML3DElement property with its corresponding attribute.
-            syncToAttribute: () => {
-                const descriptor = ViewerElement.elementProperties.get(property);
-                if (descriptor) {
-                    if (descriptor.attribute) {
-                        const attributeName = descriptor.attribute === true ? property : descriptor.attribute;
-                        if (this.hasAttribute(attributeName)) {
-                            const attributeValue = this.getAttribute(attributeName);
-
-                            const converter =
-                                typeof descriptor.converter === "function"
-                                    ? descriptor.converter
-                                    : descriptor.converter?.fromAttribute !== undefined
-                                      ? descriptor.converter.fromAttribute
-                                      : defaultConverter.fromAttribute;
-
-                            (this as any)[property] = converter ? converter(attributeValue, descriptor.type) : attributeValue;
-                        }
-                    }
-                }
-            },
         };
-    }
-
-    private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
-        if (camera !== this._viewerDetails?.camera) {
-            const hotSpot = await this._createHotSpotFromCamera(camera);
-            if (hotSpot && !signal?.aborted) {
-                this.hotSpots = {
-                    ...this.hotSpots,
-                    [`camera-${camera.name}`]: hotSpot,
-                };
-            }
-        }
-    }
-
-    private _removeCameraHotSpot(camera: Camera) {
-        delete this.hotSpots[`camera-${camera.name}`];
-        this.hotSpots = { ...this.hotSpots };
-    }
-
-    private _toggleCamerasAsHotSpots() {
-        if (!this.camerasAsHotSpots) {
-            this._camerasAsHotSpotsAbortController?.abort();
-            this._camerasAsHotSpotsAbortController = null;
-            this._viewerDetails?.scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
-        } else {
-            const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._viewerDetails?.scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
-        }
     }
 
     private async _setupViewer() {
@@ -1355,23 +1287,72 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 {
                     const detailsDeferred = new Deferred<ViewerDetails>();
-                    const viewer = await this._createViewer(
-                        canvas,
-                        Object.assign(
-                            {
-                                engine: this.engine,
-                                autoSuspendRendering: !this.renderWhenIdle,
-                                onFaulted: () => {
-                                    this._isFaultedBacking = true;
-                                    this._tearDownViewer();
-                                },
-                                onInitialized: (details) => {
-                                    detailsDeferred.resolve(details);
-                                },
-                            } satisfies CanvasViewerOptions,
-                            this._options
-                        )
-                    );
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const viewerElement = this;
+                    const viewer = await this._createViewer(canvas, {
+                        get engine() {
+                            return viewerElement.engine ?? viewerElement._options.engine;
+                        },
+                        get autoSuspendRendering() {
+                            return !(viewerElement.hasAttribute("render-when-idle") || viewerElement._options.autoSuspendRendering === false);
+                        },
+                        get source() {
+                            return viewerElement.getAttribute("source") ?? viewerElement._options.source;
+                        },
+                        get environmentLighting() {
+                            return viewerElement.getAttribute("environment-lighting") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentLighting;
+                        },
+                        get environmentSkybox() {
+                            return viewerElement.getAttribute("environment-skybox") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentSkybox;
+                        },
+                        get environmentConfig() {
+                            return {
+                                intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? viewerElement._options.environmentConfig?.intensity,
+                                blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
+                                rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
+                                visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
+                            };
+                        },
+                        get cameraOrbit() {
+                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
+                        },
+                        get cameraTarget() {
+                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-target")) ?? viewerElement._options.cameraTarget;
+                        },
+                        get cameraAutoOrbit() {
+                            return {
+                                enabled: viewerElement.hasAttribute("camera-auto-orbit") || viewerElement._options.cameraAutoOrbit?.enabled,
+                                speed: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-speed")) ?? viewerElement._options.cameraAutoOrbit?.speed,
+                                delay: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-delay")) ?? viewerElement._options.cameraAutoOrbit?.delay,
+                            };
+                        },
+                        get animationAutoPlay() {
+                            return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;
+                        },
+                        get animationSpeed() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? viewerElement._options.animationSpeed;
+                        },
+                        get selectedAnimation() {
+                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
+                        },
+                        get postProcessing() {
+                            return {
+                                toneMapping: coerceToneMapping(viewerElement.getAttribute("tone-mapping")) ?? viewerElement._options.postProcessing?.toneMapping,
+                                contrast: coerceNumericAttribute(viewerElement.getAttribute("contrast")) ?? viewerElement._options.postProcessing?.contrast,
+                                exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? viewerElement._options.postProcessing?.exposure,
+                            };
+                        },
+                        get selectedMaterialVariant() {
+                            return viewerElement.getAttribute("material-variant") ?? viewerElement._options.selectedMaterialVariant;
+                        },
+                        onInitialized: (details) => {
+                            detailsDeferred.resolve(details);
+                        },
+                        onFaulted: () => {
+                            this._isFaultedBacking = true;
+                            this._tearDownViewer();
+                        },
+                    });
                     const details = await detailsDeferred.promise;
 
                     this._viewerDetails = Object.assign(details, { viewer });
@@ -1393,15 +1374,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
                 details.viewer.onModelChanged.add((source) => {
                     this._animations = [...details.viewer.animations];
-
-                    // When attributes are explicitly set, they are re-applied when a new model is loaded.
-                    this._propertyBindings.forEach((binding) => binding.syncToAttribute());
-
-                    // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
-                    // (since the underlying Babylon camera already has these properties).
-                    this._cameraOrbitCoercer?.(details.camera);
-                    this._cameraTargetCoercer?.(details.camera);
-
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
                 });
 
@@ -1423,16 +1395,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 details.viewer.onAnimationProgressChanged.add(() => {
                     this.animationProgress = details.viewer.animationProgress ?? 0;
                     this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
-                });
-
-                details.scene.onNewCameraAddedObservable.add((camera) => {
-                    if (this.camerasAsHotSpots) {
-                        this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal);
-                    }
-                });
-
-                details.scene.onCameraRemovedObservable.add((camera) => {
-                    this._removeCameraHotSpot(camera);
                 });
 
                 details.scene.onAfterRenderCameraObservable.add(() => {
@@ -1486,8 +1448,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 if (this.source) {
                     await this._viewerDetails.viewer.loadModel(this.source, {
                         pluginExtension: this.extension ?? undefined,
-                        defaultAnimation: this.selectedAnimation ?? 0,
-                        animationAutoPlay: this.animationAutoPlay,
                     });
                 } else {
                     await this._viewerDetails.viewer.resetModel();
@@ -1533,24 +1493,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 }
             }
         }
-    }
-
-    /**
-     * Creates a world HotSpot from a camera.
-     * @param camera The camera to create a HotSpot from.
-     * @returns A HotSpot created from the camera.
-     */
-    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
-        if (camera instanceof ArcRotateCamera) {
-            const targetArray = camera.target.asArray();
-            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
-        }
-
-        if (this._viewerDetails?.model) {
-            return CreateHotSpotFromCamera(this._viewerDetails.model, camera);
-        }
-
-        return null;
     }
 }
 
