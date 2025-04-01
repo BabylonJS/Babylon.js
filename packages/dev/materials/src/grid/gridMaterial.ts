@@ -26,6 +26,7 @@ import {
     PrepareDefinesForMisc,
 } from "core/Materials/materialHelper.functions";
 import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import type { IEffectCreationOptions } from "core/Materials/effect";
 
 class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
@@ -248,7 +249,19 @@ export class GridMaterial extends PushMaterial {
             const join = defines.toString();
             addClipPlaneUniforms(uniforms);
             subMesh.setEffect(
-                scene.getEngine().createEffect("grid", attribs, uniforms, ["opacitySampler"], join, undefined, this.onCompiled, this.onError),
+                scene.getEngine().createEffect(
+                    "grid",
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: ["Scene"],
+                        samplers: ["opacitySampler"],
+                        defines: join,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                    },
+                    scene.getEngine()
+                ),
                 defines,
                 this._materialContext
             );
@@ -285,8 +298,8 @@ export class GridMaterial extends PushMaterial {
         if (!defines.INSTANCES || defines.THIN_INSTANCE) {
             this.bindOnlyWorldMatrix(world);
         }
-        this._activeEffect.setMatrix("view", scene.getViewMatrix());
-        this._activeEffect.setMatrix("projection", scene.getProjectionMatrix());
+        this.bindView(effect);
+        this.bindViewProjection(effect);
 
         // Uniforms
         if (this._mustRebind(scene, effect, subMesh)) {
