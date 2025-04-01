@@ -482,7 +482,7 @@ export class ThinEngine extends AbstractEngine {
      */
     public areAllEffectsReady(): boolean {
         for (const key in this._compiledEffects) {
-            const effect = <Effect>this._compiledEffects[key];
+            const effect = this._compiledEffects[key];
 
             if (!effect.isReady()) {
                 return false;
@@ -747,9 +747,9 @@ export class ThinEngine extends AbstractEngine {
                 if (sRGBExtension != null) {
                     this._caps.supportSRGBBuffers = true;
                     this._glSRGBExtensionValues = {
-                        SRGB: sRGBExtension.SRGB_EXT as typeof WebGL2RenderingContext.SRGB | EXT_sRGB["SRGB_EXT"],
+                        SRGB: sRGBExtension.SRGB_EXT as typeof WebGL2RenderingContext.SRGB,
                         SRGB8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"],
-                        SRGB8_ALPHA8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB8_ALPHA8_EXT"],
+                        SRGB8_ALPHA8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8,
                     };
                 }
             }
@@ -1320,7 +1320,7 @@ export class ThinEngine extends AbstractEngine {
      */
     public createIndexBuffer(indices: IndicesArray, updatable?: boolean, _label?: string): DataBuffer {
         const vbo = this._gl.createBuffer();
-        const dataBuffer = new WebGLDataBuffer(vbo!);
+        const dataBuffer = new WebGLDataBuffer(vbo);
 
         if (!vbo) {
             throw new Error("Unable to create index buffer");
@@ -1996,7 +1996,7 @@ export class ThinEngine extends AbstractEngine {
 
         const name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
-            const compiledEffect = <Effect>this._compiledEffects[name];
+            const compiledEffect = this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
                 onCompiled(compiledEffect);
             }
@@ -2131,6 +2131,8 @@ export class ThinEngine extends AbstractEngine {
     /**
      * @internal
      */
+    // named async but not actually an async function
+    // eslint-disable-next-line no-restricted-syntax
     public _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
@@ -2173,7 +2175,7 @@ export class ThinEngine extends AbstractEngine {
         context: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+        return _createShaderProgram(pipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
     }
 
     /**
@@ -2243,8 +2245,6 @@ export class ThinEngine extends AbstractEngine {
         }
 
         this._stencilStateComposer.stencilMaterial = undefined;
-
-        effect = effect as Effect;
 
         // Use program
         this.bindSamplers(effect);
@@ -3227,7 +3227,7 @@ export class ThinEngine extends AbstractEngine {
 
     /** @internal */
     public _getUnpackAlignement(): number {
-        return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
+        return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT) as number;
     }
 
     /** @internal */
@@ -3760,7 +3760,7 @@ export class ThinEngine extends AbstractEngine {
         let wasPreviouslyBound = false;
         const isTextureForRendering = texture && texture._associatedChannel > -1;
         if (forTextureDataUpdate && isTextureForRendering) {
-            this._activeChannel = texture!._associatedChannel;
+            this._activeChannel = texture._associatedChannel;
         }
 
         const currentTextureBound = this._boundTexturesCache[this._activeChannel];
@@ -3788,7 +3788,7 @@ export class ThinEngine extends AbstractEngine {
         }
 
         if (isTextureForRendering && !forTextureDataUpdate) {
-            this._bindSamplerUniformToChannel(texture!._associatedChannel, this._activeChannel);
+            this._bindSamplerUniformToChannel(texture._associatedChannel, this._activeChannel);
         }
 
         return wasPreviouslyBound;
@@ -4509,6 +4509,8 @@ export class ThinEngine extends AbstractEngine {
      * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
+    // Async function, not named Async and not marked as async to avoid breaking changes
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const numChannels = hasAlpha ? 4 : 3;
         const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
@@ -4536,6 +4538,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a webGL context can be found)
      */
+    // eslint-disable-next-line no-restricted-syntax
     public static get IsSupportedAsync(): Promise<boolean> {
         return Promise.resolve(this.isSupported());
     }
@@ -4550,7 +4553,6 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
-     * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static isSupported(): boolean {

@@ -82,6 +82,7 @@ declare module "../scene" {
          * @deprecated Please use createDefaultXRExperienceAsync instead
          * @returns a new VREXperienceHelper
          */
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
 
         /**
@@ -206,7 +207,9 @@ Scene.prototype.createDefaultEnvironment = function (options: Partial<IEnvironme
     return null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 Scene.prototype.createDefaultVRExperience = function (webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new VRExperienceHelper(this, webVROptions);
 };
 

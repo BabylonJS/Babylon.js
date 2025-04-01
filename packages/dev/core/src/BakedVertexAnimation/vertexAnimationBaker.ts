@@ -39,6 +39,8 @@ export class VertexAnimationBaker {
      * @param ranges Defines the ranges in the animation that will be baked.
      * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
      */
+    // async function, without Async suffix, to avoid breaking the API
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async bakeVertexData(ranges: AnimationRange[]): Promise<Float32Array> {
         if (!this._skeleton) {
             throw new Error("No skeleton provided.");

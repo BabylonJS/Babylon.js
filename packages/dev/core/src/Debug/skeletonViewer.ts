@@ -605,7 +605,7 @@ export class SkeletonViewer {
     private _revert(animationState: boolean): void {
         if (this.options.pauseAnimations) {
             this.scene.animationsEnabled = animationState;
-            this.utilityLayer!.utilityLayerScene!.animationsEnabled = animationState;
+            this.utilityLayer!.utilityLayerScene.animationsEnabled = animationState;
         }
     }
 
@@ -735,7 +735,7 @@ export class SkeletonViewer {
         }
 
         this._ready = false;
-        const utilityLayerScene = this.utilityLayer?.utilityLayerScene!;
+        const utilityLayerScene = this.utilityLayer?.utilityLayerScene as Scene;
         const bones: Bone[] = this.skeleton.bones;
         const spheres: Array<[Mesh, Bone]> = [];
         const spurs: Mesh[] = [];

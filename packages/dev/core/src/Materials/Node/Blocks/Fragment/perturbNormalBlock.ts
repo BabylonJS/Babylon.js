@@ -174,6 +174,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -275,7 +276,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         let normalSamplerName = null;
         if (this.normalMapColor.connectedPoint) {
-            normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+            normalSamplerName = (this.normalMapColor.connectedPoint._ownerBlock as TextureBlock).samplerName;
         }
         const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
@@ -298,11 +299,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const tbnVarying = { search: /varying mat3 vTBN;/g, replace: "" };
         const normalMatrixReplaceString = { search: isWebGPU ? /uniform normalMatrix: mat4x4f;/g : /uniform mat4 normalMatrix;/g, replace: "" };
 
-        const TBN = this.TBN;
-        if (TBN.isConnected) {
+        const tbn = this.TBN;
+        if (tbn.isConnected) {
             state.compilationString += `
             #ifdef TBNBLOCK
-            ${isWebGPU ? "var" : "mat3"} vTBN = ${TBN.associatedVariableName};
+            ${isWebGPU ? "var" : "mat3"} vTBN = ${tbn.associatedVariableName};
             #endif
             `;
         } else if (worldTangent.isConnected) {

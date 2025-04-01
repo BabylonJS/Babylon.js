@@ -21,7 +21,7 @@ export class AnimationGroupMask {
     /**
      * The set of target names included in the mask. If mode is AnimationGroupMaskMode.Exclude, the targets in this set will be excluded from the mask instead.
      */
-    private _targetNames: Set<String>;
+    private _targetNames: Set<string>;
 
     /**
      * Gets or sets a boolean indicating if the mask is disabled (default is false)
@@ -40,7 +40,7 @@ export class AnimationGroupMask {
          */
         public mode: AnimationGroupMaskMode = AnimationGroupMaskMode.Include
     ) {
-        this._targetNames = new Set<String>();
+        this._targetNames = new Set<string>();
         if (names) {
             this.addTargetName(names);
         }

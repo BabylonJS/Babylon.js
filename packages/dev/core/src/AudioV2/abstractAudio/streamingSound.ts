@@ -20,6 +20,7 @@ export interface IStreamingSoundOptions extends IAbstractSoundOptions, IStreamin
 /**
  * Options for playing a streaming sound.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IStreamingSoundPlayOptions extends IAbstractSoundPlayOptions {}
 
 /**
@@ -68,7 +69,7 @@ export abstract class StreamingSound extends AbstractSound {
      * Preloads an instance of the sound.
      * @returns A promise that resolves when the instance is preloaded.
      */
-    public preloadInstanceAsync(): Promise<void> {
+    public async preloadInstanceAsync(): Promise<void> {
         const instance = this._createInstance();
 
         this._addPreloadedInstance(instance);
@@ -83,10 +84,11 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public async preloadInstancesAsync(count: number): Promise<void> {
         for (let i = 0; i < count; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.preloadInstanceAsync();
         }
 
-        await Promise.all(this._preloadedInstances.map((instance) => instance.preloadedPromise));
+        await Promise.all(this._preloadedInstances.map(async (instance) => instance.preloadedPromise));
     }
 
     /**

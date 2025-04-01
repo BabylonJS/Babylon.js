@@ -8,6 +8,7 @@ import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { IsWindowObjectExist } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 AbstractEngine.AudioEngineFactory = (
     hostElement: Nullable<HTMLElement>,
     audioContext: Nullable<AudioContext>,
@@ -166,6 +167,7 @@ export class AudioEngine implements IAudioEngine {
         // the resume promise will never resolve and the only way to get the audio context unstuck is to
         // suspend it and make another resume request.
         if (this._tryToRun) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._audioContext?.suspend().then(() => {
                 this._tryToRun = false;
                 this._triggerRunningState();
@@ -181,7 +183,8 @@ export class AudioEngine implements IAudioEngine {
             "statechange",
             () => {
                 if (this.unlocked && this._audioContext?.state !== "running") {
-                    this._resumeAudioContext();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this._resumeAudioContextAsync();
                 }
             },
             {
@@ -192,7 +195,7 @@ export class AudioEngine implements IAudioEngine {
         );
     }
 
-    private _resumeAudioContext(): Promise<void> {
+    private async _resumeAudioContextAsync(): Promise<void> {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();
         }
@@ -231,7 +234,7 @@ export class AudioEngine implements IAudioEngine {
         }
         this._tryToRun = true;
 
-        this._resumeAudioContext()
+        this._resumeAudioContextAsync()
             .then(() => {
                 this._tryToRun = false;
                 if (this._muteButton) {
@@ -336,6 +339,8 @@ export class AudioEngine implements IAudioEngine {
         this.onAudioUnlockedObservable.clear();
         this.onAudioLockedObservable.clear();
 
+        // close is async.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._audioContext?.close();
         this._audioContext = null;
     }

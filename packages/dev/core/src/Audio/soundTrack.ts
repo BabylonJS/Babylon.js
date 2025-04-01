@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import type { Sound } from "./sound";
 import type { Analyser } from "./analyser";
 import type { Nullable } from "../types";

@@ -82,7 +82,7 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
             return requestAnimationFrame(func);
         }
     } else {
-        const { requestAnimationFrame } = requester || window;
+        const { requestAnimationFrame } = (requester || window) as { requestAnimationFrame: (callback: FrameRequestCallback) => number };
         if (typeof requestAnimationFrame === "function") {
             return requestAnimationFrame(func);
         }
@@ -622,7 +622,7 @@ export abstract class AbstractEngine {
 
     private _rebuildEffects(): void {
         for (const key in this._compiledEffects) {
-            const effect = <Effect>this._compiledEffects[key];
+            const effect = this._compiledEffects[key];
 
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
             effect._prepareEffect();
@@ -664,7 +664,7 @@ export abstract class AbstractEngine {
 
     protected _restoreEngineAfterContextLost(initEngine: () => void): void {
         // Adding a timeout to avoid race condition at browser level
-        setTimeout(async () => {
+        setTimeout(() => {
             this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
@@ -673,7 +673,7 @@ export abstract class AbstractEngine {
             const stencilTest = this._stencilState.stencilTest;
 
             // Rebuild context
-            await initEngine();
+            initEngine();
             this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;
@@ -1523,8 +1523,8 @@ export abstract class AbstractEngine {
         useSRGBBuffer?: boolean
     ): InternalTexture {
         url = url || "";
-        const fromData = url.substr(0, 5) === "data:";
-        const fromBlob = url.substr(0, 5) === "blob:";
+        const fromData = url.substring(0, 5) === "data:";
+        const fromBlob = url.substring(0, 5) === "blob:";
         const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
@@ -1635,7 +1635,7 @@ export abstract class AbstractEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            const callback = async (data: ArrayBufferView) => {
+            const callbackAsync = async (data: ArrayBufferView) => {
                 const loader = await loaderPromise;
                 loader.loadData(
                     data,
@@ -1667,7 +1667,10 @@ export abstract class AbstractEngine {
             if (!buffer) {
                 this._loadFile(
                     url,
-                    (data) => callback(new Uint8Array(data as ArrayBuffer)),
+                    (data) => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                        callbackAsync(new Uint8Array(data as ArrayBuffer));
+                    },
                     undefined,
                     scene ? scene.offlineProvider : undefined,
                     true,
@@ -1677,9 +1680,11 @@ export abstract class AbstractEngine {
                 );
             } else {
                 if (buffer instanceof ArrayBuffer) {
-                    callback(new Uint8Array(buffer));
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    callbackAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
-                    callback(buffer);
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    callbackAsync(buffer);
                 } else {
                     if (onError) {
                         onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
@@ -2030,7 +2035,9 @@ export abstract class AbstractEngine {
         options.timeStep = options.timeStep ?? 1 / 60;
         options.stencil = options.stencil ?? true;
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._audioDestination = options.audioEngineOptions?.audioDestination ?? null;
         this.premultipliedAlpha = options.premultipliedAlpha ?? true;
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;
@@ -2485,6 +2492,7 @@ export abstract class AbstractEngine {
      * @param imageSource source to load the image from.
      * @param options An object that sets options for the image's extraction.
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         throw new Error("createImageBitmapFromSource is not implemented");
     }
@@ -2495,6 +2503,7 @@ export abstract class AbstractEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return createImageBitmap(image, options);
     }
@@ -2727,7 +2736,6 @@ export abstract class AbstractEngine {
      * Gets the audio engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      * @deprecated please use AudioEngineV2 instead
-     * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static audioEngine: Nullable<IAudioEngine>;

@@ -110,6 +110,7 @@ export interface IDisposable {
 }
 
 /** Interface defining initialization parameters for Scene class */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SceneOptions {
     /**
      * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by uniqueId
@@ -494,7 +495,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /**
      * ActionManagers available on the scene.
-     * @deprecated
      */
     public actionManagers: AbstractActionManager[] = [];
 
@@ -1639,7 +1639,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _activeRequests = new Array<IFileRequest>();
 
     /** @internal */
-    public _pendingData = new Array();
+    public _pendingData = [] as any[];
     private _isDisposed = false;
 
     /**
@@ -1698,7 +1698,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public readonly useClonedMeshMap: boolean;
 
-    private _externalData: StringDictionary<Object>;
+    private _externalData: StringDictionary<object>;
     private _uid: Nullable<string>;
 
     /**
@@ -2310,7 +2310,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                             if (this._processedMaterials.indexOf(material) === -1) {
                                 this._processedMaterials.push(material);
 
-                                this._materialsRenderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
+                                this._materialsRenderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
                             }
                         }
                     }
@@ -2319,7 +2319,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                         if (this._processedMaterials.indexOf(mat) === -1) {
                             this._processedMaterials.push(mat);
 
-                            this._materialsRenderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures!());
+                            this._materialsRenderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures());
                         }
                     }
                 }
@@ -2519,7 +2519,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      * @returns A promise that resolves when the scene is ready
      */
-    public whenReadyAsync(checkRenderTargets = false): Promise<void> {
+    public async whenReadyAsync(checkRenderTargets = false): Promise<void> {
         return new Promise((resolve) => {
             this.executeWhenReady(() => {
                 resolve();
@@ -4018,9 +4018,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param data the data object to associate to the key for this Engine instance
      * @returns true if no such key were already present and the data was added successfully, false otherwise
      */
-    public addExternalData<T extends Object>(key: string, data: T): boolean {
+    public addExternalData<T extends object>(key: string, data: T): boolean {
         if (!this._externalData) {
-            this._externalData = new StringDictionary<Object>();
+            this._externalData = new StringDictionary<object>();
         }
         return this._externalData.add(key, data);
     }
@@ -4043,9 +4043,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param factory the factory that will be called to create the instance if and only if it doesn't exists
      * @returns the associated data, can be null if the factory returned null.
      */
-    public getOrAddExternalDataWithFactory<T extends Object>(key: string, factory: (k: string) => T): T {
+    public getOrAddExternalDataWithFactory<T extends object>(key: string, factory: (k: string) => T): T {
         if (!this._externalData) {
-            this._externalData = new StringDictionary<Object>();
+            this._externalData = new StringDictionary<object>();
         }
         return <T>this._externalData.getOrAddWithFactory(key, factory);
     }
@@ -4072,7 +4072,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     if (this._processedMaterials.indexOf(material) === -1) {
                         this._processedMaterials.push(material);
 
-                        this._materialsRenderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
+                        this._materialsRenderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
                     }
                 }
 
@@ -4205,7 +4205,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     ): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
-                onError && onError("No active camera found");
+                if (onError) {
+                    onError("No active camera found");
+                }
                 return;
             }
 
@@ -4223,7 +4225,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     this._activeMeshes.data[index]._freeze();
                 }
             }
-            onSuccess && onSuccess();
+            if (onSuccess) {
+                onSuccess();
+            }
         });
         return this;
     }
@@ -5807,7 +5811,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return request;
     }
 
-    public _loadFileAsync(
+    public async _loadFileAsync(
         fileOrUrl: File | string,
         onProgress?: (data: any) => void,
         useOfflineSupport?: boolean,
@@ -5815,7 +5819,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         onOpened?: (request: WebRequest) => void
     ): Promise<string>;
 
-    public _loadFileAsync(
+    public async _loadFileAsync(
         fileOrUrl: File | string,
         onProgress?: (data: any) => void,
         useOfflineSupport?: boolean,
@@ -5826,7 +5830,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * @internal
      */
-    public _loadFileAsync(
+    public async _loadFileAsync(
         fileOrUrl: File | string,
         onProgress?: (data: any) => void,
         useOfflineSupport?: boolean,
@@ -5873,7 +5877,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * @internal
      */
-    public _requestFileAsync(
+    public async _requestFileAsync(
         url: string,
         onProgress?: (ev: ProgressEvent) => void,
         useOfflineSupport?: boolean,
@@ -5918,7 +5922,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * @internal
      */
-    public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+    public async _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
             this._readFile(
                 file,

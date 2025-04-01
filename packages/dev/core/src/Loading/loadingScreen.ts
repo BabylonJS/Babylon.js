@@ -106,7 +106,6 @@ export class DefaultLoadingScreen implements ILoadingScreen {
 
         // Generating keyframes
         this._style = document.createElement("style");
-        this._style.type = "text/css";
         const keyFrames = `@-webkit-keyframes spin1 {\
                             0% { -webkit-transform: rotate(0deg);}
                             100% { -webkit-transform: rotate(360deg);}

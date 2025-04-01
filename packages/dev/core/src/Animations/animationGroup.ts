@@ -1287,7 +1287,7 @@ export class AnimationGroup implements IDisposable {
             ret += ", isStarted: " + this._isStarted;
             ret += ", speedRatio: " + this._speedRatio;
             ret += ", targetedAnimations length: " + this._targetedAnimations.length;
-            ret += ", animatables length: " + this._animatables;
+            ret += ", animatables length: " + this._animatables.length;
         }
         return ret;
     }

@@ -7,6 +7,7 @@ import type { AbstractSound, IAbstractSoundPlayOptions, IAbstractSoundPlayOption
  * Options for creating a sound instance.
  * @internal
  * */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IAbstractSoundInstanceOptions extends IAbstractSoundPlayOptionsBase {}
 
 /** @internal */

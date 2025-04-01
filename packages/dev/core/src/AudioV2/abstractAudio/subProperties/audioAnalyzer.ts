@@ -6,23 +6,23 @@ import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _GetAudioAnalyzerProperty, _GetAudioAnalyzerSubNode, _SetAudioAnalyzerProperty } from "../subNodes/audioAnalyzerSubNode";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 
-let _emptyByteFrequencyData: Nullable<Uint8Array> = null;
-let _emptyFloatFrequencyData: Nullable<Float32Array> = null;
+let _EmptyByteFrequencyData: Nullable<Uint8Array> = null;
+let _EmptyFloatFrequencyData: Nullable<Float32Array> = null;
 
 /** @internal */
 export function _GetEmptyByteFrequencyData(): Uint8Array {
-    if (!_emptyByteFrequencyData) {
-        _emptyByteFrequencyData = new Uint8Array();
+    if (!_EmptyByteFrequencyData) {
+        _EmptyByteFrequencyData = new Uint8Array();
     }
-    return _emptyByteFrequencyData;
+    return _EmptyByteFrequencyData;
 }
 
 /** @internal */
 export function _GetEmptyFloatFrequencyData(): Float32Array {
-    if (!_emptyFloatFrequencyData) {
-        _emptyFloatFrequencyData = new Float32Array();
+    if (!_EmptyFloatFrequencyData) {
+        _EmptyFloatFrequencyData = new Float32Array();
     }
-    return _emptyFloatFrequencyData;
+    return _EmptyFloatFrequencyData;
 }
 
 /** @internal */
@@ -80,6 +80,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     public dispose(): void {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (subNode) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._subGraph.removeSubNodeAsync(subNode);
             subNode.dispose();
         }
@@ -99,6 +100,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             Logger.Warn("AudioAnalyzer not enabled");
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.enableAsync();
             return _GetEmptyByteFrequencyData();
         }
@@ -110,6 +112,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             Logger.Warn("AudioAnalyzer not enabled");
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.enableAsync();
             return _GetEmptyFloatFrequencyData();
         }

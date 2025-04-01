@@ -21,8 +21,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     }
 
     /** @internal */
-    public async _init(options: Partial<IMainAudioBusOptions>): Promise<void> {
-        await this._subGraph.init(options);
+    public async _initAsync(options: Partial<IMainAudioBusOptions>): Promise<void> {
+        await this._subGraph.initAsync(options);
 
         if (this.engine.mainOut) {
             if (!this._connect(this.engine.mainOut)) {

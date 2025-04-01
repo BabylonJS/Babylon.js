@@ -3,17 +3,14 @@
 export type Nullable<T> = T | null;
 /**
  * Alias type for number that are floats
- * @ignorenaming
  */
 export type float = number;
 /**
  * Alias type for number that are doubles.
- * @ignorenaming
  */
 export type double = number;
 /**
  * Alias type for number that are integer
- * @ignorenaming
  */
 export type int = number;
 
@@ -160,8 +157,8 @@ export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
 
 /**
  * Alias type for primitive types
- * @ignorenaming
  */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type Primitive = undefined | null | boolean | string | number | Function | Element;
 
 /**
@@ -200,6 +197,7 @@ export type WritableObject<T> = { -readonly [P in keyof T]: T[P] };
 export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
 /** @internal */
 /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */

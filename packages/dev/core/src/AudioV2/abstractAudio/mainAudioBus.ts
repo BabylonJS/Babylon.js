@@ -5,6 +5,7 @@ import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
 /**
  * Options for creating a main audio bus.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IMainAudioBusOptions extends IAbstractAudioBusOptions {}
 
 /**
