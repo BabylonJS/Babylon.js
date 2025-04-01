@@ -66,6 +66,14 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             var trAdapt: f32 = step(0., info.NdotLUnclamped);
             transmittanceNdotL = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
         }
+        var diffuseTerm : vec3f = vec3f(1.0 / PI);
+#if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+        diffuseTerm = vec3f(diffuseBRDF_Burley(
+            info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+#elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+        diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness,
+                                      info.NdotL, info.NdotV, info.LdotV);
+#endif
 
         // Note: we use a Lambert BRDF for the transmitted term.
         return (transmittanceNdotL / PI) * info.attenuation * lightColor;
