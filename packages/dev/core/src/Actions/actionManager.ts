@@ -384,18 +384,26 @@ export class ActionManager extends AbstractActionManager {
      */
     public serialize(name: string): any {
         const root = {
-            children: new Array(),
+            children: [] as any[],
             name: name,
             type: 3, // Root node
-            properties: new Array(), // Empty for root but required
+            properties: [] as {
+                name: string;
+                targetType: Nullable<string>;
+                value: string;
+            }[], // Empty for root but required
         };
 
         for (let i = 0; i < this.actions.length; i++) {
             const triggerObject = {
                 type: 0, // Trigger
-                children: new Array(),
+                children: [] as any[],
                 name: ActionManager.GetTriggerName(this.actions[i].trigger),
-                properties: new Array(),
+                properties: [] as {
+                    name: string;
+                    targetType: Nullable<string>;
+                    value: string;
+                }[],
             };
 
             const triggerOptions = this.actions[i].triggerOptions;
