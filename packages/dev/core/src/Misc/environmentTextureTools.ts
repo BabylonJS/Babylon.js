@@ -270,6 +270,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     }
 
     // sphericalPolynomial is lazy loaded so simply accessing it should trigger the computation.
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     texture.sphericalPolynomial;
 
     // Lets keep track of the polynomial promise so we can wait for it to be ready before generating the pixels.
@@ -292,7 +293,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
         // All faces of the cube.
         for (let face = 0; face < 6; face++) {
-            specularTextures[i * 6 + face] = await _getTextureEncodedData(hostingScene, texture, textureType, face, i, faceWidth, imageType, options.imageQuality);
+            specularTextures[i * 6 + face] = await _GetTextureEncodedDataAsync(hostingScene, texture, textureType, face, i, faceWidth, imageType, options.imageQuality);
         }
     }
 
@@ -303,7 +304,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
         // All faces of the cube.
         for (let face = 0; face < 6; face++) {
-            diffuseTextures[face] = await _getTextureEncodedData(hostingScene, irradianceTexture, textureType, face, 0, faceWidth, imageType, options.imageQuality);
+            diffuseTextures[face] = await _GetTextureEncodedDataAsync(hostingScene, irradianceTexture, textureType, face, 0, faceWidth, imageType, options.imageQuality);
         }
     }
 
@@ -420,7 +421,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
  * Get the texture encoded data from the current texture
  * @internal
  */
-async function _getTextureEncodedData(
+async function _GetTextureEncodedDataAsync(
     hostingScene: Scene,
     texture: BaseTexture,
     textureType: number,
@@ -432,7 +433,7 @@ async function _getTextureEncodedData(
 ) {
     let faceData = await texture.readPixels(face, i, undefined, false);
     if (faceData && faceData.byteLength === (faceData as Uint8Array).length) {
-        const faceDataFloat = new Float32Array(faceData!.byteLength * 4);
+        const faceDataFloat = new Float32Array(faceData.byteLength * 4);
         for (let i = 0; i < faceData.byteLength; i++) {
             faceDataFloat[i] = (faceData as Uint8Array)[i] / 255;
             // Gamma to linear
@@ -550,10 +551,10 @@ export function CreateIrradianceImageDataArrayBufferViews(data: ArrayBufferView,
  * @param info defines the texture info retrieved through the GetEnvInfo method
  * @returns a promise
  */
-export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
+export async function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
     info = normalizeEnvInfo(info);
 
-    const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+    const specularInfo = info.specular;
     if (!specularInfo) {
         // Nothing else parsed so far
         return Promise.resolve([]);
@@ -575,7 +576,7 @@ export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBuffer
     return Promise.all(promises);
 }
 
-function _OnImageReadyAsync(
+async function _OnImageReadyAsync(
     image: HTMLImageElement | ImageBitmap,
     engine: Engine | WebGPUEngine,
     expandTexture: boolean,
@@ -606,8 +607,8 @@ function _OnImageReadyAsync(
             rgbdPostProcess?.onEffectCreatedObservable.addOnce((effect) => {
                 effect.executeWhenCompiled(() => {
                     // Uncompress the data to a RTT
-                    rgbdPostProcess!.externalTextureSamplerBinding = true;
-                    rgbdPostProcess!.onApply = (effect) => {
+                    rgbdPostProcess.externalTextureSamplerBinding = true;
+                    rgbdPostProcess.onApply = (effect) => {
                         effect._bindTexture("textureSampler", tempTexture);
                         effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && image instanceof ImageBitmap ? -1 : 1);
                     };
@@ -616,7 +617,7 @@ function _OnImageReadyAsync(
                         return;
                     }
 
-                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
+                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess], cubeRtt, true, face, i);
 
                     // Cleanup
                     engine.restoreDefaultFramebuffer();
@@ -818,7 +819,7 @@ async function _UploadLevelsAsync(
                 const lodTexture = new BaseTexture(null);
                 lodTexture._isCube = true;
                 lodTexture._texture = glTextureFromLod;
-                lodTextures![mipmapIndex] = lodTexture;
+                lodTextures[mipmapIndex] = lodTexture;
 
                 switch (i) {
                     case 0:
@@ -847,7 +848,7 @@ async function _UploadLevelsAsync(
             let promise: Promise<void>;
 
             if (engine._features.forceBitmapOverHTMLImageElement) {
-                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then((img) => {
+                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then(async (img) => {
                     return _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });
             } else {
@@ -955,7 +956,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 /**
  * @internal
  */
-export function _UpdateRGBDAsync(
+export async function _UpdateRGBDAsync(
     internalTexture: InternalTexture,
     data: ArrayBufferView[][],
     sphericalPolynomial: Nullable<SphericalPolynomial>,

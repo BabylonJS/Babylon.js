@@ -142,7 +142,7 @@ export function CreateScreenshot(
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotAsync(
+export async function CreateScreenshotAsync(
     engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
@@ -184,7 +184,7 @@ export function CreateScreenshotAsync(
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
  * @returns promise that resolves once the screenshot is taken
  */
-export function CreateScreenshotWithResizeAsync(
+export async function CreateScreenshotWithResizeAsync(
     engine: AbstractEngine,
     camera: Camera,
     width: number,
@@ -332,14 +332,17 @@ export function CreateScreenshotUsingRenderTarget(
             () => {
                 engine.onEndFrameObservable.addOnce(() => {
                     if (finalWidth === width && finalHeight === height) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
                             dumpDataFunc(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     } else {
                         const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                        importPromise.then(() =>
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                        importPromise.then(async () =>
                             ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                                 engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
                                     dumpDataFunc(
                                         finalWidth,
@@ -462,7 +465,7 @@ export function CreateScreenshotUsingRenderTarget(
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotUsingRenderTargetAsync(
+export async function CreateScreenshotUsingRenderTargetAsync(
     engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,

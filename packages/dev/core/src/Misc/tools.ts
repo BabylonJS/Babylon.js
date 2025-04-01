@@ -30,6 +30,7 @@ import { IsExponentOfTwo, Mix } from "./tools.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
 
 /**
@@ -124,6 +125,7 @@ export class Tools {
      * Sets both the script base URL and the assets base URL to the same value.
      * Setter only!
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static set CDNBaseUrl(value: string) {
         Tools.ScriptBaseUrl = value;
         Tools.AssetBaseUrl = value;
@@ -198,7 +200,7 @@ export class Tools {
         return InstantiationTools.RegisteredExternalClasses;
     }
 
-    public static set RegisteredExternalClasses(classes: { [key: string]: Object }) {
+    public static set RegisteredExternalClasses(classes: { [key: string]: object }) {
         InstantiationTools.RegisteredExternalClasses = classes;
     }
 
@@ -369,6 +371,7 @@ export class Tools {
             return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return Array.isArray(obj) ? obj : [obj];
     }
 
@@ -457,8 +460,8 @@ export class Tools {
     }
 
     // Note that this must come first since useArrayBuffer defaults to true below.
-    public static LoadFileAsync(url: string, useArrayBuffer?: true): Promise<ArrayBuffer>;
-    public static LoadFileAsync(url: string, useArrayBuffer?: false): Promise<string>;
+    public static async LoadFileAsync(url: string, useArrayBuffer?: true): Promise<ArrayBuffer>;
+    public static async LoadFileAsync(url: string, useArrayBuffer?: false): Promise<string>;
 
     /**
      * Loads a file from a url
@@ -466,7 +469,7 @@ export class Tools {
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @returns a promise containing an ArrayBuffer corresponding to the loaded file
      */
-    public static LoadFileAsync(url: string, useArrayBuffer = true): Promise<ArrayBuffer | string> {
+    public static async LoadFileAsync(url: string, useArrayBuffer = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
             FileToolsLoadFile(
                 url,
@@ -561,7 +564,7 @@ export class Tools {
      * @param scriptUrl defines the url of the script to laod
      * @returns a promise request object
      */
-    public static LoadBabylonScriptAsync(scriptUrl: string): Promise<void> {
+    public static async LoadBabylonScriptAsync(scriptUrl: string): Promise<void> {
         scriptUrl = Tools.GetBabylonScriptURL(scriptUrl);
         return Tools.LoadScriptAsync(scriptUrl);
     }
@@ -625,7 +628,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
+    public static async LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.LoadScript(
                 scriptUrl,
@@ -788,6 +791,8 @@ export class Tools {
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * @returns a void promise
      */
+    // Should end with Async but this is a breaking change
+    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/require-await, @typescript-eslint/naming-convention
     public static async DumpFramebuffer(
         width: number,
         height: number,
@@ -796,7 +801,7 @@ export class Tools {
         mimeType = "image/png",
         fileName?: string,
         quality?: number
-    ) {
+    ): Promise<void> {
         throw _WarnImport("DumpTools");
     }
 
@@ -839,7 +844,8 @@ export class Tools {
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * @returns a promise that resolve to the final data
      */
-    public static DumpDataAsync(
+    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/require-await
+    public static async DumpDataAsync(
         width: number,
         height: number,
         data: ArrayBufferView,
@@ -882,6 +888,7 @@ export class Tools {
             };
         }
         if (Tools._IsOffScreenCanvas(canvas)) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             canvas
                 .convertToBlob({
                     type: mimeType,
@@ -964,6 +971,7 @@ export class Tools {
             );
         } else if (successCallback) {
             if (Tools._IsOffScreenCanvas(canvas)) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 canvas
                     .convertToBlob({
                         type: mimeType,
@@ -1075,8 +1083,8 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax, @typescript-eslint/require-await
+    public static async CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -1147,8 +1155,8 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotUsingRenderTargetAsync(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax, @typescript-eslint/require-await
+    public static async CreateScreenshotUsingRenderTargetAsync(
         engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
@@ -1424,7 +1432,7 @@ export class Tools {
                 name = typeof object;
             }
         }
-        return name;
+        return name as string;
     }
 
     /**
@@ -1481,8 +1489,8 @@ export class Tools {
      * @param delay Number of milliseconds to delay
      * @returns Promise that resolves after the given amount of time
      */
-    public static DelayAsync(delay: number): Promise<void> {
-        return new Promise((resolve) => {
+    public static async DelayAsync(delay: number): Promise<void> {
+        await new Promise<void>((resolve) => {
             setTimeout(() => {
                 resolve();
             }, delay);
@@ -1510,8 +1518,9 @@ export class Tools {
  * @param module The name of the Module hosting the class, optional, but strongly recommended to specify if possible. Case should be preserved.
  * @returns a decorator function to apply on the class definition.
  */
-export function className(name: string, module?: string): (target: Object) => void {
-    return (target: Object) => {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function className(name: string, module?: string): (target: object) => void {
+    return (target: object) => {
         (<any>target)["__bjsclassName__"] = name;
         (<any>target)["__bjsmoduleName__"] = module != null ? module : null;
     };

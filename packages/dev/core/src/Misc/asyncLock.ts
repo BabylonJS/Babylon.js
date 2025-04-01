@@ -24,11 +24,11 @@ export class AsyncLock {
      * @param signal An optional signal that can be used to abort the operation.
      * @returns A promise that resolves when the func finishes executing.
      */
-    public lockAsync<T>(func: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
+    public async lockAsync<T>(func: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
         signal?.throwIfAborted();
 
         const wrappedFunc = signal
-            ? () => {
+            ? async () => {
                   signal.throwIfAborted();
                   return func();
               }
@@ -36,7 +36,9 @@ export class AsyncLock {
 
         const newOperation = this._currentOperation.then(wrappedFunc);
         // NOTE: It would be simpler to just hold a Promise<unknown>, but this class should not prevent an object held by the returned promise from being garbage collected.
-        this._currentOperation = new Promise<void>((resolve) => newOperation.then(() => resolve(), resolve));
+        this._currentOperation = new Promise<void>((resolve) => {
+            newOperation.then(() => resolve(), resolve);
+        });
         return newOperation;
     }
 
@@ -57,17 +59,15 @@ export class AsyncLock {
         const deferred = new Deferred<T>();
         let acquiredLocks = 0;
 
-        locks.forEach((lock) =>
-            lock
-                .lockAsync(async () => {
-                    acquiredLocks++;
-                    if (acquiredLocks === locks.length) {
-                        deferred.resolve(await func());
-                    }
-                    return deferred.promise;
-                }, signal)
-                .catch((e) => deferred.reject(e))
-        );
+        locks.forEach((lock) => {
+            lock.lockAsync(async () => {
+                acquiredLocks++;
+                if (acquiredLocks === locks.length) {
+                    deferred.resolve(await func());
+                }
+                return deferred.promise;
+            }, signal).catch((e) => deferred.reject(e));
+        });
 
         return deferred.promise;
     }

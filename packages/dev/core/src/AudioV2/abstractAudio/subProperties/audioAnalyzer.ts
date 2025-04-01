@@ -80,7 +80,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     public dispose(): void {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (subNode) {
-            this._subGraph.removeSubNode(subNode);
+            this._subGraph.removeSubNodeAsync(subNode);
             subNode.dispose();
         }
     }
@@ -89,7 +89,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     public async enableAsync(): Promise<void> {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
-            await this._subGraph.createAndAddSubNode(AudioSubNode.ANALYZER);
+            await this._subGraph.createAndAddSubNodeAsync(AudioSubNode.ANALYZER);
         }
         return Promise.resolve();
     }

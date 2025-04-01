@@ -164,7 +164,7 @@ let _WorkerPromise: Nullable<Promise<Worker>> = null;
 let _Worker: Nullable<Worker> = null;
 let _actionId = 0;
 const _IgnoreSupportedFormats = false;
-const _CreateWorkerAsync = () => {
+const _CreateWorkerAsync = async () => {
     if (!_WorkerPromise) {
         _WorkerPromise = new Promise((res, reject) => {
             if (_Worker) {
@@ -175,6 +175,7 @@ const _CreateWorkerAsync = () => {
                         if (typeof URL !== "function") {
                             return reject("Basis transcoder requires an environment with a URL constructor");
                         }
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunction})()`], { type: "application/javascript" }));
                         _Worker = new Worker(workerBlobUrl);
                         initializeWebWorker(_Worker, wasmBinary, BasisToolsOptions.JSModuleURL).then(res, reject);
@@ -200,7 +201,7 @@ export const SetBasisTranscoderWorker = (worker: Worker) => {
  * @param config configuration options for the transcoding
  * @returns a promise resulting in the transcoded image
  */
-export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
+export const TranscodeAsync = async (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
     const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
     return new Promise((res, rej) => {
@@ -295,7 +296,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
             texture.height = rootImage.height;
             texture.generateMipMaps = transcodeResult.fileInfo.images[i].levels.length > 1;
 
-            const format = BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine);
+            const format = BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format, engine);
             texture.format = format;
 
             BindTexture(texture, engine);

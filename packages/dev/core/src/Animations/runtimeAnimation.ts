@@ -3,12 +3,12 @@ import { Matrix } from "../Maths/math.vector";
 import type { _IAnimationState } from "./animation";
 import {
     Animation,
-    _staticOffsetValueColor3,
-    _staticOffsetValueColor4,
-    _staticOffsetValueQuaternion,
-    _staticOffsetValueSize,
-    _staticOffsetValueVector2,
-    _staticOffsetValueVector3,
+    _StaticOffsetValueColor3,
+    _StaticOffsetValueColor4,
+    _StaticOffsetValueQuaternion,
+    _StaticOffsetValueSize,
+    _StaticOffsetValueVector2,
+    _StaticOffsetValueVector3,
 } from "./animation";
 import type { AnimationEvent } from "./animationEvent";
 import type { Animatable } from "./animatable";
@@ -145,6 +145,7 @@ export class RuntimeAnimation {
      * Gets the current value of the runtime animation
      */
     public get currentValue(): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._currentValue;
     }
 
@@ -159,6 +160,7 @@ export class RuntimeAnimation {
      * Gets the actual target of the runtime animation
      */
     public get target(): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._currentActiveTarget;
     }
 
@@ -460,7 +462,7 @@ export class RuntimeAnimation {
      */
     private _getCorrectLoopMode(): number | undefined {
         if (this._target && this._target.animationPropertiesOverride) {
-            return this._target.animationPropertiesOverride.loopMode;
+            return this._target.animationPropertiesOverride.loopMode as number;
         }
 
         return this._animation.loopMode;
@@ -625,26 +627,26 @@ export class RuntimeAnimation {
                     break;
                 // Quaternion
                 case Animation.ANIMATIONTYPE_QUATERNION:
-                    offsetValue = _staticOffsetValueQuaternion;
+                    offsetValue = _StaticOffsetValueQuaternion;
                     break;
                 // Vector3
                 case Animation.ANIMATIONTYPE_VECTOR3:
-                    offsetValue = _staticOffsetValueVector3;
+                    offsetValue = _StaticOffsetValueVector3;
                     break;
                 // Vector2
                 case Animation.ANIMATIONTYPE_VECTOR2:
-                    offsetValue = _staticOffsetValueVector2;
+                    offsetValue = _StaticOffsetValueVector2;
                     break;
                 // Size
                 case Animation.ANIMATIONTYPE_SIZE:
-                    offsetValue = _staticOffsetValueSize;
+                    offsetValue = _StaticOffsetValueSize;
                     break;
                 // Color3
                 case Animation.ANIMATIONTYPE_COLOR3:
-                    offsetValue = _staticOffsetValueColor3;
+                    offsetValue = _StaticOffsetValueColor3;
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
-                    offsetValue = _staticOffsetValueColor4;
+                    offsetValue = _StaticOffsetValueColor4;
                     break;
             }
         }

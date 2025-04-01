@@ -36,13 +36,13 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            await this.createAndAddSubNode(AudioSubNode.SPATIAL);
+            await this.createAndAddSubNodeAsync(AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            await this.createAndAddSubNode(AudioSubNode.STEREO);
+            await this.createAndAddSubNodeAsync(AudioSubNode.STEREO);
         }
 
-        await this._createSubNodePromisesResolved();
+        await this._createSubNodePromisesResolvedAsync();
 
         if (hasSpatialOptions) {
             _GetSpatialAudioSubNode(this)?.setOptions(options);

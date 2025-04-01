@@ -20,7 +20,7 @@ export interface IFlowGraphCoordinatorConfiguration {
 /**
  * Parameters used to parse a flow graph coordinator.
  */
-export interface FlowGraphCoordinatorParseOptions {
+export interface IFlowGraphCoordinatorParseOptions {
     /**
      * A function that will be called to parse the value of a property.
      * @param key the key of the property
@@ -211,7 +211,9 @@ export class FlowGraphCoordinator {
             const count = this._eventExecutionCounter.get(id)!;
             this._eventExecutionCounter.set(id, count + 1);
             if (count >= FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
-                count === FlowGraphCoordinator.MaxEventTypeExecutionPerFrame && Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
+                if (count === FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
+                    Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
+                }
                 return;
             }
         } else {

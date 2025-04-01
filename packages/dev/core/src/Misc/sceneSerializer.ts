@@ -13,7 +13,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 import type { Camera } from "../Cameras/camera";
 import { Logger } from "core/Misc/logger";
 
-let serializedGeometries: Geometry[] = [];
+let SerializedGeometries: Geometry[] = [];
 const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
     if (geometry.doNotSerialize) {
         return;
@@ -21,7 +21,7 @@ const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): an
 
     serializationGeometries.vertexData.push(geometry.serializeVerticeData());
 
-    (<any>serializedGeometries)[geometry.id] = true;
+    (<any>SerializedGeometries)[geometry.id] = true;
 };
 
 const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
@@ -123,7 +123,7 @@ export class SceneSerializer {
      * Clear cache used by a previous serialization
      */
     public static ClearCache(): void {
-        serializedGeometries = [];
+        SerializedGeometries = [];
     }
 
     /**
@@ -310,7 +310,7 @@ export class SceneSerializer {
         serializationObject.geometries.torusKnots = [];
         serializationObject.geometries.vertexData = [];
 
-        serializedGeometries = [];
+        SerializedGeometries = [];
         const geometries = scene.getGeometries();
         for (index = 0; index < geometries.length; index++) {
             const geometry = geometries[index];
@@ -373,14 +373,15 @@ export class SceneSerializer {
      * @param scene defines the scene to serialize
      * @returns a JSON promise compatible object
      */
-    public static SerializeAsync(scene: Scene): Promise<any> {
+    public static async SerializeAsync(scene: Scene): Promise<any> {
         const serializationObject = SceneSerializer._Serialize(scene, false);
 
         const promises: Array<Promise<any>> = [];
 
         this._CollectPromises(serializationObject, promises);
 
-        return Promise.all(promises).then(() => serializationObject);
+        await Promise.all(promises);
+        return serializationObject;
     }
 
     private static _CollectPromises(obj: any, promises: Array<Promise<any>>): void {
@@ -388,6 +389,7 @@ export class SceneSerializer {
             for (let i = 0; i < obj.length; ++i) {
                 const o = obj[i];
                 if (o instanceof Promise) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     promises.push(o.then((res: any) => (obj[i] = res)));
                 } else if (o instanceof Object || Array.isArray(o)) {
                     this._CollectPromises(o, promises);
@@ -398,6 +400,7 @@ export class SceneSerializer {
                 if (Object.prototype.hasOwnProperty.call(obj, name)) {
                     const o = obj[name];
                     if (o instanceof Promise) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                         promises.push(o.then((res: any) => (obj[name] = res)));
                     } else if (o instanceof Object || Array.isArray(o)) {
                         this._CollectPromises(o, promises);

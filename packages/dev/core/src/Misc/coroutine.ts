@@ -160,7 +160,7 @@ export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: Abort
 /**
  * @internal
  */
-export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
+export async function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
     // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
     return new Promise((resolve, reject) => {
         runCoroutine(coroutine, scheduler, resolve, reject, abortSignal);
@@ -199,6 +199,7 @@ export function makeAsyncFunction<TParams extends unknown[], TReturn>(
     scheduler: CoroutineScheduler<TReturn>,
     abortSignal?: AbortSignal
 ): (...params: TParams) => Promise<TReturn> {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     return (...params: TParams) => {
         // Run the coroutine asynchronously.
         return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal);

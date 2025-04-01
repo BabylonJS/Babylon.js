@@ -1,5 +1,5 @@
 const allowedNonStrictAbbreviations =
-    "HTML|BRDF|UI|LOD|XR|PBR|IBL|HDR|SSR|SSAO|SMAA|MSAA|FXAA|GPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM";
+    "HTML|UI|LOD|XR|PBR|IBL|HDR|SSR|SSAO|SMAA|MSAA|FXAA|GPU|CPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|RGBD|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM|BRDF|ID|GUID";
 
 const rules = {
     root: true,
@@ -14,42 +14,42 @@ const rules = {
     // Limit TypeScript linting to TS/TSX
     // https://github.com/typescript-eslint/typescript-eslint/issues/1928
     overrides: [
+        // {
+        //     files: ["src/**/*.{ts,tsx}"],
+        //     rules: {
+        //         "@typescript-eslint/ban-ts-comment": "off",
+        //         "@typescript-eslint/explicit-function-return-type": "off",
+        //         "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+        //         // All the @typescript-eslint/* rules here...
+        //         "@typescript-eslint/no-unnecessary-type-arguments": "error",
+        //         "@typescript-eslint/prefer-nullish-coalescing": "error",
+        //         "@typescript-eslint/prefer-optional-chain": "error",
+        //         "@typescript-eslint/naming-convention": [
+        //             "error",
+        //             {
+        //                 selector: "variable",
+        //                 types: ["boolean"],
+        //                 format: ["PascalCase"],
+        //                 prefix: ["is", "should", "has", "can"],
+        //             },
+        //         ],
+
+        //     },
+        //     parser: "@typescript-eslint/parser",
+        // },
         {
-            files: ["src/**/*.{ts,tsx}"],
+            files: ["packages/**/src/**/*.{ts,tsx}"],
             extends: [
                 "plugin:@typescript-eslint/eslint-recommended",
                 "plugin:@typescript-eslint/recommended",
                 "plugin:@typescript-eslint/recommended-requiring-type-checking",
                 // "plugin:eslint-plugin-tsdoc/recommended"
             ],
-            rules: {
-                "@typescript-eslint/ban-ts-comment": "off",
-                "@typescript-eslint/explicit-function-return-type": "off",
-                "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-                // All the @typescript-eslint/* rules here...
-                "@typescript-eslint/no-unnecessary-type-arguments": "error",
-                "@typescript-eslint/prefer-nullish-coalescing": "error",
-                "@typescript-eslint/prefer-optional-chain": "error",
-                "@typescript-eslint/naming-convention": [
-                    "error",
-                    {
-                        selector: "variable",
-                        types: ["boolean"],
-                        format: ["PascalCase"],
-                        prefix: ["is", "should", "has", "can"],
-                    },
-                ],
+            parserOptions: {
+                projectService: true,
             },
             parser: "@typescript-eslint/parser",
-            parserOptions: {
-                tsconfigRootDir: "./",
-                project: "./tsconfig.json",
-            },
-        },
-        {
-            files: ["packages/**/src/**/*.{ts,tsx}"],
             rules: {
-                // "babylonjs/existing": "error",
                 "babylonjs/available": [
                     "warn",
                     {
@@ -75,9 +75,59 @@ const rules = {
                         publicOnly: true,
                     },
                 ],
+                // the following were enabled per default
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-enum-comparison": "off",
+                "@typescript-eslint/unbound-method": "off",
+                "@typescript-eslint/prefer-promise-reject-errors": "warn",
+                "@typescript-eslint/only-throw-error": "warn",
+                // till here
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
+                "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/no-this-alias": "error",
+                "@typescript-eslint/await-thenable": "error",
+                "@typescript-eslint/no-floating-promises": "error",
+                "@typescript-eslint/no-misused-promises": "error",
+                "no-restricted-syntax": [
+                    "error",
+                    {
+                        selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "FunctionDeclaration[async=true][id.name!=/Async$/]",
+                        message: "Async function name must end in 'Async'",
+                    },
+                    {
+                        selector: "MethodDefinition[value.async=false][key.name=/Async$/]",
+                        message: "Method ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "MethodDefinition[value.async=true][key.name!=/Async$/]",
+                        message: "Async method name must end in 'Async'",
+                    },
+                    {
+                        selector: "Property[value.type=/FunctionExpression$/][value.async=false][key.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "Property[value.type=/FunctionExpression$/][value.async=true][key.name!=/Async$/]",
+                        message: "Async function name must end in 'Async'",
+                    },
+                    {
+                        selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=false][id.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=true][id.name!=/Async$/]",
+                        message: "Async function name must end in 'Async'",
+                    },
+                ],
                 "@typescript-eslint/naming-convention": [
                     "error",
                     {
@@ -87,6 +137,12 @@ const rules = {
                     {
                         selector: "import",
                         format: ["strictCamelCase", "StrictPascalCase"],
+                    },
+                    {
+                        selector: "variable",
+                        format: ["StrictPascalCase"],
+                        modifiers: ["global"],
+                        leadingUnderscore: "allow",
                     },
                     {
                         selector: "variable",
@@ -165,18 +221,18 @@ const rules = {
                     {
                         selector: "variable",
                         modifiers: ["const", "global", "exported"],
-                        format: ["StrictPascalCase" /*, "strictCamelCase"*/],
+                        format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "function",
-                        format: ["StrictPascalCase" /*, "strictCamelCase"*/],
+                        format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "function",
                         modifiers: ["exported", "global"],
-                        format: ["StrictPascalCase" /*, "strictCamelCase"*/],
+                        format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
                     {
@@ -192,7 +248,7 @@ const rules = {
                     },
                     // Remove the strictCamelCase (move to simple camelCase) requirement for abbreviations like HTML, GUI, BRDF, etc.
                     {
-                        selector: ["memberLike", "variable", "property", "parameter"],
+                        selector: ["memberLike", "property", "parameter"],
                         format: ["camelCase", "UPPER_CASE"],
                         filter: {
                             // you can expand this regex to add more allowed names

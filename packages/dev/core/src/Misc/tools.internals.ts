@@ -17,7 +17,7 @@ let _UniqueResolveID = 0;
  * It is up to the caller to provide a script that will do the import and prepare a "returnedValue" variable
  * @internal DO NOT USE outside of Babylon.js core
  */
-export function _LoadScriptModuleAsync(scriptUrl: string, scriptId?: string): Promise<any> {
+export async function _LoadScriptModuleAsync(scriptUrl: string, scriptId?: string): Promise<any> {
     return new Promise((resolve, reject) => {
         // Need a relay
         let windowAsAny: any;

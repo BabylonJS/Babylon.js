@@ -227,7 +227,7 @@ export class FrameGraph {
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
         return new Promise((resolve) => {
             this._whenReadyAsyncCancel = _retryWithInterval(

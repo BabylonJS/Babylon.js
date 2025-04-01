@@ -25,7 +25,9 @@ import { _retryWithInterval } from "core/Misc/timingTools";
  *  * object: `{ vertex: "custom", fragment: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
  *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IShaderPath = {
+    // Should not have `I` prefix as it is a type and not an interface
     /**
      * Directly pass the shader code
      */
@@ -367,7 +369,7 @@ export class Effect implements IDisposable {
             this._engine = <AbstractEngine>engine;
             this.defines = defines == null ? "" : defines;
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
-            this._samplerList = samplers ? <string[]>samplers.slice() : [];
+            this._samplerList = samplers ? samplers.slice() : [];
             this._attributesNames = <string[]>attributesNamesOrOptions;
             this._uniformBuffersNamesList = [];
             this._shaderLanguage = shaderLanguage;
@@ -388,6 +390,8 @@ export class Effect implements IDisposable {
 
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
+            // Floating promise - should be checked here.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._processShaderCodeAsync(null, false, null, extraInitializationsAsync);
         } else {
             this._pipelineContext = cachedPipeline;
@@ -606,7 +610,7 @@ export class Effect implements IDisposable {
      * Wait until compilation before fulfilling.
      * @returns a promise to wait for completion.
      */
-    public whenCompiledAsync(): Promise<Effect> {
+    public async whenCompiledAsync(): Promise<Effect> {
         return new Promise((resolve) => {
             this.executeWhenCompiled(resolve);
         });
@@ -758,7 +762,7 @@ export class Effect implements IDisposable {
         this._pipelineContext = pipelineContext;
         this._pipelineContext.setEngine(this._engine);
         this._attributes = [];
-        this._pipelineContext!._fillEffectInformation(
+        this._pipelineContext._fillEffectInformation(
             this,
             this._uniformBuffersNames,
             this._uniformsNames,
@@ -878,18 +882,8 @@ export class Effect implements IDisposable {
 
         // Let's go through fallbacks then
         Logger.Error("Unable to compile effect:");
-        Logger.Error(
-            "Uniforms: " +
-                this._uniformsNames.map(function (uniform) {
-                    return " " + uniform;
-                })
-        );
-        Logger.Error(
-            "Attributes: " +
-                attributesNames.map(function (attribute) {
-                    return " " + attribute;
-                })
-        );
+        Logger.Error(`Uniforms: ${this._uniformsNames.join(" ")}`);
+        Logger.Error(`Attributes: ${attributesNames.join(" ")}`);
         Logger.Error("Defines:\n" + this.defines);
         if (Effect.LogShaderCodeOnCompilationError) {
             let lineErrorVertex = null,

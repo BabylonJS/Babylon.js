@@ -35,12 +35,12 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         const hasAnalyzerOptions = _HasAudioAnalyzerOptions(options);
 
         if (hasAnalyzerOptions) {
-            await this.createAndAddSubNode(AudioSubNode.ANALYZER);
+            await this.createAndAddSubNodeAsync(AudioSubNode.ANALYZER);
         }
 
-        await this.createAndAddSubNode(AudioSubNode.VOLUME);
+        await this.createAndAddSubNodeAsync(AudioSubNode.VOLUME);
 
-        await this._createSubNodePromisesResolved();
+        await this._createSubNodePromisesResolvedAsync();
 
         if (hasAnalyzerOptions) {
             const analyzerNode = _GetAudioAnalyzerSubNode(this);

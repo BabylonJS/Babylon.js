@@ -194,7 +194,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             canvases.push(this._renderingCanvas);
         }
         canvases.forEach((canvas, index) => {
-            const clonedLoadingDiv = loadingDiv!.cloneNode(true) as HTMLDivElement;
+            const clonedLoadingDiv = loadingDiv.cloneNode(true) as HTMLDivElement;
             clonedLoadingDiv.id += `-${index}`;
             this._loadingDivToRenderingCanvasMap.set(clonedLoadingDiv, [canvas, null]);
         });

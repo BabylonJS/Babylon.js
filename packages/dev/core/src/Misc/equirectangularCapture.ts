@@ -10,6 +10,8 @@ import "../Shaders/equirectangularPanorama.fragment";
 /**
  * Interface containing options related to equirectangular capture of the current scene
  */
+// Should have "I" prefix but we are keeping it as is for backward compatibility
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface EquiRectangularCaptureOptions {
     /**
      * This option relates to smallest dimension of the given equirectangular capture
@@ -43,6 +45,8 @@ export interface EquiRectangularCaptureOptions {
  * @param options This refers to the options for a given equirectangular capture
  * @returns the requested capture's pixel-data or auto downloads the file if options.filename is specified
  */
+// Should end with "Async" and start with "C" but we are keeping it as is for backward compatibility
+// eslint-disable-next-line no-restricted-syntax, @typescript-eslint/naming-convention
 export async function captureEquirectangularFromScene(scene: Scene, options: EquiRectangularCaptureOptions): Promise<ArrayBufferView | null> {
     const probe: ReflectionProbe = options.probe ?? new ReflectionProbe("tempProbe", options.size, scene);
     const wasProbeProvided = !!options.probe;
@@ -70,6 +74,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                 }
                 return;
             }
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             pixelDataPromise.then((pixelData) => {
                 dumpTexture.dispose();
                 if (!wasProbeProvided) {

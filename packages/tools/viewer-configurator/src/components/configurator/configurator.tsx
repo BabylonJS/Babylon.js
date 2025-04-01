@@ -291,6 +291,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
     // Allow models to be dragged and dropped into the viewer.
     useEffect(() => {
         const onDragOver = (event: DragEvent) => event.preventDefault();
+        // eslint-disable-next-line no-restricted-syntax
         const onDrop = async (event: DragEvent) => {
             const files = event.dataTransfer?.files;
             if (files) {

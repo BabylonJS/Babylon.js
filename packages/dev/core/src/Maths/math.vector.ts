@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";

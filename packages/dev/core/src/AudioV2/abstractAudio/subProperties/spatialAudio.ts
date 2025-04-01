@@ -29,7 +29,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
             this._rotation = _SpatialAudioDefaults.rotation.clone();
             this._rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
-            subGraph.createAndAddSubNode(AudioSubNode.SPATIAL);
+            subGraph.createAndAddSubNodeAsync(AudioSubNode.SPATIAL);
         }
 
         this._subGraph = subGraph;
