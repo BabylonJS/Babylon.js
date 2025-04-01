@@ -116,6 +116,13 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return name;
     }
 
+    protected override _outputRename(name: string) {
+        if (name === "rgb") {
+            return "rgbOut";
+        }
+        return name;
+    }
+
     private _buildSwizzle(len: number) {
         const swizzle = this.rSwizzle + this.gSwizzle + this.bSwizzle + this.aSwizzle;
         return "." + swizzle.substring(0, len);
