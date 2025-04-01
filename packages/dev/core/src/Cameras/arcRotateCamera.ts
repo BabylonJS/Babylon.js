@@ -56,6 +56,11 @@ export function ComputeBeta(verticalOffset: number, radius: number): number {
     return Math.acos(verticalOffset / radius);
 }
 
+// Returns the value if not NaN, otherwise returns the fallback value.
+function checkNaN(value: number, fallback: number): number {
+    return isNaN(value) ? fallback : value;
+}
+
 /**
  * This represents an orbital type of camera.
  *
@@ -607,8 +612,15 @@ export class ArcRotateCamera extends TargetCamera {
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
 
-    // restoring state progressively
-    private _progressiveRestore: boolean = false;
+    // This is redundant with all _goal* properties being NaN, but we track it anyway because we check for active interpolation in the hot path.
+    private _isInterpolating = false;
+
+    /**
+     * If true, indicates the camera is currently interpolating to a new pose.
+     */
+    public get isInterpolating(): boolean {
+        return this._isInterpolating;
+    }
 
     /**
      * Gets the bouncing behavior of the camera if it has been enabled.
@@ -819,22 +831,22 @@ export class ArcRotateCamera extends TargetCamera {
     private _storedTarget: Vector3;
     private _storedTargetScreenOffset: Vector2;
 
-    private _goalAlpha: number;
-    private _goalBeta: number;
-    private _goalRadius: number;
-    private _goalTarget: Vector3;
-    private _goalTargetScreenOffset: Vector2;
+    private _goalAlpha = NaN;
+    private _goalBeta = NaN;
+    private _goalRadius = NaN;
+    private readonly _goalTarget = new Vector3(NaN, NaN, NaN);
+    private readonly _goalTargetScreenOffset = new Vector2(NaN, NaN);
 
     /**
      * Stores the current state of the camera (alpha, beta, radius and target)
      * @returns the camera itself
      */
     public override storeState(): Camera {
-        this._storedAlpha = this._goalAlpha = this.alpha;
-        this._storedBeta = this._goalBeta = this.beta;
-        this._storedRadius = this._goalRadius = this.radius;
-        this._storedTarget = this._goalTarget = this._getTargetPosition().clone();
-        this._storedTargetScreenOffset = this._goalTargetScreenOffset = this.targetScreenOffset.clone();
+        this._storedAlpha = this.alpha;
+        this._storedBeta = this.beta;
+        this._storedRadius = this.radius;
+        this._storedTarget = this._getTargetPosition().clone();
+        this._storedTargetScreenOffset = this.targetScreenOffset.clone();
 
         return super.storeState();
     }
@@ -868,6 +880,17 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Stops any in-progress interpolation.
+     */
+    public stopInterpolation(): void {
+        this._goalAlpha = NaN;
+        this._goalBeta = NaN;
+        this._goalRadius = NaN;
+        this._goalTarget.set(NaN, NaN, NaN);
+        this._goalTargetScreenOffset.set(NaN, NaN);
+    }
+
+    /**
      * Interpolates the camera to a goal state.
      * @param alpha Defines the goal alpha.
      * @param beta Defines the goal beta.
@@ -875,6 +898,8 @@ export class ArcRotateCamera extends TargetCamera {
      * @param target Defines the goal target.
      * @param targetScreenOffset Defines the goal target screen offset.
      * @param interpolationFactor A value  between 0 and 1 that determines the speed of the interpolation.
+     * @remarks Passing undefined for any of the parameters will use the current value (effectively stopping any in-progress interpolation for that parameter).
+     *          Passing NaN will not start or stop any interpolation for that parameter (effectively allowing multiple interpolations of different parameters to overlap).
      */
     public interpolateTo(
         alpha = this.alpha,
@@ -884,7 +909,6 @@ export class ArcRotateCamera extends TargetCamera {
         targetScreenOffset = this.targetScreenOffset,
         interpolationFactor?: number
     ): void {
-        this._progressiveRestore = true;
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
         this.inertialRadiusOffset = 0;
@@ -899,16 +923,19 @@ export class ArcRotateCamera extends TargetCamera {
             this._currentInterpolationFactor = 0.1;
         }
 
-        alpha = Clamp(alpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
-        beta = Clamp(beta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
-        radius = Clamp(radius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
-        target.y = Clamp(target.y, this.lowerTargetYLimit ?? -Infinity, Infinity);
+        // If NaN is passed in for a goal value, keep the current goal value.
+        this._goalAlpha = checkNaN(alpha, this._goalAlpha);
+        this._goalBeta = checkNaN(beta, this._goalBeta);
+        this._goalRadius = checkNaN(radius, this._goalRadius);
+        this._goalTarget.set(checkNaN(target.x, this._goalTarget.x), checkNaN(target.y, this._goalTarget.y), checkNaN(target.z, this._goalTarget.z));
+        this._goalTargetScreenOffset.set(checkNaN(targetScreenOffset.x, this._goalTargetScreenOffset.x), checkNaN(targetScreenOffset.y, this._goalTargetScreenOffset.y));
 
-        this._goalAlpha = alpha;
-        this._goalBeta = beta;
-        this._goalRadius = radius;
-        this._goalTarget = target;
-        this._goalTargetScreenOffset = targetScreenOffset;
+        this._goalAlpha = Clamp(this._goalAlpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
+        this._goalBeta = Clamp(this._goalBeta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
+        this._goalRadius = Clamp(this._goalRadius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
+        this._goalTarget.y = Clamp(this._goalTarget.y, this.lowerTargetYLimit ?? -Infinity, Infinity);
+
+        this._isInterpolating = true;
     }
 
     // Synchronized
@@ -1013,44 +1040,12 @@ export class ArcRotateCamera extends TargetCamera {
 
         this.inputs.checkInputs();
 
-        // progressive restore
-        if (this._progressiveRestore) {
-            const dt = this._scene.getEngine().getDeltaTime() / 1000;
-            const t = 1 - Math.pow(2, -dt / this._currentInterpolationFactor);
-
-            // can't use tmp vector here because of assignment
-            this.setTarget(Vector3.Lerp(this.getTarget(), this._goalTarget, t));
-
-            // Using quaternion for smoother interpolation (and no Euler angles modulo)
-            Quaternion.RotationAlphaBetaGammaToRef(this._goalAlpha, this._goalBeta, 0, TmpVectors.Quaternion[0]);
-            Quaternion.RotationAlphaBetaGammaToRef(this.alpha, this.beta, 0, TmpVectors.Quaternion[1]);
-            Quaternion.SlerpToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0], t, TmpVectors.Quaternion[2]);
-            TmpVectors.Quaternion[2].normalize();
-            TmpVectors.Quaternion[2].toAlphaBetaGammaToRef(TmpVectors.Vector3[0]);
-            this.alpha = TmpVectors.Vector3[0].x;
-            this.beta = TmpVectors.Vector3[0].y;
-
-            this.radius += (this._goalRadius - this.radius) * t;
-            Vector2.LerpToRef(this.targetScreenOffset, this._goalTargetScreenOffset, t, this.targetScreenOffset);
-
-            // stop restoring when within close range or when user starts interacting
-            if (
-                (Vector3.DistanceSquared(this.getTarget(), this._goalTarget) < Epsilon &&
-                    TmpVectors.Quaternion[2].isApprox(TmpVectors.Quaternion[0]) &&
-                    Math.pow(this._goalRadius - this.radius, 2) < Epsilon &&
-                    Vector2.Distance(this.targetScreenOffset, this._goalTargetScreenOffset) < Epsilon) ||
-                this.inertialAlphaOffset !== 0 ||
-                this.inertialBetaOffset !== 0 ||
-                this.inertialRadiusOffset !== 0 ||
-                this.inertialPanningX !== 0 ||
-                this.inertialPanningY !== 0
-            ) {
-                this._progressiveRestore = false;
-            }
-        }
+        let hasUserInteractions = false;
 
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
+            hasUserInteractions = true;
+
             const directionModifier = this.invertRotation ? -1 : 1;
             const handednessMultiplier = this._calculateHandednessMultiplier();
             let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
@@ -1079,6 +1074,8 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
+            hasUserInteractions = true;
+
             const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
 
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
@@ -1122,6 +1119,98 @@ export class ArcRotateCamera extends TargetCamera {
             if (Math.abs(this.inertialPanningY) < this.speed * Epsilon) {
                 this.inertialPanningY = 0;
             }
+        }
+
+        if (hasUserInteractions) {
+            this.stopInterpolation();
+        } else if (this._isInterpolating) {
+            let isInterpolating = false;
+            const dt = this._scene.getEngine().getDeltaTime() / 1000;
+            const t = 1 - Math.pow(2, -dt / this._currentInterpolationFactor);
+
+            // NOTE: If the goal is NaN, it means we are not interpolating to a new value, so we can use the current value. Hence the calls to checkNaN.
+
+            // Get the goal radius immediately as we'll need it for determining interpolation termination for the target.
+            const goalRadius = checkNaN(this._goalRadius, this.radius);
+
+            // Interpolate the target if we haven't reached the goal yet.
+            if (!isNaN(this._goalTarget.x) || !isNaN(this._goalTarget.y) || !isNaN(this._goalTarget.z)) {
+                const goalTarget = TmpVectors.Vector3[0].set(
+                    checkNaN(this._goalTarget.x, this._target.x),
+                    checkNaN(this._goalTarget.y, this._target.y),
+                    checkNaN(this._goalTarget.z, this._target.z)
+                );
+                this.setTarget(Vector3.Lerp(this.target, goalTarget, t), undefined, undefined, true);
+
+                // Terminate the target interpolation if we the target is close relative to the radius.
+                // This is when visually (regardless of scale) the target appears close to its final goal position.
+                if ((Vector3.Distance(this.target, goalTarget) * 10) / goalRadius < Epsilon) {
+                    this._goalTarget.set(NaN, NaN, NaN);
+                    this.setTarget(goalTarget.clone(), undefined, undefined, true);
+                } else {
+                    isInterpolating = true;
+                }
+            }
+
+            // Interpolate the rotation if we haven't reached the goal yet.
+            if (!isNaN(this._goalAlpha) || !isNaN(this._goalBeta)) {
+                // Using quaternion for smoother interpolation (and no Euler angles modulo)
+                const goalRotation = Quaternion.RotationAlphaBetaGammaToRef(
+                    checkNaN(this._goalAlpha, this.alpha),
+                    checkNaN(this._goalBeta, this.beta),
+                    0,
+                    TmpVectors.Quaternion[0]
+                );
+                const currentRotation = Quaternion.RotationAlphaBetaGammaToRef(this.alpha, this.beta, 0, TmpVectors.Quaternion[1]);
+                const newRotation = Quaternion.SlerpToRef(currentRotation, goalRotation, t, TmpVectors.Quaternion[2]);
+                newRotation.normalize();
+                const newAlphaBetaGamma = newRotation.toAlphaBetaGammaToRef(TmpVectors.Vector3[0]);
+                this.alpha = newAlphaBetaGamma.x;
+                this.beta = newAlphaBetaGamma.y;
+
+                // Terminate the rotation interpolation when the rotation appears visually close to the final goal rotation.
+                if (newRotation.isApprox(goalRotation, Epsilon / 5)) {
+                    this._goalAlpha = NaN;
+                    this._goalBeta = NaN;
+                    const goalAlphaBetaGamma = goalRotation.toAlphaBetaGammaToRef(TmpVectors.Vector3[0]);
+                    this.alpha = goalAlphaBetaGamma.x;
+                    this.beta = goalAlphaBetaGamma.y;
+                } else {
+                    isInterpolating = true;
+                }
+            }
+
+            // Interpolate the radius if we haven't reached the goal yet.
+            if (!isNaN(this._goalRadius)) {
+                this.radius += (goalRadius - this.radius) * t;
+
+                // Terminate the radius interpolation when we are 99.9% of the way to the goal radius, at which point it is visually indistinguishable from the goal.
+                if (Math.abs(goalRadius / this.radius - 1) < Epsilon) {
+                    this._goalRadius = NaN;
+                    this.radius = goalRadius;
+                } else {
+                    isInterpolating = true;
+                }
+            }
+
+            // Interpolate the target screen offset if we haven't reached the goal yet.
+            if (!isNaN(this._goalTargetScreenOffset.x) || !isNaN(this._goalTargetScreenOffset.y)) {
+                const goalTargetScreenOffset = TmpVectors.Vector2[0].set(
+                    checkNaN(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
+                    checkNaN(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
+                );
+                Vector2.LerpToRef(this.targetScreenOffset, goalTargetScreenOffset, t, this.targetScreenOffset);
+
+                // Terminate the target screen offset interpolation when the target screen offset appears visually close to the final goal target screen offset.
+                if (Vector2.Distance(this.targetScreenOffset, goalTargetScreenOffset) < Epsilon) {
+                    this._goalTargetScreenOffset.set(NaN, NaN);
+                    this.targetScreenOffset.copyFrom(goalTargetScreenOffset);
+                } else {
+                    isInterpolating = true;
+                }
+            }
+
+            this._isInterpolating = isInterpolating;
         }
 
         // Limits
