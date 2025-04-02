@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable, FloatArray } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../../Maths/math.vector";

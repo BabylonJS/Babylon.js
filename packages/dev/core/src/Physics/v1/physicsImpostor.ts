@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import type { Nullable, IndicesArray } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { BuildArray } from "../../Misc/arrayTools";
@@ -19,6 +20,7 @@ import { Space } from "../../Maths/math.axis";
  * The interface for the physics imposter parameters
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsImpostorParameters {
     /**
      * The mass of the physics imposter
@@ -632,7 +634,9 @@ export class PhysicsImpostor {
             //bring back the rotation
             this.object.rotationQuaternion = q;
             //calculate the world matrix with the new rotation
-            this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
+            if (this.object.computeWorldMatrix) {
+                this.object.computeWorldMatrix(true);
+            }
             return size;
         } else {
             return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
@@ -853,9 +857,9 @@ export class PhysicsImpostor {
         }
 
         this.object.translate(this._deltaPosition, -1);
-        this._deltaRotationConjugated &&
-            this.object.rotationQuaternion &&
+        if (this._deltaRotationConjugated && this.object.rotationQuaternion) {
             this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
+        }
         this.object.computeWorldMatrix(false);
         if (this.object.parent && this.object.rotationQuaternion) {
             this.getParentsRotation();
@@ -864,8 +868,9 @@ export class PhysicsImpostor {
             this._tmpQuat.copyFrom(this.object.rotationQuaternion || new Quaternion());
         }
         if (!this._options.disableBidirectionalTransformation) {
-            this.object.rotationQuaternion &&
+            if (this.object.rotationQuaternion) {
                 this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this._tmpQuat);
+            }
         }
 
         this._onBeforePhysicsStepCallbacks.forEach((func) => {
@@ -895,7 +900,9 @@ export class PhysicsImpostor {
         // take the position set and make it the absolute position of this object.
         this.object.setAbsolutePosition(this.object.position);
         if (this._deltaRotation) {
-            this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+            if (this.object.rotationQuaternion) {
+                this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+            }
             this._deltaPosition.applyRotationQuaternionToRef(this._deltaRotation, PhysicsImpostor._TmpVecs[0]);
             this.object.translate(PhysicsImpostor._TmpVecs[0], 1);
         } else {

@@ -55,14 +55,14 @@ export class PostProcessRenderPipelineManager {
      * @param cameras the camera to attach
      * @param unique if the camera can be attached multiple times to the pipeline
      */
-    public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera, unique: boolean = false): void {
+    public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[] | Camera, unique: boolean = false): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._attachCameras(cameras, unique);
+        renderPipeline._attachCameras(cameras as Camera[], unique);
     }
 
     /**
@@ -70,14 +70,14 @@ export class PostProcessRenderPipelineManager {
      * @param renderPipelineName The name of the pipeline to detach from
      * @param cameras the camera to detach
      */
-    public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera): void {
+    public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera[] | Camera): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._detachCameras(cameras);
+        renderPipeline._detachCameras(cameras as Camera[]);
     }
 
     /**
@@ -86,14 +86,14 @@ export class PostProcessRenderPipelineManager {
      * @param renderEffectName the name of the effect to enable
      * @param cameras the cameras that the effect should be enabled on
      */
-    public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void {
+    public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[] | Camera): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._enableEffect(renderEffectName, cameras);
+        renderPipeline._enableEffect(renderEffectName, cameras as Camera[]);
     }
 
     /**
@@ -102,14 +102,14 @@ export class PostProcessRenderPipelineManager {
      * @param renderEffectName the name of the effect to disable
      * @param cameras the cameras that the effect should be disabled on
      */
-    public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void {
+    public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[] | Camera): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._disableEffect(renderEffectName, cameras);
+        renderPipeline._disableEffect(renderEffectName, cameras as Camera[]);
     }
 
     /**

@@ -13,6 +13,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _prePassRenderer: Nullable<PrePassRenderer>;

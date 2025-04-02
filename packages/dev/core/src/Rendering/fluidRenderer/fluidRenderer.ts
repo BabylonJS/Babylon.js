@@ -19,6 +19,7 @@ import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _fluidRenderer: Nullable<FluidRenderer>;

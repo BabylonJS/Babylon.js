@@ -29,6 +29,7 @@ import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOpti
 import { EffectWrapper } from "../Materials/effectRenderer";
 
 declare module "../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Sets a texture to the context from a postprocess
@@ -66,6 +67,7 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 };
 
 declare module "../Materials/effect" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Effect {
         /**
          * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
@@ -1250,7 +1252,7 @@ export class PostProcess {
         }
 
         const camera = scene ? scene.getCameraById(parsedPostProcess.cameraId) : null;
-        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
+        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl) as Nullable<PostProcess>;
     }
 
     /**

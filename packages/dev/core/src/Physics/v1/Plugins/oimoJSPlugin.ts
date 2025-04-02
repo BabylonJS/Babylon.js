@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";

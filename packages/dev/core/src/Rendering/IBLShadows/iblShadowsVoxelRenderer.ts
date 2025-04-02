@@ -466,15 +466,15 @@ export class _IblShadowsVoxelRenderer {
         const mrtArray: MultiRenderTarget[] = [];
         const targetTypes = new Array(this._maxDrawBuffers).fill(this._isVoxelGrid3D ? Constants.TEXTURE_3D : Constants.TEXTURE_2D_ARRAY);
 
-        for (let mrt_index = 0; mrt_index < numSlabs; mrt_index++) {
+        for (let mrtIndex = 0; mrtIndex < numSlabs; mrtIndex++) {
             let layerIndices = new Array(this._maxDrawBuffers).fill(0);
-            layerIndices = layerIndices.map((value, index) => mrt_index * this._maxDrawBuffers + index);
+            layerIndices = layerIndices.map((value, index) => mrtIndex * this._maxDrawBuffers + index);
 
             let textureNames = new Array(this._maxDrawBuffers).fill("");
-            textureNames = textureNames.map((value, index) => "voxel_grid_" + name + (mrt_index * this._maxDrawBuffers + index));
+            textureNames = textureNames.map((value, index) => "voxel_grid_" + name + (mrtIndex * this._maxDrawBuffers + index));
 
             const mrt = new MultiRenderTarget(
-                "mrt_" + name + mrt_index,
+                "mrt_" + name + mrtIndex,
                 { width: this._voxelResolution, height: this._voxelResolution, depth: this._isVoxelGrid3D ? this._voxelResolution : undefined },
                 this._maxDrawBuffers, // number of draw buffers
                 this._scene,
@@ -665,6 +665,7 @@ export class _IblShadowsVoxelRenderer {
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this._copyMipEffectWrapper.effect.whenCompiledAsync().then(() => {
                     this._copyMipMaps();
                     this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);

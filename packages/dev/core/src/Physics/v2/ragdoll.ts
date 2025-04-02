@@ -313,10 +313,10 @@ export class Ragdoll {
             this._rootTransformNode.rotationQuaternion ??
             Quaternion.FromEulerAngles(this._rootTransformNode.rotation.x, this._rootTransformNode.rotation.y, this._rootTransformNode.rotation.z);
         const qbind = this._initialRotation2[boneIndex];
-        const qphys = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion!;
+        const qphys = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion;
 
         qmesh.multiplyToRef(qbind, TmpVectors.Quaternion[1]);
-        qphys.multiplyToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0]);
+        qphys?.multiplyToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0]);
 
         this._bones[boneIndex].setRotationQuaternion(TmpVectors.Quaternion[0], Space.WORLD, this._rootTransformNode);
     }
@@ -332,6 +332,7 @@ export class Ragdoll {
         this._rootBoneName = skeletonRoots[0].name;
         this._rootBoneIndex = this._boneNames.indexOf(this._rootBoneName);
         if (this._rootBoneIndex == -1) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-base-to-string
             Logger.Log("Ragdoll creation failed: the array boneNames doesn't have the root bone. The root bone is " + this._skeleton.getChildren());
             return false;
         }

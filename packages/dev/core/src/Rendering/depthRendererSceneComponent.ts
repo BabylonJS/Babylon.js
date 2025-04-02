@@ -9,6 +9,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };

@@ -16,6 +16,7 @@ import type { IEffectCreationOptions } from "core/Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */
         _outlineRenderer: OutlineRenderer;

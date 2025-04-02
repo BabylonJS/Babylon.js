@@ -32,7 +32,7 @@ interface ISavedTransformationMatrix {
 }
 
 /** list the uniforms used by the geometry renderer */
-const uniforms = [
+const Uniforms = [
     "world",
     "mBones",
     "viewProjection",
@@ -56,7 +56,7 @@ const uniforms = [
     "morphTargetTextureIndices",
     "boneTextureWidth",
 ];
-addClipPlaneUniforms(uniforms);
+addClipPlaneUniforms(Uniforms);
 
 /**
  * This renderer is helpful to fill one of the render target with a geometry buffer.
@@ -508,6 +508,7 @@ export class GeometryBufferRenderer {
         this._depthFormat = depthFormat;
         this._textureTypesAndFormats = textureTypesAndFormats || {};
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
@@ -826,7 +827,7 @@ export class GeometryBufferRenderer {
                     "geometry",
                     {
                         attributes: attribs,
-                        uniformsNames: uniforms,
+                        uniformsNames: Uniforms,
                         samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler"],
                         defines: join,
                         onCompiled: null,

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
 import {
     PhysicsShapeType,

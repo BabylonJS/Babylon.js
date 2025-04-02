@@ -14,7 +14,7 @@ import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
- * This should not be instanciated directly, as it is part of a scene component
+ * This should not be instantiated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsVoxelTracingPass {

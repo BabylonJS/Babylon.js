@@ -255,6 +255,7 @@ export class FluidRenderingTextures {
                 undefined,
                 textureFormat,
                 this._shaderLanguage,
+                // Keeping this issue for further discussion - extraInitialization should return Promise<void>
                 async () => {
                     if (this.shaderLanguage === ShaderLanguage.WGSL) {
                         await import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment");

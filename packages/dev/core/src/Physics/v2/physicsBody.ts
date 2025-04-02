@@ -505,7 +505,7 @@ export class PhysicsBody {
      *
      * This method is useful for retrieving the geometry of the body from the physics plugin, which can be used for various physics calculations.
      */
-    public getGeometry(): {} {
+    public getGeometry(): object {
         return this._physicsPlugin.getBodyGeometry(this);
     }
 

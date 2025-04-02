@@ -6,6 +6,7 @@ import type { Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * The depth peeling renderer

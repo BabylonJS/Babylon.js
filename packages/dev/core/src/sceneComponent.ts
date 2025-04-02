@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type { Scene } from "./scene";
 import type { SmartArrayNoDuplicate } from "./Misc/smartArray";
 import type { Nullable } from "./types";
@@ -252,7 +253,7 @@ export class Stage<T extends Function> extends Array<{ index: number; component:
      * @returns A new instance of a Stage
      */
     static Create<T extends Function>(): Stage<T> {
-        return Object.create(Stage.prototype);
+        return Object.create(Stage.prototype) as Stage<T>;
     }
 
     /**

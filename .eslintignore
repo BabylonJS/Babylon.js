@@ -2,3 +2,5 @@ dist/**/*.*
 .snapshot/**/*.*
 # temp
 **/tests/**/*.*
+**/Shaders/**/*.ts
+**/ShadersWGSL/**/*.ts

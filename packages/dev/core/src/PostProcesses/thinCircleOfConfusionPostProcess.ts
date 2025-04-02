@@ -7,6 +7,7 @@ import { Engine } from "../Engines/engine";
 /**
  * Options used to create a ThinCircleOfConfusionPostProcess.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ThinCircleOfConfusionPostProcessOptions extends EffectWrapperCreationOptions {
     /**
      * If the (view) depth is normalized (0.0 to 1.0 from near to far) or not (0 to camera max distance)

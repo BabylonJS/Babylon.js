@@ -28,7 +28,7 @@ import { Observable } from "core/Misc/observable";
 import "../geometryBufferRendererSceneComponent";
 import "../iblCdfGeneratorSceneComponent";
 
-interface IblShadowsSettings {
+interface IIblShadowsSettings {
     /**
      * The exponent of the resolution of the voxel shadow grid. Higher resolutions will result in sharper
      * shadows but are more expensive to compute and require more memory.
@@ -285,7 +285,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     public set ssShadowDistanceScale(value: number) {
         this._sssMaxDistScale = value;
-        this._updateSSShadowParams();
+        this._updateSsShadowParams();
     }
 
     private _sssThicknessScale: number;
@@ -301,7 +301,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     public set ssShadowThicknessScale(value: number) {
         this._sssThicknessScale = value;
-        this._updateSSShadowParams();
+        this._updateSsShadowParams();
     }
 
     /**
@@ -735,7 +735,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelRenderer.onVoxelizationCompleteObservable.addOnce(() => {
             this.onVoxelizationCompleteObservable.notifyObservers();
         });
-        this._updateSSShadowParams();
+        this._updateSsShadowParams();
     }
 
     /**
@@ -768,7 +768,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
         // Set world scale for spatial blur.
         this._spatialBlurPass.setWorldScale(halfSize * 2.0);
-        this._updateSSShadowParams();
+        this._updateSsShadowParams();
     }
 
     /**
@@ -777,7 +777,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * @param options Options to configure the pipeline
      * @param cameras Cameras to apply the pipeline to.
      */
-    constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}, cameras?: Camera[]) {
+    constructor(name: string, scene: Scene, options: Partial<IIblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
         this.scene = scene;
         this._cameras = cameras || [scene.activeCamera!];
@@ -1039,7 +1039,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Update the SS shadow max distance and thickness based on the voxel grid size and resolution.
      * The max distance should be just a little larger than the world size of a single voxel.
      */
-    private _updateSSShadowParams(): void {
+    private _updateSsShadowParams(): void {
         this._voxelTracingPass.sssMaxDist = (this._sssMaxDistScale * this.voxelGridSize) / (1 << this.resolutionExp);
         this._voxelTracingPass.sssThickness = this._sssThicknessScale * 0.005 * this.voxelGridSize;
     }
@@ -1076,6 +1076,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const matIndex = this._materialsWithRenderPlugin.indexOf(m);
                 if (matIndex !== -1) {
                     this._materialsWithRenderPlugin.splice(matIndex, 1);
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
                     const plugin = m.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                     plugin.isEnabled = false;
                 }
