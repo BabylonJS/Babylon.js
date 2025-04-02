@@ -225,7 +225,7 @@ const rules = {
                     },
                     {
                         selector: "function",
-                        modifiers: ["exported", "global"],
+                        modifiers: [/*"exported", */ "global"],
                         format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
@@ -240,7 +240,7 @@ const rules = {
                         format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
-                    // Remove the strictCamelCase (move to simple camelCase) requirement for abbreviations like HTML, GUI, BRDF, etc.
+                    // Remove the strict requirement for abbreviations like HTML, GUI, BRDF, etc.
                     {
                         selector: ["memberLike", "property", "parameter"],
                         format: ["camelCase", "UPPER_CASE"],
@@ -295,6 +295,17 @@ const rules = {
                     {
                         selector: "objectLiteralProperty",
                         format: ["camelCase", "snake_case", "UPPER_CASE"],
+                        leadingUnderscore: "allow",
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "variable",
+                        format: ["pascalCase"],
+                        modifiers: ["global"],
                         leadingUnderscore: "allow",
                         filter: {
                             // you can expand this regex to add more allowed names

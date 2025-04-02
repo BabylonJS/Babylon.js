@@ -243,11 +243,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
-        const TBN = this.TBN;
-        if (TBN.isConnected) {
+        const tbn = this.TBN;
+        if (tbn.isConnected) {
             state.compilationString += `
             #ifdef TBNBLOCK
-                ${isWebGPU ? "var TBN" : "mat3 TBN"} = ${TBN.associatedVariableName};
+                ${isWebGPU ? "var TBN" : "mat3 TBN"} = ${tbn.associatedVariableName};
             #endif
             `;
         } else if (worldTangent.isConnected) {
