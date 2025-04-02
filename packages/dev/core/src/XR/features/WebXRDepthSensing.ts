@@ -503,6 +503,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         managedMaterialPlugins.forEach((plugin) => {
             plugin.dispose();
         });
+        managedMaterialPlugins.length = 0;
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
