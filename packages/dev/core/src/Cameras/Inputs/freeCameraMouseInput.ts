@@ -111,7 +111,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
-                        element && element.focus();
+                        if (element) {
+                            element.focus();
+                        }
                     }
 
                     // This is required to move while pointer button is down
@@ -213,7 +215,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             if (this._contextMenuBind) {
                 const engine = this.camera.getEngine();
                 const element = engine.getInputElement();
-                element && element.removeEventListener("contextmenu", this._contextMenuBind);
+                if (element) {
+                    element.removeEventListener("contextmenu", this._contextMenuBind);
+                }
             }
 
             if (this.onPointerMovedObservable) {

@@ -1,5 +1,7 @@
+// want to add a new allowed abbreviation? Feer not! Just add it to the regex below.
+// The regex is used to allow abbreviations in strict camelCase and PascalCase.
 const allowedNonStrictAbbreviations =
-    "HTML|UI|LOD|XR|PBR|IBL|HDR|FFT|SSR|SSAO|SMAA|MSAA|FXAA|TBN|GPU|CPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|RGBD|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM|BRDF|ID|GUID";
+    "HTML|UI|LOD|XR|PBR|IBL|HDR|FFT|SSR|SSAO|SMAA|MSAA|FXAA|TBN|GPU|CPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|RGBD|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM|BRDF|ID|GUID|wheel[XYZ]";
 
 const rules = {
     root: true,
@@ -14,29 +16,6 @@ const rules = {
     // Limit TypeScript linting to TS/TSX
     // https://github.com/typescript-eslint/typescript-eslint/issues/1928
     overrides: [
-        // {
-        //     files: ["src/**/*.{ts,tsx}"],
-        //     rules: {
-        //         "@typescript-eslint/ban-ts-comment": "off",
-        //         "@typescript-eslint/explicit-function-return-type": "off",
-        //         "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-        //         // All the @typescript-eslint/* rules here...
-        //         "@typescript-eslint/no-unnecessary-type-arguments": "error",
-        //         "@typescript-eslint/prefer-nullish-coalescing": "error",
-        //         "@typescript-eslint/prefer-optional-chain": "error",
-        //         "@typescript-eslint/naming-convention": [
-        //             "error",
-        //             {
-        //                 selector: "variable",
-        //                 types: ["boolean"],
-        //                 format: ["PascalCase"],
-        //                 prefix: ["is", "should", "has", "can"],
-        //             },
-        //         ],
-
-        //     },
-        //     parser: "@typescript-eslint/parser",
-        // },
         {
             files: ["packages/**/src/**/*.{ts,tsx}"],
             extends: [
@@ -411,6 +390,7 @@ const rules = {
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
+        curly: "error",
     },
 };
 

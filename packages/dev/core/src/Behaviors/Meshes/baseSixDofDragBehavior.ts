@@ -118,7 +118,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
-    public onDragEndObservable = new Observable<{}>();
+    public onDragEndObservable = new Observable<unknown>();
 
     /**
      * Should the behavior allow simultaneous pointers to interact with the owner node.
@@ -199,7 +199,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     private _pointerUpdate2D(ray: Ray, pointerId: number, zDragFactor: number) {
         if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
-            ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+            ray.origin.copyFrom(this._pointerCamera.globalPosition);
             zDragFactor = 0;
         }
 
@@ -320,7 +320,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         !this._pointerCamera._isLeftCamera &&
                         !this._pointerCamera._isRightCamera
                     ) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
                     }
 
                     this._ownerNode.computeWorldMatrix(true);
@@ -427,7 +427,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._tmpQuaternion.x = -this._tmpQuaternion.x;
                     this._tmpQuaternion.y = -this._tmpQuaternion.y;
                     this._tmpQuaternion.z = -this._tmpQuaternion.z;
-                    virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
+                    virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
                     virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
 
                     this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });

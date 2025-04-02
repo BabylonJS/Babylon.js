@@ -3,7 +3,7 @@ import type { _IShaderProcessingContext } from "../Engines/Processors/shaderProc
 import type { Effect } from "../Materials/effect";
 import { VertexBuffer } from "../Meshes/buffer";
 
-const vertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {
+const VertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {
     [VertexBuffer.PositionKind]: true,
     [VertexBuffer.NormalKind]: true,
     [VertexBuffer.TangentKind]: true,
@@ -48,6 +48,7 @@ function IsSignedType(type: number): boolean {
  * @param vertexBuffers List of vertex buffers to check
  * @param effect The effect (shaders) that should be recompiled if needed
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect): void {
     const engine = effect.getEngine();
     const pipelineContext = effect._pipelineContext;
@@ -61,7 +62,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
     for (const kind in vertexBuffers) {
         const currentVertexBuffer = vertexBuffers[kind];
 
-        if (!currentVertexBuffer || !vertexBufferKindForNonFloatProcessing[kind]) {
+        if (!currentVertexBuffer || !VertexBufferKindForNonFloatProcessing[kind]) {
             continue;
         }
 
@@ -91,6 +92,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
         const parallelShaderCompile = engine._caps.parallelShaderCompile;
         engine._caps.parallelShaderCompile = undefined;
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         effect._processShaderCodeAsync(null, engine._features._checkNonFloatVertexBuffersDontRecreatePipelineContext, shaderProcessingContext);
 
         engine._caps.parallelShaderCompile = parallelShaderCompile;

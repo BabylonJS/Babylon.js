@@ -66,7 +66,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
      * @returns a promise that will resolve on orientation change
      */
-    public static WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
+    public static async WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
         return new Promise((res, rej) => {
             let gotValue = false;
             const eventHandler = () => {
@@ -144,8 +144,8 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
         if (hostWindow) {
             const eventHandler = () => {
-                hostWindow!.addEventListener("orientationchange", this._orientationChanged);
-                hostWindow!.addEventListener("deviceorientation", this._deviceOrientation);
+                hostWindow.addEventListener("orientationchange", this._orientationChanged);
+                hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
                 //In certain cases, the attach control is called AFTER orientation was changed,
                 //So this is needed.
                 this._orientationChanged();
@@ -171,8 +171,10 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
     private _orientationChanged = () => {
         this._screenOrientationAngle =
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             <any>window.orientation !== undefined
-                ? +(<any>window.orientation)
+                ? // eslint-disable-next-line @typescript-eslint/no-deprecated
+                  +(<any>window.orientation)
                 : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"]
                   ? (<any>window.screen).orientation.angle
                   : 0;

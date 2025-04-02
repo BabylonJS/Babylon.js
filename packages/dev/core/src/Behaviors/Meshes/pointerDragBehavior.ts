@@ -461,6 +461,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
                 // Convert local drag axis to world if useObjectOrientationForDragging
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 this.useObjectOrientationForDragging
                     ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis)
                     : this._worldDragAxis.copyFrom(this._options.dragAxis);
@@ -554,6 +555,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _updateDragPlanePosition(ray: Ray, dragPlanePosition: Vector3) {
         this._pointA.copyFrom(dragPlanePosition);
         if (this._options.dragAxis) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             this.useObjectOrientationForDragging
                 ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis)
                 : this._localAxis.copyFrom(this._options.dragAxis);
@@ -580,6 +582,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._pointA.addToRef(this._lookAt, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);
         } else if (this._options.dragPlaneNormal) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             this.useObjectOrientationForDragging
                 ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis)
                 : this._localAxis.copyFrom(this._options.dragPlaneNormal);

@@ -146,7 +146,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
             const element = engine.getInputElement();
-            element && element.addEventListener("blur", this._onLostFocus);
+            if (element) {
+                element.addEventListener("blur", this._onLostFocus);
+            }
         }
     }
 
@@ -163,7 +165,10 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             if (this._onLostFocus) {
                 const engine = this.camera.getEngine();
                 const element = engine.getInputElement();
-                element && element.removeEventListener("blur", this._onLostFocus);
+                if (element) {
+                    element.removeEventListener("blur", this._onLostFocus);
+                }
+
                 this._onLostFocus = null;
             }
             this._pointerPressed.length = 0;

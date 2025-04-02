@@ -77,7 +77,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
                     .requestPermission()
                     .then((response: string) => {
                         if (response === "granted") {
-                            hostWindow!.addEventListener("deviceorientation", this._deviceOrientationHandler);
+                            hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
                         } else {
                             Tools.Warn("Permission not granted.");
                         }

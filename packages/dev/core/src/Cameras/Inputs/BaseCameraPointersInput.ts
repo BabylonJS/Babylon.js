@@ -130,7 +130,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
                 if (!noPreventDefault) {
                     evt.preventDefault();
-                    element && element.focus();
+                    if (element) {
+                        element.focus();
+                    }
                 }
             } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
@@ -238,7 +240,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
         this._contextMenuBind = (evt: Event) => this.onContextMenu(evt as PointerEvent);
 
-        element && element.addEventListener("contextmenu", this._contextMenuBind, false);
+        if (element) {
+            element.addEventListener("contextmenu", this._contextMenuBind, false);
+        }
 
         const hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
@@ -264,7 +268,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
             if (this._contextMenuBind) {
                 const inputElement = this.camera.getScene().getEngine().getInputElement();
-                inputElement && inputElement.removeEventListener("contextmenu", this._contextMenuBind);
+                if (inputElement) {
+                    inputElement.removeEventListener("contextmenu", this._contextMenuBind);
+                }
             }
 
             this._onLostFocus = null;
