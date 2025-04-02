@@ -304,7 +304,7 @@ const rules = {
                     },
                     {
                         selector: "variable",
-                        format: ["pascalCase"],
+                        format: ["PascalCase"],
                         modifiers: ["global"],
                         leadingUnderscore: "allow",
                         filter: {
