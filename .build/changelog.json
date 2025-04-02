@@ -1,6 +1,130 @@
 {
-    "fromTag": "8.0.1",
+    "fromTag": "8.0.2",
     "changelog": {
+        "8.0.3": [
+            {
+                "pr": "16437",
+                "title": "Add AudioEngineV2 state playwright tests",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/tests/test/audioV2/audioEngineV2.state.test.ts",
+                    "playwright.config.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16438",
+                "title": "ObjectRenderer: Fix backward compatibility break introduced with the renderInLinearSpace property",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16435",
+                "title": "Fix lazy loaded property values in audio engine",
+                "description": "Asynchronously loaded subproperties like sound and bus `analyzer`, `spatial` and `stereo`, do not return the same values set on them until the async load completes. This makes it so a property's getter does not immediately return the value given to its setter. For example `analyzer.fftSize = 128; console.log(analyzer.fftSize);` prints the default `2048` until the async `analyzer` subproperty init is complete. This is confusing for users.\r\n\r\nThis change fixes the issue by using backing variables for properties on lazy-loaded sound and bus subproperties.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/audioAnalyzerSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/spatialAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/stereoAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/audioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/stereoAudio.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16434",
+                "title": "WebGPU: Add support for fast snapshot mode to ShadowOnly and Grid materials",
+                "description": "I also fixed a problem in WebGPU where `scene.iblIntensity` was not behaving as expected.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/index.ts",
+                    "packages/dev/materials/src/grid/grid.vertex.fx",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnly.fragment.fx",
+                    "packages/dev/materials/src/shadowOnly/shadowOnly.vertex.fx",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16430",
+                "title": "Improve ArcRotateCamera interpolation logic",
+                "description": "This PR makes several improvements to the existing ArcRotateCamera interpolation logic:\r\n- Allows overlapping interpolations. For example, if you start an interpolation of alpha, and before it is finished start an interpolation of the y component of the target, it previously would always stop the previous interpolation. Now it is possible for them to overlap, but passing in `NaN` for the components you don't want to interpolate. This is perhaps a little unusual, but it's the least disruptive to the API. Still, open to alternate suggestions.\r\n- Ensures the camera orbit/target/etc. eventually reach the actual interpolation goal values. Previously, it would stop the interpolation when it was \"close,\" but not actually bring the values to the final goal values.\r\n- Because of the previous point, I had to improve the logic for determining when we are \"close\" to the final goal values, to ensure \"close\" is visually indistinguishable from the final value.\r\n  - For target, it is relative to the radius. This ensures it visually always looks the same regardless of scale.\r\n  - For rotation, it is just an absolute value (0.0002 radians), which was chosen empirically by just seeing what looked visually indistinguishable.\r\n  - For radius, it is when we are 99.9% of the way to the goal, which again should work well regardless of scale.\r\n  - For target screen offset, it is just an absolute value, same as previous actually.\r\n- Swaps the order to applying user input and applying interpolation. This way, if there is any user input, we don't add in a small and unnecessary and incorrect interpolation first (size of the change depends on frame time). Also, it means we don't need to repeat the checks for user input twice.\r\n- Add a `stopInterpolation` function to make it easier to interrupt an in-progress interpolation.\r\n- Unit tests for the interpolation logic.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16432",
+                "title": "NME: Fix wrong generated code for ColorConverter and ColorMerger",
+                "description": "See https://forum.babylonjs.com/t/nme-generates-deprecated-code-for-some-blocs/57548",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/colorConverterBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/colorMergerBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16424",
+                "title": "Native: Canvas context.filter",
+                "description": "Adds `filter` https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter\r\nThis calls to BabylonNative as implemented in https://github.com/BabylonJS/BabylonNative/pull/1489",
+                "author": {
+                    "name": "Pheo",
+                    "url": "https://github.com/Pheo"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts"
+                ],
+                "tags": []
+            }
+        ],
         "8.0.2": [
             {
                 "pr": "16426",
