@@ -575,7 +575,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
         if (this._viewerDetails) {
-            return this._viewerDetails.viewer.queryHotSpot(name, result) != null;
+            return this._viewerDetails.viewer.queryHotSpot(name, result);
         }
         return false;
     }
@@ -868,7 +868,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * - [ResetFlag] - A space separated list of reset flags that reset various aspects of the viewer state.
      */
     @property({ attribute: "reset-mode", converter: coerceResetMode })
-    public resetMode: "auto" | "reframe" | [ResetFlag, ...flags: ResetFlag[]] = "auto";
+    public resetMode: ResetMode = "auto";
 
     @query("#canvasContainer")
     private _canvasContainer: HTMLDivElement | undefined;
