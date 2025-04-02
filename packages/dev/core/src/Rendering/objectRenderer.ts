@@ -120,15 +120,16 @@ export class ObjectRenderer {
      */
     public cameraForLOD: Nullable<Camera>;
 
-    private _renderInLinearSpace = false;
+    private _renderInLinearSpace: Nullable<boolean> = null;
     /**
-     * If true, the object renderer will render all objects in linear space (default: false)
+     * If true, the object renderer will render all objects in linear color space.
+     * If null (default value), the renderer will use the current setting of the scene's image processing configuration to determine if it should render in linear color space.
      */
     public get renderInLinearSpace() {
         return this._renderInLinearSpace;
     }
 
-    public set renderInLinearSpace(value: boolean) {
+    public set renderInLinearSpace(value: Nullable<boolean>) {
         if (value === this._renderInLinearSpace) {
             return;
         }
@@ -405,8 +406,10 @@ export class ObjectRenderer {
         }
 
         this._currentApplyByPostProcessSetting = this._scene.imageProcessingConfiguration.applyByPostProcess;
-        // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
-        this._scene.imageProcessingConfiguration._applyByPostProcess = !!this._renderInLinearSpace;
+        if (this._renderInLinearSpace !== null) {
+            // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
+            this._scene.imageProcessingConfiguration._applyByPostProcess = this._renderInLinearSpace;
+        }
     }
 
     private _defaultRenderListPrepared: boolean;
@@ -440,7 +443,10 @@ export class ObjectRenderer {
     public finishRender() {
         const scene = this._scene;
 
-        scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
+        if (this._renderInLinearSpace !== null) {
+            scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
+        }
+
         scene.activeCamera = this._currentSceneCamera;
         if (this._currentSceneCamera) {
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
