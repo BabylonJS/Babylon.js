@@ -791,11 +791,7 @@ export class Viewer implements IDisposable {
     }
 
     public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
-        this._disposeShadows();
-
-        if (value.type) {
-            this._updateShadows(value.type);
-        }
+        this._updateShadows(value.type);
 
         this.onShadowsConfigurationChanged.notifyObservers();
     }
@@ -971,6 +967,8 @@ export class Viewer implements IDisposable {
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
             this._updateLight();
+            console.log("setActive model");
+            this._updateShadows();
             this._applyAnimationSpeed();
             this._selectAnimation(options?.defaultAnimation ?? 0, false);
             if (options?.animationAutoPlay) {
@@ -1309,11 +1307,19 @@ export class Viewer implements IDisposable {
         this._startSceneOptimizer(true);
     }
 
-    private async _updateShadows(type: ShadowType) {
-        if (type === "classic") {
-            await this._updateClassicShadow();
-        } else if (type === "environment") {
-            await this._updateEnvironmentShadow();
+    private async _updateShadows(type?: ShadowType) {
+        this._disposeShadows();
+        console.log("update shadows", type);
+        if (type) {
+            if (type === "classic") {
+                await this._updateClassicShadow();
+            } else if (type === "environment") {
+                const hasAnyAnimation = this._loadedModelsBacking.some((model) => model.assetContainer.animationGroups.length > 0);
+                // there is currently an issue with models with indices and WebGPU.
+                if (!hasAnyAnimation) {
+                    await this._updateEnvironmentShadow();
+                }
+            }
         }
     }
 
