@@ -646,6 +646,7 @@ export class InstancedMesh extends AbstractMesh {
 }
 
 declare module "./mesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
          * Register a custom buffer that will be instanced
@@ -677,6 +678,7 @@ declare module "./mesh" {
 }
 
 declare module "./abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /**
          * Object used to store instanced buffers defined by user

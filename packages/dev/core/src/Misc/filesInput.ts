@@ -5,6 +5,7 @@ import { SceneLoader } from "../Loading/sceneLoader";
 import { Logger } from "../Misc/logger";
 import { FilesInputStore } from "./filesInputStore";
 import type { Nullable } from "../types";
+import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 
 /**
  * Class used to help managing file picking and drag-n-drop
@@ -204,6 +205,7 @@ export class FilesInput {
                 continue;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             if (SceneLoader.IsPluginForExtensionAvailable("." + extension)) {
                 this._sceneFileToLoad = files[i];
             }
@@ -308,7 +310,7 @@ export class FilesInput {
                 }
             }
 
-            SceneLoader.ShowLoadingScreen = false;
+            SceneLoaderFlags.ShowLoadingScreen = false;
             if (this.displayLoadingUI) {
                 this._engine.displayLoadingUI();
             }

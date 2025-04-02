@@ -240,6 +240,7 @@ export function workerFunction(): void {
  * @param moduleUrl the url to the basis transcoder module
  * @returns a promise that resolves when the worker is initialized
  */
+// eslint-disable-next-line no-restricted-syntax
 export async function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
     return new Promise<Worker>((res, reject) => {
         const initHandler = (msg: any) => {

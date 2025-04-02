@@ -117,9 +117,6 @@ import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
 
-/**
- *
- */
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
     private _lockObject = new LockObject();

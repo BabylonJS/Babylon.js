@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { WebRequest } from "./webRequest";
 import { IsWindowObjectExist } from "./domManagement";
@@ -234,6 +236,7 @@ export const LoadImage = (
 
     const onErrorHandler = (exception: any) => {
         if (onError) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             const inputText = url || input.toString();
             onError(`Error while trying to load image: ${inputText.indexOf("http") === 0 || inputText.length <= 128 ? inputText : inputText.slice(0, 128) + "..."}`, exception);
         }
@@ -253,6 +256,7 @@ export const LoadImage = (
                     })
                     .catch((reason) => {
                         if (onError) {
+                            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                             onError("Error while trying to load image: " + input, reason);
                         }
                     });

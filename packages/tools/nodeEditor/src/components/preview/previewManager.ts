@@ -42,11 +42,9 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-const dontSerializeTextureContent = true;
+import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
+const DontSerializeTextureContent = true;
 
-/**
- *
- */
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;
@@ -79,7 +77,7 @@ export class PreviewManager {
 
         let fullSerialization = false;
 
-        if (dontSerializeTextureContent) {
+        if (DontSerializeTextureContent) {
             const textureBlocks = nodeMaterial.getAllTextureBlocks();
             for (const block of textureBlocks) {
                 const texture = block.texture;
@@ -102,7 +100,7 @@ export class PreviewManager {
 
         const bufferSerializationState = Texture.SerializeBuffers;
 
-        if (dontSerializeTextureContent) {
+        if (DontSerializeTextureContent) {
             Texture.SerializeBuffers = fullSerialization;
             Texture._SerializeInternalTextureUniqueId = true;
         }
@@ -163,13 +161,14 @@ export class PreviewManager {
             this._material.needDepthPrePass = this._globalState.depthPrePass;
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initAsync(targetCanvas);
     }
 
     public async _initAsync(targetCanvas: HTMLCanvasElement) {
         if (this._nodeMaterial.shaderLanguage === ShaderLanguage.WGSL) {
             this._engine = new WebGPUEngine(targetCanvas, { enableAllFeatures: true });
-            await (this._engine as WebGPUEngine).initAsync();
+            await this._engine.initAsync();
         } else {
             this._engine = new Engine(targetCanvas);
         }
@@ -458,7 +457,7 @@ export class PreviewManager {
                 this._particleSystem = null;
             }
 
-            SceneLoader.ShowLoadingScreen = false;
+            SceneLoaderFlags.ShowLoadingScreen = false;
 
             this._globalState.onIsLoadingChanged.notifyObservers(true);
 
@@ -646,7 +645,7 @@ export class PreviewManager {
         });
     }
 
-    private _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
+    private async _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
         return material.forceCompilationAsync(mesh);
     }
 
@@ -736,7 +735,7 @@ export class PreviewManager {
 
                 default: {
                     if (this._meshes && this._meshes.length) {
-                        const tasks = this._meshes.map((m) => {
+                        const tasks = this._meshes.map(async (m) => {
                             m.hasVertexAlpha = false;
                             return this._forceCompilationAsync(tempMaterial, m);
                         });

@@ -1,11 +1,11 @@
-const warnedMap: { [key: string]: boolean } = {};
+const WarnedMap: { [key: string]: boolean } = {};
 /**
  * @internal
  */
 export function _WarnImport(name: string, warnOnce = false) {
-    if (warnOnce && warnedMap[name]) {
+    if (warnOnce && WarnedMap[name]) {
         return;
     }
-    warnedMap[name] = true;
+    WarnedMap[name] = true;
     return `${name} needs to be imported before as it contains a side-effect required by your code.`;
 }

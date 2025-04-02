@@ -4,6 +4,7 @@ import type { IndicesArray } from "../types";
 import { SubMesh } from "./subMesh";
 
 declare module "./subMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface SubMesh {
         /** @internal */
         _projectOnTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number;

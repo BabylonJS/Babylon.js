@@ -1,7 +1,7 @@
 // want to add a new allowed abbreviation? Feer not! Just add it to the regex below.
 // The regex is used to allow abbreviations in strict camelCase and PascalCase.
 const allowedNonStrictAbbreviations =
-    "HTML|UI|LOD|XR|PBR|IBL|HDR|FFT|CB|RTW|SSR|SSAO|SMAA|RT|TAA|PT|PP|GI|GBuffer|[Bb]lur[XY]|upsampling[XY]|RSM|DoF|MSAA|FXAA|TBN|GPU|CPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|RGBD|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM|BRDF|ID|GUID|wheel[XYZ]";
+    "HTML|UI|LOD|XR|PBR|IBL|HDR|FFT|CB|RTW|SSR|RHS|LHS|HDR|RLE|SSAO|NME|NGE|SMAA|RT|TAA|PT|PP|GI|GBuffer|[Bb]lur[XY]|upsampling[XY]|RSM|DoF|MSAA|FXAA|TBN|GPU|CPU|FPS|CSS|MP3|OGG|HRTF|JSON|ZOffset|IK|UV|[XYZ]Axis|VR|axis[XYZ]|UBO|URL|RGB|RGBD|GL|[23]D|MRT|RTT|WGSL|GLSL|OS|NDCH|CSM|POT|DOM|WASM|BRDF|ID|GUID|wheel[XYZ]";
 
 const rules = {
     root: true,
@@ -62,6 +62,7 @@ const rules = {
                 "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-enum-comparison": "off",
                 "@typescript-eslint/unbound-method": "off",
+                "@typescript-eslint/no-base-to-string": "off",
                 "@typescript-eslint/prefer-promise-reject-errors": "warn",
                 "@typescript-eslint/only-throw-error": "warn",
                 "@typescript-eslint/no-for-in-array": "warn",

@@ -4,6 +4,7 @@ import { PanoramaToCubeMapTools } from "./panoramaToCubemap";
 /**
  * Header information of HDR texture files.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface HDRInfo {
     /**
      * The height of the texture in pixels.
@@ -23,7 +24,7 @@ export interface HDRInfo {
 
 /* This groups tools to convert HDR texture to native colors array. */
 
-function ldexp(mantissa: number, exponent: number): number {
+function Ldexp(mantissa: number, exponent: number): number {
     if (exponent > 1023) {
         return mantissa * Math.pow(2, 1023) * Math.pow(2, exponent - 1023);
     }
@@ -35,10 +36,10 @@ function ldexp(mantissa: number, exponent: number): number {
     return mantissa * Math.pow(2, exponent);
 }
 
-function rgbe2float(float32array: Float32Array, red: number, green: number, blue: number, exponent: number, index: number) {
+function Rgbe2float(float32array: Float32Array, red: number, green: number, blue: number, exponent: number, index: number) {
     if (exponent > 0) {
         /*nonzero pixel*/
-        exponent = ldexp(1.0, exponent - (128 + 8));
+        exponent = Ldexp(1.0, exponent - (128 + 8));
 
         float32array[index + 0] = red * exponent;
         float32array[index + 1] = green * exponent;
@@ -50,7 +51,7 @@ function rgbe2float(float32array: Float32Array, red: number, green: number, blue
     }
 }
 
-function readStringLine(uint8array: Uint8Array, startIndex: number): string {
+function ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
     let line = "";
     let character = "";
 
@@ -80,7 +81,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     let height: number = 0;
     let width: number = 0;
 
-    let line = readStringLine(uint8array, 0);
+    let line = ReadStringLine(uint8array, 0);
     if (line[0] != "#" || line[1] != "?") {
         // eslint-disable-next-line no-throw-literal
         throw "Bad HDR Format.";
@@ -92,7 +93,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
 
     do {
         lineIndex += line.length + 1;
-        line = readStringLine(uint8array, lineIndex);
+        line = ReadStringLine(uint8array, lineIndex);
 
         if (line == "FORMAT=32-bit_rle_rgbe") {
             findFormat = true;
@@ -107,7 +108,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     }
 
     lineIndex += line.length + 1;
-    line = readStringLine(uint8array, lineIndex);
+    line = ReadStringLine(uint8array, lineIndex);
 
     const sizeRegexp = /^-Y (.*) \+X (.*)$/g;
     const match = sizeRegexp.exec(line);
@@ -169,12 +170,13 @@ export function GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersa
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
-    return readRGBEPixelsRLE(uint8array, hdrInfo);
+    return ReadRGBEPixelsRLE(uint8array, hdrInfo);
 }
 
-function readRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
-    let num_scanlines = hdrInfo.height;
-    const scanline_width = hdrInfo.width;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function ReadRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+    let numScanlines = hdrInfo.height;
+    const scanlineWidth = hdrInfo.width;
 
     let a: number, b: number, c: number, d: number, count: number;
     let dataIndex = hdrInfo.dataPosition;
@@ -182,7 +184,7 @@ function readRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
         endIndex = 0,
         i = 0;
 
-    const scanLineArrayBuffer = new ArrayBuffer(scanline_width * 4); // four channel R G B E
+    const scanLineArrayBuffer = new ArrayBuffer(scanlineWidth * 4); // four channel R G B E
     const scanLineArray = new Uint8Array(scanLineArrayBuffer);
 
     // 3 channels of 4 bytes per pixel in float.
@@ -190,17 +192,17 @@ function readRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
     const resultArray = new Float32Array(resultBuffer);
 
     // read in each successive scanline
-    while (num_scanlines > 0) {
+    while (numScanlines > 0) {
         a = uint8array[dataIndex++];
         b = uint8array[dataIndex++];
         c = uint8array[dataIndex++];
         d = uint8array[dataIndex++];
 
         if (a != 2 || b != 2 || c & 0x80 || hdrInfo.width < 8 || hdrInfo.width > 32767) {
-            return readRGBEPixelsNotRLE(uint8array, hdrInfo);
+            return ReadRGBEPixelsNotRLE(uint8array, hdrInfo);
         }
 
-        if (((c << 8) | d) != scanline_width) {
+        if (((c << 8) | d) != scanlineWidth) {
             // eslint-disable-next-line no-throw-literal
             throw "HDR Bad header format, wrong scan line width";
         }
@@ -209,7 +211,7 @@ function readRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
 
         // read each of the four channels for the scanline into the buffer
         for (i = 0; i < 4; i++) {
-            endIndex = (i + 1) * scanline_width;
+            endIndex = (i + 1) * scanlineWidth;
 
             while (index < endIndex) {
                 a = uint8array[dataIndex++];
@@ -245,27 +247,28 @@ function readRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Arr
         }
 
         // now convert data from buffer into floats
-        for (i = 0; i < scanline_width; i++) {
+        for (i = 0; i < scanlineWidth; i++) {
             a = scanLineArray[i];
-            b = scanLineArray[i + scanline_width];
-            c = scanLineArray[i + 2 * scanline_width];
-            d = scanLineArray[i + 3 * scanline_width];
+            b = scanLineArray[i + scanlineWidth];
+            c = scanLineArray[i + 2 * scanlineWidth];
+            d = scanLineArray[i + 3 * scanlineWidth];
 
-            rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+            Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - numScanlines) * scanlineWidth * 3 + i * 3);
         }
 
-        num_scanlines--;
+        numScanlines--;
     }
 
     return resultArray;
 }
 
-function readRGBEPixelsNotRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function ReadRGBEPixelsNotRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
     // this file is not run length encoded
     // read values sequentially
 
-    let num_scanlines = hdrInfo.height;
-    const scanline_width = hdrInfo.width;
+    let numScanlines = hdrInfo.height;
+    const scanlineWidth = hdrInfo.width;
 
     let a: number, b: number, c: number, d: number, i: number;
     let dataIndex = hdrInfo.dataPosition;
@@ -275,17 +278,17 @@ function readRGBEPixelsNotRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32
     const resultArray = new Float32Array(resultBuffer);
 
     // read in each successive scanline
-    while (num_scanlines > 0) {
+    while (numScanlines > 0) {
         for (i = 0; i < hdrInfo.width; i++) {
             a = uint8array[dataIndex++];
             b = uint8array[dataIndex++];
             c = uint8array[dataIndex++];
             d = uint8array[dataIndex++];
 
-            rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+            Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - numScanlines) * scanlineWidth * 3 + i * 3);
         }
 
-        num_scanlines--;
+        numScanlines--;
     }
 
     return resultArray;

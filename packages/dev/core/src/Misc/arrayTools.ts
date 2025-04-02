@@ -23,7 +23,7 @@ export function BuildArray<T>(size: number, itemBuilder: () => T): Array<T> {
  * @returns a new tuple filled with new objects.
  */
 export function BuildTuple<T, N extends number>(size: N, itemBuilder: () => T): Tuple<T, N> {
-    return BuildArray(size, itemBuilder) as any;
+    return BuildArray(size, itemBuilder) as Tuple<T, N>;
 }
 
 /**
@@ -49,8 +49,10 @@ function _observeArrayfunction(object: { [key: string]: any }, functionName: str
     // Creates a new function that calls the callback and the old function
     const newFunction = function () {
         const previousLength = object.length;
+        // eslint-disable-next-line prefer-rest-params
         const returnValue = newFunction.previous.apply(object, arguments);
         callback(functionName, previousLength);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return returnValue;
     } as any;
 
