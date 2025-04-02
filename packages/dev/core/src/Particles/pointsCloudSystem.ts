@@ -136,8 +136,8 @@ export class PointsCloudSystem implements IDisposable {
      * @param material The material to use to render the mesh. If not provided, will create a default one
      * @returns a promise for the created mesh
      */
-    public buildMeshAsync(material?: Material): Promise<Mesh> {
-        return Promise.all(this._promises).then(() => {
+    public async buildMeshAsync(material?: Material): Promise<Mesh> {
+        return Promise.all(this._promises).then(async () => {
             this._isReady = true;
             return this._buildMesh(material);
         });
@@ -146,7 +146,7 @@ export class PointsCloudSystem implements IDisposable {
     /**
      * @internal
      */
-    private _buildMesh(material?: Material): Promise<Mesh> {
+    private async _buildMesh(material?: Material): Promise<Mesh> {
         if (this.nbParticles === 0) {
             this.addPoints(1);
         }
@@ -503,7 +503,7 @@ export class PointsCloudSystem implements IDisposable {
             return;
         }
 
-        const clone = <Mesh>mesh.clone();
+        const clone = mesh.clone();
         clone.setEnabled(false);
         this._promises.push(
             new Promise((resolve: (_: void) => void) => {

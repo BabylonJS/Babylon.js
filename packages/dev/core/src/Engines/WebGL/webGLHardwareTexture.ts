@@ -16,7 +16,7 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
     }
 
     constructor(existingTexture: Nullable<WebGLTexture> = null, context: WebGLRenderingContext) {
-        this._context = context as WebGLRenderingContext;
+        this._context = context;
         if (!existingTexture) {
             existingTexture = context.createTexture();
             if (!existingTexture) {

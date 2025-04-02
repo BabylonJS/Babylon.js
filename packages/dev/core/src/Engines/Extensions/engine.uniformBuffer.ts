@@ -73,7 +73,7 @@ ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray, _labe
     if (elements instanceof Float32Array) {
         this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.STATIC_DRAW);
     } else {
-        this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.STATIC_DRAW);
+        this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(elements), this._gl.STATIC_DRAW);
     }
 
     this.bindUniformBuffer(null);
@@ -95,7 +95,7 @@ ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray
     if (elements instanceof Float32Array) {
         this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.DYNAMIC_DRAW);
     } else {
-        this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.DYNAMIC_DRAW);
+        this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(elements), this._gl.DYNAMIC_DRAW);
     }
 
     this.bindUniformBuffer(null);
@@ -115,13 +115,13 @@ ThinEngine.prototype.updateUniformBuffer = function (uniformBuffer: DataBuffer, 
         if (elements instanceof Float32Array) {
             this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
         } else {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(elements));
         }
     } else {
         if (elements instanceof Float32Array) {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, elements.subarray(offset, offset + count));
         } else {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
+            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(elements).subarray(offset, offset + count));
         }
     }
 

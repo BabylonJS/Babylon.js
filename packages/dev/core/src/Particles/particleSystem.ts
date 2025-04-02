@@ -336,7 +336,7 @@ export class ParticleSystem extends ThinParticleSystem {
         if (sceneOrEngine instanceof AbstractEngine) {
             scene = null;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
         }
 
         const internalClass = GetClass("BABYLON.Texture");
@@ -644,7 +644,7 @@ export class ParticleSystem extends ThinParticleSystem {
         if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
             engine = scene.getEngine();
         }
 

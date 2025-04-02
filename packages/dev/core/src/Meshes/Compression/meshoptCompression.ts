@@ -106,7 +106,7 @@ export class MeshoptCompression implements IDisposable {
      * @param filter The compression filter.
      * @returns a Promise<Uint8Array> that resolves to the decoded data
      */
-    public decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
+    public async decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
         return this._decoderModulePromise!.then(async () => {
             if (NumberOfWorkers === 0) {
                 MeshoptDecoder.useWorkers(1);

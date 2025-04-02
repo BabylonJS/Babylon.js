@@ -322,7 +322,7 @@ export class PhysicsImpostor {
         if (!plugin.setBodyPressure) {
             return;
         }
-        plugin.setBodyPressure!(this, value);
+        plugin.setBodyPressure(this, value);
     }
 
     /**
@@ -336,7 +336,7 @@ export class PhysicsImpostor {
         if (!plugin.getBodyStiffness) {
             return 0;
         }
-        return plugin.getBodyStiffness!(this);
+        return plugin.getBodyStiffness(this);
     }
 
     /**
@@ -350,7 +350,7 @@ export class PhysicsImpostor {
         if (!plugin.setBodyStiffness) {
             return;
         }
-        plugin.setBodyStiffness!(this, value);
+        plugin.setBodyStiffness(this, value);
     }
 
     /**
@@ -364,7 +364,7 @@ export class PhysicsImpostor {
         if (!plugin.getBodyVelocityIterations) {
             return 0;
         }
-        return plugin.getBodyVelocityIterations!(this);
+        return plugin.getBodyVelocityIterations(this);
     }
 
     /**
@@ -378,7 +378,7 @@ export class PhysicsImpostor {
         if (!plugin.setBodyVelocityIterations) {
             return;
         }
-        plugin.setBodyVelocityIterations!(this, value);
+        plugin.setBodyVelocityIterations(this, value);
     }
 
     /**
@@ -392,7 +392,7 @@ export class PhysicsImpostor {
         if (!plugin.getBodyPositionIterations) {
             return 0;
         }
-        return plugin.getBodyPositionIterations!(this);
+        return plugin.getBodyPositionIterations(this);
     }
 
     /**
@@ -406,7 +406,7 @@ export class PhysicsImpostor {
         if (!plugin.setBodyPositionIterations) {
             return;
         }
-        plugin.setBodyPositionIterations!(this, value);
+        plugin.setBodyPositionIterations(this, value);
     }
 
     /**
@@ -532,7 +532,7 @@ export class PhysicsImpostor {
 
     private _getPhysicsParent(): Nullable<PhysicsImpostor> {
         if (this.object.parent instanceof AbstractMesh) {
-            const parentMesh: AbstractMesh = <AbstractMesh>this.object.parent;
+            const parentMesh: AbstractMesh = this.object.parent;
             return parentMesh.physicsImpostor;
         }
         return null;
@@ -784,7 +784,7 @@ export class PhysicsImpostor {
         collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>,
         func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void
     ): void {
-        const collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
+        const collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? collideAgainst : [collideAgainst];
         this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
     }
 
@@ -797,7 +797,7 @@ export class PhysicsImpostor {
         collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>,
         func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>, point: Nullable<Vector3>) => void
     ): void {
-        const collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
+        const collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? collideAgainst : [collideAgainst];
         let index = -1;
         const found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
             if (cbDef.callback === func && cbDef.otherImpostors.length === collidedAgainstList.length) {
@@ -929,10 +929,10 @@ export class PhysicsImpostor {
             }
             this._onPhysicsCollideCallbacks
                 .filter((obj) => {
-                    return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
+                    return obj.otherImpostors.indexOf(otherImpostor) !== -1;
                 })
                 .forEach((obj) => {
-                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point, e.distance, e.impulse, e.normal);
+                    obj.callback(this, otherImpostor, e.point, e.distance, e.impulse, e.normal);
                 });
         }
     };
@@ -1015,7 +1015,7 @@ export class PhysicsImpostor {
             return this;
         }
         if (this._physicsEngine) {
-            plugin.appendAnchor!(this, otherImpostor, width, height, influence, noCollisionBetweenLinkedBodies);
+            plugin.appendAnchor(this, otherImpostor, width, height, influence, noCollisionBetweenLinkedBodies);
         }
         return this;
     }

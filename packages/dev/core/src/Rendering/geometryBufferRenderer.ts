@@ -1,7 +1,6 @@
 import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
-import type { Mesh } from "../Meshes/mesh";
 import { Constants } from "../Engines/constants";
 import type { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
@@ -1085,7 +1084,7 @@ export class GeometryBufferRenderer {
                 }
 
                 let sideOrientation: Nullable<number>;
-                const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
+                const instanceDataStorage = renderingMesh._instanceDataStorage;
 
                 if (!instanceDataStorage.isFrozen && (material.backFaceCulling || material.sideOrientation !== null)) {
                     const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();

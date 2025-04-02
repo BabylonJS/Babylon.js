@@ -107,7 +107,7 @@ export function extractMinAndMax(positions: FloatArray, start: number, count: nu
  * @param indices defines the indices to use and update
  */
 export function FixFlippedFaces(positions: FloatArray, indices: IndicesArray): void {
-    const boundingInfo = extractMinAndMax(positions!, 0, positions!.length / 3);
+    const boundingInfo = extractMinAndMax(positions, 0, positions.length / 3);
 
     const inside = boundingInfo.maximum.subtract(boundingInfo.minimum).scale(0.5).add(boundingInfo.minimum);
     const tmpVectorA = new Vector3();

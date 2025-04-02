@@ -865,7 +865,9 @@ export class TransformNode extends Node {
      * @returns the current mesh
      */
     public removeChild(mesh: TransformNode, preserveScalingSign: boolean = false): this {
-        if (mesh.parent !== this) return this;
+        if (mesh.parent !== this) {
+            return this;
+        }
         mesh.setParent(null, preserveScalingSign);
         return this;
     }

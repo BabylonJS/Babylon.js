@@ -121,7 +121,7 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
-    public readDataFromBuffer(
+    public async readDataFromBuffer(
         gpuBuffer: GPUBuffer,
         size: number,
         width: number,
@@ -187,7 +187,7 @@ export class WebGPUBufferManager {
                             bytesPerRow *= 2;
                             bytesPerRowAligned *= 2;
                         }
-                        const data2 = new Uint8Array(data!.buffer);
+                        const data2 = new Uint8Array(data.buffer);
                         let offset = bytesPerRow,
                             offset2 = 0;
                         for (let y = 1; y < height; ++y) {
@@ -206,7 +206,7 @@ export class WebGPUBufferManager {
                     if (destroyBuffer) {
                         this.releaseBuffer(gpuBuffer);
                     }
-                    resolve(data!);
+                    resolve(data);
                 },
                 (reason) => {
                     if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {

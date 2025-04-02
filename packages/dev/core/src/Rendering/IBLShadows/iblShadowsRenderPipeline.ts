@@ -223,7 +223,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set voxelShadowOpacity(value: number) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         this._voxelTracingPass.voxelShadowOpacity = value;
     }
 
@@ -235,7 +237,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set ssShadowOpacity(value: number) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         this._voxelTracingPass.ssShadowOpacity = value;
     }
 
@@ -247,7 +251,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set ssShadowSampleCount(value: number) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         this._voxelTracingPass.sssSamples = value;
     }
 
@@ -260,7 +266,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set ssShadowStride(value: number) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         this._voxelTracingPass.sssStride = value;
     }
 
@@ -397,12 +405,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Turn on or off the debug view of the CDF importance sampling data
      */
     public set cdfDebugEnabled(enabled: boolean) {
-        if (!this.scene.iblCdfGenerator) return;
+        if (!this.scene.iblCdfGenerator) {
+            return;
+        }
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable importance sampling debug view without setting allowDebugPasses to true.");
             return;
         }
-        if (enabled === this.scene.iblCdfGenerator.debugEnabled) return;
+        if (enabled === this.scene.iblCdfGenerator.debugEnabled) {
+            return;
+        }
         this.scene.iblCdfGenerator.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this.scene.iblCdfGenerator.debugPassName, this.cameras);
@@ -422,7 +434,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set voxelDebugEnabled(enabled: boolean) {
-        if (!this._voxelRenderer) return;
+        if (!this._voxelRenderer) {
+            return;
+        }
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable voxel debug view without setting allowDebugPasses to true.");
             return;
@@ -444,7 +458,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set voxelDebugAxis(axisNum: number) {
-        if (!this._voxelRenderer) return;
+        if (!this._voxelRenderer) {
+            return;
+        }
         this._voxelRenderer.voxelDebugAxis = axisNum;
     }
 
@@ -453,7 +469,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * case because we only generate mips for the combined voxel grid.
      */
     public set voxelDebugDisplayMip(mipNum: number) {
-        if (!this._voxelRenderer) return;
+        if (!this._voxelRenderer) {
+            return;
+        }
         this._voxelRenderer.setDebugMipNumber(mipNum);
     }
 
@@ -465,12 +483,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set voxelTracingDebugEnabled(enabled: boolean) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable voxel tracing debug view without setting allowDebugPasses to true.");
             return;
         }
-        if (enabled === this._voxelTracingPass.debugEnabled) return;
+        if (enabled === this._voxelTracingPass.debugEnabled) {
+            return;
+        }
         this._voxelTracingPass.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._voxelTracingPass.debugPassName, this.cameras);
@@ -487,12 +509,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set spatialBlurPassDebugEnabled(enabled: boolean) {
-        if (!this._spatialBlurPass) return;
+        if (!this._spatialBlurPass) {
+            return;
+        }
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable spatial blur debug view without setting allowDebugPasses to true.");
             return;
         }
-        if (enabled === this._spatialBlurPass.debugEnabled) return;
+        if (enabled === this._spatialBlurPass.debugEnabled) {
+            return;
+        }
         this._spatialBlurPass.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._spatialBlurPass.debugPassName, this.cameras);
@@ -509,12 +535,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set accumulationPassDebugEnabled(enabled: boolean) {
-        if (!this._accumulationPass) return;
+        if (!this._accumulationPass) {
+            return;
+        }
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable accumulation pass debug view without setting allowDebugPasses to true.");
             return;
         }
-        if (enabled === this._accumulationPass.debugEnabled) return;
+        if (enabled === this._accumulationPass.debugEnabled) {
+            return;
+        }
         this._accumulationPass.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._accumulationPass.debugPassName, this.cameras);
@@ -573,7 +603,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set resolutionExp(newResolution: number) {
-        if (newResolution === this._voxelRenderer.voxelResolutionExp) return;
+        if (newResolution === this._voxelRenderer.voxelResolutionExp) {
+            return;
+        }
         if (this._voxelRenderer.isVoxelizationInProgress()) {
             Logger.Warn("Can't change the resolution of the voxel grid while voxelization is in progress.");
             return;
@@ -593,7 +625,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * The number of different directions to sample during the voxel tracing pass
      */
     public set sampleDirections(value: number) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         this._voxelTracingPass.sampleDirections = value;
     }
 
@@ -608,7 +642,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * The decree to which the shadows persist between frames. 0.0 is no persistence, 1.0 is full persistence.
      **/
     public set shadowRemanence(value: number) {
-        if (!this._accumulationPass) return;
+        if (!this._accumulationPass) {
+            return;
+        }
         this._accumulationPass.remanence = value;
     }
 
@@ -623,7 +659,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * The global Y-axis rotation of the IBL for shadows. This should match the Y-rotation of the environment map applied to materials, skybox, etc.
      */
     public set envRotation(value: number) {
-        if (!this._voxelTracingPass) return;
+        if (!this._voxelTracingPass) {
+            return;
+        }
         this._voxelTracingPass.envRotation = value;
         this._accumulationPass.reset = true;
     }
@@ -639,7 +677,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Allow debug passes to be enabled. Default is false.
      */
     public set allowDebugPasses(value: boolean) {
-        if (this._allowDebugPasses === value) return;
+        if (this._allowDebugPasses === value) {
+            return;
+        }
         this._allowDebugPasses = value;
         if (value && this.scene.iblCdfGenerator) {
             if (this.scene.iblCdfGenerator.isReady()) {
@@ -874,7 +914,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             { pass: this._getGBufferDebugPass(), enabled: this.gbufferDebugEnabled }
         );
         for (let i = 0; i < this._debugPasses.length; i++) {
-            if (!this._debugPasses[i].pass) continue;
+            if (!this._debugPasses[i].pass) {
+                continue;
+            }
             this.addEffect(
                 new PostProcessRenderEffect(
                     this.scene.getEngine(),
@@ -890,7 +932,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
         this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
         for (let i = 0; i < this._debugPasses.length; i++) {
-            if (!this._debugPasses[i].pass) continue;
+            if (!this._debugPasses[i].pass) {
+                continue;
+            }
             if (this._debugPasses[i].enabled) {
                 this._enableEffect(this._debugPasses[i].pass.name, this.cameras);
             } else {
@@ -915,12 +959,24 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _updateDebugPasses() {
         let count = 0;
-        if (this._gbufferDebugEnabled) count++;
-        if (this.cdfDebugEnabled) count++;
-        if (this.voxelDebugEnabled) count++;
-        if (this.voxelTracingDebugEnabled) count++;
-        if (this.spatialBlurPassDebugEnabled) count++;
-        if (this.accumulationPassDebugEnabled) count++;
+        if (this._gbufferDebugEnabled) {
+            count++;
+        }
+        if (this.cdfDebugEnabled) {
+            count++;
+        }
+        if (this.voxelDebugEnabled) {
+            count++;
+        }
+        if (this.voxelTracingDebugEnabled) {
+            count++;
+        }
+        if (this.spatialBlurPassDebugEnabled) {
+            count++;
+        }
+        if (this.accumulationPassDebugEnabled) {
+            count++;
+        }
 
         const rows = Math.ceil(Math.sqrt(count));
         const cols = Math.ceil(count / rows);

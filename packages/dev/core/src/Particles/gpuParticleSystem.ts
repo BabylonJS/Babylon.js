@@ -453,7 +453,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
-        this._customWrappers[blendMode]!.effect = effect;
+        this._customWrappers[blendMode].effect = effect;
     }
 
     /** @internal */
@@ -954,12 +954,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             if (!GetClass("BABYLON.ComputeShaderParticleSystem")) {
                 throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem") as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem"))(this, this._engine);
         } else {
             if (!GetClass("BABYLON.WebGL2ParticleSystem")) {
                 throw new Error("The WebGL2ParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem") as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem"))(this, this._engine);
         }
 
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
@@ -2114,7 +2114,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
             engine = scene.getEngine();
         }
 

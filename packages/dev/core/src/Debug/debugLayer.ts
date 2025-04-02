@@ -311,7 +311,7 @@ export class DebugLayer {
         }
 
         if (this._onPropertyChangedObservable) {
-            for (const observer of this._onPropertyChangedObservable!.observers) {
+            for (const observer of this._onPropertyChangedObservable.observers) {
                 this.BJSINSPECTOR.Inspector.OnPropertyChangedObservable.add(observer);
             }
             this._onPropertyChangedObservable.clear();
@@ -319,7 +319,7 @@ export class DebugLayer {
         }
 
         if (this._onSelectionChangedObservable) {
-            for (const observer of this._onSelectionChangedObservable!.observers) {
+            for (const observer of this._onSelectionChangedObservable.observers) {
                 this.BJSINSPECTOR.Inspector.OnSelectionChangedObservable.add(observer);
             }
             this._onSelectionChangedObservable.clear();
@@ -432,7 +432,7 @@ export class DebugLayer {
      * @param config Define the configuration of the inspector
      * @returns a promise fulfilled when the debug layer is visible
      */
-    public show(config?: IInspectorOptions): Promise<DebugLayer> {
+    public async show(config?: IInspectorOptions): Promise<DebugLayer> {
         return new Promise((resolve) => {
             if (typeof this.BJSINSPECTOR == "undefined") {
                 const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;

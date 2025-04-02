@@ -482,7 +482,7 @@ export class InternalTexture extends TextureSampler {
 
             case InternalTextureSource.CubeRaw:
                 proxy = this._engine.createRawCubeTexture(
-                    this._bufferViewArray!,
+                    this._bufferViewArray,
                     this.width,
                     this._originalFormat ?? this.format,
                     this.type,

@@ -308,7 +308,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         let node: any;
         let nodePositions: any;
         let x, y, z: number;
-        const path: Array<Vector3> = new Array();
+        const path: Array<Vector3> = [];
         for (let n = 0; n < nbVertices; n++) {
             node = bodyVertices.at(n);
             nodePositions = node.get_m_x();

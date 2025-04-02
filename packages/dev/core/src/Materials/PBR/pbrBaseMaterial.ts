@@ -2464,7 +2464,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // image processing
-            this._imageProcessingConfiguration!.bind(this._activeEffect);
+            this._imageProcessingConfiguration.bind(this._activeEffect);
 
             // Log. depth
             BindLogDepth(defines, this._activeEffect, scene);

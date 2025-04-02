@@ -85,7 +85,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "camera-access";
     }
 
-    public override attach(force?: boolean | undefined): boolean {
+    public override attach(force?: boolean): boolean {
         if (!super.attach(force)) {
             return false;
         }

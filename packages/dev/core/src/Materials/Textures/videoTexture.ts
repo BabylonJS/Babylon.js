@@ -230,7 +230,7 @@ export class VideoTexture extends Texture {
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
         if (this._settings.poster && (!this._settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._getEngine()!.createTexture(this._settings.poster!, false, !this.invertY, scene);
+            this._texture = this._getEngine()!.createTexture(this._settings.poster, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         } else if (videoHasEnoughData) {
             this._createInternalTexture();
@@ -468,7 +468,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
-    public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
+    public static async CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
         const video = scene.getEngine().createVideoElement(constraints);
 
         if (scene.getEngine()._badOS) {

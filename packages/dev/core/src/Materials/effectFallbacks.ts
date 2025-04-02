@@ -9,7 +9,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
  * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
  */
 export class EffectFallbacks implements IEffectFallbacks {
-    private _defines: { [key: string]: Array<String> } = {};
+    private _defines: { [key: string]: Array<string> } = {};
 
     private _currentRank = 32;
     private _maxRank = -1;
@@ -38,7 +38,7 @@ export class EffectFallbacks implements IEffectFallbacks {
                 this._maxRank = rank;
             }
 
-            this._defines[rank] = new Array<String>();
+            this._defines[rank] = new Array<string>();
         }
 
         this._defines[rank].push(define);

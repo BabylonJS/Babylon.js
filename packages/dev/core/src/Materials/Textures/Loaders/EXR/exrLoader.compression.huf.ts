@@ -102,7 +102,9 @@ export function ReverseLutFromBitmap(bitmap: Uint8Array, lut: Uint16Array) {
 
     const n = k - 1;
 
-    while (k < USHORT_RANGE) lut[k++] = 0;
+    while (k < USHORT_RANGE) {
+        lut[k++] = 0;
+    }
 
     return n;
 }
@@ -185,8 +187,12 @@ function GetCode(
 const HufTableBuffer = new Array(59);
 
 function HufCanonicalCodeTable(hcode: Array<any>) {
-    for (let i = 0; i <= 58; ++i) HufTableBuffer[i] = 0;
-    for (let i = 0; i < HUF_ENCSIZE; ++i) HufTableBuffer[hcode[i]] += 1;
+    for (let i = 0; i <= 58; ++i) {
+        HufTableBuffer[i] = 0;
+    }
+    for (let i = 0; i < HUF_ENCSIZE; ++i) {
+        HufTableBuffer[hcode[i]] += 1;
+    }
 
     let c = 0;
 
@@ -198,7 +204,9 @@ function HufCanonicalCodeTable(hcode: Array<any>) {
 
     for (let i = 0; i < HUF_ENCSIZE; ++i) {
         const l = hcode[i];
-        if (l > 0) hcode[i] = l | (HufTableBuffer[l]++ << 6);
+        if (l > 0) {
+            hcode[i] = l | (HufTableBuffer[l]++ << 6);
+        }
     }
 }
 
@@ -235,7 +243,9 @@ function HufUnpackEncTable(array: Uint8Array, offset: DataCursor, ni: number, im
                 throw new Error("Error in HufUnpackEncTable");
             }
 
-            while (zerun--) hcode[im++] = 0;
+            while (zerun--) {
+                hcode[im++] = 0;
+            }
 
             im--;
         } else if (l >= SHORT_ZEROCODE_RUN) {
@@ -245,7 +255,9 @@ function HufUnpackEncTable(array: Uint8Array, offset: DataCursor, ni: number, im
                 throw new Error("Error in HufUnpackEncTable");
             }
 
-            while (zerun--) hcode[im++] = 0;
+            while (zerun--) {
+                hcode[im++] = 0;
+            }
 
             im--;
         }
@@ -487,7 +499,9 @@ export function Wav2Decode(buffer: Uint16Array, j: number, nx: number, ox: numbe
     let p2;
     let py;
 
-    while (p <= n) p <<= 1;
+    while (p <= n) {
+        p <<= 1;
+    }
 
     p >>= 1;
     p2 = p;

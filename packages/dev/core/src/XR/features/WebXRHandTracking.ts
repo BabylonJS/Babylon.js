@@ -327,7 +327,7 @@ export class WebXRHand implements IDisposable {
      * @returns An array of meshes that correlate to the hand part requested.
      */
     public getHandPartMeshes(part: HandPart): AbstractMesh[] {
-        return handPartsDefinition[part].map((name) => this._jointMeshes[handJointReferenceArray.indexOf(name)]!);
+        return handPartsDefinition[part].map((name) => this._jointMeshes[handJointReferenceArray.indexOf(name)]);
     }
 
     /**
@@ -336,7 +336,7 @@ export class WebXRHand implements IDisposable {
      * @returns An AbstractMesh whose position corresponds with the joint position.
      */
     public getJointMesh(jointName: WebXRHandJoint): AbstractMesh {
-        return this._jointMeshes[handJointReferenceArray.indexOf(jointName)!];
+        return this._jointMeshes[handJointReferenceArray.indexOf(jointName)];
     }
 
     /**
@@ -581,7 +581,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         return { left: meshes.left, right: meshes.right };
     }
 
-    private static _GenerateDefaultHandMeshesAsync(
+    private static async _GenerateDefaultHandMeshesAsync(
         scene: Scene,
         xrSessionManager: WebXRSessionManager,
         options?: IWebXRHandTrackingOptions

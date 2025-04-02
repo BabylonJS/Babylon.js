@@ -64,7 +64,7 @@ ThinWebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSi
         fullOptions.format = options.format;
         fullOptions.type = options.type;
     } else {
-        fullOptions.generateMipMaps = <boolean>options;
+        fullOptions.generateMipMaps = options;
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
         fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;

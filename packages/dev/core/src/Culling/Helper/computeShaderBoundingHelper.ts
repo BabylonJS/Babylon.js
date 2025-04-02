@@ -126,7 +126,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     }
 
     /** @internal */
-    public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+    public async registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         this._disposeForMeshList();
 
         if (!Array.isArray(meshes)) {
@@ -283,7 +283,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     }
 
     /** @internal */
-    public fetchResultsForMeshListAsync(): Promise<void> {
+    public async fetchResultsForMeshListAsync(): Promise<void> {
         return new Promise((resolve) => {
             const buffers: DataBuffer[] = [];
             let size = 0;

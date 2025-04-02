@@ -1007,7 +1007,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // When preWarm is false, forces the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
         // shader variations in DEPTHPREPASS mode.
-        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean | undefined): boolean => {
+        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean): boolean => {
             if (!preWarm || !mesh.subMeshes) {
                 return true;
             }
@@ -1517,7 +1517,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param options Sets of optional options forcing the compilation with different modes
      * @returns A promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
+    public async forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
         return new Promise((resolve) => {
             this.forceCompilation(() => {
                 resolve();

@@ -67,7 +67,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    private _prepareImgToLoadAsync(url: string) {
+    private async _prepareImgToLoadAsync(url: string) {
         return new Promise<void>((resolve, reject) => {
             const img = new Image();
             const canvas = document.createElement("canvas");
@@ -114,7 +114,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param imageFile defines the file to load data from
      * @returns a promise fulfilled when image data is loaded
      */
-    public loadTextureFromFileAsync(imageFile: File) {
+    public async loadTextureFromFileAsync(imageFile: File) {
         return this._prepareImgToLoadAsync(URL.createObjectURL(imageFile));
     }
 
@@ -123,7 +123,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param url defines the url to load data from
      * @returns a promise fulfilled when image data is loaded
      */
-    public loadTextureFromUrlAsync(url: string) {
+    public async loadTextureFromUrlAsync(url: string) {
         return this._prepareImgToLoadAsync(url);
     }
 
@@ -132,10 +132,10 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param texture defines the source texture
      * @returns a promise fulfilled when image data is loaded
      */
-    public extractFromTextureAsync(texture: Texture) {
+    public async extractFromTextureAsync(texture: Texture) {
         return new Promise<void>((resolve, reject) => {
             if (!texture.isReady()) {
-                texture.onLoadObservable.addOnce(() => {
+                texture.onLoadObservable.addOnce(async () => {
                     return this.extractFromTextureAsync(texture).then(resolve).catch(reject);
                 });
                 return;

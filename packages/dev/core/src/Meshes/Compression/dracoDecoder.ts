@@ -113,7 +113,7 @@ export class DracoDecoder extends DracoCodec {
      * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
      * @returns A promise that resolves with the decoded mesh data
      */
-    public decodeMeshToMeshDataAsync(
+    public async decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
         gltfNormalizedOverride?: { [kind: string]: boolean }
@@ -135,7 +135,7 @@ export class DracoDecoder extends DracoCodec {
         };
 
         if (this._workerPoolPromise) {
-            return this._workerPoolPromise.then((workerPool) => {
+            return this._workerPoolPromise.then(async (workerPool) => {
                 return new Promise<MeshData>((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
                         let resultIndices: Nullable<Uint16Array | Uint32Array> = null;

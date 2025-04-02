@@ -2403,9 +2403,9 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             // init arrays, matrix and sort function on first call
             data.facetDepthSortEnabled = true;
             if (indices instanceof Uint16Array) {
-                data.depthSortedIndices = new Uint16Array(indices!);
+                data.depthSortedIndices = new Uint16Array(indices);
             } else if (indices instanceof Uint32Array) {
-                data.depthSortedIndices = new Uint32Array(indices!);
+                data.depthSortedIndices = new Uint32Array(indices);
             } else {
                 let needs32bits = false;
                 for (let i = 0; i < indices!.length; i++) {

@@ -108,7 +108,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
 
             rtWrapper._MSAAFramebuffer = gl.createFramebuffer();
 
-            this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer!);
+            this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, msaaRenderBuffer);
             this._bindUnboundFramebuffer(null);
         }

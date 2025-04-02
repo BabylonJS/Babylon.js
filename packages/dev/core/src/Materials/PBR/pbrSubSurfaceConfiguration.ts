@@ -565,7 +565,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as MaterialSubSurfaceDefines;
+        const defines = subMesh.materialDefines as unknown as MaterialSubSurfaceDefines;
 
         const isFrozen = this._material.isFrozen;
         const realTimeFiltering = this._material.realTimeFiltering;

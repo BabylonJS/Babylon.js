@@ -140,7 +140,7 @@ export function workerFunction(KTX2DecoderModule: any): void {
     };
 }
 
-export function initializeWebWorker(worker: Worker, wasmBinaries?: { [key in AllowedKeys]?: ArrayBuffer }, urls?: { [key in AllowedKeys]: string }): Promise<Worker> {
+export async function initializeWebWorker(worker: Worker, wasmBinaries?: { [key in AllowedKeys]?: ArrayBuffer }, urls?: { [key in AllowedKeys]: string }): Promise<Worker> {
     return new Promise((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);

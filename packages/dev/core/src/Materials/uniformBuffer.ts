@@ -436,7 +436,7 @@ export class UniformBuffer {
                 data = size;
                 size = data.length;
             } else {
-                size = <number>size;
+                size = size;
                 data = [];
 
                 // Fill with zeros
@@ -444,12 +444,12 @@ export class UniformBuffer {
                     data.push(0);
                 }
             }
-            this._fillAlignment(<number>size);
+            this._fillAlignment(size);
         }
 
-        this._uniformSizes[name] = <number>size;
+        this._uniformSizes[name] = size;
         this._uniformLocations[name] = this._uniformLocationPointer;
-        this._uniformLocationPointer += <number>size;
+        this._uniformLocationPointer += size;
 
         for (let i = 0; i < size; i++) {
             this._data.push(data[i]);
@@ -1201,7 +1201,7 @@ export class UniformBuffer {
         if (this._engine._features.trackUbosInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i][0];
-                this._engine._releaseBuffer(buffer!);
+                this._engine._releaseBuffer(buffer);
             }
         } else if (this._buffer && this._engine._releaseBuffer(this._buffer)) {
             this._buffer = null;

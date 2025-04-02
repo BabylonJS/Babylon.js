@@ -105,7 +105,9 @@ export class Angle {
      */
     public static BetweenTwoVectors<Vec extends Vector2 | Vector3 | Vector4>(a: DeepImmutable<Vec>, b: DeepImmutable<Vec>): Angle {
         let product = a.lengthSquared() * b.lengthSquared();
-        if (product === 0) return new Angle(Math.PI / 2);
+        if (product === 0) {
+            return new Angle(Math.PI / 2);
+        }
         product = Math.sqrt(product);
         let cosVal = a.dot(b as any) / product;
         cosVal = Clamp(cosVal, -1, 1);

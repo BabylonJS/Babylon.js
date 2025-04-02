@@ -51,7 +51,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             this._webgpuMSAATexture = [];
         }
 
-        this._webgpuMSAATexture![index] = texture;
+        this._webgpuMSAATexture[index] = texture;
     }
 
     public releaseMSAATexture(index?: number): void {

@@ -26,6 +26,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
     // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     private readonly _usingMacOs: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
@@ -597,7 +598,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             // mouse button were released.
             // If Firefox makes a fix to ensure this is the case, this workaround can be removed.
             // Relevant forum thread: https://forum.babylonjs.com/t/camera-pan-getting-stuck-in-firefox/57158
-            if (!shouldProcessPointerUp && this._isUsingFirefox && this._usingMacOS && pointer) {
+            if (!shouldProcessPointerUp && this._isUsingFirefox && this._usingMacOs && pointer) {
                 // Try the other button (left or right button)
                 button = button === 2 ? 0 : 2;
 
@@ -860,7 +861,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceSlot = evt.gamepad.index;
 
                 this._unregisterDevice(deviceType, deviceSlot);
-                delete this._gamepads[deviceSlot];
+                this._gamepads.splice(deviceSlot, 1);
             }
         };
 

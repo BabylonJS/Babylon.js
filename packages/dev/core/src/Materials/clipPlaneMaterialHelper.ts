@@ -34,12 +34,24 @@ export function prepareStringDefinesForClipPlanes(primaryHolder: IClipPlanesHold
     const clipPlane5 = !!(primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5);
     const clipPlane6 = !!(primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6);
 
-    if (clipPlane) defines.push("#define CLIPPLANE");
-    if (clipPlane2) defines.push("#define CLIPPLANE2");
-    if (clipPlane3) defines.push("#define CLIPPLANE3");
-    if (clipPlane4) defines.push("#define CLIPPLANE4");
-    if (clipPlane5) defines.push("#define CLIPPLANE5");
-    if (clipPlane6) defines.push("#define CLIPPLANE6");
+    if (clipPlane) {
+        defines.push("#define CLIPPLANE");
+    }
+    if (clipPlane2) {
+        defines.push("#define CLIPPLANE2");
+    }
+    if (clipPlane3) {
+        defines.push("#define CLIPPLANE3");
+    }
+    if (clipPlane4) {
+        defines.push("#define CLIPPLANE4");
+    }
+    if (clipPlane5) {
+        defines.push("#define CLIPPLANE5");
+    }
+    if (clipPlane6) {
+        defines.push("#define CLIPPLANE6");
+    }
 }
 
 /** @internal */

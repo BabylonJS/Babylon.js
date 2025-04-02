@@ -103,7 +103,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (
     return buffer;
 };
 
-ThinEngine.prototype._readTexturePixels = function (
+ThinEngine.prototype._readTexturePixels = async function (
     texture: InternalTexture,
     width: number,
     height: number,

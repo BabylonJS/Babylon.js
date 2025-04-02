@@ -238,7 +238,7 @@ export class NodeRenderGraph {
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
-    public edit(config?: INodeRenderGraphEditorOptions): Promise<void> {
+    public async edit(config?: INodeRenderGraphEditorOptions): Promise<void> {
         return new Promise((resolve) => {
             this.BJSNODERENDERGRAPHEDITOR = this.BJSNODERENDERGRAPHEDITOR || this._getGlobalNodeRenderGraphEditor();
             if (typeof this.BJSNODERENDERGRAPHEDITOR == "undefined") {
@@ -350,7 +350,7 @@ export class NodeRenderGraph {
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
     }
 
@@ -754,7 +754,7 @@ export class NodeRenderGraph {
      * @param skipBuild defines whether to skip building the node render graph (default is true)
      * @returns a promise that will resolve to the new node render graph
      */
-    public static ParseFromSnippetAsync(
+    public static async ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene,
         nodeRenderGraphOptions?: INodeRenderGraphCreateOptions,

@@ -175,7 +175,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         if (!this.options.images || !this.options.images.length) {
             return {};
         }
-        const promises = this.options.images.map((image) => {
+        const promises = this.options.images.map(async (image) => {
             if (typeof image.src === "string") {
                 return (this._xrSessionManager.scene.getEngine() as Engine)._createImageBitmapFromSource(image.src);
             } else {

@@ -173,7 +173,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         };
 
         this.onApplyObservable.add((effect: Effect) => {
-            this._updateMeshScreenCoordinates(<Scene>scene);
+            this._updateMeshScreenCoordinates(scene);
 
             effect.setTexture("lightScatteringSampler", this._volumetricLightScatteringRTT);
             effect.setFloat("exposure", this.exposure);

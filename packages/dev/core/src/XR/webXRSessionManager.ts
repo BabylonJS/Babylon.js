@@ -238,7 +238,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * After initialization enterXR can be called to start an XR session
      * @returns Promise which resolves after it is initialized
      */
-    public initializeAsync(): Promise<void> {
+    public async initializeAsync(): Promise<void> {
         // Check if the browser supports webXR
         this._xrNavigator = navigator;
         if (!this._xrNavigator.xr) {
@@ -253,7 +253,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param xrSessionInit defines optional and required values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+    public async initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this._sessionMode = xrSessionMode;
@@ -301,7 +301,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param sessionMode session mode to check if supported eg. immersive-vr
      * @returns A Promise that resolves to true if supported and false if not
      */
-    public isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
+    public async isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
@@ -362,14 +362,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param referenceSpaceType space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
+    public async setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
         return this.session
             .requestReferenceSpace(referenceSpaceType)
             .then(
                 (referenceSpace) => {
                     return referenceSpace as XRReferenceSpace;
                 },
-                (rejectionReason) => {
+                async (rejectionReason) => {
                     Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
                     Logger.Error(rejectionReason);
                     Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
@@ -387,7 +387,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                     );
                 }
             )
-            .then((referenceSpace) => {
+            .then(async (referenceSpace) => {
                 // create viewer reference space before setting the first reference space
                 return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace) => {
                     this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
@@ -409,7 +409,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise that resolves once the render state has been updated
      * @deprecated Use updateRenderState() instead.
      */
-    public updateRenderStateAsync(state: XRRenderState): Promise<void> {
+    public async updateRenderStateAsync(state: XRRenderState): Promise<void> {
         return Promise.resolve(this.session.updateRenderState(state));
     }
 
@@ -448,7 +448,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param sessionMode defines the session to test
      * @returns a promise with boolean as final value
      */
-    public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
+    public static async IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         if (!(navigator as any).xr) {
             return Promise.resolve(false);
         }
@@ -459,11 +459,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         } else {
             return functionToUse
                 .call((navigator as any).xr, sessionMode)
-                .then((result: boolean) => {
+                .then(async (result: boolean) => {
                     const returnValue = typeof result === "undefined" ? true : result;
                     return Promise.resolve(returnValue);
                 })
-                .catch((e: any) => {
+                .catch(async (e: any) => {
                     Logger.Warn(e);
                     return Promise.resolve(false);
                 });
@@ -496,7 +496,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param rate the new framerate. This value needs to be in the supportedFrameRates array
      * @returns a promise that resolves once the framerate has been set
      */
-    public updateTargetFrameRate(rate: number): Promise<void> {
+    public async updateTargetFrameRate(rate: number): Promise<void> {
         return this.session.updateTargetFrameRate(rate);
     }
 

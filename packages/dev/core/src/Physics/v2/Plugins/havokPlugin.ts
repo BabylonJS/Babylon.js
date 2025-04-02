@@ -686,7 +686,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             this._internalUpdateMassProperties(body._pluginData);
             return;
         }
-        const m = body.transformNode as Mesh;
+        const m = body.transformNode;
         const instancesCount = m._thinInstanceDataStorage?.instancesCount ?? 0;
         for (let i = 0; i < instancesCount; i++) {
             this._hknp.HP_Body_SetShape(body._pluginDataInstances[i].hpBodyId, shapeHandle);
@@ -1172,7 +1172,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param rotation The target rotation
      * @param instanceIndex The index of the instance in an instanced body
      */
-    public setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number | undefined): void {
+    public setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number): void {
         this._applyToBodyOrInstances(
             body,
             (pluginRef) => {

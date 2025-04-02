@@ -460,7 +460,9 @@ export class PhysicsCharacterController {
             let e2 = e1 - 1;
             for (; e2 >= 0; e2--) {
                 const fitness = this._compareContacts(this._manifold[e1], this._manifold[e2]);
-                if (fitness < 0.1) break;
+                if (fitness < 0.1) {
+                    break;
+                }
             }
             if (e2 >= 0) {
                 this._manifold.slice(e1, 1);
@@ -1042,9 +1044,15 @@ export class PhysicsCharacterController {
             let minCollisionTime = remainingTime;
             for (let i = 0; i < constraints.length; i++) {
                 //  Do not search existing active planes
-                if (info.numSupportPlanes >= 1 && info.supportPlanes[0].index == i) continue;
-                if (info.numSupportPlanes >= 2 && info.supportPlanes[1].index == i) continue;
-                if (info.numSupportPlanes >= 3 && info.supportPlanes[2].index == i) continue;
+                if (info.numSupportPlanes >= 1 && info.supportPlanes[0].index == i) {
+                    continue;
+                }
+                if (info.numSupportPlanes >= 2 && info.supportPlanes[1].index == i) {
+                    continue;
+                }
+                if (info.numSupportPlanes >= 3 && info.supportPlanes[2].index == i) {
+                    continue;
+                }
                 if (output.planeInteractions[i].status != SurfaceConstraintInteractionStatus.OK) {
                     continue;
                 }

@@ -282,7 +282,7 @@ export class CameraInputsManager<Tcamera extends Camera> {
                         parsedinput,
                         null
                     );
-                    this.add(input as any);
+                    this.add(input);
                 }
             }
         } else {
@@ -298,7 +298,7 @@ export class CameraInputsManager<Tcamera extends Camera> {
                         null
                     );
                     this.remove(this.attached[n]);
-                    this.add(input as any);
+                    this.add(input);
                 }
             }
         }

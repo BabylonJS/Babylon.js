@@ -167,7 +167,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 const worldMatrix = mesh.computeWorldMatrix(true);
 
                 if (mesh.hasThinInstances) {
-                    const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                    const thinMatrices = mesh.thinInstanceGetWorldMatrices();
                     for (let instanceIndex = 0; instanceIndex < thinMatrices.length; instanceIndex++) {
                         const tmpMatrix = new Matrix();
                         const thinMatrix = thinMatrices[instanceIndex];

@@ -39,7 +39,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
-    public processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+    public async processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         if (!Array.isArray(meshes)) {
             meshes = [meshes];
         }
@@ -208,7 +208,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
-    public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+    public async registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         if (!Array.isArray(meshes)) {
             meshes = [meshes];
         }
@@ -230,7 +230,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
-    public fetchResultsForMeshListAsync(): Promise<void> {
+    public async fetchResultsForMeshListAsync(): Promise<void> {
         this._meshListCounter = 0;
 
         return Promise.resolve();

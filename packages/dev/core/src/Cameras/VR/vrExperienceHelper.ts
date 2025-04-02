@@ -159,7 +159,7 @@ class VRExperienceHelperGazer implements IDisposable {
             targetMat.backFaceCulling = false;
             this._gazeTracker.material = targetMat;
         } else {
-            this._gazeTracker = gazeTrackerToClone.clone("gazeTracker") as Mesh;
+            this._gazeTracker = gazeTrackerToClone.clone("gazeTracker");
         }
     }
 

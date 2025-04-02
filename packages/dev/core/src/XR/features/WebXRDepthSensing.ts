@@ -433,7 +433,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * @param force should attachment be forced (even when already attached)
      * @returns true if successful.
      */
-    public override attach(force?: boolean | undefined): boolean {
+    public override attach(force?: boolean): boolean {
         if (!super.attach(force)) {
             return false;
         }
@@ -627,7 +627,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Extends the session init object if needed
      * @returns augmentation object for the xr session init object.
      */
-    public getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
+    public async getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
         const isDepthUsageDeclared = this.options.usagePreference != null && this.options.usagePreference.length !== 0;
         const isDataFormatDeclared = this.options.dataFormatPreference != null && this.options.dataFormatPreference.length !== 0;
 

@@ -247,7 +247,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         }
 
         if ((this.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
-            const textureCreateOptions = this.creationOptions as FrameGraphTextureCreationOptions;
+            const textureCreateOptions = this.creationOptions;
 
             if (!textureCreateOptions) {
                 throw new Error(`NodeRenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);

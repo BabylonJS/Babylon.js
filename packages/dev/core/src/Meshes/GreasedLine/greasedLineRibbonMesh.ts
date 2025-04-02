@@ -186,11 +186,11 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 indiceOffset = this._preprocess(GreasedLineTools.ToVector3Array(subPoints) as Vector3[][], indiceOffset, pathOptions);
             } else {
                 if (pathOptions.ribbonOptions?.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE) {
-                    if (!pathOptions.ribbonOptions!.directions) {
+                    if (!pathOptions.ribbonOptions.directions) {
                         // eslint-disable-next-line no-throw-literal
                         throw "In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE 'GreasedLineMeshOptions.ribbonOptions.directions' must be defined.";
                     }
-                    directionPlanes = GreasedLineRibbonMesh._GetDirectionPlanesFromDirectionsOption(subPoints.length, pathOptions.ribbonOptions!.directions);
+                    directionPlanes = GreasedLineRibbonMesh._GetDirectionPlanesFromDirectionsOption(subPoints.length, pathOptions.ribbonOptions.directions);
                 }
                 subPoints.forEach((p, idx) => {
                     const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(
@@ -394,7 +394,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 const p2 = pointVectors[i + 1];
 
                 if (directionPlane) {
-                    direction = <Vector3>directionPlane;
+                    direction = directionPlane;
                 } else if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO) {
                     p2.subtractToRef(p1, TmpVectors.Vector3[0]);
                     direction = Vector3.CrossToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2]).normalize();

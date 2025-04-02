@@ -284,7 +284,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 export function GetPointsCount(allPoints: number[][]) {
     let pointCount = 0;
     for (const points of allPoints) {
-        pointCount += (<number[]>points).length / 3;
+        pointCount += points.length / 3;
     }
     return pointCount;
 }

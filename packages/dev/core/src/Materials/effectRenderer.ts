@@ -601,10 +601,10 @@ export class EffectWrapper {
                     onError: onError ?? null,
                     indexParameters: indexParameters || this.options.indexParameters,
                     processCodeAfterIncludes: customShaderCodeProcessing?.processCodeAfterIncludes
-                        ? (shaderType: string, code: string) => customShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
+                        ? (shaderType: string, code: string) => customShaderCodeProcessing.processCodeAfterIncludes!(this.name, shaderType, code)
                         : null,
                     processFinalCode: customShaderCodeProcessing?.processFinalCode
-                        ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
+                        ? (shaderType: string, code: string) => customShaderCodeProcessing.processFinalCode!(this.name, shaderType, code)
                         : null,
                     shaderLanguage: this.options.shaderLanguage,
                     extraInitializationsAsync,

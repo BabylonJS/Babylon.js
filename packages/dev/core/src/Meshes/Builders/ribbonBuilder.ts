@@ -328,7 +328,7 @@ export function CreateRibbon(
         const maximum = TmpVectors.Vector3[1].setAll(-Number.MAX_VALUE);
         const positionFunction = (positions: FloatArray) => {
             let minlg = pathArray[0].length;
-            const mesh = <Mesh>instance;
+            const mesh = instance;
             let i = 0;
             const ns = mesh._originalBuilderSideOrientation === Mesh.DOUBLESIDE ? 2 : 1;
             for (let si = 1; si <= ns; ++si) {
@@ -392,9 +392,9 @@ export function CreateRibbon(
                 let indexFirst: number = 0;
                 let indexLast: number = 0;
                 for (let p = 0; p < pathArray.length; p++) {
-                    indexFirst = instance._creationDataStorage!.idx[p] * 3;
+                    indexFirst = instance._creationDataStorage.idx[p] * 3;
                     if (p + 1 < pathArray.length) {
-                        indexLast = (instance._creationDataStorage!.idx[p + 1] - 1) * 3;
+                        indexLast = (instance._creationDataStorage.idx[p + 1] - 1) * 3;
                     } else {
                         indexLast = normals.length - 3;
                     }

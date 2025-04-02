@@ -108,7 +108,7 @@ export function resetCachedPipeline(pipeline: IPipelineContext): void {
     const name = pipeline._name;
     const context = (pipeline as WebGLPipelineContext).context;
     if (name && context) {
-        const stateObject = getStateObject(context!);
+        const stateObject = getStateObject(context);
         const cachedPipeline = stateObject.cachedPipelines[name];
         cachedPipeline?.dispose();
         delete stateObject.cachedPipelines[name];

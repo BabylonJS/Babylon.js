@@ -80,7 +80,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public _getReferencedMesh(context: FlowGraphContext): AbstractMesh {
-        return this.asset.getValue(context) as AbstractMesh;
+        return this.asset.getValue(context);
     }
 
     public override _executeEvent(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {

@@ -176,7 +176,7 @@ export class IblCdfGenerator {
             this._iblSource.name = "Placeholder IBL Source";
         }
 
-        if (this._iblSource!.isCube) {
+        if (this._iblSource.isCube) {
             size.width *= 4;
             size.height *= 2;
             // Force the resolution to be a power of 2 because we rely on the
@@ -342,7 +342,7 @@ export class IblCdfGenerator {
      * Explicitly trigger generation of CDF maps when they are ready to render.
      * @returns Promise that resolves when the CDF maps are rendered.
      */
-    public renderWhenReady(): Promise<void> {
+    public async renderWhenReady(): Promise<void> {
         // Once the textures are generated, notify that they are ready to use.
         this._icdfPT.onGeneratedObservable.addOnce(() => {
             this.onGeneratedObservable.notifyObservers();

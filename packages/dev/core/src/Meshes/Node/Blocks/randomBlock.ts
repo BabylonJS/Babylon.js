@@ -174,7 +174,7 @@ export class RandomBlock extends NodeGeometryBlock {
 
                 if (this._currentLockId !== lockId || this.lockMode === RandomBlockLocks.None) {
                     this._currentLockId = lockId;
-                    this.output._storedValue = func!(state);
+                    this.output._storedValue = func(state);
                 }
                 return this.output._storedValue;
             };

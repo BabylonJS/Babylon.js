@@ -105,7 +105,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @param filter filter function that will filter the results
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
-    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
+    public static async XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
         return xrSession.requestHitTest!(xrRay, referenceSpace).then((results) => {
             const filterFunction = filter || ((result) => !!result.hitMatrix);
             return results.filter(filterFunction);
@@ -118,7 +118,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @param referenceSpace the reference space to use for this hit test
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
-    public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
+    public static async XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
         const targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
         if (!targetRayPose) {
             return Promise.resolve([]);

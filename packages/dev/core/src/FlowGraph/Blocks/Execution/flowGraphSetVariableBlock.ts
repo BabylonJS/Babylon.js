@@ -51,7 +51,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 this._saveVariable(context, variable);
             }
         } else {
-            this._saveVariable(context, this.config?.variable!, "value");
+            this._saveVariable(context, this.config?.variable, "value");
         }
         this.out._activateSignal(context);
     }

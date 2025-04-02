@@ -475,11 +475,11 @@ export function CreateGroundFromHeightMap(
             const bufferWidth = img.width;
             const bufferHeight = img.height;
 
-            if (scene!.isDisposed) {
+            if (scene.isDisposed) {
                 return;
             }
 
-            const buffer = <Uint8Array>scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight);
+            const buffer = scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight);
 
             onBufferLoaded(buffer, bufferWidth, bufferHeight);
         };

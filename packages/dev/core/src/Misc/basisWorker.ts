@@ -94,7 +94,7 @@ export function workerFunction(): void {
                     for (let levelIndex = 0; levelIndex < mipCount; levelIndex++) {
                         const levelInfo = image.levels[levelIndex];
 
-                        const pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
+                        const pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format, needsConversion);
                         if (!pixels) {
                             success = false;
                             break;
@@ -240,12 +240,12 @@ export function workerFunction(): void {
  * @param moduleUrl the url to the basis transcoder module
  * @returns a promise that resolves when the worker is initialized
  */
-export function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
+export async function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
     return new Promise<Worker>((res, reject) => {
         const initHandler = (msg: any) => {
             if (msg.data.action === "init") {
-                worker!.removeEventListener("message", initHandler);
-                res(worker!);
+                worker.removeEventListener("message", initHandler);
+                res(worker);
             } else if (msg.data.action === "error") {
                 reject(msg.data.error || "error initializing worker");
             }

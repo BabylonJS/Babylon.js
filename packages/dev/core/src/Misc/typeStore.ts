@@ -1,11 +1,11 @@
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const _RegisteredTypes: { [key: string]: Object } = {};
+const _RegisteredTypes: { [key: string]: object } = {};
 
 /**
  * @internal
  */
-export function RegisterClass(className: string, type: Object) {
+export function RegisterClass(className: string, type: object) {
     _RegisteredTypes[className] = type;
 }
 

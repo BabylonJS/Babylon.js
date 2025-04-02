@@ -1021,7 +1021,7 @@ export class WebGPUTextureManager {
         if (texture._maxLodLevel !== null) {
             mipmapCount = texture._maxLodLevel;
         } else {
-            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1;
+            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         }
 
         if (texture.isCube) {
@@ -1230,7 +1230,7 @@ export class WebGPUTextureManager {
 
                 buffer.unmap();
 
-                commandEncoder!.copyBufferToTexture(
+                commandEncoder.copyBufferToTexture(
                     {
                         buffer: buffer,
                         offset: 0,
@@ -1241,7 +1241,7 @@ export class WebGPUTextureManager {
                     textureExtent
                 );
 
-                this._device.queue.submit([commandEncoder!.finish()]);
+                this._device.queue.submit([commandEncoder.finish()]);
 
                 this._bufferManager.releaseBuffer(buffer);
             } else {
@@ -1289,7 +1289,7 @@ export class WebGPUTextureManager {
         }
     }
 
-    public readPixels(
+    public async readPixels(
         texture: GPUTexture,
         x: number,
         y: number,
@@ -1340,7 +1340,7 @@ export class WebGPUTextureManager {
             }
         );
 
-        this._device.queue.submit([commandEncoder!.finish()]);
+        this._device.queue.submit([commandEncoder.finish()]);
 
         return this._bufferManager.readDataFromBuffer(
             gpuBuffer,

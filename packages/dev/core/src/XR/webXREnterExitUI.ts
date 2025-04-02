@@ -177,7 +177,7 @@ export class WebXREnterExitUI implements IDisposable {
     public async setHelperAsync(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget): Promise<void> {
         this._helper = helper;
         this._renderTarget = renderTarget;
-        const supportedPromises = this._buttons.map((btn) => {
+        const supportedPromises = this._buttons.map(async (btn) => {
             return helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
         });
         helper.onStateChangedObservable.add((state) => {

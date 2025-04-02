@@ -77,7 +77,9 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: IFlo
     }
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
-        serializedObject._flowGraphs?.map((serializedGraph: any) => ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))
+        serializedObject._flowGraphs?.map(async (serializedGraph: any) =>
+            ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter })
+        )
     );
     return coordinator;
 }

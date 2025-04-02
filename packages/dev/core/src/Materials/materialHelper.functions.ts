@@ -100,19 +100,43 @@ export function PrepareDefinesAndAttributesForMorphTargets(
 
     defines.push("#define MORPHTARGETS");
 
-    if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
-    if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
-    if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
-    if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
-    if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
-    if (morphTargetManager.hasColors) defines.push("#define MORPHTARGETTEXTURE_HASCOLORS");
+    if (morphTargetManager.hasPositions) {
+        defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+    }
+    if (morphTargetManager.hasNormals) {
+        defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+    }
+    if (morphTargetManager.hasTangents) {
+        defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+    }
+    if (morphTargetManager.hasUVs) {
+        defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+    }
+    if (morphTargetManager.hasUV2s) {
+        defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+    }
+    if (morphTargetManager.hasColors) {
+        defines.push("#define MORPHTARGETTEXTURE_HASCOLORS");
+    }
 
-    if (morphTargetManager.supportsPositions && usePositionMorph) defines.push("#define MORPHTARGETS_POSITION");
-    if (morphTargetManager.supportsNormals && useNormalMorph) defines.push("#define MORPHTARGETS_NORMAL");
-    if (morphTargetManager.supportsTangents && useTangentMorph) defines.push("#define MORPHTARGETS_TANGENT");
-    if (morphTargetManager.supportsUVs && useUVMorph) defines.push("#define MORPHTARGETS_UV");
-    if (morphTargetManager.supportsUV2s && useUV2Morph) defines.push("#define MORPHTARGETS_UV2");
-    if (morphTargetManager.supportsColors && useColorMorph) defines.push("#define MORPHTARGETS_COLOR");
+    if (morphTargetManager.supportsPositions && usePositionMorph) {
+        defines.push("#define MORPHTARGETS_POSITION");
+    }
+    if (morphTargetManager.supportsNormals && useNormalMorph) {
+        defines.push("#define MORPHTARGETS_NORMAL");
+    }
+    if (morphTargetManager.supportsTangents && useTangentMorph) {
+        defines.push("#define MORPHTARGETS_TANGENT");
+    }
+    if (morphTargetManager.supportsUVs && useUVMorph) {
+        defines.push("#define MORPHTARGETS_UV");
+    }
+    if (morphTargetManager.supportsUV2s && useUV2Morph) {
+        defines.push("#define MORPHTARGETS_UV2");
+    }
+    if (morphTargetManager.supportsColors && useColorMorph) {
+        defines.push("#define MORPHTARGETS_COLOR");
+    }
 
     defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 

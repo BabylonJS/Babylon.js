@@ -20,7 +20,7 @@ declare let CANNON: any;
 export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "CannonJSPlugin";
-    private _physicsMaterials = new Array();
+    private _physicsMaterials: any[] = [];
     private _fixedTimeStep: number = 1 / 60;
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;

@@ -49,11 +49,11 @@ export function _LoadFile(
     onError?: (request?: IWebRequest, exception?: any) => void,
     injectedLoadFile?: (
         url: string,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string | undefined) => void,
-        onProgress?: ((ev: ProgressEvent<EventTarget>) => void) | undefined,
-        offlineProvider?: IOfflineProvider | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((request?: WebRequest | undefined, exception?: LoadFileError | undefined) => void) | undefined
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (ev: ProgressEvent<EventTarget>) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest
 ): IFileRequest {
     const loadFile = injectedLoadFile || EngineFunctionContext.loadFile;

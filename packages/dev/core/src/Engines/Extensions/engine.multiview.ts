@@ -55,7 +55,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     internalTexture.isMultiview = true;
 
     if (!colorTexture) {
-        colorTexture = gl.createTexture() as WebGLTexture;
+        colorTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, colorTexture);
         (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
     }
@@ -63,7 +63,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     rtWrapper._colorTextureArray = colorTexture;
 
     if (!depthStencilTexture) {
-        depthStencilTexture = gl.createTexture() as WebGLTexture;
+        depthStencilTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthStencilTexture);
         (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
     }

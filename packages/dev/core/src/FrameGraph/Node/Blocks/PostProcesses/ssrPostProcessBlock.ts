@@ -427,7 +427,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
                 throw new Error(`SSR post process "${this.name}": Automatic thickness computation requires a back depth texture to be connected!`);
             }
 
-            const geomBackDepthOwnerBlock = this.geomBackDepth.connectedPoint!.ownerBlock!;
+            const geomBackDepthOwnerBlock = this.geomBackDepth.connectedPoint!.ownerBlock;
             if (geomBackDepthOwnerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
                 const geometryBackFaceRendererBlock = geomBackDepthOwnerBlock as NodeRenderGraphGeometryRendererBlock;
                 if (!geometryBackFaceRendererBlock.reverseCulling) {
@@ -437,7 +437,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
                 }
 
                 if (this._frameGraphTask.depthTexture) {
-                    const geomDepthOwnerBlock = this.geomDepth.connectedPoint!.ownerBlock!;
+                    const geomDepthOwnerBlock = this.geomDepth.connectedPoint!.ownerBlock;
                     if (geomDepthOwnerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
                         const geomDepthConnectionPointType = this.geomDepth.connectedPoint!.type;
                         const geomBackDepthConnectionPointType = this.geomBackDepth.connectedPoint!.type;

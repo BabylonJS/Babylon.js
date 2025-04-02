@@ -237,9 +237,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
-        this._customWrappers[blendMode]!.effect = effect;
-        if (this._customWrappers[blendMode]!.drawContext) {
-            this._customWrappers[blendMode]!.drawContext!.useInstancing = this._useInstancing;
+        this._customWrappers[blendMode].effect = effect;
+        if (this._customWrappers[blendMode].drawContext) {
+            this._customWrappers[blendMode].drawContext.useInstancing = this._useInstancing;
         }
     }
 
@@ -452,8 +452,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
 
                 if (this.isLocal && particle._localPosition) {
-                    particle._localPosition!.addInPlace(this._scaledDirection);
-                    Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
+                    particle._localPosition.addInPlace(this._scaledDirection);
+                    Vector3.TransformCoordinatesToRef(particle._localPosition, this._emitterWorldMatrix, particle.position);
                 } else {
                     particle.position.addInPlace(this._scaledDirection);
                 }
@@ -1487,7 +1487,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 } else {
                     particle._localPosition.copyFrom(particle.position);
                 }
-                Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
+                Vector3.TransformCoordinatesToRef(particle._localPosition, this._emitterWorldMatrix, particle.position);
             }
 
             if (this.startDirectionFunction) {

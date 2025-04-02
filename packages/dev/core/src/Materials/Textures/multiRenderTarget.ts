@@ -318,7 +318,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return mapInternalTexture2MainIndex;
         }
 
-        const internalTextures = this._renderTarget!.textures!;
+        const internalTextures = this._renderTarget.textures!;
         for (let i = 0; i < internalTextures.length; i++) {
             const texture = internalTextures[i];
             if (!texture) {

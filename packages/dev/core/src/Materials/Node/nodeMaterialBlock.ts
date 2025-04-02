@@ -251,6 +251,8 @@ export class NodeMaterialBlock {
     /** @internal */
     public _setInitialTarget(target: NodeMaterialBlockTargets): void {
         this._target = target;
+        // marked as read only
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         (this._originalTargetIsNeutral as boolean) = target === NodeMaterialBlockTargets.Neutral;
     }
 
@@ -706,11 +708,11 @@ export class NodeMaterialBlock {
             }
 
             if (this.target !== NodeMaterialBlockTargets.Neutral) {
-                if ((input.target & this.target!) === 0) {
+                if ((input.target & this.target) === 0) {
                     continue;
                 }
 
-                if ((input.target & state.target!) === 0) {
+                if ((input.target & state.target) === 0) {
                     continue;
                 }
             }

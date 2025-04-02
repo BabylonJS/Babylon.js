@@ -579,8 +579,8 @@ export class FluidRenderer {
             }
         });
 
-        (this.renderObjects as Array<IFluidRenderingRenderObject>) = [];
-        (this.targetRenderers as FluidRenderingTargetRenderer[]) = [];
+        this.renderObjects.length = 0;
+        this.targetRenderers.length = 0;
         this._cameras.clear();
     }
 }

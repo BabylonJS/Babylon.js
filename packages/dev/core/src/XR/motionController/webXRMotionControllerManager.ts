@@ -110,7 +110,7 @@ export class WebXRMotionControllerManager {
      * @param forceProfile force a certain profile for this controller
      * @returns A promise that fulfils with the motion controller class for this profile id or the generic standard class if none was found
      */
-    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): Promise<WebXRAbstractMotionController> {
+    public static async GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): Promise<WebXRAbstractMotionController> {
         const profileArray: string[] = [];
         if (forceProfile) {
             profileArray.push(forceProfile);
@@ -185,7 +185,7 @@ export class WebXRMotionControllerManager {
      * Will update the list of profiles available in the repository
      * @returns a promise that resolves to a map of profiles available online
      */
-    public static UpdateProfilesList() {
+    public static async UpdateProfilesList() {
         this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + "/profiles/profilesList.json", false).then((data) => {
             return JSON.parse(data);
         });
@@ -204,9 +204,9 @@ export class WebXRMotionControllerManager {
         controllerCache.length = 0;
     }
 
-    private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
+    private static async _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
         return Promise.resolve()
-            .then(() => {
+            .then(async () => {
                 if (!this._ProfilesList) {
                     return this.UpdateProfilesList();
                 } else {
@@ -227,7 +227,7 @@ export class WebXRMotionControllerManager {
 
                 throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
             })
-            .then((profileToLoad: string) => {
+            .then(async (profileToLoad: string) => {
                 // load the profile
                 if (!this._ProfileLoadingPromises[profileToLoad]) {
                     this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then(
@@ -241,7 +241,7 @@ export class WebXRMotionControllerManager {
             });
     }
 
-    private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
+    private static async _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
         // check fallbacks
         for (let i = 0; i < profileArray.length; ++i) {
             // defensive

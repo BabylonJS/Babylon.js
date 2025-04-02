@@ -397,7 +397,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
                 this._colorShader._preBind(drawWrapperBack);
 
-                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
 
                 // Back
                 if (useReverseDepthBuffer) {
@@ -419,7 +419,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             this._colorShader._preBind(drawWrapperFront);
 
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
 
             // Front
             if (useReverseDepthBuffer) {

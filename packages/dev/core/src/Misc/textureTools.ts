@@ -7,7 +7,6 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
-import type { AbstractEngine } from "../Engines/abstractEngine";
 import { ShaderLanguage } from "core/Materials";
 
 /**
@@ -96,7 +95,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
  * @param height height of the output texture. If not provided, use the one from internalTexture
  * @returns a promise with the internalTexture having its texture replaced by the result of the processing
  */
-export function ApplyPostProcess(
+export async function ApplyPostProcess(
     postProcessName: string,
     internalTexture: InternalTexture,
     scene: Scene,
@@ -107,7 +106,7 @@ export function ApplyPostProcess(
     height?: number
 ): Promise<InternalTexture> {
     // Gets everything ready.
-    const engine = internalTexture.getEngine() as AbstractEngine;
+    const engine = internalTexture.getEngine();
 
     internalTexture.isReady = false;
 
@@ -128,7 +127,7 @@ export function ApplyPostProcess(
 
         // Hold the output of the decoding.
         const encodedTexture = engine.createRenderTargetTexture(
-            { width: width as number, height: height as number },
+            { width: width, height: height },
             {
                 generateDepthBuffer: false,
                 generateMipMaps: false,
@@ -146,7 +145,7 @@ export function ApplyPostProcess(
                     effect._bindTexture("textureSampler", internalTexture);
                     effect.setFloat2("scale", 1, 1);
                 };
-                scene.postProcessManager.directRender([postProcess!], encodedTexture, true);
+                scene.postProcessManager.directRender([postProcess], encodedTexture, true);
 
                 // Cleanup
                 engine.restoreDefaultFramebuffer();

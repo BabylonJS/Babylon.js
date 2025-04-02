@@ -470,7 +470,7 @@ export class VertexData implements IVertexDataLike {
         }
 
         if (this.colors) {
-            const stride = this.positions && this.colors.length === this.positions!.length ? 3 : 4;
+            const stride = this.positions && this.colors.length === this.positions.length ? 3 : 4;
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable, stride);
             if (this.hasVertexAlpha && (meshOrGeometry as any).hasVertexAlpha !== undefined) {
                 (meshOrGeometry as any).hasVertexAlpha = true;
@@ -2186,10 +2186,10 @@ export class VertexData implements IVertexDataLike {
                 const block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
                 const block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
 
-                options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] : new Array();
-                options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] : new Array();
-                options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] : new Array();
-                options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] : new Array();
+                options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] : [];
+                options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] : [];
+                options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] : [];
+                options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] : [];
 
                 // push each facet index in each block containing the vertex
                 options.facetPartitioning[block_idx_v1].push(index);

@@ -177,7 +177,7 @@ export class PolygonMeshBuilder {
 
         let points: Vector2[];
         if (contours instanceof Path2) {
-            points = (<Path2>contours).getPoints();
+            points = contours.getPoints();
         } else {
             points = <Vector2[]>contours;
         }

@@ -459,7 +459,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param hapticActuatorIndex optional index of actuator (will usually be 0)
      * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
      */
-    public pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
+    public async pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
         if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
             return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
         } else {

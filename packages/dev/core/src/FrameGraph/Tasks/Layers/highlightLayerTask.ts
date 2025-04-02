@@ -37,7 +37,7 @@ export class FrameGraphHighlightLayerTask extends FrameGraphBaseLayerTask {
         }
 
         const depthTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.objectRendererTask.depthTexture);
-        if (!depthTextureCreationOptions.options.formats || !HasStencilAspect(depthTextureCreationOptions.options.formats![0])) {
+        if (!depthTextureCreationOptions.options.formats || !HasStencilAspect(depthTextureCreationOptions.options.formats[0])) {
             throw new Error(`FrameGraphHighlightLayerTask "${this.name}": objectRendererTask depthTexture must have a stencil aspect`);
         }
 

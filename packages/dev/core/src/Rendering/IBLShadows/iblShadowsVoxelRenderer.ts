@@ -599,14 +599,18 @@ export class _IblShadowsVoxelRenderer {
     private _removeVoxelRTs(rts: RenderTargetTexture[]) {
         // const currentRTs = this._scene.customRenderTargets;
         const rtIdx = this._renderTargets.findIndex((rt) => {
-            if (rt === rts[0]) return true;
+            if (rt === rts[0]) {
+                return true;
+            }
             return false;
         });
         if (rtIdx >= 0) {
             this._renderTargets.splice(rtIdx, rts.length);
         } else {
             const rtIdx = this._scene.customRenderTargets.findIndex((rt) => {
-                if (rt === rts[0]) return true;
+                if (rt === rts[0]) {
+                    return true;
+                }
                 return false;
             });
             if (rtIdx >= 0) {

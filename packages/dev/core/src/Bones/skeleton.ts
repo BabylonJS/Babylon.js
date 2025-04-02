@@ -904,7 +904,9 @@ export class Skeleton implements IAnimatable {
         visited[index] = true;
 
         const bone = this.bones[index];
-        if (!bone) return;
+        if (!bone) {
+            return;
+        }
 
         if (bone._index === undefined) {
             bone._index = index;

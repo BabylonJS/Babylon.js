@@ -7,7 +7,6 @@ import type { Matrix } from "../Maths/math.vector";
 import { Vector3, TmpVectors } from "../Maths/math.vector";
 import type { IDisposable, Scene } from "../scene";
 import type { Observer } from "../Misc/observable";
-import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Camera } from "../Cameras/camera";
@@ -1006,7 +1005,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         // VBOs
-        engine.bindBuffers(useBuffersWithInstances ? this._buffersForInstances : this._buffers, this._ib, <Effect>this._lineShader.getEffect());
+        engine.bindBuffers(useBuffersWithInstances ? this._buffersForInstances : this._buffers, this._ib, this._lineShader.getEffect());
 
         scene.resetCachedMaterial();
         this._lineShader.setColor4("color", this._source.edgesColor);

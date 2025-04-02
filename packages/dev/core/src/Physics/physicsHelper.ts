@@ -632,7 +632,7 @@ class PhysicsGravitationalFieldEvent {
         } else {
             const radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._options);
             if (radialExplosionEvent) {
-                this._sphere = <Mesh>radialExplosionEvent.getData().sphere?.clone("radialExplosionEventSphereClone");
+                this._sphere = radialExplosionEvent.getData().sphere?.clone("radialExplosionEventSphereClone");
             }
         }
     }

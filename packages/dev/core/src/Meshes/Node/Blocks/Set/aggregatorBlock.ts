@@ -169,27 +169,27 @@ export class AggregatorBlock extends NodeGeometryBlock implements INodeGeometryE
             switch (this.source.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    returnValue = (context as number[]).reduce(func!);
+                    returnValue = (context as number[]).reduce(func);
                     break;
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    const x = (context as Vector2[]).map((v) => v.x).reduce(func!);
-                    const y = (context as Vector2[]).map((v) => v.y).reduce(func!);
+                    const x = (context as Vector2[]).map((v) => v.x).reduce(func);
+                    const y = (context as Vector2[]).map((v) => v.y).reduce(func);
                     returnValue = new Vector2(x, y);
                     break;
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    const x = (context as Vector3[]).map((v) => v.x).reduce(func!);
-                    const y = (context as Vector3[]).map((v) => v.y).reduce(func!);
-                    const z = (context as Vector3[]).map((v) => v.z).reduce(func!);
+                    const x = (context as Vector3[]).map((v) => v.x).reduce(func);
+                    const y = (context as Vector3[]).map((v) => v.y).reduce(func);
+                    const z = (context as Vector3[]).map((v) => v.z).reduce(func);
                     returnValue = new Vector3(x, y, z);
                     break;
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    const x = (context as Vector4[]).map((v) => v.x).reduce(func!);
-                    const y = (context as Vector4[]).map((v) => v.y).reduce(func!);
-                    const z = (context as Vector4[]).map((v) => v.z).reduce(func!);
-                    const w = (context as Vector4[]).map((v) => v.w).reduce(func!);
+                    const x = (context as Vector4[]).map((v) => v.x).reduce(func);
+                    const y = (context as Vector4[]).map((v) => v.y).reduce(func);
+                    const z = (context as Vector4[]).map((v) => v.z).reduce(func);
+                    const w = (context as Vector4[]).map((v) => v.w).reduce(func);
                     returnValue = new Vector4(x, y, z, w);
                     break;
                 }

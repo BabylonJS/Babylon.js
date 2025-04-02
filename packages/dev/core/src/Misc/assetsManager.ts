@@ -3,7 +3,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
-import { ImportAnimationsAsync, ImportMeshAsync, LoadAssetContainerAsync, SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
+import { ImportAnimationsAsync, ImportMeshAsync, LoadAssetContainerAsync, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";

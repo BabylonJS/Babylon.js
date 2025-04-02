@@ -56,7 +56,7 @@ export class WebGPUTintWASM {
         }
 
         if ((self as any).twgsl) {
-            WebGPUTintWASM._Twgsl = await (self as any).twgsl(Tools.GetBabylonScriptURL(twgslOptions!.wasmPath!));
+            WebGPUTintWASM._Twgsl = await (self as any).twgsl(Tools.GetBabylonScriptURL(twgslOptions.wasmPath!));
             return Promise.resolve();
         }
 

@@ -1337,7 +1337,7 @@ export class NodeMaterial extends PushMaterial {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
                 TimingTools.SetImmediate(() =>
-                    postProcess!.updateEffect(
+                    postProcess.updateEffect(
                         defines.toString(),
                         this._fragmentCompilationState.uniforms,
                         this._fragmentCompilationState.samplers,
@@ -1514,7 +1514,7 @@ export class NodeMaterial extends PushMaterial {
 
                 tempName = this.name + this._buildId + "_" + blendMode;
 
-                defines!.markAllAsDirty();
+                defines.markAllAsDirty();
 
                 buildId = this._buildId;
             }
@@ -1526,11 +1526,11 @@ export class NodeMaterial extends PushMaterial {
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
             if (particleSystemDefinesJoinedCurrent !== join) {
-                defines!.markAllAsDirty();
+                defines.markAllAsDirty();
                 join = particleSystemDefinesJoinedCurrent;
             }
 
-            const result = this._processDefines(dummyMesh!, defines!);
+            const result = this._processDefines(dummyMesh, defines);
 
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, undefined, this.shaderLanguage);
@@ -1541,7 +1541,7 @@ export class NodeMaterial extends PushMaterial {
                         tempName,
                         this._fragmentCompilationState.uniforms,
                         this._fragmentCompilationState.samplers,
-                        defines!.toString() + "\n" + join,
+                        defines.toString() + "\n" + join,
                         result?.fallbacks,
                         onCompiled,
                         onError,
@@ -2024,7 +2024,7 @@ export class NodeMaterial extends PushMaterial {
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
-    public edit(config?: INodeMaterialEditorOptions): Promise<void> {
+    public async edit(config?: INodeMaterialEditorOptions): Promise<void> {
         return new Promise((resolve) => {
             this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
             if (typeof this.BJSNODEMATERIALEDITOR == "undefined") {
@@ -2564,7 +2564,7 @@ export class NodeMaterial extends PushMaterial {
      * Awaits for all the material textures to be ready before resolving the returned promise.
      * @returns A promise that resolves when the textures are ready.
      */
-    public whenTexturesReadyAsync(): Promise<void[]> {
+    public async whenTexturesReadyAsync(): Promise<void[]> {
         // Ensures all textures are ready to render.
         const textureReadyPromises: Promise<void>[] = [];
         this.getActiveTextures().forEach((texture) => {
@@ -2648,7 +2648,7 @@ export class NodeMaterial extends PushMaterial {
      * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromSnippetAsync(
+    public static async ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene = EngineStore.LastCreatedScene!,
         rootUrl: string = "",

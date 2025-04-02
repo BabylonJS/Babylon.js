@@ -759,7 +759,7 @@ export class NullEngine extends Engine {
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         } else {
-            fullOptions.generateMipMaps = <boolean>options;
+            fullOptions.generateMipMaps = options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;

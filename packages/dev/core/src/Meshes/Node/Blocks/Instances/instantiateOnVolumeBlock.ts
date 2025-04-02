@@ -196,7 +196,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             let instanceGeometry: Nullable<VertexData> = null;
             const instanceCount = this.count.getConnectedValue(state);
             const additionalVertexData: VertexData[] = [];
-            const boundingInfo = extractMinAndMax(this._vertexData.positions!, 0, this._vertexData.positions!.length / 3);
+            const boundingInfo = extractMinAndMax(this._vertexData.positions, 0, this._vertexData.positions.length / 3);
             const min = boundingInfo.minimum;
             const max = boundingInfo.maximum;
             const direction = new Vector3(0.5, 0.8, 0.2);
@@ -258,9 +258,9 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
                 let intersectionCount = 0;
                 for (let currentFaceIndex = 0; currentFaceIndex < faceCount; currentFaceIndex++) {
                     // Extract face vertices
-                    this._vertex0.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3] * 3);
-                    this._vertex1.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3 + 1] * 3);
-                    this._vertex2.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3 + 2] * 3);
+                    this._vertex0.fromArray(this._vertexData.positions, this._vertexData.indices[currentFaceIndex * 3] * 3);
+                    this._vertex1.fromArray(this._vertexData.positions, this._vertexData.indices[currentFaceIndex * 3 + 1] * 3);
+                    this._vertex2.fromArray(this._vertexData.positions, this._vertexData.indices[currentFaceIndex * 3 + 2] * 3);
 
                     const currentIntersectInfo = ray.intersectsTriangle(this._vertex0, this._vertex1, this._vertex2);
 
@@ -281,7 +281,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
                 if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
                     continue;
                 }
-                const clone = instanceGeometry!.clone();
+                const clone = instanceGeometry.clone();
 
                 if (this.matrix.isConnected) {
                     const transform = this.matrix.getConnectedValue(state);

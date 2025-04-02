@@ -243,7 +243,7 @@ export const LoadImage = (
         LoadFile(
             url,
             (data) => {
-                engine!
+                engine
                     .createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions })
                     .then((imgBmp) => {
                         onLoad(imgBmp);
@@ -844,36 +844,36 @@ export let FileTools: {
     IsFileURL: () => boolean;
     LoadFile: (
         fileOrUrl: string | File,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string | undefined) => void,
-        onProgress?: ((ev: ProgressEvent<EventTarget>) => void) | undefined,
-        offlineProvider?: IOfflineProvider | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((request?: WebRequest | undefined, exception?: LoadFileError | undefined) => void) | undefined,
-        onOpened?: ((request: WebRequest) => void) | undefined
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (ev: ProgressEvent<EventTarget>) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void,
+        onOpened?: (request: WebRequest) => void
     ) => IFileRequest;
     LoadImage: (
         input: string | ArrayBuffer | Blob | ArrayBufferView,
         onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-        onError: (message?: string | undefined, exception?: any) => void,
+        onError: (message?: string, exception?: any) => void,
         offlineProvider: Nullable<IOfflineProvider>,
-        mimeType?: string | undefined,
-        imageBitmapOptions?: ImageBitmapOptions | undefined
+        mimeType?: string,
+        imageBitmapOptions?: ImageBitmapOptions
     ) => Nullable<HTMLImageElement>;
     ReadFile: (
         file: File,
         onSuccess: (data: any) => void,
-        onProgress?: ((ev: ProgressEvent<EventTarget>) => any) | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((error: ReadFileError) => void) | undefined
+        onProgress?: (ev: ProgressEvent<EventTarget>) => any,
+        useArrayBuffer?: boolean,
+        onError?: (error: ReadFileError) => void
     ) => IFileRequest;
     RequestFile: (
         url: string,
-        onSuccess: (data: string | ArrayBuffer, request?: WebRequest | undefined) => void,
-        onProgress?: ((event: ProgressEvent<EventTarget>) => void) | undefined,
-        offlineProvider?: IOfflineProvider | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((error: RequestFileError) => void) | undefined,
-        onOpened?: ((request: WebRequest) => void) | undefined
+        onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
+        onProgress?: (event: ProgressEvent<EventTarget>) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (error: RequestFileError) => void,
+        onOpened?: (request: WebRequest) => void
     ) => IFileRequest;
     SetCorsBehavior: (url: string | string[], element: { crossOrigin: string | null }) => void;
 };
@@ -888,36 +888,36 @@ export const _injectLTSFileTools = (
     IsFileURL: () => boolean,
     LoadFile: (
         fileOrUrl: string | File,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string | undefined) => void,
-        onProgress?: ((ev: ProgressEvent<EventTarget>) => void) | undefined,
-        offlineProvider?: IOfflineProvider | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((request?: WebRequest | undefined, exception?: LoadFileError | undefined) => void) | undefined,
-        onOpened?: ((request: WebRequest) => void) | undefined
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (ev: ProgressEvent<EventTarget>) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void,
+        onOpened?: (request: WebRequest) => void
     ) => IFileRequest,
     LoadImage: (
         input: string | ArrayBuffer | ArrayBufferView | Blob,
         onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-        onError: (message?: string | undefined, exception?: any) => void,
+        onError: (message?: string, exception?: any) => void,
         offlineProvider: Nullable<IOfflineProvider>,
         mimeType?: string,
-        imageBitmapOptions?: ImageBitmapOptions | undefined
+        imageBitmapOptions?: ImageBitmapOptions
     ) => Nullable<HTMLImageElement>,
     ReadFile: (
         file: File,
         onSuccess: (data: any) => void,
-        onProgress?: ((ev: ProgressEvent<EventTarget>) => any) | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((error: ReadFileError) => void) | undefined
+        onProgress?: (ev: ProgressEvent<EventTarget>) => any,
+        useArrayBuffer?: boolean,
+        onError?: (error: ReadFileError) => void
     ) => IFileRequest,
     RequestFile: (
         url: string,
-        onSuccess: (data: string | ArrayBuffer, request?: WebRequest | undefined) => void,
-        onProgress?: ((event: ProgressEvent<EventTarget>) => void) | undefined,
-        offlineProvider?: IOfflineProvider | undefined,
-        useArrayBuffer?: boolean | undefined,
-        onError?: ((error: RequestFileError) => void) | undefined,
-        onOpened?: ((request: WebRequest) => void) | undefined
+        onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
+        onProgress?: (event: ProgressEvent<EventTarget>) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (error: RequestFileError) => void,
+        onOpened?: (request: WebRequest) => void
     ) => IFileRequest,
     SetCorsBehavior: (url: string | string[], element: { crossOrigin: string | null }) => void
 ) => {

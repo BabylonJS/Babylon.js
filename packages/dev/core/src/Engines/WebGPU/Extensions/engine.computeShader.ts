@@ -46,7 +46,7 @@ WebGPUEngine.prototype.createComputeEffect = function (baseName: string | (IComp
 
     const name = compute + "@" + options.defines;
     if (this._compiledComputeEffects[name]) {
-        const compiledEffect = <ComputeEffect>this._compiledComputeEffects[name];
+        const compiledEffect = this._compiledComputeEffects[name];
         if (options.onCompiled && compiledEffect.isReady()) {
             options.onCompiled(compiledEffect);
         }

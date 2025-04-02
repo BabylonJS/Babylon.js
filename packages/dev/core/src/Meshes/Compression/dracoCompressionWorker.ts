@@ -202,7 +202,7 @@ export function DecodeMesh(
                     decoderModule._free(ptr);
                 }
 
-                geometry = mesh as Mesh;
+                geometry = mesh;
                 break;
             }
             case decoderModule.POINT_CLOUD: {
@@ -212,7 +212,7 @@ export function DecodeMesh(
                     throw new Error(status.error_msg());
                 }
 
-                geometry = pointCloud as PointCloud;
+                geometry = pointCloud;
                 break;
             }
             default: {
@@ -350,7 +350,7 @@ export { DecoderWorkerFunction as workerFunction };
  * @param moduleUrl The url to the draco decoder module (optional)
  * @returns A promise that resolves when the worker is initialized
  */
-export function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
+export async function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
     return new Promise<Worker>((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);

@@ -1138,7 +1138,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise that resolves when the operation is complete
      */
 
-    public loadDataAsync(data: ArrayBuffer): Promise<void> {
+    public async loadDataAsync(data: ArrayBuffer): Promise<void> {
         return this.updateDataAsync(data);
     }
 
@@ -1148,7 +1148,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise that resolves when the operation is complete
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
-    public loadFileAsync(url: string): Promise<void> {
+    public async loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
             (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: PLYConversionBuffers) => {
                 this.updateDataAsync(splatsData.buffer, splatsData.sh);
@@ -1444,7 +1444,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
 
             // sort will be dirty here as just finished filled positions will not be sorted
-            const positions = Float32Array.from(this._splatPositions!);
+            const positions = Float32Array.from(this._splatPositions);
             const vertexCount = this._vertexCount;
             this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
             this._sortIsDirty = true;
