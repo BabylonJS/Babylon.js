@@ -55,6 +55,7 @@ export class GraphNode {
     private _ownerCanvas: GraphCanvasComponent;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
+    private _isDeletable = true;
     private _enclosingFrameId = -1;
     private _visualPropertiesRefresh: Array<() => void> = [];
     private _lastClick = 0.0;
@@ -73,6 +74,20 @@ export class GraphNode {
 
     public get isVisible() {
         return this._isVisible;
+    }
+
+    /**
+     * If the node can be deleted or not. Default is true.
+     */
+    public get isDeletable() {
+        return this._isDeletable;
+    }
+
+    /**
+     * Sets if the node can be deleted or not. Default is true.
+     */
+    public set isDeletable(value: boolean) {
+        this._isDeletable = value;
     }
 
     public set isVisible(value: boolean) {

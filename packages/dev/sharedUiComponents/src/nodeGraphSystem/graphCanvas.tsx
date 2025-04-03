@@ -397,8 +397,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         let needRebuild = false;
 
         if (selectedItems.length > 0) {
-            needRebuild = true;
             for (const selectedItem of selectedItems) {
+                if (!selectedItem.isDeletable) {
+                    continue;
+                }
+                needRebuild = true;
+
                 if (autoReconnect) {
                     this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
                 }
