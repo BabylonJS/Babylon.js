@@ -131,8 +131,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
         return this._packedFloat;
     }
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
         this._drawWrapper.effect!.setFloat2("delta", (1 / this.textureWidth) * this.direction.x, (1 / this.textureHeight) * this.direction.y);
     }
 
