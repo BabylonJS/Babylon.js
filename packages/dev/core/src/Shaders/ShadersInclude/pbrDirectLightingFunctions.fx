@@ -5,7 +5,7 @@ struct lightingInfo
 {
     vec3 diffuse;
     #ifdef SS_TRANSLUCENCY
-        vec3 transmission;
+        vec3 diffuseTransmission;
     #endif
     #ifdef SPECULARTERM
         vec3 specular;
