@@ -376,6 +376,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * When the mesh is loaded, the onModelLoadedObservable will be triggered
      * @returns A promise fulfilled with the result of the model loading
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async loadModel(): Promise<boolean> {
         const useGeneric = !this._getModelLoadingConstraints();
         let loadingParams = this._getGenericFilenameAndPath();
@@ -459,6 +460,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param hapticActuatorIndex optional index of actuator (will usually be 0)
      * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
         if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
             return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);

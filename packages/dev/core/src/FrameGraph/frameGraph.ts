@@ -7,7 +7,7 @@ import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 
 enum FrameGraphPassType {
@@ -230,7 +230,7 @@ export class FrameGraph {
     public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
         return new Promise((resolve) => {
-            this._whenReadyAsyncCancel = _retryWithInterval(
+            this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();
                     for (const task of this._tasks) {

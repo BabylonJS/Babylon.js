@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { HighestCommonFactor } from "../Maths/math.scalar.functions";
 import { PHI } from "../Maths/math.constants";

@@ -37,6 +37,7 @@ declare module "../scene" {
 }
 
 declare module "../Materials/Textures/renderTargetTexture" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface RenderTargetTexture {
         /**
          * Gets or sets a boolean indicating that the prepass renderer should not be used with this render target

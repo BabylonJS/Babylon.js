@@ -111,6 +111,7 @@ export interface ISpriteManager extends IDisposable {
 /**
  * Options for the SpriteManager
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SpriteManagerOptions {
     /** Options for the sprite renderer */
     spriteRendererOptions: SpriteRendererOptions;
@@ -307,7 +308,7 @@ export class SpriteManager implements ISpriteManager {
         epsilon: number = 0.01,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         fromPacked: boolean = false,
-        spriteJSON: any | null = null,
+        spriteJSON: null = null,
         options?: SpriteManagerOptions
     ) {
         if (!scene) {

@@ -496,6 +496,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param rate the new framerate. This value needs to be in the supportedFrameRates array
      * @returns a promise that resolves once the framerate has been set
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async updateTargetFrameRate(rate: number): Promise<void> {
         return this.session.updateTargetFrameRate(rate);
     }

@@ -20,7 +20,7 @@ import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -437,7 +437,7 @@ export class ComputeShader {
      */
     public async dispatchWhenReady(x: number, y?: number, z?: number, delay = 10): Promise<void> {
         return new Promise((resolve) => {
-            _retryWithInterval(() => this.dispatch(x, y, z), resolve, undefined, delay);
+            _RetryWithInterval(() => this.dispatch(x, y, z), resolve, undefined, delay);
         });
     }
 

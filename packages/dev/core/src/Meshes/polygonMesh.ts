@@ -9,6 +9,7 @@ import { Path2 } from "../Maths/math.path";
 import { Epsilon } from "../Maths/math.constants";
 import { EngineStore } from "../Engines/engineStore";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let earcut: any;
 /**
  * Vector2 wth index property
@@ -331,33 +332,33 @@ export class PolygonMeshBuilder {
                 vn = vn.scale(-1);
             }
 
-            const vc_norm = vc.normalizeToNew();
-            let vp_norm = vp.normalizeToNew();
-            let vn_norm = vn.normalizeToNew();
+            const vcNorm = vc.normalizeToNew();
+            let vpNorm = vp.normalizeToNew();
+            let vnNorm = vn.normalizeToNew();
 
-            const dotp = Vector3.Dot(vp_norm, vc_norm);
+            const dotp = Vector3.Dot(vpNorm, vcNorm);
             if (dotp > smoothingThreshold) {
                 if (dotp < Epsilon - 1) {
-                    vp_norm = new Vector3(p.x, 0, p.y).subtract(new Vector3(p1.x, 0, p1.y)).normalize();
+                    vpNorm = new Vector3(p.x, 0, p.y).subtract(new Vector3(p1.x, 0, p1.y)).normalize();
                 } else {
                     // cheap average weighed by side length
-                    vp_norm = vp.add(vc).normalize();
+                    vpNorm = vp.add(vc).normalize();
                 }
             } else {
-                vp_norm = vc_norm;
+                vpNorm = vcNorm;
             }
 
             const dotn = Vector3.Dot(vn, vc);
             if (dotn > smoothingThreshold) {
                 if (dotn < Epsilon - 1) {
                     // back to back
-                    vn_norm = new Vector3(p1.x, 0, p1.y).subtract(new Vector3(p.x, 0, p.y)).normalize();
+                    vnNorm = new Vector3(p1.x, 0, p1.y).subtract(new Vector3(p.x, 0, p.y)).normalize();
                 } else {
                     // cheap average weighed by side length
-                    vn_norm = vn.add(vc).normalize();
+                    vnNorm = vn.add(vc).normalize();
                 }
             } else {
-                vn_norm = vc_norm;
+                vnNorm = vcNorm;
             }
 
             uvs.push(ulength / bounds.width, 0);
@@ -366,10 +367,10 @@ export class PolygonMeshBuilder {
             uvs.push(ulength / bounds.width, 0);
             uvs.push(ulength / bounds.width, 1);
 
-            normals.push(vp_norm.x, vp_norm.y, vp_norm.z);
-            normals.push(vp_norm.x, vp_norm.y, vp_norm.z);
-            normals.push(vn_norm.x, vn_norm.y, vn_norm.z);
-            normals.push(vn_norm.x, vn_norm.y, vn_norm.z);
+            normals.push(vpNorm.x, vpNorm.y, vpNorm.z);
+            normals.push(vpNorm.x, vpNorm.y, vpNorm.z);
+            normals.push(vnNorm.x, vnNorm.y, vnNorm.z);
+            normals.push(vnNorm.x, vnNorm.y, vnNorm.z);
 
             if (!flip) {
                 indices.push(startIndex);

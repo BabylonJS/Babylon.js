@@ -20,7 +20,7 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
  */
 
-const controllerCache: Array<{
+const ControllerCache: Array<{
     filename: string;
     path: string;
     meshes: AbstractMesh[];
@@ -144,15 +144,15 @@ export class WebXRMotionControllerManager {
         }
 
         if (this.UseOnlineRepository) {
-            const firstFunction = this.PrioritizeOnlineRepository ? this._LoadProfileFromRepository : this._LoadProfilesFromAvailableControllers;
-            const secondFunction = this.PrioritizeOnlineRepository ? this._LoadProfilesFromAvailableControllers : this._LoadProfileFromRepository;
+            const firstFunction = this.PrioritizeOnlineRepository ? this._LoadProfileFromRepositoryAsync : this._LoadProfilesFromAvailableControllersAsync;
+            const secondFunction = this.PrioritizeOnlineRepository ? this._LoadProfilesFromAvailableControllersAsync : this._LoadProfileFromRepositoryAsync;
 
             return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
                 return secondFunction.call(this, profileArray, xrInput, scene);
             });
         } else {
             // use only available functions
-            return this._LoadProfilesFromAvailableControllers(profileArray, xrInput, scene);
+            return this._LoadProfilesFromAvailableControllersAsync(profileArray, xrInput, scene);
         }
     }
 
@@ -185,6 +185,7 @@ export class WebXRMotionControllerManager {
      * Will update the list of profiles available in the repository
      * @returns a promise that resolves to a map of profiles available online
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async UpdateProfilesList() {
         this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + "/profiles/profilesList.json", false).then((data) => {
             return JSON.parse(data);
@@ -196,15 +197,15 @@ export class WebXRMotionControllerManager {
      * Clear the controller's cache (usually happens at the end of a session)
      */
     public static ClearControllerCache() {
-        controllerCache.forEach((cacheItem) => {
+        ControllerCache.forEach((cacheItem) => {
             cacheItem.meshes.forEach((mesh) => {
                 mesh.dispose(false, true);
             });
         });
-        controllerCache.length = 0;
+        ControllerCache.length = 0;
     }
 
-    private static async _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
+    private static async _LoadProfileFromRepositoryAsync(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
         return Promise.resolve()
             .then(async () => {
                 if (!this._ProfilesList) {
@@ -237,11 +238,11 @@ export class WebXRMotionControllerManager {
                 return this._ProfileLoadingPromises[profileToLoad];
             })
             .then((profile: IMotionControllerProfile) => {
-                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl, this.DisableControllerCache ? undefined : controllerCache);
+                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl, this.DisableControllerCache ? undefined : ControllerCache);
             });
     }
 
-    private static async _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
+    private static async _LoadProfilesFromAvailableControllersAsync(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
         // check fallbacks
         for (let i = 0; i < profileArray.length; ++i) {
             // defensive

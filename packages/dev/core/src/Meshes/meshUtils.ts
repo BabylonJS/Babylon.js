@@ -4,7 +4,7 @@ import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { FloatArray, Nullable } from "../types";
 import type { AbstractMesh } from "./abstractMesh";
 
-function getExtentCorners(extent: { minimum: Vector3; maximum: Vector3 }): Array<Vector3> {
+function GetExtentCorners(extent: { minimum: Vector3; maximum: Vector3 }): Array<Vector3> {
     const minX = extent.minimum.x;
     const minY = extent.minimum.y;
     const minZ = extent.minimum.z;
@@ -30,6 +30,7 @@ function getExtentCorners(extent: { minimum: Vector3; maximum: Vector3 }): Array
  * @param animationStep An optional value indicating the number of seconds to step while looping through the given animation group
  * @returns An array of world space extents corresponding to the given meshes
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function computeMaxExtents(
     meshes: Array<AbstractMesh>,
     animationGroup: Nullable<AnimationGroup> = null,
@@ -137,7 +138,7 @@ export function computeMaxExtents(
     for (const mesh of meshes) {
         const extent = meshExtents.get(mesh.uniqueId);
         if (extent) {
-            meshCorners.set(mesh.uniqueId, getExtentCorners(extent));
+            meshCorners.set(mesh.uniqueId, GetExtentCorners(extent));
         } else {
             const perBoneExtents = skinnedMeshExtents.get(mesh.uniqueId);
             if (perBoneExtents) {
@@ -147,7 +148,7 @@ export function computeMaxExtents(
                 skinnedMeshCorners.set(mesh.uniqueId, perBoneCorners);
 
                 perBoneExtents.forEach((extent, boneIndex) => {
-                    const corners = getExtentCorners(extent);
+                    const corners = GetExtentCorners(extent);
 
                     // Transform the coordinates of the corners for skinned meshes to bone space.
                     const inverseBindMatrix = bones[boneIndex].getAbsoluteInverseBindMatrix();

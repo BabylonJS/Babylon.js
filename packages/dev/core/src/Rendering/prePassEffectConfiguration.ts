@@ -3,6 +3,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 /**
  * Interface for defining prepass effects in the prepass post-process pipeline
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PrePassEffectConfiguration {
     /**
      * Name of the effect

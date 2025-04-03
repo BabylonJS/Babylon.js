@@ -39,6 +39,7 @@ AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedParticle
 });
 
 declare module "../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Create an effect to use with particle systems.
@@ -133,6 +134,7 @@ AbstractEngine.prototype.createEffectForParticles = function (
 };
 
 declare module "../Meshes/mesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
          * Returns an array populated with IParticleSystem objects whose the mesh is the emitter

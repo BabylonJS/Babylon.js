@@ -27,6 +27,7 @@ declare module "../scene" {
 }
 
 declare module "../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /**
          * Gets the edgesRenderer associated with the mesh
@@ -57,6 +58,7 @@ Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
 });
 
 declare module "../Meshes/linesMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface LinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -76,6 +78,7 @@ LinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVertic
 };
 
 declare module "../Meshes/linesMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface InstancedLinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.

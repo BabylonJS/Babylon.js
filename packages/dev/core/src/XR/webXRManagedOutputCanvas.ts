@@ -105,7 +105,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             this._removeCanvas();
         });
 
-        this._makeCanvasCompatibleAsync();
+        this._makeCanvasCompatible();
     }
 
     /**
@@ -117,7 +117,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         this.onXRLayerInitObservable.clear();
     }
 
-    private _makeCanvasCompatibleAsync() {
+    private _makeCanvasCompatible() {
         this._canvasCompatiblePromise = new Promise<void>((resolve, reject) => {
             // stay safe - make sure the context has the function
             try {

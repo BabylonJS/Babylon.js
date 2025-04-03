@@ -21,6 +21,7 @@ import type { Color4 } from "../../Maths/math.color";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let NODEGEOMETRYEDITOR: any;
 declare let BABYLON: any;
 
@@ -196,6 +197,7 @@ export class NodeGeometry {
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async edit(config?: INodeGeometryEditorOptions): Promise<void> {
         return new Promise((resolve) => {
             this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();

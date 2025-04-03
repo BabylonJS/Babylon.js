@@ -14,7 +14,7 @@ import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import type { Observer } from "../Misc/observable";
 import { RegisterClass } from "../Misc/typeStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines a sound that can be played in the application.
@@ -1119,7 +1119,7 @@ export class Sound {
     public clone(): Nullable<Sound> {
         if (!this._streaming) {
             const setBufferAndRun = () => {
-                _retryWithInterval(
+                _RetryWithInterval(
                     () => this._isReadyToPlay,
                     () => {
                         clonedSound._audioBuffer = this.getAudioBuffer();
@@ -1271,7 +1271,7 @@ export class Sound {
             scene.addPendingData(newSound);
         } else {
             const setBufferAndRun = () => {
-                _retryWithInterval(
+                _RetryWithInterval(
                     () => sourceSound._isReadyToPlay,
                     () => {
                         newSound._audioBuffer = sourceSound.getAudioBuffer();

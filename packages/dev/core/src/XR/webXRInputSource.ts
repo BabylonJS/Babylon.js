@@ -10,7 +10,7 @@ import type { WebXRCamera } from "./webXRCamera";
 import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Mesh } from "../Meshes/mesh";
 
-let idCount = 0;
+let IdCount = 0;
 
 /**
  * Configuration options for the WebXR controller creation
@@ -95,7 +95,7 @@ export class WebXRInputSource {
         public inputSource: XRInputSource,
         private _options: IWebXRControllerOptions = {}
     ) {
-        this._uniqueId = `controller-${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
+        this._uniqueId = `controller-${IdCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
 
         this.pointer = new Mesh(`${this._uniqueId}-pointer`, _scene);
         this.pointer.rotationQuaternion = new Quaternion();

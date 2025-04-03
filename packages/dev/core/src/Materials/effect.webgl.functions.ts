@@ -8,7 +8,7 @@ import { _GetGlobalDefines } from "core/Engines/abstractEngine.functions";
 import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Generate a pipeline context from the provided options
@@ -95,7 +95,7 @@ export async function generatePipelineContext(
                         if (!options.waitForIsReady || !pipeline.isAsync) {
                             resolve(pipeline);
                         } else {
-                            _retryWithInterval(
+                            _RetryWithInterval(
                                 () => _isRenderingStateCompiled(pipeline, context),
                                 () => resolve(pipeline),
                                 () => reject(new Error("Timeout while waiting for pipeline to be ready"))

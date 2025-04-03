@@ -8,6 +8,7 @@ import type { PhysicsRaycastResult } from "../physicsRaycastResult";
 /**
  * Interface used to describe a physics joint
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsImpostorJoint {
     /** Defines the main impostor to which the joint is linked */
     mainImpostor: PhysicsImpostor;

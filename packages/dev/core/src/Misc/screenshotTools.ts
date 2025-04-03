@@ -12,7 +12,7 @@ import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { _retryWithInterval } from "./timingTools";
+import { _RetryWithInterval } from "./timingTools";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -327,7 +327,7 @@ export function CreateScreenshotUsingRenderTarget(
     const dumpDataFunc = customDumpData || DumpData;
 
     const renderWhenReady = () => {
-        _retryWithInterval(
+        _RetryWithInterval(
             () => texture.isReadyForRendering() && camera.isReady(true),
             () => {
                 engine.onEndFrameObservable.addOnce(() => {

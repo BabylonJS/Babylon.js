@@ -18,6 +18,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 /**
  * Options for the SpriteRenderer
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SpriteRendererOptions {
     /**
      * Sets a boolean indicating if the renderer must render sprites with pixel perfect rendering.

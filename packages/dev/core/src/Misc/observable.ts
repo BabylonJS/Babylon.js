@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 
 declare const WeakRef: any;
 
-const isWeakRefSupported = typeof WeakRef !== "undefined";
+const IsWeakRefSupported = typeof WeakRef !== "undefined";
 
 /**
  * A class serves as a medium between the observable and its observers
@@ -240,7 +240,7 @@ export class Observable<T> {
         }
 
         // attach the remove function to the observer
-        const observableWeakRef = isWeakRefSupported ? new WeakRef(this) : { deref: () => this };
+        const observableWeakRef = IsWeakRefSupported ? new WeakRef(this) : { deref: () => this };
         observer._remove = () => {
             const observable = observableWeakRef.deref();
             if (observable) {

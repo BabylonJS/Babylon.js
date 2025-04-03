@@ -224,7 +224,7 @@ export const enum WebXRHandJoint {
 /** A type encapsulating a dictionary mapping WebXR joints to bone names in a rigged hand mesh.  */
 export type XRHandMeshRigMapping = { [webXRJointName in WebXRHandJoint]: string };
 
-const handJointReferenceArray: WebXRHandJoint[] = [
+const HandJointReferenceArray: WebXRHandJoint[] = [
     WebXRHandJoint.WRIST,
     WebXRHandJoint.THUMB_METACARPAL,
     WebXRHandJoint.THUMB_PHALANX_PROXIMAL,
@@ -252,7 +252,7 @@ const handJointReferenceArray: WebXRHandJoint[] = [
     WebXRHandJoint.PINKY_FINGER_TIP,
 ];
 
-const handPartsDefinition: { [key in HandPart]: WebXRHandJoint[] } = {
+const HandPartsDefinition: { [key in HandPart]: WebXRHandJoint[] } = {
     [HandPart.WRIST]: [WebXRHandJoint.WRIST],
     [HandPart.THUMB]: [WebXRHandJoint.THUMB_METACARPAL, WebXRHandJoint.THUMB_PHALANX_PROXIMAL, WebXRHandJoint.THUMB_PHALANX_DISTAL, WebXRHandJoint.THUMB_TIP],
     [HandPart.INDEX]: [
@@ -300,19 +300,19 @@ export class WebXRHand implements IDisposable {
     /**
      * Transform nodes that will directly receive the transforms from the WebXR matrix data.
      */
-    private _jointTransforms = new Array<TransformNode>(handJointReferenceArray.length);
+    private _jointTransforms = new Array<TransformNode>(HandJointReferenceArray.length);
 
     /**
      * The float array that will directly receive the transform matrix data from WebXR.
      */
-    private _jointTransformMatrices = new Float32Array(handJointReferenceArray.length * 16);
+    private _jointTransformMatrices = new Float32Array(HandJointReferenceArray.length * 16);
 
     private _tempJointMatrix = new Matrix();
 
     /**
      * The float array that will directly receive the joint radii from WebXR.
      */
-    private _jointRadii = new Float32Array(handJointReferenceArray.length);
+    private _jointRadii = new Float32Array(HandJointReferenceArray.length);
 
     /**
      * Get the hand mesh.
@@ -327,7 +327,7 @@ export class WebXRHand implements IDisposable {
      * @returns An array of meshes that correlate to the hand part requested.
      */
     public getHandPartMeshes(part: HandPart): AbstractMesh[] {
-        return handPartsDefinition[part].map((name) => this._jointMeshes[handJointReferenceArray.indexOf(name)]);
+        return HandPartsDefinition[part].map((name) => this._jointMeshes[HandJointReferenceArray.indexOf(name)]);
     }
 
     /**
@@ -336,7 +336,7 @@ export class WebXRHand implements IDisposable {
      * @returns An AbstractMesh whose position corresponds with the joint position.
      */
     public getJointMesh(jointName: WebXRHandJoint): AbstractMesh {
-        return this._jointMeshes[handJointReferenceArray.indexOf(jointName)];
+        return this._jointMeshes[HandJointReferenceArray.indexOf(jointName)];
     }
 
     /**
@@ -368,7 +368,7 @@ export class WebXRHand implements IDisposable {
 
         // Initialize the joint transform quaternions and link the transforms to the bones.
         for (let jointIdx = 0; jointIdx < this._jointTransforms.length; jointIdx++) {
-            this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene);
+            this._jointTransforms[jointIdx] = new TransformNode(HandJointReferenceArray[jointIdx], this._scene);
             this._jointTransforms[jointIdx].rotationQuaternion = new Quaternion();
 
             // Set the rotation quaternion so we can use it later for tracking.
@@ -414,7 +414,7 @@ export class WebXRHand implements IDisposable {
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
             const handMeshSkeleton = this._handMesh.skeleton;
-            handJointReferenceArray.forEach((jointName, jointIdx) => {
+            HandJointReferenceArray.forEach((jointName, jointIdx) => {
                 const jointBoneIdx = handMeshSkeleton.getBoneIndexByName(rigMapping ? rigMapping[jointName] : jointName);
                 if (jointBoneIdx !== -1) {
                     handMeshSkeleton.bones[jointBoneIdx].linkTransformNode(this._jointTransforms[jointIdx]);
@@ -438,7 +438,7 @@ export class WebXRHand implements IDisposable {
 
         // TODO: Modify webxr.d.ts to better match WebXR IDL so we don't need this any cast.
         const anyHand: any = hand;
-        const jointSpaces: XRJointSpace[] = handJointReferenceArray.map((jointName) => anyHand[jointName] || hand.get(jointName));
+        const jointSpaces: XRJointSpace[] = HandJointReferenceArray.map((jointName) => anyHand[jointName] || hand.get(jointName));
         let trackingSuccessful = false;
 
         if (xrFrame.fillPoses && xrFrame.fillJointRadii) {
@@ -462,7 +462,7 @@ export class WebXRHand implements IDisposable {
             return;
         }
 
-        handJointReferenceArray.forEach((_jointName, jointIdx) => {
+        HandJointReferenceArray.forEach((_jointName, jointIdx) => {
             const jointTransform = this._jointTransforms[jointIdx];
             Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
@@ -552,7 +552,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
             originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
-            for (let i = 0; i < handJointReferenceArray.length; ++i) {
+            for (let i = 0; i < HandJointReferenceArray.length; ++i) {
                 let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
                 if (featureOptions.jointMeshes?.onHandJointMeshGenerated) {
                     const returnedMesh = featureOptions.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, handedness);
@@ -586,7 +586,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         xrSessionManager: WebXRSessionManager,
         options?: IWebXRHandTrackingOptions
     ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
-        // eslint-disable-next-line no-async-promise-executor
+        // eslint-disable-next-line no-async-promise-executor, @typescript-eslint/no-misused-promises
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
             // check the cache, defensive
@@ -671,33 +671,33 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * @returns A mapping from XRHandJoint to bone name.
      */
     private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
-        const H = handedness == "right" ? "R" : "L";
+        const h = handedness == "right" ? "R" : "L";
         return {
-            [WebXRHandJoint.WRIST]: `wrist_${H}`,
-            [WebXRHandJoint.THUMB_METACARPAL]: `thumb_metacarpal_${H}`,
-            [WebXRHandJoint.THUMB_PHALANX_PROXIMAL]: `thumb_proxPhalanx_${H}`,
-            [WebXRHandJoint.THUMB_PHALANX_DISTAL]: `thumb_distPhalanx_${H}`,
-            [WebXRHandJoint.THUMB_TIP]: `thumb_tip_${H}`,
-            [WebXRHandJoint.INDEX_FINGER_METACARPAL]: `index_metacarpal_${H}`,
-            [WebXRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL]: `index_proxPhalanx_${H}`,
-            [WebXRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE]: `index_intPhalanx_${H}`,
-            [WebXRHandJoint.INDEX_FINGER_PHALANX_DISTAL]: `index_distPhalanx_${H}`,
-            [WebXRHandJoint.INDEX_FINGER_TIP]: `index_tip_${H}`,
-            [WebXRHandJoint.MIDDLE_FINGER_METACARPAL]: `middle_metacarpal_${H}`,
-            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL]: `middle_proxPhalanx_${H}`,
-            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE]: `middle_intPhalanx_${H}`,
-            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL]: `middle_distPhalanx_${H}`,
-            [WebXRHandJoint.MIDDLE_FINGER_TIP]: `middle_tip_${H}`,
-            [WebXRHandJoint.RING_FINGER_METACARPAL]: `ring_metacarpal_${H}`,
-            [WebXRHandJoint.RING_FINGER_PHALANX_PROXIMAL]: `ring_proxPhalanx_${H}`,
-            [WebXRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE]: `ring_intPhalanx_${H}`,
-            [WebXRHandJoint.RING_FINGER_PHALANX_DISTAL]: `ring_distPhalanx_${H}`,
-            [WebXRHandJoint.RING_FINGER_TIP]: `ring_tip_${H}`,
-            [WebXRHandJoint.PINKY_FINGER_METACARPAL]: `little_metacarpal_${H}`,
-            [WebXRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL]: `little_proxPhalanx_${H}`,
-            [WebXRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE]: `little_intPhalanx_${H}`,
-            [WebXRHandJoint.PINKY_FINGER_PHALANX_DISTAL]: `little_distPhalanx_${H}`,
-            [WebXRHandJoint.PINKY_FINGER_TIP]: `little_tip_${H}`,
+            [WebXRHandJoint.WRIST]: `wrist_${h}`,
+            [WebXRHandJoint.THUMB_METACARPAL]: `thumb_metacarpal_${h}`,
+            [WebXRHandJoint.THUMB_PHALANX_PROXIMAL]: `thumb_proxPhalanx_${h}`,
+            [WebXRHandJoint.THUMB_PHALANX_DISTAL]: `thumb_distPhalanx_${h}`,
+            [WebXRHandJoint.THUMB_TIP]: `thumb_tip_${h}`,
+            [WebXRHandJoint.INDEX_FINGER_METACARPAL]: `index_metacarpal_${h}`,
+            [WebXRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL]: `index_proxPhalanx_${h}`,
+            [WebXRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE]: `index_intPhalanx_${h}`,
+            [WebXRHandJoint.INDEX_FINGER_PHALANX_DISTAL]: `index_distPhalanx_${h}`,
+            [WebXRHandJoint.INDEX_FINGER_TIP]: `index_tip_${h}`,
+            [WebXRHandJoint.MIDDLE_FINGER_METACARPAL]: `middle_metacarpal_${h}`,
+            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL]: `middle_proxPhalanx_${h}`,
+            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE]: `middle_intPhalanx_${h}`,
+            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL]: `middle_distPhalanx_${h}`,
+            [WebXRHandJoint.MIDDLE_FINGER_TIP]: `middle_tip_${h}`,
+            [WebXRHandJoint.RING_FINGER_METACARPAL]: `ring_metacarpal_${h}`,
+            [WebXRHandJoint.RING_FINGER_PHALANX_PROXIMAL]: `ring_proxPhalanx_${h}`,
+            [WebXRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE]: `ring_intPhalanx_${h}`,
+            [WebXRHandJoint.RING_FINGER_PHALANX_DISTAL]: `ring_distPhalanx_${h}`,
+            [WebXRHandJoint.RING_FINGER_TIP]: `ring_tip_${h}`,
+            [WebXRHandJoint.PINKY_FINGER_METACARPAL]: `little_metacarpal_${h}`,
+            [WebXRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL]: `little_proxPhalanx_${h}`,
+            [WebXRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE]: `little_intPhalanx_${h}`,
+            [WebXRHandJoint.PINKY_FINGER_PHALANX_DISTAL]: `little_distPhalanx_${h}`,
+            [WebXRHandJoint.PINKY_FINGER_TIP]: `little_tip_${h}`,
         };
     }
 
@@ -799,7 +799,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     const legacyRigMapping = rigMappingTuple[0] as string[];
                     const rigMapping = rigMappingTuple[1] as XRHandMeshRigMapping;
                     legacyRigMapping.forEach((modelJointName, index) => {
-                        rigMapping[handJointReferenceArray[index]] = modelJointName;
+                        rigMapping[HandJointReferenceArray[index]] = modelJointName;
                     });
                 });
                 options.handMeshes.customRigMappings = {

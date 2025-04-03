@@ -2181,26 +2181,26 @@ export class VertexData implements IVertexDataLike {
                 const b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * ratio) * ySubRatio);
                 const b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * ratio) * zSubRatio);
 
-                const block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
-                const block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
-                const block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
-                const block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
+                const blockIdxV1 = b1x + options.subDiv.max * b1y + subSq * b1z;
+                const blockIdxV2 = b2x + options.subDiv.max * b2y + subSq * b2z;
+                const blockIdxV3 = b3x + options.subDiv.max * b3y + subSq * b3z;
+                const blockIdxV4 = ox + options.subDiv.max * oy + subSq * oz;
 
-                options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] : [];
-                options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] : [];
-                options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] : [];
-                options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] : [];
+                options.facetPartitioning[blockIdxV4] = options.facetPartitioning[blockIdxV4] ? options.facetPartitioning[blockIdxV4] : [];
+                options.facetPartitioning[blockIdxV1] = options.facetPartitioning[blockIdxV1] ? options.facetPartitioning[blockIdxV1] : [];
+                options.facetPartitioning[blockIdxV2] = options.facetPartitioning[blockIdxV2] ? options.facetPartitioning[blockIdxV2] : [];
+                options.facetPartitioning[blockIdxV3] = options.facetPartitioning[blockIdxV3] ? options.facetPartitioning[blockIdxV3] : [];
 
                 // push each facet index in each block containing the vertex
-                options.facetPartitioning[block_idx_v1].push(index);
-                if (block_idx_v2 != block_idx_v1) {
-                    options.facetPartitioning[block_idx_v2].push(index);
+                options.facetPartitioning[blockIdxV1].push(index);
+                if (blockIdxV2 != blockIdxV1) {
+                    options.facetPartitioning[blockIdxV2].push(index);
                 }
-                if (!(block_idx_v3 == block_idx_v2 || block_idx_v3 == block_idx_v1)) {
-                    options.facetPartitioning[block_idx_v3].push(index);
+                if (!(blockIdxV3 == blockIdxV2 || blockIdxV3 == blockIdxV1)) {
+                    options.facetPartitioning[blockIdxV3].push(index);
                 }
-                if (!(block_idx_o == block_idx_v1 || block_idx_o == block_idx_v2 || block_idx_o == block_idx_v3)) {
-                    options.facetPartitioning[block_idx_o].push(index);
+                if (!(blockIdxV4 == blockIdxV1 || blockIdxV4 == blockIdxV2 || blockIdxV4 == blockIdxV3)) {
+                    options.facetPartitioning[blockIdxV4].push(index);
                 }
             }
 

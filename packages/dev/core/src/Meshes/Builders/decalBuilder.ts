@@ -8,12 +8,12 @@ import type { AbstractMesh } from "../abstractMesh";
 import type { Camera } from "../../Cameras/camera";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
-const xpAxis = new Vector3(1, 0, 0);
-const xnAxis = new Vector3(-1, 0, 0);
-const ypAxis = new Vector3(0, 1, 0);
-const ynAxis = new Vector3(0, -1, 0);
-const zpAxis = new Vector3(0, 0, 1);
-const znAxis = new Vector3(0, 0, -1);
+const XpAxis = new Vector3(1, 0, 0);
+const XnAxis = new Vector3(-1, 0, 0);
+const YpAxis = new Vector3(0, 1, 0);
+const YnAxis = new Vector3(0, -1, 0);
+const ZpAxis = new Vector3(0, 0, 1);
+const ZnAxis = new Vector3(0, 0, -1);
 
 /** @internal */
 class DecalVertex {
@@ -395,27 +395,27 @@ export function CreateDecal(
             }
 
             // Clip
-            faceVertices = clip(faceVertices, xpAxis);
+            faceVertices = clip(faceVertices, XpAxis);
             if (!faceVertices) {
                 continue;
             }
-            faceVertices = clip(faceVertices, xnAxis);
+            faceVertices = clip(faceVertices, XnAxis);
             if (!faceVertices) {
                 continue;
             }
-            faceVertices = clip(faceVertices, ypAxis);
+            faceVertices = clip(faceVertices, YpAxis);
             if (!faceVertices) {
                 continue;
             }
-            faceVertices = clip(faceVertices, ynAxis);
+            faceVertices = clip(faceVertices, YnAxis);
             if (!faceVertices) {
                 continue;
             }
-            faceVertices = clip(faceVertices, zpAxis);
+            faceVertices = clip(faceVertices, ZpAxis);
             if (!faceVertices) {
                 continue;
             }
-            faceVertices = clip(faceVertices, znAxis);
+            faceVertices = clip(faceVertices, ZnAxis);
             if (!faceVertices) {
                 continue;
             }

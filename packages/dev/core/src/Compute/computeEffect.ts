@@ -10,7 +10,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -301,7 +301,7 @@ export class ComputeEffect {
     }
 
     private _checkIsReady(previousPipelineContext: Nullable<IComputePipelineContext>) {
-        _retryWithInterval(
+        _RetryWithInterval(
             () => this._isReadyInternal(),
             () => {
                 // no-op, all work is done in _isReadyInternal

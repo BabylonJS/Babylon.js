@@ -79,6 +79,13 @@ const abbreviations = [
     "RAW",
     "ZIP",
     "PIZ",
+    "VAO",
+    "JS",
+    "DB",
+    "XHR",
+    "POV",
+    "BABYLON",
+    "HSV",
 ];
 
 // Join them into a single regex string
@@ -134,6 +141,7 @@ const rules = {
                         publicOnly: true,
                     },
                 ],
+                "prefer-rest-params": "off",
                 // the following were enabled per default
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
@@ -153,6 +161,8 @@ const rules = {
                 "@typescript-eslint/no-unsafe-declaration-merging": "off",
                 "@typescript-eslint/restrict-template-expressions": "off",
                 "@typescript-eslint/no-unnecessary-type-constraint": "off",
+                "@typescript-eslint/no-redundant-type-constituents": "off",
+                "@typescript-eslint/no-namespace": "off",
                 "@typescript-eslint/prefer-promise-reject-errors": "warn",
                 "@typescript-eslint/only-throw-error": "warn",
                 "@typescript-eslint/no-for-in-array": "warn",
@@ -388,6 +398,15 @@ const rules = {
                         modifiers: [/*"exported", */ "global"],
                         format: ["PascalCase"],
                         leadingUnderscore: "allow",
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "enumMember",
+                        format: ["PascalCase", "UPPER_CASE"],
                         filter: {
                             // you can expand this regex to add more allowed names
                             regex: allowedNonStrictAbbreviations,

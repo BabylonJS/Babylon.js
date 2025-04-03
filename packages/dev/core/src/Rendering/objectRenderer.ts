@@ -8,6 +8,7 @@ import { _ObserveArray } from "../Misc/arrayTools";
 /**
  * Defines the options of the object renderer
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ObjectRendererOptions {
     /** The number of passes the renderer will support (1 by default) */
     numPasses?: number;

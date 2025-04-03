@@ -16,6 +16,7 @@ import { AbstractEngine } from "core/Engines/abstractEngine";
 /**
  * Options for setting up XR spectator camera.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface WebXRSpectatorModeOption {
     /**
      * Expected refresh rate (frames per sec) for a spectator camera.

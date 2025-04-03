@@ -139,14 +139,11 @@ export class PointsCloudSystem implements IDisposable {
     public async buildMeshAsync(material?: Material): Promise<Mesh> {
         return Promise.all(this._promises).then(async () => {
             this._isReady = true;
-            return this._buildMesh(material);
+            return this._buildMeshAsync(material);
         });
     }
 
-    /**
-     * @internal
-     */
-    private async _buildMesh(material?: Material): Promise<Mesh> {
+    private async _buildMeshAsync(material?: Material): Promise<Mesh> {
         if (this.nbParticles === 0) {
             this.addPoints(1);
         }

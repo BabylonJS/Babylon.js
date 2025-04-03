@@ -41,6 +41,7 @@ Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {
 };
 
 declare module "../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /** @internal (Backing field) */
         _renderOutline: boolean;

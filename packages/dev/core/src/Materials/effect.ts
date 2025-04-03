@@ -16,7 +16,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -636,7 +636,7 @@ export class Effect implements IDisposable {
     }
 
     private _checkIsReady(previousPipelineContext: Nullable<IPipelineContext>) {
-        _retryWithInterval(
+        _RetryWithInterval(
             () => {
                 return this._isReadyInternal() || this._isDisposed;
             },

@@ -20,6 +20,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      * Reference to the Recast library
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsRECAST: any = {};
 
     /**
@@ -548,6 +549,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Recast/detour plugin
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsRECASTPlugin: RecastJSPlugin;
     /**
      * Link to the detour crowd

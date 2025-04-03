@@ -6,6 +6,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 /**
  * Block used to normalize lerp between 2 values
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class GeometryNLerpBlock extends NodeGeometryBlock {
     /**
      * Creates a new GeometryNLerpBlock

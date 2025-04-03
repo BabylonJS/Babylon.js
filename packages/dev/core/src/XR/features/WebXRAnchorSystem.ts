@@ -91,7 +91,7 @@ interface IWebXRFutureAnchor {
     xrTransformation: XRRigidTransform;
 }
 
-let anchorIdProvider = 0;
+let AnchorIdProvider = 0;
 
 /**
  * An implementation of the anchor system for WebXR.
@@ -247,7 +247,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         );
         const xrAnchor =
             forceCreateInCurrentFrame && this.attached && this._xrSessionManager.currentFrame
-                ? await this._createAnchorAtTransformation(xrTransformation, this._xrSessionManager.currentFrame)
+                ? await this._createAnchorAtTransformationAsync(xrTransformation, this._xrSessionManager.currentFrame)
                 : undefined;
         // add the transformation to the future anchors list
         return new Promise<IWebXRAnchor>((resolve, reject) => {
@@ -329,7 +329,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
             trackedAnchors.forEach((xrAnchor) => {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {
-                        id: anchorIdProvider++,
+                        id: AnchorIdProvider++,
                         xrAnchor: xrAnchor,
                         remove: () => {
                             newAnchor._removed = true;
@@ -367,7 +367,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // process future anchors
         this._futureAnchors.forEach((futureAnchor) => {
             if (!futureAnchor.resolved && !futureAnchor.submitted) {
-                this._createAnchorAtTransformation(futureAnchor.xrTransformation, frame).then(
+                this._createAnchorAtTransformationAsync(futureAnchor.xrTransformation, frame).then(
                     (nativeAnchor) => {
                         futureAnchor.nativeAnchor = nativeAnchor;
                     },
@@ -415,7 +415,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         return <IWebXRAnchor>anchor;
     }
 
-    private async _createAnchorAtTransformation(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
+    private async _createAnchorAtTransformationAsync(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
         if (xrFrame.createAnchor) {
             try {
                 return xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
