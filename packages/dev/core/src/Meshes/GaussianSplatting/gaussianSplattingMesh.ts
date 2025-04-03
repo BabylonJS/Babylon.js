@@ -925,7 +925,7 @@ export class GaussianSplattingMesh extends Mesh {
                         const compressedChunk = compressedChunks![chunkIndex];
                         unpack111011(value, temp3);
                         position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
-                        position[1] = Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
+                        position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
                         position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
                     }
                     break;
@@ -933,9 +933,9 @@ export class GaussianSplattingMesh extends Mesh {
                     {
                         unpackRot(value, q);
                         r0 = q.w;
-                        r1 = -q.z;
+                        r1 = q.z;
                         r2 = q.y;
-                        r3 = -q.x;
+                        r3 = q.x;
                     }
                     break;
                 case PLYValue.PACKED_SCALE:
