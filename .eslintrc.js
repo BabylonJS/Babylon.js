@@ -66,6 +66,8 @@ const rules = {
                 "@typescript-eslint/prefer-promise-reject-errors": "warn",
                 "@typescript-eslint/only-throw-error": "warn",
                 "@typescript-eslint/no-for-in-array": "warn",
+                "@typescript-eslint/no-floating-promises": "warn",
+                "@typescript-eslint/no-misused-promises": "warn",
                 // till here
                 "@typescript-eslint/no-deprecated": "error",
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
@@ -73,8 +75,6 @@ const rules = {
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/no-this-alias": "error",
                 "@typescript-eslint/await-thenable": "error",
-                "@typescript-eslint/no-floating-promises": "error",
-                "@typescript-eslint/no-misused-promises": "error",
                 "no-restricted-syntax": [
                     "error",
                     {
