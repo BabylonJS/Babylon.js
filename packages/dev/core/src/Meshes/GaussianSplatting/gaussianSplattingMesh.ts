@@ -895,7 +895,6 @@ export class GaussianSplattingMesh extends Mesh {
         let r3: number = 0;
 
         const plySH = [];
-        let hasSH = false;
 
         for (let propertyIndex = 0; propertyIndex < header.vertexProperties.length; propertyIndex++) {
             const property = header.vertexProperties[propertyIndex];
@@ -961,10 +960,10 @@ export class GaussianSplattingMesh extends Mesh {
                     position[0] = value;
                     break;
                 case PLYValue.Y:
-                    position[1] = value;
+                    position[1] = -value;
                     break;
                 case PLYValue.Z:
-                    position[2] = value;
+                    position[2] = -value;
                     break;
                 case PLYValue.SCALE_0:
                     scale[0] = Math.exp(value);
@@ -1016,11 +1015,10 @@ export class GaussianSplattingMesh extends Mesh {
                 const clampedValue = Scalar.Clamp(value * 127.5 + 127.5, 0, 255);
                 const shIndex = property.value - PLYValue.SH_0;
                 plySH[shIndex] = clampedValue;
-                hasSH = true;
             }
         }
 
-        if (hasSH && sh) {
+        if (sh) {
             const shDim = header.shDegree == 1 ? 3 : header.shDegree == 2 ? 8 : 15;
             for (let j = 0; j < shDim; j++) {
                 sh[j * 3 + 0] = plySH[j];
