@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.0.2",
+    "fromTag": "8.0.3",
     "changelog": {
         "8.0.3": [
             {
@@ -121,6 +121,36 @@
                 },
                 "files": [
                     "packages/dev/core/src/Engines/ICanvas.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "8.1.0": [
+            {
+                "pr": "16439",
+                "title": "Dispose managed material plugins on feature destruction",
+                "description": "Ensure proper disposal of managed material plugins when the feature is destroyed to prevent memory leaks.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16440",
+                "title": "update core repository dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
                 ],
                 "tags": []
             }
