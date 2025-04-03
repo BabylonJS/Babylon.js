@@ -2,7 +2,7 @@
 var finalDiffuse: vec3f = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
 #if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
-    finalDiffuse += transmissionBase;
+    finalDiffuse += diffuseTransmissionBase;
 #endif
 finalDiffuse = max(finalDiffuse, vec3f(0.0));
 finalDiffuse *= uniforms.vLightingIntensity.x;
