@@ -1,6 +1,112 @@
 {
-    "fromTag": "8.0.3",
+    "fromTag": "8.1.0",
     "changelog": {
+        "8.1.1": [
+            {
+                "pr": "16436",
+                "title": "Viewer: More options + reset logic in Viewer layer",
+                "description": "This PR aims to solve a couple of different but overlapping problems:\r\n- More flexibility in the reset logic (forum issue: https://forum.babylonjs.com/t/viewer-v2-reset-button-to-the-initial-explicitly-specified-camera-pose/56925)\r\n- Make it possible to initialize the Viewer from JSON (allows the Viewer Configurator to be used with all layers of the Viewer, not just the HTML layer, and also creates a path for saving/loading to/from snippet server)\r\n\r\nChanges to the Configurator will come in a subsequent PR. For this PR, the overall changes are as follows:\r\n## Viewer\r\n- Flesh out `ViewerOptions` with *most* properties of the Viewer.\r\n- Expose a `DefaultViewerOptions` object, which is used for Viewer initialization and will also be used by the Configurator.\r\n- Add a `reset` function that helps reset Viewer state to the initial state (based on passed in options and default options).\r\n- Use this reset state and logic in the Viewer layer and remove old `UpdateModelOptions` that was needed to coordinate reset logic that was spread across `Viewer` and `ViewerElement`.\r\n- Update the `resetCamera` function to be more configurable (reframe the camera (current logic), reset the camera to the initial state, or pick a reasonable default based on Viewer state).\r\n- Add an `updateCamera` function that will interpolate to a new pose.\r\n- Remove `FramingBehavior`. It was used in early versions of the Viewer, but at this point the Viewer's framing logic has superseded `FramingBehavior` and it is no longer needed.\r\n- Move all hotspot state and logic down to the Viewer layer.\r\n\r\n## ViewerFactory\r\n- Wrap the passed through options in a `Proxy`, which makes is possible for the higher layers (e.g. `ViewerElement`) to override the default options dynamically (used to allow element attributes to behave as default options).\r\n\r\n## ViewerElement\r\n- Initialize properties/attributes based on the passed in options (since they now have most of the Viewer properties).\r\n- Pass `ViewerOptions` down that return attributes if they are set, otherwise the passed in option value. This makes it so if an attribute is dynamically updated, it becomes the configured value that is used by the reset logic.\r\n- Change `camera-orbit` and `camera-target` to be custom handled attributes (not reactive properties). There is a lot of special handling to get the desired behavior for camera pose, so the reactive property pattern is not helpful anymore.\r\n- Add a `resetMode` property/attribute, and a `reset` function. The behavior of the `reset` function (called when the reset button is clicked) depends on the `resetMode`. This is what finally addresses the forum issue.\r\n- Remove `syncToAttribute` logic that was previously used for reset logic (since reset logic moved down to the Viewer layer).\r\n- Remove logic to reset camera state, since it also moved down to the Viewer layer.\r\n- Remove `UpdateModelOptions` related args previously passed to `Viewer.loadModel` as this is now all handled in the Viewer layer.\r\n- Remove all hotspot implementation since it is now handled in the Viewer layer.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16444",
+                "title": "Add support for BasedOnInput connection point type in node port design",
+                "description": "Fixes #16441\r\n\r\n![image](https://github.com/user-attachments/assets/a0164b69-cef2-43d8-a93e-b7165eb004b3)\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16443",
+                "title": "Post Processes: Fix scale being overwritten by default (1,1) values",
+                "description": "See https://forum.babylonjs.com/t/environment-texture-flipped-when-created-using-imagebitmap/57572",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBlackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBloomMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinChromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinCircleOfConfusionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinExtractHighlightsPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRBlurCombinerPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinTAAPostProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "16442",
+                "title": "PhysicsViewer, bbhelper fixes",
+                "description": "follow up\r\nhttps://forum.babylonjs.com/t/customizable-utility-layer-for-physics-viewer/57591/2\r\nhttps://forum.babylonjs.com/t/boundinginfohelper-dispose/57588/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "8.1.0": [
+            {
+                "pr": "16439",
+                "title": "Dispose managed material plugins on feature destruction",
+                "description": "Ensure proper disposal of managed material plugins when the feature is destroyed to prevent memory leaks.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16440",
+                "title": "update core repository dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            }
+        ],
         "8.0.3": [
             {
                 "pr": "16437",
@@ -121,36 +227,6 @@
                 },
                 "files": [
                     "packages/dev/core/src/Engines/ICanvas.ts"
-                ],
-                "tags": []
-            }
-        ],
-        "8.1.0": [
-            {
-                "pr": "16439",
-                "title": "Dispose managed material plugins on feature destruction",
-                "description": "Ensure proper disposal of managed material plugins when the feature is destroyed to prevent memory leaks.",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "16440",
-                "title": "update core repository dependencies",
-                "description": null,
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "package-lock.json"
                 ],
                 "tags": []
             }
