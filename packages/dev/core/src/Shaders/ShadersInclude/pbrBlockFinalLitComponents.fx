@@ -31,7 +31,7 @@ aggShadow = aggShadow / numLights;
         #endif
     #endif
 
-    #ifndef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
+    #ifdef GLTF_COMPLIANT
         finalIrradiance *= surfaceAlbedo.rgb;
     #endif
 
@@ -44,7 +44,7 @@ aggShadow = aggShadow / numLights;
         finalIrradiance += subSurfaceOut.refractionIrradiance;
     #endif
 
-    #ifdef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
+    #ifndef GLTF_COMPLIANT
         finalIrradiance *= surfaceAlbedo.rgb;
     #endif
 

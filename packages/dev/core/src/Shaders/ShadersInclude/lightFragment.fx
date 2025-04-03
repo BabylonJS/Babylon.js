@@ -84,12 +84,15 @@
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
             #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
+            #elif defined(SS_TRANSLUCENCY)
+                #ifdef GLTF_COMPLIANT
+                    info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                    info.transmission = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance); // note subSurfaceOut.translucencyIntensity is already factored in subSurfaceOut.transmittance
+                #else
+                    info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
+                #endif
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
-                #ifdef SS_TRANSLUCENCY
-                    info.diffuse *= (1.0 - subSurfaceOut.translucencyIntensity);
-                    info.transmission = computeTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
-                #endif
             #endif
 
             // Specular contribution
