@@ -218,6 +218,20 @@ function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBo
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
 }
 
+// This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
+// If there is any error (other than AbortError) in the async function, it will be logged.
+function observePromise(promise: Promise<unknown>): void {
+    (async () => {
+        try {
+            await promise;
+        } catch (error) {
+            if (!(error instanceof AbortError)) {
+                Logger.Error(error);
+            }
+        }
+    })();
+}
+
 /**
  * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
  *
@@ -404,6 +418,9 @@ export type ViewerOptions = Partial<{
     useRightHandedSystem: boolean;
 }>;
 
+/**
+ * The default options for the Viewer.
+ */
 export const DefaultViewerOptions = {
     clearColor: [0, 0, 0, 0] as const,
     autoSuspendRendering: true,
@@ -805,7 +822,7 @@ export class Viewer implements IDisposable {
 
             scene.onNewCameraAddedObservable.add((camera) => {
                 if (this.camerasAsHotSpots) {
-                    this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal);
+                    observePromise(this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal));
                 }
             });
 
@@ -1644,24 +1661,20 @@ export class Viewer implements IDisposable {
     /**
      * Resets the viewer to its initial state based on the options passed in to the constructor.
      * @param flags The flags that specify which parts of the viewer to reset. If no flags are provided, all parts will be reset.
+     * - "source": Reset the loaded model.
+     * - "environment": Reset environment related state.
+     * - "animation": Reset animation related state.
+     * - "camera": Reset camera related state.
+     * - "post-processing": Reset post-processing related state.
+     * - "material-variant": Reset material variant related state.
      */
     public reset(...flags: ResetFlag[]) {
         this._reset(true, ...flags);
     }
 
     private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
-        const handleLoadError = async (promise: Promise<unknown>) => {
-            try {
-                await promise;
-            } catch (error) {
-                if (!(error instanceof AbortError)) {
-                    Logger.Error(error);
-                }
-            }
-        };
-
         if (flags.length === 0 || flags.includes("source")) {
-            handleLoadError(this._updateModel(this._options?.source));
+            observePromise(this._updateModel(this._options?.source));
         }
 
         if (flags.length === 0 || flags.includes("environment")) {
@@ -1673,10 +1686,10 @@ export class Viewer implements IDisposable {
                 visible: this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible,
             };
             if (this._options?.environmentLighting === this._options?.environmentSkybox) {
-                handleLoadError(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
+                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
             } else {
-                handleLoadError(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
-                handleLoadError(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
+                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
+                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
             }
         }
 
@@ -1738,6 +1751,7 @@ export class Viewer implements IDisposable {
         this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._loadSkyboxAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
@@ -1755,6 +1769,9 @@ export class Viewer implements IDisposable {
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
         this.onAnimationProgressChanged.clear();
+        this.onSelectedMaterialVariantChanged.clear();
+        this.onHotSpotsChanged.clear();
+        this.onCamerasAsHotSpotsChanged.clear();
         this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
