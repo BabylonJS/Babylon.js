@@ -1,9 +1,9 @@
 import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
 import type { AudioAnalyzerFFTSizeType } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
-import { AbstractAudioAnalyzer } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
+import { _AudioAnalyzerDefaults, AbstractAudioAnalyzer } from "../../abstractAudio/subProperties/abstractAudioAnalyzer";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
-import { _GetAudioAnalyzerProperty, _GetAudioAnalyzerSubNode, _SetAudioAnalyzerProperty } from "../subNodes/audioAnalyzerSubNode";
+import { _GetAudioAnalyzerSubNode, _SetAudioAnalyzerProperty } from "../subNodes/audioAnalyzerSubNode";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 
 let _EmptyByteFrequencyData: Nullable<Uint8Array> = null;
@@ -27,6 +27,10 @@ export function _GetEmptyFloatFrequencyData(): Float32Array {
 
 /** @internal */
 export class _AudioAnalyzer extends AbstractAudioAnalyzer {
+    private _fftSize: AudioAnalyzerFFTSizeType = _AudioAnalyzerDefaults.fftSize;
+    private _maxDecibels: number = _AudioAnalyzerDefaults.maxDecibels;
+    private _minDecibels: number = _AudioAnalyzerDefaults.minDecibels;
+    private _smoothing: number = _AudioAnalyzerDefaults.smoothing;
     private _subGraph: _AbstractAudioSubGraph;
 
     /** @internal */
@@ -37,10 +41,11 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
 
     /** @internal */
     public get fftSize(): AudioAnalyzerFFTSizeType {
-        return _GetAudioAnalyzerProperty(this._subGraph, "fftSize");
+        return this._fftSize;
     }
 
     public set fftSize(value: AudioAnalyzerFFTSizeType) {
+        this._fftSize = value;
         _SetAudioAnalyzerProperty(this._subGraph, "fftSize", value);
     }
 
@@ -51,28 +56,31 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
 
     /** @internal */
     public get minDecibels(): number {
-        return _GetAudioAnalyzerProperty(this._subGraph, "minDecibels");
+        return this._minDecibels;
     }
 
     public set minDecibels(value: number) {
+        this._minDecibels = value;
         _SetAudioAnalyzerProperty(this._subGraph, "minDecibels", value);
     }
 
     /** @internal */
     public get maxDecibels(): number {
-        return _GetAudioAnalyzerProperty(this._subGraph, "maxDecibels");
+        return this._maxDecibels;
     }
 
     public set maxDecibels(value: number) {
+        this._maxDecibels = value;
         _SetAudioAnalyzerProperty(this._subGraph, "maxDecibels", value);
     }
 
     /** @internal */
     public get smoothing(): number {
-        return _GetAudioAnalyzerProperty(this._subGraph, "smoothing");
+        return this._smoothing;
     }
 
     public set smoothing(value: number) {
+        this._smoothing = value;
         _SetAudioAnalyzerProperty(this._subGraph, "smoothing", value);
     }
 

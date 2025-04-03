@@ -239,7 +239,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         return this._objectRenderer.renderInLinearSpace;
     }
 
-    public set renderInLinearSpace(value: boolean) {
+    public set renderInLinearSpace(value: Nullable<boolean>) {
         this._objectRenderer.renderInLinearSpace = value;
     }
 

@@ -61,6 +61,7 @@ export class PhysicsViewer {
     private _inertiaRenderFunction: () => void;
     private _constraintRenderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
+    private _ownUtilityLayer = false;
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
@@ -77,8 +78,9 @@ export class PhysicsViewer {
      * Creates a new PhysicsViewer
      * @param scene defines the hosting scene
      * @param size Physics V2 size scalar
+     * @param utilityLayer The utility layer the viewer will be added to
      */
-    constructor(scene?: Scene, size?: number) {
+    constructor(scene?: Scene, size?: number, utilityLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         this._scene = scene || EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
@@ -89,9 +91,14 @@ export class PhysicsViewer {
             this._physicsEnginePlugin = physicEngine.getPhysicsPlugin();
         }
 
-        this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
-        this._utilityLayer.pickUtilitySceneFirst = false;
-        this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
+        if (utilityLayer) {
+            this._utilityLayer = utilityLayer;
+        } else {
+            this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
+            this._utilityLayer.pickUtilitySceneFirst = false;
+            this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
+            this._ownUtilityLayer = true;
+        }
         if (size) {
             this._constraintAxesSize = 0.4 * size;
             this._constraintAngularSize = 0.4 * size;
@@ -1120,7 +1127,7 @@ export class PhysicsViewer {
         this._scene = null;
         this._physicsEnginePlugin = null;
 
-        if (this._utilityLayer) {
+        if (this._ownUtilityLayer && this._utilityLayer) {
             this._utilityLayer.dispose();
             this._utilityLayer = null;
         }

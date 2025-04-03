@@ -1,9 +1,10 @@
-import { AbstractStereoAudio } from "../../abstractAudio/subProperties/abstractStereoAudio";
+import { _StereoAudioDefaults, AbstractStereoAudio } from "../../abstractAudio/subProperties/abstractStereoAudio";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
-import { _GetStereoAudioProperty, _SetStereoAudioProperty } from "../subNodes/stereoAudioSubNode";
+import { _SetStereoAudioProperty } from "../subNodes/stereoAudioSubNode";
 
 /** @internal */
 export class _StereoAudio extends AbstractStereoAudio {
+    private _pan: number = _StereoAudioDefaults.pan;
     private _subGraph: _AbstractAudioSubGraph;
 
     /** @internal */
@@ -14,10 +15,11 @@ export class _StereoAudio extends AbstractStereoAudio {
 
     /** @internal */
     public get pan(): number {
-        return _GetStereoAudioProperty(this._subGraph, "pan");
+        return this._pan;
     }
 
     public set pan(value: number) {
+        this._pan = value;
         _SetStereoAudioProperty(this._subGraph, "pan", value);
     }
 }

@@ -634,9 +634,10 @@ export class EffectWrapper {
 
     /**
      * Binds the data to the effect.
+     * @param noDefaultBindings if true, the default bindings (scale and alpha mode) will not be set.
      */
-    public bind() {
-        if (this.options.useAsPostProcess) {
+    public bind(noDefaultBindings = false) {
+        if (this.options.useAsPostProcess && !noDefaultBindings) {
             this.options.engine.setAlphaMode(this.alphaMode);
             this.drawWrapper.effect!.setFloat2("scale", 1, 1);
         }
