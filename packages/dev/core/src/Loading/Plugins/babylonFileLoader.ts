@@ -48,11 +48,11 @@ export class BabylonFileLoaderConfiguration {
     public static LoaderInjectedPhysicsEngine: any = undefined;
 }
 
-let tempIndexContainer: { [key: string]: Node } = {};
-let tempMaterialIndexContainer: { [key: string]: Material } = {};
-let tempMorphTargetManagerIndexContainer: { [key: string]: MorphTargetManager } = {};
+let TempIndexContainer: { [key: string]: Node } = {};
+let TempMaterialIndexContainer: { [key: string]: Material } = {};
+let TempMorphTargetManagerIndexContainer: { [key: string]: MorphTargetManager } = {};
 
-const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
+const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
         return null;
     }
@@ -66,7 +66,7 @@ const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, p
     return null;
 };
 
-const isDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>) => {
+const IsDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>) => {
     for (const i in names) {
         if (mesh.name === names[i]) {
             hierarchyIds.push(mesh.id);
@@ -89,7 +89,7 @@ const logOperation = (operation: string, producer: { file: string; name: string;
     );
 };
 
-const loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
+const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     const mastermesh: Mesh = mesh as Mesh;
 
     // Every value specified in the ids array of the lod data points to another mesh which should be used as the lower LOD level.
@@ -125,7 +125,7 @@ const loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
+const FindParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     if (typeof parentId !== "number") {
         const parentEntry = scene.getLastEntryById(parentId);
         if (parentEntry && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
@@ -135,7 +135,7 @@ const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
         return parentEntry;
     }
 
-    const parent = tempIndexContainer[parentId];
+    const parent = TempIndexContainer[parentId];
     if (parent && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
         const instance = (parent as Mesh).instances[parseInt(parentInstanceIndex)];
         return instance;
@@ -144,15 +144,15 @@ const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     return parent;
 };
 
-const findMaterial = (materialId: any, scene: Scene) => {
+const FindMaterial = (materialId: any, scene: Scene) => {
     if (typeof materialId !== "number") {
         return scene.getLastMaterialById(materialId, true);
     }
 
-    return tempMaterialIndexContainer[materialId];
+    return TempMaterialIndexContainer[materialId];
 };
 
-const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
+const LoadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -238,7 +238,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 const parsedLight = parsedData.lights[index];
                 const light = Light.Parse(parsedLight, scene);
                 if (light) {
-                    tempIndexContainer[parsedLight.uniqueId] = light;
+                    TempIndexContainer[parsedLight.uniqueId] = light;
                     container.lights.push(light);
                     light._parentContainer = container;
                     log += index === 0 ? "\n\tLights:" : "";
@@ -282,7 +282,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 const parsedMaterial = parsedData.materials[index];
                 const mat = Material.Parse(parsedMaterial, scene, rootUrl);
                 if (mat) {
-                    tempMaterialIndexContainer[parsedMaterial.uniqueId || parsedMaterial.id] = mat;
+                    TempMaterialIndexContainer[parsedMaterial.uniqueId || parsedMaterial.id] = mat;
                     container.materials.push(mat);
                     mat._parentContainer = container;
                     log += index === 0 ? "\n\tMaterials:" : "";
@@ -304,7 +304,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                 const parsedMultiMaterial = parsedData.multiMaterials[index];
                 const mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
-                tempMaterialIndexContainer[parsedMultiMaterial.uniqueId || parsedMultiMaterial.id] = mmat;
+                TempMaterialIndexContainer[parsedMultiMaterial.uniqueId || parsedMultiMaterial.id] = mmat;
                 container.multiMaterials.push(mmat);
                 mmat._parentContainer = container;
 
@@ -326,7 +326,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
             for (const parsedManager of parsedData.morphTargetManagers) {
                 const manager = MorphTargetManager.Parse(parsedManager, scene);
-                tempMorphTargetManagerIndexContainer[parsedManager.id] = manager;
+                TempMorphTargetManagerIndexContainer[parsedManager.id] = manager;
                 container.morphTargetManagers.push(manager);
                 manager._parentContainer = container;
             }
@@ -371,7 +371,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
                 const parsedTransformNode = parsedData.transformNodes[index];
                 const node = TransformNode.Parse(parsedTransformNode, scene, rootUrl);
-                tempIndexContainer[parsedTransformNode.uniqueId] = node;
+                TempIndexContainer[parsedTransformNode.uniqueId] = node;
                 container.transformNodes.push(node);
                 node._parentContainer = container;
             }
@@ -382,7 +382,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                 const parsedMesh = parsedData.meshes[index];
                 const mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
-                tempIndexContainer[parsedMesh.uniqueId] = mesh;
+                TempIndexContainer[parsedMesh.uniqueId] = mesh;
                 container.meshes.push(mesh);
                 mesh._parentContainer = container;
                 if (mesh.hasInstances) {
@@ -401,7 +401,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
                 const parsedCamera = parsedData.cameras[index];
                 const camera = Camera.Parse(parsedCamera, scene);
-                tempIndexContainer[parsedCamera.uniqueId] = camera;
+                TempIndexContainer[parsedCamera.uniqueId] = camera;
                 container.cameras.push(camera);
                 camera._parentContainer = container;
                 log += index === 0 ? "\n\tCameras:" : "";
@@ -448,7 +448,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
-                camera.parent = findParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
+                camera.parent = FindParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
                 camera._waitingParentId = null;
                 camera._waitingParentInstanceIndex = null;
             }
@@ -457,7 +457,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             const light = scene.lights[index];
             if (light && light._waitingParentId !== null) {
-                light.parent = findParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
+                light.parent = FindParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
                 light._waitingParentId = null;
                 light._waitingParentInstanceIndex = null;
             }
@@ -467,7 +467,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             const transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId !== null) {
-                transformNode.parent = findParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
+                transformNode.parent = FindParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
                 transformNode._waitingParentId = null;
                 transformNode._waitingParentInstanceIndex = null;
             }
@@ -475,19 +475,19 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
-                mesh.parent = findParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
+                mesh.parent = FindParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
                 mesh._waitingParentId = null;
                 mesh._waitingParentInstanceIndex = null;
             }
             if (mesh._waitingData.lods) {
-                loadDetailLevels(scene, mesh);
+                LoadDetailLevels(scene, mesh);
             }
         }
 
         // link multimats with materials
         scene.multiMaterials.forEach((multimat) => {
             multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
-                multimat.subMaterials.push(findMaterial(subMaterial, scene));
+                multimat.subMaterials.push(FindMaterial(subMaterial, scene));
             });
             multimat._waitingSubMaterialsUniqueIds = [];
         });
@@ -495,7 +495,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         // link meshes with materials
         scene.meshes.forEach((mesh) => {
             if (mesh._waitingMaterialId !== null) {
-                mesh.material = findMaterial(mesh._waitingMaterialId, scene);
+                mesh.material = FindMaterial(mesh._waitingMaterialId, scene);
                 mesh._waitingMaterialId = null;
             }
         });
@@ -503,7 +503,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         // link meshes with morph target managers
         scene.meshes.forEach((mesh) => {
             if (mesh._waitingMorphTargetManagerId !== null) {
-                mesh.morphTargetManager = tempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
+                mesh.morphTargetManager = TempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
                 mesh._waitingMorphTargetManagerId = null;
             }
         });
@@ -595,9 +595,9 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             throw err;
         }
     } finally {
-        tempIndexContainer = {};
-        tempMaterialIndexContainer = {};
-        tempMorphTargetManagerIndexContainer = {};
+        TempIndexContainer = {};
+        TempMaterialIndexContainer = {};
+        TempMorphTargetManagerIndexContainer = {};
 
         if (!addToScene) {
             container.removeAllFromScene();
@@ -669,7 +669,7 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                     const parsedMesh = parsedData.meshes[index];
 
-                    if (meshesNames === null || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
+                    if (meshesNames === null || IsDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames !== null) {
                             // Remove found mesh name from list.
                             delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
@@ -712,9 +712,9 @@ SceneLoader.RegisterPlugin({
                                 // Loads a submaterial of a multimaterial
                                 const loadSubMaterial = (subMatId: string, predicate: (parsedMaterial: any) => boolean) => {
                                     materialArray.push(subMatId);
-                                    const mat = parseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
+                                    const mat = ParseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
                                     if (mat && mat.material) {
-                                        tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                        TempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
                                         log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                     }
                                 };
@@ -737,7 +737,7 @@ SceneLoader.RegisterPlugin({
                                         }
                                         materialArray.push(parsedMultiMaterial.uniqueId || parsedMultiMaterial.id);
                                         const mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
-                                        tempMaterialIndexContainer[parsedMultiMaterial.uniqueId || parsedMultiMaterial.id] = mmat;
+                                        TempMaterialIndexContainer[parsedMultiMaterial.uniqueId || parsedMultiMaterial.id] = mmat;
                                         if (mmat) {
                                             materialFound = true;
                                             log += "\n\tMulti-Material " + mmat.toString(fullDetails);
@@ -749,7 +749,7 @@ SceneLoader.RegisterPlugin({
 
                             if (materialFound === false) {
                                 materialArray.push(parsedMesh.materialUniqueId || parsedMesh.materialId);
-                                const mat = parseMaterialByPredicate(
+                                const mat = ParseMaterialByPredicate(
                                     (parsedMaterial) =>
                                         (parsedMesh.materialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
                                     parsedData,
@@ -759,7 +759,7 @@ SceneLoader.RegisterPlugin({
                                 if (!mat || !mat.material) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {
-                                    tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                    TempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
                                     log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                 }
                             }
@@ -795,7 +795,7 @@ SceneLoader.RegisterPlugin({
                                     const parsedManager = parsedData.morphTargetManagers[morphTargetManagerIndex];
                                     if (parsedManager.id === parsedMesh.morphTargetManagerId) {
                                         const morphTargetManager = MorphTargetManager.Parse(parsedManager, scene);
-                                        tempMorphTargetManagerIndexContainer[parsedManager.id] = morphTargetManager;
+                                        TempMorphTargetManagerIndexContainer[parsedManager.id] = morphTargetManager;
                                         loadedMorphTargetManagerIds.push(parsedManager.id);
                                         log += "\nMorph target manager" + morphTargetManager.toString();
                                     }
@@ -814,7 +814,7 @@ SceneLoader.RegisterPlugin({
                 // link multimats with materials
                 scene.multiMaterials.forEach((multimat) => {
                     multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
-                        multimat.subMaterials.push(findMaterial(subMaterial, scene));
+                        multimat.subMaterials.push(FindMaterial(subMaterial, scene));
                     });
                     multimat._waitingSubMaterialsUniqueIds = [];
                 });
@@ -822,7 +822,7 @@ SceneLoader.RegisterPlugin({
                 // link meshes with materials
                 scene.meshes.forEach((mesh) => {
                     if (mesh._waitingMaterialId !== null) {
-                        mesh.material = findMaterial(mesh._waitingMaterialId, scene);
+                        mesh.material = FindMaterial(mesh._waitingMaterialId, scene);
                         mesh._waitingMaterialId = null;
                     }
                 });
@@ -830,7 +830,7 @@ SceneLoader.RegisterPlugin({
                 // link meshes with morph target managers
                 scene.meshes.forEach((mesh) => {
                     if (mesh._waitingMorphTargetManagerId !== null) {
-                        mesh.morphTargetManager = tempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
+                        mesh.morphTargetManager = TempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
                         mesh._waitingMorphTargetManagerId = null;
                     }
                 });
@@ -869,7 +869,7 @@ SceneLoader.RegisterPlugin({
                         currentMesh._waitingParentId = null;
                     }
                     if (currentMesh._waitingData.lods) {
-                        loadDetailLevels(scene, currentMesh);
+                        LoadDetailLevels(scene, currentMesh);
                     }
                 }
 
@@ -943,8 +943,8 @@ SceneLoader.RegisterPlugin({
             if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
                 Logger.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
             }
-            tempMaterialIndexContainer = {};
-            tempMorphTargetManagerIndexContainer = {};
+            TempMaterialIndexContainer = {};
+            TempMorphTargetManagerIndexContainer = {};
         }
 
         return false;
@@ -1040,7 +1040,7 @@ SceneLoader.RegisterPlugin({
                 scene.collisionsEnabled = parsedData.collisionsEnabled;
             }
 
-            const container = loadAssetContainer(scene, data, rootUrl, onError, true);
+            const container = LoadAssetContainer(scene, data, rootUrl, onError, true);
             if (!container) {
                 return false;
             }
@@ -1071,7 +1071,7 @@ SceneLoader.RegisterPlugin({
         return false;
     },
     loadAssetContainer: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer => {
-        const container = loadAssetContainer(scene, data, rootUrl, onError);
+        const container = LoadAssetContainer(scene, data, rootUrl, onError);
         return container;
     },
 });

@@ -76,7 +76,7 @@ export class BoundingInfoHelper {
      * @returns a promise that resolves when the bounding info is/are computed
      */
     public async batchFetchResultsAsync(): Promise<void> {
-        await this._initializePlatform();
+        await this._initializePlatformAsync();
         return this._platform.fetchResultsForMeshListAsync();
     }
 

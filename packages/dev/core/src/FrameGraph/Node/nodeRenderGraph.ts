@@ -29,7 +29,9 @@ import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRen
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let NODERENDERGRAPHEDITOR: any;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let BABYLON: any;
 
 /**
@@ -238,6 +240,7 @@ export class NodeRenderGraph {
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async edit(config?: INodeRenderGraphEditorOptions): Promise<void> {
         return new Promise((resolve) => {
             this.BJSNODERENDERGRAPHEDITOR = this.BJSNODERENDERGRAPHEDITOR || this._getGlobalNodeRenderGraphEditor();

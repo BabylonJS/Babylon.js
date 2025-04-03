@@ -295,15 +295,15 @@ export function ScanData(decoder: IEXRDecoder, header: IEXRHeader, dataView: Dat
 
         offset.value += decoder.size;
 
-        for (let line_y = 0; line_y < decoder.scanlineBlockSize; line_y++) {
-            const scan_y = scanlineBlockIdx * decoder.scanlineBlockSize;
-            const true_y = line_y + decoder.scanOrder(scan_y);
-            if (true_y >= decoder.height) {
+        for (let lineY = 0; lineY < decoder.scanlineBlockSize; lineY++) {
+            const scanY = scanlineBlockIdx * decoder.scanlineBlockSize;
+            const trueY = lineY + decoder.scanOrder(scanY);
+            if (trueY >= decoder.height) {
                 continue;
             }
 
-            const lineOffset = line_y * decoder.bytesPerLine;
-            const outLineOffset = (decoder.height - 1 - true_y) * decoder.outLineWidth;
+            const lineOffset = lineY * decoder.bytesPerLine;
+            const outLineOffset = (decoder.height - 1 - trueY) * decoder.outLineWidth;
 
             for (let channelID = 0; channelID < decoder.channels; channelID++) {
                 const name = header.channels[channelID].name;

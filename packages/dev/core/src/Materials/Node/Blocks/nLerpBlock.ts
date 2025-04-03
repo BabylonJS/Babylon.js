@@ -7,6 +7,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to normalize lerp between 2 values
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class NLerpBlock extends NodeMaterialBlock {
     /**
      * Creates a new NLerpBlock

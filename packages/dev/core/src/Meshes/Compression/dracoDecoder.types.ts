@@ -1,6 +1,7 @@
 /**
  * Decoded Draco mesh data.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface MeshData {
     /**
      * The indices of the mesh. Point clouds will not have indices.
@@ -9,7 +10,7 @@ export interface MeshData {
     /**
      * The attributes of the mesh.
      */
-    attributes: Array<AttributeData>;
+    attributes: Array<IAttributeData>;
     /**
      * The total number of vertices in the mesh.
      */
@@ -19,7 +20,7 @@ export interface MeshData {
 /**
  * @internal
  */
-export interface AttributeData {
+export interface IAttributeData {
     kind: string;
     data: ArrayBufferView;
     size: number;
@@ -31,7 +32,7 @@ export interface AttributeData {
 /**
  * @internal
  */
-export interface DecodeMeshDoneMessage {
+export interface IDecodeMeshDoneMessage {
     id: "decodeMeshDone";
     totalVertices: number;
 }
@@ -39,7 +40,7 @@ export interface DecodeMeshDoneMessage {
 /**
  * @internal
  */
-export interface IndicesMessage {
+export interface IIndicesMessage {
     id: "indices";
     data: Uint16Array | Uint32Array;
 }
@@ -47,11 +48,11 @@ export interface IndicesMessage {
 /**
  * @internal
  */
-export interface AttributeMessage extends AttributeData {
+export interface IAttributeMessage extends IAttributeData {
     id: "attribute";
 }
 
 /**
  * @internal
  */
-export type DecoderMessage = DecodeMeshDoneMessage | IndicesMessage | AttributeMessage;
+export type DecoderMessage = IDecodeMeshDoneMessage | IIndicesMessage | IAttributeMessage;

@@ -20,7 +20,7 @@ import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
 
-interface DelayedTextureUpdate {
+interface IDelayedTextureUpdate {
     covA: Uint16Array;
     covB: Uint16Array;
     colors: Uint8Array;
@@ -29,33 +29,33 @@ interface DelayedTextureUpdate {
 }
 
 // @internal
-const unpackUnorm = (value: number, bits: number) => {
+const UnpackUnorm = (value: number, bits: number) => {
     const t = (1 << bits) - 1;
     return (value & t) / t;
 };
 
 // @internal
-const unpack111011 = (value: number, result: Vector3) => {
-    result.x = unpackUnorm(value >>> 21, 11);
-    result.y = unpackUnorm(value >>> 11, 10);
-    result.z = unpackUnorm(value, 11);
+const Unpack111011 = (value: number, result: Vector3) => {
+    result.x = UnpackUnorm(value >>> 21, 11);
+    result.y = UnpackUnorm(value >>> 11, 10);
+    result.z = UnpackUnorm(value, 11);
 };
 
 // @internal
-const unpack8888 = (value: number, result: Uint8ClampedArray) => {
-    result[0] = unpackUnorm(value >>> 24, 8) * 255;
-    result[1] = unpackUnorm(value >>> 16, 8) * 255;
-    result[2] = unpackUnorm(value >>> 8, 8) * 255;
-    result[3] = unpackUnorm(value, 8) * 255;
+const Unpack8888 = (value: number, result: Uint8ClampedArray) => {
+    result[0] = UnpackUnorm(value >>> 24, 8) * 255;
+    result[1] = UnpackUnorm(value >>> 16, 8) * 255;
+    result[2] = UnpackUnorm(value >>> 8, 8) * 255;
+    result[3] = UnpackUnorm(value, 8) * 255;
 };
 
 // @internal
 // unpack quaternion with 2,10,10,10 format (largest element, 3x10bit element)
-const unpackRot = (value: number, result: Quaternion) => {
+const UnpackRot = (value: number, result: Quaternion) => {
     const norm = 1.0 / (Math.sqrt(2) * 0.5);
-    const a = (unpackUnorm(value >>> 20, 10) - 0.5) * norm;
-    const b = (unpackUnorm(value >>> 10, 10) - 0.5) * norm;
-    const c = (unpackUnorm(value, 10) - 0.5) * norm;
+    const a = (UnpackUnorm(value >>> 20, 10) - 0.5) * norm;
+    const b = (UnpackUnorm(value >>> 10, 10) - 0.5) * norm;
+    const c = (UnpackUnorm(value, 10) - 0.5) * norm;
     const m = Math.sqrt(1.0 - (a * a + b * b + c * c));
 
     switch (value >>> 30) {
@@ -74,8 +74,7 @@ const unpackRot = (value: number, result: Quaternion) => {
     }
 };
 
-// @internal
-interface CompressedPLYChunk {
+interface ICompressedPLYChunk {
     min: Vector3;
     max: Vector3;
     minScale: Vector3;
@@ -84,8 +83,7 @@ interface CompressedPLYChunk {
     maxColor: Vector3;
 }
 
-// @internal
-interface PLYConversionBuffers {
+interface IPLYConversionBuffers {
     buffer: ArrayBuffer;
     sh?: [];
 }
@@ -224,6 +222,7 @@ export type PlyProperty = {
 /**
  * meta info on Splat file
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PLYHeader {
     /**
      * number of splats
@@ -292,7 +291,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _sh: Nullable<Uint8Array[]> = null;
     private readonly _keepInRam: boolean = false;
 
-    private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
+    private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
     private _useRGBACovariants = false;
     private _material: Nullable<Material> = null;
@@ -784,12 +783,12 @@ export class GaussianSplattingMesh extends Mesh {
             shBuffer: shBuffer,
         };
     }
-    private static _GetCompressedChunks(header: PLYHeader, offset: { value: number }): Array<CompressedPLYChunk> | null {
+    private static _GetCompressedChunks(header: PLYHeader, offset: { value: number }): Array<ICompressedPLYChunk> | null {
         if (!header.chunkCount) {
             return null;
         }
         const dataView = header.dataView;
-        const compressedChunks = new Array<CompressedPLYChunk>(header.chunkCount);
+        const compressedChunks = new Array<ICompressedPLYChunk>(header.chunkCount);
         for (let i = 0; i < header.chunkCount; i++) {
             const currentChunk = {
                 min: new Vector3(),
@@ -873,7 +872,7 @@ export class GaussianSplattingMesh extends Mesh {
         return compressedChunks;
     }
 
-    private static _GetSplat(header: PLYHeader, index: number, compressedChunks: Array<CompressedPLYChunk> | null, offset: { value: number }): void {
+    private static _GetSplat(header: PLYHeader, index: number, compressedChunks: Array<ICompressedPLYChunk> | null, offset: { value: number }): void {
         const q = TmpVectors.Quaternion[0];
         const temp3 = TmpVectors.Vector3[0];
 
@@ -921,7 +920,7 @@ export class GaussianSplattingMesh extends Mesh {
                 case PLYValue.PACKED_POSITION:
                     {
                         const compressedChunk = compressedChunks![chunkIndex];
-                        unpack111011(value, temp3);
+                        Unpack111011(value, temp3);
                         position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
                         position[1] = Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
                         position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
@@ -929,7 +928,7 @@ export class GaussianSplattingMesh extends Mesh {
                     break;
                 case PLYValue.PACKED_ROTATION:
                     {
-                        unpackRot(value, q);
+                        UnpackRot(value, q);
                         r0 = q.w;
                         r1 = -q.z;
                         r2 = q.y;
@@ -939,7 +938,7 @@ export class GaussianSplattingMesh extends Mesh {
                 case PLYValue.PACKED_SCALE:
                     {
                         const compressedChunk = compressedChunks![chunkIndex];
-                        unpack111011(value, temp3);
+                        Unpack111011(value, temp3);
                         scale[0] = Math.exp(Scalar.Lerp(compressedChunk.minScale.x, compressedChunk.maxScale.x, temp3.x));
                         scale[1] = Math.exp(Scalar.Lerp(compressedChunk.minScale.y, compressedChunk.maxScale.y, temp3.y));
                         scale[2] = Math.exp(Scalar.Lerp(compressedChunk.minScale.z, compressedChunk.maxScale.z, temp3.z));
@@ -948,7 +947,7 @@ export class GaussianSplattingMesh extends Mesh {
                 case PLYValue.PACKED_COLOR:
                     {
                         const compressedChunk = compressedChunks![chunkIndex];
-                        unpack8888(value, rgba);
+                        Unpack8888(value, rgba);
                         rgba[0] = Scalar.Lerp(compressedChunk.minColor.x, compressedChunk.maxColor.x, rgba[0] / 255) * 255;
                         rgba[1] = Scalar.Lerp(compressedChunk.minColor.y, compressedChunk.maxColor.y, rgba[1] / 255) * 255;
                         rgba[2] = Scalar.Lerp(compressedChunk.minColor.z, compressedChunk.maxColor.z, rgba[2] / 255) * 255;
@@ -1150,7 +1149,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public async loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
-            (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: PLYConversionBuffers) => {
+            (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: IPLYConversionBuffers) => {
                 this.updateDataAsync(splatsData.buffer, splatsData.sh);
             });
         });
@@ -1302,15 +1301,15 @@ export class GaussianSplattingMesh extends Mesh {
 
         Matrix.ScalingToRef(fBuffer[8 * index + 3 + 0] * 2, fBuffer[8 * index + 3 + 1] * 2, fBuffer[8 * index + 3 + 2] * 2, matrixScale);
 
-        const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
+        const m = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
         const covariances = this._tmpCovariances;
-        covariances[0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
-        covariances[1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
-        covariances[2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
-        covariances[3] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
-        covariances[4] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
-        covariances[5] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
+        covariances[0] = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+        covariances[1] = m[0] * m[4] + m[1] * m[5] + m[2] * m[6];
+        covariances[2] = m[0] * m[8] + m[1] * m[9] + m[2] * m[10];
+        covariances[3] = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+        covariances[4] = m[4] * m[8] + m[5] * m[9] + m[6] * m[10];
+        covariances[5] = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
 
         // normalize covA, covB
         let factor = -10000;

@@ -13,9 +13,7 @@ import { PhysicsEngine as PhysicsEngineV1 } from "./v1/physicsEngine";
 import { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
 
 declare module "../scene" {
-    /**
-     *
-     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;

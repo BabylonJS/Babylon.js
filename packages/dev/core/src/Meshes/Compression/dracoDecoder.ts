@@ -8,7 +8,7 @@ import type { BoundingInfo } from "../../Culling/boundingInfo";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
-import type { AttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
+import type { IAttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
@@ -139,7 +139,7 @@ export class DracoDecoder extends DracoCodec {
                 return new Promise<MeshData>((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
                         let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                        const resultAttributes: Array<AttributeData> = [];
+                        const resultAttributes: Array<IAttributeData> = [];
 
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
@@ -189,7 +189,7 @@ export class DracoDecoder extends DracoCodec {
         if (this._modulePromise) {
             return this._modulePromise.then((decoder) => {
                 let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                const resultAttributes: Array<AttributeData> = [];
+                const resultAttributes: Array<IAttributeData> = [];
 
                 const numPoints = DecodeMesh(
                     decoder.module,

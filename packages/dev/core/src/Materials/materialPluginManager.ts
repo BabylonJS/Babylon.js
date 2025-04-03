@@ -28,6 +28,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 import { ShaderStore } from "../Engines/shaderStore";
 
 declare module "./material" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Material {
         /**
          * Plugin manager for this material
@@ -36,7 +37,7 @@ declare module "./material" {
     }
 }
 
-const rxOption = new RegExp("^([gimus]+)!");
+const RxOption = new RegExp("^([gimus]+)!");
 
 /**
  * Class that manages the plugins of a material
@@ -417,7 +418,7 @@ export class MaterialPluginManager {
                             pointName = pointName.substring(1);
                         } else {
                             // get the flag(s)
-                            const matchOption = rxOption.exec(pointName);
+                            const matchOption = RxOption.exec(pointName);
                             if (matchOption && matchOption.length >= 2) {
                                 regexFlags = matchOption[1];
                                 pointName = pointName.substring(regexFlags.length + 1);
@@ -456,9 +457,9 @@ export class MaterialPluginManager {
  */
 export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPluginBase>;
 
-const plugins: Array<[string, PluginMaterialFactory]> = [];
-let inited = false;
-let observer: Nullable<Observer<Material>> = null;
+const Plugins: Array<[string, PluginMaterialFactory]> = [];
+let Inited = false;
+let MaterialObserver: Nullable<Observer<Material>> = null;
 
 /**
  * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
@@ -467,19 +468,19 @@ let observer: Nullable<Observer<Material>> = null;
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
-    if (!inited) {
-        observer = Material.OnEventObservable.add((material: Material) => {
-            for (const [, factory] of plugins) {
+    if (!Inited) {
+        MaterialObserver = Material.OnEventObservable.add((material: Material) => {
+            for (const [, factory] of Plugins) {
                 factory(material);
             }
         }, MaterialPluginEvent.Created);
-        inited = true;
+        Inited = true;
     }
-    const existing = plugins.filter(([name, _factory]) => name === pluginName);
+    const existing = Plugins.filter(([name, _factory]) => name === pluginName);
     if (existing.length > 0) {
         existing[0][1] = factory;
     } else {
-        plugins.push([pluginName, factory]);
+        Plugins.push([pluginName, factory]);
     }
 }
 
@@ -490,10 +491,10 @@ export function RegisterMaterialPlugin(pluginName: string, factory: PluginMateri
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterMaterialPlugin(pluginName: string): boolean {
-    for (let i = 0; i < plugins.length; ++i) {
-        if (plugins[i][0] === pluginName) {
-            plugins.splice(i, 1);
-            if (plugins.length === 0) {
+    for (let i = 0; i < Plugins.length; ++i) {
+        if (Plugins[i][0] === pluginName) {
+            Plugins.splice(i, 1);
+            if (Plugins.length === 0) {
                 UnregisterAllMaterialPlugins();
             }
             return true;
@@ -507,8 +508,8 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterAllMaterialPlugins(): void {
-    plugins.length = 0;
-    inited = false;
-    Material.OnEventObservable.remove(observer);
-    observer = null;
+    Plugins.length = 0;
+    Inited = false;
+    Material.OnEventObservable.remove(MaterialObserver);
+    MaterialObserver = null;
 }

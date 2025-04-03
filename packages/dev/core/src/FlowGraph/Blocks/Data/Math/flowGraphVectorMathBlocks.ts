@@ -137,7 +137,7 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
 }
 RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
 
-function _transformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
+function _TransformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
     const className = _getClassNameOf(a);
     switch (className) {
         case FlowGraphTypes.Vector2:
@@ -180,7 +180,7 @@ export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<FlowG
             getRichTypeByFlowGraphType(vectorType),
             getRichTypeByFlowGraphType(matrixType),
             getRichTypeByFlowGraphType(vectorType),
-            _transformVector,
+            _TransformVector,
             FlowGraphBlockNames.TransformVector,
             config
         );

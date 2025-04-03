@@ -13,9 +13,6 @@ export interface IPhysicsEngine {
      */
     gravity: Vector3;
 
-    /**
-     *
-     */
     getPluginVersion(): number;
     /**
      * Sets the gravity vector used by the simulation

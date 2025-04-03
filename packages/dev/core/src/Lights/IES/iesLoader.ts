@@ -26,21 +26,21 @@ interface IDataPointer {
     index: number;
 }
 
-function lineToArray(line: string): number[] {
+function LineToArray(line: string): number[] {
     return line
         .split(" ")
         .filter((x) => x !== "")
         .map((x) => parseFloat(x));
 }
 
-function readArray(dataPointer: IDataPointer, count: number, targetArray: number[]) {
+function ReadArray(dataPointer: IDataPointer, count: number, targetArray: number[]) {
     while (targetArray.length !== count) {
-        const line = lineToArray(dataPointer.lines[dataPointer.index++]);
+        const line = LineToArray(dataPointer.lines[dataPointer.index++]);
         targetArray.push(...line);
     }
 }
 
-function interpolateCandelaValues(data: IIESData, phi: number, theta: number): number {
+function InterpolateCandelaValues(data: IIESData, phi: number, theta: number): number {
     let phiIndex = 0;
     let thetaIndex = 0;
     let startTheta = 0;
@@ -131,7 +131,7 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
     dataPointer.index++;
 
     // Header
-    const header = lineToArray(dataPointer.lines[dataPointer.index++]);
+    const header = LineToArray(dataPointer.lines[dataPointer.index++]);
     data.numberOfLights = header[0];
     data.lumensPerLamp = header[1];
     data.candelaMultiplier = header[2];
@@ -144,7 +144,7 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
     data.height = header[9];
 
     // Additional data
-    const additionalData = lineToArray(dataPointer.lines[dataPointer.index++]);
+    const additionalData = LineToArray(dataPointer.lines[dataPointer.index++]);
     data.ballastFactor = additionalData[0];
     data.fileGenerationType = additionalData[1];
     data.inputWatts = additionalData[2];
@@ -155,14 +155,14 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
     }
 
     // Vertical angles
-    readArray(dataPointer, data.numberOfVerticalAngles, data.verticalAngles);
+    ReadArray(dataPointer, data.numberOfVerticalAngles, data.verticalAngles);
 
     // Horizontal angles
-    readArray(dataPointer, data.numberOfHorizontalAngles, data.horizontalAngles);
+    ReadArray(dataPointer, data.numberOfHorizontalAngles, data.horizontalAngles);
 
     // Candela values
     for (let index = 0; index < data.numberOfHorizontalAngles; index++) {
-        readArray(dataPointer, data.numberOfVerticalAngles, data.candelaValues[index]);
+        ReadArray(dataPointer, data.numberOfVerticalAngles, data.candelaValues[index]);
     }
 
     // Evaluate candela values
@@ -204,7 +204,7 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
             }
         }
 
-        arrayBuffer[phi + theta * height] = interpolateCandelaValues(data, phi, theta);
+        arrayBuffer[phi + theta * height] = InterpolateCandelaValues(data, phi, theta);
     }
 
     // So far we only need the first half of the first row of the texture as we only support IES for spot light. We can add support for other types later.

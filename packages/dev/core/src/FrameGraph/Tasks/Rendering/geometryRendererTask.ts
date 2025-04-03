@@ -38,7 +38,7 @@ export interface IFrameGraphGeometryRendererTextureDescription {
     textureFormat: number;
 }
 
-const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
+const ClearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
 
 /**
  * Task used to render geometry to a set of textures.
@@ -344,7 +344,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
             this._clearAttachmentsLayout.forEach((layout, clearType) => {
-                context.clearColorAttachments(clearColors[clearType], layout);
+                context.clearColorAttachments(ClearColors[clearType], layout);
             });
 
             context.bindAttachments(this._allAttachmentsLayout);

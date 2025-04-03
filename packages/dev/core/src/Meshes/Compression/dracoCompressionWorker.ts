@@ -10,13 +10,15 @@ declare let DracoDecoderModule: DracoDecoderModule;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
-interface InitDoneMessage {
+interface IInitDoneMessage {
     id: "initDone";
 }
 
 // WorkerGlobalScope
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
-declare function postMessage(message: InitDoneMessage | DecoderMessage | EncoderMessage, transfer?: ArrayBufferLike[]): void;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare function postMessage(message: IInitDoneMessage | DecoderMessage | EncoderMessage, transfer?: ArrayBufferLike[]): void;
 
 /**
  * @internal
@@ -350,6 +352,7 @@ export { DecoderWorkerFunction as workerFunction };
  * @param moduleUrl The url to the draco decoder module (optional)
  * @returns A promise that resolves when the worker is initialized
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export async function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
     return new Promise<Worker>((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
@@ -358,7 +361,7 @@ export async function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuff
             reject(error);
         };
 
-        const onMessage = (event: MessageEvent<InitDoneMessage>) => {
+        const onMessage = (event: MessageEvent<IInitDoneMessage>) => {
             if (event.data.id === "initDone") {
                 worker.removeEventListener("error", onError);
                 worker.removeEventListener("message", onMessage);

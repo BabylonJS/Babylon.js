@@ -41,7 +41,7 @@ import {
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-const mapOutputToVariable: { [name: string]: [string, string] } = {
+const MapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
     diffuseDir: ["finalDiffuse", ""],
     specularDir: ["finalSpecularScaled", "!defined(UNLIT) && defined(SPECULARTERM)"],
@@ -91,6 +91,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _scene: Scene;
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
     private _environmentBrdfSamplerName: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _vNormalWName: string;
     private _invertNormalName: string;
     private _metallicReflectanceColor: Color3 = Color3.White();
@@ -1447,7 +1448,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Generate end points ________________________
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                const remap = mapOutputToVariable[output.name];
+                const remap = MapOutputToVariable[output.name];
                 if (remap) {
                     const [varName, conditions] = remap;
                     if (conditions) {
