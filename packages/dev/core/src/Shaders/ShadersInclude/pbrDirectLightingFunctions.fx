@@ -60,7 +60,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
     vec3 computeDiffuseTransmittedLighting(preLightingInfo info, vec3 lightColor, vec3 transmittance) {
         vec3 transmittanceNdotL = vec3(0.);
         float NdotL = absEps(info.NdotLUnclamped);
-    #ifdef GLTF_COMPLIANT
+    #ifndef SS_TRANSLUCENCY_LEGACY
         if (info.NdotLUnclamped < 0.0) {
     #endif
             // Use wrap lighting to simulate SSS.
@@ -69,7 +69,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
             // Remap transmittance from tr to 1. if ndotl is negative.
             float trAdapt = step(0., info.NdotLUnclamped);
             transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
-    #ifdef GLTF_COMPLIANT
+    #ifndef SS_TRANSLUCENCY_LEGACY
         }
 
         return (transmittanceNdotL / PI) * info.attenuation * lightColor;

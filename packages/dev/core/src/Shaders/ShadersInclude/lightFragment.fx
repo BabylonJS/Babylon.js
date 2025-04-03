@@ -85,7 +85,7 @@
             #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
             #elif defined(SS_TRANSLUCENCY)
-                #ifdef GLTF_COMPLIANT
+                #ifndef SS_TRANSLUCENCY_LEGACY
                     info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
                     info.transmission = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance); // note subSurfaceOut.translucencyIntensity is already factored in subSurfaceOut.transmittance
                 #else
