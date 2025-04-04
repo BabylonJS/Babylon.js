@@ -71,6 +71,11 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_materials_clearcoat(loader);
     });
 
+    registerGLTFExtension("EXT_materials_diffuse_roughness", true, async (loader) => {
+        const { EXT_materials_diffuse_roughness } = await import("./EXT_materials_diffuse_roughness");
+        return new EXT_materials_diffuse_roughness(loader);
+    });
+
     registerGLTFExtension("KHR_materials_diffuse_transmission", true, async (loader) => {
         const { KHR_materials_diffuse_transmission } = await import("./KHR_materials_diffuse_transmission");
         return new KHR_materials_diffuse_transmission(loader);

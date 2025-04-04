@@ -12,6 +12,35 @@
             "referenceImage": "openpbr_base_weight.png"
         },
         {
+            "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
+            "playgroundId": "#MXACV7#3",
+            "referenceImage": "openpbr_base_diffuse_roughness.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
+            "playgroundId": "#MXACV7#5",
+            "renderCount": 15,
+            "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
+            "playgroundId": "#MXACV7#9",
+            "renderCount": 5,
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
+            "playgroundId": "#MXACV7#10",
+            "renderCount": 5,
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness SH IBL",
+            "playgroundId": "#MXACV7#11",
+            "renderCount": 2,
+            "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"
