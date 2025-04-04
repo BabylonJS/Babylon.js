@@ -1,7 +1,7 @@
 import type { _IProcessingOptions } from "./shaderProcessingOptions";
 
-const defaultAttributeKeywordName = "attribute";
-const defaultVaryingKeywordName = "varying";
+const DefaultAttributeKeywordName = "attribute";
+const DefaultVaryingKeywordName = "varying";
 
 /** @internal */
 export class ShaderCodeNode {
@@ -26,13 +26,13 @@ export class ShaderCodeNode {
                     value = processor.lineProcessor(value, options.isFragment, options.processingContext);
                 }
 
-                const attributeKeyword = options.processor?.attributeKeywordName ?? defaultAttributeKeywordName;
+                const attributeKeyword = options.processor?.attributeKeywordName ?? DefaultAttributeKeywordName;
                 const varyingKeyword =
                     options.isFragment && options.processor?.varyingFragmentKeywordName
                         ? options.processor?.varyingFragmentKeywordName
                         : !options.isFragment && options.processor?.varyingVertexKeywordName
                           ? options.processor?.varyingVertexKeywordName
-                          : defaultVaryingKeywordName;
+                          : DefaultVaryingKeywordName;
 
                 if (!options.isFragment && processor.attributeProcessor && this.line.startsWith(attributeKeyword)) {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);

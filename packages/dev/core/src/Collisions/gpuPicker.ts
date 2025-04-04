@@ -351,7 +351,7 @@ export class GPUPicker {
         const invertedY = rttSizeH - adjustedY - 1;
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
 
-        return this._executePicking(adjustedX, invertedY, disposeWhenDone);
+        return this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
     }
 
     /**
@@ -399,7 +399,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        return this._executeMultiPicking(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
+        return this._executeMultiPickingAsync(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _prepareForPicking(x: number, y: number) {
@@ -440,7 +440,7 @@ export class GPUPicker {
     }
 
     // pick one pixel
-    private async _executePicking(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
+    private async _executePickingAsync(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
         return new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
                 this._pickingInProgress = false;
@@ -491,7 +491,7 @@ export class GPUPicker {
     }
 
     // pick multiple pixels
-    private async _executeMultiPicking(
+    private async _executeMultiPickingAsync(
         xy: IVector2Like[],
         minX: number,
         maxY: number,

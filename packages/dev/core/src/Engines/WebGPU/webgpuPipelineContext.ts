@@ -47,6 +47,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     // Default implementation.
     public onCompiled?: () => void;
 
+    // eslint-disable-next-line no-restricted-syntax
     public get isAsync() {
         return false;
     }

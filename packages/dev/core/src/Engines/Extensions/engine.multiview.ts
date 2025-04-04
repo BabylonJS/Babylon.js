@@ -193,7 +193,7 @@ function CreateMultiviewUbo(engine: AbstractEngine, name?: string) {
     return ubo;
 }
 
-const currentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer;
+const CurrentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer;
 
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
@@ -204,7 +204,7 @@ Scene.prototype.createSceneUniformBuffer = function (name?: string): UniformBuff
     if (this._multiviewSceneUbo) {
         return CreateMultiviewUbo(this.getEngine(), name);
     }
-    return currentCreateSceneUniformBuffer.bind(this)(name);
+    return CurrentCreateSceneUniformBuffer.bind(this)(name);
 };
 Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {

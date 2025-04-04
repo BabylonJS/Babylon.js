@@ -78,6 +78,7 @@ export interface IExplorerAdditionalNode {
     getContent(): IExplorerAdditionalChild[];
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IInspectorContextMenuType = "pipeline" | "node" | "materials" | "spriteManagers" | "particleSystems" | "frameGraphs";
 
 /**
@@ -432,6 +433,7 @@ export class DebugLayer {
      * @param config Define the configuration of the inspector
      * @returns a promise fulfilled when the debug layer is visible
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async show(config?: IInspectorOptions): Promise<DebugLayer> {
         return new Promise((resolve) => {
             if (typeof this.BJSINSPECTOR == "undefined") {

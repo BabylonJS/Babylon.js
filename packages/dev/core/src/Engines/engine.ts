@@ -421,6 +421,7 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return CreateImageBitmapFromSource(this, imageSource, options);
     }
@@ -543,8 +544,8 @@ export class Engine extends ThinEngine {
     /**
      * @internal
      */
-    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
-    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
+    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
+    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
 
     /**
      * @internal
@@ -1010,8 +1011,10 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * This function might return null synchronously, so it is technically not async.
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Nullable<Promise<ArrayBufferView>> {
         if (this._webGLVersion < 2) {
             throw new Error("_readPixelsAsync only work on WebGL2+");

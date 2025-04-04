@@ -19,15 +19,15 @@ import type { IFileRequest } from "../../Misc/fileRequest";
 import { _GetGlobalDefines } from "../abstractEngine.functions";
 import type { AbstractEngine } from "../abstractEngine";
 
-const regexSe = /defined\s*?\((.+?)\)/g;
-const regexSeRevert = /defined\s*?\[(.+?)\]/g;
-const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-const regexShaderDecl = /__decl__/;
-const regexLightX = /light\{X\}.(\w*)/g;
-const regexX = /\{X\}/g;
-const reusableMatches: RegExpMatchArray[] = [];
+const RegexSe = /defined\s*?\((.+?)\)/g;
+const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
+const RegexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+const RegexShaderDecl = /__decl__/;
+const RegexLightX = /light\{X\}.(\w*)/g;
+const RegexX = /\{X\}/g;
+const ReusableMatches: RegExpMatchArray[] = [];
 
-const _moveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
+const _MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
 
 /** @internal */
 export function Initialize(options: _IProcessingOptions): void {
@@ -128,7 +128,7 @@ function _ExtractOperation(expression: string) {
 }
 
 function _BuildSubExpression(expression: string): ShaderDefineExpression {
-    expression = expression.replace(regexSe, "defined[$1]");
+    expression = expression.replace(RegexSe, "defined[$1]");
 
     const postfix = ShaderDefineExpression.infixToPostfix(expression);
 
@@ -146,11 +146,11 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
             const operator = c == "&&" ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
 
             if (typeof v1 === "string") {
-                v1 = v1.replace(regexSeRevert, "defined($1)");
+                v1 = v1.replace(RegexSeRevert, "defined($1)");
             }
 
             if (typeof v2 === "string") {
-                v2 = v2.replace(regexSeRevert, "defined($1)");
+                v2 = v2.replace(RegexSeRevert, "defined($1)");
             }
 
             operator.leftOperand = typeof v2 === "string" ? _ExtractOperation(v2) : v2;
@@ -163,7 +163,7 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
     let result = stack[stack.length - 1];
 
     if (typeof result === "string") {
-        result = result.replace(regexSeRevert, "defined($1)");
+        result = result.replace(RegexSeRevert, "defined($1)");
     }
 
     // note: stack.length !== 1 if there was an error in the parsing
@@ -215,7 +215,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
         const line = cursor.currentLine;
 
         if (line.indexOf("#") >= 0) {
-            const matches = _moveCursorRegex.exec(line);
+            const matches = _MoveCursorRegex.exec(line);
 
             if (matches && matches.length) {
                 const keyword = matches[0];
@@ -398,11 +398,11 @@ function _ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, e
 
 /** @internal */
 export function _ProcessIncludes(sourceCode: string, options: _IProcessingOptions, callback: (data: any) => void): void {
-    reusableMatches.length = 0;
+    ReusableMatches.length = 0;
     let match: RegExpMatchArray | null;
     // stay back-compat to the old matchAll syntax
-    while ((match = regexShaderInclude.exec(sourceCode)) !== null) {
-        reusableMatches.push(match);
+    while ((match = RegexShaderInclude.exec(sourceCode)) !== null) {
+        ReusableMatches.push(match);
     }
 
     let returnValue = String(sourceCode);
@@ -410,12 +410,12 @@ export function _ProcessIncludes(sourceCode: string, options: _IProcessingOption
 
     let keepProcessing = false;
 
-    for (const match of reusableMatches) {
+    for (const match of ReusableMatches) {
         let includeFile = match[1];
 
         // Uniform declaration
         if (includeFile.indexOf("__decl__") !== -1) {
-            includeFile = includeFile.replace(regexShaderDecl, "");
+            includeFile = includeFile.replace(RegexShaderDecl, "");
             if (options.supportsUniformBuffers) {
                 includeFile = includeFile.replace("Vertex", "Ubo").replace("Fragment", "Ubo");
             }
@@ -453,20 +453,20 @@ export function _ProcessIncludes(sourceCode: string, options: _IProcessingOption
                     for (let i = minIndex; i < maxIndex; i++) {
                         if (!options.supportsUniformBuffers) {
                             // Ubo replacement
-                            sourceIncludeContent = sourceIncludeContent.replace(regexLightX, (str: string, p1: string) => {
+                            sourceIncludeContent = sourceIncludeContent.replace(RegexLightX, (str: string, p1: string) => {
                                 return p1 + "{X}";
                             });
                         }
-                        includeContent += sourceIncludeContent.replace(regexX, i.toString()) + "\n";
+                        includeContent += sourceIncludeContent.replace(RegexX, i.toString()) + "\n";
                     }
                 } else {
                     if (!options.supportsUniformBuffers) {
                         // Ubo replacement
-                        includeContent = includeContent.replace(regexLightX, (str: string, p1: string) => {
+                        includeContent = includeContent.replace(RegexLightX, (str: string, p1: string) => {
                             return p1 + "{X}";
                         });
                     }
-                    includeContent = includeContent.replace(regexX, indexString);
+                    includeContent = includeContent.replace(RegexX, indexString);
                 }
             }
 
@@ -494,7 +494,7 @@ export function _ProcessIncludes(sourceCode: string, options: _IProcessingOption
             return;
         }
     }
-    reusableMatches.length = 0;
+    ReusableMatches.length = 0;
 
     returnValue = parts.join("");
 

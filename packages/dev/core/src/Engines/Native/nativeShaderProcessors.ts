@@ -7,7 +7,7 @@ import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOp
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 
-const varyingRegex = /(flat\s)?\s*varying\s*.*/;
+const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
 
 /** @internal */
 export class NativeShaderProcessor implements IShaderProcessor {
@@ -52,7 +52,7 @@ export class NativeShaderProcessor implements IShaderProcessor {
     }
 
     public varyingCheck(varying: string, _isFragment: boolean) {
-        return varyingRegex.test(varying);
+        return VaryingRegex.test(varying);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean) {

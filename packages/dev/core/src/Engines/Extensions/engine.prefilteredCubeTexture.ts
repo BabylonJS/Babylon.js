@@ -49,7 +49,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
     forcedExtension: any = null,
     createPolynomials: boolean = true
 ): InternalTexture {
-    const callback = async (loadData: any) => {
+    const callbackAsync = async (loadData: any) => {
         if (!loadData) {
             if (onLoad) {
                 onLoad(null);
@@ -142,5 +142,5 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
         }
     };
 
-    return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
+    return this.createCubeTexture(rootUrl, scene, null, false, callbackAsync, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
 };

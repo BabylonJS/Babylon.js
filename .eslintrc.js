@@ -166,6 +166,8 @@ const rules = {
                 "@typescript-eslint/no-unnecessary-type-constraint": "off",
                 "@typescript-eslint/no-redundant-type-constituents": "off",
                 "@typescript-eslint/no-namespace": "off",
+                "@typescript-eslint/no-array-delete": "off",
+                "@typescript-eslint/no-implied-eval": "off",
                 "@typescript-eslint/prefer-promise-reject-errors": "warn",
                 "@typescript-eslint/only-throw-error": "warn",
                 "@typescript-eslint/no-for-in-array": "warn",

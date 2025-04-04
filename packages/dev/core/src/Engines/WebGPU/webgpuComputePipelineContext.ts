@@ -15,6 +15,7 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
 
     public computePipeline: GPUComputePipeline;
 
+    // eslint-disable-next-line no-restricted-syntax
     public get isAsync() {
         return false;
     }

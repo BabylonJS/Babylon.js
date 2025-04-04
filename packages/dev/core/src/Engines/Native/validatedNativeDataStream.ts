@@ -3,6 +3,7 @@ import type { NativeData } from "./nativeDataStream";
 import { NativeDataStream } from "./nativeDataStream";
 import type { INative } from "./nativeInterfaces";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
 NativeEngine._createNativeDataStream = function () {

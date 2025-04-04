@@ -121,6 +121,7 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async readDataFromBuffer(
         gpuBuffer: GPUBuffer,
         size: number,

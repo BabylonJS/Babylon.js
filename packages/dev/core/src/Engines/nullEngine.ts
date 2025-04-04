@@ -17,6 +17,7 @@ import { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { IStencilState } from "../States/IStencilState";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const global: any;
 
 /**

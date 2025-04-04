@@ -19,6 +19,7 @@ import { _RetryWithInterval } from "core/Misc/timingTools";
  *  * object: `{ compute: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
  *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IComputeShaderPath = {
     /**
      * Directly pass the shader code

@@ -35,7 +35,7 @@ declare module "../../webgpuEngine" {
     }
 }
 
-const computePassDescriptor: GPUComputePassDescriptor = {};
+const ComputePassDescriptor: GPUComputePassDescriptor = {};
 
 WebGPUEngine.prototype.createComputeContext = function (): IComputeContext | undefined {
     return new WebGPUComputeContext(this._device, this._cacheSampler);
@@ -125,10 +125,10 @@ WebGPUEngine.prototype._computeDispatch = function (
     }
 
     if (gpuPerfCounter) {
-        this._timestampQuery.startPass(computePassDescriptor, this._timestampIndex);
+        this._timestampQuery.startPass(ComputePassDescriptor, this._timestampIndex);
     }
 
-    const computePass = this._renderEncoder.beginComputePass(computePassDescriptor);
+    const computePass = this._renderEncoder.beginComputePass(ComputePassDescriptor);
 
     computePass.setPipeline(contextPipeline.computePipeline);
 

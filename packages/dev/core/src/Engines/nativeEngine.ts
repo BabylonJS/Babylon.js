@@ -405,6 +405,7 @@ export class NativeEngine extends Engine {
                               this,
                               function (acc: any, cur: any) {
                                   if (Array.isArray(cur)) {
+                                      // eslint-disable-next-line prefer-spread
                                       acc.push.apply(acc, flat.call(cur, depth - 1));
                                   } else {
                                       acc.push(cur);
@@ -750,8 +751,10 @@ export class NativeEngine extends Engine {
     }
 
     /**
+     * Function is not technically Async
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public override _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
