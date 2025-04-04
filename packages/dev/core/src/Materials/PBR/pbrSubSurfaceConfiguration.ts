@@ -59,6 +59,7 @@ export class MaterialSubSurfaceDefines extends MaterialDefines {
 
     public SS_USE_GLTF_TEXTURES = false;
     public SS_APPLY_ALBEDO_AFTER_SUBSURFACE = false;
+    public SS_TRANSLUCENCY_LEGACY = false;
 }
 
 /**
@@ -73,6 +74,14 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * Note however that the PBR calculation is wrong when this property is set to true, so only use it if you want to mimic the 7.0 behavior.
      */
     public static DEFAULT_APPLY_ALBEDO_AFTERSUBSURFACE = false;
+
+    /**
+     * Default value used for legacyTranslucency.
+     *
+     * This property only exists for backward compatibility reasons.
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface transluceny. Default is false.
+     */
+    public static DEFAULT_LEGACY_TRANSLUCENCY = false;
 
     protected override _material: PBRBaseMaterial;
 
@@ -351,6 +360,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @serialize()
     public applyAlbedoAfterSubSurface = PBRSubSurfaceConfiguration.DEFAULT_APPLY_ALBEDO_AFTERSUBSURFACE;
 
+    /**
+     * This property only exists for backward compatibility reasons.
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface transluceny. Default is false.
+     */
+    @serialize()
+    public legacyTransluceny = PBRSubSurfaceConfiguration.DEFAULT_LEGACY_TRANSLUCENCY;
+
     private _scene: Scene;
 
     /** @internal */
@@ -465,6 +481,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_DISPERSION = this._isDispersionEnabled;
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_THICKNESS = false;
+            defines.SS_TRANSLUCENCY_LEGACY = this.legacyTransluceny;
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
             defines.SS_REFRACTIONINTENSITY_TEXTURE = false;

@@ -84,12 +84,16 @@
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
             #elif defined(AREALIGHT{X})
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
+            #elif defined(SS_TRANSLUCENCY)
+                #ifndef SS_TRANSLUCENCY_LEGACY
+                    info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                    info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance); // note subSurfaceOut.translucencyIntensity is already factored in subSurfaceOut.transmittance
+                #else
+                    info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
+                    info.diffuseTransmission = vec3(0.0);
+                #endif
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
-                #ifdef SS_TRANSLUCENCY
-                    info.diffuse *= (1.0 - subSurfaceOut.translucencyIntensity);
-                    info.transmission = computeTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
-                #endif
             #endif
 
             // Specular contribution
@@ -137,7 +141,7 @@
                         absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
                         info.diffuse *= absorption;
                         #ifdef SS_TRANSLUCENCY
-                            info.transmission *= absorption;
+                            info.diffuseTransmission *= absorption;
                         #endif
                         #ifdef SPECULARTERM
                             info.specular *= absorption;
@@ -147,7 +151,7 @@
                     // Apply energy conservation on diffuse and specular term.
                     info.diffuse *= info.clearCoat.w;
                     #ifdef SS_TRANSLUCENCY
-                        info.transmission *= info.clearCoat.w;
+                        info.diffuseTransmission *= info.clearCoat.w;
                     #endif
                     #ifdef SPECULARTERM
                         info.specular *= info.clearCoat.w;
@@ -347,7 +351,7 @@
                 diffuseBase += info.diffuse * shadow;
             #endif
             #ifdef SS_TRANSLUCENCY
-                transmissionBase += info.transmission * shadow;
+                diffuseTransmissionBase += info.diffuseTransmission * shadow;
             #endif
             #ifdef SPECULARTERM
                 specularBase += info.specular * shadow;

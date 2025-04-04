@@ -1,6 +1,6 @@
 var diffuseBase: vec3f = vec3f(0., 0., 0.);
 #ifdef SS_TRANSLUCENCY
-    var transmissionBase: vec3f = vec3f(0., 0., 0.);
+    var diffuseTransmissionBase: vec3f = vec3f(0., 0., 0.);
 #endif
 #ifdef SPECULARTERM
     var specularBase: vec3f = vec3f(0., 0., 0.);
