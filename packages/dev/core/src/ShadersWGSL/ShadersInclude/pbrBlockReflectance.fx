@@ -1,5 +1,5 @@
 #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-    var specularEnvironmentReflectance: vec3f = getReflectanceFromBRDFWithEnvLookup(clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, environmentBrdf);
+    var specularEnvironmentReflectance: vec3f = getReflectanceFromBRDFWithEnvLookup(clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, uniforms.vReflectivityColor.b, environmentBrdf);
 
     #ifdef RADIANCEOCCLUSION
         specularEnvironmentReflectance *= seo;

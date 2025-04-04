@@ -80,12 +80,18 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 #endif
 
 #ifdef SPECULARTERM
-    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
+    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f, ior: f32) -> vec3f {
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
 
-        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90);
+        #ifdef METALLICWORKFLOW
+            // Scale the reflectance by the IOR for values less than 1.5
+            var f90Mod = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
+        #else
+            var f90Mod = 1.0;
+        #endif
+        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90 * f90Mod);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);

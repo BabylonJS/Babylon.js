@@ -2298,11 +2298,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 if (defines.METALLICWORKFLOW) {
                     TmpColors.Color3[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
                     TmpColors.Color3[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
-                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
-
                     const ior = this.subSurface?._indexOfRefraction ?? 1.5;
                     const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
-
+                    TmpColors.Color3[0].b = ior;
+                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model
                     // for dielectrics.
