@@ -71,8 +71,8 @@ export class ThinChromaticAberrationPostProcess extends EffectWrapper {
     /** The height of the screen to apply the effect on */
     public screenHeight: number;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         const effect = this._drawWrapper.effect!;
 

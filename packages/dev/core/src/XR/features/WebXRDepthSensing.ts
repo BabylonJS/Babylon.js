@@ -500,6 +500,10 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         if (this._onCameraObserver) {
             this._xrSessionManager.scene.onBeforeCameraRenderObservable.remove(this._onCameraObserver);
         }
+        managedMaterialPlugins.forEach((plugin) => {
+            plugin.dispose();
+        });
+        managedMaterialPlugins.length = 0;
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
