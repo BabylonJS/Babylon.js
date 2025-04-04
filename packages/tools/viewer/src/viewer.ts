@@ -949,6 +949,7 @@ export class Viewer implements IDisposable {
         }
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
+            this._iblShadowsRenderPipeline?.resetAccumulation();
         }
         if (value.visible !== undefined) {
             this._changeSkyboxVisible(value.visible);
