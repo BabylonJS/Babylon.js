@@ -49,7 +49,6 @@ function _observeArrayfunction(object: { [key: string]: any }, functionName: str
     // Creates a new function that calls the callback and the old function
     const newFunction = function () {
         const previousLength = object.length;
-        // eslint-disable-next-line prefer-rest-params
         const returnValue = newFunction.previous.apply(object, arguments);
         callback(functionName, previousLength);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return

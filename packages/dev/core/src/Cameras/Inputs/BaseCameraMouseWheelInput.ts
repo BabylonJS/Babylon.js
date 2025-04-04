@@ -57,7 +57,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
         this._wheel = (pointer) => {

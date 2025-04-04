@@ -294,7 +294,6 @@ export const prepareLeakDetection = async (classes: string[] = classesToCheck) =
         const originalPrototype = parentObject[objectName].prototype;
         const originalDispose = originalPrototype.dispose;
         originalPrototype.dispose = function () {
-            // eslint-disable-next-line prefer-rest-params
             originalDispose.apply(this, arguments);
             this.__disposeCalled = true;
         };

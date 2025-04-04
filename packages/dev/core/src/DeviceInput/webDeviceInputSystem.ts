@@ -860,7 +860,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceSlot = evt.gamepad.index;
 
                 this._unregisterDevice(deviceType, deviceSlot);
-                this._gamepads.splice(deviceSlot, 1);
+                delete this._gamepads[deviceSlot];
             }
         };
 

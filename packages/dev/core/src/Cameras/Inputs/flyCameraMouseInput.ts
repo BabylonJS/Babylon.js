@@ -79,7 +79,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 

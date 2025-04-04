@@ -92,7 +92,6 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      */
     public attachControl(noPreventDefault?: boolean): void {
         // was there a second variable defined?
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
         if (this._onCanvasBlurObserver) {

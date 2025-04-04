@@ -995,7 +995,6 @@ export class ArcRotateCamera extends TargetCamera {
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public override attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
-        // eslint-disable-next-line prefer-rest-params
         const args = arguments;
 
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(args);

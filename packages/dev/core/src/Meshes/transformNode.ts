@@ -543,11 +543,8 @@ export class TransformNode extends Node {
             if (arguments.length < 3) {
                 return this;
             }
-            // eslint-disable-next-line prefer-rest-params
             absolutePositionX = arguments[0];
-            // eslint-disable-next-line prefer-rest-params
             absolutePositionY = arguments[1];
-            // eslint-disable-next-line prefer-rest-params
             absolutePositionZ = arguments[2];
         } else {
             absolutePositionX = absolutePosition.x;
