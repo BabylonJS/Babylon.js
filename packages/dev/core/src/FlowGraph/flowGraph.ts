@@ -14,7 +14,7 @@ import { FlowGraphEventType } from "./flowGraphEventType";
 import type { IFlowGraphEventTrigger } from "./flowGraphSceneEventCoordinator";
 import { FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator";
 import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
-import { _isADescendantOf } from "./utils";
+import { _IsDescendantOf } from "./utils";
 
 export const enum FlowGraphState {
     /**
@@ -247,7 +247,7 @@ export class FlowGraph {
                 for (; i < order.length; i++) {
                     const block2 = order[i];
                     const mesh2 = (block2 as FlowGraphMeshPickEventBlock).asset.getValue(context);
-                    if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
+                    if (mesh1 && mesh2 && _IsDescendantOf(mesh1, mesh2)) {
                         break;
                     }
                 }

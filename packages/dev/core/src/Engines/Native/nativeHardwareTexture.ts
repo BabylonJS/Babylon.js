@@ -1,9 +1,9 @@
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import type { Nullable } from "../../types";
 import type { INativeEngine, NativeTexture } from "./nativeInterfaces";
 
 /** @internal */
-export class NativeHardwareTexture implements HardwareTextureWrapper {
+export class NativeHardwareTexture implements IHardwareTextureWrapper {
     private readonly _engine: INativeEngine;
     private _nativeTexture: Nullable<NativeTexture>;
 

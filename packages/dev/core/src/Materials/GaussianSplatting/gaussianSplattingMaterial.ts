@@ -10,7 +10,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
 import { Camera } from "core/Cameras/camera";
 
 import "../../Shaders/gaussianSplatting.fragment";
@@ -156,7 +156,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 defines: defines,
             });
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             const join = defines.toString();
             const effect = scene.getEngine().createEffect(
@@ -284,7 +284,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             GaussianSplattingMaterial.BindEffect(mesh, this._activeEffect, scene);
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
             this._needToBindSceneUbo = true;
         }

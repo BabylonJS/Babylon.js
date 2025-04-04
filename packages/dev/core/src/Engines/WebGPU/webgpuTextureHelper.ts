@@ -4,7 +4,7 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { ILog2 } from "../../Maths/math.scalar.functions";
 import { Constants } from "../constants";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 
 /** @internal */
 export class WebGPUTextureHelper {
@@ -303,8 +303,8 @@ export class WebGPUTextureHelper {
         return { width: 1, height: 1, length: 4 };
     }
 
-    public static IsHardwareTexture(texture: HardwareTextureWrapper | GPUTexture): texture is HardwareTextureWrapper {
-        return !!(texture as HardwareTextureWrapper).release;
+    public static IsHardwareTexture(texture: IHardwareTextureWrapper | GPUTexture): texture is IHardwareTextureWrapper {
+        return !!(texture as IHardwareTextureWrapper).release;
     }
 
     public static IsInternalTexture(texture: InternalTexture | GPUTexture): texture is InternalTexture {

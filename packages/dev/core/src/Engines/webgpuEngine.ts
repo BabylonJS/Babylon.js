@@ -27,7 +27,7 @@ import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import { AbstractEngine } from "./abstractEngine";
 import type { ISceneLike, AbstractEngineOptions } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
-import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
 import type { IColor4Like } from "../Maths/math.like";
 import { UniformBuffer } from "../Materials/uniformBuffer";
@@ -97,7 +97,7 @@ import "./WebGPU/Extensions/engine.renderTargetTexture";
 import "./WebGPU/Extensions/engine.renderTargetCube";
 import "./WebGPU/Extensions/engine.query";
 
-const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
+const ViewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
     dimension: WebGPUConstants.TextureDimension.E2d,
     format: undefined as any, // will be updated with the right value
@@ -105,14 +105,14 @@ const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     arrayLayerCount: 1,
 };
 
-const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
+const ViewDescriptorSwapChain: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain`,
     dimension: WebGPUConstants.TextureDimension.E2d,
     format: undefined as any, // will be updated with the right value
     mipLevelCount: 1,
     arrayLayerCount: 1,
 };
-const tempColor4 = new Color4();
+const TempColor4 = new Color4();
 
 /** @internal */
 interface IWebGPURenderPassWrapper {
@@ -441,6 +441,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
      */
+    // eslint-disable-next-line no-restricted-syntax
     public static get IsSupportedAsync(): Promise<boolean> {
         return !navigator.gpu
             ? Promise.resolve(false)
@@ -610,7 +611,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public async prepareGlslangAndTintAsync(): Promise<void> {
         if (!this._workingGlslangAndTintPromise) {
             this._workingGlslangAndTintPromise = new Promise<void>((resolve) => {
-                this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
+                this._initGlslangAsync(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
                     this._glslang = glslang;
                     this._tintWASM = new WebGPUTintWASM();
                     this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
@@ -793,7 +794,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             });
     }
 
-    private async _initGlslang(glslangOptions?: GlslangOptions): Promise<any> {
+    private async _initGlslangAsync(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || {};
         glslangOptions = {
             ...WebGPUEngine._GlslangDefaultOptions,
@@ -1063,6 +1064,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return CreateImageBitmapFromSource(this, imageSource, options);
     }
@@ -2235,7 +2237,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /** @internal */
-    public _createHardwareTexture(): HardwareTextureWrapper {
+    public _createHardwareTexture(): IHardwareTextureWrapper {
         return new WebGPUHardwareTexture(this);
     }
 
@@ -2899,18 +2901,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param y defines the y coordinate of the rectangle where pixels must be read
      * @param width defines the width of the rectangle where pixels must be read
      * @param height defines the height of the rectangle where pixels must be read
-     * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
+     * @param _hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
      * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async readPixels(
         x: number,
         y: number,
         width: number,
         height: number,
-        hasAlpha = true,
+        _hasAlpha = true,
         flushRenderer = true,
         data: Nullable<Uint8Array> = null
     ): Promise<ArrayBufferView> {
@@ -3085,7 +3087,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this.setDepthFunctionToGreaterOrEqual();
         }
 
-        const clearColorForIntegerRt = tempColor4;
+        const clearColorForIntegerRt = TempColor4;
         if (clearColor) {
             clearColorForIntegerRt.r = clearColor.r * 255;
             clearColorForIntegerRt.g = clearColor.g * 255;
@@ -3264,11 +3266,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         // Resolve in case of MSAA
         if (this._options.antialias) {
-            viewDescriptorSwapChainAntialiasing.format = swapChainTexture.format;
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView(viewDescriptorSwapChainAntialiasing);
+            ViewDescriptorSwapChainAntialiasing.format = swapChainTexture.format;
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView(ViewDescriptorSwapChainAntialiasing);
         } else {
-            viewDescriptorSwapChain.format = swapChainTexture.format;
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(viewDescriptorSwapChain);
+            ViewDescriptorSwapChain.format = swapChainTexture.format;
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(ViewDescriptorSwapChain);
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -3963,6 +3965,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         size = size || storageBuffer.capacity;
 
@@ -3987,6 +3990,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async readFromMultipleStorageBuffers(
         storageBuffers: DataBuffer[],
         offset?: number,

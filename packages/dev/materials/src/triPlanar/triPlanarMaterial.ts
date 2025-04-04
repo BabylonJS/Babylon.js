@@ -21,7 +21,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./triplanar.fragment";
 import "./triplanar.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -282,7 +282,7 @@ export class TriPlanarMaterial extends PushMaterial {
 
             const uniformBuffers: string[] = [];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -377,7 +377,7 @@ export class TriPlanarMaterial extends PushMaterial {
                 this._activeEffect.setTexture("normalSamplerZ", this.normalTextureZ);
             }
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

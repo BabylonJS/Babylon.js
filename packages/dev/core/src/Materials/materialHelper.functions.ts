@@ -17,7 +17,7 @@ import { LightConstants } from "../Lights/lightConstants";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
-import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 // Temps
@@ -732,7 +732,7 @@ export function PrepareDefinesForFrameBoundValues(
     let changed = PrepareDefinesForCamera(scene, defines);
 
     if (useClipPlane !== false) {
-        changed = prepareDefinesForClipPlanes(material, scene, defines);
+        changed = PrepareDefinesForClipPlanes(material, scene, defines);
     }
 
     if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
@@ -926,6 +926,7 @@ export function PrepareDefinesForMultiview(scene: Scene, defines: any) {
  * @param defines The defines to update
  * @param needAlphaBlending Determines if the material needs alpha blending
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
     const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
     const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;

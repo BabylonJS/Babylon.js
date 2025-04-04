@@ -5,7 +5,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import type { ICanvas, IImage, IPath2D } from "./ICanvas";
-import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
@@ -2412,7 +2412,7 @@ export abstract class AbstractEngine {
     public _renderPassNames: string[] = ["main"];
 
     /** @internal */
-    public abstract _createHardwareTexture(): HardwareTextureWrapper;
+    public abstract _createHardwareTexture(): IHardwareTextureWrapper;
 
     /**
      * creates and returns a new video element

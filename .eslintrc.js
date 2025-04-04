@@ -86,6 +86,9 @@ const abbreviations = [
     "POV",
     "BABYLON",
     "HSV",
+    "[VUW](Offset|Rotation|Scale|Ang)",
+    "DDS",
+    "NaN",
 ];
 
 // Join them into a single regex string

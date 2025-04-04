@@ -61,7 +61,7 @@ export interface ICubeTextureCreationOptions {
 }
 
 // The default scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-const defaultLodScale = 0.8;
+const DefaultLodScale = 0.8;
 
 /**
  * Class for creating a cube texture
@@ -239,7 +239,7 @@ export class CubeTexture extends BaseTexture {
         prefiltered = false,
         forcedExtension: any = null,
         createPolynomials: boolean = false,
-        lodScale: number = defaultLodScale,
+        lodScale: number = DefaultLodScale,
         lodOffset: number = 0,
         loaderOptions?: any,
         useSRGBBuffer?: boolean
@@ -266,7 +266,7 @@ export class CubeTexture extends BaseTexture {
             prefiltered = extensionsOrOptions.prefiltered ?? false;
             forcedExtension = extensionsOrOptions.forcedExtension ?? null;
             this._createPolynomials = extensionsOrOptions.createPolynomials ?? false;
-            this._lodScale = extensionsOrOptions.lodScale ?? defaultLodScale;
+            this._lodScale = extensionsOrOptions.lodScale ?? DefaultLodScale;
             this._lodOffset = extensionsOrOptions.lodOffset ?? 0;
             this._loaderOptions = extensionsOrOptions.loaderOptions;
             this._useSRGBBuffer = extensionsOrOptions.useSRGBBuffer;

@@ -19,7 +19,7 @@ import { Material } from "../Materials/material";
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 import "../Engines/Extensions/engine.multiRender";
@@ -56,7 +56,7 @@ const Uniforms = [
     "morphTargetTextureIndices",
     "boneTextureWidth",
 ];
-addClipPlaneUniforms(Uniforms);
+AddClipPlaneUniforms(Uniforms);
 
 /**
  * This renderer is helpful to fill one of the render target with a geometry buffer.
@@ -814,7 +814,7 @@ export class GeometryBufferRenderer {
             defines.push("#define SCENE_MRT_COUNT " + this._multiRenderTarget.textures.length);
         }
 
-        prepareStringDefinesForClipPlanes(material, this._scene, defines);
+        PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
         // Get correct effect
         const engine = this._scene.getEngine();
@@ -1201,7 +1201,7 @@ export class GeometryBufferRenderer {
                 }
 
                 // Clip plane
-                bindClipPlane(effect, material, this._scene);
+                BindClipPlane(effect, material, this._scene);
 
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {

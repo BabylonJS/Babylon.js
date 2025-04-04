@@ -308,7 +308,7 @@ export class SpriteManager implements ISpriteManager {
         epsilon: number = 0.01,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         fromPacked: boolean = false,
-        spriteJSON: null = null,
+        spriteJSON: null | string = null,
         options?: SpriteManagerOptions
     ) {
         if (!scene) {

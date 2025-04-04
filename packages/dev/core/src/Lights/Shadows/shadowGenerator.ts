@@ -26,7 +26,7 @@ import { DrawWrapper } from "../../Materials/drawWrapper";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { Camera } from "../../Cameras/camera";
 
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     BindMorphTargetParameters,
@@ -1382,7 +1382,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
 
                 // Clip planes
-                bindClipPlane(effect, material, scene);
+                BindClipPlane(effect, material, scene);
             }
 
             if (!this._useUBO && !shadowDepthWrapper) {
@@ -1684,7 +1684,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 : 0;
 
             // ClipPlanes
-            prepareStringDefinesForClipPlanes(material, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
             // Instances
             if (useInstances) {
@@ -1742,7 +1742,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
-                addClipPlaneUniforms(uniforms);
+                AddClipPlaneUniforms(uniforms);
 
                 // Custom shader?
                 if (this.customShaderOptions) {

@@ -26,7 +26,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 import { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
@@ -1460,7 +1460,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
-        addClipPlaneUniforms(effectCreationOption);
+        AddClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("sheetInfos");
@@ -1485,7 +1485,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public fillDefines(defines: Array<string>, blendMode: number = 0, fillImageProcessing: boolean = true): void {
         if (this._scene) {
-            prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
@@ -1679,7 +1679,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const defines = effect.defines;
 
         if (this._scene) {
-            bindClipPlane(effect, this, this._scene);
+            BindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
                 BindFogParameters(this._scene, undefined, effect);

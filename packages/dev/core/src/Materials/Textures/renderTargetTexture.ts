@@ -25,6 +25,7 @@ import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 
 declare module "../effect" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Effect {
         /**
          * Sets a depth stencil texture from a render target on the engine to be used in the shader.
@@ -47,6 +48,7 @@ Effect.prototype.setDepthStencilTexture = function (channel: string, texture: Nu
 /**
  * Options for the RenderTargetTexture constructor
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface RenderTargetTextureOptions {
     /** True (default: false) if mipmaps need to be generated after render */
     generateMipMaps?: boolean;

@@ -7,7 +7,7 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
-import { _isADescendantOf } from "core/FlowGraph/utils";
+import { _IsDescendantOf } from "core/FlowGraph/utils";
 
 /**
  * Configuration for the pointer over event block.
@@ -76,9 +76,9 @@ export class FlowGraphPointerOverEventBlock extends FlowGraphEventBlock {
         const mesh = this.targetMesh.getValue(context);
         this.meshUnderPointer.setValue(payload.mesh, context);
         // skip if we moved from a mesh that is under the hierarchy of the target mesh
-        const skipEvent = payload.out && _isADescendantOf(payload.out, mesh);
+        const skipEvent = payload.out && _IsDescendantOf(payload.out, mesh);
         this.pointerId.setValue(payload.pointerId, context);
-        if (!skipEvent && (payload.mesh === mesh || _isADescendantOf(payload.mesh, mesh))) {
+        if (!skipEvent && (payload.mesh === mesh || _IsDescendantOf(payload.mesh, mesh))) {
             this._execute(context);
             return !this.config?.stopPropagation;
         }

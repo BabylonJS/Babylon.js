@@ -2,7 +2,7 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
 import type { Nullable } from "../../../types";
 import { Logger } from "core/Misc/logger";
 
-const _registeredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>();
+const _RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>();
 
 /**
  * Registers a texture loader.
@@ -10,11 +10,12 @@ const _registeredTextureLoaders = new Map<string, (mimeType?: string) => IIntern
  * @param extension The name of the loader extension.
  * @param loaderFactory The factory function that creates the loader extension.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function registerTextureLoader(extension: string, loaderFactory: (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>): void {
     if (unregisterTextureLoader(extension)) {
         Logger.Warn(`Extension with the name '${name}' already exists`);
     }
-    _registeredTextureLoaders.set(extension, loaderFactory);
+    _RegisteredTextureLoaders.set(extension, loaderFactory);
 }
 
 /**
@@ -22,8 +23,9 @@ export function registerTextureLoader(extension: string, loaderFactory: (mimeTyp
  * @param extension The name of the loader extension.
  * @returns A boolean indicating whether the extension has been unregistered
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function unregisterTextureLoader(extension: string): boolean {
-    return _registeredTextureLoaders.delete(extension);
+    return _RegisteredTextureLoaders.delete(extension);
 }
 
 /**
@@ -36,7 +38,7 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
     if (mimeType === "image/ktx" || mimeType === "image/ktx2") {
         extension = ".ktx";
     }
-    if (!_registeredTextureLoaders.has(extension)) {
+    if (!_RegisteredTextureLoaders.has(extension)) {
         if (extension.endsWith(".ies")) {
             registerTextureLoader(".ies", async () => import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
         }
@@ -64,6 +66,6 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
             registerTextureLoader(".exr", async () => import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
         }
     }
-    const registered = _registeredTextureLoaders.get(extension);
+    const registered = _RegisteredTextureLoaders.get(extension);
     return registered ? Promise.resolve(registered(mimeType)) : null;
 }

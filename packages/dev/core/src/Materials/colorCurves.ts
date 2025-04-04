@@ -461,9 +461,9 @@ export class ColorCurves {
      * @param hue The hue (H) input.
      * @param saturation The saturation (S) input.
      * @param brightness The brightness (B) input.
-     * @param result
-     * @result An RGBA color represented as Vector4.
+     * @param result An RGBA color represented as Vector4.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private static _FromHSBToRef(hue: number, saturation: number, brightness: number, result: Color4): void {
         let h: number = ColorCurves._Clamp(hue, 0, 360);
         const s: number = ColorCurves._Clamp(saturation / 100, 0, 1);

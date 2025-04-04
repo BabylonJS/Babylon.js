@@ -1,6 +1,6 @@
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
+import { _ProcessShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { _executeWhenRenderingStateIsCompiled, _isRenderingStateCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -19,6 +19,7 @@ import { _RetryWithInterval } from "core/Misc/timingTools";
  * @param _preparePipelineContextInjection the function to prepare the pipeline context
  * @returns a promise that resolves to the pipeline context
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export async function generatePipelineContext(
     options: IPipelineGenerationOptions,
     context: WebGL2RenderingContext | WebGLRenderingContext,
@@ -69,7 +70,7 @@ export async function generatePipelineContext(
     };
     return new Promise((resolve, reject) => {
         try {
-            _processShaderCode(
+            _ProcessShaderCode(
                 processorOptions,
                 shaderDef,
                 undefined,

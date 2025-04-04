@@ -8,7 +8,7 @@ import type { Effect } from "../../../effect";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { bindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
+import { BindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to implement clip planes
@@ -115,7 +115,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
         const scene = mesh.getScene();
 
-        bindClipPlane(effect, nodeMaterial, scene);
+        BindClipPlane(effect, nodeMaterial, scene);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

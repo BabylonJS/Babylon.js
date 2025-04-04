@@ -28,7 +28,7 @@ import { Constants } from "../constants";
 import type { Nullable } from "../../types";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
@@ -311,7 +311,7 @@ export class WebGPUTextureManager {
     private _compiledShaders: GPUShaderModule[][] = [];
     private _videoPipelines: { [format: string]: Array<[GPURenderPipeline, GPUBindGroupLayout]> } = {};
     private _videoCompiledShaders: GPUShaderModule[][] = [];
-    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
+    private _deferredReleaseTextures: Array<[Nullable<IHardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
 
     //------------------------------------------------------------------------------

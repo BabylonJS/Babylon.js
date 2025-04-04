@@ -15,7 +15,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
+import { _ProcessShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
@@ -442,7 +442,7 @@ export class Effect implements IDisposable {
             processCodeAfterIncludes: this._processCodeAfterIncludes,
         };
 
-        _processShaderCode(
+        _ProcessShaderCode(
             processorOptions,
             this.name,
             this._processFinalCode,

@@ -46,7 +46,7 @@ import type {
 import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
-import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import {
     getNativeAlphaMode,
     getNativeAttribType,
@@ -2225,7 +2225,7 @@ export class NativeEngine extends Engine {
     }
 
     /** @internal */
-    public override _createHardwareTexture(): HardwareTextureWrapper {
+    public override _createHardwareTexture(): IHardwareTextureWrapper {
         return new NativeHardwareTexture(this._createTexture() as NativeTexture, this._engine);
     }
 

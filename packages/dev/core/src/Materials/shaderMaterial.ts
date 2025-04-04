@@ -20,7 +20,7 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
@@ -36,7 +36,7 @@ import {
 } from "./materialHelper.functions";
 import type { IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
 
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -847,9 +847,9 @@ export class ShaderMaterial extends PushMaterial {
 
         // Clip planes
         if (this._options.useClipPlane !== false) {
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
-            prepareStringDefinesForClipPlanes(this, scene, defines);
+            PrepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
         // Fog
@@ -913,9 +913,9 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = effect;
-                onCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
-                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                OnCreatedEffectParameters.effect = effect;
+                OnCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
+                this._onEffectCreatedObservable.notifyObservers(OnCreatedEffectParameters);
             }
         }
 
@@ -1047,7 +1047,7 @@ export class ShaderMaterial extends PushMaterial {
             BindBonesParameters(mesh, effect);
 
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Misc
             if (this._useLogarithmicDepth) {

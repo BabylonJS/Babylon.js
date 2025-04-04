@@ -24,7 +24,7 @@ import type { ISize } from "../Maths/math.size";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.alpha";
-import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, PrepareStringDefinesForClipPlanes, BindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
@@ -1670,7 +1670,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["invView", "view", "projection", "textureMask", "translationPivot", "eyePosition"];
 
-        addClipPlaneUniforms(effectCreationOption);
+        AddClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1695,7 +1695,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing: boolean = true): void {
         if (this._scene) {
-            prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Constants.FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
@@ -2036,7 +2036,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         const defines = effect.defines;
 
         if (this._scene) {
-            bindClipPlane(effect, this, this._scene);
+            BindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
                 BindFogParameters(this._scene, undefined, effect);

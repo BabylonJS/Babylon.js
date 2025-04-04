@@ -3,6 +3,7 @@ import { DecalMapConfiguration } from "./material.decalMapConfiguration";
 import { StandardMaterial } from "./standardMaterial";
 
 declare module "./standardMaterial" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface StandardMaterial {
         /** @internal */
         _decalMap: Nullable<DecalMapConfiguration>;

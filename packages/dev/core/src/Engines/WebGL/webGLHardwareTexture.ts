@@ -1,8 +1,8 @@
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import type { Nullable } from "../../types";
 
 /** @internal */
-export class WebGLHardwareTexture implements HardwareTextureWrapper {
+export class WebGLHardwareTexture implements IHardwareTextureWrapper {
     private _webGLTexture: WebGLTexture;
     private _context: WebGLRenderingContext;
 

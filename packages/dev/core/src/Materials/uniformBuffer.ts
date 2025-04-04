@@ -436,7 +436,6 @@ export class UniformBuffer {
                 data = size;
                 size = data.length;
             } else {
-                size = size;
                 data = [];
 
                 // Fill with zeros
