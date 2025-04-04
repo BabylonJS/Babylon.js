@@ -1655,22 +1655,16 @@ export class Viewer implements IDisposable {
                     const groundSize = this._shadowGroundScalingFactor * this._iblShadowsRenderPipeline?.voxelGridSize;
                     this._shadowGround?.scaling.set(groundSize, groundSize, groundSize);
                     this._iblShadowsRenderPipeline.resetAccumulation();
+
+                    this._iblShadowsRenderPipeline.updateSceneBounds();
+                    this._iblShadowsRenderPipeline.updateVoxelization();
+
+                    this._iblShadowsRenderPipeline.toggleShadow(true);
+
+                    this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 }
             });
-            this._groundShadowMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-            this._groundShadowMaterial?.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
-            this._groundShadowMaterial?.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
-            const groundSize = this._shadowGroundScalingFactor * this._iblShadowsRenderPipeline?.voxelGridSize;
-            this._shadowGround?.scaling.set(groundSize, groundSize, groundSize);
-            this._iblShadowsRenderPipeline.resetAccumulation();
-
-            this._iblShadowsRenderPipeline.updateSceneBounds();
-            this._iblShadowsRenderPipeline.updateVoxelization();
-
-            this._iblShadowsRenderPipeline.toggleShadow(true);
-
-            this._snapshotHelper.enableSnapshotRendering();
-            this._markSceneMutated();
 
             this._resizeShadowObserver = this._engine.onResizeObservable.add(() => {
                 if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
