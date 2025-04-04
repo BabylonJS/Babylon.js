@@ -48,7 +48,7 @@ export class WebGPUTintWASM {
 
         if (twgslOptions.twgsl) {
             WebGPUTintWASM._Twgsl = twgslOptions.twgsl;
-            return Promise.resolve();
+            return;
         }
 
         if (twgslOptions.jsPath && twgslOptions.wasmPath) {
@@ -57,10 +57,10 @@ export class WebGPUTintWASM {
 
         if ((self as any).twgsl) {
             WebGPUTintWASM._Twgsl = await (self as any).twgsl(Tools.GetBabylonScriptURL(twgslOptions.wasmPath!));
-            return Promise.resolve();
+            return;
         }
 
-        return Promise.reject("twgsl is not available.");
+        throw new Error("twgsl is not available.");
     }
 
     public convertSpirV2WGSL(code: Uint32Array, disableUniformityAnalysis = false): string {

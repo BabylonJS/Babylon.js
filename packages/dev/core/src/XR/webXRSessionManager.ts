@@ -185,7 +185,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 Logger.Warn("Could not end XR session.");
             }
         }
-        return Promise.resolve();
     }
 
     /**
@@ -242,9 +241,8 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         // Check if the browser supports webXR
         this._xrNavigator = navigator;
         if (!this._xrNavigator.xr) {
-            return Promise.reject("WebXR not available");
+            throw new Error("WebXR not supported on this browser.");
         }
-        return Promise.resolve();
     }
 
     /**
@@ -410,7 +408,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @deprecated Use updateRenderState() instead.
      */
     public async updateRenderStateAsync(state: XRRenderState): Promise<void> {
-        return Promise.resolve(this.session.updateRenderState(state));
+        return this.session.updateRenderState(state);
     }
 
     /**
@@ -450,22 +448,22 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public static async IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         if (!(navigator as any).xr) {
-            return Promise.resolve(false);
+            return false;
         }
         // When the specs are final, remove supportsSession!
         const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
         if (!functionToUse) {
-            return Promise.resolve(false);
+            return false;
         } else {
             return functionToUse
                 .call((navigator as any).xr, sessionMode)
                 .then(async (result: boolean) => {
                     const returnValue = typeof result === "undefined" ? true : result;
-                    return Promise.resolve(returnValue);
+                    return returnValue;
                 })
                 .catch(async (e: any) => {
                     Logger.Warn(e);
-                    return Promise.resolve(false);
+                    return false;
                 });
         }
     }

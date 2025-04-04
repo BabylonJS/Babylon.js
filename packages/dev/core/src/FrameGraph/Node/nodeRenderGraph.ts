@@ -765,7 +765,7 @@ export class NodeRenderGraph {
         skipBuild: boolean = true
     ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions));
+            return NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions);
         }
 
         return new Promise((resolve, reject) => {

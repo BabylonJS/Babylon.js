@@ -2659,7 +2659,7 @@ export class NodeMaterial extends PushMaterial {
         options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
+            return NodeMaterial.CreateDefault("blank", scene);
         }
 
         return new Promise((resolve, reject) => {

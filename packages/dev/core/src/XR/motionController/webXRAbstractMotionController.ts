@@ -465,7 +465,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
             return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
         } else {
-            return Promise.resolve(false);
+            return false;
         }
     }
 

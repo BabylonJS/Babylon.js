@@ -179,7 +179,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
             if (typeof image.src === "string") {
                 return (this._xrSessionManager.scene.getEngine() as Engine)._createImageBitmapFromSource(image.src);
             } else {
-                return Promise.resolve(image.src); // resolve is probably unneeded
+                return image.src;
             }
         });
 

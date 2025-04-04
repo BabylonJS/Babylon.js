@@ -253,7 +253,7 @@ export class WebXRMotionControllerManager {
             for (let j = 0; j < fallbacks.length; ++j) {
                 const constructionFunction = this._AvailableControllers[fallbacks[j]];
                 if (constructionFunction) {
-                    return Promise.resolve(constructionFunction(xrInput, scene));
+                    return constructionFunction(xrInput, scene);
                 }
             }
         }

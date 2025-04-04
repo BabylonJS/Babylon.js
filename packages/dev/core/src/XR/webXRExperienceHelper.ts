@@ -233,7 +233,7 @@ export class WebXRExperienceHelper implements IDisposable {
     public async exitXRAsync() {
         // only exit if state is IN_XR
         if (this.state !== WebXRState.IN_XR) {
-            return Promise.resolve();
+            return;
         }
         this._setState(WebXRState.EXITING_XR);
         return this.sessionManager.exitXRAsync();

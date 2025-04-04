@@ -185,7 +185,7 @@ export class ParticleHelper {
         if (snippetId === "_BLANK") {
             const system = this.CreateDefault(null);
             system.start();
-            return Promise.resolve(system);
+            return system;
         }
 
         return new Promise((resolve, reject) => {

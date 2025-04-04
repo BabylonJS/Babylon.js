@@ -556,7 +556,7 @@ export async function UploadEnvLevelsAsync(texture: InternalTexture, data: Array
     const specularInfo = info.specular;
     if (!specularInfo) {
         // Nothing else parsed so far
-        return Promise.resolve([]);
+        return [];
     }
 
     texture._lodGenerationScale = specularInfo.lodGenerationScale;

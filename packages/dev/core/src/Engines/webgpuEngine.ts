@@ -802,7 +802,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         };
 
         if (glslangOptions.glslang) {
-            return Promise.resolve(glslangOptions.glslang);
+            return glslangOptions.glslang;
         }
 
         if ((self as any).glslang) {
@@ -815,7 +815,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             });
         }
 
-        return Promise.reject("gslang is not available.");
+        throw new Error("glslang is not available");
     }
 
     private _initializeLimits(): void {
@@ -2920,13 +2920,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const hardwareTexture = renderPassWrapper.colorAttachmentGPUTextures[0];
         if (!hardwareTexture) {
             // we are calling readPixels for a render pass with no color texture bound
-            return Promise.resolve(new Uint8Array(0));
+            return new Uint8Array(0);
         }
         const gpuTexture = hardwareTexture.underlyingResource;
         const gpuTextureFormat = hardwareTexture.format;
         if (!gpuTexture) {
             // we are calling readPixels before startMainRenderPass has been called and no RTT is bound, so swapChainTexture is not setup yet!
-            return Promise.resolve(new Uint8Array(0));
+            return new Uint8Array(0);
         }
         if (flushRenderer) {
             this.flushFramebuffer();

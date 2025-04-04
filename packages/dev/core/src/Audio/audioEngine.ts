@@ -195,7 +195,6 @@ export class AudioEngine implements IAudioEngine {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();
         }
-        return Promise.resolve();
     }
 
     private _initializeAudioContext() {

@@ -99,7 +99,6 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         if (!subNode) {
             await this._subGraph.createAndAddSubNodeAsync(AudioSubNode.ANALYZER);
         }
-        return Promise.resolve();
     }
 
     /** @internal */

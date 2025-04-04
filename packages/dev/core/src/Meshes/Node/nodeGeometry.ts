@@ -686,7 +686,7 @@ export class NodeGeometry {
      */
     public static async ParseFromSnippetAsync(snippetId: string, nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeGeometry.CreateDefault("blank"));
+            return NodeGeometry.CreateDefault("blank");
         }
 
         return new Promise((resolve, reject) => {

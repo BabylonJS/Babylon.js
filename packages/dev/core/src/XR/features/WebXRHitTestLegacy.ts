@@ -121,7 +121,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
     public static async XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
         const targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
         if (!targetRayPose) {
-            return Promise.resolve([]);
+            return [];
         }
         const targetRay = new XRRay(targetRayPose.transform);
 
