@@ -52,12 +52,10 @@ export class Analyser {
             return;
         }
         this._scene = scene;
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (!AbstractEngine.audioEngine) {
             Tools.Warn("No audio engine initialized, failed to create an audio analyser");
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._audioEngine = AbstractEngine.audioEngine;
         if (this._audioEngine.canUseWebAudio && this._audioEngine.audioContext) {
             this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();

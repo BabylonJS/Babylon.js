@@ -13,7 +13,7 @@ const _RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IIntern
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function registerTextureLoader(extension: string, loaderFactory: (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>): void {
     if (unregisterTextureLoader(extension)) {
-        Logger.Warn(`Extension with the name '${name}' already exists`);
+        Logger.Warn(`Extension with the name '${extension}' already exists`);
     }
     _RegisteredTextureLoaders.set(extension, loaderFactory);
 }

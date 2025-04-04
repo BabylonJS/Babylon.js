@@ -26,7 +26,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
     // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     private readonly _usingMacOs: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;

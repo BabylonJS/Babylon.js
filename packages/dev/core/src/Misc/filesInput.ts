@@ -205,7 +205,6 @@ export class FilesInput {
                 continue;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
             if (SceneLoader.IsPluginForExtensionAvailable("." + extension)) {
                 this._sceneFileToLoad = files[i];
             }

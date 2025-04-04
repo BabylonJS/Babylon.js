@@ -949,7 +949,6 @@ export class Animation {
      */
     public evaluate(currentFrame: number) {
         EvaluateAnimationState.key = 0;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._interpolate(currentFrame, EvaluateAnimationState);
     }
 
@@ -1632,7 +1631,6 @@ export class Animation {
      * @param snippetId defines the snippet to load
      * @returns a promise that will resolve to the new animation or a new array of animations
      */
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     public static CreateFromSnippetAsync = Animation.ParseFromSnippetAsync;
 }
 

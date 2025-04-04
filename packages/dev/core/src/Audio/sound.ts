@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";

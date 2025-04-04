@@ -171,10 +171,8 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
     private _orientationChanged = () => {
         this._screenOrientationAngle =
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
             <any>window.orientation !== undefined
-                ? // eslint-disable-next-line @typescript-eslint/no-deprecated
-                  +(<any>window.orientation)
+                ? +(<any>window.orientation)
                 : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"]
                   ? (<any>window.screen).orientation.angle
                   : 0;

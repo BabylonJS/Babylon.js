@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import { Sound } from "./sound";
 import { SoundTrack } from "./soundTrack";
 import type { Nullable } from "../types";
@@ -24,7 +23,6 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
     if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
         for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
             const parsedSound = parsedData.sounds[index];
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
             if (AbstractEngine.audioEngine?.canUseWebAudio) {
                 if (!parsedSound.url) {
                     parsedSound.url = parsedSound.name;

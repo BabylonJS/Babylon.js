@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";

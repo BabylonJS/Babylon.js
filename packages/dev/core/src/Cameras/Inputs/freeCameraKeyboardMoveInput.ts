@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import { serialize } from "../../Misc/decorators";
 import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Logger } from "./logger";
 
 const CloneValue = (source: any, destinationObject: any, shallowCopyValues: boolean) => {

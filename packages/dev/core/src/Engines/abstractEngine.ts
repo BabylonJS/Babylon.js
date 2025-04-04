@@ -2035,9 +2035,7 @@ export abstract class AbstractEngine {
         options.timeStep = options.timeStep ?? 1 / 60;
         options.stencil = options.stencil ?? true;
 
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._audioDestination = options.audioEngineOptions?.audioDestination ?? null;
         this.premultipliedAlpha = options.premultipliedAlpha ?? true;
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;

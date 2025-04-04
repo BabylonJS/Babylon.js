@@ -145,7 +145,6 @@ export class RuntimeAnimation {
      * Gets the current value of the runtime animation
      */
     public get currentValue(): any {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._currentValue;
     }
 
@@ -160,7 +159,6 @@ export class RuntimeAnimation {
      * Gets the actual target of the runtime animation
      */
     public get target(): any {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._currentActiveTarget;
     }
 
