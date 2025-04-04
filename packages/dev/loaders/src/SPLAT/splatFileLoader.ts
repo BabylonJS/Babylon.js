@@ -364,7 +364,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
-                                    gaussianSplatting.updateData(parsedPLY.data);
+                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
                                 }
                                 break;
                             case Mode.PointCloud:
