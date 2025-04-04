@@ -668,30 +668,26 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             hotSpotsJSON += hotspots
                 .map((hotspot) => {
                     let hotspotJson = `    "${hotspot.name}": {\n`;
-                    const hotspotAttributes: string[] = [];
+                    const hotspotProperties: string[] = [];
                     if (hotspot.data.type === "surface") {
-                        hotspotAttributes.push(
-                            ...[
-                                `      "type": "surface"`,
-                                `      "meshIndex": ${hotspot.data.meshIndex}`,
-                                `      "pointIndex": [${hotspot.data.pointIndex.join(", ")}]`,
-                                `      "barycentric": [${hotspot.data.barycentric.map((value) => value.toFixed(3)).join(", ")}]`,
-                            ]
+                        hotspotProperties.push(
+                            `      "type": "surface"`,
+                            `      "meshIndex": ${hotspot.data.meshIndex}`,
+                            `      "pointIndex": [${hotspot.data.pointIndex.join(", ")}]`,
+                            `      "barycentric": [${hotspot.data.barycentric.map((value) => value.toFixed(3)).join(", ")}]`
                         );
                     } else {
-                        hotspotAttributes.push(
-                            ...[
-                                `      "type": "world"`,
-                                `      "position": [${hotspot.data.position.map((value) => value.toFixed(3)).join(", ")}]`,
-                                `      "normal": [${hotspot.data.normal.map((value) => value.toFixed(3)).join(", ")}]`,
-                            ]
+                        hotspotProperties.push(
+                            `      "type": "world"`,
+                            `      "position": [${hotspot.data.position.map((value) => value.toFixed(3)).join(", ")}]`,
+                            `      "normal": [${hotspot.data.normal.map((value) => value.toFixed(3)).join(", ")}]`
                         );
                     }
                     if (hotspot.data.cameraOrbit) {
                         const [alpha, beta, radius] = hotspot.data.cameraOrbit;
-                        hotspotAttributes.push(`      "cameraOrbit": [${alpha.toFixed(3)}, ${beta.toFixed(3)}, ${radius.toFixed(3)}]`);
+                        hotspotProperties.push(`      "cameraOrbit": [${alpha.toFixed(3)}, ${beta.toFixed(3)}, ${radius.toFixed(3)}]`);
                     }
-                    hotspotJson += hotspotAttributes.join(",\n");
+                    hotspotJson += hotspotProperties.join(",\n");
                     hotspotJson += `\n    }`;
                     return hotspotJson;
                 })
