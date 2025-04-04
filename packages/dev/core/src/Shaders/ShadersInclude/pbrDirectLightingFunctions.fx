@@ -86,7 +86,11 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         float roughness = max(info.roughness, geometricRoughnessFactor);
         float alphaG = convertRoughnessToAverageSlope(roughness);
 
-        vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, clamp(reflectance90 * 2.0 * (ior - 1.0), 0.0, 1.0));
+        #ifdef METALLICWORKFLOW
+            // Scale the reflectance by the IOR for values less than 1.5
+            reflectance90 = clamp(reflectance90 * 2.0 * (ior - 1.0), 0.0, 1.0);
+        #endif
+        vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);

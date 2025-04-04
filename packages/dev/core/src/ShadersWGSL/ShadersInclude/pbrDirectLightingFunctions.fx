@@ -85,7 +85,13 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
 
-        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90 * clamp(2.0 * (ior - 1.0), 0.0, 1.0));
+        #ifdef METALLICWORKFLOW
+            // Scale the reflectance by the IOR for values less than 1.5
+            var f90Mod = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
+        #else
+            var f90Mod = 1.0;
+        #endif
+        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90 * f90Mod);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
