@@ -950,6 +950,9 @@ export class Viewer implements IDisposable {
         }
         if (value.intensity !== undefined) {
             this._changeEnvironmentIntensity(value.intensity);
+            if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
+                this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+            }
             this._iblShadowsRenderPipeline?.resetAccumulation();
         }
         if (value.rotation !== undefined) {
