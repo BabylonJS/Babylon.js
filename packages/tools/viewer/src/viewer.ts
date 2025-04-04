@@ -1510,6 +1510,9 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = null;
             this.selectedAnimation = -1;
 
+            this._iblShadowsRenderPipeline?.updateVoxelization();
+            this._iblShadowsRenderPipeline?.resetAccumulation();
+
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
