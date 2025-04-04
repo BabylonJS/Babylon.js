@@ -1070,7 +1070,6 @@ async function loadSceneSharedAsync(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         loadSceneImplAsync(
             rootUrl,
             sceneFilename,

@@ -119,7 +119,6 @@ export class DepthRenderer {
             this.clearColor = new Color4(storeCameraSpaceZ ? 1e8 : 1.0, 0.0, 0.0, 1.0);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         DepthRenderer._SceneComponentInitialization(this._scene);

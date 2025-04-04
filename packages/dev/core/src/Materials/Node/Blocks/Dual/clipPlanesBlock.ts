@@ -50,7 +50,6 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         state._excludeVariableName("vClipPlane6");
         state._excludeVariableName("fClipDistance6");
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 

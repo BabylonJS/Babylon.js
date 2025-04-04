@@ -47,7 +47,6 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         state._excludeVariableName("clipPos");
         state._excludeVariableName("worldPos");
         state._excludeVariableName("zSM");
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 

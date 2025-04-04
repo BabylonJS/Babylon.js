@@ -66,7 +66,6 @@ export class VideoDome extends TextureDome<VideoTexture> {
         if (options.clickToPlay) {
             this._pointerObserver = scene.onPointerObservable.add((data) => {
                 if (data.pickInfo?.pickedMesh === this.mesh) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._texture.video.play();
                 }
             }, PointerEventTypes.POINTERDOWN);

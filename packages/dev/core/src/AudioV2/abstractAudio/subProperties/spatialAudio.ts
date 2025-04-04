@@ -37,7 +37,6 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
             this._rotation = _SpatialAudioDefaults.rotation.clone();
             this._rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             subGraph.createAndAddSubNodeAsync(AudioSubNode.SPATIAL);
         }
 

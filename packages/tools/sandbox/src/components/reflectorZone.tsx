@@ -68,7 +68,6 @@ class Reflector {
 
                     this._globalState.onSceneLoaded.notifyObservers({ scene: scene, filename: "Reflector scene" });
 
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     scene.debugLayer.show();
                 });
                 break;

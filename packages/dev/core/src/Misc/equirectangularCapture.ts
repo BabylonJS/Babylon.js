@@ -74,7 +74,6 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                 }
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             pixelDataPromise.then((pixelData) => {
                 dumpTexture.dispose();
                 if (!wasProbeProvided) {

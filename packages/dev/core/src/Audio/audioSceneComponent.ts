@@ -428,7 +428,6 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         this._audioEnabled = false;
 
         if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             AbstractEngine.audioEngine.audioContext.suspend();
         }
 
@@ -453,7 +452,6 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         this._audioEnabled = true;
 
         if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             AbstractEngine.audioEngine.audioContext.resume();
         }
 

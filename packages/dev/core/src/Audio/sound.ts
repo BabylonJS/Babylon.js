@@ -498,7 +498,6 @@ export class Sound {
         if (!AbstractEngine.audioEngine?.audioContext) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         AbstractEngine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {

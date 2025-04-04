@@ -82,7 +82,6 @@ export class CubeMapToSphericalPolynomialTools {
         }
 
         return new Promise((resolve) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             Promise.all([leftPromise, rightPromise, upPromise, downPromise, frontPromise, backPromise]).then(([left, right, up, down, front, back]) => {
                 const cubeInfo: CubeMapInfo = {
                     size,

@@ -3,7 +3,6 @@ import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSubNode } from "../webAudioNode";
 
 /** @internal */
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_VolumeAudioSubNode> {
     return new _VolumeWebAudioSubNode(engine);
 }

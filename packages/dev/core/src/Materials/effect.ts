@@ -391,7 +391,6 @@ export class Effect implements IDisposable {
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
             // Floating promise - should be checked here.
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._processShaderCodeAsync(null, false, null, extraInitializationsAsync);
         } else {
             this._pipelineContext = cachedPipeline;

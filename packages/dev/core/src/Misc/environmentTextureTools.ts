@@ -270,7 +270,6 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     }
 
     // sphericalPolynomial is lazy loaded so simply accessing it should trigger the computation.
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     texture.sphericalPolynomial;
 
     // Lets keep track of the polynomial promise so we can wait for it to be ready before generating the pixels.

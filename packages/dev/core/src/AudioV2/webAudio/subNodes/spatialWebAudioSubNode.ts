@@ -17,7 +17,6 @@ function R2d(radians: number): number {
 }
 
 /** @internal */
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_SpatialAudioSubNode> {
     return new _SpatialWebAudioSubNode(engine);
 }

@@ -6,7 +6,6 @@ import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
 /** @internal */
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateAudioAnalyzerSubNodeAsync(engine: _WebAudioEngine): Promise<_AudioAnalyzerSubNode> {
     return new _WebAudioAnalyzerSubNode(engine);
 }

@@ -246,7 +246,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._listener = null;
 
         if (this._audioContext.state !== "closed") {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._audioContext.close();
         }
 
@@ -352,7 +351,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }

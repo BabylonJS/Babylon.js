@@ -64,7 +64,6 @@ export class PreviewManager {
             }
             const currentMat = this._mesh.material;
             this._mesh.material = this._matStd;
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             GLTF2Export.GLBAsync(this._scene, "node-geometry-scene", {
                 shouldExportNode: (node) => {
                     return !node.doNotSerialize;

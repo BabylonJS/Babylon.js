@@ -332,17 +332,14 @@ export function CreateScreenshotUsingRenderTarget(
             () => {
                 engine.onEndFrameObservable.addOnce(() => {
                     if (finalWidth === width && finalHeight === height) {
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
                             dumpDataFunc(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     } else {
                         const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         importPromise.then(async () =>
                             ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                                 engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
                                     dumpDataFunc(
                                         finalWidth,

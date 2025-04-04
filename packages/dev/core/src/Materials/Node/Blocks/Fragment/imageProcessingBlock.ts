@@ -87,7 +87,6 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._excludeVariableName("txColorTransform");
         state._excludeVariableName("colorTransformSettings");
         state._excludeVariableName("ditherIntensity");
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 

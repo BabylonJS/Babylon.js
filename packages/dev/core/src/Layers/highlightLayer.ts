@@ -112,7 +112,6 @@ class GlowBlurPostProcess extends PostProcess {
  * Highlight layer options. This helps customizing the behaviour
  * of the highlight layer.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHighlightLayerOptions extends IThinHighlightLayerOptions {}
 
 /**

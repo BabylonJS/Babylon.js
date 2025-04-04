@@ -508,7 +508,6 @@ export class GeometryBufferRenderer {
         this._depthFormat = depthFormat;
         this._textureTypesAndFormats = textureTypesAndFormats || {};
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);

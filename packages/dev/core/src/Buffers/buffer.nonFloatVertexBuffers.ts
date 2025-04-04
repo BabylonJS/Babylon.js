@@ -92,7 +92,6 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
         const parallelShaderCompile = engine._caps.parallelShaderCompile;
         engine._caps.parallelShaderCompile = undefined;
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         effect._processShaderCodeAsync(null, engine._features._checkNonFloatVertexBuffersDontRecreatePipelineContext, shaderProcessingContext);
 
         engine._caps.parallelShaderCompile = parallelShaderCompile;

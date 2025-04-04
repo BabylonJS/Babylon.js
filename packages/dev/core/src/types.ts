@@ -197,7 +197,6 @@ export type WritableObject<T> = { -readonly [P in keyof T]: T[P] };
 export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
 
 /** @internal */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
 /** @internal */
 /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */

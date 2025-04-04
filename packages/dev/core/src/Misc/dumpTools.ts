@@ -63,7 +63,6 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
                     });
                     engine.getCaps().parallelShaderCompile = undefined;
                     const renderer = new EffectRenderer(engine);
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     import("../Shaders/pass.fragment").then(({ passPixelShader }) => {
                         if (!engine) {
                             reject("Engine is not defined");
@@ -170,7 +169,6 @@ export function DumpData(
     toArrayBuffer = false,
     quality?: number
 ): void {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     _CreateDumpRendererAsync().then((renderer) => {
         renderer.engine.setSize(width, height, true);
 
@@ -227,7 +225,6 @@ export function Dispose() {
         _DumpToolsEngine.engine.dispose();
     } else {
         // in cases where the engine is not yet created, we need to wait for it to dispose it
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         _EnginePromise?.then((dumpToolsEngine) => {
             dumpToolsEngine.wrapper.dispose();
             dumpToolsEngine.renderer.dispose();

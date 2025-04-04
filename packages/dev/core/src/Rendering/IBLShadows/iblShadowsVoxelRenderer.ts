@@ -665,7 +665,6 @@ export class _IblShadowsVoxelRenderer {
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this._copyMipEffectWrapper.effect.whenCompiledAsync().then(() => {
                     this._copyMipMaps();
                     this._scene.onAfterRenderObservable.removeCallback(this._renderVoxelGridBound);

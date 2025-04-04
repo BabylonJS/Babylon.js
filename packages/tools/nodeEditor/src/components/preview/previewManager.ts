@@ -161,7 +161,6 @@ export class PreviewManager {
             this._material.needDepthPrePass = this._globalState.depthPrePass;
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initAsync(targetCanvas);
     }
 

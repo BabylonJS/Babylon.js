@@ -888,7 +888,6 @@ export class Tools {
             };
         }
         if (Tools._IsOffScreenCanvas(canvas)) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             canvas
                 .convertToBlob({
                     type: mimeType,
@@ -971,7 +970,6 @@ export class Tools {
             );
         } else if (successCallback) {
             if (Tools._IsOffScreenCanvas(canvas)) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 canvas
                     .convertToBlob({
                         type: mimeType,

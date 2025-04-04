@@ -1213,7 +1213,6 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 pp.onAfterRender = () => {
                     const pixel = scene.getEngine().readPixels(0, 0, 1, 1);
                     const bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     pixel.then((pixel) => {
                         const data = new Uint8Array(pixel.buffer);
                         this._hdrCurrentLuminance = (data[0] * bit_shift.x + data[1] * bit_shift.y + data[2] * bit_shift.z + data[3] * bit_shift.w) / 100.0;

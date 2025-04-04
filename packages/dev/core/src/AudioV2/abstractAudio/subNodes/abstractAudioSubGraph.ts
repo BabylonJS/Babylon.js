@@ -38,7 +38,6 @@ export abstract class _AbstractAudioSubGraph {
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._createSubNodePromisesResolvedAsync().then(() => {
             const node = this.getSubNode(name);
             if (node) {
@@ -46,7 +45,6 @@ export abstract class _AbstractAudioSubGraph {
                 return;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.createAndAddSubNodeAsync(name).then((node) => {
                 callback(node as T);
             });

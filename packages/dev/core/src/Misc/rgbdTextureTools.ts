@@ -116,7 +116,6 @@ export class RGBDTextureTools {
 
         if (expandTexture) {
             if (isReady) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 expandRgbdTextureAsync();
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
