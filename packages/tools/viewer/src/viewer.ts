@@ -961,6 +961,11 @@ export class Viewer implements IDisposable {
             this._iblShadowsRenderPipeline?.resetAccumulation();
         }
         if (value.visible !== undefined) {
+            // Dynamically create the skybox if it doesn't exist yet
+            if (value.visible && !this._skybox && this._reflectionTexture) {
+                this._setEnvironmentSkybox(this._reflectionTexture, true);
+            }
+
             this._changeSkyboxVisible(value.visible);
         }
         this.onEnvironmentConfigurationChanged.notifyObservers();
@@ -1823,6 +1828,23 @@ export class Viewer implements IDisposable {
         await Promise.all(promises);
     }
 
+    private _setEnvironmentLighting(cubeTexture: CubeTexture | HDRCubeTexture): void {
+        this._reflectionTexture = cubeTexture;
+        this._scene.environmentTexture = this._reflectionTexture;
+        this._reflectionTexture.level = this.environmentConfig.intensity;
+        this._reflectionTexture.rotationY = this.environmentConfig.rotation;
+    }
+
+    private _setEnvironmentSkybox(cubeTexture: CubeTexture | HDRCubeTexture, lighting?: boolean): void {
+        this._skyboxTexture = lighting ? cubeTexture.clone() : cubeTexture;
+        this._skyboxTexture.level = this.environmentConfig.intensity;
+        this._skyboxTexture.rotationY = this.environmentConfig.rotation;
+        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
+        this._skybox.setEnabled(this._skyboxVisible);
+        this._snapshotHelper.fixMeshes([this._skybox]);
+        this._updateAutoClear();
+    }
+
     private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
@@ -1877,20 +1899,11 @@ export class Viewer implements IDisposable {
                     const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
-                        this._reflectionTexture = cubeTexture;
-                        this._scene.environmentTexture = this._reflectionTexture;
-                        cubeTexture.level = this.environmentConfig.intensity;
-                        cubeTexture.rotationY = this.environmentConfig.rotation;
+                        this._setEnvironmentLighting(cubeTexture);
                     }
 
                     if (options.skybox) {
-                        this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
-                        this._skyboxTexture.level = this.environmentConfig.intensity;
-                        this._skyboxTexture.rotationY = this.environmentConfig.rotation;
-                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
-                        this._skybox.setEnabled(this._skyboxVisible);
-                        this._snapshotHelper.fixMeshes([this._skybox]);
-                        this._updateAutoClear();
+                        this._setEnvironmentSkybox(cubeTexture, options.lighting);
                     }
 
                     await new Promise<void>((resolve, reject) => {
