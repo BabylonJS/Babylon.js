@@ -423,7 +423,7 @@ export type ViewerOptions = Partial<{
  * The default options for the Viewer.
  */
 export const DefaultViewerOptions = {
-    clearColor: [0, 0, 0, 0] as const,
+    clearColor: [0, 0, 0, 0],
     autoSuspendRendering: true,
     environmentConfig: {
         intensity: 1,

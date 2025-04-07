@@ -185,7 +185,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private async _parseSPZAsync(data: ArrayBuffer, scene: Scene): Promise<IParsedPLY> {
         const ubuf = new Uint8Array(data);
-        const ubufu32 = new Uint32Array(data);
+        const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
         // debug infos
         const splatCount = ubufu32[2];
 

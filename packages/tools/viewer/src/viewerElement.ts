@@ -15,7 +15,7 @@ import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { IsToneMapping, Viewer } from "./viewer";
-import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
+import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =
@@ -961,8 +961,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (changedProperties.get("renderWhenIdle") != null) {
             needsReload = true;
         } else if (changedProperties.has("engine")) {
-            const previous = changedProperties.get("engine") ?? GetDefaultEngine();
-            if (this.engine !== previous) {
+            const previous = changedProperties.get("engine");
+            if (previous && this.engine !== previous) {
                 needsReload = true;
             }
         }
