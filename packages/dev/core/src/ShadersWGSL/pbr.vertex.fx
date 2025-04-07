@@ -172,11 +172,15 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        var viewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - vertexOutputs.vPositionW);
-        var NdotV: f32 = max(dot(vertexOutputs.vNormalW, viewDirectionW), 0.0);
-        // Bend the normal towards the viewer based on the diffuse roughness
-        var roughNormal: vec3f = mix(vertexOutputs.vNormalW, viewDirectionW, (0.5 * (1.0 - NdotV)) * uniforms.baseDiffuseRoughness);
-        var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(roughNormal, 0)).xyz;
+        #if BASE_DIFFUSE_ROUGHNESS_MODEL != 2 // Lambert
+            // Bend the normal towards the viewer based on the diffuse roughness
+            var viewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - vertexOutputs.vPositionW);
+            var NdotV: f32 = max(dot(vertexOutputs.vNormalW, viewDirectionW), 0.0);
+            var roughNormal: vec3f = mix(vertexOutputs.vNormalW, viewDirectionW, (0.5 * (1.0 - NdotV)) * uniforms.baseDiffuseRoughness);
+            var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(roughNormal, 0)).xyz;
+        #else
+            var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(vertexOutputs.vNormalW, 0)).xyz;
+        #endif
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif

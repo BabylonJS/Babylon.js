@@ -428,13 +428,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public _albedoTexture: Nullable<BaseTexture> = null;
 
     /**
-     * OpenPBR Base Weight texture (multiplier to the diffuse and metal lobes).
+     * Base Weight texture (multiplier to the diffuse and metal lobes).
      * @internal
      */
     public _baseWeightTexture: Nullable<BaseTexture> = null;
 
     /**
-     * OpenPBR Base Diffuse Roughness texture (roughness of the diffuse lobe).
+     * Base Diffuse Roughness texture (roughness of the diffuse lobe).
      * @internal
      */
     public _baseDiffuseRoughnessTexture: Nullable<BaseTexture> = null;
@@ -582,13 +582,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public _albedoColor = new Color3(1, 1, 1);
 
     /**
-     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     * Base Weight (multiplier to the diffuse and metal lobes).
      * @internal
      */
     public _baseWeight = 1;
 
     /**
-     * OpenPBR Base Diffuse Roughness (roughness of the diffuse lobe).
+     * Base Diffuse Roughness (roughness of the diffuse lobe).
      * Can also be used to scale the corresponding texture.
      * @internal
      */
@@ -820,7 +820,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR;
+    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
     /**
      * Defines the base diffuse roughness model of the material.
      */

@@ -1190,7 +1190,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_materials_diffuse_roughness extension
      */
     /** @internal */
-    interface IKHRMaterialsDiffuseRoughness {
+    interface IEXTMaterialsDiffuseRoughness {
         diffuseRoughnessFactor?: number;
         diffuseRoughnessTexture?: ITextureInfo;
     }
