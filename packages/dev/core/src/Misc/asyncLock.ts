@@ -24,11 +24,13 @@ export class AsyncLock {
      * @param signal An optional signal that can be used to abort the operation.
      * @returns A promise that resolves when the func finishes executing.
      */
-    public async lockAsync<T>(func: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public lockAsync<T>(func: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
         signal?.throwIfAborted();
 
         const wrappedFunc = signal
-            ? async () => {
+            ? // eslint-disable-next-line @typescript-eslint/promise-function-async
+              () => {
                   signal.throwIfAborted();
                   return func();
               }
@@ -60,10 +62,11 @@ export class AsyncLock {
         let acquiredLocks = 0;
 
         locks.forEach((lock) => {
-            lock.lockAsync(async () => {
+            // eslint-disable-next-line @typescript-eslint/promise-function-async
+            lock.lockAsync(() => {
                 acquiredLocks++;
                 if (acquiredLocks === locks.length) {
-                    deferred.resolve(await func());
+                    deferred.resolve(func());
                 }
                 return deferred.promise;
             }, signal).catch((e) => deferred.reject(e));

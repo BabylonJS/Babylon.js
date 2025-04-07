@@ -23,10 +23,10 @@ describe("AudioEngine", () => {
     let scene: Scene;
 
     beforeEach(() => {
-        mock = new MockedAudioObjects;
-        engine = new NullEngine;
+        mock = new MockedAudioObjects();
+        engine = new NullEngine();
         scene = new Scene(engine);
-        audioEngine = AbstractEngine.audioEngine = new AudioEngine(null, new AudioContext, null);
+        audioEngine = AbstractEngine.audioEngine = new AudioEngine(null, new AudioContext(), null);
     });
 
     afterEach(() => {
@@ -49,10 +49,19 @@ describe("AudioEngine", () => {
         expect(audioEngine.unlocked).toBe(false);
     });
 
-    it("unlocked is initialized to true when browser does not require user interaction", () => {
+    it("unlocked is initialized to true when browser does not require user interaction", async () => {
         mock.audioContext.state = "running";
 
         AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
+
+        await new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error("AudioEngine unlocked event was not fired."));
+            }, 1000);
+            audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                resolve(true);
+            });
+        });
 
         return AudioTestHelper.WhenAudioContextResumes(() => {
             expect(audioEngine.unlocked).toBe(true);
