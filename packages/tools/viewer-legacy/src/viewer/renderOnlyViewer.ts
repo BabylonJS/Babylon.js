@@ -11,13 +11,13 @@ export class RenderOnlyViewer extends AbstractViewer {
         super(containerElement, initialConfiguration);
         this._canvas = containerElement as HTMLCanvasElement;
     }
-    public initialize() {
+    public async initialize() {
         const autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
         return this._initEngine()
-            .then((engine) => {
+            .then(async (engine) => {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             })
-            .then(() => {
+            .then(async () => {
                 this._initTelemetryEvents();
                 if (autoLoad) {
                     return this.loadModel(this.configuration.model!)
@@ -29,7 +29,7 @@ export class RenderOnlyViewer extends AbstractViewer {
                     return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
                 }
             })
-            .then(() => {
+            .then(async () => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             })
             .catch((e) => {

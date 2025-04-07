@@ -64,7 +64,7 @@ export class NodeGeometryEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
         if (options.backgroundColor) {
             globalState.backgroundColor = options.backgroundColor;

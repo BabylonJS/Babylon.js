@@ -181,7 +181,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     };
 
-    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
+    saveToSnippetServerHelper = async (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
         return new Promise((resolve, reject) => {
             const xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = () => {
@@ -307,7 +307,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
      * @returns the class name of a list of controls if they share a class, or an empty string if not
      */
     getControlsCommonClassName(nodes: Control[]) {
-        if (nodes.length === 0) return "";
+        if (nodes.length === 0) {
+            return "";
+        }
         const firstNode = nodes[0];
         const firstClass = firstNode.getClassName();
         for (const node of nodes) {
@@ -319,7 +321,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     renderProperties(nodes: Control[]) {
-        if (nodes.length === 0) return;
+        if (nodes.length === 0) {
+            return;
+        }
         const className = this.getControlsCommonClassName(nodes);
         switch (className) {
             case "TextBlock": {
@@ -523,7 +527,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         }
 
-        const controls = nodes as Control[];
+        const controls = nodes;
         return (
             <ControlPropertyGridComponent
                 controls={controls}
@@ -548,7 +552,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     override render() {
-        if (this.props.globalState.guiTexture == undefined) return null;
+        if (this.props.globalState.guiTexture == undefined) {
+            return null;
+        }
         const nodesToRender = this.props.globalState.selectedControls.length > 0 ? this.props.globalState.selectedControls : [this.props.globalState.workbench.trueRootContainer];
         return <div id="ge-propertyTab">{this.renderNode(nodesToRender)}</div>;
     }

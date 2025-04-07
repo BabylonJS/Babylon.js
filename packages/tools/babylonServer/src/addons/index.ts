@@ -7,13 +7,13 @@ import * as Addons from "../../../../dev/addons/src/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
     for (const mat in Addons) {
-        (<any>globalObject).BABYLON[mat] = (<any>Addons)[mat];
+        (<any>GlobalObject).BABYLON[mat] = (<any>Addons)[mat];
     }
-    (<any>globalObject).ADDONS = Addons;
+    (<any>GlobalObject).ADDONS = Addons;
 }
 
 export * from "../../../../dev/addons/src/index";

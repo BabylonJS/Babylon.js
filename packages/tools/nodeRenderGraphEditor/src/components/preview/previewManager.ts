@@ -94,7 +94,7 @@ export class PreviewManager {
                 enableAllFeatures: true,
                 setMaximumLimits: true,
             });
-            await (this._engine as WebGPUEngine).initAsync();
+            await this._engine.initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
             this._engine.getCaps().parallelShaderCompile = undefined;
@@ -122,7 +122,7 @@ export class PreviewManager {
         this._refreshPreviewMesh();
     }
 
-    private _initSceneAsync(scene: Scene): Promise<void> {
+    private async _initSceneAsync(scene: Scene): Promise<void> {
         (window as any).scenePreview = scene;
 
         this._scene = scene;

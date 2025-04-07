@@ -153,7 +153,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             return true;
         };
 
-        filesInput.loadAsync = (sceneFile, onProgress) => {
+        filesInput.loadAsync = async (sceneFile, onProgress) => {
             const filesToLoad = filesInput.filesToLoad;
             if (filesToLoad.length === 1) {
                 const fileName = (filesToLoad[0] as any).correctName as string;

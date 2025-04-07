@@ -66,7 +66,9 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
     BABYLON.Tools.ScriptBaseUrl = baseUrl;
 
     const canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas) {
+        return;
+    }
     window.canvas = canvas;
     if (engineName === "webgpu") {
         const options = {
@@ -84,7 +86,7 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
         engine.enableOfflineSupport = false;
         window.engine = engine;
     }
-    window.engine!.renderEvenInBackground = true;
+    window.engine.renderEvenInBackground = true;
     window.engine.getCaps().parallelShaderCompile = undefined;
     return !!window.engine;
 };
@@ -124,7 +126,7 @@ export const evaluateEventListenerAugmentation = async () => {
                             err.stack,
                             (stackArray) => {
                                 window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                                window.eventsRegistered[a].stackTraces!.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                                window.eventsRegistered[a].stackTraces.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
                                 resolve(null);
                             },
                             {
@@ -137,14 +139,14 @@ export const evaluateEventListenerAugmentation = async () => {
                         );
                     } catch (err) {
                         window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                        window.eventsRegistered[a].stackTraces!.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                        window.eventsRegistered[a].stackTraces.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
                         resolve(null);
                     }
                 });
                 window.sourcemapPromises.push(promise);
             } else {
                 window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                window.eventsRegistered[a].stackTraces!.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                window.eventsRegistered[a].stackTraces.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
             }
         }
     };
@@ -281,7 +283,7 @@ export const prepareLeakDetection = async (classes: string[] = classesToCheck) =
             "onNewMaterialAddedObservable",
             "onNewTextureAddedObservable",
         ].forEach((observable: string) => {
-            (scene as any)[observable].add((target: any) => {
+            scene[observable].add((target: any) => {
                 setStackStrace(target);
             });
         });
@@ -395,7 +397,9 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
             msg.args().map((arg: any) =>
                 arg.evaluate((argument: string | Error) => {
                     // I'm in a page context now. If my arg is an error - get me its message.
-                    if (argument instanceof Error) return `[ERR] ${argument.message}`;
+                    if (argument instanceof Error) {
+                        return `[ERR] ${argument.message}`;
+                    }
                     //Return the argument if it is just a message
                     return `[STR] ${argument}`;
                 }, arg)

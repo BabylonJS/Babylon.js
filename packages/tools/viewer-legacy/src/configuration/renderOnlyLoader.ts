@@ -59,7 +59,7 @@ export class RenderOnlyConfigurationLoader {
      * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
      * @returns A promise that delivers the extended viewer configuration, when done.
      */
-    public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
+    public async loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
         this._processInitialConfiguration(loadedConfig);
 
@@ -141,7 +141,7 @@ export class RenderOnlyConfigurationLoader {
         }
     }
 
-    private _loadFile(url: string): Promise<any> {
+    private async _loadFile(url: string): Promise<any> {
         const cacheReference = this._configurationCache;
         if (this._enableCache && cacheReference[url]) {
             return Promise.resolve(cacheReference[url]);

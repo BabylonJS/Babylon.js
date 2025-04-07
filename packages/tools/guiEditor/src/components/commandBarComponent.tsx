@@ -201,7 +201,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             isActive={false}
                             copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
-                                this.props.globalState.onCopyObservable.notifyObservers((content) => this.props.globalState.hostWindow.navigator.clipboard.writeText(content));
+                                this.props.globalState.onCopyObservable.notifyObservers(async (content) =>
+                                    this.props.globalState.hostWindow.navigator.clipboard.writeText(content)
+                                );
                                 this.forceUpdate();
                             }}
                         />

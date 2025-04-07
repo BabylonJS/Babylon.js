@@ -62,7 +62,7 @@ export class NodeRenderGraphEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
         globalState.noAutoFillExternalInputs = options.hostScene !== undefined && options.hostScene !== null;
 

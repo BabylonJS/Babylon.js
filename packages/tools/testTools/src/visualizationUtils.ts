@@ -49,7 +49,7 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         engine.compatibilityMode = !window.forceUseNonCompatibilityMode;
         window.engine = engine;
     }
-    window.engine!.renderEvenInBackground = true;
+    window.engine.renderEvenInBackground = true;
     window.engine.getCaps().parallelShaderCompile = undefined;
     return {
         forceUseReverseDepthBuffer: window.forceUseReverseDepthBuffer,
@@ -188,7 +188,7 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
             if (window.scene.activeCamera && (window.scene.activeCamera as any).useAutoRotationBehavior) {
                 (window.scene.activeCamera as any).useAutoRotationBehavior = false;
             }
-            const sceneAdts: any[] = window.scene!.textures.filter((t: any) => t.getClassName() === "AdvancedDynamicTexture");
+            const sceneAdts: any[] = window.scene.textures.filter((t: any) => t.getClassName() === "AdvancedDynamicTexture");
             const adtsAreReady = () => {
                 return sceneAdts.every((adt: any) => adt.guiIsReady());
             };

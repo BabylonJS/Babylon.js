@@ -40,10 +40,10 @@ export class KTX2Decoder {
         this._transcoderMgr = new TranscoderManager();
     }
 
-    public decode(data: Uint8Array, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
+    public async decode(data: Uint8Array, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
         const finalOptions = { ...options, ...KTX2Decoder.DefaultDecoderOptions };
 
-        return Promise.resolve().then(() => {
+        return Promise.resolve().then(async () => {
             const kfr = new KTX2FileReader(data);
 
             if (!kfr.isValid()) {
@@ -57,7 +57,7 @@ export class KTX2Decoder {
                     this._zstdDecoder = new ZSTDDecoder();
                 }
 
-                return this._zstdDecoder.init().then(() => {
+                return this._zstdDecoder.init().then(async () => {
                     return this._decodeData(kfr, caps, finalOptions);
                 });
             }
@@ -66,7 +66,7 @@ export class KTX2Decoder {
         });
     }
 
-    private _decodeData(kfr: KTX2FileReader, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
+    private async _decodeData(kfr: KTX2FileReader, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
         const width = kfr.header.pixelWidth;
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;

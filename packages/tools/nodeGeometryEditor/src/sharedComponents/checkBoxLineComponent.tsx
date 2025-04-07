@@ -37,7 +37,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         let currentState: boolean;
 
         if (nextProps.isSelected) {
-            currentState = nextProps.isSelected!();
+            currentState = nextProps.isSelected();
         } else {
             currentState = nextProps.target[nextProps.propertyName!] == true;
         }

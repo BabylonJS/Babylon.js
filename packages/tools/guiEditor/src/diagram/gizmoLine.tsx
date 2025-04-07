@@ -89,7 +89,7 @@ export function GizmoLine(props: IGizmoLineProps) {
     }, []);
 
     const update = () => {
-        const line = control as Line;
+        const line = control;
         const x1 = line._cachedParentMeasure.left + line._x1.getValue(line._host);
         const y1 = line._cachedParentMeasure.top + line._y1.getValue(line._host);
         const x2 = line._cachedParentMeasure.left + line._effectiveX2;
@@ -229,7 +229,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             // If the control has any rotation, reset the
             // rotation, modifying the so the scale behave as expected
             if (!scalePoint.isPivot && control.rotation) {
-                const line = control as Line;
+                const line = control;
                 const x1 = line._x1.getValue(line._host);
                 const y1 = line._y1.getValue(line._host);
                 const x2 = line._x2.getValue(line._host);

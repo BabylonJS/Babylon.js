@@ -23,7 +23,7 @@ export class GlobalState {
     public SnippetServerUrl = "https://snippet.babylonjs.com";
 
     public currentCode: string;
-    public getCompiledCode: () => Promise<string> = () => {
+    public getCompiledCode: () => Promise<string> = async () => {
         return Promise.resolve(this.currentCode);
     };
     public language = Utilities.ReadStringFromStore("language", "JS");

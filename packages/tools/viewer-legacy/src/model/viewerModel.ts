@@ -232,7 +232,7 @@ export class ViewerModel implements IDisposable {
      * @param triggerLoaded should this mesh trigger the onLoaded observable. Used when adding meshes manually.
      * @returns a promise that will resolve when the model is done loading
      */
-    public addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
+    public async addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }

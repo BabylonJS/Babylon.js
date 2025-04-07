@@ -40,7 +40,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         switch (inputBlock.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture: {
                 const isExternal = inputBlock.isExternal;
-                const creationOptions = inputBlock.creationOptions as FrameGraphTextureCreationOptions;
+                const creationOptions = inputBlock.creationOptions;
                 if (!isExternal && !inputBlock.creationOptions) {
                     inputBlock.setDefaultValue();
                 }
@@ -131,7 +131,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions}
                                     propertyName=""
                                     onSelect={(value: boolean) => {
-                                        creationOptions.options.useSRGBBuffers![0] = value as boolean;
+                                        creationOptions.options.useSRGBBuffers![0] = value;
                                         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                     }}
                                     extractValue={() => creationOptions.options.useSRGBBuffers![0]}
@@ -142,7 +142,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 );
             }
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment: {
-                const creationOptions = inputBlock.creationOptions as FrameGraphTextureCreationOptions;
+                const creationOptions = inputBlock.creationOptions;
                 const isExternal = inputBlock.isExternal;
                 if (!isExternal && !inputBlock.creationOptions) {
                     inputBlock.setDefaultValue();

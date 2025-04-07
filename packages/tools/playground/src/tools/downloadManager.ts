@@ -10,7 +10,7 @@ declare let saveAs: any;
 export class DownloadManager {
     public constructor(public globalState: GlobalState) {}
 
-    private _addContentToZipAsync(zip: typeof JSZip, name: string, url: string, replace: Nullable<string>, buffer = false): Promise<void> {
+    private async _addContentToZipAsync(zip: typeof JSZip, name: string, url: string, replace: Nullable<string>, buffer = false): Promise<void> {
         return new Promise((resolve) => {
             if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 resolve();
@@ -54,7 +54,7 @@ export class DownloadManager {
         });
     }
 
-    private _addTexturesToZipAsync(zip: typeof JSZip, index: number, textures: any[], folder: Nullable<string>): Promise<void> {
+    private async _addTexturesToZipAsync(zip: typeof JSZip, index: number, textures: any[], folder: Nullable<string>): Promise<void> {
         if (index === textures.length || !textures[index].name) {
             return Promise.resolve();
         }
@@ -94,7 +94,7 @@ export class DownloadManager {
         const name = textures[index].name.replace("textures/", "");
 
         if (url != null) {
-            return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
+            return this._addContentToZipAsync(folder, name, url, null, true).then(async () => {
                 return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
             });
         } else {
@@ -102,7 +102,7 @@ export class DownloadManager {
         }
     }
 
-    private _addImportedFilesToZipAsync(zip: typeof JSZip, index: number, importedFiles: string[], folder: Nullable<string>): Promise<void> {
+    private async _addImportedFilesToZipAsync(zip: typeof JSZip, index: number, importedFiles: string[], folder: Nullable<string>): Promise<void> {
         if (index === importedFiles.length) {
             return Promise.resolve();
         }
@@ -114,7 +114,7 @@ export class DownloadManager {
 
         const name = url.substring(url.lastIndexOf("/") + 1);
 
-        return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
+        return this._addContentToZipAsync(folder, name, url, null, true).then(async () => {
             return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
         });
     }
@@ -124,7 +124,7 @@ export class DownloadManager {
 
         const scene = engine.scenes[0];
         const textures = scene.textures?.slice(0) as any;
-        const importedFiles = scene.importedMeshesFiles?.slice(0) as string[];
+        const importedFiles = scene.importedMeshesFiles?.slice(0);
 
         const zipCode = this.globalState.zipCode;
 
@@ -144,10 +144,10 @@ export class DownloadManager {
         } while (true);
 
         this._addContentToZipAsync(zip, "index.html", "/zipContent/index.html", zipCode)
-            .then(() => {
+            .then(async () => {
                 return this._addTexturesToZipAsync(zip, 0, textures, null);
             })
-            .then(() => {
+            .then(async () => {
                 return this._addImportedFilesToZipAsync(zip, 0, importedFiles, null);
             })
             .then(() => {

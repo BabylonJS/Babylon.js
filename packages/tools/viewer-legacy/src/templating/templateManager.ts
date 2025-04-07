@@ -68,7 +68,7 @@ export class TemplateManager {
      * @param templates the templates to be used to initialize the main template
      * @returns a promise that will be fulfilled when the template is loaded
      */
-    public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
+    public async initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
         const internalInit = (dependencyMap: any, name: string, parentTemplate?: Template) => {
             //init template
             const template = this._templates[name];
@@ -119,8 +119,8 @@ export class TemplateManager {
      * @param templates the templates to be used to initialize the main template
      * @returns a promise that will be fulfilled when the template is loaded
      */
-    private _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
-        const promises: Array<Promise<Template | boolean>> = Object.keys(templates).map((name) => {
+    private async _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
+        const promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(async (name) => {
             // if the template was overridden
             if (!templates[name]) {
                 return Promise.resolve(false);
@@ -477,12 +477,12 @@ export class Template {
      * @param visibilityFunction The function to execute to show the template.
      * @returns a promise that will be fulfilled when the template is shown
      */
-    public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+    public async show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (this._isHiding) {
             return Promise.resolve(this);
         }
         return Promise.resolve()
-            .then(() => {
+            .then(async () => {
                 this._isShowing = true;
                 if (visibilityFunction) {
                     return visibilityFunction(this);
@@ -512,12 +512,12 @@ export class Template {
      * @param visibilityFunction The function to execute to show the template.
      * @returns a promise that will be fulfilled when the template is hidden
      */
-    public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+    public async hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (this._isShowing) {
             return Promise.resolve(this);
         }
         return Promise.resolve()
-            .then(() => {
+            .then(async () => {
                 this._isHiding = true;
                 if (visibilityFunction) {
                     return visibilityFunction(this);
@@ -562,7 +562,7 @@ export class Template {
         }
     }
 
-    private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
+    private async _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject("No templateConfig provided");
         } else if (templateConfig.html && !templateConfig.location) {

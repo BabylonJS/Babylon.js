@@ -26,7 +26,9 @@ export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
         if (text) {
             setText({ ...text, [axis]: value });
             const parsedValue = parseFloat(value);
-            if (isNaN(parsedValue)) return;
+            if (isNaN(parsedValue)) {
+                return;
+            }
             if (selectedAction instanceof SetPositionAction) {
                 selectedAction.targetPosition[axis] = parsedValue;
                 setSelectedAction(selectedAction);

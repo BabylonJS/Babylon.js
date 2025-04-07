@@ -73,7 +73,9 @@ export class GlobalState {
         }
     }
     public set tool(newTool: GUIEditorTool) {
-        if (this._tool === newTool) return;
+        if (this._tool === newTool) {
+            return;
+        }
         this._prevTool = this._tool;
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
@@ -252,8 +254,12 @@ export class GlobalState {
     }
 
     public isMultiSelectable(control: Control): boolean {
-        if (this.selectedControls.length === 0) return true;
-        if (this.selectedControls[0].parent === control.parent) return true;
+        if (this.selectedControls.length === 0) {
+            return true;
+        }
+        if (this.selectedControls[0].parent === control.parent) {
+            return true;
+        }
         return false;
     }
 

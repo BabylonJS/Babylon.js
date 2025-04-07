@@ -82,7 +82,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SOURCE">
                     {this.state.isLoading && <TextLineComponent ignoreValue={true} label="Loading..." />}
-                    {!this.state.isLoading && <FileButtonLine label="Load" onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />}
+                    {!this.state.isLoading && <FileButtonLine label="Load" onClick={async (file) => this.loadMesh(file)} accept=".glb, .babylon" />}
                     {scene && (
                         <OptionsLine
                             label="Mesh"

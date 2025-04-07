@@ -34,7 +34,7 @@ export class LiteTranscoder_UASTC_RG8_UNORM extends LiteTranscoder {
         this.setModulePath(LiteTranscoder_UASTC_RG8_UNORM.WasmModuleURL, LiteTranscoder_UASTC_RG8_UNORM.WasmBinary);
     }
 
-    public override transcode(
+    public override async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,

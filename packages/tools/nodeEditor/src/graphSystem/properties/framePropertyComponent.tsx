@@ -62,7 +62,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                             <ButtonLineComponent
                                 label="Collapse"
                                 onClick={() => {
-                                    this.props.frame!.isCollapsed = true;
+                                    this.props.frame.isCollapsed = true;
                                 }}
                             />
                         )}
@@ -70,14 +70,14 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                             <ButtonLineComponent
                                 label="Expand"
                                 onClick={() => {
-                                    this.props.frame!.isCollapsed = false;
+                                    this.props.frame.isCollapsed = false;
                                 }}
                             />
                         )}
                         <ButtonLineComponent
                             label="Export"
                             onClick={() => {
-                                this.props.frame!.export();
+                                this.props.frame.export();
                             }}
                         />
                     </LineContainerComponent>

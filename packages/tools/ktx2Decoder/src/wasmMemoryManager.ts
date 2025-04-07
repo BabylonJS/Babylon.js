@@ -9,11 +9,11 @@ export class WASMMemoryManager {
 
     private static _RequestId = 0;
 
-    public static LoadWASM(path: string): Promise<ArrayBuffer> {
+    public static async LoadWASM(path: string): Promise<ArrayBuffer> {
         if (this.LoadBinariesFromCurrentThread) {
             return new Promise((resolve, reject) => {
                 fetch(path)
-                    .then((response) => {
+                    .then(async (response) => {
                         if (response.ok) {
                             return response.arrayBuffer();
                         }

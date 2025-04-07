@@ -60,7 +60,7 @@ export class GUIEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.customLoad = options.customLoad;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.registerEventListeners();
 
         const graphEditor = React.createElement(WorkbenchEditor, {

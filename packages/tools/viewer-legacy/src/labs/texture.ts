@@ -255,7 +255,7 @@ export class TextureUtils {
                 if (face instanceof HTMLElement || face instanceof ImageData) {
                     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, textureCube.internalFormat, textureCube.internalFormat, textureCube.type, <any>face);
                 } else {
-                    const textureData = <TextureData>face;
+                    const textureData = face;
                     gl.texImage2D(
                         gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
                         level,

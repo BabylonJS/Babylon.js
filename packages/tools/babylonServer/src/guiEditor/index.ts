@@ -1,13 +1,13 @@
 /* eslint-disable import/no-internal-modules */
 import { GUIEditor } from "../../../guiEditor/src/index";
 
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.GuiEditor = GUIEditor;
-    (<any>globalObject).BABYLON.GUIEditor = GUIEditor;
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    (<any>GlobalObject).BABYLON.GuiEditor = GUIEditor;
+    (<any>GlobalObject).BABYLON.GUIEditor = GUIEditor;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    (<any>globalObject).GUIEDITOR = { GUIEditor };
+    (<any>GlobalObject).GUIEDITOR = { GUIEditor };
 }
 
 export * from "../../../guiEditor/src/index";

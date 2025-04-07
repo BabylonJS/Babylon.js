@@ -14,16 +14,16 @@ export class LiteTranscoder extends Transcoder {
     private _memoryManager: WASMMemoryManager;
     protected _transcodeInPlace: boolean;
 
-    private _instantiateWebAssembly(wasmBinary: ArrayBuffer): Promise<{ module: any }> {
-        return WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
+    private async _instantiateWebAssembly(wasmBinary: ArrayBuffer): Promise<{ module: any }> {
+        return WebAssembly.instantiate(wasmBinary, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
             return { module: moduleWrapper.instance.exports };
         });
     }
 
-    protected _loadModule(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
+    protected async _loadModule(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
         this._modulePromise =
             this._modulePromise ||
-            (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then((wasmBinary) => {
+            (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then(async (wasmBinary) => {
                 return this._instantiateWebAssembly(wasmBinary);
             });
         return this._modulePromise;
@@ -52,7 +52,7 @@ export class LiteTranscoder extends Transcoder {
         this._memoryManager = memoryMgr;
     }
 
-    public override transcode(
+    public override async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,

@@ -347,14 +347,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Comment"
                             multilines={true}
                             lockObject={this.props.globalState.lockObject}
-                            value={this.props.globalState.nodeGeometry!.comment}
+                            value={this.props.globalState.nodeGeometry.comment}
                             target={this.props.globalState.nodeGeometry}
                             propertyName="comment"
                         />
                         <ButtonLineComponent
                             label="Reset to default"
                             onClick={() => {
-                                this.props.globalState.nodeGeometry!.setToDefault();
+                                this.props.globalState.nodeGeometry.setToDefault();
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                                 this.props.globalState.onFrame.notifyObservers();
                                 this.props.globalState.onClearUndoStack.notifyObservers();
@@ -450,13 +450,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent
                             label="Generate code"
                             onClick={() => {
-                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeGeometry!.generateCode(), "code.txt");
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeGeometry.generateCode(), "code.txt");
                             }}
                         />
                         {this.props.globalState.customSave && (
                             <>
                                 <ButtonLineComponent
-                                    label={this.props.globalState.customSave!.label}
+                                    label={this.props.globalState.customSave.label}
                                     isDisabled={this.state.uploadInProgress}
                                     onClick={() => {
                                         this.customSave();
@@ -475,7 +475,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">
-                            {this.props.globalState.nodeGeometry!.snippetId && <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeGeometry!.snippetId} />}
+                            {this.props.globalState.nodeGeometry.snippetId && <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeGeometry.snippetId} />}
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                             <ButtonLineComponent
                                 label="Save to snippet server"

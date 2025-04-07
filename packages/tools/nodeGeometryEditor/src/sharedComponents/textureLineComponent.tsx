@@ -86,11 +86,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             passPostProcess = passCubePostProcess;
         }
 
-        if (!passPostProcess.getEffect() || !passPostProcess.getEffect()!.isReady()) {
+        if (!passPostProcess.getEffect() || !passPostProcess.getEffect().isReady()) {
             // Try again later
             passPostProcess.dispose();
 
-            setTimeout(() => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
+            setTimeout(async () => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
 
             return;
         }
