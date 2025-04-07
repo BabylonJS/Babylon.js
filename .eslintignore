@@ -6,3 +6,5 @@ dist/**/*.*
 **/ShadersWGSL/**/*.ts
 **/*.fragment.ts
 **/*.vertex.ts
+packages/public/**/*.*
+packages/lts/**/*.*
