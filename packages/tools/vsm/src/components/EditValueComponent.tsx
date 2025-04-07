@@ -6,7 +6,7 @@ import { useSelectedAction } from "./tools/useSelectedAction";
 
 export interface IEditValueComponentProps {}
 
-const style = { width: "40px", backgroundColor: "rgb(87, 87, 87)", border: "unset" };
+const Style = { width: "40px", backgroundColor: "rgb(87, 87, 87)", border: "unset" };
 
 export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
     const { selectedAction, setSelectedAction } = useSelectedAction();
@@ -38,9 +38,9 @@ export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
 
     return text ? (
         <div style={{ display: "flex", gap: "2px" }}>
-            <input style={style} value={text.x} onChange={(event) => onSingleValueChanged("x", event)}></input>
-            <input style={style} value={text.y} onChange={(event) => onSingleValueChanged("y", event)}></input>
-            <input style={style} value={text.z} onChange={(event) => onSingleValueChanged("z", event)}></input>
+            <input style={Style} value={text.x} onChange={(event) => onSingleValueChanged("x", event)}></input>
+            <input style={Style} value={text.y} onChange={(event) => onSingleValueChanged("y", event)}></input>
+            <input style={Style} value={text.z} onChange={(event) => onSingleValueChanged("z", event)}></input>
         </div>
     ) : null;
 };

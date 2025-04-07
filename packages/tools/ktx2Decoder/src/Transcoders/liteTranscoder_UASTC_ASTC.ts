@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { LiteTranscoder } from "./liteTranscoder";

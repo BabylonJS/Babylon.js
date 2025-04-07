@@ -98,6 +98,9 @@ const abbreviations = [
     "glTF",
     "GLTF",
     "MSFT",
+    "MSC",
+    "QR",
+    "BGR",
 ];
 
 // Join them into a single regex string

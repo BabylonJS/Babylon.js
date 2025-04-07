@@ -181,6 +181,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     saveToSnippetServerHelper = async (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
         return new Promise((resolve, reject) => {
             const xmlHttp = new XMLHttpRequest();
@@ -236,6 +237,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     saveToSnippetServer = async () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());

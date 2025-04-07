@@ -6,6 +6,7 @@ import { viewerGlobals } from "./configuration/globals";
  * Will attach an init function the DOMContentLoaded event.
  * The init function will be removed automatically after the event was triggered.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function initListeners() {
     document.addEventListener("DOMContentLoaded", init);
     function init() {

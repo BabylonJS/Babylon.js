@@ -10,7 +10,7 @@ import type { Nullable } from "core/types";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
-const predicate = (b: NodeGeometryBlock) => !!(b as any).getExecutionIndex;
+const Predicate = (b: NodeGeometryBlock) => !!(b as any).getExecutionIndex;
 
 export class InputDisplayManager implements IDisplayManager {
     private _hasHighlights = false;
@@ -146,7 +146,7 @@ export class InputDisplayManager implements IDisplayManager {
         if (!block.isContextual) {
             return;
         }
-        const contextGenerationBlock = block.getDescendantOfPredicate(predicate);
+        const contextGenerationBlock = block.getDescendantOfPredicate(Predicate);
 
         if (selectedData !== nodeData) {
             if (this._hasHighlights) {
@@ -154,7 +154,7 @@ export class InputDisplayManager implements IDisplayManager {
 
                 if (selectedData && selectedData.data.getClassName() === "GeometryInputBlock") {
                     const otherSelection = selectedData.data as GeometryInputBlock;
-                    const otherContextGenerationBlock = otherSelection.getDescendantOfPredicate(predicate);
+                    const otherContextGenerationBlock = otherSelection.getDescendantOfPredicate(Predicate);
 
                     removeHighlight = contextGenerationBlock !== otherContextGenerationBlock;
                 } else {
@@ -180,7 +180,7 @@ export class InputDisplayManager implements IDisplayManager {
             return;
         }
 
-        const contextGenerationBlock = block.getDescendantOfPredicate(predicate);
+        const contextGenerationBlock = block.getDescendantOfPredicate(Predicate);
 
         if (contextGenerationBlock) {
             manager.onHighlightNodeObservable.notifyObservers({ data: contextGenerationBlock, active: false });

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import type * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { Transcoder } from "../transcoder";
@@ -14,17 +15,17 @@ export class LiteTranscoder extends Transcoder {
     private _memoryManager: WASMMemoryManager;
     protected _transcodeInPlace: boolean;
 
-    private async _instantiateWebAssembly(wasmBinary: ArrayBuffer): Promise<{ module: any }> {
+    private async _instantiateWebAssemblyAsync(wasmBinary: ArrayBuffer): Promise<{ module: any }> {
         return WebAssembly.instantiate(wasmBinary, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
             return { module: moduleWrapper.instance.exports };
         });
     }
 
-    protected async _loadModule(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
+    protected async _loadModuleAsync(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
         this._modulePromise =
             this._modulePromise ||
             (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then(async (wasmBinary) => {
-                return this._instantiateWebAssembly(wasmBinary);
+                return this._instantiateWebAssemblyAsync(wasmBinary);
             });
         return this._modulePromise;
     }
@@ -52,6 +53,7 @@ export class LiteTranscoder extends Transcoder {
         this._memoryManager = memoryMgr;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
@@ -63,7 +65,7 @@ export class LiteTranscoder extends Transcoder {
         imageDesc: IKTX2_ImageDesc | null,
         encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
-        return this._loadModule().then((moduleWrapper: any) => {
+        return this._loadModuleAsync().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
             const [textureView, uncompressedTextureView, nBlocks] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData);
 

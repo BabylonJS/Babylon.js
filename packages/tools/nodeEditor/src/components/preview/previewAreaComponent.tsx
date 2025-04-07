@@ -75,6 +75,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async processPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
         if (!e.ctrlKey || !this.props.globalState.pickingTexture) {
             this._consoleRef.current?.classList.add("hidden");

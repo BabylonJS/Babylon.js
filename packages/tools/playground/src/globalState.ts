@@ -23,6 +23,7 @@ export class GlobalState {
     public SnippetServerUrl = "https://snippet.babylonjs.com";
 
     public currentCode: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public getCompiledCode: () => Promise<string> = async () => {
         return Promise.resolve(this.currentCode);
     };

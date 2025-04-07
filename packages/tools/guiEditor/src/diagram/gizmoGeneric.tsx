@@ -25,13 +25,13 @@ interface IGuiGizmoState {
     isRotating: boolean;
 }
 
-const roundFactor = 100;
-const round = (value: number) => Math.round(value * roundFactor) / roundFactor;
+const RoundFactor = 100;
+const Round = (value: number) => Math.round(value * RoundFactor) / RoundFactor;
 
-const modulo = (dividend: number, divisor: number) => ((dividend % divisor) + divisor) % divisor;
+const Modulo = (dividend: number, divisor: number) => ((dividend % divisor) + divisor) % divisor;
 
 // this defines the lines that link the corners, making up the bounding box
-const lines = [
+const Lines = [
     [0, 2],
     [0, 6],
     [2, 8],
@@ -39,7 +39,7 @@ const lines = [
 ];
 
 // used to calculate which cursor icon we should display for the scalepoints
-const defaultScalePointRotations = [315, 0, 45, 270, 0, 90, 225, 180, 135];
+const DefaultScalePointRotations = [315, 0, 45, 270, 0, 90, 225, 180, 135];
 
 export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
     // used for scaling computations
@@ -68,7 +68,7 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
                     verticalPosition: vertical,
                     rotation: 0,
                     isPivot,
-                    defaultRotation: defaultScalePointRotations[scalePoints.length],
+                    defaultRotation: DefaultScalePointRotations[scalePoints.length],
                 });
             }
         }
@@ -280,7 +280,7 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             const nb = initialBounds.clone();
             // account for rotation: if other control is rotated 90 degrees
             // relative to primary control, we should modify top instead of left
-            const rotationModifier = (modulo(this.props.control.rotation - node.rotation, Math.PI * 2) / Math.PI) * 2;
+            const rotationModifier = (Modulo(this.props.control.rotation - node.rotation, Math.PI * 2) / Math.PI) * 2;
             edges.forEach((edge, index) => {
                 const modifiedIndex = Math.round(index + rotationModifier) % 4;
                 const flipSign = index < 2 === modifiedIndex < 2 ? 1 : -1;
@@ -346,16 +346,16 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
                 let newPixels = 0;
                 switch (property) {
                     case "left":
-                        newPixels = round(selectedControl.metadata.storedValues.left + rotatedCenter.x);
+                        newPixels = Round(selectedControl.metadata.storedValues.left + rotatedCenter.x);
                         break;
                     case "top":
-                        newPixels = round(selectedControl.metadata.storedValues.top + rotatedCenter.y);
+                        newPixels = Round(selectedControl.metadata.storedValues.top + rotatedCenter.y);
                         break;
                     case "width":
-                        newPixels = round(width);
+                        newPixels = Round(width);
                         break;
                     case "height":
-                        newPixels = round(height);
+                        newPixels = Round(height);
                         break;
                 }
                 // compute real change in property
@@ -403,7 +403,7 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
     override render() {
         return (
             <div className="gizmo">
-                {lines.map((line, index) => {
+                {Lines.map((line, index) => {
                     const start = this.state.scalePoints[line[0]];
                     const end = this.state.scalePoints[line[1]];
                     // the vector between start and end

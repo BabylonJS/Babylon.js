@@ -3,6 +3,7 @@ import type { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 
 const ClassName = "faIconButton";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IFontAwesomeIconButtonProps = FontAwesomeIconProps & {
     onClick: () => void;
     disabled?: boolean;

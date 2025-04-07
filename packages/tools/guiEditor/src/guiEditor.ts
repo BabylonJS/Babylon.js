@@ -30,6 +30,7 @@ export class GUIEditor {
      * @param options defines the options to use to configure the gui editor
      * @param embed defines whether editor is being opened from the Playground
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async Show(options: IGUIEditorOptions, embed?: boolean) {
         let hostElement = options.hostElement;
 

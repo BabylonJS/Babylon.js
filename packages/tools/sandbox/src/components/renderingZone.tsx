@@ -26,11 +26,11 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
-function getFileExtension(str: string): string {
+function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
 }
 
-function isTextureAsset(extension: string): boolean {
+function IsTextureAsset(extension: string): boolean {
     switch (extension.toLowerCase()) {
         case "ktx":
         case "ktx2":
@@ -68,6 +68,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         super(props);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async initEngine() {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
         const antialias = !this.props.globalState.commerceMode;
@@ -141,7 +142,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         return false;
                     }
                     default: {
-                        if (isTextureAsset(extension)) {
+                        if (IsTextureAsset(extension)) {
                             setSceneFileToLoad(file);
                         }
 
@@ -157,8 +158,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             const filesToLoad = filesInput.filesToLoad;
             if (filesToLoad.length === 1) {
                 const fileName = (filesToLoad[0] as any).correctName as string;
-                const fileExtension = getFileExtension(fileName);
-                if (isTextureAsset(fileExtension)) {
+                const fileExtension = GetFileExtension(fileName);
+                if (IsTextureAsset(fileExtension)) {
                     return Promise.resolve(this.loadTextureAsset(`file:${fileName}`));
                 }
             }
@@ -353,11 +354,11 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     loadAssetFromUrl(assetUrl: string) {
         const rootUrl = Tools.GetFolderPath(assetUrl);
         const fileName = Tools.GetFilename(assetUrl);
-        const fileExtension = getFileExtension(fileName);
+        const fileExtension = GetFileExtension(fileName);
 
         this._engine.clearInternalTexturesCache();
 
-        const promise = isTextureAsset(fileExtension) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
+        const promise = IsTextureAsset(fileExtension) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
 
         promise
             .then((scene) => {

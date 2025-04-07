@@ -30,7 +30,7 @@ interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
 
-const _sizeValues = [
+const _SizeValues = [
     { width: 1920, height: 1080 },
     { width: 1366, height: 768 },
     { width: 1280, height: 800 },
@@ -45,7 +45,7 @@ const _sizeValues = [
     { width: 2048, height: 2048 },
 ];
 
-const _sizeOptions = [
+const _SizeOptions = [
     { label: "Web (1920)", value: 0 },
     { label: "Web (1366)", value: 1 },
     { label: "Web (1280)", value: 2 },
@@ -101,7 +101,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
         const responsiveUI = this.props.globalState.fromPG ? DataStorage.ReadBoolean("responsiveUI", true) : DataStorage.ReadBoolean("Responsive", true);
 
-        this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
+        this._sizeOption = _SizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
             DataStorage.WriteBoolean("Responsive", false);
@@ -265,10 +265,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                                 DataStorage.WriteBoolean("Responsive", value);
                                 DataStorage.WriteBoolean("responsiveUI", value);
-                                this._sizeOption = _sizeOptions.length;
+                                this._sizeOption = _SizeOptions.length;
                                 if (value) {
                                     this._sizeOption = 0;
-                                    this.props.globalState.workbench.guiSize = _sizeValues[this._sizeOption];
+                                    this.props.globalState.workbench.guiSize = _SizeValues[this._sizeOption];
                                     DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
                                     DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.height);
                                 }
@@ -280,14 +280,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             <OptionsLine
                                 label=""
                                 iconLabel="Size"
-                                options={_sizeOptions}
+                                options={_SizeOptions}
                                 target={this}
                                 propertyName={"_sizeOption"}
                                 noDirectUpdate={true}
                                 onSelect={(value: any) => {
                                     this._sizeOption = value;
-                                    if (this._sizeOption !== _sizeOptions.length) {
-                                        const newSize = _sizeValues[this._sizeOption];
+                                    if (this._sizeOption !== _SizeOptions.length) {
+                                        const newSize = _SizeValues[this._sizeOption];
                                         this.props.globalState.workbench.guiSize = newSize;
                                         DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
                                         DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.height);

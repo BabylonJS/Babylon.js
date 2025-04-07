@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { LiteTranscoder } from "./liteTranscoder";
@@ -34,6 +35,7 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
         this.setModulePath(LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL, LiteTranscoder_UASTC_RGBA_UNORM.WasmBinary);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
@@ -45,7 +47,7 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
         imageDesc: IKTX2_ImageDesc | null,
         encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
-        return this._loadModule().then((moduleWrapper: any) => {
+        return this._loadModuleAsync().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
             const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, 4);
 

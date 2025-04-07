@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Observable } from "core/Misc/observable";
 import type { AbstractViewer } from "./viewer";
 

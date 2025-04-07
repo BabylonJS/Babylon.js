@@ -22,6 +22,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
         this.state = { isLoading: false };
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async loadMesh(file: File) {
         this.setState({ isLoading: true });
         const scene = await SceneLoader.LoadAsync("file:", file, EngineStore.LastCreatedEngine);

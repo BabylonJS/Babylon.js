@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
 // eslint-disable-next-line import/no-internal-modules

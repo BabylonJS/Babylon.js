@@ -1,11 +1,14 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { Transcoder } from "../transcoder";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let MSC_TRANSCODER: any;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
 
 /**
@@ -105,6 +108,7 @@ export class MSCTranscoder extends Transcoder {
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,

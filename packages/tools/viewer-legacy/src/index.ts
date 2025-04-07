@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { mapperManager } from "./configuration/mappers";
 import { viewerGlobals } from "./configuration/globals";
 import { viewerManager } from "./viewer/viewerManager";

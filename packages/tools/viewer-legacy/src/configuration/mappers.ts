@@ -190,4 +190,5 @@ export class MapperManager {
  * The mapperManager can be disposed directly with calling mapperManager.dispose()
  * or indirectly with using BabylonViewer.disposeAll()
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const mapperManager = new MapperManager();

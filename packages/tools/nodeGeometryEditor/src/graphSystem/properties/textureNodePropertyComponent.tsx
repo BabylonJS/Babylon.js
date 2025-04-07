@@ -12,6 +12,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async loadTextureData(file: File) {
         const block = this.props.nodeData.data as GeometryTextureBlock;
         await block.loadTextureFromFileAsync(file);

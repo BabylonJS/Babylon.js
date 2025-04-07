@@ -3,7 +3,7 @@ import type { FunctionComponent } from "react";
 import type { ViewerElement } from "viewer/viewerElement";
 import "viewer";
 
-interface HTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
+interface IHTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
     class?: string;
     engine?: "WebGL" | "WebGPU";
     source?: string;
@@ -16,7 +16,7 @@ declare global {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         interface IntrinsicElements {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            "babylon-viewer": HTML3DElementAttributes;
+            "babylon-viewer": IHTML3DElementAttributes;
         }
     }
 }

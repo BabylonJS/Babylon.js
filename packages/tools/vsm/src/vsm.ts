@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Workbench } from "./workbench";

@@ -49,7 +49,7 @@ export class GlobalState {
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
     public keys: KeyboardManager;
-    private _fromPG: boolean;
+    private _fromPg: boolean;
     /** DO NOT USE: in the process of removing */
     public blockKeyboardEvents = false;
     onOutlineChangedObservable = new Observable<void>();
@@ -174,11 +174,13 @@ export class GlobalState {
     public get backgroundColor() {
         return this._backgroundColor;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get fromPG() {
-        return this._fromPG;
+        return this._fromPg;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set fromPG(value: boolean) {
-        this._fromPG = value;
+        this._fromPg = value;
     }
 
     public set backgroundColor(value: Color3) {

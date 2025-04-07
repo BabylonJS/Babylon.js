@@ -59,6 +59,7 @@ export class RenderOnlyConfigurationLoader {
      * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
      * @returns A promise that delivers the extended viewer configuration, when done.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
         this._processInitialConfiguration(loadedConfig);
@@ -88,7 +89,7 @@ export class RenderOnlyConfigurationLoader {
                             }
                             mapperType = type || mapperType;
                         }
-                        return this._loadFile(url);
+                        return this._loadFileAsync(url);
                     } else {
                         if (typeof loadedConfig.configuration === "object") {
                             mapperType = loadedConfig.configuration.mapper || mapperType;
@@ -141,7 +142,7 @@ export class RenderOnlyConfigurationLoader {
         }
     }
 
-    private async _loadFile(url: string): Promise<any> {
+    private async _loadFileAsync(url: string): Promise<any> {
         const cacheReference = this._configurationCache;
         if (this._enableCache && cacheReference[url]) {
             return Promise.resolve(cacheReference[url]);

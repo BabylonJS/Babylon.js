@@ -5,6 +5,7 @@ import type { Engine } from "@dev/core";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let JSZip: any;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let saveAs: any;
 
 export class DownloadManager {

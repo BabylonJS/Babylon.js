@@ -117,7 +117,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         this.forceUpdate();
     }
 
-    private _onLoadPG(id: string) {
+    private _onLoadPg(id: string) {
         this.props.globalState.onLoadRequiredObservable.notifyObservers(id);
 
         if (window.innerWidth < this.props.globalState.MobileSizeTrigger) {
@@ -167,7 +167,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                                 <div className="example-category-title">{s.title}</div>
                                 {active.map((ss, i) => {
                                     return (
-                                        <div className="example" key={ss.title + i} onClick={() => this._onLoadPG(ss.PGID)}>
+                                        <div className="example" key={ss.title + i} onClick={() => this._onLoadPg(ss.PGID)}>
                                             <img src={this.state.openedOnce ? ss.icon.replace("icons", "https://doc.babylonjs.com/examples/icons") : ""} alt={ss.title} />
                                             <div className="example-title">{ss.title}</div>
                                             <div className="example-description">{ss.description}</div>

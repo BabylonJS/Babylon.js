@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function postMessage(message: any, transfer?: any[]): void;
 
 /**

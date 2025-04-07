@@ -36,22 +36,22 @@ import { LoadModel, PickModel } from "../../modelLoader";
 import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
-const defaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb";
+const DefaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
-const toneMappingOptions = [
+const ToneMappingOptions = [
     { label: "Standard", value: "standard" },
     { label: "None", value: "none" },
     { label: "Aces", value: "aces" },
     { label: "Neutral", value: "neutral" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: ToneMapping }[];
 
-const hotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
+const HotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
 
-const hotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
+const HotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
 
-function useConfiguration<T>(
+function UseConfiguration<T>(
     defaultState: T,
     get: () => T,
     set: ((data: T) => void) | undefined,
@@ -309,7 +309,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const [modelUrl, setModelUrl] = useState(defaultModelUrl);
+    const [modelUrl, setModelUrl] = useState(DefaultModelUrl);
 
     // Whenever the model changes, update the model URL.
     useEffect(() => {
@@ -341,8 +341,8 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         };
     }, [viewerElement]);
 
-    const lightingUrlConfig = useConfiguration("", () => viewerElement.environment.lighting ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
-    const skyboxUrlConfig = useConfiguration("", () => viewerElement.environment.skybox ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
+    const lightingUrlConfig = UseConfiguration("", () => viewerElement.environment.lighting ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
+    const skyboxUrlConfig = UseConfiguration("", () => viewerElement.environment.skybox ?? "", undefined, undefined, [viewer.onEnvironmentChanged], [viewerElement]);
 
     const [syncEnvironment, setSyncEnvironment] = useState(false);
     const [needsEnvironmentUpdate, setNeedsEnvironmentUpdate] = useState(false);
@@ -358,7 +358,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return !!skyboxUrlConfig.configuredState;
     }, [syncEnvironment, lightingUrlConfig.configuredState, skyboxUrlConfig.configuredState]);
 
-    const skyboxBlurConfig = useConfiguration(
+    const skyboxBlurConfig = UseConfiguration(
         viewer.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
         (blur) => (viewer.environmentConfig = { blur }),
@@ -367,7 +367,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const environmentIntensityConfig = useConfiguration(
+    const environmentIntensityConfig = UseConfiguration(
         viewer.environmentConfig.intensity,
         () => viewer.environmentConfig.intensity,
         (intensity) => (viewer.environmentConfig = { intensity }),
@@ -376,7 +376,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const environmentRotationConfig = useConfiguration(
+    const environmentRotationConfig = UseConfiguration(
         viewer.environmentConfig.rotation,
         () => viewer.environmentConfig.rotation,
         (rotation) => (viewer.environmentConfig = { rotation }),
@@ -385,7 +385,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const clearColorConfig = useConfiguration(
+    const clearColorConfig = UseConfiguration(
         viewerDetails.scene.clearColor,
         () => viewerDetails.scene.clearColor,
         (color) => (viewerDetails.scene.clearColor = color),
@@ -398,7 +398,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return { clearColor: clearColorConfig.configuredState };
     }, [clearColorConfig.configuredState]);
 
-    const cameraConfig = useConfiguration(
+    const cameraConfig = UseConfiguration(
         undefined,
         () => {
             return {
@@ -431,7 +431,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerDetails.camera, model]
     );
 
-    const toneMappingConfig = useConfiguration(
+    const toneMappingConfig = UseConfiguration(
         viewer.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
         (toneMapping) => (viewer.postProcessing = { toneMapping }),
@@ -444,7 +444,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         return { toneMapping: toneMappingConfig.configuredState };
     }, [toneMappingConfig.configuredState]);
 
-    const contrastConfig = useConfiguration(
+    const contrastConfig = UseConfiguration(
         viewer.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
         (contrast) => (viewer.postProcessing = { contrast }),
@@ -453,7 +453,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const exposureConfig = useConfiguration(
+    const exposureConfig = UseConfiguration(
         viewer.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
         (exposure) => (viewer.postProcessing = { exposure }),
@@ -462,7 +462,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const autoOrbitConfig = useConfiguration(
+    const autoOrbitConfig = UseConfiguration(
         // TODO: Viewer should have autoOrbit false by default at the Viewer layer.
         false,
         () => viewer.cameraAutoOrbit.enabled,
@@ -472,7 +472,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const autoOrbitSpeedConfig = useConfiguration(
+    const autoOrbitSpeedConfig = UseConfiguration(
         viewer.cameraAutoOrbit.speed,
         () => viewer.cameraAutoOrbit.speed,
         (speed) => (viewer.cameraAutoOrbit = { speed }),
@@ -481,7 +481,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const autoOrbitDelayConfig = useConfiguration(
+    const autoOrbitDelayConfig = UseConfiguration(
         viewer.cameraAutoOrbit.delay,
         () => viewer.cameraAutoOrbit.delay,
         (delay) => (viewer.cameraAutoOrbit = { delay }),
@@ -490,7 +490,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const animationStateConfig = useConfiguration(
+    const animationStateConfig = UseConfiguration(
         undefined,
         () => {
             return {
@@ -514,7 +514,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer]
     );
 
-    const animationAutoPlayConfig = useConfiguration(
+    const animationAutoPlayConfig = UseConfiguration(
         false,
         () => viewerElement.animationAutoPlay,
         (autoPlay) => {
@@ -526,7 +526,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
         [viewer, viewerElement]
     );
 
-    const selectedMaterialVariantConfig = useConfiguration(
+    const selectedMaterialVariantConfig = UseConfiguration(
         "",
         () => viewer.selectedMaterialVariant,
         (materialVariant) => {
@@ -1111,7 +1111,7 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                         <OptionsLine
                             label="Tone Mapping"
                             valuesAreStrings={true}
-                            options={toneMappingOptions}
+                            options={ToneMappingOptions}
                             target={toneMappingWrapper}
                             propertyName={"toneMapping"}
                             noDirectUpdate={true}
@@ -1268,15 +1268,15 @@ export const Configurator: FunctionComponent<{ viewerElement: ViewerElement; vie
                             <OptionsLine
                                 label="Hot Spot Type"
                                 valuesAreStrings={true}
-                                options={hotSpotTypeOptions}
-                                target={hotSpotTypeOptions}
+                                options={HotSpotTypeOptions}
+                                target={HotSpotTypeOptions}
                                 propertyName=""
                                 noDirectUpdate={true}
                             />
                         </div>
                         <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
                     </div>
-                    <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
+                    <DndContext sensors={dndSensors} modifiers={HotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
                         <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
                             {hotspots.map((hotspot) => (
                                 <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />

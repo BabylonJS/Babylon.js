@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Template, EventCallback } from "../templating/templateManager";
 import { TemplateManager } from "../templating/templateManager";
 import { FilesInput } from "core/Misc/filesInput";

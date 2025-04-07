@@ -280,7 +280,7 @@ class Playground {
             this._editor.setValue(this.globalState.currentCode);
         }
 
-        this.globalState.getCompiledCode = async () => this._getRunCode();
+        this.globalState.getCompiledCode = async () => this._getRunCodeAsync();
 
         if (this.globalState.currentCode) {
             this.globalState.onRunRequiredObservable.notifyObservers();
@@ -404,7 +404,7 @@ declare var canvas: HTMLCanvasElement;
                 Logger.Log("Error loading templates code");
             }
 
-            this._hookMonacoCompletionProvider();
+            this._hookMonacoCompletionProviderAsync();
         }
 
         if (!this.globalState.loadingCodeInProgress) {
@@ -708,7 +708,7 @@ declare var canvas: HTMLCanvasElement;
 
     // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
     // So we need to be super fast.
-    private async _hookMonacoCompletionProvider() {
+    private async _hookMonacoCompletionProviderAsync() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const owner = this;
@@ -767,7 +767,7 @@ declare var canvas: HTMLCanvasElement;
         };
     }
 
-    private async _getRunCode() {
+    private async _getRunCodeAsync() {
         if (this.globalState.language == "JS") {
             return this._editor.getValue();
         } else {
