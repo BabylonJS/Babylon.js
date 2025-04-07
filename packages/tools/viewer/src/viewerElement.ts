@@ -960,8 +960,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (changedProperties.get("renderWhenIdle") != null) {
             needsReload = true;
         } else if (changedProperties.has("engine")) {
-            const previous = changedProperties.get("engine") ?? GetDefaultEngine();
-            if (this.engine !== previous) {
+            const previous = changedProperties.get("engine");
+            if (previous && this.engine !== previous) {
                 needsReload = true;
             }
         }
