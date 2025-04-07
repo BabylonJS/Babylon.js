@@ -10,7 +10,6 @@ import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
-import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTypes";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<NodeRenderGraphInputBlock>>;
