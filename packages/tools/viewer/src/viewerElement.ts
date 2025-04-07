@@ -14,7 +14,7 @@ import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { IsToneMapping, Viewer } from "./viewer";
-import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
+import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =
