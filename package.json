@@ -94,7 +94,7 @@
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "lint": "npm run lint:check",
-        "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
+        "lint:check": "eslint \"packages/dev/**/src/**/*.{ts,tsx,js,json}\" --quiet && eslint \"packages/tools/**/src/**/*.{ts,tsx,js,json}\" --quiet && eslint \"packages/lts/**/src/**/*.{ts,tsx,js,json}\" --quiet && eslint \"packages/public/**/src/**/*.{ts,tsx,js,json}\" --quiet",
         "lint:check-ci": "eslint -f node_modules/eslint-formatter-azure-devops/index.js \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
