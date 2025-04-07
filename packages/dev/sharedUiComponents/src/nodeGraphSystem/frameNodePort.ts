@@ -7,7 +7,6 @@ import type { GraphNode } from "./graphNode";
 import { IsFramePortData } from "./tools";
 import type { FramePortPosition } from "./graphFrame";
 import type { StateManager } from "./stateManager";
-import type { FramePortData } from "./types/framePortData";
 import * as commonStyles from "./common.module.scss";
 
 export class FrameNodePort extends NodePort {
