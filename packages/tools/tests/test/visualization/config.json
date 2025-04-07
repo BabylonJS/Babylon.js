@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "SPZ SH",
+            "playgroundId": "#8SD32Q",
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
             "title": "PBR in mirror",
             "playgroundId": "#Q7DP2M",
             "referenceImage": "pbr_mirror.png"
