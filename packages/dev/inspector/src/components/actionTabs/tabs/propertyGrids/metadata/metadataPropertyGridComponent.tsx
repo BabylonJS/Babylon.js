@@ -206,7 +206,7 @@ export class MetadataGridComponent extends React.Component<
      * @param o Any Object, String or number
      * @returns Boolean
      */
-    objectCanSafelyStringify(o: object | string | number): boolean {
+    objectCanSafelyStringify(o: object | string | number | boolean): boolean {
         if (typeof o === "function") {
             return false;
         }

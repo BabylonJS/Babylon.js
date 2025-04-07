@@ -21,7 +21,6 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { Buffer, VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";

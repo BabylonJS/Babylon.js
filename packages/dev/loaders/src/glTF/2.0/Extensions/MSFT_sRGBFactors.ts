@@ -45,7 +45,8 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     /** @internal*/
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
+        // eslint-disable-next-line @typescript-eslint/promise-function-async
+        return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
             if (extra) {
                 if (!(babylonMaterial instanceof PBRMaterial)) {
                     throw new Error(`${extraContext}: Material type not supported`);
