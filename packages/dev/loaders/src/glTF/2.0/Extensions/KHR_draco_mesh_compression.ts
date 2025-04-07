@@ -14,7 +14,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_draco_mesh_compression";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_draco_mesh_compression extension.
@@ -72,6 +72,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, async (extensionContext, extension) => {
             if (primitive.mode != undefined) {

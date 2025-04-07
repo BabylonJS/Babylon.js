@@ -12,7 +12,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_materials_specular";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_specular extension.
@@ -60,6 +60,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSpecular>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();

@@ -342,7 +342,7 @@ export class TextureCanvasManager {
 
     public async updateTexture() {
         if (this._mipLevel !== 0) {
-            await this._setMipLevel(0);
+            this._setMipLevel(0);
         }
         this._didEdit = true;
         const element = this._editing3D ? this._3DCanvas : this._2DCanvas;
@@ -399,7 +399,7 @@ export class TextureCanvasManager {
 
     public async startPainting(): Promise<CanvasRenderingContext2D> {
         if (this._mipLevel != 0) {
-            await this._setMipLevel(0);
+            this._setMipLevel(0);
         }
         let x = 0,
             y = 0,

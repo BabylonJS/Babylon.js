@@ -46,7 +46,7 @@ interface ITexturePropertyGridComponentState {
     textureEditing: Nullable<BaseTexture>;
 }
 
-const textureFormat = [
+const TextureFormat = [
     { label: "Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_ALPHA },
     { label: "Luminance", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE },
     { label: "Luminance/Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE_ALPHA },
@@ -75,7 +75,7 @@ const textureFormat = [
     { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
 ];
 
-const textureType = [
+const TextureType = [
     { label: "unsigned byte", normalizable: 1, value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
     { label: "32-bit float", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT },
     { label: "16-bit float", normalizable: 0, value: Constants.TEXTURETYPE_HALF_FLOAT },
@@ -195,18 +195,18 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
     }
 
     findTextureFormat(format: number) {
-        for (let i = 0; i < textureFormat.length; ++i) {
-            if (textureFormat[i].value === format) {
-                return textureFormat[i];
+        for (let i = 0; i < TextureFormat.length; ++i) {
+            if (TextureFormat[i].value === format) {
+                return TextureFormat[i];
             }
         }
         return null;
     }
 
     findTextureType(type: number) {
-        for (let i = 0; i < textureType.length; ++i) {
-            if (textureType[i].value === type) {
-                return textureType[i];
+        for (let i = 0; i < TextureType.length; ++i) {
+            if (TextureType[i].value === type) {
+                return TextureType[i];
             }
         }
         return null;

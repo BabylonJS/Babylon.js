@@ -17,10 +17,10 @@ import * as webpackTools from "./webpackTools.js";
 import * as fs from "fs";
 import * as path from "path";
 
-const cliCommand = checkArgs(["-c", "--command"], false, true) as string;
-runCommand(cliCommand);
+const CliCommand = checkArgs(["-c", "--command"], false, true) as string;
+RunCommand(CliCommand);
 
-function processConfigFile() {
+function ProcessConfigFile() {
     const baseDir = path.resolve(".");
     const configFile = (checkArgs(["-f", "--file"], false, true) as string) || "config.tasks.json";
     if (configFile) {
@@ -35,21 +35,21 @@ function processConfigFile() {
                     if (command.args) {
                         externalArgs.push(...command.args);
                     }
-                    runCommand(command.command);
+                    RunCommand(command.command);
                 }
             }
         }
     }
 }
 
-function runCommand(command: string) {
+function RunCommand(command: string) {
     if (command) {
         console.log("Babylon.js build tools");
         console.log(`Command: ${command}`);
         switch (command) {
             case "run-tasks":
             case "rt":
-                processConfigFile();
+                ProcessConfigFile();
                 break;
             case "add-js-to-es6":
             case "ajte":

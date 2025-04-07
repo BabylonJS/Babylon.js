@@ -12,7 +12,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "ExtrasAsMetadata";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the ExtrasAsMetadata extension.
@@ -22,7 +22,7 @@ declare module "../../glTFFileLoader" {
     }
 }
 
-interface ObjectWithMetadata {
+interface IObjectWithMetadata {
     metadata: any;
 }
 
@@ -42,7 +42,7 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    private _assignExtras(babylonObject: ObjectWithMetadata, gltfProp: IProperty): void {
+    private _assignExtras(babylonObject: IObjectWithMetadata, gltfProp: IProperty): void {
         if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
             const metadata = (babylonObject.metadata = babylonObject.metadata || {});
             const gltf = (metadata.gltf = metadata.gltf || {});
@@ -65,6 +65,7 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return this._loader.loadNodeAsync(context, node, (babylonTransformNode): void => {
             this._assignExtras(babylonTransformNode, node);
@@ -75,6 +76,7 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>> {
         return this._loader.loadCameraAsync(context, camera, (babylonCamera): void => {
             this._assignExtras(babylonCamera, camera);

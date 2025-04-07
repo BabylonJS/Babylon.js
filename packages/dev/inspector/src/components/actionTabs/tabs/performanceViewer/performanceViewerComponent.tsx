@@ -21,16 +21,17 @@ interface IPerformanceViewerComponentProps {
 }
 
 // arbitrary window size
-const initialWindowSize = { width: 1024, height: 512 };
-const initialGraphSize = { width: 724, height: 512 };
+const InitialWindowSize = { width: 1024, height: 512 };
+const InitialGraphSize = { width: 724, height: 512 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export enum IPerfMetadataCategory {
     Count = "Count",
     FrameSteps = "Frame Steps Duration",
 }
 
 // list of strategies to add to perf graph automatically.
-const defaultStrategiesList = [
+const DefaultStrategiesList = [
     { strategyCallback: PerfCollectionStrategy.FpsStrategy() },
     { strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
     { strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
@@ -91,7 +92,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                         title: "Realtime Performance Viewer",
                         onClose: onClosePerformanceViewer,
                         onResize: onResize,
-                        size: initialWindowSize,
+                        size: InitialWindowSize,
                     },
                     children: (
                         <PerformanceViewerPopupComponent
@@ -99,7 +100,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                             layoutObservable={layoutObservable}
                             returnToLiveObservable={returnToLiveObservable}
                             performanceCollector={performanceCollector}
-                            initialGraphSize={initialGraphSize}
+                            initialGraphSize={InitialGraphSize}
                         />
                     ),
                 },
@@ -150,7 +151,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     };
 
     const addStrategies = (perfCollector: PerformanceViewerCollector) => {
-        perfCollector.addCollectionStrategies(...defaultStrategiesList);
+        perfCollector.addCollectionStrategies(...DefaultStrategiesList);
         if (PressureObserverWrapper.IsAvailable) {
             // Do not enable for now as the Pressure API does not
             // report factors at the moment.

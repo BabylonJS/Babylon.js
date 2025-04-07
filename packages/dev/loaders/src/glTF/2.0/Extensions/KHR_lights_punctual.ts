@@ -18,7 +18,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_lights_punctual";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_lights_punctual extension.
@@ -74,6 +74,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;

@@ -62,7 +62,7 @@ export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visi
     });
 };
 
-let idGenerator = 0;
+let IdGenerator = 0;
 export const BuildFloatUI = (
     container: HTMLDivElement,
     document: Document,
@@ -81,7 +81,7 @@ export const BuildFloatUI = (
         container.classList.add(localStyles.floatContainer);
         const numberInput = document.createElement("input");
         numberInput.type = "number";
-        numberInput.id = `number-${idGenerator++}`;
+        numberInput.id = `number-${IdGenerator++}`;
         if (additionalClassName) {
             numberInput.classList.add(additionalClassName);
         }
@@ -147,7 +147,7 @@ export const BuildFloatUI = (
         container.appendChild(value);
         const slider = document.createElement("input");
         slider.type = "range";
-        slider.id = `slider-${idGenerator++}`;
+        slider.id = `slider-${IdGenerator++}`;
         slider.step = isInteger ? "1" : (Math.abs(max - min) / 100.0).toString();
         slider.min = min.toString();
         slider.max = max.toString();

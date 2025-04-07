@@ -1,4 +1,5 @@
 // globalThis.debugNode receives the selected node in the inspector
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function setDebugNode(node: any) {
     if (typeof globalThis !== "undefined") {
         (globalThis as any).debugNode = node;

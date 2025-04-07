@@ -14,15 +14,15 @@ import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
 // Matrix that converts handedness on the X-axis.
-const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // 180 degrees rotation in Y.
-const rotation180Y = new Quaternion(0, 1, 0, 0);
+const Rotation180Y = new Quaternion(0, 1, 0, 0);
 
 // Default values for comparison.
-const epsilon = 1e-6;
-const defaultTranslation = Vector3.Zero();
-const defaultScale = Vector3.One();
+const Epsilon = 1e-6;
+const DefaultTranslation = Vector3.Zero();
+const DefaultScale = Vector3.One();
 
 export function GetAccessorElementCount(accessorType: AccessorType): number {
     switch (accessorType) {
@@ -190,7 +190,7 @@ export function ConvertToRightHandedNode(value: INode) {
     translation = ConvertToRightHandedPosition(translation);
     rotation = ConvertToRightHandedRotation(rotation);
 
-    if (translation.equalsWithEpsilon(defaultTranslation, epsilon)) {
+    if (translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete value.translation;
     } else {
         value.translation = translation.asArray();
@@ -209,12 +209,12 @@ export function ConvertToRightHandedNode(value: INode) {
  * @returns Ref to camera rotation.
  */
 export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
-    return rotation.multiplyInPlace(rotation180Y);
+    return rotation.multiplyInPlace(Rotation180Y);
 }
 
 export function RotateNode180Y(node: INode) {
     const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    rotation180Y.multiplyToRef(rotation, rotation);
+    Rotation180Y.multiplyToRef(rotation, rotation);
     node.rotation = rotation.asArray();
 }
 
@@ -237,7 +237,7 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
     parentMatrix.multiplyToRef(matrix, matrix);
     matrix.decompose(parentScale, parentRotation, parentTranslation);
 
-    if (parentTranslation.equalsWithEpsilon(defaultTranslation, epsilon)) {
+    if (parentTranslation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete parentNode.translation;
     } else {
         parentNode.translation = parentTranslation.asArray();
@@ -249,7 +249,7 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
         parentNode.rotation = parentRotation.asArray();
     }
 
-    if (parentScale.equalsWithEpsilon(defaultScale, epsilon)) {
+    if (parentScale.equalsWithEpsilon(DefaultScale, Epsilon)) {
         delete parentNode.scale;
     } else {
         parentNode.scale = parentScale.asArray();
@@ -278,7 +278,7 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
             return false;
         }
     } else {
-        const matrix = node.getWorldMatrix().multiplyToRef(convertHandednessMatrix, TmpVectors.Matrix[0]);
+        const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
         if (!matrix.isIdentity()) {
             return false;
         }

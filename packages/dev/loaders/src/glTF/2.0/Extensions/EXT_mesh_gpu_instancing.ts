@@ -13,7 +13,7 @@ import "core/Meshes/thinInstanceMesh";
 const NAME = "EXT_mesh_gpu_instancing";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_mesh_gpu_instancing extension.
@@ -57,6 +57,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             this._loader._disableInstancedMesh++;

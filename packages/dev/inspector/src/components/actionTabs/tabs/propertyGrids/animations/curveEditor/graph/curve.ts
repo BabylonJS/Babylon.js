@@ -2,6 +2,7 @@ import { Animation } from "core/Animations/animation";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Observable } from "core/Misc/observable";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface KeyEntry {
     frame: number;
     value: number;

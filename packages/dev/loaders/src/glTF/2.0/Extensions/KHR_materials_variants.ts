@@ -32,7 +32,7 @@ declare module "../../glTFFileLoader" {
         selectedVariant: string;
     };
 
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_variants extension.
@@ -252,6 +252,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadMeshPrimitiveAsync(
         context: string,
         name: string,

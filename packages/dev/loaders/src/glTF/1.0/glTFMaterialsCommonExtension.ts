@@ -75,6 +75,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         super("KHR_materials_common");
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public override loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime): boolean {
         if (!gltfRuntime.extensions) {
             return false;
@@ -141,6 +142,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         return false;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public override loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
         const material: IGLTFMaterial = gltfRuntime.materials[id];
         if (!material || !material.extensions) {

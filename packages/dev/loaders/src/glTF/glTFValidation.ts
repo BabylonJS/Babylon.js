@@ -5,10 +5,12 @@ import { Tools } from "core/Misc/tools";
 declare let GLTFValidator: GLTF2.IGLTFValidator;
 
 // WorkerGlobalScope
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function postMessage(message: any, transfer?: any[]): void;
 
-async function validateAsync(
+async function ValidateAsync(
     data: string | Uint8Array,
     rootUrl: string,
     fileName: string,
@@ -28,7 +30,7 @@ async function validateAsync(
 /**
  * The worker function that gets converted to a blob url to pass into a worker.
  */
-function workerFunc(): void {
+function WorkerFunc(): void {
     const pendingExternalResources: Array<{ resolve: (data: any) => void; reject: (reason: any) => void }> = [];
 
     onmessage = (message) => {
@@ -39,7 +41,7 @@ function workerFunc(): void {
                 break;
             }
             case "validate": {
-                validateAsync(
+                ValidateAsync(
                     data.data,
                     data.rootUrl,
                     data.fileName,
@@ -110,7 +112,7 @@ export class GLTFValidation {
     ): Promise<GLTF2.IGLTFValidationResults> {
         if (typeof Worker === "function") {
             return new Promise((resolve, reject) => {
-                const workerContent = `${validateAsync}(${workerFunc})()`;
+                const workerContent = `${ValidateAsync}(${WorkerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
                 const worker = new Worker(workerBlobUrl);
 
@@ -169,7 +171,7 @@ export class GLTFValidation {
             }
 
             return this._LoadScriptPromise.then(async () => {
-                return validateAsync(data, rootUrl, fileName, getExternalResource);
+                return ValidateAsync(data, rootUrl, fileName, getExternalResource);
             });
         }
     }

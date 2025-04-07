@@ -13,7 +13,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "EXT_lights_image_based";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_lights_image_based extension.
@@ -76,6 +76,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;

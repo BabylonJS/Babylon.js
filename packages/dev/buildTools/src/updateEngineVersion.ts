@@ -2,6 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { findRootDirectory } from "./utils.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const updateEngineVersion = async () => {
     const baseDirectory = findRootDirectory();
     // get @dev/core package.json

@@ -16,7 +16,7 @@ import type { IAnimation } from "../glTFLoaderInterfaces";
 const NAME = "KHR_interactivity";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_interactivity extension.

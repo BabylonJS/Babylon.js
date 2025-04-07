@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { globSync } from "glob";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const declarationsEs6 = () => {
     const root = checkArgs(["--root", "-r"]) as string;
     const appendToFile = checkArgs(["--append-to-file", "-atf"]) as string;

@@ -8,7 +8,7 @@ interface IPropertyWithBufferView {
     bufferView?: number;
 }
 
-function getHighestByteAlignment(byteLength: number): number {
+function GetHighestByteAlignment(byteLength: number): number {
     if (byteLength % 4 === 0) {
         return 4;
     }
@@ -52,7 +52,7 @@ export class BufferManager {
         const dataWriter = new DataWriter(totalByteLength);
 
         // Order the bufferViews in descending order of their alignment requirements
-        const orderedBufferViews = Array.from(this._bufferViewToData.keys()).sort((a, b) => getHighestByteAlignment(b.byteLength) - getHighestByteAlignment(a.byteLength));
+        const orderedBufferViews = Array.from(this._bufferViewToData.keys()).sort((a, b) => GetHighestByteAlignment(b.byteLength) - GetHighestByteAlignment(a.byteLength));
 
         // Fill in the bufferViews list and missing bufferView index references while writing the binary
         for (const bufferView of orderedBufferViews) {

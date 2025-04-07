@@ -5,7 +5,7 @@ import { GUIEditor } from "gui-editor/guiEditor";
 
 declare let BABYLON: any;
 
-let editorUrl = `${Tools._DefaultCdnUrl}/v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
+let EditorUrl = `${Tools._DefaultCdnUrl}/v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let guiEditorContainer: { GUIEditor: typeof GUIEditor };
 /** Get the inspector from bundle or global
@@ -40,7 +40,7 @@ export function InjectGUIEditor(guiEditorPackage: any) {
  * @param guiEditorURL
  */
 export function SetGUIEditorURL(guiEditorURL: string) {
-    editorUrl = guiEditorURL;
+    EditorUrl = guiEditorURL;
 }
 
 /**
@@ -59,11 +59,11 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, em
             if (typeof guiEditorContainer === "undefined") {
                 // Load editor and add it to the DOM
                 try {
-                    await Tools.LoadScriptAsync(editorUrl);
+                    await Tools.LoadScriptAsync(EditorUrl);
                     guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
                 } catch {
                     // eslint-disable-next-line no-throw-literal
-                    throw `Failed to load GUI editor from ${editorUrl}`;
+                    throw `Failed to load GUI editor from ${EditorUrl}`;
                 }
             }
         } else {

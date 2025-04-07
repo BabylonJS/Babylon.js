@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { AssetContainer } from "core/assetContainer";
 import type { Bone } from "core/Bones/bone";
 import type { Skeleton } from "core/Bones/skeleton";

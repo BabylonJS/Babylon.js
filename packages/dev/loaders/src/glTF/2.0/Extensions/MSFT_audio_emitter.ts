@@ -19,7 +19,7 @@ import "core/Audio/audioSceneComponent";
 const NAME = "MSFT_audio_emitter";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the MSFT_audio_emitter extension.
@@ -104,6 +104,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference>(context, scene, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
@@ -133,6 +134,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
@@ -171,6 +173,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
         return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, async (extensionContext, extension) => {
             return this._loader.loadAnimationAsync(context, animation).then(async (babylonAnimationGroup) => {

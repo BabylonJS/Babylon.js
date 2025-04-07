@@ -10,15 +10,15 @@ export class StringTools {
      */
     private static _SaveAs(blob: Blob, name: string, document: HTMLDocument) {
         if ("download" in HTMLAnchorElement.prototype) {
-            const URL = window.URL || window.webkitURL;
+            const url = window.URL || window.webkitURL;
             const a = document.createElement("a");
 
             a.download = name;
             a.rel = "noopener"; // tabnabbing
 
-            a.href = URL.createObjectURL(blob);
+            a.href = url.createObjectURL(blob);
             setTimeout(() => {
-                URL.revokeObjectURL(a.href);
+                url.revokeObjectURL(a.href);
             }, 4e4); // 40s
             setTimeout(() => {
                 this._Click(a, document);
@@ -52,8 +52,8 @@ export class StringTools {
             };
             reader.readAsDataURL(blob);
         } else {
-            const URL = window.URL || window.webkitURL;
-            const url = URL.createObjectURL(blob);
+            const windowUrl = window.URL || window.webkitURL;
+            const url = windowUrl.createObjectURL(blob);
             if (popup) {
                 popup.location.href = url;
             } else {
@@ -61,7 +61,7 @@ export class StringTools {
             }
             popup = null;
             setTimeout(function () {
-                URL.revokeObjectURL(url);
+                windowUrl.revokeObjectURL(url);
             }, 4e4);
         }
     }

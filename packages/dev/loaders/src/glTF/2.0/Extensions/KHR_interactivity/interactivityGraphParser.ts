@@ -11,6 +11,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { GLTFLoader } from "../../glTFLoader";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
     eventId: string;
     eventData?: {
@@ -20,6 +21,7 @@ export interface InteractivityEvent {
         value?: any;
     }[];
 }
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const gltfTypeToBabylonType: {
     [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
 } = {

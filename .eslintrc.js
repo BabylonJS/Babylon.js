@@ -91,6 +91,13 @@ const abbreviations = [
     "NaN",
     "SVG",
     "MRDL",
+    "MTL",
+    "OBJ",
+    "SPLAT",
+    "PLY",
+    "glTF",
+    "GLTF",
+    "MSFT",
 ];
 
 // Join them into a single regex string
@@ -170,6 +177,7 @@ const rules = {
                 "@typescript-eslint/no-namespace": "off",
                 "@typescript-eslint/no-array-delete": "off",
                 "@typescript-eslint/no-implied-eval": "off",
+                "@typescript-eslint/no-duplicate-enum-values": "off",
                 "@typescript-eslint/prefer-promise-reject-errors": "warn",
                 "@typescript-eslint/only-throw-error": "warn",
                 "@typescript-eslint/no-for-in-array": "warn",
@@ -217,7 +225,7 @@ const rules = {
                     },
                     {
                         selector: "variable",
-                        format: ["StrictPascalCase"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         modifiers: ["global"],
                         leadingUnderscore: "allow",
                     },

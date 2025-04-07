@@ -15,7 +15,7 @@ import "./KHR_animation_pointer.data";
 const NAME = "KHR_animation_pointer";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_animation_pointer extension.
@@ -69,6 +69,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete or null if not handled
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadAnimationChannelAsync(
         context: string,
         animationContext: string,

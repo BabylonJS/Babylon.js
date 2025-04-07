@@ -73,13 +73,13 @@ export function PhysicsBodyGridComponent(props: IPhysicsBodyGridComponentProps) 
                 body={props.body}
                 globalState={props.globalState}
             />
-            <TextLineComponent label="Motion Type" value={_convertPhysicsMotionTypeToString(props.body.motionType)} />
-            <TextLineComponent label="Shape Type" value={_convertPhysicsShapeTypeToString(props.body.shape?.type)} />
+            <TextLineComponent label="Motion Type" value={_ConvertPhysicsMotionTypeToString(props.body.motionType)} />
+            <TextLineComponent label="Shape Type" value={_ConvertPhysicsShapeTypeToString(props.body.shape?.type)} />
         </LineContainerComponent>
     );
 }
 
-function _convertPhysicsMotionTypeToString(type?: PhysicsMotionType) {
+function _ConvertPhysicsMotionTypeToString(type?: PhysicsMotionType) {
     switch (type) {
         case PhysicsMotionType.DYNAMIC:
             return "Dynamic";
@@ -92,7 +92,7 @@ function _convertPhysicsMotionTypeToString(type?: PhysicsMotionType) {
     }
 }
 
-function _convertPhysicsShapeTypeToString(type?: PhysicsShapeType) {
+function _ConvertPhysicsShapeTypeToString(type?: PhysicsShapeType) {
     switch (type) {
         case PhysicsShapeType.BOX:
             return "Box";

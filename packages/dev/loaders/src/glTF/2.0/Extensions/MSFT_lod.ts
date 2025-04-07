@@ -14,7 +14,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "MSFT_lod";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the MSFT_lod extension.
@@ -165,6 +165,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         const promise = this._loader.loadSceneAsync(context, scene);
         this._loadBufferLOD(this._bufferLODs, 0);
@@ -174,6 +175,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             let firstPromise: Promise<TransformNode>;
@@ -226,6 +228,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadMaterialAsync(
         context: string,
         material: IMaterial,
@@ -290,6 +293,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
         // Defer the loading of uris if loading a node or material LOD.
         if (this._nodeIndexLOD !== null) {
@@ -314,6 +318,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
         if (this._loader.parent.useRangeRequests && !buffer.uri) {
             if (!this._loader.bin) {

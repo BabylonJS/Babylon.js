@@ -10,8 +10,8 @@ import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
 import type { AbstractEngine } from "core/Engines";
 
-const _positionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
-const babylonUnitsToPixels = 100;
+const _PositionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
+const BabylonUnitsToPixels = 100;
 
 /**
  * A function that compares two submeshes and returns a number indicating which
@@ -29,7 +29,7 @@ type RenderLayerElements = {
 // Note this will only be applied to group 0.
 // If neither mesh is an HtmlMesh, then the default render order is used
 // This prevents HtmlMeshes from appearing in front of other meshes when they are behind them
-const renderOrderFunc = (defaultRenderOrder: RenderOrderFunction): RenderOrderFunction => {
+const RenderOrderFunc = (defaultRenderOrder: RenderOrderFunction): RenderOrderFunction => {
     return (subMeshA: SubMesh, subMeshB: SubMesh) => {
         const meshA = subMeshA.getMesh();
         const meshB = subMeshB.getMesh();
@@ -230,9 +230,9 @@ export class HtmlMeshRenderer {
         // Updating the render order isn't ideal, but it is the only way to acheive this
         // The implication is that an app using the HtmlMeshRendered must set the scene render order
         // via the HtmlMeshRendered constructor
-        const opaqueRenderOrder = renderOrderFunc(defaultOpaqueRenderOrder);
-        const alphaTestRenderOrder = renderOrderFunc(defaultAlphaTestRenderOrder);
-        const transparentRenderOrder = renderOrderFunc(defaultTransparentRenderOrder);
+        const opaqueRenderOrder = RenderOrderFunc(defaultOpaqueRenderOrder);
+        const alphaTestRenderOrder = RenderOrderFunc(defaultAlphaTestRenderOrder);
+        const transparentRenderOrder = RenderOrderFunc(defaultTransparentRenderOrder);
         scene.setRenderingOrder(0, opaqueRenderOrder, alphaTestRenderOrder, transparentRenderOrder);
 
         this._renderObserver = scene.onBeforeRenderObservable.add(() => {
@@ -396,8 +396,8 @@ export class HtmlMeshRenderer {
         let widthScaleFactor = 1;
         let heightScaleFactor = 1;
         if (htmlMesh.sourceWidth && htmlMesh.sourceHeight) {
-            widthScaleFactor = htmlMesh.width! / (htmlMesh.sourceWidth / babylonUnitsToPixels);
-            heightScaleFactor = htmlMesh.height! / (htmlMesh.sourceHeight / babylonUnitsToPixels);
+            widthScaleFactor = htmlMesh.width! / (htmlMesh.sourceWidth / BabylonUnitsToPixels);
+            heightScaleFactor = htmlMesh.height! / (htmlMesh.sourceHeight / BabylonUnitsToPixels);
         }
 
         // Apply the scale to the object's world matrix.  Note we aren't scaling
@@ -421,16 +421,16 @@ export class HtmlMeshRenderer {
         const position = htmlMesh.getAbsolutePosition();
         scaledAndTranslatedObjectMatrix.setRowFromFloats(
             3,
-            (-this._cameraWorldMatrix.m[12] + position.x) * babylonUnitsToPixels * direction,
-            (-this._cameraWorldMatrix.m[13] + position.y) * babylonUnitsToPixels * direction,
-            (this._cameraWorldMatrix.m[14] - position.z) * babylonUnitsToPixels,
-            this._cameraWorldMatrix.m[15] * 0.00001 * babylonUnitsToPixels
+            (-this._cameraWorldMatrix.m[12] + position.x) * BabylonUnitsToPixels * direction,
+            (-this._cameraWorldMatrix.m[13] + position.y) * BabylonUnitsToPixels * direction,
+            (this._cameraWorldMatrix.m[14] - position.z) * BabylonUnitsToPixels,
+            this._cameraWorldMatrix.m[15] * 0.00001 * BabylonUnitsToPixels
         );
 
         // Adjust other values to be pixels vs Babylon units
-        scaledAndTranslatedObjectMatrix.multiplyAtIndex(3, babylonUnitsToPixels);
-        scaledAndTranslatedObjectMatrix.multiplyAtIndex(7, babylonUnitsToPixels);
-        scaledAndTranslatedObjectMatrix.multiplyAtIndex(11, babylonUnitsToPixels);
+        scaledAndTranslatedObjectMatrix.multiplyAtIndex(3, BabylonUnitsToPixels);
+        scaledAndTranslatedObjectMatrix.multiplyAtIndex(7, BabylonUnitsToPixels);
+        scaledAndTranslatedObjectMatrix.multiplyAtIndex(11, BabylonUnitsToPixels);
 
         return scaledAndTranslatedObjectMatrix;
     }
@@ -609,7 +609,7 @@ export class HtmlMeshRenderer {
 
         // canvas rect may be null if layout not complete
         if (!canvasRect) {
-            Logger.Warn(_positionUpdateFailMessage);
+            Logger.Warn(_PositionUpdateFailMessage);
             return;
         }
         const scrollTop = window.scrollY;

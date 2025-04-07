@@ -1373,7 +1373,6 @@ export class GraphFrame {
         }
     };
 
-    //@ts-ignore
     private _onBottomLeftHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
@@ -1433,7 +1432,6 @@ export class GraphFrame {
         }
     };
 
-    //@ts-ignore
     private _onTopLeftHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
