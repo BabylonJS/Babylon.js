@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowType, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -188,10 +188,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
         ),
         this._createPropertyBinding(
-            "shadowType",
+            "shadowQuality",
             (details) => details.viewer.onShadowsConfigurationChanged,
-            (details) => (details.viewer.shadowConfig = { type: this.shadowType ?? details.viewer.shadowConfig.type }),
-            (details) => (this.shadowType = details.viewer.shadowConfig.type ?? null)
+            (details) => (details.viewer.shadowConfig = { quality: this.shadowQuality ?? details.viewer.shadowConfig.quality }),
+            (details) => (this.shadowQuality = details.viewer.shadowConfig.quality ?? null)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -687,9 +687,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * "classic" for shadow maps, "environment" for environment shadows.
      */
     @property({
-        attribute: "shadow-type",
+        attribute: "shadow-quality",
     })
-    public shadowType: Nullable<ShadowType> = null;
+    public shadowQuality: Nullable<ShadowQuality> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1326,6 +1326,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
                                 rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
                                 visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
+                            };
+                        },
+                        get shadowConfig() {
+                            const shadowQuality = viewerElement.getAttribute("shadow-quality") as ShadowQuality;
+                            return {
+                                quality: shadowQuality ?? viewerElement._options.shadowConfig?.quality,
                             };
                         },
                         get cameraOrbit() {

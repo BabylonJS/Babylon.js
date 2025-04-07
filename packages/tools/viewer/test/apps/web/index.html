@@ -161,11 +161,11 @@
                 <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
             </div>
             <div>
-                <span>Shadows type</span>
-                <select id="shadowTypeInput" checked oninput="onShadowType()">
+                <span>Shadows Quality</span>
+                <select id="shadowQualityInput" checked oninput="onShadowQuality()">
                     <option value="none">None</option>
-                    <option value="classic">Classic</option>
-                    <option value="environment">Environment</option>
+                    <option value="normal">Normal (shadow map)</option>
+                    <option value="high">High (environment shadow)</option>
                 </select>
             </div>
         </div>
@@ -374,10 +374,10 @@
                 const viewer = viewerElement.viewerDetails.viewer;
                 viewer.environmentConfig = { visible: checked };
             };
-            globalThis.onShadowType = () => {
-                const value = document.querySelector("#shadowTypeInput").value;
+            globalThis.onShadowQuality = () => {
+                const value = document.querySelector("#shadowQualityInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.shadowConfig = { type: value === "none" ? null : value };
+                viewer.shadowConfig = { quality: value };
             };
         </script>
     </body>

@@ -58,7 +58,7 @@ import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransformNode } from "core/Meshes/transformNode";
 
-export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant";
+export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -109,13 +109,13 @@ export type EnvironmentParams = {
     visible: boolean;
 };
 
-export type ShadowType = "classic" | "environment";
+export type ShadowQuality = "none" | "normal" | "high";
 
 export type ShadowParams = {
     /**
-     * The type of shadow being used
+     * The quality of shadow being used
      */
-    type?: ShadowType;
+    quality?: ShadowQuality;
 };
 
 export type PostProcessing = {
@@ -420,6 +420,8 @@ export type ViewerOptions = Partial<{
      */
     postProcessing: Partial<PostProcessing>;
 
+    shadowConfig: Partial<ShadowParams>;
+
     /**
      * The default selected material variant.
      * @remarks The default material variant is restored when a new model is loaded.
@@ -456,6 +458,9 @@ export const DefaultViewerOptions = {
     },
     animationAutoPlay: false,
     animationSpeed: 1,
+    shadowConfig: {
+        quality: "none",
+    },
     postProcessing: {
         toneMapping: "neutral",
         contrast: 1,
@@ -777,7 +782,7 @@ export class Viewer implements IDisposable {
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
     private _shadowGroundScalingFactor = 4.0;
-    private _shadowType: Nullable<ShadowType> = null;
+    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private _shadowGenerator: Nullable<ShadowGenerator> = null;
     private _iblShadowsRenderPipeline: Nullable<IblShadowsRenderPipeline> = null;
     private _shadowGround: Nullable<Mesh> = null;
@@ -898,7 +903,7 @@ export class Viewer implements IDisposable {
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
 
-        this._reset(false, "source", "environment", "post-processing");
+        this._reset(false, "source", "environment", "shadow", "post-processing");
     }
 
     /**
@@ -975,21 +980,21 @@ export class Viewer implements IDisposable {
      * Get the current shadow configuration
      */
     public get shadowConfig(): Readonly<ShadowParams> {
-        if (this._shadowGenerator !== null) {
-            return { type: "classic" };
-        } else if (this._iblShadowsRenderPipeline !== null) {
-            return { type: "environment" };
+        if (this._shadowQuality) {
+            return { quality: this._shadowQuality };
         }
         return {
-            type: undefined,
+            quality: undefined,
         };
     }
 
     public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
-        this._shadowType = value.type ?? null;
+        if (value.quality) {
+            this._shadowQuality = value.quality;
 
-        this._updateShadows();
-        this.onShadowsConfigurationChanged.notifyObservers();
+            this._updateShadows();
+            this.onShadowsConfigurationChanged.notifyObservers();
+        }
     }
 
     private _changeSkyboxBlur(value: number) {
@@ -1538,10 +1543,10 @@ export class Viewer implements IDisposable {
 
     private async _updateShadows() {
         this._disposeShadows();
-        if (this._shadowType) {
-            if (this._shadowType === "classic") {
+        if (this._shadowQuality) {
+            if (this._shadowQuality === "normal") {
                 await this._updateClassicShadow();
-            } else if (this._shadowType === "environment") {
+            } else if (this._shadowQuality === "high") {
                 const isWebGPU = this._scene.getEngine().isWebGPU;
                 const hasAnyAnimation = this._loadedModelsBacking.some(
                     (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
@@ -2032,6 +2037,11 @@ export class Viewer implements IDisposable {
                 observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
                 observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
             }
+        }
+
+        if (flags.includes("shadow") && this._options?.shadowConfig?.quality) {
+            this._shadowQuality = this._options?.shadowConfig?.quality;
+            this._updateShadows();
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
