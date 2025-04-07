@@ -11,6 +11,7 @@ export class RenderOnlyViewer extends AbstractViewer {
         super(containerElement, initialConfiguration);
         this._canvas = containerElement as HTMLCanvasElement;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async initialize() {
         const autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
         return this._initEngine()
