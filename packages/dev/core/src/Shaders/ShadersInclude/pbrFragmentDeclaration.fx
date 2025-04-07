@@ -72,7 +72,7 @@ uniform mat4 view;
     #endif
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
-    #ifdef USEIRRADIANCEMAP
+    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
         uniform vec3 vReflectionDominantDirection;
     #endif
 

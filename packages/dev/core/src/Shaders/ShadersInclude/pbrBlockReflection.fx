@@ -269,8 +269,11 @@
             #endif
             vec3 irradianceView = vec3(reflectionMatrix * vec4(viewDirectionW, 0)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
-                float NdotV = max(dot(normalW, viewDirectionW), 0.0);
-                irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
+                // Approximate diffuse roughness by bending the surface normal away from the view.
+                #if BASE_DIFFUSE_ROUGHNESS_MODEL != 2 // Lambert
+                    float NdotV = max(dot(normalW, viewDirectionW), 0.0);
+                    irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
+                #endif
             #endif
 
             #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -314,12 +317,12 @@
                 float NoV = dot(irradianceVector, irradianceView);
                 
                 vec3 diffuseRoughnessTerm = vec3(1.0);
-                #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+                #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
                     float LoV = dot (Ls, irradianceView);
                     float mag = length(reflectionDominantDirection) * 2.0;
                     diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
                     diffuseRoughnessTerm = mix(vec3(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0)));
-                #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+                #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
                     vec3 H = (irradianceView + Ls)*0.5;
                     float VoH = dot(irradianceView, H);
                     diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);

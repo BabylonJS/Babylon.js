@@ -1,4 +1,4 @@
-import type { IMaterial, IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
+import type { IMaterial, IEXTMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
@@ -64,7 +64,7 @@ export class EXT_materials_diffuse_roughness implements IGLTFExporterExtensionV2
 
                 const diffuseRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial._baseDiffuseRoughnessTexture);
 
-                const diffuseRoughnessInfo: IKHRMaterialsDiffuseRoughness = {
+                const diffuseRoughnessInfo: IEXTMaterialsDiffuseRoughness = {
                     diffuseRoughnessFactor: babylonMaterial._baseDiffuseRoughness,
                     diffuseRoughnessTexture: diffuseRoughnessTextureInfo ?? undefined,
                 };

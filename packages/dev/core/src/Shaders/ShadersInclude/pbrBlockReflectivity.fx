@@ -37,7 +37,7 @@ reflectivityOutParams reflectivityBlock(
     , in float baseDiffuseRoughness
 #ifdef BASE_DIFFUSE_ROUGHNESS
     , in float baseDiffuseRoughnessTexture
-    , in vec2 vBaseDiffuseRoughnessInfos
+    , in vec2 baseDiffuseRoughnessInfos
 #endif
 #ifdef REFLECTIVITY
     , in vec3 reflectivityInfos
@@ -168,7 +168,7 @@ reflectivityOutParams reflectivityBlock(
 
     float diffuseRoughness = baseDiffuseRoughness;
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    diffuseRoughness *= baseDiffuseRoughnessTexture;
+    diffuseRoughness *= baseDiffuseRoughnessTexture * baseDiffuseRoughnessInfos.y;
 #endif
 
     outParams.microSurface = microSurface;
