@@ -216,7 +216,7 @@ export class TouchHolographicButton extends TouchButton3D {
      * Gets the mesh used to render this control
      */
     public override get mesh(): Nullable<AbstractMesh> {
-        return this._backPlate as AbstractMesh;
+        return this._backPlate;
     }
 
     /**

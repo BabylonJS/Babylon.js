@@ -12,7 +12,7 @@ import { Container } from "./container";
  */
 export class SelectorGroup {
     private _groupPanel = new StackPanel();
-    private _selectors: StackPanel[] = new Array();
+    private _selectors: StackPanel[] = [];
     private _groupHeader: TextBlock;
 
     /**
@@ -331,7 +331,7 @@ export class SelectionPanel extends Rectangle {
     private _spacerHeight: string = "20px";
     private _labelColor: string;
     private _groups: SelectorGroup[];
-    private _bars: any[] = new Array();
+    private _bars: any[] = [];
 
     /**
      * Creates a new SelectionPanel

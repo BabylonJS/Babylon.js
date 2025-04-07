@@ -62,7 +62,7 @@ export class MultiLine extends Control {
             this._points[index] = new MultiLinePoint(this);
         }
 
-        return this._points[index] as MultiLinePoint;
+        return this._points[index];
     }
 
     /** Function called when a point is updated */

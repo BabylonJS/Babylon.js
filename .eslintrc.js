@@ -90,6 +90,7 @@ const abbreviations = [
     "DDS",
     "NaN",
     "SVG",
+    "MRDL",
 ];
 
 // Join them into a single regex string
