@@ -25,7 +25,7 @@ export const GraphLinesContainer: FC<IGraphLinesContainerProps> = (props) => {
             return item.parentContainerId === props.id;
         },
         collect: (monitor: DropTargetMonitor) => ({
-            start: monitor.getItem() as any,
+            start: monitor.getItem(),
             delta: monitor.getDifferenceFromInitialOffset() as any,
         }),
     }));

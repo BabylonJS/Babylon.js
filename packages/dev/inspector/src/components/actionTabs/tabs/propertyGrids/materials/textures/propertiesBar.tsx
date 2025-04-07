@@ -67,7 +67,9 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
     private _getNewDimension(oldDim: number, newDim: any) {
         if (!isNaN(newDim)) {
             if (parseInt(newDim) > 0) {
-                if (Number.isInteger(parseInt(newDim))) return parseInt(newDim);
+                if (Number.isInteger(parseInt(newDim))) {
+                    return parseInt(newDim);
+                }
             }
         }
         return oldDim;

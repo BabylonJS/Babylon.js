@@ -61,7 +61,9 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
     getValue(props = this.props): Color4 {
         const target = props.target;
         const property = target[props.propertyName];
-        if (!property) return emptyColor;
+        if (!property) {
+            return emptyColor;
+        }
         if (typeof property === "string") {
             if (property === conflictingValuesPlaceholder) {
                 return emptyColor;
@@ -175,7 +177,7 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
+            const value = this.props.target[this.props.propertyName];
             const hex = this.state.color.toHexString();
             let strColor;
             if (value.a) {

@@ -20,7 +20,7 @@ const FitStrategyContain: FitStrategyType = {
         sizingElement.style.width = `${width}px`;
         sizingElement.style.height = `${height}px`;
 
-        const [childWidth, childHeight] = [scalingElement!.offsetWidth, scalingElement!.offsetHeight];
+        const [childWidth, childHeight] = [scalingElement.offsetWidth, scalingElement.offsetHeight];
         const scale = Math.min(width / childWidth, height / childHeight);
         scalingElement.style.transform = `scale(${scale})`;
         scalingElement.style.visibility = "visible";
@@ -45,7 +45,7 @@ const FitStrategyCover: FitStrategyType = {
         sizingElement.style.width = `${width}px`;
         sizingElement.style.height = `${height}px`;
 
-        const [childWidth, childHeight] = [scalingElement!.offsetWidth, scalingElement!.offsetHeight];
+        const [childWidth, childHeight] = [scalingElement.offsetWidth, scalingElement.offsetHeight];
         const scale = Math.max(width / childWidth, height / childHeight);
         scalingElement.style.transform = `scale(${scale})`;
         scalingElement.style.visibility = "visible";
@@ -69,7 +69,7 @@ const FitStrategyStretch: FitStrategyType = {
         sizingElement.style.width = `${width}px`;
         sizingElement.style.height = `${height}px`;
 
-        const [childWidth, childHeight] = [scalingElement!.offsetWidth, scalingElement!.offsetHeight];
+        const [childWidth, childHeight] = [scalingElement.offsetWidth, scalingElement.offsetHeight];
         scalingElement.style.transform = `scale(${width / childWidth}, ${height / childHeight})`;
         scalingElement.style.visibility = "visible";
     },

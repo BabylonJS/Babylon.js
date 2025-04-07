@@ -556,10 +556,14 @@ export class SolidParser {
     }
 
     private static _GetZbrushMRGB(line: string, notParse: boolean) {
-        if (!line.startsWith("mrgb")) return null;
+        if (!line.startsWith("mrgb")) {
+            return null;
+        }
         line = line.replace("mrgb", "").trim();
         // if include vertex color , not load mrgb anymore
-        if (notParse) return [];
+        if (notParse) {
+            return [];
+        }
         const regex = /[a-z0-9]/g;
         const regArray = line.match(regex);
         if (!regArray || regArray.length % 8 !== 0) {

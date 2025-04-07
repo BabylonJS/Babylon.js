@@ -8,7 +8,7 @@ declare let GLTFValidator: GLTF2.IGLTFValidator;
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
 
-function validateAsync(
+async function validateAsync(
     data: string | Uint8Array,
     rootUrl: string,
     fileName: string,
@@ -43,7 +43,7 @@ function workerFunc(): void {
                     data.data,
                     data.rootUrl,
                     data.fileName,
-                    (uri) =>
+                    async (uri) =>
                         new Promise((resolve, reject) => {
                             const index = pendingExternalResources.length;
                             pendingExternalResources.push({ resolve, reject });
@@ -102,7 +102,7 @@ export class GLTFValidation {
      * @param getExternalResource The callback to get external resources for the glTF validator
      * @returns A promise that resolves with the glTF validation results once complete
      */
-    public static ValidateAsync(
+    public static async ValidateAsync(
         data: string | Uint8Array,
         rootUrl: string,
         fileName: string,
@@ -168,7 +168,7 @@ export class GLTFValidation {
                 this._LoadScriptPromise = Tools.LoadBabylonScriptAsync(this.Configuration.url);
             }
 
-            return this._LoadScriptPromise.then(() => {
+            return this._LoadScriptPromise.then(async () => {
                 return validateAsync(data, rootUrl, fileName, getExternalResource);
             });
         }

@@ -152,7 +152,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             return;
         }
         if (this.props.propertyName) {
-            (material as any)[this.props.propertyName!] = texture;
+            (material as any)[this.props.propertyName] = texture;
         } else if (this.props.onTextureCreated) {
             this.props.onTextureCreated(texture);
         }
@@ -177,7 +177,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                     : new Texture(url, material.getScene(), false, false);
 
                 if (this.props.propertyName) {
-                    (material as any)[this.props.propertyName!] = texture;
+                    (material as any)[this.props.propertyName] = texture;
                 } else if (this.props.onTextureCreated) {
                     this.props.onTextureCreated(texture);
                 }
@@ -195,7 +195,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             return;
         }
         if (this.props.propertyName) {
-            (material as any)[this.props.propertyName!] = null;
+            (material as any)[this.props.propertyName] = null;
         } else if (this.props.onTextureRemoved) {
             this.props.onTextureRemoved();
         }

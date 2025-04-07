@@ -47,7 +47,7 @@ interface IFileRequestInfo extends IFileRequest {
     _total?: number;
 }
 
-function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: number): Promise<Uint8Array> {
+async function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: number): Promise<Uint8Array> {
     try {
         return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength));
     } catch (e) {
@@ -55,7 +55,7 @@ function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: num
     }
 }
 
-function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byteLength: number): Promise<Uint8Array> {
+async function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byteLength: number): Promise<Uint8Array> {
     try {
         if (byteOffset < 0 || byteOffset >= arrayBufferView.byteLength) {
             throw new RangeError("Offset is out of range.");
@@ -113,7 +113,7 @@ export interface IGLTFLoaderData {
     /**
      * The object that represents the glTF JSON.
      */
-    json: Object;
+    json: object;
 
     /**
      * The BIN chunk of a binary glTF.
@@ -341,7 +341,7 @@ abstract class GLTFLoaderOptions {
      * @param url url referenced by the asset
      * @returns Async url to load
      */
-    public preprocessUrlAsync = (url: string) => Promise.resolve(url);
+    public preprocessUrlAsync = async (url: string) => Promise.resolve(url);
 
     /**
      * Defines the node to use as the root of the hierarchy when loading the scene (default: undefined). If not defined, a root node will be automatically created.
@@ -728,7 +728,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
         delete this._progressCallback;
 
-        this.preprocessUrlAsync = (url) => Promise.resolve(url);
+        this.preprocessUrlAsync = async (url) => Promise.resolve(url);
 
         this.onMeshLoadedObservable.clear();
         this.onSkinLoadedObservable.clear();
@@ -756,7 +756,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         name?: string
     ): Nullable<IFileRequest> {
         if (ArrayBuffer.isView(fileOrUrl)) {
-            this._loadBinary(scene, fileOrUrl as ArrayBufferView, rootUrl, onSuccess, onError, name);
+            this._loadBinary(scene, fileOrUrl, rootUrl, onSuccess, onError, name);
             return null;
         }
 
@@ -776,11 +776,11 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
                 };
 
                 const dataBuffer = {
-                    readAsync: (byteOffset: number, byteLength: number) => {
+                    readAsync: async (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             this._loadFile(
                                 scene,
-                                fileOrUrl as File | string,
+                                fileOrUrl,
                                 (data) => {
                                     resolve(new Uint8Array(data as ArrayBuffer));
                                 },
@@ -810,12 +810,12 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
             return this._loadFile(
                 scene,
-                fileOrUrl as File | string,
+                fileOrUrl,
                 (data) => {
                     this._validate(scene, new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength), rootUrl, fileName);
                     this._unpackBinaryAsync(
                         new DataReader({
-                            readAsync: (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
+                            readAsync: async (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
                             byteLength: (data as ArrayBuffer).byteLength,
                         })
                     ).then(
@@ -859,7 +859,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         this._validate(scene, new Uint8Array(data.buffer, data.byteOffset, data.byteLength), rootUrl, fileName);
         this._unpackBinaryAsync(
             new DataReader({
-                readAsync: (byteOffset, byteLength) => readViewAsync(data, byteOffset, byteLength),
+                readAsync: async (byteOffset, byteLength) => readViewAsync(data, byteOffset, byteLength),
                 byteLength: data.byteLength,
             })
         ).then(
@@ -873,7 +873,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * @internal
      */
-    public importMeshAsync(
+    public async importMeshAsync(
         meshesNames: string | readonly string[] | null | undefined,
         scene: Scene,
         data: IGLTFLoaderData,
@@ -881,7 +881,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        return Promise.resolve().then(() => {
+        return Promise.resolve().then(async () => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
@@ -894,8 +894,8 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * @internal
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
-        return Promise.resolve().then(() => {
+    public async loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+        return Promise.resolve().then(async () => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
@@ -908,14 +908,14 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * @internal
      */
-    public loadAssetContainerAsync(
+    public async loadAssetContainerAsync(
         scene: Scene,
         data: IGLTFLoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName?: string
     ): Promise<AssetContainer> {
-        return Promise.resolve().then(() => {
+        return Promise.resolve().then(async () => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
@@ -973,7 +973,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * @internal
      */
-    public directLoad(scene: Scene, data: string): Promise<Object> {
+    public async directLoad(scene: Scene, data: string): Promise<object> {
         if (
             data.startsWith("base64," + GLTFMagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
             data.startsWith(";base64," + GLTFMagicBase64Encoded) ||
@@ -985,7 +985,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
             this._validate(scene, new Uint8Array(arrayBuffer, 0, arrayBuffer.byteLength));
             return this._unpackBinaryAsync(
                 new DataReader({
-                    readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
+                    readAsync: async (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
                     byteLength: arrayBuffer.byteLength,
                 })
             );
@@ -1024,7 +1024,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      * Returns a promise that resolves when the asset is completely loaded.
      * @returns a promise that resolves when the asset is completely loaded.
      */
-    public whenCompleteAsync(): Promise<void> {
+    public async whenCompleteAsync(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.onCompleteObservable.addOnce(() => {
                 resolve();
@@ -1114,8 +1114,8 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         }
 
         this._startPerformanceCounter("Validate JSON");
-        GLTFValidation.ValidateAsync(data, rootUrl, fileName, (uri) => {
-            return this.preprocessUrlAsync(rootUrl + uri).then((url) => {
+        GLTFValidation.ValidateAsync(data, rootUrl, fileName, async (uri) => {
+            return this.preprocessUrlAsync(rootUrl + uri).then(async (url) => {
                 return scene._loadFileAsync(url, undefined, true, true).then((data) => {
                     return new Uint8Array(data, 0, data.byteLength);
                 });
@@ -1170,7 +1170,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         return createLoader(this);
     }
 
-    private _parseJson(json: string): Object {
+    private _parseJson(json: string): object {
         this._startPerformanceCounter("Parse JSON");
         this._log(`JSON length: ${json.length}`);
         const parsed = JSON.parse(json);
@@ -1178,11 +1178,11 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         return parsed;
     }
 
-    private _unpackBinaryAsync(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private async _unpackBinaryAsync(dataReader: DataReader): Promise<IGLTFLoaderData> {
         this._startPerformanceCounter("Unpack Binary");
 
         // Read magic + version + length + json length + json format
-        return dataReader.loadAsync(20).then(() => {
+        return dataReader.loadAsync(20).then(async () => {
             const Binary = {
                 Magic: 0x46546c67,
             };
@@ -1224,7 +1224,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         });
     }
 
-    private _unpackBinaryV1Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
+    private async _unpackBinaryV1Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ContentFormat = {
             JSON: 0,
         };
@@ -1242,7 +1242,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         if (bodyLength !== 0) {
             const startByteOffset = dataReader.byteOffset;
             data.bin = {
-                readAsync: (byteOffset, byteLength) => dataReader.buffer.readAsync(startByteOffset + byteOffset, byteLength),
+                readAsync: async (byteOffset, byteLength) => dataReader.buffer.readAsync(startByteOffset + byteOffset, byteLength),
                 byteLength: bodyLength,
             };
         }
@@ -1250,7 +1250,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         return Promise.resolve(data);
     }
 
-    private _unpackBinaryV2Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
+    private async _unpackBinaryV2Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ChunkFormat = {
             JSON: 0x4e4f534a,
             BIN: 0x004e4942,
@@ -1271,10 +1271,10 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         }
 
         // Read the JSON chunk and the length and type of the next chunk.
-        return dataReader.loadAsync(chunkLength + 8).then(() => {
+        return dataReader.loadAsync(chunkLength + 8).then(async () => {
             const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(chunkLength)), bin: null };
 
-            const readAsync = (): Promise<IGLTFLoaderData> => {
+            const readAsync = async (): Promise<IGLTFLoaderData> => {
                 const chunkLength = dataReader.readUint32();
                 const chunkFormat = dataReader.readUint32();
 
@@ -1285,7 +1285,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
                     case ChunkFormat.BIN: {
                         const startByteOffset = dataReader.byteOffset;
                         data.bin = {
-                            readAsync: (byteOffset, byteLength) => dataReader.buffer.readAsync(startByteOffset + byteOffset, byteLength),
+                            readAsync: async (byteOffset, byteLength) => dataReader.buffer.readAsync(startByteOffset + byteOffset, byteLength),
                             byteLength: chunkLength,
                         };
                         dataReader.skipBytes(chunkLength);

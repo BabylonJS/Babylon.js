@@ -204,7 +204,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
+            const value = this.props.target[this.props.propertyName];
             const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {

@@ -119,7 +119,7 @@ function chainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (
     }
 
     return function transformSourceFileOrBundle(node: T) {
-        return ts.isSourceFile(node) ? (transformSourceFile(node) as T) : (transformBundle(node as ts.Bundle) as T);
+        return ts.isSourceFile(node) ? (transformSourceFile(node) as T) : (transformBundle(node) as T);
     };
 }
 

@@ -78,7 +78,7 @@ class PaintbrushTool implements IToolType {
                     circleCtx.imageSmoothingEnabled = false;
                     const pixels = new Array(4 * this.width * this.width);
                     const dis = (this.width * this.width) / 4;
-                    const rgb = Color3.FromHexString(metadata.color)!;
+                    const rgb = Color3.FromHexString(metadata.color);
                     const r = Math.floor(rgb.r * 255);
                     const g = Math.floor(rgb.g * 255);
                     const b = Math.floor(rgb.b * 255);

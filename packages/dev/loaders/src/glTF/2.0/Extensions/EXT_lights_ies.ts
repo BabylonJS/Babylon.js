@@ -63,7 +63,7 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as any;
+            const extension = extensions[this.name];
             this._lights = extension.lights;
             ArrayItem.Assign(this._lights);
         }

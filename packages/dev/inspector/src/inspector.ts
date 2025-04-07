@@ -164,7 +164,7 @@ export class Inspector {
 
         // Prepare the scene explorer host
         if (parentControlExplorer) {
-            this._SceneExplorerHost = parentControlExplorer.ownerDocument!.createElement("div");
+            this._SceneExplorerHost = parentControlExplorer.ownerDocument.createElement("div");
 
             this._SceneExplorerHost.id = "scene-explorer-host";
             this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
@@ -224,7 +224,7 @@ export class Inspector {
 
         // Prepare the inspector host
         if (parentControlActions) {
-            const host = parentControlActions.ownerDocument!.createElement("div");
+            const host = parentControlActions.ownerDocument.createElement("div");
 
             host.id = "inspector-host";
             host.style.width = options.inspectorWidth || "auto";
@@ -275,7 +275,7 @@ export class Inspector {
         this._InspectorOptions = null;
         // Prepare the inspector host
         if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+            const host = parentControl.ownerDocument.createElement("div");
 
             host.id = "embed-host";
             host.style.width = options.embedHostWidth || "auto";
@@ -476,7 +476,7 @@ export class Inspector {
         }
 
         // Create a container for previous elements
-        this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+        this._NewCanvasContainer = parentControl.ownerDocument.createElement("div");
         this._NewCanvasContainer.style.display = parentControl.style.display;
         parentControl.style.display = "flex";
 

@@ -272,8 +272,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         });
 
-        this.props.stateManager.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
-        this.props.stateManager.hostDocument!.addEventListener(
+        this.props.stateManager.hostDocument.addEventListener("keyup", () => this.onKeyUp(), false);
+        this.props.stateManager.hostDocument.addEventListener(
             "keydown",
             (evt) => {
                 this._altKeyIsPressed = evt.altKey;
@@ -282,7 +282,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             },
             false
         );
-        this.props.stateManager.hostDocument!.defaultView!.addEventListener(
+        this.props.stateManager.hostDocument.defaultView!.addEventListener(
             "blur",
             () => {
                 this._altKeyIsPressed = false;
@@ -296,7 +296,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
             if (graphFrame) {
-                editorData.frames.push(graphFrame!.serialize(false));
+                editorData.frames.push(graphFrame.serialize(false));
             } else {
                 editorData.x = this.x;
                 editorData.y = this.y;
@@ -457,7 +457,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument!.body) {
+        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument.body) {
             this.stateManager.modalIsDisplayed = true;
             this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({ x: mouseLocationX, y: mouseLocationY });
             return;
@@ -489,7 +489,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 return;
             }
 
-            const selectedItem = selectedItems[0] as GraphNode;
+            const selectedItem = selectedItems[0];
 
             if (!selectedItem.content.data) {
                 return;

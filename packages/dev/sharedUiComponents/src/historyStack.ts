@@ -87,7 +87,9 @@ export class HistoryStack implements IDisposable {
     }
 
     private _generateJSONDiff(obj1: any, obj2: any): any {
-        if (obj1 === obj2) return undefined;
+        if (obj1 === obj2) {
+            return undefined;
+        }
         if (obj1 === null || obj2 === null || typeof obj1 !== "object" || typeof obj2 !== "object") {
             if (obj1 !== obj2 && obj2 === undefined) {
                 return "@d@";

@@ -9,7 +9,9 @@ export function UnitButton(props: IUnitButtonProps) {
         <button
             className={"unit"}
             onClick={() => {
-                if (props.onClick && !props.locked) props.onClick(props.unit || "");
+                if (props.onClick && !props.locked) {
+                    props.onClick(props.unit || "");
+                }
             }}
             disabled={props.locked}
         >

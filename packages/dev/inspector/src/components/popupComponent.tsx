@@ -49,7 +49,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         this._container = CreatePopup(title, { onWindowCreateCallback: (w) => (this._window = w), width: size.width, height: size.height });
 
         if (this._container) {
-            this._host = this._container.ownerDocument!.createElement("div");
+            this._host = this._container.ownerDocument.createElement("div");
 
             this._host.id = "host";
             this._host.style.width = "auto";

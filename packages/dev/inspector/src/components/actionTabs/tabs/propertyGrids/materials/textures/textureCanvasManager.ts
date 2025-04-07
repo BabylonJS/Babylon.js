@@ -666,7 +666,7 @@ export class TextureCanvasManager {
                     const base64data = reader.result as string;
 
                     if (extension === ".dds" || extension === ".env") {
-                        (this._originalTexture as CubeTexture).updateURL(base64data, extension, () => this.grabOriginalTexture());
+                        (this._originalTexture as CubeTexture).updateURL(base64data, extension, async () => this.grabOriginalTexture());
                     } else {
                         const texture = new Texture(base64data, this._scene, this._originalTexture.noMipmap, false, Texture.NEAREST_SAMPLINGMODE, () => {
                             TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, { R: true, G: true, B: true, A: true }).then(

@@ -51,7 +51,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
      * @param bufferManager buffer manager
      * @returns nullable promise, resolves with the node
      */
-    public postExportNodeAsync(
+    public async postExportNodeAsync(
         context: string,
         node: Nullable<INode>,
         babylonNode: Node,

@@ -792,7 +792,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
     gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
     if (subMaterials.length > 1) {
         material = new MultiMaterial("multimat" + id, gltfRuntime.scene);
-        (material as MultiMaterial).subMaterials = subMaterials;
+        material.subMaterials = subMaterials;
     } else {
         material = new StandardMaterial("multimat" + id, gltfRuntime.scene);
     }
@@ -1099,7 +1099,7 @@ const postLoad = (gltfRuntime: IGLTFRuntime) => {
         }
     } else {
         for (const thing in gltfRuntime.scenes) {
-            currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
+            currentScene = gltfRuntime.scenes[thing];
 
             for (let i = 0; i < currentScene.nodes.length; i++) {
                 traverseNodes(gltfRuntime, currentScene.nodes[i], null);
@@ -1143,7 +1143,7 @@ const onBindShaderMaterial = (
 
         if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
             if (uniform.semantic && !uniform.source && !uniform.node) {
-                GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, <Effect>shaderMaterial.getEffect());
+                GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
             } else if (uniform.semantic && (uniform.source || uniform.node)) {
                 let source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
@@ -1153,7 +1153,7 @@ const onBindShaderMaterial = (
                     continue;
                 }
 
-                GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, <Effect>shaderMaterial.getEffect());
+                GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
             }
         } else {
             const value = (<any>materialValues)[technique.uniforms[unif]];
@@ -1168,9 +1168,9 @@ const onBindShaderMaterial = (
                     continue;
                 }
 
-                (<Effect>shaderMaterial.getEffect()).setTexture(unif, texture);
+                shaderMaterial.getEffect().setTexture(unif, texture);
             } else {
-                GLTFUtils.SetUniform(<Effect>shaderMaterial.getEffect(), unif, value, type);
+                GLTFUtils.SetUniform(shaderMaterial.getEffect(), unif, value, type);
             }
         }
     }
@@ -1814,7 +1814,7 @@ export class GLTFLoader implements IGLTFLoader {
                     const node: IGLTFNode = gltfRuntime.nodes[nde];
 
                     if (node.babylonNode instanceof AbstractMesh) {
-                        meshes.push(<AbstractMesh>node.babylonNode);
+                        meshes.push(node.babylonNode);
                     }
                 }
 
@@ -1858,7 +1858,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise containg the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(
+    public async importMeshAsync(
         meshesNames: any,
         scene: Scene,
         assetContainer: Nullable<AssetContainer>,
@@ -1946,7 +1946,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
+    public async loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
         return new Promise((resolve, reject) => {
             this._loadAsync(
                 scene,
@@ -2062,7 +2062,7 @@ export class GLTFLoader implements IGLTFLoader {
         } else {
             // Load all scenes
             for (const thing in gltfRuntime.scenes) {
-                currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
+                currentScene = gltfRuntime.scenes[thing];
 
                 for (let i = 0; i < currentScene.nodes.length; i++) {
                     traverseNodes(gltfRuntime, currentScene.nodes[i], null);

@@ -49,7 +49,7 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
      * @internal
      */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRTextureBasisU, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRTextureBasisU, BaseTexture>(context, texture, this.name, async (extensionContext, extension) => {
             const sampler = texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._loader.gltf.samplers, texture.sampler);
             const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);
             return this._loader._createTextureAsync(

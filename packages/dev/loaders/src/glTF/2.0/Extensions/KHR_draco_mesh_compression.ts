@@ -73,7 +73,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
      * @internal
      */
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, async (extensionContext, extension) => {
             if (primitive.mode != undefined) {
                 if (primitive.mode !== MeshPrimitiveMode.TRIANGLES && primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP) {
                     throw new Error(`${context}: Unsupported mode ${primitive.mode}`);
@@ -118,7 +118,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
 
             const bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
-                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
+                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then(async (data) => {
                     const dracoDecoder = this.dracoDecoder || DracoDecoder.Default;
                     const positionAccessor = ArrayItem.TryGet(this._loader.gltf.accessors, primitive.attributes["POSITION"]);
                     const babylonBoundingInfo =

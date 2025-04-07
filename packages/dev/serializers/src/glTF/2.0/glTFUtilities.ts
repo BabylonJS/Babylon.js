@@ -345,7 +345,7 @@ export function GetMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
  * @param defaultValues a partial object with default values
  * @returns object with default values omitted
  */
-export function OmitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
+export function OmitDefaultValues<T extends object>(object: T, defaultValues: Partial<T>): T {
     for (const [key, value] of Object.entries(object)) {
         const defaultValue = defaultValues[key as keyof T];
         if ((Array.isArray(value) && Array.isArray(defaultValue) && AreArraysEqual(value, defaultValue)) || value === defaultValue) {

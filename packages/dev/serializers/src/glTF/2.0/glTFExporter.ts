@@ -268,7 +268,7 @@ export class GLTFExporter {
     private static readonly _ExtensionNames = new Array<string>();
     private static readonly _ExtensionFactories: { [name: string]: (exporter: GLTFExporter) => IGLTFExporterExtensionV2 } = {};
 
-    private _applyExtension<T>(
+    private async _applyExtension<T>(
         node: T,
         extensions: IGLTFExporterExtensionV2[],
         index: number,
@@ -284,10 +284,10 @@ export class GLTFExporter {
             return this._applyExtension(node, extensions, index + 1, actionAsync);
         }
 
-        return currentPromise.then((newNode) => (newNode ? this._applyExtension(newNode, extensions, index + 1, actionAsync) : null));
+        return currentPromise.then(async (newNode) => (newNode ? this._applyExtension(newNode, extensions, index + 1, actionAsync) : null));
     }
 
-    private _applyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
+    private async _applyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         const extensions: IGLTFExporterExtensionV2[] = [];
         for (const name of GLTFExporter._ExtensionNames) {
             extensions.push(this._extensions[name]);
@@ -296,19 +296,26 @@ export class GLTFExporter {
         return this._applyExtension(node, extensions, 0, actionAsync);
     }
 
-    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
-        return this._applyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
+    public async _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
+        return this._applyExtensions(babylonTexture, async (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
+    public async _extensionsPostExportNodeAsync(
+        context: string,
+        node: INode,
+        babylonNode: Node,
+        nodeMap: Map<Node, number>,
+        convertToRightHanded: boolean
+    ): Promise<Nullable<INode>> {
         return this._applyExtensions(
             node,
-            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded, this._bufferManager)
+            async (extension, node) =>
+                extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded, this._bufferManager)
         );
     }
 
-    public _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
-        return this._applyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
+    public async _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
+        return this._applyExtensions(material, async (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
 
     public _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[] {
@@ -1449,7 +1456,7 @@ export class GLTFExporter {
                         name: babylonMaterial.name,
                     };
 
-                    const babylonLinesMesh = babylonMesh as GreasedLineBaseMesh;
+                    const babylonLinesMesh = babylonMesh;
 
                     const colorWhite = Color3.White();
                     const alpha = babylonLinesMesh.material?.alpha ?? 1;
@@ -1468,7 +1475,7 @@ export class GLTFExporter {
                         name: babylonMaterial.name,
                     };
 
-                    const babylonLinesMesh = babylonMesh as LinesMesh;
+                    const babylonLinesMesh = babylonMesh;
 
                     if (!babylonLinesMesh.color.equals(Color3.White()) || babylonLinesMesh.alpha < 1) {
                         material.pbrMetallicRoughness = {

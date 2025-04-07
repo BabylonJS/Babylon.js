@@ -160,7 +160,7 @@ export class PointerEventsCaptureBehavior implements Behavior<AbstractMesh> {
         this._captureOnPointerEnter = captureOnPointerEnter;
         if (this._attachedMesh) {
             if (this._captureOnPointerEnter) {
-                startCaptureOnEnter(this._attachedMesh.getScene()!);
+                startCaptureOnEnter(this._attachedMesh.getScene());
             } else {
                 stopCaptureOnEnter();
             }
@@ -183,7 +183,7 @@ export class PointerEventsCaptureBehavior implements Behavior<AbstractMesh> {
         this.attachedMesh = mesh;
         meshToBehaviorMap.set(mesh, this);
         if (this._captureOnPointerEnter) {
-            startCaptureOnEnter(mesh.getScene()!);
+            startCaptureOnEnter(mesh.getScene());
         }
     }
 

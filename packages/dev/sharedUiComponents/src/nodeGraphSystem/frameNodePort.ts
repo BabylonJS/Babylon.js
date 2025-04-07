@@ -59,7 +59,7 @@ export class FrameNodePort extends NodePort {
 
         this._onSelectionChangedObserver = stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
-            if (IsFramePortData(selection) && (selection as FramePortData).port === this) {
+            if (IsFramePortData(selection) && selection.port === this) {
                 this._imgHost.classList.add(commonStyles["selected"]);
             } else {
                 this._imgHost.classList.remove(commonStyles["selected"]);
@@ -79,7 +79,7 @@ export class FrameNodePort extends NodePort {
         framePortId: number,
         parentFrameId: number
     ) {
-        const portContainer = root.ownerDocument!.createElement("div");
+        const portContainer = root.ownerDocument.createElement("div");
 
         portContainer.classList.add(commonStyles["portLine"]);
         if (framePortId !== null) {
@@ -88,7 +88,7 @@ export class FrameNodePort extends NodePort {
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(portData)) {
-            const portLabel = root.ownerDocument!.createElement("div");
+            const portLabel = root.ownerDocument.createElement("div");
             portLabel.classList.add(commonStyles["port-label"]);
 
             portLabel.innerHTML = portData.name;

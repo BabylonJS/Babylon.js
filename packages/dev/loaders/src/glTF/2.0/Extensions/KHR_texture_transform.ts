@@ -55,7 +55,7 @@ export class KHR_texture_transform implements IGLTFLoaderExtension {
      * @internal
      */
     public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, async (extensionContext, extension) => {
             return this._loader.loadTextureInfoAsync(context, textureInfo, (babylonTexture) => {
                 if (!(babylonTexture instanceof Texture)) {
                     throw new Error(`${extensionContext}: Texture type not supported`);

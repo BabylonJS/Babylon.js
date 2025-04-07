@@ -96,7 +96,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     }
 
     override render() {
-        const gradients = this.props.gradients as Nullable<Array<IValueGradient>>;
+        const gradients = this.props.gradients;
 
         return (
             <div>
@@ -107,7 +107,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                             url={this.props.docLink}
                             icon={faTrash}
                             onIconClick={() => {
-                                gradients!.length = 0;
+                                gradients.length = 0;
                                 this.updateAndSync();
                             }}
                             buttonLabel="Add new step"

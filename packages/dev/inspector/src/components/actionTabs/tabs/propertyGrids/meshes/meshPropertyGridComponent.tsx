@@ -90,7 +90,7 @@ export class MeshPropertyGridComponent extends React.Component<
             return;
         }
 
-        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true, false)!;
+        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true, false);
         wireframeOver.reservedDataStore = { hidden: true };
 
         // Sets up the mesh to be attached to the parent.

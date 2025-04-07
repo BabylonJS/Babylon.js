@@ -287,7 +287,7 @@ export class HtmlMeshRenderer {
             return;
         }
 
-        const domElements = [this._inSceneElements!.domElement, this._overlayElements!.domElement, this._inSceneElements!.cameraElement, this._overlayElements!.cameraElement];
+        const domElements = [this._inSceneElements.domElement, this._overlayElements.domElement, this._inSceneElements.cameraElement, this._overlayElements.cameraElement];
         domElements.forEach((dom) => {
             if (dom) {
                 dom.style.width = `${width}px`;

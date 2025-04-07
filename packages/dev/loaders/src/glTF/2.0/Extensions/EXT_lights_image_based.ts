@@ -77,7 +77,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
      * @internal
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;
 
             const promises = new Array<Promise<any>>();
@@ -99,7 +99,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadLightAsync(context: string, light: IEXTLightsImageBased_LightImageBased): Promise<BaseTexture> {
+    private async _loadLightAsync(context: string, light: IEXTLightsImageBased_LightImageBased): Promise<BaseTexture> {
         if (!light._loaded) {
             const promises = new Array<Promise<any>>();
 
@@ -127,7 +127,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
             this._loader.logClose();
 
-            light._loaded = Promise.all(promises).then(() => {
+            light._loaded = Promise.all(promises).then(async () => {
                 const babylonTexture = new RawCubeTexture(this._loader.babylonScene, null, light.specularImageSize);
                 babylonTexture.name = light.name || "environment";
                 light._babylonTexture = babylonTexture;

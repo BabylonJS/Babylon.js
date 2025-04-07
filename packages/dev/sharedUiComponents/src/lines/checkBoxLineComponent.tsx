@@ -103,7 +103,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             }
 
             if (this.props.target && this.props.propertyName) {
-                this.props.target[this.props.propertyName!] = !this.state.isSelected;
+                this.props.target[this.props.propertyName] = !this.state.isSelected;
             }
         }
 

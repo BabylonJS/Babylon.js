@@ -60,16 +60,18 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
      * @internal
      */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, async (extensionContext, extension) => {
             const bufferViewMeshopt = bufferView as IBufferViewMeshopt;
             if (bufferViewMeshopt._meshOptData) {
                 return bufferViewMeshopt._meshOptData;
             }
 
             const buffer = ArrayItem.Get(`${context}/buffer`, this._loader.gltf.buffers, extension.buffer);
-            bufferViewMeshopt._meshOptData = this._loader.loadBufferAsync(`/buffers/${buffer.index}`, buffer, extension.byteOffset || 0, extension.byteLength).then((buffer) => {
-                return MeshoptCompression.Default.decodeGltfBufferAsync(buffer as Uint8Array, extension.count, extension.byteStride, extension.mode, extension.filter);
-            });
+            bufferViewMeshopt._meshOptData = this._loader
+                .loadBufferAsync(`/buffers/${buffer.index}`, buffer, extension.byteOffset || 0, extension.byteLength)
+                .then(async (buffer) => {
+                    return MeshoptCompression.Default.decodeGltfBufferAsync(buffer as Uint8Array, extension.count, extension.byteStride, extension.mode, extension.filter);
+                });
 
             return bufferViewMeshopt._meshOptData;
         });

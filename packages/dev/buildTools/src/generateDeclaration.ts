@@ -213,7 +213,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
             }
             const realClassName = parts[0].trim();
             const alias = parts[1] ? parts[1].trim() : realClassName;
-            const firstSplit = matches[2]!.split("/")[0];
+            const firstSplit = matches[2].split("/")[0];
             const devPackageName = firstSplit[0] === "." ? originalDevPackageName : firstSplit;
             // if (alias !== realClassName) {
             //     console.log(
@@ -231,7 +231,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                     alias,
                     realClassName,
                     devPackageName,
-                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]).replace(/\\/g, "/") : matches[2],
                 });
             } else {
                 if (!devPackageName.startsWith("babylonjs")) {
@@ -240,7 +240,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                         alias,
                         externalName: devPackageName,
                         realClassName,
-                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]).replace(/\\/g, "/") : matches[2],
                     });
                 }
             }

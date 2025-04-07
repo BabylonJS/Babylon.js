@@ -927,7 +927,9 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                     type: "number",
                     get: (light) => light._babylonTexture?.level,
                     set: (value, light) => {
-                        if (light._babylonTexture) light._babylonTexture.level = value;
+                        if (light._babylonTexture) {
+                            light._babylonTexture.level = value;
+                        }
                     },
 
                     getTarget: (light) => light._babylonTexture,
@@ -936,7 +938,9 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                     type: "Quaternion",
                     get: (light) => light._babylonTexture && Quaternion.FromRotationMatrix(light._babylonTexture?.getReflectionTextureMatrix()),
                     set: (value, light) => {
-                        if (!light._babylonTexture) return;
+                        if (!light._babylonTexture) {
+                            return;
+                        }
                         // Invert the rotation so that positive rotation is counter-clockwise.
                         if (!light._babylonTexture.getScene()?.useRightHandedSystem) {
                             value = Quaternion.Inverse(value);

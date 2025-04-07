@@ -61,7 +61,9 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     getValue(props = this.props): Color4 {
         const target = props.target;
         const property = target[props.propertyName];
-        if (!property) return emptyColor;
+        if (!property) {
+            return emptyColor;
+        }
         if (typeof property === "string") {
             // if (property === conflictingValuesPlaceholder) {
             //     return emptyColor;

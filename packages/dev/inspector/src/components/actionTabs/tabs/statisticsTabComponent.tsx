@@ -88,7 +88,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <TextLineComponent label="Total textures" value={scene.textures.length.toString()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="FRAME STEPS DURATION">
-                    <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation!.frameTimeCounter.lastSecAverage} fractionDigits={0} />
+                    <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation.frameTimeCounter.lastSecAverage} fractionDigits={0} />
                     <ValueLineComponent label="Meshes selection" value={sceneInstrumentation.activeMeshesEvaluationTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Render targets" value={sceneInstrumentation.renderTargetsRenderTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Particles" value={sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage} units="ms" />

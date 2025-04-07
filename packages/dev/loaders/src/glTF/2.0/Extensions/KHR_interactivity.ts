@@ -83,7 +83,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return parser.serializeToFlowGraph();
         });
         // parse each graph async
-        await Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
+        await Promise.all(graphs.map(async (graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
 
         coordinator.start();
     }

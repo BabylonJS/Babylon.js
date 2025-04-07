@@ -58,7 +58,7 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
         const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
         for (const fillMode in target._data!) {
             babylonAnimations.push({
-                babylonAnimatable: target._data![fillMode].babylonMaterial,
+                babylonAnimatable: target._data[fillMode].babylonMaterial,
                 babylonAnimation: this._buildAnimation(name, fps, keys),
             });
         }

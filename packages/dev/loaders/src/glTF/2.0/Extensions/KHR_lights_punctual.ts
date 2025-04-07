@@ -65,7 +65,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as any;
+            const extension = extensions[this.name];
             this._lights = extension.lights;
             ArrayItem.Assign(this._lights);
         }
@@ -75,7 +75,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
      * @internal
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;
 
             return this._loader.loadNodeAsync(context, node, (babylonMesh) => {

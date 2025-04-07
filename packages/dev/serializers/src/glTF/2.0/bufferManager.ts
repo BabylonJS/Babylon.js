@@ -9,8 +9,12 @@ interface IPropertyWithBufferView {
 }
 
 function getHighestByteAlignment(byteLength: number): number {
-    if (byteLength % 4 === 0) return 4;
-    if (byteLength % 2 === 0) return 2;
+    if (byteLength % 4 === 0) {
+        return 4;
+    }
+    if (byteLength % 2 === 0) {
+        return 2;
+    }
     return 1;
 }
 

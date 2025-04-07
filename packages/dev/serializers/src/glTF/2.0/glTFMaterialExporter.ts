@@ -857,7 +857,7 @@ export class GLTFMaterialExporter {
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
     }
 
-    private _getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
+    private async _getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
         const pixels =
             babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE
                 ? (babylonTexture.readPixels() as Promise<Uint8Array>)
@@ -871,7 +871,7 @@ export class GLTFMaterialExporter {
             return this._exportTextureInfoAsync(babylonTexture, mimeType);
         }
 
-        return extensionPromise.then((texture) => {
+        return extensionPromise.then(async (texture) => {
             if (!texture) {
                 return this._exportTextureInfoAsync(babylonTexture, mimeType);
             }

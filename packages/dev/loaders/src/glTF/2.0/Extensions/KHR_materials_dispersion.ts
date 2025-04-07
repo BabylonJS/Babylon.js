@@ -61,7 +61,7 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
      * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDispersion>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDispersion>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadDispersionPropertiesAsync(extensionContext, material, babylonMaterial, extension));
@@ -69,7 +69,7 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadDispersionPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDispersion): Promise<void> {
+    private async _loadDispersionPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDispersion): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }

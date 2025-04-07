@@ -42,7 +42,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     } else {
                         // check for declarations
                         const found3 = node.getChildren().find((c: { kind: any }) => c.kind === ts.SyntaxKind.VariableDeclarationList) as ts.VariableDeclarationList;
-                        if (found3 && (found3 as ts.VariableDeclarationList).declarations) {
+                        if (found3 && found3.declarations) {
                             const foundIdentifier = found3.declarations[0].getChildren().find((c: { kind: any }) => c.kind === ts.SyntaxKind.Identifier) as ts.Identifier;
                             importedSource.push(foundIdentifier.getText());
                         }

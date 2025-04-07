@@ -141,7 +141,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const pathOfFile = rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest | undefined, exception?: any) => {
+        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest, exception?: any) => {
             onFailure(pathOfFile, exception);
         });
     }
@@ -167,7 +167,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
+    public async importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file
         return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
@@ -190,7 +190,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
+    public async loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
         //Get the 3D model
         return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
             // return void
@@ -204,7 +204,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
+    public async loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
@@ -247,7 +247,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl defines the path to the folder
      * @returns the list of loaded meshes
      */
-    private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
+    private async _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
         let fileToLoad: string = ""; //The name of the mtlFile to load
         const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
         const materialToUse: string[] = [];

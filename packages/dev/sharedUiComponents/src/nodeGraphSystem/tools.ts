@@ -185,7 +185,7 @@ export function GetListOfAcceptedTypes<T extends Record<string, string | number>
     }
 
     if (port.acceptedConnectionPointTypes.length !== 0) {
-        acceptedTypes = port.acceptedConnectionPointTypes.filter((t) => t && t !== port.type).map((t) => types[t as number] as string);
+        acceptedTypes = port.acceptedConnectionPointTypes.filter((t) => t && t !== port.type).map((t) => types[t] as string);
     }
 
     if (skips.indexOf(autoDetectValue) === -1) {

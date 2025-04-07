@@ -33,7 +33,7 @@ function processConfigFile() {
                     // populate the args
                     externalArgs.length = 0;
                     if (command.args) {
-                        externalArgs.push(...(command.args as string[]));
+                        externalArgs.push(...command.args);
                     }
                     runCommand(command.command);
                 }

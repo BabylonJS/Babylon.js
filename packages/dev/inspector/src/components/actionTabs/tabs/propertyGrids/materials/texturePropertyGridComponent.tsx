@@ -120,8 +120,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const adt = texture as AdvancedDynamicTexture;
 
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
-        this._adtInstrumentation!.captureRenderTime = true;
-        this._adtInstrumentation!.captureLayoutTime = true;
+        this._adtInstrumentation.captureRenderTime = true;
+        this._adtInstrumentation.captureLayoutTime = true;
 
         this.onOpenTextureEditor.bind(this);
         this.onCloseTextureEditor.bind(this);
@@ -280,7 +280,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         label="Edit"
                         onClick={() => {
                             if (this.props.texture instanceof AdvancedDynamicTexture) {
-                                EditAdvancedDynamicTexture(this.props.texture as AdvancedDynamicTexture);
+                                EditAdvancedDynamicTexture(this.props.texture);
                             } else {
                                 this.openTextureEditor();
                             }
@@ -421,8 +421,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 )}
                 {(texture as any).rootContainer && this._adtInstrumentation && (
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES" selection={this.props.globalState}>
-                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
-                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation.renderTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Render scale"
