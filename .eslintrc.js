@@ -132,7 +132,7 @@ const rules = {
             parser: "@typescript-eslint/parser",
             rules: {
                 "babylonjs/available": [
-                    "warn",
+                    "off",
                     {
                         contexts: [
                             'PropertyDefinition:not([accessibility="private"]):not([accessibility="protected"])',
@@ -141,7 +141,7 @@ const rules = {
                     },
                 ],
                 "jsdoc/require-jsdoc": [
-                    "warn",
+                    "off",
                     {
                         contexts: [
                             "TSInterfaceDeclaration",
@@ -188,7 +188,7 @@ const rules = {
                 "@typescript-eslint/no-misused-promises": "off",
                 "@typescript-eslint/no-deprecated": "off",
                 // till here
-                "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+                "@typescript-eslint/no-unused-vars": ["off", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/no-this-alias": "error",
@@ -513,7 +513,7 @@ const rules = {
         "template-tag-spacing": "error",
         "jest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
         "jest/valid-expect": "off",
-        "babylonjs/syntax": "warn",
+        "babylonjs/syntax": "off",
         "jsdoc/check-param-names": ["error", { checkRestProperty: false, checkDestructured: false }],
         "jsdoc/check-property-names": "error",
         "jsdoc/require-param": [
@@ -528,15 +528,15 @@ const rules = {
         "jsdoc/require-param-name": "error",
         "jsdoc/require-returns": ["error", { checkGetters: false, checkConstructors: false }],
         "jsdoc/require-returns-check": "error",
-        "import/export": "warn",
-        "no-useless-escape": "warn",
-        "no-case-declarations": "warn",
-        "no-prototype-builtins": "warn",
-        "no-loss-of-precision": "warn",
+        "import/export": "off",
+        "no-useless-escape": "off",
+        "no-case-declarations": "off",
+        "no-prototype-builtins": "off",
+        "no-loss-of-precision": "off",
         "prefer-spread": "off",
         "prefer-rest-params": "off",
-        "no-fallthrough": "warn",
-        "no-async-promise-executor": "warn",
+        "no-fallthrough": "off",
+        "no-async-promise-executor": "off",
         "no-throw-literal": "error",
         curly: "error",
     },
