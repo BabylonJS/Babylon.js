@@ -37,7 +37,7 @@ fn reflectivityBlock(
     , baseDiffuseRoughness: f32
 #ifdef BASE_DIFFUSE_ROUGHNESS
     , baseDiffuseRoughnessTexture: f32
-    , vBaseDiffuseRoughnessInfos: vec2f
+    , baseDiffuseRoughnessInfos: vec2f
 #endif
 #ifdef REFLECTIVITY
     , reflectivityInfos: vec3f
@@ -168,7 +168,7 @@ fn reflectivityBlock(
 
     var diffuseRoughness: f32 = baseDiffuseRoughness;
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    diffuseRoughness *= baseDiffuseRoughnessTexture;
+    diffuseRoughness *= baseDiffuseRoughnessTexture * baseDiffuseRoughnessInfos.y;
 #endif
 
     outParams.microSurface = microSurface;

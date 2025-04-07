@@ -280,10 +280,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         options: [
             { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
             { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
-            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR },
+            { label: "Oren-Nayar", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR },
         ],
     })
-    public baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR;
+    public baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
 
     /**
      * Defines if the material uses energy conservation.

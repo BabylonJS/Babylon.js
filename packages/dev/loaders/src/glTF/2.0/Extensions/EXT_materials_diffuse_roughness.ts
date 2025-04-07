@@ -5,7 +5,7 @@ import type { Material } from "core/Materials/material";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
+import type { IEXTMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { Constants } from "core/Engines/constants";
 
@@ -23,8 +23,8 @@ declare module "../../glTFFileLoader" {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/EXT_materials_diffuse_roughness/README.md)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/fdee35425ae560ea378092e38977216d63a094ec/extensions/2.0/Khronos/EXT_materials_diffuse_roughness/README.md)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_materials_diffuse_roughness implements IGLTFLoaderExtension {
@@ -62,7 +62,7 @@ export class EXT_materials_diffuse_roughness implements IGLTFLoaderExtension {
      * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDiffuseRoughness>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTMaterialsDiffuseRoughness>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadDiffuseRoughnessPropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -70,14 +70,14 @@ export class EXT_materials_diffuse_roughness implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadDiffuseRoughnessPropertiesAsync(context: string, properties: IKHRMaterialsDiffuseRoughness, babylonMaterial: Material): Promise<void> {
+    private _loadDiffuseRoughnessPropertiesAsync(context: string, properties: IEXTMaterialsDiffuseRoughness, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR;
+        babylonMaterial.baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
 
         if (properties.diffuseRoughnessFactor != undefined) {
             babylonMaterial.baseDiffuseRoughness = properties.diffuseRoughnessFactor;

@@ -45,9 +45,9 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
 
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     var diffuseTerm: vec3f = vec3f(1.0 / PI);
-    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
         diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
-    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
         diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
     #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
@@ -76,10 +76,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
         var diffuseTerm : vec3f = vec3f(1.0 / PI);
-#if BASE_DIFFUSE_ROUGHNESS_MODEL == 1
+#if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
         diffuseTerm = vec3f(diffuseBRDF_Burley(
             info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
-#elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0
+#elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
         diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness,
                                       info.NdotL, info.NdotV, info.LdotV);
 #endif

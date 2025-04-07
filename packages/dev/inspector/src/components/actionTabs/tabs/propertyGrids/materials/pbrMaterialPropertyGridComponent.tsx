@@ -266,7 +266,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         const baseDiffuseRoughnessModelOptions = [
             { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
             { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
-            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR },
         ];
 
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
@@ -300,16 +300,6 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         label="Base Weight"
                         target={material}
                         propertyName="baseWeight"
-                        minimum={0}
-                        maximum={1}
-                        step={0.01}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Base Diffuse Roughness"
-                        target={material}
-                        propertyName="baseDiffuseRoughness"
                         minimum={0}
                         maximum={1}
                         step={0.01}

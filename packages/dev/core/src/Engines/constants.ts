@@ -469,7 +469,7 @@ export class Constants {
      */
     public static readonly MATERIAL_CounterClockWiseSideOrientation = 1;
 
-    public static readonly MATERIAL_DIFFUSE_ROUGHNESS_OPENPBR = 0;
+    public static readonly MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR = 0;
     public static readonly MATERIAL_DIFFUSE_ROUGHNESS_BURLEY = 1;
     public static readonly MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT = 2;
 
