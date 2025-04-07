@@ -1015,7 +1015,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
 
             reflectivityOut = reflectivityBlock(
-                vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.)
+                vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName}, 0.)
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
@@ -1037,6 +1037,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo = reflectivityOut.surfaceAlbedo;
+                vec4${state.fSuffix} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName}, 1.0);
             #endif
             #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY) && defined(AOSTOREINMETALMAPRED)
                 aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
