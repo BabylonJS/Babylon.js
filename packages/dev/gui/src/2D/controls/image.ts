@@ -341,7 +341,7 @@ export class Image extends Control {
         }
         const canvas = engine.createCanvas(height, width);
 
-        const context = canvas.getContext("2d")!;
+        const context = canvas.getContext("2d");
 
         context.translate(canvas.width / 2, canvas.height / 2);
         context.rotate((n * Math.PI) / 2);
@@ -429,7 +429,7 @@ export class Image extends Control {
             this._workingCanvas = engine.createCanvas(width, height);
         }
         const canvas = this._workingCanvas;
-        const context = canvas.getContext("2d")!;
+        const context = canvas.getContext("2d");
 
         context.drawImage(this._domImage, 0, 0, width, height);
         const imageData = context.getImageData(0, 0, width, height);
@@ -687,26 +687,26 @@ export class Image extends Control {
             // get element bbox and matrix transform
             const elem = svgDoc.getElementById(elemid) as Nullable<SVGGraphicsElement>;
             if (vb && docwidth && docheight && elem) {
-                const vb_width = Number(vb.split(" ")[2]);
-                const vb_height = Number(vb.split(" ")[3]);
-                const elem_bbox = elem.getBBox();
-                let elem_matrix_a = 1;
-                let elem_matrix_d = 1;
-                let elem_matrix_e = 0;
-                let elem_matrix_f = 0;
+                const vbWidth = Number(vb.split(" ")[2]);
+                const vbHeight = Number(vb.split(" ")[3]);
+                const elemBbox = elem.getBBox();
+                let elemMatrixA = 1;
+                let elemMatrixD = 1;
+                let elemMatrixE = 0;
+                let elemMatrixF = 0;
                 const mainMatrix = elem.transform.baseVal.consolidate()!.matrix;
                 if (elem.transform && elem.transform.baseVal.consolidate()) {
-                    elem_matrix_a = mainMatrix.a;
-                    elem_matrix_d = mainMatrix.d;
-                    elem_matrix_e = mainMatrix.e;
-                    elem_matrix_f = mainMatrix.f;
+                    elemMatrixA = mainMatrix.a;
+                    elemMatrixD = mainMatrix.d;
+                    elemMatrixE = mainMatrix.e;
+                    elemMatrixF = mainMatrix.f;
                 }
 
                 // compute source coordinates and dimensions
-                this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
-                this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
-                this.sourceWidth = elem_bbox.width * elem_matrix_a * (docwidth / vb_width);
-                this.sourceHeight = elem_bbox.height * elem_matrix_d * (docheight / vb_height);
+                this.sourceLeft = ((elemMatrixA * elemBbox.x + elemMatrixE) * docwidth) / vbWidth;
+                this.sourceTop = ((elemMatrixD * elemBbox.y + elemMatrixF) * docheight) / vbHeight;
+                this.sourceWidth = elemBbox.width * elemMatrixA * (docwidth / vbWidth);
+                this.sourceHeight = elemBbox.height * elemMatrixD * (docheight / vbHeight);
                 this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
@@ -800,7 +800,7 @@ export class Image extends Control {
 
         if (!imageData || this._imageDataCache.key !== key) {
             const canvas = this._workingCanvas;
-            const context = canvas.getContext("2d")!;
+            const context = canvas.getContext("2d");
 
             this._imageDataCache.data = imageData = context.getImageData(0, 0, width, height).data;
             this._imageDataCache.key = key;
@@ -872,7 +872,7 @@ export class Image extends Control {
         }
         const canvas = this._workingCanvas;
 
-        const context = canvas.getContext("2d")!;
+        const context = canvas.getContext("2d");
 
         context.clearRect(0, 0, width, height);
     }
@@ -887,7 +887,7 @@ export class Image extends Control {
         const transform = context.getTransform();
 
         const canvas = this._workingCanvas!;
-        const workingCanvasContext = canvas.getContext("2d")!;
+        const workingCanvasContext = canvas.getContext("2d");
         workingCanvasContext.save();
         const ttx = tx - this._currentMeasure.left;
         const tty = ty - this._currentMeasure.top;

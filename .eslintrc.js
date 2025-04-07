@@ -89,6 +89,7 @@ const abbreviations = [
     "[VUW](Offset|Rotation|Scale|Ang)",
     "DDS",
     "NaN",
+    "SVG",
 ];
 
 // Join them into a single regex string
