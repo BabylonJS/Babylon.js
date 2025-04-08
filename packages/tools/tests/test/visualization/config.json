@@ -943,6 +943,12 @@
             "errorRatio": 1.1
         },
         {
+            "title": "GLTF Serializer Shared Buffer Conversions",
+            "playgroundId": "#KX53VK#85",
+            "referenceImage": "glTFSerializerSharedBufferConversions.png",
+            "replace": "//options//, meshCount = 2;"
+        },
+        {
             "title": "GLTF Serializer Skinning and Animation",
             "playgroundId": "#DMZBX1#1",
             "referenceImage": "gltfSerializerSkinningAndAnimation.png"
