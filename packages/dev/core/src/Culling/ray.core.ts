@@ -63,7 +63,7 @@ export class Ray {
      * @param origin origin point
      * @param direction direction
      * @param length length of the ray
-     * @param epsilon The epsilon value to use when calculating the ray/triangle intersection (default: 0)
+     * @param epsilon The epsilon value to use when calculating the ray/triangle intersection (default: Epsilon from math constants)
      */
     constructor(
         /** origin point */
