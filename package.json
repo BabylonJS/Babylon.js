@@ -94,8 +94,9 @@
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "lint": "npm run lint:check",
-        "lint:check": "NODE_OPTIONS=\"--max-old-space-size=8192\" eslint \"packages/dev/**/src/**/*.{ts,tsx}\" --quiet && eslint \"packages/tools/**/src/**/*.{ts,tsx,js,json}\" --quiet && --quiet && eslint \"packages/public/**/src/**/*.{ts,tsx,js,json}\" --quiet",
-        "lint:check-ci": "eslint -f node_modules/eslint-formatter-azure-devops/index.js \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
+        "lint:check": "eslint \"packages/dev/core/src/**/*.{ts,tsx}\" --quiet && eslint \"packages/dev/**/src/**/*.{ts,tsx}\" --quiet --ignore-pattern \"packages/dev/core/*\" && eslint \"packages/tools/**/src/**/*.{ts,tsx,js,json}\" --quiet && --quiet && eslint \"packages/public/**/src/**/*.{ts,tsx,js,json}\" --quiet",
+        "lint:check:changed": "eslint --quiet $(git diff --name-only master | xargs)",
+        "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""

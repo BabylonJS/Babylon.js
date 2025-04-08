@@ -8,3 +8,8 @@ dist/**/*.*
 **/*.vertex.ts
 packages/public/**/*.*
 packages/lts/**/*.*
+*.md
+*.fx
+*.scss
+*.css
+*.html
