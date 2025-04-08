@@ -65,10 +65,10 @@ export class ThinChromaticAberrationPostProcess extends EffectWrapper {
      */
     public centerPosition = new Vector2(0.5, 0.5);
 
-    /** The width of the screen to apply the effect on */
+    /** The width of the source texture to which the effect is applied */
     public screenWidth: number;
 
-    /** The height of the screen to apply the effect on */
+    /** The height of the source texture to which the effect is applied */
     public screenHeight: number;
 
     public override bind(noDefaultBindings = false) {
