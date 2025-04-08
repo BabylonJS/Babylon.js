@@ -28,7 +28,7 @@ struct reflectivityOutParams
 
 #define pbr_inline
 fn reflectivityBlock(
-    vReflectivityColor: vec4f
+    reflectivityColor: vec4f
 #ifdef METALLICWORKFLOW
     , surfaceAlbedo: vec3f
     , metallicReflectanceFactors: vec4f
@@ -50,8 +50,8 @@ fn reflectivityBlock(
 ) -> reflectivityOutParams
 {
     var outParams: reflectivityOutParams;
-    var microSurface: f32 = vReflectivityColor.a;
-    var surfaceReflectivityColor: vec3f = vReflectivityColor.rgb;
+    var microSurface: f32 = reflectivityColor.a;
+    var surfaceReflectivityColor: vec3f = reflectivityColor.rgb;
 
     #ifdef METALLICWORKFLOW
         var metallicRoughness: vec2f = surfaceReflectivityColor.rg;
