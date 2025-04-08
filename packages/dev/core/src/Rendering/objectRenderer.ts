@@ -121,21 +121,21 @@ export class ObjectRenderer {
      */
     public cameraForLOD: Nullable<Camera>;
 
-    private _renderInLinearSpace: Nullable<boolean> = null;
+    private _disableImageProcessing = false;
     /**
-     * If true, the object renderer will render all objects in linear color space.
-     * If null (default value), the renderer will use the current setting of the scene's image processing configuration to determine if it should render in linear color space.
+     * If true, the object renderer will render all objects without any image processing applied.
+     * If false (default value), the renderer will use the current setting of the scene's image processing configuration.
      */
-    public get renderInLinearSpace() {
-        return this._renderInLinearSpace;
+    public get disableImageProcessing() {
+        return this._disableImageProcessing;
     }
 
-    public set renderInLinearSpace(value: Nullable<boolean>) {
-        if (value === this._renderInLinearSpace) {
+    public set disableImageProcessing(value: boolean) {
+        if (value === this._disableImageProcessing) {
             return;
         }
 
-        this._renderInLinearSpace = value;
+        this._disableImageProcessing = value;
         this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_ImageProcessingDirtyFlag);
     }
 
@@ -407,9 +407,9 @@ export class ObjectRenderer {
         }
 
         this._currentApplyByPostProcessSetting = this._scene.imageProcessingConfiguration.applyByPostProcess;
-        if (this._renderInLinearSpace !== null) {
+        if (this._disableImageProcessing) {
             // we do not use the applyByPostProcess setter to avoid flagging all the materials as "image processing dirty"!
-            this._scene.imageProcessingConfiguration._applyByPostProcess = this._renderInLinearSpace;
+            this._scene.imageProcessingConfiguration._applyByPostProcess = this._disableImageProcessing;
         }
     }
 
@@ -444,7 +444,7 @@ export class ObjectRenderer {
     public finishRender() {
         const scene = this._scene;
 
-        if (this._renderInLinearSpace !== null) {
+        if (this._disableImageProcessing) {
             scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
         }
 

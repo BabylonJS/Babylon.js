@@ -59,6 +59,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         SSRBlock: "Applies a Screen Space Reflection post process",
         AnaglyphBlock: "Applies an anaglyph post process",
         ChromaticAberrationBlock: "Applies a chromatic aberration post process",
+        ImageProcessingBlock: "Applies an image processing post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -163,6 +164,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CircleOfConfusionBlock",
                 "DepthOfFieldBlock",
                 "ExtractHighlightsBlock",
+                "ImageProcessingBlock",
                 "PassBlock",
                 "PassCubeBlock",
                 "SSRBlock",

@@ -429,6 +429,18 @@ export class ImageProcessingConfiguration {
     }
 
     /**
+     * Width of the output texture used in the post process. If not provided, uses the width of the screen.
+     */
+    @serialize()
+    public outputTextureWidth = 0;
+
+    /**
+     * Height of the output texture used in the post process. If not provided, uses the height of the screen.
+     */
+    @serialize()
+    public outputTextureHeight = 0;
+
+    /**
      * An event triggered when the configuration changes and requires Shader to Update some parameters.
      */
     public onUpdateParameters = new Observable<ImageProcessingConfiguration>();
@@ -543,8 +555,8 @@ export class ImageProcessingConfiguration {
 
         // Vignette and dither handled together due to common uniform.
         if (this._vignetteEnabled || this._ditheringEnabled) {
-            const inverseWidth = 1 / effect.getEngine().getRenderWidth();
-            const inverseHeight = 1 / effect.getEngine().getRenderHeight();
+            const inverseWidth = 1 / (this.outputTextureWidth || effect.getEngine().getRenderWidth());
+            const inverseHeight = 1 / (this.outputTextureHeight || effect.getEngine().getRenderHeight());
             effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
             if (this._ditheringEnabled) {
