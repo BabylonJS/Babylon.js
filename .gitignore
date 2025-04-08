@@ -32,4 +32,3 @@ playwright-report
 playwright/.cache/
 .nx
 .DS_Store
-packages/tools/documentation/*
