@@ -1422,8 +1422,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
                 });
 
-                await this._updateModel();
-                await this._updateEnv({ lighting: true, skybox: true });
+                this._updateModel();
+                this._updateEnv({ lighting: true, skybox: true });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
