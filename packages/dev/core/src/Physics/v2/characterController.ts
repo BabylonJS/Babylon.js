@@ -308,6 +308,14 @@ export class PhysicsCharacterController {
     }
 
     /**
+     * Teleport character to a new position
+     * @param position new position
+     */
+    public setPosition(position: Vector3) {
+        this._position.copyFrom(position);
+    }
+
+    /**
      * Character velocity
      * @returns Character velocity vector
      */
