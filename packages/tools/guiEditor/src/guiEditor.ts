@@ -64,21 +64,23 @@ export class GUIEditor {
         globalState.registerEventListeners();
 
         const graphEditor = React.createElement(WorkbenchEditor, {
-            globalState: globalState,
+            globalState,
         });
 
         const root = createRoot(hostElement);
         root.render(graphEditor);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas(embed);
-            if (options.currentSnippetToken) {
-                try {
-                    await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
-                } catch (error) {
-                    //swallow and continue
+            setTimeout(async () => {
+                globalState.workbench.createGUICanvas(embed);
+                if (options.currentSnippetToken) {
+                    try {
+                        await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                    } catch (error) {
+                        //swallow and continue
+                    }
                 }
-            }
+            });
         }
 
         if (options.customLoadObservable) {
