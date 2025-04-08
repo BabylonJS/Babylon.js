@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { CreatePopup } from "shared-ui-components/popupHelper";
@@ -67,7 +68,8 @@ export class GUIEditor {
             globalState: globalState,
         });
 
-        ReactDOM.render(graphEditor, hostElement);
+        const root = createRoot(hostElement);
+        root.render(graphEditor);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas(embed);
