@@ -96,7 +96,7 @@
         "lint": "npm run lint:check",
         "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
         "lint:check:changed": "eslint --quiet $(git diff --name-only master | xargs)",
-        "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js}\" --quiet --format azure-devops",
+        "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
