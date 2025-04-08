@@ -212,7 +212,9 @@
             , irradianceSampler: texture_2d<f32>
             , irradianceSamplerSampler: sampler        
         #endif
-        , reflectionDominantDirection: vec3f
+        #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+            , reflectionDominantDirection: vec3f
+        #endif
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
