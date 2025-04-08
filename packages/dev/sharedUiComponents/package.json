@@ -42,6 +42,6 @@
     },
     "sideEffects": false,
     "resolutions": {
-        "webpack": "^5.73.0"
+        "webpack": "~5.98.0"
     }
 }
