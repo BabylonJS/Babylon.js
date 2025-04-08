@@ -763,6 +763,42 @@ export const RequestFile = (
 };
 
 /**
+ * Reads the mime type from a URL, if available.
+ * @param url
+ * @returns
+ */
+export const GetMimeType = (url: string): string | undefined => {
+    const { match, type } = TestBase64DataUrl(url);
+    if (match) {
+        return type;
+    }
+
+    const lastDot = url.lastIndexOf(".");
+    if (lastDot === -1) {
+        return undefined;
+    }
+
+    const extension = url.substring(lastDot + 1).toLowerCase();
+    switch (extension) {
+        case "glb":
+            return "model/gltf-binary";
+        case "bin":
+            return "application/octet-stream";
+        case "gltf":
+            return "model/gltf+json";
+        case "jpg":
+        case "jpeg":
+            return "image/jpeg";
+        case "png":
+            return "image/png";
+        case "webp":
+            return "image/webp";
+        default:
+            return undefined;
+    }
+};
+
+/**
  * Checks if the loaded document was accessed via `file:`-Protocol.
  * @returns boolean
  * @internal

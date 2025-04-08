@@ -1,23 +1,5 @@
-import { ImageMimeType } from "babylonjs-gltf2interface";
+import { GetMimeType } from "core/Misc/fileTools";
 import { Tools } from "core/Misc/tools";
-
-function GetMimeType(fileName: string): string | undefined {
-    if (fileName.endsWith(".glb")) {
-        return "model/gltf-binary";
-    } else if (fileName.endsWith(".bin")) {
-        return "application/octet-stream";
-    } else if (fileName.endsWith(".gltf")) {
-        return "model/gltf+json";
-    } else if (fileName.endsWith(".jpeg") || fileName.endsWith(".jpg")) {
-        return ImageMimeType.JPEG;
-    } else if (fileName.endsWith(".png")) {
-        return ImageMimeType.PNG;
-    } else if (fileName.endsWith(".webp")) {
-        return ImageMimeType.WEBP;
-    }
-
-    return undefined;
-}
 
 /**
  * Class for holding and downloading glTF file data
