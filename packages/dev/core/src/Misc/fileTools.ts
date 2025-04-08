@@ -770,11 +770,11 @@ export const RequestFile = (
 export const GetMimeType = (url: string): string | undefined => {
     const { match, type } = TestBase64DataUrl(url);
     if (match) {
-        return type;
+        return type || undefined;
     }
 
     const lastDot = url.lastIndexOf(".");
-    if (lastDot === -1) {
+    if (lastDot === -1 || lastDot === url.length - 1) {
         return undefined;
     }
 
