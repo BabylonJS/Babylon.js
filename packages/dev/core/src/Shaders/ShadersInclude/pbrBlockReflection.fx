@@ -190,7 +190,9 @@
         #else
             , in sampler2D irradianceSampler
         #endif
-        , in vec3 reflectionDominantDirection
+        #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+            , in vec3 reflectionDominantDirection
+        #endif
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
