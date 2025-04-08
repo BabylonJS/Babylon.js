@@ -170,7 +170,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                             enableGPUDebugMarkers: true,
                         });
                         await engine.initAsync();
-                        console.log("engine", engine);
                         return engine;
                     } catch (e) {
                         // eslint-disable-next-line no-console
