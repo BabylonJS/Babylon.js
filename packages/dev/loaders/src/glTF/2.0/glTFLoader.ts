@@ -68,7 +68,7 @@ import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import type { IDataBuffer } from "core/Misc/dataReader";
-import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
+import { DecodeBase64UrlToBinary, GetMimeType, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
@@ -2463,7 +2463,7 @@ export class GLTFLoader implements IGLTFLoader {
                     deferred.reject(new Error(`${context}: ${exception && exception.message ? exception.message : message || "Failed to load texture"}`));
                 }
             },
-            mimeType: image.mimeType,
+            mimeType: image.mimeType ?? GetMimeType(image.uri ?? ""),
             loaderOptions: textureLoaderOptions,
             useSRGBBuffer: !!useSRGBBuffer && this._parent.useSRGBBuffers,
         };
