@@ -1637,6 +1637,17 @@ export class Viewer implements IDisposable {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { ShaderMaterial } = await import("core/Materials/shaderMaterial");
 
+        const updateMaterial = () => {
+            if (!this._iblShadowsRenderPipeline) {
+                return;
+            }
+            this._groundShadowMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+            this._groundShadowMaterial?.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
+            this._groundShadowMaterial?.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
+            const groundSize = this._shadowGroundScalingFactor * this._iblShadowsRenderPipeline?.voxelGridSize;
+            this._envShadowGround?.scaling.set(groundSize, groundSize, groundSize);
+        };
+
         this._snapshotHelper.disableSnapshotRendering();
 
         if (!this._iblShadowsRenderPipeline) {
@@ -1678,25 +1689,13 @@ export class Viewer implements IDisposable {
             this._groundShadowMaterial = new ShaderMaterial("customGroundMaterial", this._scene, "customGround", options);
             this._groundShadowMaterial.alphaMode = Constants.ALPHA_MULTIPLY;
             this._groundShadowMaterial.alpha = 0.99;
-            this._groundShadowMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-            this._groundShadowMaterial?.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
-            this._groundShadowMaterial?.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
-            const groundSize = this._shadowGroundScalingFactor * this._iblShadowsRenderPipeline?.voxelGridSize;
-            this._envShadowGround?.scaling.set(groundSize, groundSize, groundSize);
+            updateMaterial();
 
-            this._iblShadowsRenderPipeline.onShadowTextureReadyObservable.addOnce(() => {
-                if (this._iblShadowsRenderPipeline) {
-                    this._groundShadowMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-                    this._groundShadowMaterial?.setFloat("shadowOpacity", this._iblShadowsRenderPipeline.shadowOpacity);
-                    this._groundShadowMaterial?.setTexture("shadowTexture", this._iblShadowsRenderPipeline._getAccumulatedTexture());
-                    const groundSize = this._shadowGroundScalingFactor * this._iblShadowsRenderPipeline?.voxelGridSize;
-                    this._envShadowGround?.scaling.set(groundSize, groundSize, groundSize);
-                }
-            });
+            this._iblShadowsRenderPipeline.onShadowTextureReadyObservable.addOnce(updateMaterial);
 
             this._resizeShadowObserver = this._engine.onResizeObservable.add(() => {
                 if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
-                    this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+                    updateMaterial();
                     this._iblShadowsRenderPipeline?.resetAccumulation();
                     this._startIblShadowsRenderTime();
                 }
@@ -1718,6 +1717,7 @@ export class Viewer implements IDisposable {
         });
 
         this._iblShadowsRenderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
+            updateMaterial();
             const ground = this._createEnvironmentShadowGround();
             ground.material = this._groundShadowMaterial;
             this._iblShadowsRenderPipeline?.toggleShadow(true);
