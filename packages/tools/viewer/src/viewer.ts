@@ -791,6 +791,8 @@ export class Viewer implements IDisposable {
     private _shadowLight: Nullable<DirectionalLight> = null;
     private _shadowLightNode: Nullable<TransformNode> = null;
     private _resizeShadowObserver: Nullable<Observer<Engine>> = null;
+    private _iblShadowsRender: boolean = false;
+    private _iblRenderTimer: Nullable<ReturnType<typeof setTimeout>> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -960,11 +962,13 @@ export class Viewer implements IDisposable {
                 this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
             }
             this._iblShadowsRenderPipeline?.resetAccumulation();
+            this._startIblShadowsRenderTime();
         }
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
             this._rotateShadowLightWithEnvironment();
             this._iblShadowsRenderPipeline?.resetAccumulation();
+            this._startIblShadowsRenderTime();
         }
         if (value.visible !== undefined) {
             // Dynamically create the skybox if it doesn't exist yet
@@ -1604,6 +1608,18 @@ export class Viewer implements IDisposable {
         return this._envShadowGround;
     }
 
+    private _startIblShadowsRenderTime() {
+        clearTimeout(this._iblRenderTimer!);
+        this._iblShadowsRender = true;
+        this._iblRenderTimer = setTimeout(
+            () => {
+                this._iblShadowsRender = false;
+            },
+            // based on the shadow remanence as we can't estimate the time it takes to accumulate the shadows
+            this._iblShadowsRenderPipeline?.shadowRemanence! * 4000
+        );
+    }
+
     private async _updateEnvironmentShadow() {
         await Promise.all([
             import("core/Materials/standardMaterial"),
@@ -1682,7 +1698,12 @@ export class Viewer implements IDisposable {
                 if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
                     this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
                     this._iblShadowsRenderPipeline?.resetAccumulation();
+                    this._startIblShadowsRenderTime();
                 }
+            });
+
+            this._camera.onViewMatrixChangedObservable.add(() => {
+                this._startIblShadowsRenderTime();
             });
         }
 
@@ -1704,9 +1725,10 @@ export class Viewer implements IDisposable {
         });
 
         // call the update now because a model might be loaded before the shadows are created
-        this._iblShadowsRenderPipeline?.resetAccumulation();
         this._iblShadowsRenderPipeline?.updateSceneBounds();
         this._iblShadowsRenderPipeline?.updateVoxelization();
+        this._iblShadowsRenderPipeline?.resetAccumulation();
+        this._startIblShadowsRenderTime();
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -2297,7 +2319,13 @@ export class Viewer implements IDisposable {
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
         // 4. At least one model should render (playing animations).
-        return !this._autoSuspendRendering || this._sceneMutated || !this._snapshotHelper.isReady || this._loadedModelsBacking.some((model) => model._shouldRender());
+        return (
+            !this._autoSuspendRendering ||
+            this._sceneMutated ||
+            !this._snapshotHelper.isReady ||
+            this._iblShadowsRender ||
+            this._loadedModelsBacking.some((model) => model._shouldRender())
+        );
     }
 
     protected _markSceneMutated() {
@@ -2354,7 +2382,7 @@ export class Viewer implements IDisposable {
 
             const render = () => {
                 // First check if we have indicators that we should render.
-                let shouldRender = true;
+                let shouldRender = this._shouldRender;
 
                 // If we don't have indicators that we should render (e.g. nothing has changed since the last frame),
                 // we still need to ensure that we render at least one frame after any mutations. Scene.isReady does
