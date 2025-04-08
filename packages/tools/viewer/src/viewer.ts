@@ -1757,14 +1757,12 @@ export class Viewer implements IDisposable {
             this._shadowLight.intensity = 100.0;
             this._shadowLightNode.position.set(x, radius, z);
             this._shadowLightNode.setPivotPoint(Vector3.FromArray(worldBounds.center));
-            const groundSize = this._shadowGroundScalingFactor * radius;
-            this._classicShadowGround?.scaling.set(groundSize, groundSize, groundSize);
             this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
             this._shadowGenerator.setDarkness(0.5);
-            this._shadowGenerator.setTransparencyShadow(false);
-            this._shadowGenerator.usePercentageCloserFiltering = true;
+            this._shadowGenerator.setTransparencyShadow(true);
+            this._shadowGenerator.usePercentageCloserFiltering = false;
             this._shadowGenerator.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
-            this._shadowGenerator.bias = -0.000001;
+            this._shadowGenerator.bias = -0.01;
             this._shadowGenerator.normalBias = 0.00002;
             this._shadowGenerator.useContactHardeningShadow = true;
             this._shadowGenerator.contactHardeningLightSizeUVRatio = 0.1;
@@ -1773,14 +1771,6 @@ export class Viewer implements IDisposable {
             this._shadowGenerator.useKernelBlur = false;
             this._shadowGenerator.blurScale = 1;
             this._shadowGenerator.blurKernel = 8;
-
-            this._snapshotHelper.disableSnapshotRendering();
-            this._loadedModelsBacking.forEach((model) => {
-                model.assetContainer.meshes.forEach((mesh) => {
-                    this._shadowGenerator?.addShadowCaster(mesh);
-                    mesh.receiveShadows = true;
-                });
-            });
 
             const shadowMap = this._shadowGenerator.getShadowMap();
             if (shadowMap) {
@@ -1791,20 +1781,20 @@ export class Viewer implements IDisposable {
             const ground = this._createClassicShadowGround();
             ground.material = shadowMaterial;
             this._shadowLight.includedOnlyMeshes = [ground];
-        } else {
-            this._shadowLightNode?.position.set(x, radius, z);
-            this._shadowLightNode?.setPivotPoint(Vector3.FromArray(worldBounds.center));
-            const groundSize = this._shadowGroundScalingFactor * radius;
-            this._classicShadowGround?.scaling.set(groundSize, groundSize, groundSize);
-
-            this._loadedModelsBacking.forEach((model) => {
-                const mesh = model.assetContainer.meshes[0];
-                this._shadowGenerator?.addShadowCaster(mesh, true);
-                model.assetContainer.meshes.forEach((mesh) => {
-                    mesh.receiveShadows = true;
-                });
-            });
         }
+
+        this._shadowLightNode?.position.set(x, radius, z);
+        this._shadowLightNode?.setPivotPoint(Vector3.FromArray(worldBounds.center));
+        const groundSize = this._shadowGroundScalingFactor * radius;
+        this._classicShadowGround?.scaling.set(groundSize, groundSize, groundSize);
+
+        this._loadedModelsBacking.forEach((model) => {
+            const mesh = model.assetContainer.meshes[0];
+            this._shadowGenerator?.addShadowCaster(mesh, true);
+            model.assetContainer.meshes.forEach((mesh) => {
+                mesh.receiveShadows = true;
+            });
+        });
 
         this._envShadowGround?.setEnabled(false);
         this._iblShadowsRenderPipeline?.toggleShadow(false);
