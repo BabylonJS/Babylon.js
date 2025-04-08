@@ -1,35 +1,31 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
-import type { Observer } from "../Misc/observable";
 import { serialize } from "../Misc/decorators";
 import type { Color4 } from "../Maths/math.color";
 import type { Camera } from "../Cameras/camera";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Effect } from "../Materials/effect";
 import type { ColorCurves } from "../Materials/colorCurves";
-import type { IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
+import { ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
 
 /**
  * ImageProcessingPostProcess
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#imageprocessing
  */
 export class ImageProcessingPostProcess extends PostProcess {
-    /**
-     * Default configuration related to image processing available in the PBR Material.
-     */
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+    protected get _imageProcessingConfiguration(): ImageProcessingConfiguration {
+        return this._effectWrapper.imageProcessingConfiguration;
+    }
 
     /**
      * Gets the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
-        return this._imageProcessingConfiguration;
+        return this._effectWrapper.imageProcessingConfiguration;
     }
 
     /**
@@ -38,67 +34,7 @@ export class ImageProcessingPostProcess extends PostProcess {
      * If sets to null, the scene one is in use.
      */
     public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
-        // We are almost sure it is applied by post process as
-        // We are in the post process :-)
-        value.applyByPostProcess = true;
-        this._attachImageProcessingConfiguration(value);
-    }
-
-    /**
-     * Keep track of the image processing observer to allow dispose and replace.
-     */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
-
-    /**
-     * Attaches a new image processing configuration to the PBR Material.
-     * @param configuration
-     * @param doNotBuild
-     */
-    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild = false): void {
-        if (configuration === this._imageProcessingConfiguration) {
-            return;
-        }
-
-        // Detaches observer.
-        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-        }
-
-        // Pick the scene configuration if needed.
-        if (!configuration) {
-            let scene = null;
-            const engine = this.getEngine();
-            const camera = this.getCamera();
-
-            if (camera) {
-                scene = camera.getScene();
-            } else if (engine && engine.scenes) {
-                const scenes = engine.scenes;
-                scene = scenes[scenes.length - 1];
-            } else {
-                scene = EngineStore.LastCreatedScene;
-            }
-
-            if (scene) {
-                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
-            } else {
-                this._imageProcessingConfiguration = new ImageProcessingConfiguration();
-            }
-        } else {
-            this._imageProcessingConfiguration = configuration;
-        }
-
-        // Attaches observer.
-        if (this._imageProcessingConfiguration) {
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._updateParameters();
-            });
-        }
-
-        // Ensure the effect will be rebuilt.
-        if (!doNotBuild) {
-            this._updateParameters();
-        }
+        this._effectWrapper.imageProcessingConfiguration = value;
     }
 
     /**
@@ -369,47 +305,21 @@ export class ImageProcessingPostProcess extends PostProcess {
         this.imageProcessingConfiguration.ditheringEnabled = value;
     }
 
-    @serialize()
-    private _fromLinearSpace = true;
     /**
      * Gets whether the input of the processing is in Gamma or Linear Space.
      */
+    @serialize()
     public get fromLinearSpace(): boolean {
-        return this._fromLinearSpace;
+        return this._effectWrapper.fromLinearSpace;
     }
     /**
      * Sets whether the input of the processing is in Gamma or Linear Space.
      */
     public set fromLinearSpace(value: boolean) {
-        if (this._fromLinearSpace === value) {
-            return;
-        }
-
-        this._fromLinearSpace = value;
-        this._updateParameters();
+        this._effectWrapper.fromLinearSpace = value;
     }
 
-    /**
-     * Defines cache preventing GC.
-     */
-    private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
-        IMAGEPROCESSING: false,
-        VIGNETTE: false,
-        VIGNETTEBLENDMODEMULTIPLY: false,
-        VIGNETTEBLENDMODEOPAQUE: false,
-        TONEMAPPING: 0,
-        CONTRAST: false,
-        COLORCURVES: false,
-        COLORGRADING: false,
-        COLORGRADING3D: false,
-        FROMLINEARSPACE: false,
-        SAMPLER3DGREENDEPTH: false,
-        SAMPLER3DBGRMAP: false,
-        DITHER: false,
-        IMAGEPROCESSINGPOSTPROCESS: false,
-        EXPOSURE: false,
-        SKIPFINALCOLORCLAMP: false,
-    };
+    protected override _effectWrapper: ThinImageProcessingPostProcess;
 
     constructor(
         name: string,
@@ -421,36 +331,27 @@ export class ImageProcessingPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         imageProcessingConfiguration?: ImageProcessingConfiguration
     ) {
-        super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true);
-
-        // Setup the configuration as forced by the constructor. This would then not force the
-        // scene materials output in linear space and let untouched the default forward pass.
-        if (imageProcessingConfiguration) {
-            imageProcessingConfiguration.applyByPostProcess = true;
-            this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
-            // This will cause the shader to be compiled
-            this._updateParameters();
-        }
-        // Setup the default processing configuration to the scene.
-        else {
-            this._attachImageProcessingConfiguration(null, true);
-            this.imageProcessingConfiguration.applyByPostProcess = true;
-        }
-
-        this.onApply = (effect: Effect) => {
-            this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
+        const localOptions = {
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            imageProcessingConfiguration,
+            scene: camera?.getScene(),
+            ...(options as PostProcessOptions),
+            blockCompilation: true,
         };
-    }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/imageProcessing.fragment"));
-        } else {
-            list.push(import("../Shaders/imageProcessing.fragment"));
-        }
+        super(name, ThinImageProcessingPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinImageProcessingPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
 
-        super._gatherImports(useWebGPU, list);
+        this.onApply = () => {
+            this._effectWrapper.overrideAspectRatio = this.aspectRatio;
+        };
     }
 
     /**
@@ -465,43 +366,10 @@ export class ImageProcessingPostProcess extends PostProcess {
      * @internal
      */
     public _updateParameters(): void {
-        this._defines.FROMLINEARSPACE = this._fromLinearSpace;
-        this.imageProcessingConfiguration.prepareDefines(this._defines, true);
-        let defines = "";
-        for (const prop in this._defines) {
-            const value = (<any>this._defines)[prop];
-            const type = typeof value;
-
-            switch (type) {
-                case "number":
-                case "string":
-                    defines += `#define ${prop} ${value};\n`;
-                    break;
-                default:
-                    if (value) {
-                        defines += `#define ${prop};\n`;
-                    }
-                    break;
-            }
-        }
-
-        const samplers = ["textureSampler"];
-        const uniforms = ["scale"];
-
-        if (ImageProcessingConfiguration) {
-            ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);
-            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._defines);
-        }
-
-        this.updateEffect(defines, uniforms, samplers);
+        this._effectWrapper._updateParameters();
     }
-
     public override dispose(camera?: Camera): void {
         super.dispose(camera);
-
-        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-        }
 
         if (this._imageProcessingConfiguration) {
             this.imageProcessingConfiguration.applyByPostProcess = false;

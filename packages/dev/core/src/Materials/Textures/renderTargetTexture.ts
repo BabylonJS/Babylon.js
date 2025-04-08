@@ -233,14 +233,15 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * If true, all objects will be rendered in linear space (default: false)
+     * If true, the renderer will render all objects without any image processing applied.
+     * If false (default value), the renderer will use the current setting of the scene's image processing configuration.
      */
-    public get renderInLinearSpace() {
-        return this._objectRenderer.renderInLinearSpace;
+    public get disableImageProcessing() {
+        return this._objectRenderer.disableImageProcessing;
     }
 
-    public set renderInLinearSpace(value: Nullable<boolean>) {
-        this._objectRenderer.renderInLinearSpace = value;
+    public set disableImageProcessing(value: boolean) {
+        this._objectRenderer.disableImageProcessing = value;
     }
 
     /**

@@ -101,14 +101,14 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.disableShadows = value;
     }
 
-    /** If the rendering should be done in linear space */
-    @editableInPropertyPage("Render in linear space", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    /** If image processing should be disabled */
+    @editableInPropertyPage("Disable image processing", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get renderInLinearSpace() {
-        return this._frameGraphTask.renderInLinearSpace;
+        return this._frameGraphTask.disableImageProcessing;
     }
 
     public set renderInLinearSpace(value: boolean) {
-        this._frameGraphTask.renderInLinearSpace = value;
+        this._frameGraphTask.disableImageProcessing = value;
     }
 
     /**
