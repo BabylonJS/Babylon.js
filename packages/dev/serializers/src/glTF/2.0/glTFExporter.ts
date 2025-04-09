@@ -811,7 +811,7 @@ export class GLTFExporter {
 
         // Scene metadata
         if (this._babylonScene.metadata) {
-                scene.extras = this._options.metadataSelector(this._babylonScene.metadata);
+            scene.extras = this._options.metadataSelector(this._babylonScene.metadata);
         }
 
         //  TODO:
@@ -1214,6 +1214,10 @@ export class GLTFExporter {
 
         if (babylonNode.name) {
             node.name = babylonNode.name;
+        }
+
+        if (babylonNode.metadata) {
+            node.extras = this._options.metadataSelector(babylonNode.metadata);
         }
 
         if (babylonNode instanceof TransformNode) {
