@@ -49,7 +49,7 @@ test.afterEach(async ({ page }) => {
         await AudioV2Test.AfterEachAsync();
     });
 
-    // await page.close();
+    await page.close();
 });
 
 export class AudioTestConfig {
