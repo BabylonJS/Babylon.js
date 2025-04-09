@@ -232,6 +232,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
+        scene.bindEyePosition(effect);
 
         const gsMesh = mesh as GaussianSplattingMesh;
 
