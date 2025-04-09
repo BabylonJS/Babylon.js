@@ -4,7 +4,7 @@ import type { MorphTarget } from "core/Morph/morphTarget";
 import type { BufferManager } from "./bufferManager";
 
 import { NormalizeTangent } from "./glTFUtilities";
-import type { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
@@ -21,7 +21,7 @@ export interface IMorphTargetData {
 
 export function BuildMorphTargetBuffers(
     morphTarget: MorphTarget,
-    mesh: Mesh,
+    mesh: AbstractMesh,
     bufferManager: BufferManager,
     bufferViews: IBufferView[],
     accessors: IAccessor[],
@@ -41,7 +41,7 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasPositions) {
         const morphPositions = morphTarget.getPositions()!;
-        const originalPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true);
+        const originalPositions = mesh.geometry?.getVerticesData(VertexBuffer.PositionKind); // Bypasses mesh's instance data
 
         if (originalPositions) {
             const positionData = new Float32Array(originalPositions.length);
@@ -80,7 +80,7 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasNormals) {
         const morphNormals = morphTarget.getNormals()!;
-        const originalNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true);
+        const originalNormals = mesh.geometry?.getVerticesData(VertexBuffer.NormalKind);
 
         if (originalNormals) {
             const normalData = new Float32Array(originalNormals.length);
@@ -107,7 +107,7 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasTangents) {
         const morphTangents = morphTarget.getTangents()!;
-        const originalTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true);
+        const originalTangents = mesh.geometry?.getVerticesData(VertexBuffer.TangentKind);
 
         if (originalTangents) {
             vertexCount = originalTangents.length / 4;
@@ -138,9 +138,8 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasColors) {
         const morphColors = morphTarget.getColors()!;
-        const originalColors = mesh.getVerticesData(VertexBuffer.ColorKind, undefined, undefined, true);
-
-        const buffer = mesh.getVertexBuffer(VertexBuffer.ColorKind, true);
+        const originalColors = mesh.geometry?.getVerticesData(VertexBuffer.ColorKind);
+        const buffer = mesh.geometry?.getVertexBuffer(VertexBuffer.ColorKind);
 
         if (originalColors && buffer) {
             const componentSize = buffer.getSize();
