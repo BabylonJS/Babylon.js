@@ -1,6 +1,6 @@
 import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
-import type { FC } from "react";
+import type { FC, PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
 import { useDragLayer } from "react-dnd";
 export interface IGraphContainerProps {
@@ -13,7 +13,7 @@ export interface IGraphContainerProps {
  * @param props properties
  * @returns graph node container element
  */
-export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
+export const GraphNodesContainer: FC<PropsWithChildren<IGraphContainerProps>> = (props) => {
     const lastDragPos = useRef<Nullable<Vector2>>(null);
 
     const { currentOffset, item, isDragging } = useDragLayer((monitor) => ({
