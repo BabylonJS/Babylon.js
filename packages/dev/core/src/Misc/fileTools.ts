@@ -774,11 +774,8 @@ export const GetMimeType = (url: string): string | undefined => {
     }
 
     const lastDot = url.lastIndexOf(".");
-    if (lastDot === -1 || lastDot === url.length - 1) {
-        return undefined;
-    }
-
     const extension = url.substring(lastDot + 1).toLowerCase();
+
     switch (extension) {
         case "glb":
             return "model/gltf-binary";
