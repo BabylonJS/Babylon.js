@@ -312,7 +312,7 @@ export function CreateSoundAsync(
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound buffer.
  */
-export function CreateSoundBufferAsync(
+export async function CreateSoundBufferAsync(
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
     options: Partial<IStaticSoundBufferOptions> = {},
     engine: Nullable<AudioEngineV2> = null
@@ -329,7 +329,7 @@ export function CreateSoundBufferAsync(
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created streaming sound.
  */
-export async function CreateStreamingSoundAsync(
+export function CreateStreamingSoundAsync(
     name: string,
     source: HTMLMediaElement | string | string[],
     options: Partial<IStreamingSoundOptions> = {},
