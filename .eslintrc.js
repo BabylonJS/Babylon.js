@@ -167,7 +167,7 @@ const rules = {
                 "@typescript-eslint/unbound-method": "off",
                 "@typescript-eslint/no-base-to-string": "off",
                 "@typescript-eslint/restrict-plus-operands": "off",
-                "@typescript-eslint/require-await": "error",
+                "@typescript-eslint/require-await": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unused-expressions": "off",
                 "@typescript-eslint/no-unsafe-function-type": "off",
