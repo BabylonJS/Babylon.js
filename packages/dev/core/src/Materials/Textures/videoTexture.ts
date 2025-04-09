@@ -469,7 +469,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
-    public static async CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
+    public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
         const video = scene.getEngine().createVideoElement(constraints);
 
         if (scene.getEngine()._badOS) {

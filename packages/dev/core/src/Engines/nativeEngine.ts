@@ -97,7 +97,7 @@ if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self, "
  * Returns _native only after it has been defined by BabylonNative.
  * @internal
  */
-export async function AcquireNativeObjectAsync(): Promise<INative> {
+export function AcquireNativeObjectAsync(): Promise<INative> {
     return new Promise((resolve) => {
         if (typeof _native === "undefined") {
             onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
@@ -2021,10 +2021,10 @@ export class NativeEngine extends Engine {
     /**
      * @internal Engine abstraction for loading and creating an image bitmap from a given source string.
      * @param imageSource source to load the image from.
-     * @param options An object that sets options for the image's extraction.
+     * @param _options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override _createImageBitmapFromSource(imageSource: string, _options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = this.createCanvasImage();
             image.onload = () => {
@@ -2051,7 +2051,7 @@ export class NativeEngine extends Engine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return new Promise((resolve, reject) => {
             if (Array.isArray(image)) {
                 const arr = <Array<ArrayBufferView>>image;
@@ -2201,8 +2201,8 @@ export class NativeEngine extends Engine {
 
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
-            Promise.all(reorderedFiles.map(async (file) => this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
-                .then(async (data) => {
+            Promise.all(reorderedFiles.map((file) => this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
+                .then((data) => {
                     return new Promise<void>((resolve, reject) => {
                         this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
                     });
@@ -2700,7 +2700,7 @@ export class NativeEngine extends Engine {
      */
     public override flushFramebuffer(): void {}
 
-    public override async _readTexturePixels(
+    public override _readTexturePixels(
         texture: InternalTexture,
         width: number,
         height: number,

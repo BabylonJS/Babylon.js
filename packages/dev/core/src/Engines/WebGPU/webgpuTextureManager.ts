@@ -1289,7 +1289,7 @@ export class WebGPUTextureManager {
         }
     }
 
-    public async readPixels(
+    public readPixels(
         texture: GPUTexture,
         x: number,
         y: number,

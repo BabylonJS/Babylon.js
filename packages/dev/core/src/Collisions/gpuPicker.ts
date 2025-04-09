@@ -121,6 +121,7 @@ export class GPUPicker {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     private async _createColorMaterialAsync(scene: Scene) {
         if (this._defaultRenderMaterial) {
             this._defaultRenderMaterial.dispose();

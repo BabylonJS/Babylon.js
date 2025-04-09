@@ -113,7 +113,7 @@ export class DracoDecoder extends DracoCodec {
      * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
      * @returns A promise that resolves with the decoded mesh data
      */
-    public async decodeMeshToMeshDataAsync(
+    public decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
         gltfNormalizedOverride?: { [kind: string]: boolean }

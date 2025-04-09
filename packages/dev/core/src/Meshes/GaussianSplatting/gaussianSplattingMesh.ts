@@ -1148,7 +1148,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise that resolves when the operation is complete
      */
 
-    public async loadDataAsync(data: ArrayBuffer): Promise<void> {
+    public loadDataAsync(data: ArrayBuffer): Promise<void> {
         return this.updateDataAsync(data);
     }
 
@@ -1158,9 +1158,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise that resolves when the operation is complete
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
-    public async loadFileAsync(url: string): Promise<void> {
-        return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
-            (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: IPLYConversionBuffers) => {
+    public loadFileAsync(url: string): Promise<void> {
+        return Tools.LoadFileAsync(url, true).then((plyBuffer) => {
+            return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: IPLYConversionBuffers) => {
                 this.updateDataAsync(splatsData.buffer, splatsData.sh);
             });
         });

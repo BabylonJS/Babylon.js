@@ -126,7 +126,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     }
 
     /** @internal */
-    public async registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+    public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         this._disposeForMeshList();
 
         if (!Array.isArray(meshes)) {

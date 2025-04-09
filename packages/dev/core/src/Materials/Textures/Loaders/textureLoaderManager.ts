@@ -40,30 +40,30 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
     }
     if (!_RegisteredTextureLoaders.has(extension)) {
         if (extension.endsWith(".ies")) {
-            registerTextureLoader(".ies", async () => import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
+            registerTextureLoader(".ies", () => import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
         }
         if (extension.endsWith(".dds")) {
-            registerTextureLoader(".dds", async () => import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
+            registerTextureLoader(".dds", () => import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
         }
         if (extension.endsWith(".basis")) {
-            registerTextureLoader(".basis", async () => import("./basisTextureLoader").then((module) => new module._BasisTextureLoader()));
+            registerTextureLoader(".basis", () => import("./basisTextureLoader").then((module) => new module._BasisTextureLoader()));
         }
         if (extension.endsWith(".env")) {
-            registerTextureLoader(".env", async () => import("./envTextureLoader").then((module) => new module._ENVTextureLoader()));
+            registerTextureLoader(".env", () => import("./envTextureLoader").then((module) => new module._ENVTextureLoader()));
         }
         if (extension.endsWith(".hdr")) {
-            registerTextureLoader(".hdr", async () => import("./hdrTextureLoader").then((module) => new module._HDRTextureLoader()));
+            registerTextureLoader(".hdr", () => import("./hdrTextureLoader").then((module) => new module._HDRTextureLoader()));
         }
         // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
         if (extension.endsWith(".ktx") || extension.endsWith(".ktx2")) {
-            registerTextureLoader(".ktx", async () => import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
-            registerTextureLoader(".ktx2", async () => import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
+            registerTextureLoader(".ktx", () => import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
+            registerTextureLoader(".ktx2", () => import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
         }
         if (extension.endsWith(".tga")) {
-            registerTextureLoader(".tga", async () => import("./tgaTextureLoader").then((module) => new module._TGATextureLoader()));
+            registerTextureLoader(".tga", () => import("./tgaTextureLoader").then((module) => new module._TGATextureLoader()));
         }
         if (extension.endsWith(".exr")) {
-            registerTextureLoader(".exr", async () => import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
+            registerTextureLoader(".exr", () => import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
         }
     }
     const registered = _RegisteredTextureLoaders.get(extension);

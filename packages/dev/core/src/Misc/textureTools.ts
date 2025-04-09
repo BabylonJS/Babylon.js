@@ -95,7 +95,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
  * @param height height of the output texture. If not provided, use the one from internalTexture
  * @returns a promise with the internalTexture having its texture replaced by the result of the processing
  */
-export async function ApplyPostProcess(
+export function ApplyPostProcess(
     postProcessName: string,
     internalTexture: InternalTexture,
     scene: Scene,

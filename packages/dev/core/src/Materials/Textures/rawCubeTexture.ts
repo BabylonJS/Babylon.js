@@ -59,12 +59,7 @@ export class RawCubeTexture extends CubeTexture {
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @returns a promise that resolves when the operation is complete
      */
-    public async updateRGBDAsync(
-        data: ArrayBufferView[][],
-        sphericalPolynomial: Nullable<SphericalPolynomial> = null,
-        lodScale: number = 0.8,
-        lodOffset: number = 0
-    ): Promise<void> {
+    public updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial> = null, lodScale: number = 0.8, lodOffset: number = 0): Promise<void> {
         return UpdateRGBDAsyncEnvTools(this._texture!, data, sphericalPolynomial, lodScale, lodOffset).then(() => {});
     }
 

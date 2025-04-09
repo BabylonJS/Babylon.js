@@ -4866,7 +4866,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static async MergeMeshesAsync(
+    public static MergeMeshesAsync(
         meshes: Array<Mesh>,
         disposeSource = true,
         allow32BitsIndices?: boolean,

@@ -353,7 +353,7 @@ export { DecoderWorkerFunction as workerFunction };
  * @returns A promise that resolves when the worker is initialized
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export async function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
+export function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
     return new Promise<Worker>((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);

@@ -36,7 +36,7 @@ declare module "../../abstractEngine" {
     }
 }
 
-ThinWebGPUEngine.prototype._readTexturePixels = async function (
+ThinWebGPUEngine.prototype._readTexturePixels = function (
     texture: InternalTexture,
     width: number,
     height: number,

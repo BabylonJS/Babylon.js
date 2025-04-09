@@ -55,7 +55,7 @@ declare module "./observable" {
     }
 }
 
-Observable.prototype.runCoroutineAsync = async function (coroutine: AsyncCoroutine<void>) {
+Observable.prototype.runCoroutineAsync = function (coroutine: AsyncCoroutine<void>) {
     if (!this._coroutineScheduler) {
         const schedulerAndDispose = CreateObservableScheduler<void>(this);
         this._coroutineScheduler = schedulerAndDispose.scheduler;

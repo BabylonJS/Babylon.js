@@ -122,7 +122,7 @@ export class WebGPUBufferManager {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async readDataFromBuffer(
+    public readDataFromBuffer(
         gpuBuffer: GPUBuffer,
         size: number,
         width: number,

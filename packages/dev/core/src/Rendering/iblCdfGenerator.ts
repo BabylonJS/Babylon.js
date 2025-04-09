@@ -343,7 +343,7 @@ export class IblCdfGenerator {
      * @returns Promise that resolves when the CDF maps are rendered.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async renderWhenReady(): Promise<void> {
+    public renderWhenReady(): Promise<void> {
         // Once the textures are generated, notify that they are ready to use.
         this._icdfPT.onGeneratedObservable.addOnce(() => {
             this.onGeneratedObservable.notifyObservers();

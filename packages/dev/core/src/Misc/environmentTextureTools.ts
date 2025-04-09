@@ -956,7 +956,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 /**
  * @internal
  */
-export async function _UpdateRGBDAsync(
+export function _UpdateRGBDAsync(
     internalTexture: InternalTexture,
     data: ArrayBufferView[][],
     sphericalPolynomial: Nullable<SphericalPolynomial>,

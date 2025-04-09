@@ -541,7 +541,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      * @returns a promise that resolves with the created engine
      */
-    public static async CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngine> {
+    public static CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngine> {
         const engine = new WebGPUEngine(canvas, options);
 
         return new Promise((resolve) => {
@@ -608,7 +608,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Load the glslang and tintWASM libraries and prepare them for use.
      * @returns a promise that resolves when the engine is ready to use the glslang and tintWASM
      */
-    public async prepareGlslangAndTintAsync(): Promise<void> {
+    public prepareGlslangAndTintAsync(): Promise<void> {
         if (!this._workingGlslangAndTintPromise) {
             this._workingGlslangAndTintPromise = new Promise<void>((resolve) => {
                 this._initGlslangAsync(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
@@ -631,13 +631,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param twgslOptions Defines the Twgsl compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public async initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
+    public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
         (this.uniqueId as number) = WebGPUEngine._InstanceId++;
         this._glslangOptions = glslangOptions;
         this._twgslOptions = twgslOptions;
         return navigator
             .gpu!.requestAdapter(this._options)
-            .then(async (adapter: GPUAdapter | undefined) => {
+            .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
                     // eslint-disable-next-line no-throw-literal
                     throw "Could not retrieve a WebGPU adapter (adapter is null).";
@@ -794,7 +794,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             });
     }
 
-    private async _initGlslangAsync(glslangOptions?: GlslangOptions): Promise<any> {
+    private _initGlslangAsync(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || {};
         glslangOptions = {
             ...WebGPUEngine._GlslangDefaultOptions,
@@ -1065,7 +1065,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns ImageBitmap
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return CreateImageBitmapFromSource(this, imageSource, options);
     }
 
@@ -3906,7 +3906,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
-    private async _readFromGPUBuffer(gpuBuffer: GPUBuffer, size: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+    private _readFromGPUBuffer(gpuBuffer: GPUBuffer, size: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         return new Promise((resolve, reject) => {
             const readFromBuffer = () => {
                 gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size).then(
@@ -3958,7 +3958,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+    public readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         size = size || storageBuffer.capacity;
 
         const gpuBuffer = this._bufferManager.createRawBuffer(
@@ -3983,13 +3983,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async readFromMultipleStorageBuffers(
-        storageBuffers: DataBuffer[],
-        offset?: number,
-        size?: number,
-        buffer?: ArrayBufferView,
-        noDelay?: boolean
-    ): Promise<ArrayBufferView> {
+    public readFromMultipleStorageBuffers(storageBuffers: DataBuffer[], offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         size = size || storageBuffers[0].capacity;
 
         const gpuBuffer = this._bufferManager.createRawBuffer(

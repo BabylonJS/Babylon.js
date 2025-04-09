@@ -130,7 +130,7 @@ export abstract class DracoCodec implements IDisposable {
                 const workerContent = this._getWorkerContent();
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
 
-                return new AutoReleaseWorkerPool(numberOfWorkers, async () => {
+                return new AutoReleaseWorkerPool(numberOfWorkers, () => {
                     const worker = new Worker(workerBlobUrl);
                     return initializeWebWorker(worker, wasmBinary, codecInfo.url);
                 });

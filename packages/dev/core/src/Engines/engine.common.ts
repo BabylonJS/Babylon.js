@@ -175,7 +175,7 @@ export function GetFontOffset(font: string): { ascent: number; height: number; d
 
 /** @internal */
 export async function CreateImageBitmapFromSource(engine: AbstractEngine, imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-    const promise = new Promise<ImageBitmap>((resolve, reject) => {
+    return new Promise<ImageBitmap>((resolve, reject) => {
         const image = new Image();
         image.onload = () => {
             image.decode().then(() => {
@@ -190,8 +190,6 @@ export async function CreateImageBitmapFromSource(engine: AbstractEngine, imageS
 
         image.src = imageSource;
     });
-
-    return promise;
 }
 
 /** @internal */

@@ -67,7 +67,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    private async _prepareImgToLoadAsync(url: string) {
+    private _prepareImgToLoadAsync(url: string) {
         return new Promise<void>((resolve, reject) => {
             const img = new Image();
             const canvas = document.createElement("canvas");
@@ -114,7 +114,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param imageFile defines the file to load data from
      * @returns a promise fulfilled when image data is loaded
      */
-    public async loadTextureFromFileAsync(imageFile: File) {
+    public loadTextureFromFileAsync(imageFile: File) {
         return this._prepareImgToLoadAsync(URL.createObjectURL(imageFile));
     }
 
@@ -123,7 +123,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param url defines the url to load data from
      * @returns a promise fulfilled when image data is loaded
      */
-    public async loadTextureFromUrlAsync(url: string) {
+    public loadTextureFromUrlAsync(url: string) {
         return this._prepareImgToLoadAsync(url);
     }
 
@@ -132,7 +132,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param texture defines the source texture
      * @returns a promise fulfilled when image data is loaded
      */
-    public async extractFromTextureAsync(texture: Texture) {
+    public extractFromTextureAsync(texture: Texture) {
         return new Promise<void>((resolve, reject) => {
             if (!texture.isReady()) {
                 texture.onLoadObservable.addOnce(async () => {
@@ -142,7 +142,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
             }
             const size = texture.getSize();
             TextureTools.GetTextureDataAsync(texture, size.width, size.height)
-                .then(async (data) => {
+                .then((data) => {
                     const floatArray = new Float32Array(data.length);
 
                     for (let i = 0; i < data.length; i++) {
