@@ -2907,26 +2907,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async readPixels(
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        _hasAlpha = true,
-        flushRenderer = true,
-        data: Nullable<Uint8Array> = null
-    ): Promise<ArrayBufferView> {
+    public readPixels(x: number, y: number, width: number, height: number, _hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const renderPassWrapper = this._getCurrentRenderPassWrapper();
         const hardwareTexture = renderPassWrapper.colorAttachmentGPUTextures[0];
         if (!hardwareTexture) {
             // we are calling readPixels for a render pass with no color texture bound
-            return new Uint8Array(0);
+            return Promise.resolve(new Uint8Array(0));
         }
         const gpuTexture = hardwareTexture.underlyingResource;
         const gpuTextureFormat = hardwareTexture.format;
         if (!gpuTexture) {
             // we are calling readPixels before startMainRenderPass has been called and no RTT is bound, so swapChainTexture is not setup yet!
-            return new Uint8Array(0);
+            return Promise.resolve(new Uint8Array(0));
         }
         if (flushRenderer) {
             this.flushFramebuffer();

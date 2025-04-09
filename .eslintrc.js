@@ -167,7 +167,7 @@ const rules = {
                 "@typescript-eslint/unbound-method": "off",
                 "@typescript-eslint/no-base-to-string": "off",
                 "@typescript-eslint/restrict-plus-operands": "off",
-                "@typescript-eslint/require-await": "off",
+                "@typescript-eslint/require-await": "error",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unused-expressions": "off",
                 "@typescript-eslint/no-unsafe-function-type": "off",
@@ -186,31 +186,31 @@ const rules = {
                 "@typescript-eslint/no-for-in-array": "off",
                 "@typescript-eslint/no-floating-promises": "off",
                 "@typescript-eslint/no-misused-promises": "off",
+                "@typescript-eslint/promise-function-async": "off",
                 "@typescript-eslint/no-deprecated": "off",
                 // till here
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
-                "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/no-this-alias": "error",
                 "@typescript-eslint/await-thenable": "error",
                 "no-restricted-syntax": [
                     "error",
-                    {
-                        selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
-                        message: "Function ending in 'Async' must be declared async",
-                    },
-                    {
-                        selector: "MethodDefinition[value.async=false][key.name=/Async$/]",
-                        message: "Method ending in 'Async' must be declared async",
-                    },
-                    {
-                        selector: "Property[value.type=/FunctionExpression$/][value.async=false][key.name=/Async$/]",
-                        message: "Function ending in 'Async' must be declared async",
-                    },
-                    {
-                        selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=false][id.name=/Async$/]",
-                        message: "Function ending in 'Async' must be declared async",
-                    },
+                    // {
+                    //     selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
+                    //     message: "Function ending in 'Async' must be declared async",
+                    // },
+                    // {
+                    //     selector: "MethodDefinition[value.async=false][key.name=/Async$/]",
+                    //     message: "Method ending in 'Async' must be declared async",
+                    // },
+                    // {
+                    //     selector: "Property[value.type=/FunctionExpression$/][value.async=false][key.name=/Async$/]",
+                    //     message: "Function ending in 'Async' must be declared async",
+                    // },
+                    // {
+                    //     selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=false][id.name=/Async$/]",
+                    //     message: "Function ending in 'Async' must be declared async",
+                    // },
                     {
                         selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=true][id.name!=/Async$/]",
                         message: "Async function name must end in 'Async'",

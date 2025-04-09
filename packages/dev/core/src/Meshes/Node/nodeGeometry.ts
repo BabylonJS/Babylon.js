@@ -684,9 +684,9 @@ export class NodeGeometry {
      * @param skipBuild defines whether to build the node geometry
      * @returns a promise that will resolve to the new node geometry
      */
-    public static async ParseFromSnippetAsync(snippetId: string, nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
+    public static ParseFromSnippetAsync(snippetId: string, nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
         if (snippetId === "_BLANK") {
-            return NodeGeometry.CreateDefault("blank");
+            return Promise.resolve(NodeGeometry.CreateDefault("blank"));
         }
 
         return new Promise((resolve, reject) => {

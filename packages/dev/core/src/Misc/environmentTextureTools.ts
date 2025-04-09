@@ -270,6 +270,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     }
 
     // sphericalPolynomial is lazy loaded so simply accessing it should trigger the computation.
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     texture.sphericalPolynomial;
 
     // Lets keep track of the polynomial promise so we can wait for it to be ready before generating the pixels.
@@ -550,13 +551,13 @@ export function CreateIrradianceImageDataArrayBufferViews(data: ArrayBufferView,
  * @param info defines the texture info retrieved through the GetEnvInfo method
  * @returns a promise
  */
-export async function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
+export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
     info = normalizeEnvInfo(info);
 
     const specularInfo = info.specular;
     if (!specularInfo) {
         // Nothing else parsed so far
-        return [];
+        return Promise.resolve([]);
     }
 
     texture._lodGenerationScale = specularInfo.lodGenerationScale;

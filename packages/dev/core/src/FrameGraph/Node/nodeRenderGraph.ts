@@ -757,7 +757,7 @@ export class NodeRenderGraph {
      * @param skipBuild defines whether to skip building the node render graph (default is true)
      * @returns a promise that will resolve to the new node render graph
      */
-    public static async ParseFromSnippetAsync(
+    public static ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene,
         nodeRenderGraphOptions?: INodeRenderGraphCreateOptions,
@@ -765,7 +765,7 @@ export class NodeRenderGraph {
         skipBuild: boolean = true
     ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions);
+            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions));
         }
 
         return new Promise((resolve, reject) => {

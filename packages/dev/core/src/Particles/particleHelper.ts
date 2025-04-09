@@ -75,7 +75,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the ParticleSystemSet created
      */
-    public static async CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false, capacity?: number): Promise<ParticleSystemSet> {
+    public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false, capacity?: number): Promise<ParticleSystemSet> {
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
         }
@@ -134,14 +134,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
-    public static async ParseFromFileAsync(
-        name: Nullable<string>,
-        url: string,
-        scene: Scene,
-        gpu: boolean = false,
-        rootUrl: string = "",
-        capacity?: number
-    ): Promise<IParticleSystem> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -181,11 +174,11 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
-    public static async ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
             const system = this.CreateDefault(null);
             system.start();
-            return system;
+            return Promise.resolve(system);
         }
 
         return new Promise((resolve, reject) => {
