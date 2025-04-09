@@ -21,8 +21,8 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g"
     },
     "dependencies": {
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2"
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -32,8 +32,8 @@
         "@dev/shared-ui-components": "1.0.0",
         "@svgr/webpack": "^7.0.0",
         "@types/dagre": "^0.7.47",
-        "@types/react": "^17.0.30",
-        "@types/react-dom": "^17.0.10",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
         "copy-webpack-plugin": "^11.0.0",
         "css-loader": "^7.1.0",
         "dagre": "^0.8.5",
@@ -44,7 +44,7 @@
         "split.js": "^1.6.5",
         "style-loader": "^3.3.0",
         "url-loader": "^4.1.1",
-        "webpack": "^5.73.0",
+        "webpack": "^5.98.0",
         "webpack-cli": "^5.1.0",
         "webpack-merge": "^5.8.0"
     },

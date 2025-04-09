@@ -24,6 +24,24 @@ const Epsilon = 1e-6;
 const DefaultTranslation = Vector3.Zero();
 const DefaultScale = Vector3.One();
 
+/**
+ * Get the information necessary for enumerating a vertex buffer.
+ * @param vertexBuffer the vertex buffer to enumerate
+ * @param meshes the meshes that use the vertex buffer
+ * @returns the information necessary to enumerate the vertex buffer
+ */
+export function GetVertexBufferInfo(vertexBuffer: VertexBuffer, meshes: Mesh[]) {
+    const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+    const componentCount = vertexBuffer.getSize();
+    const totalVertices = meshes.reduce((max, current) => {
+        return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+    }, -Number.MAX_VALUE); // Get the max total vertices count, to ensure we capture the full range of vertex data used by the meshes.
+    const count = totalVertices * componentCount;
+    const kind = vertexBuffer.getKind();
+
+    return { byteOffset, byteStride, componentCount, type, count, normalized, totalVertices, kind };
+}
+
 export function GetAccessorElementCount(accessorType: AccessorType): number {
     switch (accessorType) {
         case AccessorType.MAT2:

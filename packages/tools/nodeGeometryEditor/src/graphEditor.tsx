@@ -13,7 +13,7 @@ import { PreviewManager } from "./components/preview/previewManager";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 
@@ -548,7 +548,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 globalState: this.props.globalState,
                 togglePreviewAreaComponent: this.handlePopUp,
             });
-            ReactDOM.render(previewMeshControlComponentHost, host);
+            const reactRoot = createRoot(host);
+            reactRoot.render(previewMeshControlComponentHost);
         }
     };
 
@@ -579,7 +580,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
             });
-            ReactDOM.render(previewAreaComponentHost, this._previewHost);
+            const reactRoot = createRoot(this._previewHost);
+            reactRoot.render(previewAreaComponentHost);
         }
     };
 

@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
 import * as styles from "./splitContainer.module.scss";
 import { ControlledSize, SplitDirection, SplitContext } from "./splitContext";
@@ -67,7 +68,7 @@ export interface ISplitContainerProps {
  * @param props defines the split container properties
  * @returns the split container component
  */
-export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
+export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> = (props) => {
     const elementRef: React.RefObject<HTMLDivElement> = props.containerRef || useRef(null);
     const sizes: number[] = [];
     const floatingCells: boolean[] = [];

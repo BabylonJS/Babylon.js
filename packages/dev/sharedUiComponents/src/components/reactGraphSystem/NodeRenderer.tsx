@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, PropsWithChildren } from "react";
 import { useState, useEffect, useMemo } from "react";
 import { GraphContainer } from "./GraphContainer";
 import { GraphLine } from "./GraphLine";
@@ -68,7 +68,7 @@ export interface INodeRendererProps {
  * @param props
  * @returns
  */
-export const NodeRenderer = (props: INodeRendererProps) => {
+export const NodeRenderer = (props: PropsWithChildren<INodeRendererProps>) => {
     const { nodes, connections, updateConnections, highlightedNode } = props;
     // Store the nodes positions
     const [pos, setPos] = useState<IVisualRecordsType>({});

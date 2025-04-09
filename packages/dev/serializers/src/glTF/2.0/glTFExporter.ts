@@ -55,6 +55,7 @@ import {
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
     IndicesArrayToTypedArray,
+    GetVertexBufferInfo,
 } from "./glTFUtilities";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
@@ -984,20 +985,16 @@ export class GLTFExporter {
 
             const bytes = DataArrayToUint8Array(data).slice();
 
-            // Apply conversions to buffer data in-place.
+            // Apply normalizations and color corrections to buffer data in-place.
             for (const vertexBuffer of vertexBuffers) {
-                const { byteOffset, byteStride, type, normalized } = vertexBuffer;
-                const size = vertexBuffer.getSize();
                 const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
-                const maxTotalVertices = meshes.reduce((max, current) => {
-                    return current.getTotalVertices() > max ? current.getTotalVertices() : max;
-                }, -Number.MAX_VALUE); // To ensure nothing is missed when enumerating, but may not be necessary.
+                const { byteOffset, byteStride, componentCount, type, count, normalized, kind } = GetVertexBufferInfo(vertexBuffer, meshes);
 
-                switch (vertexBuffer.getKind()) {
+                switch (kind) {
                     // Normalize normals and tangents.
                     case VertexBuffer.NormalKind:
                     case VertexBuffer.TangentKind: {
-                        EnumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
+                        EnumerateFloatValues(bytes, byteOffset, byteStride, componentCount, type, count, normalized, (values) => {
                             const length = Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
                             if (length > 0) {
                                 const invLength = 1 / length;
@@ -1011,17 +1008,14 @@ export class GLTFExporter {
                     // Convert StandardMaterial vertex colors from gamma to linear space.
                     case VertexBuffer.ColorKind: {
                         const stdMaterialCount = meshes.filter((mesh) => mesh.material instanceof StandardMaterial || mesh.material == null).length;
-
                         if (stdMaterialCount == 0) {
                             break; // Buffer not used by StandardMaterials, so no conversion needed.
                         }
-
                         // TODO: Implement this case.
                         if (stdMaterialCount != meshes.length) {
                             Logger.Warn("Not converting vertex color space, as buffer is shared by StandardMaterials and other material types. Results may look incorrect.");
                             break;
                         }
-
                         if (type == VertexBuffer.UNSIGNED_BYTE) {
                             Logger.Warn("Converting uint8 vertex colors to linear space. Results may look incorrect.");
                         }
@@ -1030,7 +1024,7 @@ export class GLTFExporter {
                         const vertexData4 = new Color4();
                         const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
 
-                        EnumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
+                        EnumerateFloatValues(bytes, byteOffset, byteStride, componentCount, type, count, normalized, (values) => {
                             // Using separate Color3 and Color4 objects to ensure the right functions are called.
                             if (values.length === 3) {
                                 vertexData3.fromArray(values, 0);
@@ -1046,20 +1040,19 @@ export class GLTFExporter {
                 }
             }
 
-            // Performs coordinate conversion if needed (only for position, normal and tangent).
+            // Perform coordinate conversions, if needed, to buffer data in-place (only for positions, normals and tangents).
             if (state.convertToRightHanded) {
                 for (const vertexBuffer of vertexBuffers) {
-                    switch (vertexBuffer.getKind()) {
+                    const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
+                    const { byteOffset, byteStride, componentCount, type, count, normalized, kind } = GetVertexBufferInfo(vertexBuffer, meshes);
+
+                    switch (kind) {
                         case VertexBuffer.PositionKind:
                         case VertexBuffer.NormalKind:
                         case VertexBuffer.TangentKind: {
-                            for (const mesh of vertexBufferToMeshesMap.get(vertexBuffer)!) {
-                                const { byteOffset, byteStride, type, normalized } = vertexBuffer;
-                                const size = vertexBuffer.getSize();
-                                EnumerateFloatValues(bytes, byteOffset, byteStride, size, type, mesh.getTotalVertices() * size, normalized, (values) => {
-                                    values[0] = -values[0];
-                                });
-                            }
+                            EnumerateFloatValues(bytes, byteOffset, byteStride, componentCount, type, count, normalized, (values) => {
+                                values[0] = -values[0];
+                            });
                         }
                     }
                 }
@@ -1076,15 +1069,15 @@ export class GLTFExporter {
 
             // If buffers are of type MatricesIndicesKind and have float values, we need to create a new buffer instead.
             for (const vertexBuffer of vertexBuffers) {
-                switch (vertexBuffer.getKind()) {
+                const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
+                const { kind, totalVertices } = GetVertexBufferInfo(vertexBuffer, meshes);
+                switch (kind) {
                     case VertexBuffer.MatricesIndicesKind:
                     case VertexBuffer.MatricesIndicesExtraKind: {
                         if (vertexBuffer.type == VertexBuffer.FLOAT) {
-                            for (const mesh of vertexBufferToMeshesMap.get(vertexBuffer)!) {
-                                const floatData = vertexBuffer.getFloatData(mesh.getTotalVertices());
-                                if (floatData !== null) {
-                                    floatMatricesIndices.set(vertexBuffer, floatData);
-                                }
+                            const floatData = vertexBuffer.getFloatData(totalVertices);
+                            if (floatData !== null) {
+                                floatMatricesIndices.set(vertexBuffer, floatData);
                             }
                         }
                     }
@@ -1116,6 +1109,7 @@ export class GLTFExporter {
             }
         }
 
+        // Build morph targets buffers
         const morphTargets = Array.from(morphTagetsMeshesMap.keys());
 
         for (const morphTarget of morphTargets) {

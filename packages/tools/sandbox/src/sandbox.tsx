@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
@@ -304,7 +304,8 @@ export class Sandbox extends React.Component<
 
     public static Show(hostElement: HTMLElement): void {
         const sandbox = React.createElement(Sandbox, {});
-        ReactDOM.render(sandbox, hostElement);
+        const root = createRoot(hostElement);
+        root.render(sandbox);
     }
 
     public static async CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {

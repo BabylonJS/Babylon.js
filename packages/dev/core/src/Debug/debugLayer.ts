@@ -351,7 +351,13 @@ export class DebugLayer {
                     this.BJSINSPECTOR.Inspector.MarkMultipleLineContainerTitlesForHighlighting(lineContainerTitles);
                 }
             }
-            this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable.notifyObservers(entity);
+            if (!this.BJSINSPECTOR.Inspector.IsVisible) {
+                setTimeout(() => {
+                    this.select(entity, lineContainerTitles);
+                }, 100);
+            } else {
+                this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable.notifyObservers(entity);
+            }
         }
     }
 

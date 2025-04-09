@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { MonacoComponent } from "./components/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
 import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
@@ -163,6 +163,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
     public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
         const playground = React.createElement(Playground, { runtimeMode: mode });
 
-        ReactDOM.render(playground, hostElement);
+        const root = createRoot(hostElement);
+        root.render(playground);
     }
 }

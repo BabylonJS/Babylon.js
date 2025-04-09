@@ -134,7 +134,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
-    override componentWillMount() {
+    override componentDidMount() {
         this._checkFontsInLayout();
     }
 
