@@ -2,10 +2,15 @@ import type { Nullable } from "@dev/core/types";
 import { test } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
+/**
+ * The maximum pulse volume in the sound test file containing the pulse train.
+ */
+const MaxPulseVolume = 0.1;
+
 // Declarations for babylonServer/public/audiov2-test.js
 declare global {
-    let audioTestConfig: Nullable<AudioTestConfig>;
-    let audioTestResult: Nullable<AudioTestResult>;
+    let audioTestConfig: AudioTestConfig;
+    let audioTestResult: AudioTestResult;
 
     class AudioV2Test {
         public static AfterEachAsync(): Promise<void>;
@@ -50,6 +55,8 @@ test.afterEach(async ({ page }) => {
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
     public soundsUrl = getGlobalConfig().assetsUrl + "/sound/testing/audioV2/";
+
+    public pulseTrainSoundFile = "square-1-khz-0.1-amp-for-10-seconds.flac";
 }
 
 export class AudioTestResult {
@@ -60,6 +67,18 @@ export class AudioTestResult {
     public volumeCurves: Nullable<Float32Array[]> = null;
 }
 
+/**
+ * Gets the volumes of the given result's samples.
+ *
+ * The volume of each pulse is calculated by taking the absolute value of the samples and averaging them over the pulse length.
+ *
+ * The average volume is stored in the `volumeCurves` array for each channel, and is repeated for each sample in the pulse which
+ * makes the resulting `volumeCurves` array length the same as the result's `samples` array, which makes it easier to find the
+ * resulting volume at a given time.
+ *
+ * @param result - the test result containing the samples to calculate the volume from.
+ * @returns an array containing the volume of each pulse aligned with channels and samples in the given result's samples.
+ */
 function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
     if (!result.samples?.length) {
         return [];
@@ -113,6 +132,13 @@ function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
     return result.volumeCurves;
 }
 
+/**
+ * Gets the volumes of the given result's samples at a given time.
+ *
+ * @param result - the test result containing the samples to calculate the volume from.
+ * @param time - the time in seconds to get the volumes at.
+ * @returns an array containing the volume of each channel at the given time.
+ */
 export function GetVolumesAtTime(result: AudioTestResult, time: number): number[] {
     const volumes = new Array<number>(result.numberOfChannels);
 
@@ -122,7 +148,7 @@ export function GetVolumesAtTime(result: AudioTestResult, time: number): number[
     for (let channel = 0; channel < result.numberOfChannels; channel++) {
         const curve = volumeCurves[channel];
         if (curve && sampleIndex < curve.length) {
-            volumes[channel] = curve[sampleIndex];
+            volumes[channel] = curve[sampleIndex] / MaxPulseVolume;
         } else {
             volumes[channel] = 0;
         }
