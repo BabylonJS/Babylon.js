@@ -187,7 +187,6 @@ export class Inspector {
         // Scene
         if (this._SceneExplorerHost) {
             this._SceneExplorerRoot = createRoot(this._SceneExplorerHost);
-            this._OpenedPane++;
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
                 scene,
                 contextMenu: options.contextMenu,
@@ -218,6 +217,9 @@ export class Inspector {
                 },
             });
             this._SceneExplorerRoot.render(sceneExplorerElement);
+            setTimeout(() => {
+                this._OpenedPane++;
+            });
         }
     }
 
@@ -245,7 +247,6 @@ export class Inspector {
 
         if (this._ActionTabsHost) {
             this._ActionTabsRoot = createRoot(this._ActionTabsHost);
-            this._OpenedPane++;
             const actionTabsElement = React.createElement(ActionTabsComponent, {
                 globalState: this._GlobalState,
                 scene: scene,
@@ -271,6 +272,9 @@ export class Inspector {
                 initialTab: options.initialTab,
             });
             this._ActionTabsRoot.render(actionTabsElement);
+            setTimeout(() => {
+                this._OpenedPane++;
+            });
         }
     }
 
@@ -297,7 +301,6 @@ export class Inspector {
 
         if (this._EmbedHost) {
             this._EmbedHostRoot = createRoot(this._EmbedHost);
-            this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
                 globalState: this._GlobalState,
                 scene: scene,
@@ -327,6 +330,9 @@ export class Inspector {
                 initialTab: options.initialTab,
             });
             this._EmbedHostRoot.render(embedHostElement);
+            setTimeout(() => {
+                this._OpenedPane++;
+            });
         }
     }
 
