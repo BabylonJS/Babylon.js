@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, PropsWithChildren } from "react";
 import * as style from "./FlexibleColumn.module.scss";
 
 /**
@@ -17,7 +17,7 @@ export interface IFlexibleColumnProps {
  * @param props
  * @returns
  */
-export const FlexibleColumn: FC<IFlexibleColumnProps> = (props) => {
+export const FlexibleColumn: FC<PropsWithChildren<IFlexibleColumnProps>> = (props) => {
     return (
         <div style={{ width: props.width }} className={style.flexibleColumn}>
             {props.children}

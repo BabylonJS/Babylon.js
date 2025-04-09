@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, PropsWithChildren } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { useDrop } from "react-dnd";
 import { GraphLine, MarkerArrowId } from "./GraphLine";
@@ -18,7 +18,7 @@ export interface IGraphLinesContainerProps {
  * @param props
  * @returns
  */
-export const GraphLinesContainer: FC<IGraphLinesContainerProps> = (props) => {
+export const GraphLinesContainer: FC<PropsWithChildren<IGraphLinesContainerProps>> = (props) => {
     const [{ start, delta }, dropRef] = useDrop(() => ({
         accept: "connector",
         canDrop: (item: any) => {

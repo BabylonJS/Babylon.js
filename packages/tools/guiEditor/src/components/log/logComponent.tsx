@@ -1,6 +1,5 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import * as ReactDOM from "react-dom";
 
 import "./log.scss";
 
@@ -16,6 +15,7 @@ export class LogEntry {
 }
 
 export class LogComponent extends React.Component<ILogComponentProps, { logs: LogEntry[] }> {
+    private _consoleRef: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
     constructor(props: ILogComponentProps) {
         super(props);
 
@@ -31,7 +31,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     override componentDidUpdate() {
-        const logConsole = ReactDOM.findDOMNode(this.refs["log-console"]) as HTMLElement;
+        const logConsole = this._consoleRef.current;
         if (!logConsole) {
             return;
         }
@@ -46,7 +46,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
         const s = today.getSeconds();
 
         return (
-            <div id="log-console" ref={"log-console"}>
+            <div id="log-console" ref={this._consoleRef}>
                 {this.state.logs.map((l, i) => {
                     return (
                         <div key={i} className={"log" + (l.isError ? " error" : "")}>
