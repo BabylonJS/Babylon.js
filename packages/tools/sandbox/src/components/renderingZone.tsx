@@ -37,6 +37,7 @@ function isTextureAsset(extension: string): boolean {
         case "png":
         case "jpg":
         case "jpeg":
+        case "exr":
         case "webp": {
             return true;
         }
