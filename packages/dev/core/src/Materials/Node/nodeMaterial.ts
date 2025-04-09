@@ -2564,7 +2564,7 @@ export class NodeMaterial extends PushMaterial {
      * Awaits for all the material textures to be ready before resolving the returned promise.
      * @returns A promise that resolves when the textures are ready.
      */
-    public async whenTexturesReadyAsync(): Promise<void[]> {
+    public whenTexturesReadyAsync(): Promise<void[]> {
         // Ensures all textures are ready to render.
         const textureReadyPromises: Promise<void>[] = [];
         this.getActiveTextures().forEach((texture) => {
@@ -2648,7 +2648,7 @@ export class NodeMaterial extends PushMaterial {
      * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static async ParseFromSnippetAsync(
+    public static ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene = EngineStore.LastCreatedScene!,
         rootUrl: string = "",
@@ -2659,7 +2659,7 @@ export class NodeMaterial extends PushMaterial {
         options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
-            return NodeMaterial.CreateDefault("blank", scene);
+            return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
         }
 
         return new Promise((resolve, reject) => {
