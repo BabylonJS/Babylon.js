@@ -80,28 +80,32 @@ function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
         let iPulseStart = 0;
         let iPulseEnd = 0;
 
+        const updateCurve = () => {
+            const pulseLength = iPulseEnd - iPulseStart;
+            if (pulseLength > 0) {
+                let totalVolume = 0;
+                for (let j = iPulseStart; j < iPulseEnd; j++) {
+                    totalVolume += Math.abs(samples[j]);
+                }
+                const avgVolume = totalVolume / pulseLength;
+
+                for (let j = iPulseStart; j < iPulseEnd; j++) {
+                    curve[j] = avgVolume;
+                }
+            }
+        };
+
         for (let i = 0; i < result.length; i++) {
             if (currentPolarity === samples[i] > 0) {
                 iPulseEnd = i;
             } else {
-                const pulseLength = iPulseEnd - iPulseStart;
-                if (pulseLength > 0) {
-                    let totalVolume = 0;
-                    for (let j = iPulseStart; j < iPulseEnd; j++) {
-                        totalVolume += Math.abs(samples[j]);
-                    }
-                    const avgVolume = totalVolume / pulseLength;
-
-                    for (let j = iPulseStart; j < iPulseEnd; j++) {
-                        curve[j] = avgVolume;
-                    }
-                }
-
+                updateCurve();
                 iPulseStart = i;
                 iPulseEnd = i;
                 currentPolarity = !currentPolarity;
             }
         }
+        updateCurve();
 
         result.volumeCurves[channel] = curve;
     }
