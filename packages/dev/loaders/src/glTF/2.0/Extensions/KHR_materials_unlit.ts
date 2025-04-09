@@ -61,12 +61,12 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync(context, material, this.name, async () => {
+        return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
             return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
         });
     }
 
-    private async _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
+    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }

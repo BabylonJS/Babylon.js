@@ -61,7 +61,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsAnisotropy>(context, material, this.name, async (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsAnisotropy>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadIridescencePropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -69,7 +69,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
         });
     }
 
-    private async _loadIridescencePropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material): Promise<void> {
+    private _loadIridescencePropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }

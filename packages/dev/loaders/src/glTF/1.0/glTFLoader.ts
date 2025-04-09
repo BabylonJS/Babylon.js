@@ -1867,7 +1867,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise containg the loaded meshes, particles, skeletons and animations
      */
-    public async importMeshAsync(
+    public importMeshAsync(
         meshesNames: any,
         scene: Scene,
         assetContainer: Nullable<AssetContainer>,
@@ -1956,7 +1956,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public async loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
         return new Promise((resolve, reject) => {
             this._loadAsync(
                 scene,

@@ -167,7 +167,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public async importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
+    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file
         return this._parseSolidAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
@@ -190,7 +190,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public async loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
+    public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
         //Get the 3D model
         return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
             // return void
@@ -204,7 +204,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    public async loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
+    public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
@@ -247,7 +247,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl defines the path to the folder
      * @returns the list of loaded meshes
      */
-    private async _parseSolidAsync(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
+    private _parseSolidAsync(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
         let fileToLoad: string = ""; //The name of the mtlFile to load
         const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
         const materialToUse: string[] = [];

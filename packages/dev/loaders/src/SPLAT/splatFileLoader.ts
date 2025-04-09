@@ -183,7 +183,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
-    private async _parseSPZAsync(data: ArrayBuffer, scene: Scene): Promise<IParsedPLY> {
+    private _parseSPZAsync(data: ArrayBuffer, scene: Scene): Promise<IParsedPLY> {
         const ubuf = new Uint8Array(data);
         const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
         // debug infos
@@ -326,7 +326,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         });
     }
 
-    private async _parseAsync(meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<Array<AbstractMesh>> {
+    private _parseAsync(meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<Array<AbstractMesh>> {
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
         const readableStream = new ReadableStream({
@@ -405,7 +405,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    public async loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
+    public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
@@ -429,7 +429,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public async loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
+    public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
         //Get the 3D model
         return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
             // return void
@@ -443,7 +443,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param data the .ply data to load
      * @returns the loaded splat buffer
      */
-    private static async _ConvertPLYToSplat(data: ArrayBuffer): Promise<IParsedPLY> {
+    private static _ConvertPLYToSplat(data: ArrayBuffer): Promise<IParsedPLY> {
         const ubuf = new Uint8Array(data);
         const header = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
         const headerEnd = "end_header\n";

@@ -10,7 +10,7 @@ declare function importScripts(...urls: string[]): void;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare function postMessage(message: any, transfer?: any[]): void;
 
-async function ValidateAsync(
+function ValidateAsync(
     data: string | Uint8Array,
     rootUrl: string,
     fileName: string,
@@ -45,7 +45,7 @@ function WorkerFunc(): void {
                     data.data,
                     data.rootUrl,
                     data.fileName,
-                    async (uri) =>
+                    (uri) =>
                         new Promise((resolve, reject) => {
                             const index = pendingExternalResources.length;
                             pendingExternalResources.push({ resolve, reject });
@@ -104,7 +104,7 @@ export class GLTFValidation {
      * @param getExternalResource The callback to get external resources for the glTF validator
      * @returns A promise that resolves with the glTF validation results once complete
      */
-    public static async ValidateAsync(
+    public static ValidateAsync(
         data: string | Uint8Array,
         rootUrl: string,
         fileName: string,
@@ -170,7 +170,7 @@ export class GLTFValidation {
                 this._LoadScriptPromise = Tools.LoadBabylonScriptAsync(this.Configuration.url);
             }
 
-            return this._LoadScriptPromise.then(async () => {
+            return this._LoadScriptPromise.then(() => {
                 return ValidateAsync(data, rootUrl, fileName, getExternalResource);
             });
         }

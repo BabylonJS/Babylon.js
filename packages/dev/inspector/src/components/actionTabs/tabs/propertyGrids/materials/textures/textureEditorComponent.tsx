@@ -232,9 +232,9 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             scene3D: this._textureCanvasManager.scene3D,
             size: this._textureCanvasManager.size,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            updateTexture: async () => this._textureCanvasManager.updateTexture(),
+            updateTexture: () => this._textureCanvasManager.updateTexture(),
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            startPainting: async () => this._textureCanvasManager.startPainting(),
+            startPainting: () => this._textureCanvasManager.startPainting(),
             stopPainting: () => this._textureCanvasManager.stopPainting(),
             updatePainting: () => this._textureCanvasManager.updatePainting(),
             metadata: this.state.metadata,

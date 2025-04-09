@@ -324,7 +324,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async importMeshAsync(
+    public importMeshAsync(
         meshesNames: string | readonly string[] | null | undefined,
         scene: Scene,
         container: Nullable<AssetContainer>,
@@ -333,7 +333,7 @@ export class GLTFLoader implements IGLTFLoader {
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName = ""
     ): Promise<ISceneLoaderAsyncResult> {
-        return Promise.resolve().then(async () => {
+        return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._assetContainer = container;
             this._loadData(data);
@@ -379,15 +379,15 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
-        return Promise.resolve().then(async () => {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
+        return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._loadData(data);
             return this._loadAsync(rootUrl, fileName, null, () => undefined);
         });
     }
 
-    private async _loadAsync<T>(rootUrl: string, fileName: string, nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
+    private _loadAsync<T>(rootUrl: string, fileName: string, nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
         return Promise.resolve()
             .then(async () => {
                 this._rootUrl = rootUrl;
@@ -661,7 +661,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param scene The glTF scene property
      * @returns A promise that resolves when the load is complete
      */
-    public async loadSceneAsync(context: string, scene: IScene): Promise<void> {
+    public loadSceneAsync(context: string, scene: IScene): Promise<void> {
         const extensionPromise = this._extensionsLoadSceneAsync(context, scene);
         if (extensionPromise) {
             return extensionPromise;
@@ -821,7 +821,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon mesh when the load is complete
      */
-    public async loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void = () => {}): Promise<TransformNode> {
+    public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void = () => {}): Promise<TransformNode> {
         const extensionPromise = this._extensionsLoadNodeAsync(context, node, assign);
         if (extensionPromise) {
             return extensionPromise;
@@ -944,7 +944,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private async _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
+    private _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
         const primitives = mesh.primitives;
         if (!primitives || !primitives.length) {
             throw new Error(`${context}: Primitives are missing`);
@@ -1003,7 +1003,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
      */
-    public async _loadMeshPrimitiveAsync(
+    public _loadMeshPrimitiveAsync(
         context: string,
         name: string,
         node: INode,
@@ -1040,7 +1040,7 @@ export class GLTFLoader implements IGLTFLoader {
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(
-                this._loadVertexDataAsync(context, primitive, babylonMesh).then(async (babylonGeometry) => {
+                this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
                     return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
                         if (this._disposed) {
                             return;
@@ -1095,7 +1095,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private async _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
+    private _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
         const extensionPromise = this._extensionsLoadVertexDataAsync(context, primitive, babylonMesh);
         if (extensionPromise) {
             return extensionPromise;
@@ -1206,7 +1206,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private async _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
+    private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
         if (!primitive.targets || !this._parent.loadMorphTargets) {
             return Promise.resolve();
         }
@@ -1359,7 +1359,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonNode.scaling = scaling;
     }
 
-    private async _loadSkinAsync(context: string, node: INode, skin: ISkin, assign: (babylonSkeleton: Skeleton) => void): Promise<void> {
+    private _loadSkinAsync(context: string, node: INode, skin: ISkin, assign: (babylonSkeleton: Skeleton) => void): Promise<void> {
         if (!this._parent.loadSkins) {
             return Promise.resolve();
         }
@@ -1496,7 +1496,7 @@ export class GLTFLoader implements IGLTFLoader {
         return babylonBone;
     }
 
-    private async _loadSkinInverseBindMatricesDataAsync(context: string, skin: ISkin): Promise<Nullable<Float32Array>> {
+    private _loadSkinInverseBindMatricesDataAsync(context: string, skin: ISkin): Promise<Nullable<Float32Array>> {
         if (skin.inverseBindMatrices == undefined) {
             return Promise.resolve(null);
         }
@@ -1541,7 +1541,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon camera when the load is complete
      */
-    public async loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void = () => {}): Promise<Camera> {
+    public loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void = () => {}): Promise<Camera> {
         const extensionPromise = this._extensionsLoadCameraAsync(context, camera, assign);
         if (extensionPromise) {
             return extensionPromise;
@@ -1603,7 +1603,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private async _loadAnimationsAsync(): Promise<void> {
+    private _loadAnimationsAsync(): Promise<void> {
         const animations = this._gltf.animations;
         if (!animations) {
             return Promise.resolve();
@@ -1632,14 +1632,14 @@ export class GLTFLoader implements IGLTFLoader {
      * @param animation The glTF animation property
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
      */
-    public async loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup> {
+    public loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup> {
         const promise = this._extensionsLoadAnimationAsync(context, animation);
         if (promise) {
             return promise;
         }
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        return import("core/Animations/animationGroup").then(async ({ AnimationGroup }) => {
+        return import("core/Animations/animationGroup").then(({ AnimationGroup }) => {
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
             const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
             babylonAnimationGroup._parentContainer = this._assetContainer;
@@ -1756,7 +1756,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete
      */
-    public async _loadAnimationChannelFromTargetInfoAsync(
+    public _loadAnimationChannelFromTargetInfoAsync(
         context: string,
         animationContext: string,
         animation: IAnimation,
@@ -1843,7 +1843,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private async _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
+    private _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
         if (sampler._data) {
             return sampler._data;
         }
@@ -1884,7 +1884,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param byteLength The byte length to use
      * @returns A promise that resolves with the loaded data when the load is complete
      */
-    public async loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView> {
+    public loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView> {
         const extensionPromise = this._extensionsLoadBufferAsync(context, buffer, byteOffset, byteLength);
         if (extensionPromise) {
             return extensionPromise;
@@ -1917,7 +1917,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param bufferView The glTF buffer view property
      * @returns A promise that resolves with the loaded data when the load is complete
      */
-    public async loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView> {
+    public loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView> {
         const extensionPromise = this._extensionsLoadBufferViewAsync(context, bufferView);
         if (extensionPromise) {
             return extensionPromise;
@@ -1933,7 +1933,7 @@ export class GLTFLoader implements IGLTFLoader {
         return bufferView._data;
     }
 
-    private async _loadAccessorAsync(context: string, accessor: IAccessor, constructor: TypedArrayConstructor): Promise<ArrayBufferView> {
+    private _loadAccessorAsync(context: string, accessor: IAccessor, constructor: TypedArrayConstructor): Promise<ArrayBufferView> {
         if (accessor._data) {
             return accessor._data;
         }
@@ -1970,7 +1970,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (accessor.sparse) {
             const sparse = accessor.sparse;
-            accessor._data = accessor._data.then(async (data) => {
+            accessor._data = accessor._data.then((data) => {
                 const typedArray = data as TypedArray;
                 const indicesBufferView = ArrayItem.Get(`${context}/sparse/indices/bufferView`, this._gltf.bufferViews, sparse.indices.bufferView);
                 const valuesBufferView = ArrayItem.Get(`${context}/sparse/values/bufferView`, this._gltf.bufferViews, sparse.values.bufferView);
@@ -2018,14 +2018,14 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
+    public _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
 
     /**
      * @internal
      */
-    public async _loadIndicesAccessorAsync(context: string, accessor: IAccessor): Promise<IndicesArray> {
+    public _loadIndicesAccessorAsync(context: string, accessor: IAccessor): Promise<IndicesArray> {
         if (accessor.type !== AccessorType.SCALAR) {
             throw new Error(`${context}/type: Invalid value ${accessor.type}`);
         }
@@ -2058,7 +2058,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async _loadVertexBufferViewAsync(bufferView: IBufferView): Promise<Buffer> {
+    public _loadVertexBufferViewAsync(bufferView: IBufferView): Promise<Buffer> {
         if (bufferView._babylonBuffer) {
             return bufferView._babylonBuffer;
         }
@@ -2074,7 +2074,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async _loadVertexAccessorAsync(context: string, accessor: IAccessor, kind: string): Promise<VertexBuffer> {
+    public _loadVertexAccessorAsync(context: string, accessor: IAccessor, kind: string): Promise<VertexBuffer> {
         if (accessor._babylonVertexBuffer?.[kind]) {
             return accessor._babylonVertexBuffer[kind];
         }
@@ -2115,7 +2115,7 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._babylonVertexBuffer[kind];
     }
 
-    private async _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
+    private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
@@ -2163,7 +2163,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async _loadMaterialAsync(
+    public _loadMaterialAsync(
         context: string,
         material: IMaterial,
         babylonMesh: Nullable<Mesh>,
@@ -2257,7 +2257,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param babylonMaterial The Babylon material
      * @returns A promise that resolves when the load is complete
      */
-    public async loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
         const extensionPromise = this._extensionsLoadMaterialPropertiesAsync(context, material, babylonMaterial);
         if (extensionPromise) {
             return extensionPromise;
@@ -2283,7 +2283,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param babylonMaterial The Babylon material
      * @returns A promise that resolves when the load is complete
      */
-    public async loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
+    public loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
@@ -2389,7 +2389,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete
      */
-    public async loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
+    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign);
         if (extensionPromise) {
             return extensionPromise;
@@ -2419,7 +2419,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
+    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
         if (extensionPromise) {
             return extensionPromise;
@@ -2439,7 +2439,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public async _createTextureAsync(
+    public _createTextureAsync(
         context: string,
         sampler: ISampler,
         image: IImage,
@@ -2522,7 +2522,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param image The glTF image property
      * @returns A promise that resolves with the loaded data when the load is complete
      */
-    public async loadImageAsync(context: string, image: IImage): Promise<ArrayBufferView> {
+    public loadImageAsync(context: string, image: IImage): Promise<ArrayBufferView> {
         if (!image._data) {
             this.logOpen(`${context} ${image.name || ""}`);
 
@@ -2546,7 +2546,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param uri The base64 or relative uri
      * @returns A promise that resolves with the loaded data when the load is complete
      */
-    public async loadUriAsync(context: string, property: IProperty, uri: string): Promise<ArrayBufferView> {
+    public loadUriAsync(context: string, property: IProperty, uri: string): Promise<ArrayBufferView> {
         const extensionPromise = this._extensionsLoadUriAsync(context, property, uri);
         if (extensionPromise) {
             return extensionPromise;
@@ -2564,7 +2564,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.log(`${context}: Loading ${uri}`);
 
-        return this._parent.preprocessUrlAsync(this._rootUrl + uri).then(async (url) => {
+        return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
             return new Promise((resolve, reject) => {
                 this._parent._loadFile(
                     this._babylonScene,
@@ -2739,7 +2739,7 @@ export class GLTFLoader implements IGLTFLoader {
         throw new Error(`${context}: Invalid mesh primitive mode (${mode})`);
     }
 
-    private async _compileMaterialsAsync(): Promise<void> {
+    private _compileMaterialsAsync(): Promise<void> {
         this._parent._startPerformanceCounter("Compile materials");
 
         const promises = new Array<Promise<unknown>>();
@@ -2771,7 +2771,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private async _compileShadowGeneratorsAsync(): Promise<void> {
+    private _compileShadowGeneratorsAsync(): Promise<void> {
         this._parent._startPerformanceCounter("Compile shadow generators");
 
         const promises = new Array<Promise<unknown>>();
@@ -2832,30 +2832,22 @@ export class GLTFLoader implements IGLTFLoader {
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(scene, "loadScene", (extension) => extension.loadSceneAsync && extension.loadSceneAsync(context, scene));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(node, "loadNode", (extension) => extension.loadNodeAsync && extension.loadNodeAsync(context, node, assign));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(camera, "loadCamera", (extension) => extension.loadCameraAsync && extension.loadCameraAsync(context, camera, assign));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
-        return this._applyExtensions(
-            primitive,
-            "loadVertexData",
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
-            (extension) => extension._loadVertexDataAsync && extension._loadVertexDataAsync(context, primitive, babylonMesh)
-        );
+        return this._applyExtensions(primitive, "loadVertexData", (extension) => extension._loadVertexDataAsync && extension._loadVertexDataAsync(context, primitive, babylonMesh));
     }
 
     // eslint-disable-next-line no-restricted-syntax
@@ -2870,7 +2862,6 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(
             primitive,
             "loadMeshPrimitive",
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
             (extension) => extension._loadMeshPrimitiveAsync && extension._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign)
         );
     }
@@ -2886,7 +2877,6 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(
             material,
             "loadMaterial",
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
             (extension) => extension._loadMaterialAsync && extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign)
         );
     }
@@ -2900,30 +2890,22 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(
             material,
             "loadMaterialProperties",
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
             (extension) => extension.loadMaterialPropertiesAsync && extension.loadMaterialPropertiesAsync(context, material, babylonMaterial)
         );
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(
-            textureInfo,
-            "loadTextureInfo",
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
-            (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign)
-        );
+        return this._applyExtensions(textureInfo, "loadTextureInfo", (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(texture, "loadTexture", (extension) => extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(animation, "loadAnimation", (extension) => extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation));
     }
 
@@ -2938,32 +2920,27 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(
             animation,
             "loadAnimationChannel",
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
             (extension) => extension._loadAnimationChannelAsync && extension._loadAnimationChannelAsync(context, animationContext, animation, channel, onLoad)
         );
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadSkinAsync(context: string, node: INode, skin: ISkin): Nullable<Promise<void>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(skin, "loadSkin", (extension) => extension._loadSkinAsync && extension._loadSkinAsync(context, node, skin));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(property, "loadUri", (extension) => extension._loadUriAsync && extension._loadUriAsync(context, property, uri));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView));
     }
 
     // eslint-disable-next-line no-restricted-syntax
     private _extensionsLoadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._applyExtensions(buffer, "loadBuffer", (extension) => extension.loadBufferAsync && extension.loadBufferAsync(context, buffer, byteOffset, byteLength));
     }
 

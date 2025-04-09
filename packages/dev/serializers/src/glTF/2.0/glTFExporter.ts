@@ -270,7 +270,7 @@ export class GLTFExporter {
     private static readonly _ExtensionFactories: { [name: string]: (exporter: GLTFExporter) => IGLTFExporterExtensionV2 } = {};
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private async _ApplyExtension<T>(
+    private _ApplyExtension<T>(
         node: T,
         extensions: IGLTFExporterExtensionV2[],
         index: number,
@@ -286,11 +286,11 @@ export class GLTFExporter {
             return this._ApplyExtension(node, extensions, index + 1, actionAsync);
         }
 
-        return currentPromise.then(async (newNode) => (newNode ? this._ApplyExtension(newNode, extensions, index + 1, actionAsync) : null));
+        return currentPromise.then((newNode) => (newNode ? this._ApplyExtension(newNode, extensions, index + 1, actionAsync) : null));
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private async _ApplyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
+    private _ApplyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         const extensions: IGLTFExporterExtensionV2[] = [];
         for (const name of GLTFExporter._ExtensionNames) {
             extensions.push(this._extensions[name]);
@@ -299,18 +299,12 @@ export class GLTFExporter {
         return this._ApplyExtension(node, extensions, 0, actionAsync);
     }
 
-    public async _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
+    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
         // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._ApplyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
-    public async _extensionsPostExportNodeAsync(
-        context: string,
-        node: INode,
-        babylonNode: Node,
-        nodeMap: Map<Node, number>,
-        convertToRightHanded: boolean
-    ): Promise<Nullable<INode>> {
+    public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return this._ApplyExtensions(
             node,
             // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -318,7 +312,7 @@ export class GLTFExporter {
         );
     }
 
-    public async _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
+    public _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
         // eslint-disable-next-line @typescript-eslint/promise-function-async
         return this._ApplyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
