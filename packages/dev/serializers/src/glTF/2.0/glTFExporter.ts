@@ -404,7 +404,7 @@ export class GLTFExporter {
         this._options = {
             shouldExportNode: () => true,
             shouldExportAnimation: () => true,
-            metadataSelector: (metadata) => metadata,
+            metadataSelector: (metadata) => metadata?.gltf?.extras,
             animationSampleRate: 1 / 60,
             exportWithoutWaitingForScene: false,
             exportUnusedUVs: false,
@@ -811,11 +811,7 @@ export class GLTFExporter {
 
         // Scene metadata
         if (this._babylonScene.metadata) {
-            if (this._options.metadataSelector) {
                 scene.extras = this._options.metadataSelector(this._babylonScene.metadata);
-            } else if (this._babylonScene.metadata.gltf) {
-                scene.extras = this._babylonScene.metadata.gltf.extras;
-            }
         }
 
         //  TODO:
