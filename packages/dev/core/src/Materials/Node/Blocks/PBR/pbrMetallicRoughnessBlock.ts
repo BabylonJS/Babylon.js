@@ -408,6 +408,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("reflectivityOut");
         state._excludeVariableName("microSurface");
         state._excludeVariableName("roughness");
+        state._excludeVariableName("vReflectivityColor");
 
         state._excludeVariableName("NdotVUnclamped");
         state._excludeVariableName("NdotV");
@@ -1013,9 +1014,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
-
+            ${isWebGPU ? "let" : `vec4${state.fSuffix}`} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName}, 1.0);
             reflectivityOut = reflectivityBlock(
-                vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.)
+                vReflectivityColor
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
@@ -1339,6 +1340,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+                { search: /uniforms.vReflectivityColor/g, replace: "vReflectivityColor" },
             ],
         });
 
