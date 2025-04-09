@@ -219,7 +219,7 @@ export abstract class AudioEngineV2 {
      * - Note that the returned promise may already be resolved if the audio engine is already unlocked.
      * @returns A promise that is resolved when the audio engine is unlocked.
      */
-    public async unlockAsync(): Promise<void> {
+    public unlockAsync(): Promise<void> {
         return this.resumeAsync();
     }
 
@@ -270,7 +270,7 @@ export function _GetAudioEngine(engine: Nullable<AudioEngineV2>): AudioEngineV2 
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created audio bus.
  */
-export async function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
+export function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createBusAsync(name, options);
 }
@@ -282,7 +282,7 @@ export async function CreateAudioBusAsync(name: string, options: Partial<IAudioB
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created main audio bus.
  */
-export async function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
+export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createMainBusAsync(name, options);
 }
@@ -295,7 +295,7 @@ export async function CreateMainAudioBusAsync(name: string, options: Partial<IMa
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound.
  */
-export async function CreateSoundAsync(
+export function CreateSoundAsync(
     name: string,
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
     options: Partial<IStaticSoundOptions> = {},
@@ -312,7 +312,7 @@ export async function CreateSoundAsync(
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound buffer.
  */
-export async function CreateSoundBufferAsync(
+export function CreateSoundBufferAsync(
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
     options: Partial<IStaticSoundBufferOptions> = {},
     engine: Nullable<AudioEngineV2> = null

@@ -68,7 +68,7 @@ export abstract class StreamingSound extends AbstractSound {
      * Preloads an instance of the sound.
      * @returns A promise that resolves when the instance is preloaded.
      */
-    public async preloadInstanceAsync(): Promise<void> {
+    public preloadInstanceAsync(): Promise<void> {
         const instance = this._createInstance();
 
         this._addPreloadedInstance(instance);
@@ -86,7 +86,7 @@ export abstract class StreamingSound extends AbstractSound {
             this.preloadInstanceAsync();
         }
 
-        await Promise.all(this._preloadedInstances.map(async (instance) => instance.preloadedPromise));
+        await Promise.all(this._preloadedInstances.map((instance) => instance.preloadedPromise));
     }
 
     /**

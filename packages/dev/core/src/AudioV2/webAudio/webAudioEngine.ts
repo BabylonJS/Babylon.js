@@ -295,7 +295,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public override async resumeAsync(): Promise<void> {
+    public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
         if (this._resumePromise) {
