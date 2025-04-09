@@ -8,6 +8,7 @@ function processSource(sourceCode: string, forceMJS: boolean) {
     const extension = forceMJS ? ".mjs" : ".js";
     return (
         sourceCode
+            // replace imports and exports with js extensions
             .replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?)("|');/g, `$1${extension}$5;`)
             .replace(/((import|export)\(["']((@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?))(["'])\)/g, `$1${extension}$6)`)
             // also declare module imports
