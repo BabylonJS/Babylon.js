@@ -72,12 +72,12 @@ export class AudioTestResult {
  *
  * The volume of each pulse is calculated by taking the absolute value of the samples and averaging them over the pulse length.
  *
- * The average volume is stored in the `volumeCurves` array for each channel, and is repeated for each sample in the pulse which
- * makes the resulting `volumeCurves` array length the same as the result's `samples` array, which makes it easier to find the
+ * The average volume is stored in the `volumeCurves` array for each channel, and is repeated for each sample in the pulse making
+ * the resulting `volumeCurves` array length the same as the result's `samples` array, which makes it easier to find the
  * resulting volume at a given time.
  *
- * @param result - the test result containing the samples to calculate the volume from.
- * @returns an array containing the volume of each pulse aligned with channels and samples in the given result's samples.
+ * @param result - the test result containing the samples to calculate the volume from
+ * @returns an array containing the volume of each pulse aligned with channels and samples in the given result's samples
  */
 function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
     if (!result.samples?.length) {
@@ -135,9 +135,9 @@ function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
 /**
  * Gets the volumes of the given result's samples at a given time.
  *
- * @param result - the test result containing the samples to calculate the volume from.
- * @param time - the time in seconds to get the volumes at.
- * @returns an array containing the volume of each channel at the given time.
+ * @param result - the test result containing the samples to calculate the volume from
+ * @param time - the time in seconds to get the volumes at
+ * @returns an array containing the volume of each channel at the given time
  */
 export function GetVolumesAtTime(result: AudioTestResult, time: number): number[] {
     const volumes = new Array<number>(result.numberOfChannels);

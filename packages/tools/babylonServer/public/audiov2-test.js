@@ -67,6 +67,7 @@ class AudioV2Test {
         const sound = await BABYLON.CreateSoundAsync("", source, options);
         audioTestSounds.push(sound);
 
+        // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
         audioRecorder.start();
 
         return sound;
