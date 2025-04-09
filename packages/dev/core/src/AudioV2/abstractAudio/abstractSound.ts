@@ -333,6 +333,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     };
 
     private _onOutBusDisposed = () => {
-        this.outBus = null;
+        this._outBus = null;
     };
 }
