@@ -56,7 +56,6 @@ import { Constants } from "core/Engines/constants";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { TransformNode } from "core/Meshes/transformNode";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -789,7 +788,6 @@ export class Viewer implements IDisposable {
     private _envShadowGround: Nullable<Mesh> = null;
     private _groundShadowMaterial: Nullable<ShaderMaterial> = null;
     private _shadowLight: Nullable<DirectionalLight> = null;
-    private _shadowLightNode: Nullable<TransformNode> = null;
     private _resizeShadowObserver: Nullable<Observer<Engine>> = null;
     private _iblShadowsRender: boolean = false;
     private _iblRenderTimer: Nullable<ReturnType<typeof setTimeout>> = null;
@@ -1568,8 +1566,12 @@ export class Viewer implements IDisposable {
     }
 
     private _rotateShadowLightWithEnvironment(): void {
-        if (this._shadowLightNode) {
-            this._shadowLightNode.rotation.y = this._reflectionsRotation;
+        const x = Math.cos(this._reflectionsRotation);
+        const z = Math.sin(this._reflectionsRotation);
+        if (this._shadowLight) {
+            const radius = this._shadowLight.position.y;
+            this._shadowLight.position.set(x * radius, this._shadowLight.position.y, z * radius);
+            this._shadowLight.direction.set(-x, -1, -z);
         }
     }
 
@@ -1745,18 +1747,14 @@ export class Viewer implements IDisposable {
             return;
         }
         const radius = Vector3.FromArray(worldBounds!.size).length();
-        const x = radius * Math.cos(this._reflectionsRotation);
-        const z = radius * Math.sin(this._reflectionsRotation);
+        const x = Math.cos(this._reflectionsRotation);
+        const z = Math.sin(this._reflectionsRotation);
 
         this._snapshotHelper.disableSnapshotRendering();
 
         if (!this._shadowGenerator) {
-            this._shadowLightNode = new TransformNode("shadowLightNode", this._scene);
-            this._shadowLight = new DirectionalLight("shadowLight", new Vector3(-x, -radius, -z), this._scene);
-            this._shadowLight.parent = this._shadowLightNode;
+            this._shadowLight = new DirectionalLight("shadowLight", new Vector3(-x, -1, -z), this._scene);
             this._shadowLight.intensity = 100.0;
-            this._shadowLightNode.position.set(x, radius, z);
-            this._shadowLightNode.setPivotPoint(Vector3.FromArray(worldBounds.center));
             this._shadowGenerator = new ShadowGenerator(2048, this._shadowLight);
             this._shadowGenerator.setDarkness(0.5);
             this._shadowGenerator.setTransparencyShadow(true);
@@ -1771,6 +1769,7 @@ export class Viewer implements IDisposable {
             this._shadowGenerator.useKernelBlur = false;
             this._shadowGenerator.blurScale = 1;
             this._shadowGenerator.blurKernel = 8;
+            this._shadowGenerator.depthScale = 1;
 
             const shadowMap = this._shadowGenerator.getShadowMap();
             if (shadowMap) {
@@ -1783,8 +1782,18 @@ export class Viewer implements IDisposable {
             this._shadowLight.includedOnlyMeshes = [ground];
         }
 
-        this._shadowLightNode?.position.set(x, radius, z);
-        this._shadowLightNode?.setPivotPoint(Vector3.FromArray(worldBounds.center));
+        // manually set the extends to take into account animated meshes
+        if (this._shadowLight) {
+            this._shadowLight.position.set(x * radius, radius, z * radius);
+            this._shadowLight.autoUpdateExtends = false;
+            this._shadowLight.shadowMinZ = 0.000000007;
+            this._shadowLight.shadowMaxZ = radius * 4;
+            this._shadowLight.orthoLeft = -radius * 2;
+            this._shadowLight.orthoRight = radius * 2;
+            this._shadowLight.orthoTop = radius * 2;
+            this._shadowLight.orthoBottom = -radius * 2;
+        }
+
         const groundSize = this._shadowGroundScalingFactor * radius;
         this._classicShadowGround?.scaling.set(groundSize, groundSize, groundSize);
 
