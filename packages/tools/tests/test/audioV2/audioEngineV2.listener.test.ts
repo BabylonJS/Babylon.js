@@ -28,7 +28,7 @@ test("Sound at position (0, 0, -1) with no listener options set should be 1x vol
     expect(volumes[R]).toBeCloseTo(0.7, VolumePrecision);
 });
 
-test("Sound at position (0, 0, 0) with listener position option set to (1, 0, 0) should  be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
+test("Sound at position (0, 0, 0) with listener position option set to (1, 0, 0) should be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
     const result = await page.evaluate(async () => {
         await AudioV2Test.CreateAudioEngineAsync({ listenerPosition: new BABYLON.Vector3(1, 0, 0) });
         const sound = await AudioV2Test.CreateSoundAsync(audioTestConfig.pulseTrainSoundFile, { spatialPosition: new BABYLON.Vector3(0, 0, 0) });
@@ -46,7 +46,7 @@ test("Sound at position (0, 0, 0) with listener position option set to (1, 0, 0)
     expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
 });
 
-test("Sound at position (0, 0, 0) with listener position option set to (-1, 0, 0) should  be 0 volume in left speaker and 1x volume in right speaker", async ({ page }) => {
+test("Sound at position (0, 0, 0) with listener position option set to (-1, 0, 0) should be 0 volume in left speaker and 1x volume in right speaker", async ({ page }) => {
     const result = await page.evaluate(async () => {
         await AudioV2Test.CreateAudioEngineAsync({ listenerPosition: new BABYLON.Vector3(-1, 0, 0) });
         const sound = await AudioV2Test.CreateSoundAsync(audioTestConfig.pulseTrainSoundFile, { spatialPosition: new BABYLON.Vector3(0, 0, 0) });
@@ -100,7 +100,7 @@ test("Sound at position (0, 0, -1) with listener rotation option set to -90 degr
     expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
 });
 
-test("Sound at position (0, 0, 0) with listener position property set to (1, 0, 0) should  be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
+test("Sound at position (0, 0, 0) with listener position property set to (1, 0, 0) should be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
     const result = await page.evaluate(async () => {
         const audioEngine = await AudioV2Test.CreateAudioEngineAsync();
         const sound = await AudioV2Test.CreateSoundAsync(audioTestConfig.pulseTrainSoundFile, { spatialPosition: new BABYLON.Vector3(0, 0, 0) });
