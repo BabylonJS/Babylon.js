@@ -24,6 +24,11 @@ aggShadow = aggShadow / numLights;
 #ifdef REFLECTION
     vec3 finalIrradiance = reflectionOut.environmentIrradiance;
 
+    #ifdef METALLICWORKFLOW
+        // Account for energy loss due to specular reflectance
+        finalIrradiance *= (1.0 - subSurfaceOut.specularEnvironmentReflectance);
+    #endif
+
     #if defined(CLEARCOAT)
         finalIrradiance *= clearcoatOut.conservationFactor;
         #if defined(CLEARCOAT_TINT)
