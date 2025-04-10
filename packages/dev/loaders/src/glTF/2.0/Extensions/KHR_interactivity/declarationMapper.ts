@@ -1322,7 +1322,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
-        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing],
+        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing],
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1331,8 +1331,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value_1" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
                 duration: { name: "duration_1", gltfType: "number" /*, inOptions: true */ },
-                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.Easing },
-                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.Easing },
+                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
             },
             flows: {
                 in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
