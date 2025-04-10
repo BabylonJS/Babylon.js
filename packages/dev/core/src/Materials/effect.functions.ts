@@ -118,6 +118,7 @@ export function resetCachedPipeline(pipeline: IPipelineContext): void {
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function _ProcessShaderCode(
     processorOptions: _IProcessingOptions,
     baseName: any,
@@ -169,14 +170,14 @@ export function _ProcessShaderCode(
                     }
                     const finalShaders = Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
                     processorOptions = null as any;
-                    const finalCode = _UseFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
+                    const finalCode = UseFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
                     onFinalCodeReady?.(finalCode.vertexSourceCode, finalCode.fragmentSourceCode);
                 },
                 engine
             );
         }
     };
-    _LoadShader(
+    LoadShader(
         vertexSource,
         "Vertex",
         "",
@@ -201,7 +202,7 @@ export function _ProcessShaderCode(
         },
         shaderLanguage
     );
-    _LoadShader(
+    LoadShader(
         fragmentSource,
         "Fragment",
         "Pixel",
@@ -216,7 +217,7 @@ export function _ProcessShaderCode(
     );
 }
 
-function _LoadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void, shaderLanguage?: ShaderLanguage, _loadFileInjection?: typeof _LoadFile) {
+function LoadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void, shaderLanguage?: ShaderLanguage, _loadFileInjection?: typeof _LoadFile) {
     if (typeof HTMLElement !== "undefined") {
         // DOM element ?
         if (shader instanceof HTMLElement) {
@@ -268,7 +269,7 @@ function _LoadShader(shader: any, key: string, optionalKey: string, callback: (d
     _loadFileInjection(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
 }
 
-function _UseFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, shaderLanguage?: ShaderLanguage) {
+function UseFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, shaderLanguage?: ShaderLanguage) {
     if (baseName) {
         const vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
         const fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;

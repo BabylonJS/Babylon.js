@@ -13,7 +13,7 @@ import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrix
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const _ExtractAsInt = (value: number) => {
+const ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
 
@@ -157,8 +157,8 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this.x);
-        const y = _ExtractAsInt(this.y);
+        const x = ExtractAsInt(this.x);
+        const y = ExtractAsInt(this.y);
         let hash = x;
         hash = (hash * 397) ^ y;
         return hash;
@@ -1282,9 +1282,9 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this._x);
-        const y = _ExtractAsInt(this._y);
-        const z = _ExtractAsInt(this._z);
+        const x = ExtractAsInt(this._x);
+        const y = ExtractAsInt(this._y);
+        const z = ExtractAsInt(this._z);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -3463,10 +3463,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this.x);
-        const y = _ExtractAsInt(this.y);
-        const z = _ExtractAsInt(this.z);
-        const w = _ExtractAsInt(this.w);
+        const x = ExtractAsInt(this.x);
+        const y = ExtractAsInt(this.y);
+        const z = ExtractAsInt(this.z);
+        const w = ExtractAsInt(this.w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -4556,10 +4556,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this._x);
-        const y = _ExtractAsInt(this._y);
-        const z = _ExtractAsInt(this._z);
-        const w = _ExtractAsInt(this._w);
+        const x = ExtractAsInt(this._x);
+        const y = ExtractAsInt(this._y);
+        const z = ExtractAsInt(this._z);
+        const w = ExtractAsInt(this._w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -7035,9 +7035,9 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = _ExtractAsInt(this._m[0]);
+        let hash = ExtractAsInt(this._m[0]);
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ _ExtractAsInt(this._m[i]);
+            hash = (hash * 397) ^ ExtractAsInt(this._m[i]);
         }
         return hash;
     }

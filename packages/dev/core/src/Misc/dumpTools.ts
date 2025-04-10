@@ -17,13 +17,13 @@ type DumpToolsEngine = {
     wrapper: EffectWrapper;
 };
 
-let _DumpToolsEngine: Nullable<DumpToolsEngine>;
+let DumpToolsEngine: Nullable<DumpToolsEngine>;
 
-let _EnginePromise: Promise<DumpToolsEngine> | null = null;
+let EnginePromise: Promise<DumpToolsEngine> | null = null;
 
 async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
-    if (!_EnginePromise) {
-        _EnginePromise = new Promise((resolve, reject) => {
+    if (!EnginePromise) {
+        EnginePromise = new Promise((resolve, reject) => {
             let canvas: HTMLCanvasElement | OffscreenCanvas;
             let engine: Nullable<ThinEngine> = null;
             const options = {
@@ -74,19 +74,19 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
                             fragmentShader: passPixelShader.shader,
                             samplerNames: ["textureSampler"],
                         });
-                        _DumpToolsEngine = {
+                        DumpToolsEngine = {
                             canvas,
                             engine,
                             renderer,
                             wrapper,
                         };
-                        resolve(_DumpToolsEngine);
+                        resolve(DumpToolsEngine);
                     });
                 })
                 .catch(reject);
         });
     }
-    return await _EnginePromise;
+    return await EnginePromise;
 }
 
 /**
@@ -219,20 +219,20 @@ export function DumpData(
  * Dispose the dump tools associated resources
  */
 export function Dispose() {
-    if (_DumpToolsEngine) {
-        _DumpToolsEngine.wrapper.dispose();
-        _DumpToolsEngine.renderer.dispose();
-        _DumpToolsEngine.engine.dispose();
+    if (DumpToolsEngine) {
+        DumpToolsEngine.wrapper.dispose();
+        DumpToolsEngine.renderer.dispose();
+        DumpToolsEngine.engine.dispose();
     } else {
         // in cases where the engine is not yet created, we need to wait for it to dispose it
-        _EnginePromise?.then((dumpToolsEngine) => {
+        EnginePromise?.then((dumpToolsEngine) => {
             dumpToolsEngine.wrapper.dispose();
             dumpToolsEngine.renderer.dispose();
             dumpToolsEngine.engine.dispose();
         });
     }
-    _EnginePromise = null;
-    _DumpToolsEngine = null;
+    EnginePromise = null;
+    DumpToolsEngine = null;
 }
 
 /**

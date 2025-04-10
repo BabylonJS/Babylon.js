@@ -2,7 +2,7 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
 import type { Nullable } from "../../../types";
 import { Logger } from "core/Misc/logger";
 
-const _RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>();
+const RegisteredTextureLoaders = new Map<string, (mimeType?: string) => IInternalTextureLoader | Promise<IInternalTextureLoader>>();
 
 /**
  * Registers a texture loader.
@@ -15,7 +15,7 @@ export function registerTextureLoader(extension: string, loaderFactory: (mimeTyp
     if (unregisterTextureLoader(extension)) {
         Logger.Warn(`Extension with the name '${extension}' already exists`);
     }
-    _RegisteredTextureLoaders.set(extension, loaderFactory);
+    RegisteredTextureLoaders.set(extension, loaderFactory);
 }
 
 /**
@@ -25,7 +25,7 @@ export function registerTextureLoader(extension: string, loaderFactory: (mimeTyp
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function unregisterTextureLoader(extension: string): boolean {
-    return _RegisteredTextureLoaders.delete(extension);
+    return RegisteredTextureLoaders.delete(extension);
 }
 
 /**
@@ -38,7 +38,7 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
     if (mimeType === "image/ktx" || mimeType === "image/ktx2") {
         extension = ".ktx";
     }
-    if (!_RegisteredTextureLoaders.has(extension)) {
+    if (!RegisteredTextureLoaders.has(extension)) {
         if (extension.endsWith(".ies")) {
             registerTextureLoader(".ies", () => import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
         }
@@ -66,6 +66,6 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
             registerTextureLoader(".exr", () => import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
         }
     }
-    const registered = _RegisteredTextureLoaders.get(extension);
+    const registered = RegisteredTextureLoaders.get(extension);
     return registered ? Promise.resolve(registered(mimeType)) : null;
 }

@@ -5,7 +5,7 @@ import type { AbstractEngineOptions } from "./abstractEngine";
 import { EngineStore } from "./engineStore";
 
 /** @internal */
-function _DisableTouchAction(canvas: Nullable<HTMLCanvasElement>): void {
+function DisableTouchAction(canvas: Nullable<HTMLCanvasElement>): void {
     if (!canvas || !canvas.setAttribute) {
         return;
     }
@@ -66,7 +66,7 @@ export function _CommonInit(commonEngine: AbstractEngine, canvas: HTMLCanvasElem
     canvas.addEventListener("pointerout", commonEngine._onCanvasPointerOut);
 
     if (!creationOptions.doNotHandleTouchAction) {
-        _DisableTouchAction(canvas);
+        DisableTouchAction(canvas);
     }
 
     // Create Audio Engine if needed.

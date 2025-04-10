@@ -95,10 +95,10 @@ export interface DataCursor {
     value: number;
 }
 
-const _Tables = _GenerateTables();
+const Tables = GenerateTables();
 
 // Fast Half Float Conversions, http://www.fox-toolkit.org/ftp/fasthalffloatconversion.pdf
-function _GenerateTables() {
+function GenerateTables() {
     // float32 to float16 helpers
 
     const buffer = new ArrayBuffer(4);
@@ -356,10 +356,10 @@ function ToHalfFloat(value: number) {
 
     value = Clamp(value, -65504, 65504);
 
-    _Tables.floatView[0] = value;
-    const f = _Tables.uint32View[0];
+    Tables.floatView[0] = value;
+    const f = Tables.uint32View[0];
     const e = (f >> 23) & 0x1ff;
-    return _Tables.baseTable[e] + ((f & 0x007fffff) >> _Tables.shiftTable[e]);
+    return Tables.baseTable[e] + ((f & 0x007fffff) >> Tables.shiftTable[e]);
 }
 
 /**

@@ -39,7 +39,7 @@ export type _ObserveCallback = (functionName: string, previousLength: number) =>
  * @param callback Defines the callback to call when the function is called.
  * @returns A function to call to stop observing
  */
-function _observeArrayfunction(object: { [key: string]: any }, functionName: string, callback: _ObserveCallback): Nullable<() => void> {
+function ObserveArrayFunction(object: { [key: string]: any }, functionName: string, callback: _ObserveCallback): Nullable<() => void> {
     // Finds the function to observe
     const oldFunction = object[functionName];
     if (typeof oldFunction !== "function") {
@@ -107,7 +107,7 @@ const observedArrayFunctions = ["push", "splice", "pop", "shift", "unshift"];
 export function _ObserveArray<T>(array: T[], callback: _ObserveCallback) {
     // Observes all the required array functions and stores the unhook functions
     const unObserveFunctions = observedArrayFunctions.map((name) => {
-        return _observeArrayfunction(array, name, callback);
+        return ObserveArrayFunction(array, name, callback);
     });
 
     // Returns a function that unhook all the observed functions

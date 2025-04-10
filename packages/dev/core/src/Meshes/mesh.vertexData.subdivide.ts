@@ -24,7 +24,7 @@ export interface ISubdivideOptions {
     weight?: number;
 }
 
-const _PositionShift = Math.pow(10, 4);
+const PositionShift = Math.pow(10, 4);
 
 /**
  * Rounds a number (simulate integer rounding)
@@ -38,7 +38,7 @@ function Round(x: number): number {
  * Generates a hash string from a number
  * @internal
  */
-function HashFromNumber(num: number, shift = _PositionShift): string {
+function HashFromNumber(num: number, shift = PositionShift): string {
     let roundedNumber = Round(num * shift);
     if (roundedNumber === 0) {
         roundedNumber = 0; // prevent -0
@@ -50,7 +50,7 @@ function HashFromNumber(num: number, shift = _PositionShift): string {
  * Generates a hash string from a Vector3
  * @internal
  */
-function HashFromVector(v: Vector3, shift = _PositionShift): string {
+function HashFromVector(v: Vector3, shift = PositionShift): string {
     return `${HashFromNumber(v.x, shift)},${HashFromNumber(v.y, shift)},${HashFromNumber(v.z, shift)}`;
 }
 

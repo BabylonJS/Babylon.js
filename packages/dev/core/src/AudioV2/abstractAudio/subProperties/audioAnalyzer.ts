@@ -6,23 +6,23 @@ import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _GetAudioAnalyzerSubNode, _SetAudioAnalyzerProperty } from "../subNodes/audioAnalyzerSubNode";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 
-let _EmptyByteFrequencyData: Nullable<Uint8Array> = null;
-let _EmptyFloatFrequencyData: Nullable<Float32Array> = null;
+let EmptyByteFrequencyData: Nullable<Uint8Array> = null;
+let EmptyFloatFrequencyData: Nullable<Float32Array> = null;
 
 /** @internal */
 export function _GetEmptyByteFrequencyData(): Uint8Array {
-    if (!_EmptyByteFrequencyData) {
-        _EmptyByteFrequencyData = new Uint8Array();
+    if (!EmptyByteFrequencyData) {
+        EmptyByteFrequencyData = new Uint8Array();
     }
-    return _EmptyByteFrequencyData;
+    return EmptyByteFrequencyData;
 }
 
 /** @internal */
 export function _GetEmptyFloatFrequencyData(): Float32Array {
-    if (!_EmptyFloatFrequencyData) {
-        _EmptyFloatFrequencyData = new Float32Array();
+    if (!EmptyFloatFrequencyData) {
+        EmptyFloatFrequencyData = new Float32Array();
     }
-    return _EmptyFloatFrequencyData;
+    return EmptyFloatFrequencyData;
 }
 
 /** @internal */

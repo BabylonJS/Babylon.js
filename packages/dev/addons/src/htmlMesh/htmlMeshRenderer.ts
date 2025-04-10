@@ -10,7 +10,7 @@ import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
 import type { AbstractEngine } from "core/Engines";
 
-const _PositionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
+const PositionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
 const BabylonUnitsToPixels = 100;
 
 /**
@@ -609,7 +609,7 @@ export class HtmlMeshRenderer {
 
         // canvas rect may be null if layout not complete
         if (!canvasRect) {
-            Logger.Warn(_PositionUpdateFailMessage);
+            Logger.Warn(PositionUpdateFailMessage);
             return;
         }
         const scrollTop = window.scrollY;

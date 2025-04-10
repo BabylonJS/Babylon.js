@@ -142,7 +142,7 @@ export interface IWebXRNearInteractionOptions {
     motionControllerTouchMaterialSnippetUrl?: string;
 }
 
-const _TmpVectors = [new Vector3(), new Vector3(), new Vector3(), new Vector3()];
+const LocalTempVectors = [new Vector3(), new Vector3(), new Vector3(), new Vector3()];
 
 /**
  * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
@@ -1001,12 +1001,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return pi;
         }
 
-        const result = _TmpVectors[0];
-        const tmpVec = _TmpVectors[1];
-        _TmpVectors[2].setAll(0);
-        _TmpVectors[3].setAll(0);
+        const result = LocalTempVectors[0];
+        const tmpVec = LocalTempVectors[1];
+        LocalTempVectors[2].setAll(0);
+        LocalTempVectors[3].setAll(0);
 
-        const tmpRay = new Ray(_TmpVectors[2], _TmpVectors[3], 1);
+        const tmpRay = new Ray(LocalTempVectors[2], LocalTempVectors[3], 1);
 
         let distance = +Infinity;
         let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;

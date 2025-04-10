@@ -21,7 +21,7 @@ export interface ICopySourceOptions {
     cloneTexturesOnlyOnce?: boolean;
 }
 
-const _CopySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: ICopySourceOptions = {}): T {
+const CopySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: ICopySourceOptions = {}): T {
     const destination = creationFunction();
 
     // Tags
@@ -301,7 +301,7 @@ export class SerializationHelper {
      * @returns the cloned object
      */
     public static Clone<T>(creationFunction: () => T, source: T, options: ICopySourceOptions = {}): T {
-        return _CopySource(creationFunction, source, false, options);
+        return CopySource(creationFunction, source, false, options);
     }
 
     /**
@@ -311,6 +311,6 @@ export class SerializationHelper {
      * @returns the new object
      */
     public static Instanciate<T>(creationFunction: () => T, source: T): T {
-        return _CopySource(creationFunction, source, true);
+        return CopySource(creationFunction, source, true);
     }
 }

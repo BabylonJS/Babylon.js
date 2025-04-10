@@ -10,13 +10,13 @@ interface IRegisteredGLTFExtension {
 
 export type GLTFExtensionFactory = (loader: GLTFLoader) => IGLTFLoaderExtension | Promise<IGLTFLoaderExtension>;
 
-const _RegisteredGLTFExtensions = new Map<string, IRegisteredGLTFExtension>();
+const RegisteredGLTFExtensions = new Map<string, IRegisteredGLTFExtension>();
 
 /**
  * All currently registered glTF 2.0 loader extensions.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const registeredGLTFExtensions: ReadonlyMap<string, Readonly<IRegisteredGLTFExtension>> = _RegisteredGLTFExtensions;
+export const registeredGLTFExtensions: ReadonlyMap<string, Readonly<IRegisteredGLTFExtension>> = RegisteredGLTFExtensions;
 
 /**
  * Registers a loader extension.
@@ -30,7 +30,7 @@ export function registerGLTFExtension(name: string, isGLTFExtension: boolean, fa
         Logger.Warn(`Extension with the name '${name}' already exists`);
     }
 
-    _RegisteredGLTFExtensions.set(name, {
+    RegisteredGLTFExtensions.set(name, {
         isGLTFExtension,
         factory,
     });
@@ -43,5 +43,5 @@ export function registerGLTFExtension(name: string, isGLTFExtension: boolean, fa
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function unregisterGLTFExtension(name: string): boolean {
-    return _RegisteredGLTFExtensions.delete(name);
+    return RegisteredGLTFExtensions.delete(name);
 }

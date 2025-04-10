@@ -735,7 +735,7 @@ async function loadDataAsync(
     });
 }
 
-function _getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
+function GetFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
     let url: string;
     let name: string;
     let file: Nullable<File> = null;
@@ -872,7 +872,7 @@ async function importMeshAsync(
         return null;
     }
 
-    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = GetFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -1105,7 +1105,7 @@ async function appendSceneImplAsync(
         return null;
     }
 
-    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = GetFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -1269,7 +1269,7 @@ async function loadAssetContainerImplAsync(
         return null;
     }
 
-    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = GetFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }

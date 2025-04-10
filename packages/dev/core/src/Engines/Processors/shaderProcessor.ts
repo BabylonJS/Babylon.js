@@ -27,7 +27,7 @@ const RegexLightX = /light\{X\}.(\w*)/g;
 const RegexX = /\{X\}/g;
 const ReusableMatches: RegExpMatchArray[] = [];
 
-const _MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
+const MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
 
 /** @internal */
 export function Initialize(options: _IProcessingOptions): void {
@@ -41,11 +41,11 @@ export function Process(sourceCode: string, options: _IProcessingOptions, callba
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
-    _ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+    ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
         if (options.processCodeAfterIncludes) {
             codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes, options.defines);
         }
-        const migratedCode = _ProcessShaderConversion(codeWithIncludes, options, engine);
+        const migratedCode = ProcessShaderConversion(codeWithIncludes, options, engine);
         callback(migratedCode, codeWithIncludes);
     });
 }
@@ -55,11 +55,11 @@ export function PreProcess(sourceCode: string, options: _IProcessingOptions, cal
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
-    _ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+    ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
         if (options.processCodeAfterIncludes) {
             codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes, options.defines);
         }
-        const migratedCode = _ApplyPreProcessing(codeWithIncludes, options, engine);
+        const migratedCode = ApplyPreProcessing(codeWithIncludes, options, engine);
         callback(migratedCode, codeWithIncludes);
     });
 }
@@ -73,7 +73,7 @@ export function Finalize(vertexCode: string, fragmentCode: string, options: _IPr
     return options.processor.finalizeShaders(vertexCode, fragmentCode, options.processingContext);
 }
 
-function _ProcessPrecision(source: string, options: _IProcessingOptions): string {
+function ProcessPrecision(source: string, options: _IProcessingOptions): string {
     if (options.processor?.noPrecision) {
         return source;
     }
@@ -96,7 +96,7 @@ function _ProcessPrecision(source: string, options: _IProcessingOptions): string
     return source;
 }
 
-function _ExtractOperation(expression: string) {
+function ExtractOperation(expression: string) {
     const regex = /defined\((.+)\)/;
 
     const match = regex.exec(expression);
@@ -127,7 +127,7 @@ function _ExtractOperation(expression: string) {
     return new ShaderDefineArithmeticOperator(define, operator, value);
 }
 
-function _BuildSubExpression(expression: string): ShaderDefineExpression {
+function BuildSubExpression(expression: string): ShaderDefineExpression {
     expression = expression.replace(RegexSe, "defined[$1]");
 
     const postfix = ShaderDefineExpression.infixToPostfix(expression);
@@ -153,8 +153,8 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
                 v2 = v2.replace(RegexSeRevert, "defined($1)");
             }
 
-            operator.leftOperand = typeof v2 === "string" ? _ExtractOperation(v2) : v2;
-            operator.rightOperand = typeof v1 === "string" ? _ExtractOperation(v1) : v1;
+            operator.leftOperand = typeof v2 === "string" ? ExtractOperation(v2) : v2;
+            operator.rightOperand = typeof v1 === "string" ? ExtractOperation(v1) : v1;
 
             stack.push(operator);
         }
@@ -168,10 +168,10 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
 
     // note: stack.length !== 1 if there was an error in the parsing
 
-    return typeof result === "string" ? _ExtractOperation(result) : result;
+    return typeof result === "string" ? ExtractOperation(result) : result;
 }
 
-function _BuildExpression(line: string, start: number): ShaderCodeTestNode {
+function BuildExpression(line: string, start: number): ShaderCodeTestNode {
     const node = new ShaderCodeTestNode();
     const command = line.substring(0, start);
     let expression = line.substring(start);
@@ -183,25 +183,25 @@ function _BuildExpression(line: string, start: number): ShaderCodeTestNode {
     } else if (command === "#ifndef") {
         node.testExpression = new ShaderDefineIsDefinedOperator(expression, true);
     } else {
-        node.testExpression = _BuildSubExpression(expression);
+        node.testExpression = BuildSubExpression(expression);
     }
 
     return node;
 }
 
-function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode) {
+function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode) {
     let line = cursor.currentLine;
-    while (_MoveCursor(cursor, ifNode)) {
+    while (MoveCursor(cursor, ifNode)) {
         line = cursor.currentLine;
         const first5 = line.substring(0, 5).toLowerCase();
 
         if (first5 === "#else") {
             const elseNode = new ShaderCodeNode();
             rootNode.children.push(elseNode);
-            _MoveCursor(cursor, elseNode);
+            MoveCursor(cursor, elseNode);
             return;
         } else if (first5 === "#elif") {
-            const elifNode = _BuildExpression(line, 5);
+            const elifNode = BuildExpression(line, 5);
 
             rootNode.children.push(elifNode);
             ifNode = elifNode;
@@ -209,13 +209,13 @@ function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeCondi
     }
 }
 
-function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
+function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
     while (cursor.canRead) {
         cursor.lineIndex++;
         const line = cursor.currentLine;
 
         if (line.indexOf("#") >= 0) {
-            const matches = _MoveCursorRegex.exec(line);
+            const matches = MoveCursorRegex.exec(line);
 
             if (matches && matches.length) {
                 const keyword = matches[0];
@@ -225,9 +225,9 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
                         const newRootNode = new ShaderCodeConditionNode();
                         rootNode.children.push(newRootNode);
 
-                        const ifNode = _BuildExpression(line, 6);
+                        const ifNode = BuildExpression(line, 6);
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode);
                         break;
                     }
                     case "#else":
@@ -239,18 +239,18 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
                         const newRootNode = new ShaderCodeConditionNode();
                         rootNode.children.push(newRootNode);
 
-                        const ifNode = _BuildExpression(line, 7);
+                        const ifNode = BuildExpression(line, 7);
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode);
                         break;
                     }
                     case "#if": {
                         const newRootNode = new ShaderCodeConditionNode();
-                        const ifNode = _BuildExpression(line, 3);
+                        const ifNode = BuildExpression(line, 3);
                         rootNode.children.push(newRootNode);
 
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode);
                         break;
                     }
                 }
@@ -275,7 +275,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
     return false;
 }
 
-function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: _IProcessingOptions): string {
+function EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: _IProcessingOptions): string {
     const rootNode = new ShaderCodeNode();
     const cursor = new ShaderCodeCursor();
 
@@ -283,13 +283,13 @@ function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: strin
     cursor.lines = sourceCode.split("\n");
 
     // Decompose (We keep it in 2 steps so it is easier to maintain and perf hit is insignificant)
-    _MoveCursor(cursor, rootNode);
+    MoveCursor(cursor, rootNode);
 
     // Recompose
     return rootNode.process(preprocessors, options);
 }
 
-function _PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
+function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
     const defines = options.defines;
     const preprocessors: { [key: string]: string } = {};
 
@@ -310,8 +310,8 @@ function _PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEn
     return preprocessors;
 }
 
-function _ProcessShaderConversion(sourceCode: string, options: _IProcessingOptions, engine?: AbstractEngine): string {
-    let preparedSourceCode = _ProcessPrecision(sourceCode, options);
+function ProcessShaderConversion(sourceCode: string, options: _IProcessingOptions, engine?: AbstractEngine): string {
+    let preparedSourceCode = ProcessPrecision(sourceCode, options);
 
     if (!options.processor) {
         return preparedSourceCode;
@@ -327,14 +327,14 @@ function _ProcessShaderConversion(sourceCode: string, options: _IProcessingOptio
 
     const defines = options.defines;
 
-    const preprocessors = _PreparePreProcessors(options, engine);
+    const preprocessors = PreparePreProcessors(options, engine);
 
     // General pre processing
     if (options.processor.preProcessor) {
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
     // Post processing
     if (options.processor.postProcessor) {
@@ -359,19 +359,19 @@ function _ProcessShaderConversion(sourceCode: string, options: _IProcessingOptio
     return preparedSourceCode;
 }
 
-function _ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, engine: AbstractEngine): string {
+function ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, engine: AbstractEngine): string {
     let preparedSourceCode = sourceCode;
 
     const defines = options.defines;
 
-    const preprocessors = _PreparePreProcessors(options, engine);
+    const preprocessors = PreparePreProcessors(options, engine);
 
     // General pre processing
     if (options.processor?.preProcessor) {
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
     // Post processing
     if (options.processor?.postProcessor) {
@@ -397,7 +397,7 @@ function _ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, e
 }
 
 /** @internal */
-export function _ProcessIncludes(sourceCode: string, options: _IProcessingOptions, callback: (data: any) => void): void {
+export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions, callback: (data: any) => void): void {
     ReusableMatches.length = 0;
     let match: RegExpMatchArray | null;
     // stay back-compat to the old matchAll syntax
@@ -489,7 +489,7 @@ export function _ProcessIncludes(sourceCode: string, options: _IProcessingOption
 
             _FunctionContainer.loadFile(includeShaderUrl, (fileContent) => {
                 options.includesShadersStore[includeFile] = fileContent as string;
-                _ProcessIncludes(parts.join(""), options, callback);
+                ProcessIncludes(parts.join(""), options, callback);
             });
             return;
         }
@@ -499,7 +499,7 @@ export function _ProcessIncludes(sourceCode: string, options: _IProcessingOption
     returnValue = parts.join("");
 
     if (keepProcessing) {
-        _ProcessIncludes(returnValue.toString(), options, callback);
+        ProcessIncludes(returnValue.toString(), options, callback);
     } else {
         callback(returnValue);
     }

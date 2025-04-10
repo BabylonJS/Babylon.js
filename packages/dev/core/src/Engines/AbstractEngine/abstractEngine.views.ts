@@ -86,18 +86,18 @@ declare module "../../Engines/abstractEngine" {
     }
 }
 
-const _OnBeforeViewRenderObservable = new Observable<EngineView>();
-const _OnAfterViewRenderObservable = new Observable<EngineView>();
+const OnBeforeViewRenderObservable = new Observable<EngineView>();
+const OnAfterViewRenderObservable = new Observable<EngineView>();
 
 Object.defineProperty(AbstractEngine.prototype, "onBeforeViewRenderObservable", {
     get: function (this: AbstractEngine) {
-        return _OnBeforeViewRenderObservable;
+        return OnBeforeViewRenderObservable;
     },
 });
 
 Object.defineProperty(AbstractEngine.prototype, "onAfterViewRenderObservable", {
     get: function (this: AbstractEngine) {
-        return _OnAfterViewRenderObservable;
+        return OnAfterViewRenderObservable;
     },
 });
 
@@ -173,7 +173,7 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
     }
     const parent = this.getRenderingCanvas()!;
 
-    _OnBeforeViewRenderObservable.notifyObservers(view);
+    OnBeforeViewRenderObservable.notifyObservers(view);
     const camera = view.camera;
     let previewCamera: Nullable<Camera> = null;
     let previewCameras: Nullable<Camera[]> = null;
@@ -228,7 +228,7 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
         scene.activeCameras = previewCameras;
         scene.activeCamera = previewCamera;
     }
-    _OnAfterViewRenderObservable.notifyObservers(view);
+    OnAfterViewRenderObservable.notifyObservers(view);
     return true;
 };
 

@@ -23,7 +23,7 @@ import { EngineStore } from "../Engines/engineStore";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { MaterialPluginBase } from "./materialPluginBase";
-import { _ProcessIncludes } from "../Engines/Processors/shaderProcessor";
+import { ProcessIncludes } from "../Engines/Processors/shaderProcessor";
 import { ShaderLanguage } from "./shaderLanguage";
 import { ShaderStore } from "../Engines/shaderStore";
 
@@ -402,7 +402,7 @@ export class MaterialPluginManager {
                             };
                         }
                         processorOptions.isFragment = shaderType === "fragment";
-                        _ProcessIncludes(customCode, processorOptions, (code) => (customCode = code));
+                        ProcessIncludes(customCode, processorOptions, (code) => (customCode = code));
                     }
                     injectedCode += customCode + "\n";
                 }

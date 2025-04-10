@@ -6,7 +6,7 @@
 import { IsWindowObjectExist } from "./domManagement";
 import { Tools } from "./tools";
 
-let _UniqueResolveID = 0;
+let UniqueResolveID = 0;
 
 /**
  * Load an asynchronous script (identified by an url) in a module way. When the url returns, the
@@ -37,13 +37,13 @@ export async function _LoadScriptModuleAsync(scriptUrl: string, scriptId?: strin
         if (!windowAsAny._LoadScriptModuleResolve) {
             windowAsAny._LoadScriptModuleResolve = {};
         }
-        windowAsAny._LoadScriptModuleResolve[_UniqueResolveID] = resolve;
+        windowAsAny._LoadScriptModuleResolve[UniqueResolveID] = resolve;
 
         scriptUrl += `
-            ${windowString}._LoadScriptModuleResolve[${_UniqueResolveID}](returnedValue);
-            ${windowString}._LoadScriptModuleResolve[${_UniqueResolveID}] = undefined;
+            ${windowString}._LoadScriptModuleResolve[${UniqueResolveID}](returnedValue);
+            ${windowString}._LoadScriptModuleResolve[${UniqueResolveID}] = undefined;
         `;
-        _UniqueResolveID++;
+        UniqueResolveID++;
 
         Tools.LoadScript(
             scriptUrl,

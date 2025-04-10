@@ -321,7 +321,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         version: CurrentVersion,
         width: cubeWidth,
         imageType,
-        irradiance: _CreateEnvTextureIrradiance(texture),
+        irradiance: CreateEnvTextureIrradiance(texture),
         specular: {
             mipmaps: [],
             lodGenerationScale: texture.lodGenerationScale,
@@ -467,7 +467,7 @@ async function _GetTextureEncodedDataAsync(
  * @param texture defines the texture containing the polynomials
  * @returns the JSON representation of the spherical info
  */
-function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
+function CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
     const polynmials = texture.sphericalPolynomial;
     if (polynmials == null) {
         return null;

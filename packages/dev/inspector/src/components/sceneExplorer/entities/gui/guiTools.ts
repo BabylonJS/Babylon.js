@@ -12,7 +12,7 @@ let guiEditorContainer: { GUIEditor: typeof GUIEditor };
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _getGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
+function GetGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
     // UMD Global name detection from Webpack Bundle UMD Name.
     if (typeof GUIEditor !== "undefined") {
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -52,7 +52,7 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * @returns a promise that resolves when the editor is opened
  */
 export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, embed?: boolean) {
-    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
+    guiEditorContainer = guiEditorContainer || GetGlobalGUIEditor();
     if (!guiEditorContainer) {
         if (typeof BABYLON !== "undefined") {
             // we are in UMD environment
@@ -60,7 +60,7 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, em
                 // Load editor and add it to the DOM
                 try {
                     await Tools.LoadScriptAsync(EditorUrl);
-                    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
+                    guiEditorContainer = guiEditorContainer || GetGlobalGUIEditor();
                 } catch {
                     // eslint-disable-next-line no-throw-literal
                     throw `Failed to load GUI editor from ${EditorUrl}`;

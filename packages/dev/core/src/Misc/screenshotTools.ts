@@ -45,7 +45,7 @@ export function CreateScreenshot(
     quality?: number,
     useFill = false
 ): void {
-    const { height, width } = _GetScreenshotSize(engine, camera, size);
+    const { height, width } = GetScreenshotSize(engine, camera, size);
 
     if (!(height && width)) {
         Logger.Error("Invalid 'size' parameter !");
@@ -260,7 +260,7 @@ export function CreateScreenshotUsingRenderTarget(
         quality?: number
     ) => void
 ): void {
-    const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
+    const { height, width, finalWidth, finalHeight } = GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
 
     if (!(height && width)) {
@@ -520,7 +520,7 @@ export async function CreateScreenshotUsingRenderTargetAsync(
  * @param size This size of the screenshot. can be a number or an object implementing IScreenshotSize
  * @returns height and width for screenshot size
  */
-function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
+function GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;
     let width = 0;
     let finalWidth = 0;

@@ -5,7 +5,7 @@ import { Logger } from "core/Misc/logger";
 import { requestCapture, requestRelease, releaseCurrent, getCapturingId } from "./pointerEventsCapture";
 
 // Module level variable for holding the current scene
-let _Scene: Scene | null = null;
+let LocalScene: Scene | null = null;
 
 // Module level variable to hold the count of behavior instances that are currently capturing pointer events
 // on entry.  This is used to determine if we need to start or stop observing pointer movement.
@@ -24,9 +24,9 @@ const StartCaptureOnEnter = (scene: Scene) => {
     if (CaptureOnEnterCount === 0) {
         document.addEventListener("pointermove", OnPointerMove);
         document.addEventListener("touchstart", OnPointerMove);
-        _Scene = _Scene ?? scene;
+        LocalScene = LocalScene ?? scene;
         Logger.Log("PointerEventsCaptureBehavior: Starting observation of pointer move events.");
-        _Scene.onDisposeObservable.add(SoStopCaptureOnEnter);
+        LocalScene.onDisposeObservable.add(SoStopCaptureOnEnter);
     }
     CaptureOnEnterCount++;
 };
@@ -34,7 +34,7 @@ const StartCaptureOnEnter = (scene: Scene) => {
 const SoStopCaptureOnEnter = () => {
     document.removeEventListener("pointermove", OnPointerMove);
     document.removeEventListener("touchstart", OnPointerMove);
-    _Scene = null;
+    LocalScene = null;
     Logger.Log("PointerEventsCaptureBehavior: Stopping observation of pointer move events.");
     CaptureOnEnterCount = 0;
 };
@@ -46,7 +46,7 @@ const StopCaptureOnEnter = () => {
     }
 
     // If we are not observing pointer movement, do nothing
-    if (!_Scene) {
+    if (!LocalScene) {
         return;
     }
 
@@ -58,11 +58,11 @@ const StopCaptureOnEnter = () => {
 
 // Module level function used to determine if an entered mesh should capture pointer events
 const OnPointerMove = (evt: PointerEvent | TouchEvent) => {
-    if (!_Scene) {
+    if (!LocalScene) {
         return;
     }
 
-    const canvasRect = _Scene.getEngine().getRenderingCanvasClientRect();
+    const canvasRect = LocalScene.getEngine().getRenderingCanvasClientRect();
     if (!canvasRect) {
         return;
     }
@@ -76,7 +76,7 @@ const OnPointerMove = (evt: PointerEvent | TouchEvent) => {
     const pointerScreenY = clientY - canvasRect.top;
 
     let pointerCaptureBehavior: PointerEventsCaptureBehavior | undefined;
-    const pickResult = _Scene.pick(pointerScreenX, pointerScreenY, (mesh) => {
+    const pickResult = LocalScene.pick(pointerScreenX, pointerScreenY, (mesh) => {
         // If the mesh has an instance of PointerEventsCaptureBehavior attached to it,
         // and capture on pointer enter is true, then we want to pick it
         const pointerCaptureBehavior = MeshToBehaviorMap.get(mesh);
