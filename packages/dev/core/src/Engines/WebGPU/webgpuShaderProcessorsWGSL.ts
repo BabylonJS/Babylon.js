@@ -313,7 +313,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             //      #define ETA 1.0/IOR
             //
             // After IOR replacement is performed, we will have:
-            //      #define IOR 1.333
+            //      #define 1.333 1.333
             //      #define ETA 1.0/1.333
             //
             // but preProcessorsFromCode["ETA"] is still "1.0/IOR" and not "1.0/1.333", so we must retrieve the value for ETA from the current code
