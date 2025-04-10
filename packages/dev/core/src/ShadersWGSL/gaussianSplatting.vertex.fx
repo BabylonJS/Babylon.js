@@ -14,6 +14,7 @@ attribute position: vec2f;
 uniform invViewport: vec2f;
 uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
+uniform kernelSize: f32;
 
 // textures
 var covariancesATexture: texture_2d<f32>;
@@ -57,7 +58,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor = splat.color;
 #endif
 
-    vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport);
+    vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

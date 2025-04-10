@@ -69,6 +69,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
+     * Point spread function
+     */
+    public static KernelSize: number = 0.3;
+
+    /**
      * Gets a boolean indicating that current material needs to register RTT
      */
     public override get hasRenderTargetTextures(): boolean {
@@ -145,7 +150,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal", "vEyePosition"];
+            const uniforms = [
+                "world",
+                "view",
+                "projection",
+                "vFogInfos",
+                "vFogColor",
+                "logarithmicDepthConstant",
+                "invViewport",
+                "dataTextureSize",
+                "focal",
+                "vEyePosition",
+                "kernelSize",
+            ];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
             const uniformBuffers = ["Scene", "Mesh"];
 
@@ -232,6 +249,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
+        effect.setFloat("kernelSize", GaussianSplattingMaterial.KernelSize);
 
         const gsMesh = mesh as GaussianSplattingMesh;
 

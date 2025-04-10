@@ -207,6 +207,9 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
     mat3 T = invy * transpose(mat3(modelView)) * J;
     mat3 cov2d = transpose(T) * Vrk * T;
 
+	cov2d[0][0] += kernelSize;
+	cov2d[1][1] += kernelSize;
+
     float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
     float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
     float epsilon = 0.0001;
