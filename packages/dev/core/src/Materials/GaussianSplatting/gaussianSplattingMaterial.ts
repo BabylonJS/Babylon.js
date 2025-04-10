@@ -232,6 +232,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
+
+        // vEyePosition doesn't get automatially bound on MacOS with Chromium for no apparent reason.
+        // Binding it manually here instead. Remove next line when SH rendering is fine on that platform.
         scene.bindEyePosition(effect);
 
         const gsMesh = mesh as GaussianSplattingMesh;
