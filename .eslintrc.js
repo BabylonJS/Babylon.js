@@ -316,7 +316,7 @@ const rules = {
                         selector: "function",
                         modifiers: [/*"exported", */ "global"],
                         format: ["StrictPascalCase"],
-                        // leadingUnderscore: "allow",
+                        leadingUnderscore: "allow",
                     },
                     {
                         selector: "interface",
