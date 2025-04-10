@@ -510,6 +510,30 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(3);
             expect(assertionData.nodes).toHaveLength(3);
         });
+        it("serializes scene and node metadata", async () => {
+            const assertionData = await page.evaluate(async () => {
+                window.scene!.metadata = { gltf: { extras: { high: "five" } } };
+                const box = BABYLON.CreateBox("box");
+                box.metadata = { test: "test" };
+                const box2 = BABYLON.CreateBox("box2");
+                box2.metadata = { gltf: { extras: { foo: 2, bar: "baz" } } };
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            const scene = assertionData.scenes[0];
+            const box1 = assertionData.nodes.find((node: any) => node.name == "box");
+            const box2 = assertionData.nodes.find((node: any) => node.name == "box2");
+            expect(scene).toBeDefined();
+            expect(scene.extras).toBeDefined();
+            expect(scene.extras.high).toEqual("five");
+            expect(box1).toBeDefined();
+            expect(box1.extras).toBeUndefined();
+            expect(box2).toBeDefined();
+            expect(box2.extras).toBeDefined();
+            expect(box2.extras.foo).toEqual(2);
+            expect(box2.extras.bar).toEqual("baz");
+        });
         it("should export instances as nodes pointing to same mesh", async () => {
             const instanceCount = 3;
             const assertionData = await page.evaluate(async (instanceCount) => {
