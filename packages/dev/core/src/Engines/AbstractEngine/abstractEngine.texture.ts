@@ -4,6 +4,7 @@ import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a depth stencil texture.

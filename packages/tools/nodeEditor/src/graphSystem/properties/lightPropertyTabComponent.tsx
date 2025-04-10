@@ -9,7 +9,7 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     override render() {
-        const scene = (this.props.stateManager.data as GlobalState).nodeMaterial!.getScene();
+        const scene = (this.props.stateManager.data as GlobalState).nodeMaterial.getScene();
         const lightOptions = scene.lights.map((l: Light) => {
             return { label: l.name, value: l.name };
         });

@@ -13,14 +13,14 @@ import * as Validation from "../../../../dev/loaders/src/glTF/glTFValidation";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
     for (const key in FileLoader) {
-        (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
+        (<any>GlobalObject).BABYLON[key] = (<any>FileLoader)[key];
     }
     for (const key in Validation) {
-        (<any>globalObject).BABYLON[key] = (<any>Validation)[key];
+        (<any>GlobalObject).BABYLON[key] = (<any>Validation)[key];
     }
 }
 
@@ -33,11 +33,11 @@ import * as GLTF1 from "../../../../dev/loaders/src/glTF/1.0/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.GLTF1 = (<any>globalObject).BABYLON.GLTF1 || {};
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    (<any>GlobalObject).BABYLON.GLTF1 = (<any>GlobalObject).BABYLON.GLTF1 || {};
     for (const key in GLTF1) {
-        (<any>globalObject).BABYLON.GLTF1[key] = (<any>GLTF1)[key];
+        (<any>GlobalObject).BABYLON.GLTF1[key] = (<any>GLTF1)[key];
     }
 }
 
@@ -52,9 +52,10 @@ import * as GLTF2 from "../../../../dev/loaders/src/glTF/2.0/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLON = (<any>globalObject).BABYLON;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const BABYLON = (<any>GlobalObject).BABYLON;
     BABYLON.GLTF2 = BABYLON.GLTF2 || {};
     BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
     BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
@@ -88,9 +89,9 @@ import * as OBJLoaders from "../../../../dev/loaders/src/OBJ/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-if (typeof globalObject !== "undefined") {
+if (typeof GlobalObject !== "undefined") {
     for (const key in OBJLoaders) {
-        (<any>globalObject).BABYLON[key] = (<any>OBJLoaders)[key];
+        (<any>GlobalObject).BABYLON[key] = (<any>OBJLoaders)[key];
     }
 }
 
@@ -103,9 +104,9 @@ import * as Loaders from "../../../../dev/loaders/src/STL/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-if (typeof globalObject !== "undefined") {
+if (typeof GlobalObject !== "undefined") {
     for (const key in Loaders) {
-        (<any>globalObject).BABYLON[key] = (<any>Loaders)[key];
+        (<any>GlobalObject).BABYLON[key] = (<any>Loaders)[key];
     }
 }
 

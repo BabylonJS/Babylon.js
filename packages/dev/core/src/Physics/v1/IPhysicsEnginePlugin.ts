@@ -8,6 +8,7 @@ import type { PhysicsRaycastResult } from "../physicsRaycastResult";
 /**
  * Interface used to describe a physics joint
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsImpostorJoint {
     /** Defines the main impostor to which the joint is linked */
     mainImpostor: PhysicsImpostor;
@@ -19,13 +20,8 @@ export interface PhysicsImpostorJoint {
 
 /** @internal */
 export interface IPhysicsEnginePlugin {
-    /**
-     *
-     */
     world: any;
-    /**
-     *
-     */
+
     name: string;
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;

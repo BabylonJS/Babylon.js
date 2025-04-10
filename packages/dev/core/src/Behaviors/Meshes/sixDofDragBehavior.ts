@@ -40,6 +40,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      * If `rotateDraggedObject` is set to `true`, this parameter determines if we are only rotating around the y axis (yaw)
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public rotateAroundYOnly = false;
 
     /**
@@ -79,7 +80,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         });
 
         // Node that will save the owner's transform
-        this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._virtualScene);
+        this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._VirtualScene);
         this._virtualTransformNode.rotationQuaternion = Quaternion.Identity();
 
         // On every frame move towards target scaling to avoid jitter caused by vr controllers

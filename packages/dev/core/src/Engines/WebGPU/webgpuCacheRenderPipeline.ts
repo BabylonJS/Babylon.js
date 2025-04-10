@@ -894,7 +894,7 @@ export abstract class WebGPUCacheRenderPipeline {
                         sampleType = WebGPUConstants.TextureSampleType.UnfilterableFloat;
                     }
 
-                    entry.texture!.sampleType = sampleType;
+                    entry.texture.sampleType = sampleType;
 
                     if (samplerInfo) {
                         const binding = shaderProcessingContext.bindGroupLayoutEntryInfo[samplerInfo.binding.groupIndex][samplerInfo.binding.bindingIndex].index;

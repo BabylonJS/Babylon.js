@@ -185,8 +185,8 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
-            gizmoMeshes: this._gizmoMesh.getChildMeshes() as Mesh[],
-            colliderMeshes: this._gizmoMesh.getChildMeshes() as Mesh[],
+            gizmoMeshes: this._gizmoMesh.getChildMeshes(),
+            colliderMeshes: this._gizmoMesh.getChildMeshes(),
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,

@@ -9,11 +9,13 @@ export type FrameGraphTextureHandle = number;
 /**
  * Represents a texture handle for the backbuffer color texture.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const backbufferColorTextureHandle: FrameGraphTextureHandle = 0;
 
 /**
  * Represents a texture handle for the backbuffer depth/stencil texture.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const backbufferDepthStencilTextureHandle: FrameGraphTextureHandle = 1;
 
 /**

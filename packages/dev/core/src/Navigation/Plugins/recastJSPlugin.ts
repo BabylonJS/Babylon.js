@@ -20,6 +20,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      * Reference to the Recast library
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsRECAST: any = {};
 
     /**
@@ -167,7 +168,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 const worldMatrix = mesh.computeWorldMatrix(true);
 
                 if (mesh.hasThinInstances) {
-                    const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                    const thinMatrices = mesh.thinInstanceGetWorldMatrices();
                     for (let instanceIndex = 0; instanceIndex < thinMatrices.length; instanceIndex++) {
                         const tmpMatrix = new Matrix();
                         const thinMatrix = thinMatrices[instanceIndex];
@@ -548,6 +549,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Recast/detour plugin
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsRECASTPlugin: RecastJSPlugin;
     /**
      * Link to the detour crowd

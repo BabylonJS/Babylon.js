@@ -487,7 +487,7 @@ export class AssetContainer extends AbstractAssetContainer {
             }
 
             if (clone instanceof Mesh) {
-                const clonedMesh = clone as Mesh;
+                const clonedMesh = clone;
 
                 if (clonedMesh.morphTargetManager) {
                     const oldMorphTargetManager = (source as Mesh).morphTargetManager!;

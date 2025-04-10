@@ -81,6 +81,7 @@ export class VRCameraMetrics {
     /**
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get leftHMatrix(): Matrix {
         const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
         const h = (4 * meters) / this.hScreenSize;
@@ -91,6 +92,7 @@ export class VRCameraMetrics {
     /**
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get rightHMatrix(): Matrix {
         const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
         const h = (4 * meters) / this.hScreenSize;

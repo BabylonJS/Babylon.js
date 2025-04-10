@@ -5,7 +5,7 @@ import { PointerEventTypes } from "../../../Events/pointerEvents";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { _isADescendantOf } from "../../utils";
+import { _IsDescendantOf } from "../../utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
@@ -80,7 +80,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public _getReferencedMesh(context: FlowGraphContext): AbstractMesh {
-        return this.asset.getValue(context) as AbstractMesh;
+        return this.asset.getValue(context);
     }
 
     public override _executeEvent(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {
@@ -92,7 +92,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         }
         // check if the mesh is the picked mesh or a descendant
         const mesh = this._getReferencedMesh(context);
-        if (mesh && pickedInfo.pickInfo?.pickedMesh && (pickedInfo.pickInfo?.pickedMesh === mesh || _isADescendantOf(pickedInfo.pickInfo?.pickedMesh, mesh))) {
+        if (mesh && pickedInfo.pickInfo?.pickedMesh && (pickedInfo.pickInfo?.pickedMesh === mesh || _IsDescendantOf(pickedInfo.pickInfo?.pickedMesh, mesh))) {
             this.pointerId.setValue((pickedInfo.event as PointerEvent).pointerId, context);
             this.pickOrigin.setValue(pickedInfo.pickInfo.ray?.origin!, context);
             this.pickedPoint.setValue(pickedInfo.pickInfo.pickedPoint!, context);

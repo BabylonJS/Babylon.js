@@ -19,6 +19,7 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
         const key = targetKey || "_" + propertyKey;
         Object.defineProperty(target, propertyKey, {
             get: function (this: any) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this[key];
             },
             set: function (this: any, value) {

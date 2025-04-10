@@ -56,6 +56,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         TextureLineComponent.UpdatePreview(this._canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async UpdatePreview(
         previewCanvas: HTMLCanvasElement,
         texture: BaseTexture,

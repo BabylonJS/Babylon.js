@@ -63,7 +63,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             });
 
             if (animatableAsAny.animations) {
-                this._animations!.push(...animatableAsAny.animations);
+                this._animations.push(...animatableAsAny.animations);
             }
 
             // Extract from and to

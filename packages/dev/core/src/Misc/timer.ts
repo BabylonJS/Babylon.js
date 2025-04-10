@@ -94,6 +94,7 @@ export const enum TimerState {
  * @param options options with which to initialize this timer
  * @returns an observer that can be used to stop the timer
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function setAndStartTimer<T = any>(options: ITimerOptions<T>): Nullable<Observer<T>> {
     let timer = 0;
     const startTime = Date.now();

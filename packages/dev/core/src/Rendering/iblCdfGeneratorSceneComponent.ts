@@ -7,6 +7,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Observer } from "../Misc/observable";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _iblCdfGenerator: Nullable<IblCdfGenerator>;

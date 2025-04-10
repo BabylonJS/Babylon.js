@@ -44,7 +44,7 @@ export function CreatePopup(
 
     newLinkEl.rel = "stylesheet";
     newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
-    parentDocument.head!.appendChild(newLinkEl);
+    parentDocument.head.appendChild(newLinkEl);
 
     parentDocument.title = title;
     parentDocument.body.style.width = "100%";

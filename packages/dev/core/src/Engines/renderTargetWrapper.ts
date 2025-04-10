@@ -544,7 +544,7 @@ export class RenderTargetWrapper {
                 rtw = this._engine.createRenderTargetTexture(size, options);
             }
             if (rtw.texture) {
-                rtw.texture!.isReady = true;
+                rtw.texture.isReady = true;
             }
         }
 

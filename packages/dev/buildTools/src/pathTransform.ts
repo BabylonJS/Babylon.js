@@ -4,10 +4,10 @@ import * as fs from "fs";
 import type { BuildType, PublicPackageVariable } from "./packageMapping.js";
 import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping.js";
 
-const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
+const AddJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
 // This function was adjusted for generated/src process
-const getPathForComputed = (computedPath: string, sourceFilename: string) => {
+const GetPathForComputed = (computedPath: string, sourceFilename: string) => {
     let p = computedPath;
     const generatedIndex = sourceFilename.indexOf("src");
     const srcIndex = sourceFilename.indexOf("src");
@@ -18,7 +18,7 @@ const getPathForComputed = (computedPath: string, sourceFilename: string) => {
     }
     return p;
 };
-const getRelativePath = (computedPath: string, sourceFilename: string) => {
+const GetRelativePath = (computedPath: string, sourceFilename: string) => {
     let p = path.relative(path.dirname(sourceFilename), computedPath).split(path.sep).join(path.posix.sep);
     p = p[0] === "." ? p : "./" + p;
     return p;
@@ -32,19 +32,20 @@ const getRelativePath = (computedPath: string, sourceFilename: string) => {
  * @param sourceFilename the optional source filename
  * @returns the new location
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");
     const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
     if (basePackage === "tslib" && sourceFilename && options.buildType === "es6") {
         let computedPath = "./tslib.es6.js";
-        const result = getPathForComputed(computedPath, sourceFilename);
+        const result = GetPathForComputed(computedPath, sourceFilename);
         if (options.basePackage === "@babylonjs/core") {
             storeTsLib();
-            computedPath = getRelativePath(result, sourceFilename);
+            computedPath = GetRelativePath(result, sourceFilename);
         } else {
             computedPath = "@babylonjs/core/tslib.es6";
         }
-        return addJS(computedPath, options.appendJS);
+        return AddJS(computedPath, options.appendJS);
     }
     if (!basePackage || !isValidDevPackageName(basePackage, true) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
         return;
@@ -52,7 +53,7 @@ export const transformPackageLocation = (location: string, options: ITransformer
 
     // local file?
     if (basePackage.startsWith(".")) {
-        return addJS(location, options.appendJS);
+        return AddJS(location, options.appendJS);
     }
 
     const returnPackageVariable: PublicPackageVariable = getDevPackagesByBuildType(options.buildType)[basePackage];
@@ -67,12 +68,12 @@ export const transformPackageLocation = (location: string, options: ITransformer
         }
         let computedPath = "./" + directoryParts.join("/");
         if (sourceFilename) {
-            const result = getPathForComputed(computedPath, sourceFilename);
-            computedPath = getRelativePath(result, sourceFilename);
+            const result = GetPathForComputed(computedPath, sourceFilename);
+            computedPath = GetRelativePath(result, sourceFilename);
         }
-        return addJS(computedPath, options.appendJS);
+        return AddJS(computedPath, options.appendJS);
     } else {
-        return addJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);
+        return AddJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);
     }
 };
 
@@ -105,29 +106,30 @@ interface ITransformerOptions {
 
 // inspired by https://github.com/OniVe/ts-transform-paths
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export default function transformer(_program: ts.Program, options: ITransformerOptions) {
     function optionsFactory<T extends TransformerNode>(context: ts.TransformationContext): ts.Transformer<T> {
-        return transformerFactory(context, options);
+        return TransformerFactory(context, options);
     }
 
     return optionsFactory;
 }
 
-function chainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (x: ts.SourceFile) => ts.SourceFile): (x: T) => T {
+function ChainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (x: ts.SourceFile) => ts.SourceFile): (x: T) => T {
     function transformBundle(node: ts.Bundle) {
         return ts.factory.createBundle(node.sourceFiles.map(transformSourceFile));
     }
 
     return function transformSourceFileOrBundle(node: T) {
-        return ts.isSourceFile(node) ? (transformSourceFile(node) as T) : (transformBundle(node as ts.Bundle) as T);
+        return ts.isSourceFile(node) ? (transformSourceFile(node) as T) : (transformBundle(node) as T);
     };
 }
 
-function isImportCall(node: ts.Node): node is ts.CallExpression {
+function IsImportCall(node: ts.Node): node is ts.CallExpression {
     return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
 }
 
-function transformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
+function TransformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
     // const aliasResolver = new AliasResolver(context.getCompilerOptions());
     function transformSourceFile(sourceFile: ts.SourceFile) {
         function getResolvedPathNode(node: ts.StringLiteral) {
@@ -148,7 +150,7 @@ function transformerFactory<T extends TransformerNode>(context: ts.Transformatio
              * - const x = require('path');
              * - const x = import('path');
              */
-            if (isImportCall(node)) {
+            if (IsImportCall(node)) {
                 return ts.visitEachChild(node, pathReplacer, context);
             }
 
@@ -190,18 +192,19 @@ function transformerFactory<T extends TransformerNode>(context: ts.Transformatio
         return ts.visitEachChild(sourceFile, visitor, context);
     }
 
-    return chainBundle(transformSourceFile);
+    return ChainBundle(transformSourceFile);
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const storeTsLib = () => {
     const tsLibPath = path.resolve(path.resolve(".", "tslib.es6.js"));
     if (!fs.existsSync(tsLibPath)) {
-        fs.writeFileSync(tsLibPath, tslibContent);
+        fs.writeFileSync(tsLibPath, TslibContent);
     }
 };
 
 // tslib 2.4.0
-const tslibContent = `
+const TslibContent = `
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
 Permission to use, copy, modify, and/or distribute this software for any

@@ -1,6 +1,7 @@
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { Observable } from "core/Misc/observable";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const conflictingValuesPlaceholder = "—";
 
 /**
@@ -10,6 +11,7 @@ export const conflictingValuesPlaceholder = "—";
  * @param getProperty
  * @returns a proxy object that can be passed as a target into the input
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function makeTargetsProxy<Type>(
     targets: Type[],
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
@@ -20,7 +22,9 @@ export function makeTargetsProxy<Type>(
         {
             get(_, name) {
                 const property = name as keyof Type;
-                if (targets.length === 0) return conflictingValuesPlaceholder;
+                if (targets.length === 0) {
+                    return conflictingValuesPlaceholder;
+                }
                 const firstValue = getProperty(targets[0], property);
                 for (const target of targets) {
                     if (getProperty(target, property) !== firstValue) {
@@ -30,7 +34,9 @@ export function makeTargetsProxy<Type>(
                 return firstValue;
             },
             set(_, name, value) {
-                if (value === "—") return true;
+                if (value === "—") {
+                    return true;
+                }
                 const property = name as keyof Type;
                 for (const target of targets) {
                     const initialValue = target[property];

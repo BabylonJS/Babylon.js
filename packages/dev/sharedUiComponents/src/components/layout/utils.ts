@@ -7,6 +7,7 @@ import type { Layout, LayoutColumn, LayoutTabsRow } from "./types";
  * @param row
  * @returns
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getPosInLayout = (layout: Layout, column: number, row?: number): LayoutColumn | LayoutTabsRow => {
     if (!layout.columns) {
         throw new Error("Attempted to get position on empty layout");
@@ -27,6 +28,7 @@ export const getPosInLayout = (layout: Layout, column: number, row?: number): La
  * @param column
  * @param row
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column: number, row: number) => {
     if (!layout.columns) {
         throw new Error("Attempted to get position on empty layout");
@@ -59,6 +61,7 @@ export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column
  * @param p2 the number
  * @returns the sum of the percentage string and the number
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const addPercentageStringToNumber = (p1: string, p2: number): number => {
     // Convert both values to numbers
     const np1 = Number.parseFloat(p1.replace("%", ""));
@@ -73,6 +76,7 @@ export const addPercentageStringToNumber = (p1: string, p2: number): number => {
  * @param p the percentage string
  * @returns the parsed number
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const parsePercentage = (p: string): number => {
     return Number.parseFloat(p.replace("%", ""));
 };

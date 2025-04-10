@@ -12,7 +12,7 @@ import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Observable } from "../../Misc/observable";
 
 /**
- * This should not be instanciated directly, as it is part of a scene component
+ * This should not be instantiated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsAccumulationPass {

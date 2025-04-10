@@ -160,30 +160,31 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Ab
     return format;
 };
 
-let _WorkerPromise: Nullable<Promise<Worker>> = null;
-let _Worker: Nullable<Worker> = null;
-let _actionId = 0;
-const _IgnoreSupportedFormats = false;
-const _CreateWorkerAsync = () => {
-    if (!_WorkerPromise) {
-        _WorkerPromise = new Promise((res, reject) => {
-            if (_Worker) {
-                res(_Worker);
+let WorkerPromise: Nullable<Promise<Worker>> = null;
+let LocalWorker: Nullable<Worker> = null;
+let ActionId = 0;
+const IgnoreSupportedFormats = false;
+const CreateWorkerAsync = async () => {
+    if (!WorkerPromise) {
+        WorkerPromise = new Promise((res, reject) => {
+            if (LocalWorker) {
+                res(LocalWorker);
             } else {
                 Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisToolsOptions.WasmModuleURL))
                     .then((wasmBinary) => {
                         if (typeof URL !== "function") {
                             return reject("Basis transcoder requires an environment with a URL constructor");
                         }
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunction})()`], { type: "application/javascript" }));
-                        _Worker = new Worker(workerBlobUrl);
-                        initializeWebWorker(_Worker, wasmBinary, BasisToolsOptions.JSModuleURL).then(res, reject);
+                        LocalWorker = new Worker(workerBlobUrl);
+                        initializeWebWorker(LocalWorker, wasmBinary, BasisToolsOptions.JSModuleURL).then(res, reject);
                     })
                     .catch(reject);
             }
         });
     }
-    return _WorkerPromise;
+    return WorkerPromise;
 };
 
 /**
@@ -191,7 +192,7 @@ const _CreateWorkerAsync = () => {
  * @param worker The worker that will be used for transcoding
  */
 export const SetBasisTranscoderWorker = (worker: Worker) => {
-    _Worker = worker;
+    LocalWorker = worker;
 };
 
 /**
@@ -200,16 +201,16 @@ export const SetBasisTranscoderWorker = (worker: Worker) => {
  * @param config configuration options for the transcoding
  * @returns a promise resulting in the transcoded image
  */
-export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
+export const TranscodeAsync = async (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
     const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
     return new Promise((res, rej) => {
-        _CreateWorkerAsync().then(
+        CreateWorkerAsync().then(
             () => {
-                const actionId = _actionId++;
+                const actionId = ActionId++;
                 const messageHandler = (msg: any) => {
                     if (msg.data.action === "transcode" && msg.data.id === actionId) {
-                        _Worker!.removeEventListener("message", messageHandler);
+                        LocalWorker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
                             rej("Transcode is not supported on this device");
                         } else {
@@ -217,11 +218,11 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
                         }
                     }
                 };
-                _Worker!.addEventListener("message", messageHandler);
+                LocalWorker!.addEventListener("message", messageHandler);
 
                 const dataViewCopy = new Uint8Array(dataView.byteLength);
                 dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
-                _Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: _IgnoreSupportedFormats }, [
+                LocalWorker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: IgnoreSupportedFormats }, [
                     dataViewCopy.buffer,
                 ]);
             },
@@ -295,7 +296,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
             texture.height = rootImage.height;
             texture.generateMipMaps = transcodeResult.fileInfo.images[i].levels.length > 1;
 
-            const format = BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine);
+            const format = BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format, engine);
             texture.format = format;
 
             BindTexture(texture, engine);

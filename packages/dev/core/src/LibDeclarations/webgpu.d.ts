@@ -136,7 +136,9 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
 
     createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
     createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
+    // eslint-disable-next-line no-restricted-syntax
     createComputePipelineAsync(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+    // eslint-disable-next-line no-restricted-syntax
     createRenderPipelineAsync(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
 
     createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
@@ -157,6 +159,7 @@ declare class GPUBuffer implements GPUObjectBase {
     readonly usage: GPUFlagsConstant;
     readonly mapState: GPUBufferMapState;
 
+    // eslint-disable-next-line no-restricted-syntax
     mapAsync(mode: GPUMapModeFlags, offset?: GPUSize64 /*default=0*/, size?: GPUSize64): Promise<void>;
     getMappedRange(offset?: GPUSize64 /*default=0*/, size?: GPUSize64): ArrayBuffer;
     unmap(): void;

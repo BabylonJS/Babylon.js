@@ -99,16 +99,16 @@ export class GeometryClampBlock extends NodeGeometryBlock {
             switch (this.value.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(value, min, max);
+                    return func(value, min, max);
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    return new Vector2(func!(value.x, min, max), func!(value.y, min, max));
+                    return new Vector2(func(value.x, min, max), func(value.y, min, max));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    return new Vector3(func!(value.x, min, max), func!(value.y, min, max), func!(value.z, min, max));
+                    return new Vector3(func(value.x, min, max), func(value.y, min, max), func(value.z, min, max));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func!(value.x, min, max), func!(value.y, min, max), func!(value.z, min, max), func!(value.w, min, max));
+                    return new Vector4(func(value.x, min, max), func(value.y, min, max), func(value.z, min, max), func(value.w, min, max));
                 }
             }
 

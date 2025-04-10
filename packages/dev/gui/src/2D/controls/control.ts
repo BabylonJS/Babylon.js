@@ -2454,7 +2454,7 @@ export class Control implements IAnimatable, IFocusableControl {
             this._onPointerUp(this, Vector2.Zero(), pointerId, 0, true);
         } else {
             for (const key in this._downPointerIds) {
-                this._onPointerUp(this, Vector2.Zero(), +key as number, 0, true);
+                this._onPointerUp(this, Vector2.Zero(), +key, 0, true);
             }
         }
     }

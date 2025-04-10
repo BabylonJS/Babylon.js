@@ -34,7 +34,7 @@ export interface ITextInputLineComponentProps {
     disabled?: boolean;
 }
 
-let throttleTimerId = -1;
+let ThrottleTimerId = -1;
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
@@ -155,10 +155,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         }
 
         if (this.props.throttlePropertyChangedNotification) {
-            if (throttleTimerId >= 0) {
-                window.clearTimeout(throttleTimerId);
+            if (ThrottleTimerId >= 0) {
+                window.clearTimeout(ThrottleTimerId);
             }
-            throttleTimerId = window.setTimeout(() => {
+            ThrottleTimerId = window.setTimeout(() => {
                 this.raiseOnPropertyChanged(value, store);
             }, this.props.throttlePropertyChangedNotificationDelay ?? 200);
         } else {

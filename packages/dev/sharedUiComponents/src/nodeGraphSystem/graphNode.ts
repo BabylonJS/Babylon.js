@@ -700,32 +700,32 @@ export class GraphNode {
         }
 
         // DOM
-        this._visual = root.ownerDocument!.createElement("div");
+        this._visual = root.ownerDocument.createElement("div");
         this._visual.classList.add(localStyles.visual);
 
         this._visual.addEventListener("pointerdown", (evt) => this._onDown(evt));
         this._visual.addEventListener("pointerup", (evt) => this._onUp(evt));
         this._visual.addEventListener("pointermove", (evt) => this._onMove(evt));
 
-        this._headerContainer = root.ownerDocument!.createElement("div");
+        this._headerContainer = root.ownerDocument.createElement("div");
         this._headerContainer.classList.add(localStyles["header-container"]);
         this._visual.appendChild(this._headerContainer);
 
-        this._header = root.ownerDocument!.createElement("div");
+        this._header = root.ownerDocument.createElement("div");
         this._header.classList.add(localStyles.header);
         this._headerContainer.appendChild(this._header);
 
-        this._headerIcon = root.ownerDocument!.createElement("div");
+        this._headerIcon = root.ownerDocument.createElement("div");
         this._headerIcon.classList.add(localStyles.headerIcon);
-        this._headerIconImg = root.ownerDocument!.createElement("img");
+        this._headerIconImg = root.ownerDocument.createElement("img");
         this._headerIconImg.draggable = false;
         this._headerIcon.appendChild(this._headerIconImg);
         this._headerContainer.appendChild(this._headerIcon);
 
         if (this.content.inputs.length > 1 || this.content.outputs.length > 1) {
-            this._headerCollapse = root.ownerDocument!.createElement("div");
+            this._headerCollapse = root.ownerDocument.createElement("div");
             this._headerCollapse.classList.add(localStyles.headerCollapse);
-            this._headerCollapseImg = root.ownerDocument!.createElement("img");
+            this._headerCollapseImg = root.ownerDocument.createElement("img");
             this._headerCollapseImg.src = dropdownArrowIcon;
             this._headerCollapseImg.draggable = false;
             this._headerCollapse.appendChild(this._headerCollapseImg);
@@ -743,47 +743,47 @@ export class GraphNode {
             });
         }
 
-        this._selectionBorder = root.ownerDocument!.createElement("div");
+        this._selectionBorder = root.ownerDocument.createElement("div");
         this._selectionBorder.classList.add("selection-border");
         this._visual.appendChild(this._selectionBorder);
 
-        this._connections = root.ownerDocument!.createElement("div");
+        this._connections = root.ownerDocument.createElement("div");
         this._connections.classList.add(localStyles.connections);
         this._visual.appendChild(this._connections);
 
-        this._optionsContainer = root.ownerDocument!.createElement("div");
+        this._optionsContainer = root.ownerDocument.createElement("div");
         this._optionsContainer.classList.add(localStyles.optionsContainer);
         this._connections.appendChild(this._optionsContainer);
 
-        this._inputsContainer = root.ownerDocument!.createElement("div");
+        this._inputsContainer = root.ownerDocument.createElement("div");
         this._inputsContainer.classList.add(commonStyles.inputsContainer);
         this._connections.appendChild(this._inputsContainer);
 
-        this._outputsContainer = root.ownerDocument!.createElement("div");
+        this._outputsContainer = root.ownerDocument.createElement("div");
         this._outputsContainer.classList.add(commonStyles.outputsContainer);
         this._connections.appendChild(this._outputsContainer);
 
-        this._content = root.ownerDocument!.createElement("div");
+        this._content = root.ownerDocument.createElement("div");
         this._content.classList.add(localStyles.content);
         this._visual.appendChild(this._content);
 
         root.appendChild(this._visual);
 
         // Comments
-        this._comments = root.ownerDocument!.createElement("div");
+        this._comments = root.ownerDocument.createElement("div");
         this._comments.classList.add(localStyles.comments);
 
         this._visual.appendChild(this._comments);
 
         // Execution time
-        this._executionTime = root.ownerDocument!.createElement("div");
+        this._executionTime = root.ownerDocument.createElement("div");
         this._executionTime.classList.add(localStyles.executionTime);
 
         this._visual.appendChild(this._executionTime);
 
         // Options
         let portUICount = 0;
-        const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
+        const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;
         if (propStore) {
             const source = this.content.data;
 
@@ -800,7 +800,7 @@ export class GraphNode {
                     continue;
                 }
 
-                const container = root.ownerDocument!.createElement("div");
+                const container = root.ownerDocument.createElement("div");
                 container.addEventListener("pointerdown", (evt) => evt.stopPropagation());
                 container.addEventListener("pointerup", (evt) => evt.stopPropagation());
                 container.addEventListener("pointermove", (evt) => evt.stopPropagation());
@@ -808,7 +808,7 @@ export class GraphNode {
                 switch (type) {
                     case PropertyTypeForEdition.Boolean: {
                         container.classList.add(localStyles.booleanContainer);
-                        const checkbox = root.ownerDocument!.createElement("input");
+                        const checkbox = root.ownerDocument.createElement("input");
                         checkbox.type = "checkbox";
                         checkbox.id = `checkbox-${GraphNode._IdGenerator++}`;
                         checkbox.checked = source[propertyName];
@@ -820,7 +820,7 @@ export class GraphNode {
                             this._forceRebuild(source, propertyName, options?.notifiers);
                         };
                         container.appendChild(checkbox);
-                        const label = root.ownerDocument!.createElement("label");
+                        const label = root.ownerDocument.createElement("label");
                         label.innerText = displayName;
                         label.htmlFor = checkbox.id;
                         container.appendChild(label);
@@ -831,7 +831,7 @@ export class GraphNode {
                         this._optionsContainer.appendChild(container);
                         BuildFloatUI(
                             container,
-                            root.ownerDocument!,
+                            root.ownerDocument,
                             displayName,
                             type === PropertyTypeForEdition.Int,
                             source,
@@ -848,10 +848,10 @@ export class GraphNode {
                     }
                     case PropertyTypeForEdition.List: {
                         container.classList.add(localStyles.listContainer);
-                        const select = root.ownerDocument!.createElement("div");
+                        const select = root.ownerDocument.createElement("div");
                         select.classList.add(localStyles.select);
                         container.appendChild(select);
-                        const selectText = root.ownerDocument!.createElement("div");
+                        const selectText = root.ownerDocument.createElement("div");
                         selectText.classList.add(localStyles.selectText);
                         select.appendChild(selectText);
                         const items = options.options as IEditablePropertyListOption[];
@@ -859,12 +859,12 @@ export class GraphNode {
                         this._visualPropertiesRefresh.push(() => {
                             selectText.innerText = items[source[propertyName]].label;
                         });
-                        const selectList = root.ownerDocument!.createElement("div");
+                        const selectList = root.ownerDocument.createElement("div");
                         selectList.classList.add(localStyles.selectList);
                         selectList.classList.add(commonStyles.hidden);
                         select.appendChild(selectList);
                         for (const item of items) {
-                            const option = root.ownerDocument!.createElement("div");
+                            const option = root.ownerDocument.createElement("div");
                             option.classList.add(localStyles.option);
                             option.innerText = item.label;
                             option.onclick = () => {

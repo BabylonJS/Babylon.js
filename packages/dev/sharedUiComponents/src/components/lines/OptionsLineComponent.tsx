@@ -32,13 +32,13 @@ enum OptionStates {
     Adding = 1, // State when the user is adding a new option to the menu
 }
 
-const _OptionAddKey = "addCustomOption";
+const OptionAddKey = "addCustomOption";
 
 export const OptionsLineComponent = (props: IOptionsLineComponentProps) => {
     const [optionState, setOptionState] = useState(OptionStates.Default); // State of the component
 
     const onOptionChange = (evt: ChangeEvent<HTMLSelectElement>) => {
-        if (evt.target.value === _OptionAddKey) {
+        if (evt.target.value === OptionAddKey) {
             setOptionState(OptionStates.Adding);
         } else {
             props.onOptionSelected(evt.target.value);
@@ -70,7 +70,7 @@ export const OptionsLineComponent = (props: IOptionsLineComponentProps) => {
             {optionState === OptionStates.Default && (
                 <select className={style.optionsSelect} onChange={onOptionChange} value={props.selectedOptionValue}>
                     {props.onOptionAdded && (
-                        <option key={_OptionAddKey} value={_OptionAddKey}>
+                        <option key={OptionAddKey} value={OptionAddKey}>
                             {props.addOptionText ?? "Custom"}
                         </option>
                     )}

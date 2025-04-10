@@ -4,13 +4,13 @@ import { Observable } from "../Misc/observable";
 import type { IComputePipelineContext } from "./IComputePipelineContext";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { Finalize, Initialize, PreProcess } from "../Engines/Processors/shaderProcessor";
-import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -19,6 +19,7 @@ import { _retryWithInterval } from "core/Misc/timingTools";
  *  * object: `{ compute: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
  *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IComputeShaderPath = {
     /**
      * Directly pass the shader code
@@ -165,7 +166,7 @@ export class ComputeEffect {
             computeSource = baseName.compute || baseName;
         }
 
-        const processorOptions: ProcessingOptions = {
+        const processorOptions: _IProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: undefined,
             isFragment: false,
@@ -301,7 +302,7 @@ export class ComputeEffect {
     }
 
     private _checkIsReady(previousPipelineContext: Nullable<IComputePipelineContext>) {
-        _retryWithInterval(
+        _RetryWithInterval(
             () => this._isReadyInternal(),
             () => {
                 // no-op, all work is done in _isReadyInternal

@@ -201,7 +201,7 @@ export class NodeLink {
         this._nodeB = nodeB;
         this._graphCanvas = graphCanvas;
 
-        const document = portA.element.ownerDocument!;
+        const document = portA.element.ownerDocument;
         const svg = graphCanvas.svgCanvas;
 
         // Create path
@@ -244,7 +244,7 @@ export class NodeLink {
         const pointB = this._portB!.portData;
 
         const reconnect = (newNode: GraphNode) => {
-            const newBlock = newNode.content.data as any;
+            const newBlock = newNode.content.data;
 
             // Delete previous link
             this.dispose();

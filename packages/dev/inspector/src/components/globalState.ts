@@ -99,7 +99,7 @@ export class GlobalState {
             this._onlyUseEulers = DataStorage.ReadBoolean("settings_onlyUseEulers", true);
         }
 
-        return this._onlyUseEulers!;
+        return this._onlyUseEulers;
     }
 
     public set onlyUseEulers(value: boolean) {
@@ -115,7 +115,7 @@ export class GlobalState {
             this._ignoreBackfacesForPicking = DataStorage.ReadBoolean("settings_ignoreBackfacesForPicking", false);
         }
 
-        return this._ignoreBackfacesForPicking!;
+        return this._ignoreBackfacesForPicking;
     }
 
     public set ignoreBackfacesForPicking(value: boolean) {

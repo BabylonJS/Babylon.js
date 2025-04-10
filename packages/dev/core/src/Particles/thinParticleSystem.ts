@@ -24,7 +24,7 @@ import type { ISize } from "../Maths/math.size";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.alpha";
-import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, PrepareStringDefinesForClipPlanes, BindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
@@ -237,9 +237,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
-        this._customWrappers[blendMode]!.effect = effect;
-        if (this._customWrappers[blendMode]!.drawContext) {
-            this._customWrappers[blendMode]!.drawContext!.useInstancing = this._useInstancing;
+        this._customWrappers[blendMode].effect = effect;
+        if (this._customWrappers[blendMode].drawContext) {
+            this._customWrappers[blendMode].drawContext.useInstancing = this._useInstancing;
         }
     }
 
@@ -452,8 +452,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
 
                 if (this.isLocal && particle._localPosition) {
-                    particle._localPosition!.addInPlace(this._scaledDirection);
-                    Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
+                    particle._localPosition.addInPlace(this._scaledDirection);
+                    Vector3.TransformCoordinatesToRef(particle._localPosition, this._emitterWorldMatrix, particle.position);
                 } else {
                     particle.position.addInPlace(this._scaledDirection);
                 }
@@ -1487,7 +1487,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 } else {
                     particle._localPosition.copyFrom(particle.position);
                 }
-                Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
+                Vector3.TransformCoordinatesToRef(particle._localPosition, this._emitterWorldMatrix, particle.position);
             }
 
             if (this.startDirectionFunction) {
@@ -1670,7 +1670,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["invView", "view", "projection", "textureMask", "translationPivot", "eyePosition"];
 
-        addClipPlaneUniforms(effectCreationOption);
+        AddClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1695,7 +1695,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing: boolean = true): void {
         if (this._scene) {
-            prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Constants.FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
@@ -2036,7 +2036,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         const defines = effect.defines;
 
         if (this._scene) {
-            bindClipPlane(effect, this, this._scene);
+            BindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
                 BindFogParameters(this._scene, undefined, effect);

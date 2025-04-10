@@ -66,7 +66,6 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         let previousPosition: Nullable<{ x: number; y: number }> = null;
 
@@ -146,7 +145,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
             const element = engine.getInputElement();
-            element && element.addEventListener("blur", this._onLostFocus);
+            if (element) {
+                element.addEventListener("blur", this._onLostFocus);
+            }
         }
     }
 
@@ -163,7 +164,10 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             if (this._onLostFocus) {
                 const engine = this.camera.getEngine();
                 const element = engine.getInputElement();
-                element && element.removeEventListener("blur", this._onLostFocus);
+                if (element) {
+                    element.removeEventListener("blur", this._onLostFocus);
+                }
+
                 this._onLostFocus = null;
             }
             this._pointerPressed.length = 0;

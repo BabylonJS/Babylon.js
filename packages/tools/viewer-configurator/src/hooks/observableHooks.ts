@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
  * @param eventNames The names of the events to listen for.
  * @returns The current value of the accessor.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useEventfulState<T>(accessor: () => T, element: HTMLElement | null | undefined, ...eventNames: string[]): T {
     const [current, setCurrent] = useState(accessor);
 
@@ -45,6 +46,7 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
  * @param observables The observables to listen for changes on.
  * @returns The current value of the accessor.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useObservableState<T>(accessor: () => T, ...observables: Array<Observable<any> | null | undefined>): T {
     const [current, setCurrent] = useState(accessor);
 

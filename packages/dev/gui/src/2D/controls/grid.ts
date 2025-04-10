@@ -115,7 +115,7 @@ export class Grid extends Container {
      */
     public addRowDefinition(height: number, isPixel = false): Grid {
         this._rowDefinitions.push(new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
+        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(() => this._markAsDirty()));
         this._markAsDirty();
 
         return this;
@@ -129,7 +129,7 @@ export class Grid extends Container {
      */
     public addColumnDefinition(width: number, isPixel = false): Grid {
         this._columnDefinitions.push(new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
+        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(() => this._markAsDirty()));
         this._markAsDirty();
 
         return this;

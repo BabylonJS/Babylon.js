@@ -176,7 +176,9 @@ export class PostProcessManager {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
-        postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp) => {
+        postProcesses =
+            postProcesses ||
+            camera._postProcesses.filter((pp) => {
                 return pp != null;
             });
         if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {

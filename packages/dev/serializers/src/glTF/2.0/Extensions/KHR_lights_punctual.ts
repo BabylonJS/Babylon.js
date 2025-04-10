@@ -62,7 +62,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
     /** @internal */
     public onExporting(): void {
-        this._exporter!._glTF.extensions![NAME] = this._lights;
+        this._exporter._glTF.extensions![NAME] = this._lights;
     }
     /**
      * Define this method to modify the default behavior when exporting a node

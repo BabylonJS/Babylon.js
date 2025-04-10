@@ -247,7 +247,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      */
     public get mesh(): Nullable<AbstractMesh> {
         if (this._node instanceof AbstractMesh) {
-            return this._node as AbstractMesh;
+            return this._node;
         }
 
         return null;
@@ -431,7 +431,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             this._onPointerUp(this, Vector3.Zero(), pointerId, 0, true);
         } else {
             for (const key in this._downPointerIds) {
-                this._onPointerUp(this, Vector3.Zero(), +key as number, 0, true);
+                this._onPointerUp(this, Vector3.Zero(), +key, 0, true);
             }
             if (this._downCount > 0) {
                 this._downCount = 1;

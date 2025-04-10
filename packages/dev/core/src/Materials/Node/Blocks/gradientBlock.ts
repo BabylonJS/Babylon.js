@@ -136,7 +136,7 @@ export class GradientBlock extends NodeMaterialBlock {
 
         let gradientSource = this.gradient.associatedVariableName;
 
-        if (this.gradient.connectedPoint!.type !== NodeMaterialBlockConnectionPointTypes.Float) {
+        if (this.gradient.connectedPoint.type !== NodeMaterialBlockConnectionPointTypes.Float) {
             gradientSource += ".x";
         }
 

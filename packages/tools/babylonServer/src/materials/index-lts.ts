@@ -7,13 +7,13 @@ import * as MatLib from "materials/index";
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
     for (const mat in MatLib) {
-        (<any>globalObject).BABYLON[mat] = (<any>MatLib)[mat];
+        (<any>GlobalObject).BABYLON[mat] = (<any>MatLib)[mat];
     }
-    (<any>globalObject).MATERIALS = MatLib;
+    (<any>GlobalObject).MATERIALS = MatLib;
 }
 
 export * from "materials/index";

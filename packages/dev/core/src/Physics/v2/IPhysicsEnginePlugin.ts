@@ -186,6 +186,7 @@ export interface IPhysicsCollisionEvent extends IBasePhysicsCollisionEvent {
 /**
  * Parameters used to describe the Shape
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsShapeParameters {
     /**
      * Shape center position
@@ -248,6 +249,7 @@ export interface PhysicsShapeParameters {
 /**
  * Parameters used to describe a Constraint
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsConstraintParameters {
     /**
      * Location of the constraint pivot in the space of first body
@@ -298,6 +300,7 @@ export interface PhysicsConstraintParameters {
 /**
  * Parameters used to describe mass and inertia of the Physics Body
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsMassProperties {
     /**
      * The center of mass, in local space. This is The
@@ -435,7 +438,7 @@ export interface IPhysicsEnginePluginV2 {
     applyForce(body: PhysicsBody, force: Vector3, location: Vector3, instanceIndex?: number): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
-    getBodyGeometry(body: PhysicsBody): {};
+    getBodyGeometry(body: PhysicsBody): object;
     disposeBody(body: PhysicsBody): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
     setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;

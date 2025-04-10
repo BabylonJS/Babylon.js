@@ -4,7 +4,7 @@ import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 
-import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
+import { _SetStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
 
 Node.AddNodeConstructor("AnaglyphUniversalCamera", (name, scene, options) => {
     return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
@@ -36,5 +36,5 @@ export class AnaglyphUniversalCamera extends UniversalCamera {
         return "AnaglyphUniversalCamera";
     }
 
-    protected override _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
+    protected override _setRigMode = () => _SetStereoscopicAnaglyphRigMode(this);
 }

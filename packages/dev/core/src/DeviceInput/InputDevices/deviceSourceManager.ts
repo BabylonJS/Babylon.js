@@ -128,7 +128,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      */
     public _addDevice(deviceSource: DeviceSourceType): void {
         if (!this._devices[deviceSource.deviceType]) {
-            this._devices[deviceSource.deviceType] = new Array();
+            this._devices[deviceSource.deviceType] = [];
         }
 
         if (!this._devices[deviceSource.deviceType][deviceSource.deviceSlot]) {

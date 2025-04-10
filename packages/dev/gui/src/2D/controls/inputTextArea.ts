@@ -914,7 +914,7 @@ export class InputTextArea extends InputText {
                 for (let i = startLineIndex; i <= endLineIndex; i++) {
                     const line = this._lines[i];
 
-                    let highlightRootX = this._scrollLeft as number;
+                    let highlightRootX = this._scrollLeft;
                     switch (this._textHorizontalAlignment) {
                         case Control.HORIZONTAL_ALIGNMENT_LEFT:
                             highlightRootX += 0;

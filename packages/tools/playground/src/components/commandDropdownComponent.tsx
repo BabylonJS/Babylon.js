@@ -141,10 +141,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                     return;
                                                                 }
                                                                 if (m.defaultValues) {
-                                                                    const newValue = !Utilities.ReadBoolFromStore(
-                                                                        m.storeKeys![index],
-                                                                        (m.defaultValues[index] as boolean) || false
-                                                                    );
+                                                                    const newValue = !Utilities.ReadBoolFromStore(m.storeKeys![index], m.defaultValues[index] || false);
                                                                     Utilities.StoreBoolToStore(m.storeKeys![index], newValue);
                                                                     //this.forceUpdate();
                                                                     m.onCheck!(newValue);
@@ -171,7 +168,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                         this.forceUpdate();
                                                                         m.onCheck!(evt.target.checked);
                                                                     }}
-                                                                    checked={Utilities.ReadBoolFromStore(m.storeKeys![index], (m.defaultValues[index] as boolean) || false)}
+                                                                    checked={Utilities.ReadBoolFromStore(m.storeKeys![index], m.defaultValues[index] || false)}
                                                                 />
                                                             )}
                                                         </div>

@@ -13,7 +13,7 @@ import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 import type { Observable, Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 
-function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
+function GetTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
     if (node instanceof Node) {
         return new HTMLTwinNodeItem(node, scene);
     } else {
@@ -32,9 +32,9 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
     if (!node) {
         return null;
     }
-    const [twinItem, setTwinItem] = useState<HTMLTwinItem>(getTwinItemFromNode(node, scene));
+    const [twinItem, setTwinItem] = useState<HTMLTwinItem>(GetTwinItemFromNode(node, scene));
     useEffect(() => {
-        setTwinItem(getTwinItemFromNode(node, scene));
+        setTwinItem(GetTwinItemFromNode(node, scene));
     }, [node]);
 
     const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
@@ -96,7 +96,7 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
             disposeObservable.remove(disposeObserver);
             accessibilityTagObservable.remove(accessibilityTagObserver);
             if (node instanceof Control) {
-                isVisibleChangedObservable.remove(isVisibleChangedObserver!);
+                isVisibleChangedObservable.remove(isVisibleChangedObserver);
             }
             if (node instanceof Container) {
                 controlAddedObservable.remove(controlAddedObserver);

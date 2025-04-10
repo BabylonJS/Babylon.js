@@ -119,7 +119,7 @@ export abstract class FrameGraphTask {
         let outputDepthTexture: Nullable<InternalTexture> = null;
         let outputObjectList: FrameGraphObjectList | undefined;
 
-        for (const pass of this._passes!) {
+        for (const pass of this._passes) {
             const errMsg = pass._isValid();
             if (errMsg) {
                 throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
@@ -143,7 +143,7 @@ export abstract class FrameGraphTask {
         let disabledOutputDepthTexture: Nullable<InternalTexture> = null;
         let disabledOutputObjectList: FrameGraphObjectList | undefined;
 
-        for (const pass of this._passesDisabled!) {
+        for (const pass of this._passesDisabled) {
             const errMsg = pass._isValid();
             if (errMsg) {
                 throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);

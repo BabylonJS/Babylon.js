@@ -82,12 +82,12 @@ export function CreateIcoSphereVertexData(options: {
     ];
 
     // index of 3 vertex makes a face of icopshere
-    const ico_indices = [
+    const icoIndices = [
         0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 12, 22, 23, 1, 5, 20, 5, 11, 4, 23, 22, 13, 22, 18, 6, 7, 1, 8, 14, 21, 4, 14, 4, 2, 16, 13, 6, 15, 6, 19, 3, 8, 9, 4, 21, 5, 13, 17,
         23, 6, 13, 22, 19, 6, 18, 9, 8, 1,
     ];
     // vertex for uv have aliased position, not for UV
-    const vertices_unalias_id = [
+    const verticesUnaliasId = [
         0,
         1,
         2,
@@ -116,7 +116,7 @@ export function CreateIcoSphereVertexData(options: {
     ];
 
     // uv as integer step (not pixels !)
-    const ico_vertexuv = [
+    const icoVertexuv = [
         5,
         1,
         3,
@@ -213,8 +213,8 @@ export function CreateIcoSphereVertexData(options: {
     const voffset = 26 / 1024;
     // Second island should have margin, not to touch the first island
     // avoid any borderline artefact in pixel rounding
-    const island_u_offset = -40 / 1024;
-    const island_v_offset = +20 / 1024;
+    const islandUoffset = -40 / 1024;
+    const islandVoffset = +20 / 1024;
     // face is either island 0 or 1 :
     // second island is for faces : [4, 7, 8, 12, 13, 16, 17, 18]
     const island = [
@@ -245,34 +245,30 @@ export function CreateIcoSphereVertexData(options: {
     const normals: number[] = [];
     const uvs: number[] = [];
 
-    let current_indice = 0;
+    let currentIndice = 0;
     // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
-    const face_vertex_pos = new Array(3);
-    const face_vertex_uv = new Array(3);
+    const faceVertexPos = new Array(3);
+    const faceVertexUv = new Array(3);
     let v012;
     for (v012 = 0; v012 < 3; v012++) {
-        face_vertex_pos[v012] = Vector3.Zero();
-        face_vertex_uv[v012] = Vector2.Zero();
+        faceVertexPos[v012] = Vector3.Zero();
+        faceVertexUv[v012] = Vector2.Zero();
     }
     // create all with normals
     for (let face = 0; face < 20; face++) {
         // 3 vertex per face
         for (v012 = 0; v012 < 3; v012++) {
             // look up vertex 0,1,2 to its index in 0 to 11 (or 23 including alias)
-            const v_id = ico_indices[3 * face + v012];
+            const vId = icoIndices[3 * face + v012];
             // vertex have 3D position (x,y,z)
-            face_vertex_pos[v012].copyFromFloats(
-                icoVertices[3 * vertices_unalias_id[v_id]],
-                icoVertices[3 * vertices_unalias_id[v_id] + 1],
-                icoVertices[3 * vertices_unalias_id[v_id] + 2]
-            );
+            faceVertexPos[v012].copyFromFloats(icoVertices[3 * verticesUnaliasId[vId]], icoVertices[3 * verticesUnaliasId[vId] + 1], icoVertices[3 * verticesUnaliasId[vId] + 2]);
             // Normalize to get normal
-            face_vertex_pos[v012].normalize();
+            faceVertexPos[v012].normalize();
 
             // uv Coordinates from vertex ID
-            face_vertex_uv[v012].copyFromFloats(
-                ico_vertexuv[2 * v_id] * ustep + uoffset + island[face] * island_u_offset,
-                ico_vertexuv[2 * v_id + 1] * vstep + voffset + island[face] * island_v_offset
+            faceVertexUv[v012].copyFromFloats(
+                icoVertexuv[2 * vId] * ustep + uoffset + island[face] * islandUoffset,
+                icoVertexuv[2 * vId + 1] * vstep + voffset + island[face] * islandVoffset
             );
         }
 
@@ -313,56 +309,56 @@ export function CreateIcoSphereVertexData(options: {
         // centroid of triangle is needed to get help normal computation
         //  (c1,c2) are used for centroid location
 
-        const interp_vertex = (i1: number, i2: number, c1: number, c2: number) => {
+        const interpVertex = (i1: number, i2: number, c1: number, c2: number) => {
             // vertex is interpolated from
             //   - face_vertex_pos[0..2]
             //   - face_vertex_uv[0..2]
-            const pos_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], i2 / subdivisions);
-            const pos_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], i2 / subdivisions);
-            const pos_interp = subdivisions === i2 ? face_vertex_pos[2] : Vector3.Lerp(pos_x0, pos_x1, i1 / (subdivisions - i2));
-            pos_interp.normalize();
+            const posX0 = Vector3.Lerp(faceVertexPos[0], faceVertexPos[2], i2 / subdivisions);
+            const posX1 = Vector3.Lerp(faceVertexPos[1], faceVertexPos[2], i2 / subdivisions);
+            const posInterp = subdivisions === i2 ? faceVertexPos[2] : Vector3.Lerp(posX0, posX1, i1 / (subdivisions - i2));
+            posInterp.normalize();
 
-            let vertex_normal;
+            let vertexNormal;
             if (flat) {
                 // in flat mode, recalculate normal as face centroid normal
-                const centroid_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], c2 / subdivisions);
-                const centroid_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], c2 / subdivisions);
-                vertex_normal = Vector3.Lerp(centroid_x0, centroid_x1, c1 / (subdivisions - c2));
+                const centroidX0 = Vector3.Lerp(faceVertexPos[0], faceVertexPos[2], c2 / subdivisions);
+                const centroidX1 = Vector3.Lerp(faceVertexPos[1], faceVertexPos[2], c2 / subdivisions);
+                vertexNormal = Vector3.Lerp(centroidX0, centroidX1, c1 / (subdivisions - c2));
             } else {
                 // in smooth mode, recalculate normal from each single vertex position
-                vertex_normal = new Vector3(pos_interp.x, pos_interp.y, pos_interp.z);
+                vertexNormal = new Vector3(posInterp.x, posInterp.y, posInterp.z);
             }
             // Vertex normal need correction due to X,Y,Z radius scaling
-            vertex_normal.x /= radiusX;
-            vertex_normal.y /= radiusY;
-            vertex_normal.z /= radiusZ;
-            vertex_normal.normalize();
+            vertexNormal.x /= radiusX;
+            vertexNormal.y /= radiusY;
+            vertexNormal.z /= radiusZ;
+            vertexNormal.normalize();
 
-            const uv_x0 = Vector2.Lerp(face_vertex_uv[0], face_vertex_uv[2], i2 / subdivisions);
-            const uv_x1 = Vector2.Lerp(face_vertex_uv[1], face_vertex_uv[2], i2 / subdivisions);
-            const uv_interp = subdivisions === i2 ? face_vertex_uv[2] : Vector2.Lerp(uv_x0, uv_x1, i1 / (subdivisions - i2));
-            positions.push(pos_interp.x * radiusX, pos_interp.y * radiusY, pos_interp.z * radiusZ);
-            normals.push(vertex_normal.x, vertex_normal.y, vertex_normal.z);
-            uvs.push(uv_interp.x, useOpenGLOrientationForUV ? 1.0 - uv_interp.y : uv_interp.y);
+            const uvX0 = Vector2.Lerp(faceVertexUv[0], faceVertexUv[2], i2 / subdivisions);
+            const uvX1 = Vector2.Lerp(faceVertexUv[1], faceVertexUv[2], i2 / subdivisions);
+            const uvInterp = subdivisions === i2 ? faceVertexUv[2] : Vector2.Lerp(uvX0, uvX1, i1 / (subdivisions - i2));
+            positions.push(posInterp.x * radiusX, posInterp.y * radiusY, posInterp.z * radiusZ);
+            normals.push(vertexNormal.x, vertexNormal.y, vertexNormal.z);
+            uvs.push(uvInterp.x, useOpenGLOrientationForUV ? 1.0 - uvInterp.y : uvInterp.y);
             // push each vertex has member of a face
             // Same vertex can belong to multiple face, it is pushed multiple time (duplicate vertex are present)
-            indices.push(current_indice);
-            current_indice++;
+            indices.push(currentIndice);
+            currentIndice++;
         };
 
         for (let i2 = 0; i2 < subdivisions; i2++) {
             for (let i1 = 0; i1 + i2 < subdivisions; i1++) {
                 // face : (i1,i2)  for /\  :
                 // interp for : (i1,i2),(i1+1,i2),(i1,i2+1)
-                interp_vertex(i1, i2, i1 + 1.0 / 3, i2 + 1.0 / 3);
-                interp_vertex(i1 + 1, i2, i1 + 1.0 / 3, i2 + 1.0 / 3);
-                interp_vertex(i1, i2 + 1, i1 + 1.0 / 3, i2 + 1.0 / 3);
+                interpVertex(i1, i2, i1 + 1.0 / 3, i2 + 1.0 / 3);
+                interpVertex(i1 + 1, i2, i1 + 1.0 / 3, i2 + 1.0 / 3);
+                interpVertex(i1, i2 + 1, i1 + 1.0 / 3, i2 + 1.0 / 3);
                 if (i1 + i2 + 1 < subdivisions) {
                     // face : (i1,i2)' for \/  :
                     // interp for (i1+1,i2),(i1+1,i2+1),(i1,i2+1)
-                    interp_vertex(i1 + 1, i2, i1 + 2.0 / 3, i2 + 2.0 / 3);
-                    interp_vertex(i1 + 1, i2 + 1, i1 + 2.0 / 3, i2 + 2.0 / 3);
-                    interp_vertex(i1, i2 + 1, i1 + 2.0 / 3, i2 + 2.0 / 3);
+                    interpVertex(i1 + 1, i2, i1 + 2.0 / 3, i2 + 2.0 / 3);
+                    interpVertex(i1 + 1, i2 + 1, i1 + 2.0 / 3, i2 + 2.0 / 3);
+                    interpVertex(i1, i2 + 1, i1 + 2.0 / 3, i2 + 2.0 / 3);
                 }
             }
         }

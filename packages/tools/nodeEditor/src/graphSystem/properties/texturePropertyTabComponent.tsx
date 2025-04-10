@@ -298,7 +298,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             noDirectUpdate={true}
                             propertyName="samplingMode"
                             onSelect={(value) => {
-                                texture!.updateSamplingMode(value as number);
+                                texture.updateSamplingMode(value as number);
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
@@ -310,7 +310,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             target={texture}
                             propertyName="coordinatesMode"
                             onSelect={(value: any) => {
-                                texture!.coordinatesMode = value;
+                                texture.coordinatesMode = value;
                                 this.forceUpdate();
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
@@ -319,9 +319,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp U"
-                            isSelected={() => texture!.wrapU === Texture.CLAMP_ADDRESSMODE}
+                            isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE}
                             onSelect={(value) => {
-                                texture!.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                                texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
@@ -330,9 +330,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp V"
-                            isSelected={() => texture!.wrapV === Texture.CLAMP_ADDRESSMODE}
+                            isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE}
                             onSelect={(value) => {
-                                texture!.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                                texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}

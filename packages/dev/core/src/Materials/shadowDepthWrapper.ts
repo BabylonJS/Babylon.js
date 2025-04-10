@@ -16,6 +16,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 /**
  * Options to be used when creating a shadow depth material
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface IIOptionShadowDepthMaterial {
     /** Variables in the vertex shader code that need to have their names remapped.
      * The format is: ["var_name", "var_remapped_name", "var_name", "var_remapped_name", ...]

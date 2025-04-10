@@ -1,7 +1,6 @@
 import type { IDisposable } from "../scene";
 
-/** @ignore */
-interface WorkerInfo {
+interface IWorkerInfo {
     workerPromise: Promise<Worker>;
     idle: boolean;
     timeoutId?: ReturnType<typeof setTimeout>;
@@ -11,7 +10,7 @@ interface WorkerInfo {
  * Helper class to push actions to a pool of workers.
  */
 export class WorkerPool implements IDisposable {
-    protected _workerInfos: Array<WorkerInfo>;
+    protected _workerInfos: Array<IWorkerInfo>;
     protected _pendingActions = new Array<(worker: Worker, onComplete: () => void) => void>();
 
     /**
@@ -61,7 +60,7 @@ export class WorkerPool implements IDisposable {
         return false;
     }
 
-    protected _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
+    protected _execute(workerInfo: IWorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
         workerInfo.idle = false;
         workerInfo.workerPromise.then((worker) => {
             action(worker, () => {
@@ -79,6 +78,7 @@ export class WorkerPool implements IDisposable {
 /**
  * Options for AutoReleaseWorkerPool
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface AutoReleaseWorkerPoolOptions {
     /**
      * Idle time elapsed before workers are terminated.
@@ -114,7 +114,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
     public override push(action: (worker: Worker, onComplete: () => void) => void): void {
         if (!this._executeOnIdleWorker(action)) {
             if (this._workerInfos.length < this._maxWorkers) {
-                const workerInfo: WorkerInfo = {
+                const workerInfo: IWorkerInfo = {
                     workerPromise: this._createWorkerAsync(),
                     idle: false,
                 };
@@ -126,7 +126,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
         }
     }
 
-    protected override _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
+    protected override _execute(workerInfo: IWorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
         // Reset the idle timeout.
         if (workerInfo.timeoutId) {
             clearTimeout(workerInfo.timeoutId);

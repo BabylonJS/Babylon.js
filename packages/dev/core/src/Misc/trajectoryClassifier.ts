@@ -353,14 +353,14 @@ export class Trajectory {
      * @returns whether or not transformation was successful
      */
     private static _TransformSegmentDirToRef(priorVec: DeepImmutable<Vector3>, fromVec: DeepImmutable<Vector3>, toVec: DeepImmutable<Vector3>, result: Vector3): boolean {
-        const DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD = 0.98;
+        const dotProductSampleRejectionThreshold = 0.98;
 
         fromVec.subtractToRef(priorVec, Trajectory._ForwardDir);
         Trajectory._ForwardDir.normalize();
         fromVec.scaleToRef(-1, Trajectory._InverseFromVec);
         Trajectory._InverseFromVec.normalize();
 
-        if (Math.abs(Vector3.Dot(Trajectory._ForwardDir, Trajectory._InverseFromVec)) > DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD) {
+        if (Math.abs(Vector3.Dot(Trajectory._ForwardDir, Trajectory._InverseFromVec)) > dotProductSampleRejectionThreshold) {
             return false;
         }
 
@@ -434,8 +434,8 @@ class Vector3Alphabet {
         endingStepSize: number = 0.001,
         fixedValues: DeepImmutable<Vector3[]> = []
     ): Vector3Alphabet {
-        const EPSILON = 0.001;
-        const EPSILON_SQUARED = EPSILON * EPSILON;
+        const epsilon = 0.001;
+        const epsilonSquared = epsilon * epsilon;
 
         const alphabet = new Vector3Alphabet(alphabetSize);
         for (let idx = 0; idx < alphabetSize; ++idx) {
@@ -459,7 +459,7 @@ class Vector3Alphabet {
                 alphabet.chars.forEach((pt) => {
                     alphabet.chars[idx].subtractToRef(pt, scratch);
                     distSq = scratch.lengthSquared();
-                    if (distSq > EPSILON_SQUARED) {
+                    if (distSq > epsilonSquared) {
                         scratch.scaleAndAddToRef(1 / (scratch.lengthSquared() * distSq), force);
                     }
                 });

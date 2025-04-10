@@ -40,6 +40,7 @@ class MathHelpers {
  * @param bias defines bias value to add to the result
  * @returns minimum and maximum values
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function extractMinAndMaxIndexed(
     positions: FloatArray,
     indices: IndicesArray,
@@ -76,6 +77,7 @@ export function extractMinAndMaxIndexed(
  * @param stride defines the stride size to use (distance between two positions in the positions array)
  * @returns minimum and maximum values
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function extractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
     const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -107,7 +109,7 @@ export function extractMinAndMax(positions: FloatArray, start: number, count: nu
  * @param indices defines the indices to use and update
  */
 export function FixFlippedFaces(positions: FloatArray, indices: IndicesArray): void {
-    const boundingInfo = extractMinAndMax(positions!, 0, positions!.length / 3);
+    const boundingInfo = extractMinAndMax(positions, 0, positions.length / 3);
 
     const inside = boundingInfo.maximum.subtract(boundingInfo.minimum).scale(0.5).add(boundingInfo.minimum);
     const tmpVectorA = new Vector3();

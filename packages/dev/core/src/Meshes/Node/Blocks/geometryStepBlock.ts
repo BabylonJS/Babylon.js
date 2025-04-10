@@ -74,16 +74,16 @@ export class GeometryStepBlock extends NodeGeometryBlock {
             switch (this.value.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(source, edge);
+                    return func(source, edge);
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    return new Vector2(func!(source.x, edge), func!(source.y, edge));
+                    return new Vector2(func(source.x, edge), func(source.y, edge));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    return new Vector3(func!(source.x, edge), func!(source.y, edge), func!(source.z, edge));
+                    return new Vector3(func(source.x, edge), func(source.y, edge), func(source.z, edge));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func!(source.x, edge), func!(source.y, edge), func!(source.z, edge), func!(source.w, edge));
+                    return new Vector4(func(source.x, edge), func(source.y, edge), func(source.z, edge), func(source.w, edge));
                 }
             }
 

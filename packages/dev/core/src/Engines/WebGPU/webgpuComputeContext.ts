@@ -124,7 +124,7 @@ export class WebGPUComputeContext implements IComputeContext {
                                 ? (object as DataBuffer)
                                 : type === ComputeBindingType.UniformBuffer
                                   ? (object as UniformBuffer).getBuffer()!
-                                  : (object as StorageBuffer).getBuffer()!;
+                                  : (object as StorageBuffer).getBuffer();
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
                             (entries[indexInGroupEntries].resource as GPUBufferBinding).buffer = webgpuBuffer;

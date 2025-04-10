@@ -6,6 +6,7 @@ import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 
 declare module "./mesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
          * Gets or sets a boolean defining if we want picking to pick thin instances as well

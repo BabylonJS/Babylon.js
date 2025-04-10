@@ -1,10 +1,10 @@
 /* eslint-disable import/no-internal-modules */
 import { Sandbox } from "../index";
 
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.Sandbox = Sandbox;
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    (<any>GlobalObject).BABYLON.Sandbox = Sandbox;
 }
 
 export * from "../index";

@@ -3,6 +3,7 @@ import type { Nullable } from "../types";
 /**
  * Interface used to define a behavior
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Behavior<T> {
     /** gets or sets behavior's name */
     name: string;

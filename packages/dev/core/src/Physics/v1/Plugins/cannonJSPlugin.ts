@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable, FloatArray } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../../Maths/math.vector";
@@ -20,7 +22,7 @@ declare let CANNON: any;
 export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "CannonJSPlugin";
-    private _physicsMaterials = new Array();
+    private _physicsMaterials: any[] = [];
     private _fixedTimeStep: number = 1 / 60;
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;

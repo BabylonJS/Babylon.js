@@ -261,6 +261,7 @@ export class InputBlock extends NodeMaterialBlock {
      * Please note that this value will be ignored if valueCallback is defined
      */
     public get value(): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._storedValue;
     }
 
@@ -825,7 +826,7 @@ export class InputBlock extends NodeMaterialBlock {
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Matrix:
-                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m}])`;
+                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m.join(", ")}])`;
                     break;
             }
 

@@ -5,6 +5,7 @@ import { Constants } from "../constants";
 import "./abstractEngine.alpha";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         _cachedStencilBuffer: boolean;

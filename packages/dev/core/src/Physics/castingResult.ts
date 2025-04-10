@@ -84,6 +84,7 @@ export class CastingResult {
 /**
  * Interface for the size containing width and height
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 interface IXYZ {
     /**
      * X

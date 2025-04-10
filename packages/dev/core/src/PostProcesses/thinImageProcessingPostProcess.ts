@@ -9,6 +9,7 @@ import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfig
 /**
  * Options used to create a ThinImageProcessingPostProcessOptions.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ThinImageProcessingPostProcessOptions extends EffectWrapperCreationOptions {
     /**
      * An existing image processing configuration to use. If not provided, the scene one will be used.

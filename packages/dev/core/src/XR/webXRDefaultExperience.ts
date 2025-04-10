@@ -141,7 +141,7 @@ export class WebXRDefaultExperience {
      * @param options options for basic configuration
      * @returns resulting WebXRDefaultExperience
      */
-    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
+    public static async CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
         const result = new WebXRDefaultExperience();
         scene.onDisposeObservable.addOnce(() => {
             result.dispose();
@@ -164,7 +164,7 @@ export class WebXRDefaultExperience {
 
         // Create base experience
         return WebXRExperienceHelper.CreateAsync(scene)
-            .then((xrHelper) => {
+            .then(async (xrHelper) => {
                 result.baseExperience = xrHelper;
 
                 if (options.ignoreNativeCameraTransformation) {

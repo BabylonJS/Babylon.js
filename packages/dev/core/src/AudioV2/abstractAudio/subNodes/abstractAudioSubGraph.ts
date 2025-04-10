@@ -38,14 +38,14 @@ export abstract class _AbstractAudioSubGraph {
             return;
         }
 
-        this._createSubNodePromisesResolved().then(() => {
+        this._createSubNodePromisesResolvedAsync().then(() => {
             const node = this.getSubNode(name);
             if (node) {
                 callback(node as T);
                 return;
             }
 
-            this.createAndAddSubNode(name).then((node) => {
+            this.createAndAddSubNodeAsync(name).then((node) => {
                 callback(node as T);
             });
         });
@@ -59,7 +59,7 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      */
-    public createAndAddSubNode(name: AudioSubNode): Promise<_AbstractAudioSubNode> {
+    public createAndAddSubNodeAsync(name: AudioSubNode): Promise<_AbstractAudioSubNode> {
         this._createSubNodePromises[name] ||= this._createSubNode(name).then((node) => {
             this._addSubNode(node);
             return node;
@@ -105,8 +105,8 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      */
-    public async removeSubNode(subNode: _AbstractAudioSubNode): Promise<void> {
-        await this._createSubNodePromisesResolved();
+    public async removeSubNodeAsync(subNode: _AbstractAudioSubNode): Promise<void> {
+        await this._createSubNodePromisesResolvedAsync();
 
         const name = subNode.name;
         if (this._subNodes[name]) {
@@ -126,7 +126,7 @@ export abstract class _AbstractAudioSubGraph {
      */
     protected abstract _onSubNodesChanged(): void;
 
-    protected _createSubNodePromisesResolved(): Promise<_AbstractAudioSubNode[]> {
+    protected _createSubNodePromisesResolvedAsync(): Promise<_AbstractAudioSubNode[]> {
         return Promise.all(Object.values(this._createSubNodePromises));
     }
 

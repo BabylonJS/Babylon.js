@@ -202,7 +202,7 @@ export class SolidParticle {
         target.rotation.copyFrom(this.rotation);
         if (this.rotationQuaternion) {
             if (target.rotationQuaternion) {
-                target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+                target.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
                 target.rotationQuaternion = this.rotationQuaternion.clone();
             }
@@ -210,7 +210,7 @@ export class SolidParticle {
         target.scaling.copyFrom(this.scaling);
         if (this.color) {
             if (target.color) {
-                target.color!.copyFrom(this.color!);
+                target.color.copyFrom(this.color);
             } else {
                 target.color = this.color.clone();
             }

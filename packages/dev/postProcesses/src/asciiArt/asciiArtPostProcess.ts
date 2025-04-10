@@ -232,12 +232,12 @@ export class AsciiArtPostProcess extends PostProcess {
         // Use options.
         if (options) {
             if (typeof options === "string") {
-                font = <string>options;
+                font = options;
             } else {
-                font = (<IAsciiArtPostProcessOptions>options).font || font;
-                characterSet = (<IAsciiArtPostProcessOptions>options).characterSet || characterSet;
-                this.mixToTile = (<IAsciiArtPostProcessOptions>options).mixToTile || this.mixToTile;
-                this.mixToNormal = (<IAsciiArtPostProcessOptions>options).mixToNormal || this.mixToNormal;
+                font = options.font || font;
+                characterSet = options.characterSet || characterSet;
+                this.mixToTile = options.mixToTile || this.mixToTile;
+                this.mixToNormal = options.mixToNormal || this.mixToNormal;
             }
         }
 

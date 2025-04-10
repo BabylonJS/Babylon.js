@@ -8,16 +8,19 @@ import { SetInterpolationForKey } from "./Extensions/objectModelMapping";
 export type GetValueFn = (target: any, source: Float32Array, offset: number, scale: number) => any;
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getVector3(_target: any, source: Float32Array, offset: number, scale: number): Vector3 {
     return Vector3.FromArray(source, offset).scaleInPlace(scale);
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getQuaternion(_target: any, source: Float32Array, offset: number, scale: number): Quaternion {
     return Quaternion.FromArray(source, offset).scaleInPlace(scale);
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getWeights(target: INode, source: Float32Array, offset: number, scale: number): Array<number> {
     const value = new Array<number>(target._numMorphTargets!);
     for (let i = 0; i < value.length; i++) {

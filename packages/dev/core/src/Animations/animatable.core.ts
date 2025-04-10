@@ -397,7 +397,7 @@ export class Animatable {
      * Wait asynchronously for the animation to end
      * @returns a promise which will be fulfilled when the animation ends
      */
-    public waitAsync(): Promise<Animatable> {
+    public async waitAsync(): Promise<Animatable> {
         return new Promise((resolve) => {
             this.onAnimationEndObservable.add(
                 () => {
@@ -668,7 +668,7 @@ function ProcessLateAnimationBindingsForQuaternions(
         Quaternion.SlerpToRef(cumulativeQuaternion, TmpVectors.Quaternion[0], runtimeAnimation.weight, cumulativeQuaternion);
     }
 
-    return cumulativeQuaternion!;
+    return cumulativeQuaternion;
 }
 
 /** @internal */

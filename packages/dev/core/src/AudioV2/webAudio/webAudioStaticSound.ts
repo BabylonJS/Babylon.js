@@ -63,11 +63,11 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     }
 
     /** @internal */
-    public async _init(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
+    public async _initAsync(source: StaticSoundSourceType, options: Partial<IStaticSoundOptions>): Promise<void> {
         this._audioContext = this.engine._audioContext;
 
         if (source instanceof _WebAudioStaticSoundBuffer) {
-            this._buffer = source as _WebAudioStaticSoundBuffer;
+            this._buffer = source;
         } else if (typeof source === "string" || Array.isArray(source) || source instanceof ArrayBuffer || source instanceof AudioBuffer) {
             this._buffer = (await this.engine.createSoundBufferAsync(source, options)) as _WebAudioStaticSoundBuffer;
         }
@@ -79,7 +79,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
             this.outBus = this.engine.defaultMainBus;
         }
 
-        await this._subGraph.init(options);
+        await this._subGraph.initAsync(options);
 
         if (_HasSpatialAudioOptions(options)) {
             this._initSpatialProperty();
@@ -206,15 +206,15 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         super(engine);
     }
 
-    public async _init(source: StaticSoundSourceType, options: Partial<IStaticSoundBufferOptions>): Promise<void> {
+    public async _initAsync(source: StaticSoundSourceType, options: Partial<IStaticSoundBufferOptions>): Promise<void> {
         if (source instanceof AudioBuffer) {
             this._audioBuffer = source;
         } else if (typeof source === "string") {
-            await this._initFromUrl(source);
+            await this._initFromUrlAsync(source);
         } else if (Array.isArray(source)) {
-            await this._initFromUrls(source, options.skipCodecCheck ?? false);
+            await this._initFromUrlsAsync(source, options.skipCodecCheck ?? false);
         } else if (source instanceof ArrayBuffer) {
-            await this._initFromArrayBuffer(source);
+            await this._initFromArrayBufferAsync(source);
         }
     }
 
@@ -238,25 +238,25 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         return this._audioBuffer.sampleRate;
     }
 
-    private async _initFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<void> {
+    private async _initFromArrayBufferAsync(arrayBuffer: ArrayBuffer): Promise<void> {
         this._audioBuffer = await this.engine._audioContext.decodeAudioData(arrayBuffer);
     }
 
-    private async _initFromUrl(url: string): Promise<void> {
+    private async _initFromUrlAsync(url: string): Promise<void> {
         url = _CleanUrl(url);
-        await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
+        await this._initFromArrayBufferAsync(await (await fetch(url)).arrayBuffer());
     }
 
-    private async _initFromUrls(urls: string[], skipCodecCheck: boolean): Promise<void> {
+    private async _initFromUrlsAsync(urls: string[], skipCodecCheck: boolean): Promise<void> {
         for (const url of urls) {
             if (skipCodecCheck) {
-                await this._initFromUrl(url);
+                await this._initFromUrlAsync(url);
             } else {
                 const matches = url.match(_FileExtensionRegex);
                 const format = matches?.at(1);
                 if (format && this.engine.isFormatValid(format)) {
                     try {
-                        await this._initFromUrl(url);
+                        await this._initFromUrlAsync(url);
                     } catch (e) {
                         if (format && 0 < format.length) {
                             this.engine.flagInvalidFormat(format);

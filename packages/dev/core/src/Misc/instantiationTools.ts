@@ -9,7 +9,7 @@ export class InstantiationTools {
      * Use this object to register external classes like custom textures or material
      * to allow the loaders to instantiate them
      */
-    public static RegisteredExternalClasses: { [key: string]: Object } = {};
+    public static RegisteredExternalClasses: { [key: string]: object } = {};
 
     /**
      * Tries to instantiate a new object from a given class name

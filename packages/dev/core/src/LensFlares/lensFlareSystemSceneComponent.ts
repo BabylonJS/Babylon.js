@@ -26,6 +26,7 @@ AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene:
 });
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Removes the given lens flare system from this scene.

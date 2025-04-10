@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { Workbench } from "./workbench";

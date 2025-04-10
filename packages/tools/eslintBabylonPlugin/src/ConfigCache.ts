@@ -12,14 +12,14 @@ interface ICachedConfig {
 
 // How often to check for modified input files.  If a file's modification timestamp has changed, then we will
 // evict the cache entry immediately.
-const cacheCheckIntervalMs: number = 3 * 1000;
+const CacheCheckIntervalMs: number = 3 * 1000;
 
 // Evict old entries from the cache after this much time, regardless of whether the file was detected as being
 // modified or not.
-const cacheExpireMs: number = 20 * 1000;
+const CacheExpireMs: number = 20 * 1000;
 
 // If this many objects accumulate in the cache, then it is cleared to avoid a memory leak.
-const cacheMaxSize: number = 100;
+const CacheMaxSize: number = 100;
 
 export class ConfigCache {
     // findConfigPathForFolder() result --> loaded tsdoc.json configuration
@@ -63,11 +63,11 @@ export class ConfigCache {
             const loadAgeMs: number = nowMs - cachedConfig.loadTimeMs;
             const lastCheckAgeMs: number = nowMs - cachedConfig.lastCheckTimeMs;
 
-            if (loadAgeMs > cacheExpireMs || loadAgeMs < 0) {
+            if (loadAgeMs > CacheExpireMs || loadAgeMs < 0) {
                 Debug.Log("Evicting because item is expired");
                 cachedConfig = undefined;
                 ConfigCache._CachedConfigs.delete(cacheKey);
-            } else if (lastCheckAgeMs > cacheCheckIntervalMs || lastCheckAgeMs < 0) {
+            } else if (lastCheckAgeMs > CacheCheckIntervalMs || lastCheckAgeMs < 0) {
                 Debug.Log("Checking for modifications");
                 cachedConfig.lastCheckTimeMs = nowMs;
                 if (cachedConfig.configFile.checkForModifiedFiles()) {
@@ -81,7 +81,7 @@ export class ConfigCache {
 
         // Load the object
         if (!cachedConfig) {
-            if (ConfigCache._CachedConfigs.size > cacheMaxSize) {
+            if (ConfigCache._CachedConfigs.size > CacheMaxSize) {
                 Debug.Log("Clearing cache");
                 ConfigCache._CachedConfigs.clear(); // avoid a memory leak
             }

@@ -17,12 +17,12 @@ export type IndividualBabylonFileParser = (parsedData: any, scene: Scene, rootUr
 /**
  * Stores the list of available parsers in the application.
  */
-const _BabylonFileParsers: { [key: string]: BabylonFileParser } = {};
+const BabylonFileParsers: { [key: string]: BabylonFileParser } = {};
 
 /**
  * Stores the list of available individual parsers in the application.
  */
-const _IndividualBabylonFileParsers: { [key: string]: IndividualBabylonFileParser } = {};
+const IndividualBabylonFileParsers: { [key: string]: IndividualBabylonFileParser } = {};
 
 /**
  * Adds a parser in the list of available ones
@@ -30,7 +30,7 @@ const _IndividualBabylonFileParsers: { [key: string]: IndividualBabylonFileParse
  * @param parser Defines the parser to add
  */
 export function AddParser(name: string, parser: BabylonFileParser): void {
-    _BabylonFileParsers[name] = parser;
+    BabylonFileParsers[name] = parser;
 }
 
 /**
@@ -39,8 +39,8 @@ export function AddParser(name: string, parser: BabylonFileParser): void {
  * @returns the requested parser or null
  */
 export function GetParser(name: string): Nullable<BabylonFileParser> {
-    if (_BabylonFileParsers[name]) {
-        return _BabylonFileParsers[name];
+    if (BabylonFileParsers[name]) {
+        return BabylonFileParsers[name];
     }
 
     return null;
@@ -52,7 +52,7 @@ export function GetParser(name: string): Nullable<BabylonFileParser> {
  * @param parser Defines the parser to add
  */
 export function AddIndividualParser(name: string, parser: IndividualBabylonFileParser): void {
-    _IndividualBabylonFileParsers[name] = parser;
+    IndividualBabylonFileParsers[name] = parser;
 }
 
 /**
@@ -61,8 +61,8 @@ export function AddIndividualParser(name: string, parser: IndividualBabylonFileP
  * @returns the requested parser or null
  */
 export function GetIndividualParser(name: string): Nullable<IndividualBabylonFileParser> {
-    if (_IndividualBabylonFileParsers[name]) {
-        return _IndividualBabylonFileParsers[name];
+    if (IndividualBabylonFileParsers[name]) {
+        return IndividualBabylonFileParsers[name];
     }
 
     return null;
@@ -76,9 +76,9 @@ export function GetIndividualParser(name: string): Nullable<IndividualBabylonFil
  * @param rootUrl Defines the root url of the data
  */
 export function Parse(jsonData: any, scene: Scene, container: AssetContainer, rootUrl: string): void {
-    for (const parserName in _BabylonFileParsers) {
-        if (Object.prototype.hasOwnProperty.call(_BabylonFileParsers, parserName)) {
-            _BabylonFileParsers[parserName](jsonData, scene, container, rootUrl);
+    for (const parserName in BabylonFileParsers) {
+        if (Object.prototype.hasOwnProperty.call(BabylonFileParsers, parserName)) {
+            BabylonFileParsers[parserName](jsonData, scene, container, rootUrl);
         }
     }
 }

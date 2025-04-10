@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import type { Transcoder } from "./transcoder";
@@ -27,12 +28,12 @@ export class TranscoderManager {
                 transcoder = this._getExistingTranscoder(key, TranscoderManager._Transcoders[i].Name);
                 if (!transcoder) {
                     transcoder = new TranscoderManager._Transcoders[i]();
-                    transcoder!.initialize();
-                    if (transcoder!.needMemoryManager()) {
+                    transcoder.initialize();
+                    if (transcoder.needMemoryManager()) {
                         if (!this._wasmMemoryManager) {
                             this._wasmMemoryManager = new WASMMemoryManager();
                         }
-                        transcoder!.setMemoryManager(this._wasmMemoryManager);
+                        transcoder.setMemoryManager(this._wasmMemoryManager);
                     }
                     if (!TranscoderManager._TranscoderInstances[key]) {
                         TranscoderManager._TranscoderInstances[key] = [];

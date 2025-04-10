@@ -67,6 +67,7 @@ export interface IScaleGizmo extends IGizmo {
 /**
  * Additional options for the scale gizmo
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ScaleGizmoOptions {
     /**
      * Additional transform applied to the gizmo.

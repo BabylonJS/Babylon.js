@@ -13,6 +13,7 @@ import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { AbstractEngine } from "../abstractEngine";
 
 declare module "../../Engines/engine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Engine {
         /**
          * Creates a new multiview render target
@@ -54,7 +55,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     internalTexture.isMultiview = true;
 
     if (!colorTexture) {
-        colorTexture = gl.createTexture() as WebGLTexture;
+        colorTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, colorTexture);
         (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
     }
@@ -62,7 +63,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     rtWrapper._colorTextureArray = colorTexture;
 
     if (!depthStencilTexture) {
-        depthStencilTexture = gl.createTexture() as WebGLTexture;
+        depthStencilTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthStencilTexture);
         (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
     }
@@ -124,6 +125,7 @@ Engine.prototype.bindSpaceWarpFramebuffer = function (_spaceWarpTexture: RenderT
 };
 
 declare module "../../Cameras/camera" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Camera {
         /**
          * @internal
@@ -166,6 +168,7 @@ Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, heig
 };
 
 declare module "../../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */
         _transformMatrixR: Matrix;
@@ -180,7 +183,7 @@ declare module "../../scene" {
     }
 }
 
-function createMultiviewUbo(engine: AbstractEngine, name?: string) {
+function CreateMultiviewUbo(engine: AbstractEngine, name?: string) {
     const ubo = new UniformBuffer(engine, undefined, true, name);
     ubo.addUniform("viewProjection", 16);
     ubo.addUniform("viewProjectionR", 16);
@@ -190,18 +193,18 @@ function createMultiviewUbo(engine: AbstractEngine, name?: string) {
     return ubo;
 }
 
-const currentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer;
+const CurrentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer;
 
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
 Scene.prototype._createMultiviewUbo = function () {
-    this._multiviewSceneUbo = createMultiviewUbo(this.getEngine(), "scene_multiview");
+    this._multiviewSceneUbo = CreateMultiviewUbo(this.getEngine(), "scene_multiview");
 };
 Scene.prototype.createSceneUniformBuffer = function (name?: string): UniformBuffer {
     if (this._multiviewSceneUbo) {
-        return createMultiviewUbo(this.getEngine(), name);
+        return CreateMultiviewUbo(this.getEngine(), name);
     }
-    return currentCreateSceneUniformBuffer.bind(this)(name);
+    return CurrentCreateSceneUniformBuffer.bind(this)(name);
 };
 Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {

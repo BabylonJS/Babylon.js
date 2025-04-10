@@ -1,7 +1,7 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 
-const varyingRegex = /(flat\s)?\s*varying\s*.*/;
+const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
 
 /** @internal */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
@@ -12,7 +12,7 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
     }
 
     public varyingCheck(varying: string, _isFragment: boolean) {
-        return varyingRegex.test(varying);
+        return VaryingRegex.test(varying);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean) {

@@ -77,7 +77,9 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                 <div
                     id="color"
                     onClick={() => {
-                        if (!this.props.pickerOpen) this.props.setPickerOpen(true);
+                        if (!this.props.pickerOpen) {
+                            this.props.setPickerOpen(true);
+                        }
                     }}
                     title="Color"
                     className={`icon button${this.props.pickerOpen ? ` active` : ``}`}

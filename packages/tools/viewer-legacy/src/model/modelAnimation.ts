@@ -42,6 +42,7 @@ export enum EasingFunction {
 /**
  * Defines a simple animation to be applied to a model (scale).
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ModelAnimationConfiguration {
     /**
      * Time of animation, in seconds

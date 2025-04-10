@@ -35,7 +35,7 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
-import { addClipPlaneUniforms, bindClipPlane } from "./clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -1478,7 +1478,7 @@ export class StandardMaterial extends PushMaterial {
                 maxSimultaneousLights: this._maxSimultaneousLights,
             });
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             const csnrOptions: ICustomShaderNameResolveOptions = {};
 
@@ -1845,7 +1845,7 @@ export class StandardMaterial extends PushMaterial {
             this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Colors
             this.bindEyePosition(effect);

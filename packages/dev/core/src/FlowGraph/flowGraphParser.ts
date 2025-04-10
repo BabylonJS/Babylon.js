@@ -4,7 +4,7 @@ import type { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import type { FlowGraph, IFlowGraphParseOptions } from "./flowGraph";
 import type { FlowGraphBlock, IFlowGraphBlockParseOptions } from "./flowGraphBlock";
 import type { FlowGraphContext, IFlowGraphContextParseOptions } from "./flowGraphContext";
-import type { FlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
+import type { IFlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
 import { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
@@ -58,7 +58,7 @@ export function GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], unique
  * @param options the options to use when parsing
  * @returns the parsed coordinator
  */
-export async function ParseCoordinatorAsync(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
+export async function ParseCoordinatorAsync(serializedObject: any, options: IFlowGraphCoordinatorParseOptions) {
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
 
@@ -77,7 +77,9 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: Flow
     }
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
-        serializedObject._flowGraphs?.map((serializedGraph: any) => ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))
+        serializedObject._flowGraphs?.map(async (serializedGraph: any) =>
+            ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter })
+        )
     );
     return coordinator;
 }

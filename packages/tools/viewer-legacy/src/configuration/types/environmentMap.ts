@@ -3,6 +3,7 @@ import type { ViewerConfiguration } from "../configuration";
 /**
  * Lab-oriented default .env support
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const environmentMapConfiguration: ViewerConfiguration = {
     lab: {
         assetsRootURL: "/assets/environment/",

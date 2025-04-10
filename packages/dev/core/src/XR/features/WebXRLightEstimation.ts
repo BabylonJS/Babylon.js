@@ -243,7 +243,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             }
             this._reflectionCubeMap._texture.isReady = true;
             if (!this.options.disablePreFiltering) {
-                this._xrLightProbe!.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+                this._xrLightProbe.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
                 this._hdrFilter.prefilter(this._reflectionCubeMap).then(() => {
                     this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                     this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap!);

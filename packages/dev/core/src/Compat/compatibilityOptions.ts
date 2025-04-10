@@ -1,12 +1,14 @@
 /**
  * Defines if the system should use OpenGL convention for UVs when creating geometry or loading .babylon files (false by default)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export let useOpenGLOrientationForUV = false;
 
 /**
  * Sets whether to use OpenGL convention for UVs
  * @param value the new value
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function setOpenGLOrientationForUV(value: boolean) {
     useOpenGLOrientationForUV = value;
 }

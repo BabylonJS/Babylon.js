@@ -6,7 +6,7 @@ import { Constants } from "../constants";
 import type { TextureSampler } from "../../Materials/Textures/textureSampler";
 import type { Nullable } from "../../types";
 
-const filterToBits = [
+const FilterToBits = [
     0 | (0 << 1) | (0 << 2), // not used
     0 | (0 << 1) | (0 << 2), // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
     1 | (1 << 1) | (0 << 2), // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
@@ -23,7 +23,7 @@ const filterToBits = [
 ];
 
 // subtract 0x01FF from the comparison function value before indexing this array!
-const comparisonFunctionToBits = [
+const ComparisonFunctionToBits = [
     (0 << 3) | (0 << 4) | (0 << 5) | (0 << 6), // undefined
     (0 << 3) | (0 << 4) | (0 << 5) | (1 << 6), // NEVER
     (0 << 3) | (0 << 4) | (1 << 5) | (0 << 6), // LESS
@@ -35,7 +35,7 @@ const comparisonFunctionToBits = [
     (1 << 3) | (0 << 4) | (0 << 5) | (0 << 6), // ALWAYS
 ];
 
-const filterNoMipToBits = [
+const FilterNoMipToBits = [
     0 << 7, // not used
     1 << 7, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
     1 << 7, // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
@@ -67,9 +67,9 @@ export class WebGPUCacheSampler {
         // The WebGPU spec currently only allows values 1 and 4 for anisotropy
         const anisotropy = sampler._cachedAnisotropicFilteringLevel ? sampler._cachedAnisotropicFilteringLevel : 1;
         const code =
-            filterToBits[sampler.samplingMode] +
-            comparisonFunctionToBits[(sampler._comparisonFunction || 0x0202) - 0x0200 + 1] +
-            filterNoMipToBits[sampler.samplingMode] + // handle the lodMinClamp = lodMaxClamp = 0 case when no filter used for mip mapping
+            FilterToBits[sampler.samplingMode] +
+            ComparisonFunctionToBits[(sampler._comparisonFunction || 0x0202) - 0x0200 + 1] +
+            FilterNoMipToBits[sampler.samplingMode] + // handle the lodMinClamp = lodMaxClamp = 0 case when no filter used for mip mapping
             ((sampler._cachedWrapU ?? 1) << 8) +
             ((sampler._cachedWrapV ?? 1) << 10) +
             ((sampler._cachedWrapR ?? 1) << 12) +

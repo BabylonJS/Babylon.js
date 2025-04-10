@@ -258,7 +258,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     /**
      * Observable raised before camera rotation
      */
-    public onBeforeCameraTeleportRotation = new Observable<Number>();
+    public onBeforeCameraTeleportRotation = new Observable<number>();
 
     /**
      *  Observable raised after camera rotation
@@ -716,7 +716,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                 if (!controllerData.teleportationState.backwards) {
                                     controllerData.teleportationState.backwards = true;
                                     // teleport backwards ONCE
-                                    this._tmpQuaternion.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion!);
+                                    this._tmpQuaternion.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion);
                                     this._tmpQuaternion.toEulerAnglesToRef(this._tmpVector);
                                     // get only the y rotation
                                     this._tmpVector.x = 0;

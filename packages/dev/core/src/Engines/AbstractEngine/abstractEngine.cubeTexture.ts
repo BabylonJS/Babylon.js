@@ -10,6 +10,7 @@ import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/tex
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         createCubeTextureBase(

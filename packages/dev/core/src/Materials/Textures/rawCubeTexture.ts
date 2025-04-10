@@ -74,7 +74,7 @@ export class RawCubeTexture extends CubeTexture {
 
             const texture = new RawCubeTexture(
                 scene,
-                internalTexture._bufferViewArray!,
+                internalTexture._bufferViewArray,
                 internalTexture.width,
                 internalTexture.format,
                 internalTexture.type,

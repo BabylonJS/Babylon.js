@@ -49,6 +49,7 @@ export class MultiObserver<T> {
 }
 
 declare module "./observable" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Observable<T> {
         /**
          * Calling this will execute each callback, expecting it to be a promise or return a value.

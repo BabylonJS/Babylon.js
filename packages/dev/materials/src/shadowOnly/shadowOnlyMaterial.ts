@@ -19,7 +19,7 @@ import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -208,7 +208,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             const uniformBuffers: string[] = ["Scene"];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -271,7 +271,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         if (this._mustRebind(scene, effect, subMesh)) {
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

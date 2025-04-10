@@ -19,6 +19,7 @@ import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _fluidRenderer: Nullable<FluidRenderer>;
@@ -579,8 +580,8 @@ export class FluidRenderer {
             }
         });
 
-        (this.renderObjects as Array<IFluidRenderingRenderObject>) = [];
-        (this.targetRenderers as FluidRenderingTargetRenderer[]) = [];
+        this.renderObjects.length = 0;
+        this.targetRenderers.length = 0;
         this._cameras.clear();
     }
 }

@@ -68,8 +68,8 @@ export class Xbox360Pad extends Gamepad {
     private _buttonY: number = 0;
     private _buttonBack: number = 0;
     private _buttonStart: number = 0;
-    private _buttonLB: number = 0;
-    private _buttonRB: number = 0;
+    private _buttonLb: number = 0;
+    private _buttonRb: number = 0;
 
     private _buttonLeftStick: number = 0;
     private _buttonRightStick: number = 0;
@@ -193,7 +193,7 @@ export class Xbox360Pad extends Gamepad {
         return newValue;
     }
 
-    private _setDPadValue(newValue: number, currentValue: number, buttonType: Xbox360Dpad): number {
+    private _setDpadValue(newValue: number, currentValue: number, buttonType: Xbox360Dpad): number {
         if (newValue !== currentValue) {
             if (newValue === 1) {
                 if (this._ondpaddown) {
@@ -294,27 +294,31 @@ export class Xbox360Pad extends Gamepad {
     /**
      * Gets the value of the `Left` button
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get buttonLB(): number {
-        return this._buttonLB;
+        return this._buttonLb;
     }
     /**
      * Sets the value of the `Left` button
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set buttonLB(value) {
-        this._buttonLB = this._setButtonValue(value, this._buttonLB, Xbox360Button.LB);
+        this._buttonLb = this._setButtonValue(value, this._buttonLb, Xbox360Button.LB);
     }
 
     /**
      * Gets the value of the `Right` button
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get buttonRB(): number {
-        return this._buttonRB;
+        return this._buttonRb;
     }
     /**
      * Sets the value of the `Right` button
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set buttonRB(value) {
-        this._buttonRB = this._setButtonValue(value, this._buttonRB, Xbox360Button.RB);
+        this._buttonRb = this._setButtonValue(value, this._buttonRb, Xbox360Button.RB);
     }
 
     /**
@@ -353,7 +357,7 @@ export class Xbox360Pad extends Gamepad {
      * Sets the value of D-pad up
      */
     public set dPadUp(value) {
-        this._dPadUp = this._setDPadValue(value, this._dPadUp, Xbox360Dpad.Up);
+        this._dPadUp = this._setDpadValue(value, this._dPadUp, Xbox360Dpad.Up);
     }
 
     /**
@@ -366,7 +370,7 @@ export class Xbox360Pad extends Gamepad {
      * Sets the value of D-pad down
      */
     public set dPadDown(value) {
-        this._dPadDown = this._setDPadValue(value, this._dPadDown, Xbox360Dpad.Down);
+        this._dPadDown = this._setDpadValue(value, this._dPadDown, Xbox360Dpad.Down);
     }
 
     /**
@@ -379,7 +383,7 @@ export class Xbox360Pad extends Gamepad {
      * Sets the value of D-pad left
      */
     public set dPadLeft(value) {
-        this._dPadLeft = this._setDPadValue(value, this._dPadLeft, Xbox360Dpad.Left);
+        this._dPadLeft = this._setDpadValue(value, this._dPadLeft, Xbox360Dpad.Left);
     }
 
     /**
@@ -392,7 +396,7 @@ export class Xbox360Pad extends Gamepad {
      * Sets the value of D-pad right
      */
     public set dPadRight(value) {
-        this._dPadRight = this._setDPadValue(value, this._dPadRight, Xbox360Dpad.Right);
+        this._dPadRight = this._setDpadValue(value, this._dPadRight, Xbox360Dpad.Right);
     }
 
     /**

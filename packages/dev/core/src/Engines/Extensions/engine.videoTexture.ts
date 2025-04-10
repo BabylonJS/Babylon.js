@@ -5,6 +5,7 @@ import { Constants } from "../constants";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Update a video texture

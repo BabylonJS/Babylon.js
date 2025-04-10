@@ -125,7 +125,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         impostorMesh.rotationQuaternion = new Quaternion();
         const controllerMesh = xrController.grip || xrController.pointer;
         impostorMesh.position.copyFrom(controllerMesh.position);
-        impostorMesh.rotationQuaternion!.copyFrom(controllerMesh.rotationQuaternion!);
+        impostorMesh.rotationQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
         const impostor = new PhysicsImpostor(impostorMesh, impostorType, {
             mass: 0,
             ...this._options.physicsProperties,

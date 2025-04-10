@@ -25,7 +25,7 @@ import {
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForMisc,
 } from "core/Materials/materialHelper.functions";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class GridMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
@@ -246,7 +246,7 @@ export class GridMaterial extends PushMaterial {
             ];
             // Defines
             const join = defines.toString();
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     "grid",
@@ -321,7 +321,7 @@ export class GridMaterial extends PushMaterial {
             }
 
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
             // Log. depth
             if (this._useLogarithmicDepth) {
                 BindLogDepth(defines, effect, scene);

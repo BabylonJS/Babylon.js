@@ -262,7 +262,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                         accumulatedCount -= instancePerFace;
                         continue;
                     }
-                    const clone = instanceGeometry!.clone();
+                    const clone = instanceGeometry.clone();
 
                     if (this.matrix.isConnected) {
                         const transform = this.matrix.getConnectedValue(state);

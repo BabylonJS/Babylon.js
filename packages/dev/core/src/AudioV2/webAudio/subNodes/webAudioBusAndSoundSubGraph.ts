@@ -29,20 +29,20 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
     protected _inputNode: Nullable<AudioNode> = null;
 
     /** @internal */
-    public override async init(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
-        await super.init(options);
+    public override async initAsync(options: Partial<IWebAudioBusAndSoundSubGraphOptions>): Promise<void> {
+        await super.initAsync(options);
 
         let hasSpatialOptions = false;
         let hasStereoOptions = false;
 
         if ((hasSpatialOptions = _HasSpatialAudioOptions(options))) {
-            await this.createAndAddSubNode(AudioSubNode.SPATIAL);
+            await this.createAndAddSubNodeAsync(AudioSubNode.SPATIAL);
         }
         if ((hasStereoOptions = _HasStereoAudioOptions(options))) {
-            await this.createAndAddSubNode(AudioSubNode.STEREO);
+            await this.createAndAddSubNodeAsync(AudioSubNode.STEREO);
         }
 
-        await this._createSubNodePromisesResolved();
+        await this._createSubNodePromisesResolvedAsync();
 
         if (hasSpatialOptions) {
             _GetSpatialAudioSubNode(this)?.setOptions(options);
@@ -57,6 +57,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         return this._inputNode;
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     protected override _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
         try {
             const node = super._createSubNode(name);

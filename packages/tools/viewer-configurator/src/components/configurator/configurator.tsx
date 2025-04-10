@@ -40,34 +40,34 @@ import { LoadModel, PickModel } from "../../modelLoader";
 import { ExpandableMessageLineComponent } from "../misc/ExpandableMessageLineComponent";
 import { FontAwesomeIconButton } from "../misc/FontAwesomeIconButton";
 
-const defaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb";
+const DefaultModelUrl = "https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb";
 
 type HotSpotInfo = { name: string; id: string; data: HotSpot };
 
-let currentHotSpotId = 0;
-function createHotSpotId() {
-    return (currentHotSpotId++).toString();
+let CurrentHotSpotId = 0;
+function CreateHotSpotId() {
+    return (CurrentHotSpotId++).toString();
 }
 
 type OutputFormat = "html" | "json";
 
-const outputOptions = [
+const OutputOptions = [
     { label: "HTML", value: "html" },
     { label: "JSON", value: "json" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: OutputFormat }[];
 
-const toneMappingOptions = [
+const ToneMappingOptions = [
     { label: "Standard", value: "standard" },
     { label: "None", value: "none" },
     { label: "Aces", value: "aces" },
     { label: "Neutral", value: "neutral" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: ToneMapping }[];
 
-const hotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
+const HotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const satisfies IInspectableOptions[];
 
-const hotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
+const HotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
 
-function useConfiguration<T>(
+function UseConfiguration<T>(
     defaultState: T,
     initialConfiguredState: T,
     get: () => T,
@@ -309,6 +309,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     // Allow models to be dragged and dropped into the viewer.
     useEffect(() => {
         const onDragOver = (event: DragEvent) => event.preventDefault();
+        // eslint-disable-next-line no-restricted-syntax
         const onDrop = async (event: DragEvent) => {
             const files = event.dataTransfer?.files;
             if (files) {
@@ -326,7 +327,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         };
     }, [viewerElement]);
 
-    const initialModelUrl = useMemo(() => viewerOptions.source ?? defaultModelUrl, [viewerOptions.source]);
+    const initialModelUrl = useMemo(() => viewerOptions.source ?? DefaultModelUrl, [viewerOptions.source]);
     const [modelUrl, setModelUrl] = useState(initialModelUrl);
 
     // Whenever the model changes, update the model URL.
@@ -368,7 +369,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         return { outputFormat };
     }, [outputFormat]);
 
-    const lightingUrlConfig = useConfiguration(
+    const lightingUrlConfig = UseConfiguration(
         "",
         viewerOptions.environmentLighting ?? "",
         () => viewerElement.environment.lighting ?? "",
@@ -377,7 +378,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer.onEnvironmentChanged],
         [viewerElement]
     );
-    const skyboxUrlConfig = useConfiguration(
+    const skyboxUrlConfig = UseConfiguration(
         "",
         viewerOptions.environmentSkybox === viewerOptions.environmentLighting ? "" : (viewerOptions.environmentSkybox ?? ""),
         () => viewerElement.environment.skybox ?? "",
@@ -401,7 +402,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         return !!skyboxUrlConfig.configuredState;
     }, [syncEnvironment, lightingUrlConfig.configuredState, skyboxUrlConfig.configuredState]);
 
-    const skyboxBlurConfig = useConfiguration(
+    const skyboxBlurConfig = UseConfiguration(
         DefaultViewerOptions.environmentConfig.blur,
         viewerOptions.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
@@ -411,7 +412,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const environmentIntensityConfig = useConfiguration(
+    const environmentIntensityConfig = UseConfiguration(
         DefaultViewerOptions.environmentConfig.intensity,
         viewerOptions.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
         () => viewer.environmentConfig.intensity,
@@ -421,7 +422,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const environmentRotationConfig = useConfiguration(
+    const environmentRotationConfig = UseConfiguration(
         DefaultViewerOptions.environmentConfig.rotation,
         viewerOptions.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
         () => viewer.environmentConfig.rotation,
@@ -431,7 +432,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const clearColorConfig = useConfiguration(
+    const clearColorConfig = UseConfiguration(
         viewerDetails.scene.clearColor,
         new Color4(...(viewerOptions.clearColor ? viewerOptions.clearColor : DefaultViewerOptions.clearColor)),
         () => viewerDetails.scene.clearColor,
@@ -445,7 +446,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         return { clearColor: clearColorConfig.configuredState };
     }, [clearColorConfig.configuredState]);
 
-    const cameraConfig = useConfiguration(
+    const cameraConfig = UseConfiguration(
         {
             alpha: NaN,
             beta: NaN,
@@ -502,7 +503,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer, viewerDetails.camera, model]
     );
 
-    const toneMappingConfig = useConfiguration(
+    const toneMappingConfig = UseConfiguration(
         DefaultViewerOptions.postProcessing.toneMapping,
         viewerOptions.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
@@ -516,7 +517,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         return { toneMapping: toneMappingConfig.configuredState };
     }, [toneMappingConfig.configuredState]);
 
-    const contrastConfig = useConfiguration(
+    const contrastConfig = UseConfiguration(
         DefaultViewerOptions.postProcessing.contrast,
         viewerOptions.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
@@ -526,7 +527,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const exposureConfig = useConfiguration(
+    const exposureConfig = UseConfiguration(
         DefaultViewerOptions.postProcessing.exposure,
         viewerOptions.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
@@ -536,7 +537,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const autoOrbitConfig = useConfiguration(
+    const autoOrbitConfig = UseConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
         viewerOptions.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
         () => viewer.cameraAutoOrbit.enabled,
@@ -546,7 +547,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const autoOrbitSpeedConfig = useConfiguration(
+    const autoOrbitSpeedConfig = UseConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.speed,
         viewerOptions.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
         () => viewer.cameraAutoOrbit.speed,
@@ -556,7 +557,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const autoOrbitDelayConfig = useConfiguration(
+    const autoOrbitDelayConfig = UseConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.delay,
         viewerOptions.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
         () => viewer.cameraAutoOrbit.delay,
@@ -566,7 +567,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const animationStateConfig = useConfiguration(
+    const animationStateConfig = UseConfiguration(
         {
             animationSpeed: DefaultViewerOptions.animationSpeed,
             selectedAnimation: 0,
@@ -603,7 +604,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const animationAutoPlayConfig = useConfiguration(
+    const animationAutoPlayConfig = UseConfiguration(
         DefaultViewerOptions.animationAutoPlay,
         viewerOptions.animationAutoPlay ?? DefaultViewerOptions.animationAutoPlay,
         () => viewerElement.animationAutoPlay,
@@ -620,7 +621,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer, viewerElement]
     );
 
-    const selectedMaterialVariantConfig = useConfiguration(
+    const selectedMaterialVariantConfig = UseConfiguration(
         "",
         viewerOptions.selectedMaterialVariant ?? "",
         () => viewer.selectedMaterialVariant,
@@ -636,7 +637,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const [hotspots, setHotspots] = useState<HotSpotInfo[]>(Object.entries(viewerOptions.hotSpots ?? {}).map(([name, data]) => ({ name, id: createHotSpotId(), data })));
+    const [hotspots, setHotspots] = useState<HotSpotInfo[]>(Object.entries(viewerOptions.hotSpots ?? {}).map(([name, data]) => ({ name, id: CreateHotSpotId(), data })));
 
     useEffect(() => {
         if (modelUrl !== initialModelUrl) {
@@ -1061,7 +1062,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                 ...hotspots,
                 {
                     name: `HotSpot ${hotspots.length + 1}`,
-                    id: createHotSpotId(),
+                    id: CreateHotSpotId(),
                     data: { type: "surface", meshIndex: 0, pointIndex: [0, 0, 0], barycentric: [0, 0, 0] },
                 },
             ];
@@ -1202,7 +1203,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <OptionsLine
                                 label="Format"
                                 valuesAreStrings={true}
-                                options={outputOptions}
+                                options={OutputOptions}
                                 target={outputFormatWrapper}
                                 propertyName={"outputFormat"}
                                 noDirectUpdate={true}
@@ -1358,7 +1359,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         <OptionsLine
                             label="Tone Mapping"
                             valuesAreStrings={true}
-                            options={toneMappingOptions}
+                            options={ToneMappingOptions}
                             target={toneMappingWrapper}
                             propertyName={"toneMapping"}
                             noDirectUpdate={true}
@@ -1515,15 +1516,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <OptionsLine
                                 label="Hot Spot Type"
                                 valuesAreStrings={true}
-                                options={hotSpotTypeOptions}
-                                target={hotSpotTypeOptions}
+                                options={HotSpotTypeOptions}
+                                target={HotSpotTypeOptions}
                                 propertyName=""
                                 noDirectUpdate={true}
                             />
                         </div>
                         <FontAwesomeIconButton title="Add Hot Spot" icon={faSquarePlus} onClick={onAddHotspotClick} />
                     </div>
-                    <DndContext sensors={dndSensors} modifiers={hotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
+                    <DndContext sensors={dndSensors} modifiers={HotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
                         <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
                             {hotspots.map((hotspot) => (
                                 <HotSpotEntry key={hotspot.id} id={hotspot.id} hotspots={hotspots} setHotspots={setHotspots} viewerElement={viewerElement} />

@@ -2,6 +2,7 @@ import { Animation } from "core/Animations/animation";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Observable } from "core/Misc/observable";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface KeyEntry {
     frame: number;
     value: number;
@@ -133,7 +134,9 @@ export class Curve {
 
     public hasDefinedOutTangent(keyIndex: number) {
         const keys = this.keys;
-        if (keyIndex === this.keys.length - 1) return false;
+        if (keyIndex === this.keys.length - 1) {
+            return false;
+        }
         const prevFrame = keys[keyIndex].frame;
         const currentFrame = keys[keyIndex + 1].frame;
         return prevFrame !== currentFrame;
@@ -147,7 +150,9 @@ export class Curve {
     }
 
     public hasDefinedInTangent(keyIndex: number) {
-        if (keyIndex === 0) return false;
+        if (keyIndex === 0) {
+            return false;
+        }
         const keys = this.keys;
         const prevFrame = keys[keyIndex - 1].frame;
         const currentFrame = keys[keyIndex].frame;

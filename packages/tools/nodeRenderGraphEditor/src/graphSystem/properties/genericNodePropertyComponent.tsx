@@ -16,6 +16,7 @@ import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { Constants } from "core/Engines/constants";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const samplingModeList = [
     { label: "Nearest/Nearest", value: Constants.TEXTURE_NEAREST_SAMPLINGMODE }, // 1
     { label: "Linear/Nearest", value: Constants.TEXTURE_LINEAR_NEAREST }, // 12
@@ -33,6 +34,7 @@ export const samplingModeList = [
     { label: "Linear/Linear & linear mip", value: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE }, // 3
 ];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const textureFormatList = [
     { label: "rgba", value: Constants.TEXTUREFORMAT_RGBA },
     { label: "r", value: Constants.TEXTUREFORMAT_RED },
@@ -43,6 +45,7 @@ export const textureFormatList = [
     { label: "rg Integer", value: Constants.TEXTUREFORMAT_RG_INTEGER },
 ];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const textureTypeList = [
     { label: "Unsigned Byte", value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
     { label: "Signed Byte", value: Constants.TEXTURETYPE_BYTE },
@@ -54,6 +57,7 @@ export const textureTypeList = [
     { label: "Half Float", value: Constants.TEXTURETYPE_HALF_FLOAT },
 ];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const textureDepthStencilFormatList = [
     { label: "Depth 24/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
     { label: "Depth 24 Unorm/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },

@@ -22,7 +22,7 @@ export const enum JoystickAxis {
  * Represents the different customization options available
  * for VirtualJoystick
  */
-interface VirtualJoystickCustomizations {
+interface IVirtualJoystickCustomizations {
     /**
      * Size of the joystick's puck
      */
@@ -90,11 +90,11 @@ export class VirtualJoystick {
     // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
     private static _GlobalJoystickIndex: number = 0;
     private static _AlwaysVisibleSticks: number = 0;
-    private static _VJCanvasContext: CanvasRenderingContext2D;
-    private static _VJCanvasWidth: number;
-    private static _VJCanvasHeight: number;
+    private static _VjCanvasContext: CanvasRenderingContext2D;
+    private static _VjCanvasWidth: number;
+    private static _VjCanvasHeight: number;
     private static _HalfWidth: number;
-    private static _GetDefaultOptions(): VirtualJoystickCustomizations {
+    private static _GetDefaultOptions(): IVirtualJoystickCustomizations {
         return {
             puckSize: 40,
             containerSize: 60,
@@ -144,7 +144,7 @@ export class VirtualJoystick {
      * @param leftJoystick defines that the joystick is for left hand (false by default)
      * @param customizations Defines the options we want to customize the VirtualJoystick
      */
-    constructor(leftJoystick?: boolean, customizations?: Partial<VirtualJoystickCustomizations>) {
+    constructor(leftJoystick?: boolean, customizations?: Partial<IVirtualJoystickCustomizations>) {
         const options = {
             ...VirtualJoystick._GetDefaultOptions(),
             ...customizations,
@@ -174,21 +174,21 @@ export class VirtualJoystick {
         this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
 
         this._onResize = () => {
-            VirtualJoystick._VJCanvasWidth = window.innerWidth;
-            VirtualJoystick._VJCanvasHeight = window.innerHeight;
+            VirtualJoystick._VjCanvasWidth = window.innerWidth;
+            VirtualJoystick._VjCanvasHeight = window.innerHeight;
             if (VirtualJoystick.Canvas) {
-                VirtualJoystick.Canvas.width = VirtualJoystick._VJCanvasWidth;
-                VirtualJoystick.Canvas.height = VirtualJoystick._VJCanvasHeight;
+                VirtualJoystick.Canvas.width = VirtualJoystick._VjCanvasWidth;
+                VirtualJoystick.Canvas.height = VirtualJoystick._VjCanvasHeight;
             }
-            VirtualJoystick._HalfWidth = VirtualJoystick._VJCanvasWidth / 2;
+            VirtualJoystick._HalfWidth = VirtualJoystick._VjCanvasWidth / 2;
         };
 
         // injecting a canvas element on top of the canvas 3D game
         if (!VirtualJoystick.Canvas) {
             window.addEventListener("resize", this._onResize, false);
             VirtualJoystick.Canvas = document.createElement("canvas");
-            VirtualJoystick._VJCanvasWidth = window.innerWidth;
-            VirtualJoystick._VJCanvasHeight = window.innerHeight;
+            VirtualJoystick._VjCanvasWidth = window.innerWidth;
+            VirtualJoystick._VjCanvasHeight = window.innerHeight;
             VirtualJoystick.Canvas.width = window.innerWidth;
             VirtualJoystick.Canvas.height = window.innerHeight;
             VirtualJoystick.Canvas.style.width = "100%";
@@ -207,9 +207,9 @@ export class VirtualJoystick {
                 throw new Error("Unable to create canvas for virtual joystick");
             }
 
-            VirtualJoystick._VJCanvasContext = context;
-            VirtualJoystick._VJCanvasContext.strokeStyle = "#ffffff";
-            VirtualJoystick._VJCanvasContext.lineWidth = 2;
+            VirtualJoystick._VjCanvasContext = context;
+            VirtualJoystick._VjCanvasContext.strokeStyle = "#ffffff";
+            VirtualJoystick._VjCanvasContext.lineWidth = 2;
             document.body.appendChild(VirtualJoystick.Canvas);
         }
         VirtualJoystick._HalfWidth = VirtualJoystick.Canvas.width / 2;
@@ -403,7 +403,7 @@ export class VirtualJoystick {
         } else {
             const touch = <{ x: number; y: number; prevX: number; prevY: number }>this._touches.get(e.pointerId.toString());
             if (touch) {
-                VirtualJoystick._VJCanvasContext.clearRect(touch.prevX - 44, touch.prevY - 44, 88, 88);
+                VirtualJoystick._VjCanvasContext.clearRect(touch.prevX - 44, touch.prevY - 44, 88, 88);
             }
         }
         this._deltaJoystickVector.x = 0;
@@ -538,7 +538,7 @@ export class VirtualJoystick {
         const jp = this._joystickPosition || this._joystickPointerStartPos;
 
         // clear container pixels
-        VirtualJoystick._VJCanvasContext.clearRect(
+        VirtualJoystick._VjCanvasContext.clearRect(
             jp.x - this._clearContainerSizeOffset,
             jp.y - this._clearContainerSizeOffset,
             this._clearContainerSize,
@@ -546,7 +546,7 @@ export class VirtualJoystick {
         );
 
         // clear puck pixels + 1 pixel for the change made before it moved
-        VirtualJoystick._VJCanvasContext.clearRect(
+        VirtualJoystick._VjCanvasContext.clearRect(
             this._joystickPreviousPointerPos.x - this._clearPuckSizeOffset - 1,
             this._joystickPreviousPointerPos.y - this._clearPuckSizeOffset - 1,
             this._clearPuckSize + 2,
@@ -585,23 +585,23 @@ export class VirtualJoystick {
         this._clearPreviousDraw();
 
         if (this._containerImage) {
-            VirtualJoystick._VJCanvasContext.drawImage(this._containerImage, jp.x - this.containerSize, jp.y - this.containerSize, this.containerSize * 2, this.containerSize * 2);
+            VirtualJoystick._VjCanvasContext.drawImage(this._containerImage, jp.x - this.containerSize, jp.y - this.containerSize, this.containerSize * 2, this.containerSize * 2);
         } else {
             // outer container
-            VirtualJoystick._VJCanvasContext.beginPath();
-            VirtualJoystick._VJCanvasContext.strokeStyle = this._joystickColor;
-            VirtualJoystick._VJCanvasContext.lineWidth = 2;
-            VirtualJoystick._VJCanvasContext.arc(jp.x, jp.y, this.containerSize, 0, Math.PI * 2, true);
-            VirtualJoystick._VJCanvasContext.stroke();
-            VirtualJoystick._VJCanvasContext.closePath();
+            VirtualJoystick._VjCanvasContext.beginPath();
+            VirtualJoystick._VjCanvasContext.strokeStyle = this._joystickColor;
+            VirtualJoystick._VjCanvasContext.lineWidth = 2;
+            VirtualJoystick._VjCanvasContext.arc(jp.x, jp.y, this.containerSize, 0, Math.PI * 2, true);
+            VirtualJoystick._VjCanvasContext.stroke();
+            VirtualJoystick._VjCanvasContext.closePath();
 
             // inner container
-            VirtualJoystick._VJCanvasContext.beginPath();
-            VirtualJoystick._VJCanvasContext.lineWidth = 6;
-            VirtualJoystick._VJCanvasContext.strokeStyle = this._joystickColor;
-            VirtualJoystick._VJCanvasContext.arc(jp.x, jp.y, this.puckSize, 0, Math.PI * 2, true);
-            VirtualJoystick._VJCanvasContext.stroke();
-            VirtualJoystick._VJCanvasContext.closePath();
+            VirtualJoystick._VjCanvasContext.beginPath();
+            VirtualJoystick._VjCanvasContext.lineWidth = 6;
+            VirtualJoystick._VjCanvasContext.strokeStyle = this._joystickColor;
+            VirtualJoystick._VjCanvasContext.arc(jp.x, jp.y, this.puckSize, 0, Math.PI * 2, true);
+            VirtualJoystick._VjCanvasContext.stroke();
+            VirtualJoystick._VjCanvasContext.closePath();
         }
     }
 
@@ -610,7 +610,7 @@ export class VirtualJoystick {
      */
     private _drawPuck() {
         if (this._puckImage) {
-            VirtualJoystick._VJCanvasContext.drawImage(
+            VirtualJoystick._VjCanvasContext.drawImage(
                 this._puckImage,
                 this._joystickPointerPos.x - this.puckSize,
                 this._joystickPointerPos.y - this.puckSize,
@@ -618,12 +618,12 @@ export class VirtualJoystick {
                 this.puckSize * 2
             );
         } else {
-            VirtualJoystick._VJCanvasContext.beginPath();
-            VirtualJoystick._VJCanvasContext.strokeStyle = this._joystickColor;
-            VirtualJoystick._VJCanvasContext.lineWidth = 2;
-            VirtualJoystick._VJCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, this.puckSize, 0, Math.PI * 2, true);
-            VirtualJoystick._VJCanvasContext.stroke();
-            VirtualJoystick._VJCanvasContext.closePath();
+            VirtualJoystick._VjCanvasContext.beginPath();
+            VirtualJoystick._VjCanvasContext.strokeStyle = this._joystickColor;
+            VirtualJoystick._VjCanvasContext.lineWidth = 2;
+            VirtualJoystick._VjCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, this.puckSize, 0, Math.PI * 2, true);
+            VirtualJoystick._VjCanvasContext.stroke();
+            VirtualJoystick._VjCanvasContext.closePath();
         }
     }
 
@@ -648,15 +648,15 @@ export class VirtualJoystick {
                     // store current pointer for next clear
                     this._joystickPreviousPointerPos = this._joystickPointerPos.clone();
                 } else {
-                    VirtualJoystick._VJCanvasContext.clearRect((<any>touch).prevX - 44, (<any>touch).prevY - 44, 88, 88);
-                    VirtualJoystick._VJCanvasContext.beginPath();
-                    VirtualJoystick._VJCanvasContext.fillStyle = "white";
-                    VirtualJoystick._VJCanvasContext.beginPath();
-                    VirtualJoystick._VJCanvasContext.strokeStyle = "red";
-                    VirtualJoystick._VJCanvasContext.lineWidth = 6;
-                    VirtualJoystick._VJCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
-                    VirtualJoystick._VJCanvasContext.stroke();
-                    VirtualJoystick._VJCanvasContext.closePath();
+                    VirtualJoystick._VjCanvasContext.clearRect((<any>touch).prevX - 44, (<any>touch).prevY - 44, 88, 88);
+                    VirtualJoystick._VjCanvasContext.beginPath();
+                    VirtualJoystick._VjCanvasContext.fillStyle = "white";
+                    VirtualJoystick._VjCanvasContext.beginPath();
+                    VirtualJoystick._VjCanvasContext.strokeStyle = "red";
+                    VirtualJoystick._VjCanvasContext.lineWidth = 6;
+                    VirtualJoystick._VjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
+                    VirtualJoystick._VjCanvasContext.stroke();
+                    VirtualJoystick._VjCanvasContext.closePath();
                     (<any>touch).prevX = touch.x;
                     (<any>touch).prevY = touch.y;
                 }

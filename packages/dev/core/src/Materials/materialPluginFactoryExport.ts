@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import type { MaterialPluginBase } from "./materialPluginBase";

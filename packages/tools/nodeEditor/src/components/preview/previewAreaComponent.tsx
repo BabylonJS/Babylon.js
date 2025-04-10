@@ -75,6 +75,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async processPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
         if (!e.ctrlKey || !this.props.globalState.pickingTexture) {
             this._consoleRef.current?.classList.add("hidden");
@@ -120,7 +121,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         onPointerOut={this._onPointerOutCanvas}
                         id="preview-canvas"
                         onKeyUp={(evt) => this.onKeyUp(evt)}
-                        onPointerMove={(evt) => this.processPointerMove(evt)}
+                        onPointerMove={async (evt) => this.processPointerMove(evt)}
                     />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                     <div id="preview-color-picker" className="hidden" ref={this._consoleRef} />

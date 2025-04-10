@@ -31,14 +31,14 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
             this._targetX = loc.x;
             this._targetY = loc.y;
             this.setState({ isVisible: true, filter: "", selectedIndex: 0 });
-            this.props.stateManager.hostDocument!.addEventListener("keydown", this._handleEscKey);
+            this.props.stateManager.hostDocument.addEventListener("keydown", this._handleEscKey);
         });
     }
 
     hide() {
         this.setState({ isVisible: false });
         this.props.stateManager.modalIsDisplayed = false;
-        this.props.stateManager.hostDocument!.removeEventListener("keydown", this._handleEscKey);
+        this.props.stateManager.hostDocument.removeEventListener("keydown", this._handleEscKey);
     }
 
     onFilterChange(evt: React.ChangeEvent<HTMLInputElement>) {

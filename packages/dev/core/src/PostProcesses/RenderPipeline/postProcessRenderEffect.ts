@@ -205,7 +205,7 @@ export class PostProcessRenderEffect {
                 const index = this._indicesForCamera[cameraName][j];
                 const postProcess = camera._postProcesses[index];
                 if (postProcess === undefined || postProcess === null) {
-                    cams![i].attachPostProcess(this._postProcesses[cameraKey][j], index);
+                    cams[i].attachPostProcess(this._postProcesses[cameraKey][j], index);
                 }
             }
         }

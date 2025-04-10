@@ -41,7 +41,7 @@ export class UtilityLayerRenderer implements IDisposable {
             if (this.originalScene.activeCameras && this.originalScene.activeCameras.length > 1) {
                 activeCam = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
             } else {
-                activeCam = <Camera>this.originalScene.activeCamera!;
+                activeCam = this.originalScene.activeCamera!;
             }
 
             if (getRigParentIfPossible && activeCam && activeCam.isRigCamera) {
@@ -193,7 +193,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 this.utilityLayerScene.pointerX = originalScene.pointerX;
                 this.utilityLayerScene.pointerY = originalScene.pointerY;
                 const pointerEvent = <IPointerEvent>prePointerInfo.event;
-                if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
+                if (originalScene.isPointerCaptured(pointerEvent.pointerId)) {
                     this._pointerCaptures[pointerEvent.pointerId] = false;
                     return;
                 }

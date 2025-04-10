@@ -6,9 +6,9 @@ import { TextBlock } from "./textBlock";
  * Forcing an export so that this code will execute
  * @internal
  */
-const name = "Statics";
+const Name = "Statics";
 
-export { name };
+export { Name as name };
 
 /**
  * Creates a stack panel that can be used to render headers

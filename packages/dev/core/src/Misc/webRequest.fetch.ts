@@ -7,7 +7,7 @@ import { WebRequest } from "./webRequest";
  * @returns a promise that resolves when the resource is fetched
  * @internal
  */
-export function _FetchAsync(
+export async function _FetchAsync(
     url: string,
     options: Partial<{ method: string; responseHeaders?: string[] }>
 ): Promise<{ response: Response; headerValues: { [key: string]: string } }> {

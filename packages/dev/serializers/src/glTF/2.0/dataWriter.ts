@@ -24,7 +24,7 @@ export class DataWriter {
         this._checkGrowBuffer(value.byteLength);
         const setMethod = TypedArrayToWriteMethod.get(value.constructor)!;
         for (let i = 0; i < value.length; i++) {
-            setMethod(this._dataView, this._byteOffset, value[i] as number);
+            setMethod(this._dataView, this._byteOffset, value[i]);
             this._byteOffset += value.BYTES_PER_ELEMENT;
         }
     }

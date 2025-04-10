@@ -7,16 +7,17 @@
 // export * from "./legacy-objFileLoader";
 // export * from "./legacy-stlFileLoader";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as LOADERS from "../../../../dev/loaders/src/index";
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
     for (const key in LOADERS) {
-        (<any>globalObject).BABYLON[key] = (<any>LOADERS)[key];
+        (<any>GlobalObject).BABYLON[key] = (<any>LOADERS)[key];
     }
     // for (const key in Validation) {
     //     (<any>globalObject).BABYLON[key] = (<any>Validation)[key];
@@ -27,9 +28,10 @@ if (typeof globalObject !== "undefined") {
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLON = (<any>globalObject).BABYLON;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const BABYLON = (<any>GlobalObject).BABYLON;
     BABYLON.GLTF2 = BABYLON.GLTF2 || {};
     BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
     BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};

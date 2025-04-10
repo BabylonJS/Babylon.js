@@ -13,6 +13,7 @@ export const Floodfill: IToolData = {
             this.getParameters = getParameters;
         }
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         async fill() {
             const { metadata, startPainting, updatePainting, stopPainting } = this.getParameters();
             const ctx = await startPainting();

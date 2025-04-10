@@ -252,7 +252,7 @@ export class Stage<T extends Function> extends Array<{ index: number; component:
      * @returns A new instance of a Stage
      */
     static Create<T extends Function>(): Stage<T> {
-        return Object.create(Stage.prototype);
+        return Object.create(Stage.prototype) as Stage<T>;
     }
 
     /**

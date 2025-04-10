@@ -2,3 +2,14 @@ dist/**/*.*
 .snapshot/**/*.*
 # temp
 **/tests/**/*.*
+**/Shaders/**/*.ts
+**/ShadersWGSL/**/*.ts
+**/*.fragment.ts
+**/*.vertex.ts
+packages/public/**/*.*
+packages/lts/**/*.*
+*.md
+*.fx
+*.scss
+*.css
+*.html
