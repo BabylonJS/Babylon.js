@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.1.0",
+    "fromTag": "8.1.1",
     "changelog": {
         "8.1.1": [
             {
@@ -74,6 +74,389 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "8.2.0": [
+            {
+                "pr": "16464",
+                "title": "Add AudioEngineV2 listener playwright tests",
+                "description": "This change also adds a small .js script to the CDN to help with evaluated playwright audio tests and sound output capture.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "package.json",
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/testTools/src/index.ts",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.listener.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioEngineV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16468",
+                "title": "glTF Exporter: Missing node metadata export",
+                "description": "- Restore missing node `metadata` export\r\n- Use metadata.gltf.extras as default metadataSelector() target\r\n- Add test\r\n\r\nMarking as breaking change out of caution. We technically changed the default behavior of metadata selection in the glTF serializer rework (pre-8.0), and this PR undoes that.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16452",
+                "title": "Add empirical modification to specular reflectance to handle low IOR's",
+                "description": "Babylon uses the split sum approximation to apply the BRDF and this leads to an issue when IOR gets close to 1.0. When inside and outside IOR's match, specular reflectance should go to zero. However, because the BRDF texture is baked for an IOR of 1.5 and we only use IOR to modify F0, the specular reflectance at glancing angles ends up very wrong when IOR gets close to 1.0.\r\n\r\nI've added a linear scale to the F90 value to help account for this. It's still not correct, of course. We'd need to do the actual Fresnel calculations for the given IOR to fully fix the problem (note that the Schlick approximation is not sufficient).\r\n\r\nIBL:\r\n![ReflectanceIOR](https://github.com/user-attachments/assets/cc24a000-fde9-4e03-9229-587d7cf06e69)\r\n\r\nAnalytic Lights\r\n![ReflectanceIOR_analytic](https://github.com/user-attachments/assets/212383f4-8178-48a9-9087-06c7b8815f57)\r\n",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-Reflectance-with-IOR.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16462",
+                "title": "glTF Loader: Get `mimeType` from URI if not defined",
+                "description": "glTF images that did not specify a `mimeType` would not set the `Texture.mimeType` field. This happens with GLBs, for example. While the field isn't required, it helps with export. The glTF exporter uses this field to try to preserve the original mime type when re-encoding the images-- if undefined, they'll default to PNG. The Babylon exporter should also be using this information when serializing its image buffers.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16465",
+                "title": "SandBox: Add support for .exr files",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "16461",
+                "title": "Update dependencies, mainly React",
+                "description": "This PR updates the dependencies of the main repo. The main update here is the update of React to 18.\nThis is needed as the first step towards moving the documentation to the main repository.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/inspector/src/components/popupComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSelectableComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDragHandler.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphConnectorHandle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphLinesContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNodesContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer.tsx",
+                    "packages/dev/sharedUiComponents/src/split/splitContainer.tsx",
+                    "packages/public/@babylonjs/accessibility/package.json",
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/@babylonjs/node-editor/package.json",
+                    "packages/public/@babylonjs/node-geometry-editor/package.json",
+                    "packages/public/@babylonjs/node-render-graph-editor/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json",
+                    "packages/public/babylonjs-viewer-assets/package.json",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-addons/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinRenderer.ts",
+                    "packages/tools/babylonServer/package.json",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/guiEditor/src/components/log/logComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/treeItemSelectableComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/gizmoWrapper.tsx",
+                    "packages/tools/guiEditor/src/guiEditor.ts",
+                    "packages/tools/guiEditor/src/portal.tsx",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx",
+                    "packages/tools/ktx2Decoder/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/nodeEditor.ts",
+                    "packages/tools/nodeEditor/src/portal.tsx",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/nodeGeometryEditor.ts",
+                    "packages/tools/nodeGeometryEditor/src/portal.tsx",
+                    "packages/tools/nodeRenderGraphEditor/package.json",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/nodeRenderGraphEditor.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/portal.tsx",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/playground/src/playground.tsx",
+                    "packages/tools/reflector/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/sandbox/src/sandbox.tsx",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/viewer-configurator/package.json",
+                    "packages/tools/viewer-configurator/src/index.tsx",
+                    "packages/tools/viewer-legacy/package.json",
+                    "packages/tools/vsm/package.json",
+                    "packages/tools/vsm/src/vsm.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16463",
+                "title": "Fix double disconnect issue in `AbstractSound` class",
+                "description": "When a sound's output bus is disposed, the sound tries to disconnect the underlying web audio nodes after the bus has already disconnected them.\r\n\r\nThis change fixes the issue by setting the sound's `_outBus` property directly instead of using the `outBus` setter, which disconnects the underlying web audio nodes.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16456",
+                "title": "glTF Exporter: Fix LH -> RH vertex data conversion bug",
+                "description": "When iterating over left-handed vertex buffers to perform our RH conversions, we can accidentally iterate several times over the same buffer if it is used by multiple meshes. See https://playground.babylonjs.com/#KX53VK#85 and update `meshCount` for demo of issue. \r\n\r\n- Calculate the `maxTotalVertices` to use when enumerating over the vertex data, which is the largest number of vertices in any mesh using the buffer. This should cover any cases where meshes use only a subsection of the vertex buffer, starting from its beginning. There should not be any cases where the `maxTotalVertices` < the union of the ranges of the buffer that are used by individual meshes.\r\n- Factor out common vertex buffer info retrieval into utility function, `GetVertexBufferInfo`\r\n- Simple visual test based on playground from above. (Considered making this a unit test, but it'd be lengthy, as we're testing a roundtrip + we'd need to parse the buffers.)\r\n- Simple unit testing for converting float matrices indices",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerSharedBufferConversions.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16460",
+                "title": "Frame Graph: Add image processing support",
+                "description": "Note that, technically, renaming `renderInLinearSpace` to `disableImageProcessing` is a breaking change, but this property has been added wrt frame graphs (I think that no end-user uses it), and because frame graphs are still in alpha stage, I think the change is ok (and `renderInLinearSpace` is really a bad name...).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/imageProcessingPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/imageProcessingTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/taaObjectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/thinChromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinImageProcessingPostProcess.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-image-processing.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16433",
+                "title": "SH fix SPZ+PLY",
+                "description": "- [x] Fix SH loading with .PLY\r\n- [x] Fix SH computation in shader\r\n- [x] More consistent coordinate system between .ply, compressed.ply & spz\r\n- [x] Validation tests + test assets",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16458",
+                "title": "doc: Correct epsilon default value for Ray",
+                "description": "The default value for `Ray` is incorrectly mentioned as 0.",
+                "author": {
+                    "name": "fazil47",
+                    "url": "https://github.com/fazil47"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.core.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16457",
+                "title": "CharCtrl setPosition teleporter",
+                "description": "follow up https://forum.babylonjs.com/t/physics-character-controller/55265/17?u=cedric",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "16453",
+                "title": "fix SPZ loading",
+                "description": "Fixed an issue where an error occurred when trying to convert to Uint32Array when the data size was not a multiple of 4.",
+                "author": {
+                    "name": "takeru",
+                    "url": "https://github.com/takeru"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16454",
+                "title": "fix: only reload viewer when an engine was already set",
+                "description": "With the new initialization method, `_setupViewer` was called twice once in the `connectedCallback` and once in `update` method.\r\n\r\nIt was very noticable with heavy model.\r\n\r\nNow, the `update` method will only tearDown and reload the viewer when the engine was previously set : `previous !== undefined`\r\n\r\nTested with :\r\n- no engine set on the attribute\r\n- engine set with `WebGPU`\r\n- engien set with `WebGL` ",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16447",
+                "title": "Viewer Configurator: Add json output + save/load snippet",
+                "description": "This change introduces two new configurator features:\r\n1. The ability to save/load the current state (to/from snippet server). See https://forum.babylonjs.com/t/babylon-viewer-v2/54317/65\r\n![image](https://github.com/user-attachments/assets/bd33db53-3c56-4524-ac07-2be32947b4f8)\r\n![image](https://github.com/user-attachments/assets/116bc8c6-d014-47cd-aa7e-7dd52e0c2dd8)\r\n\r\n1. The ability to output to json, which can in turn be passed into any of the Viewer layers as the `ViewerOptions` (making the configurator useful even if you aren't using the html layer).\r\n![image](https://github.com/user-attachments/assets/0a12b30a-36d6-428b-95fe-590f7219dffe)\r\n\r\nChanges to enable this:\r\n- Add format dropdown to choose between html and json (html by default).\r\n- Improve camera pose management.\r\n- Pass an additional `initialConfiguredState` to `useConfiguration` (comes from the loaded config/options).\r\n- Use loaded options and default options in all calls to `useConfiguration`.\r\n- Add the ability to save the current configuration (as `ViewerOptions`) to snippet server and encode into the url like other Babylon tools.\r\n- Add the ability to load a configuration from snippet server (via url) and use it with `ConfigureCustomViewerElement` to determine the initial state of the Viewer within the Configurator.\r\n\r\nAlso fixed a small bug where environment intensity and rotation were not output if the skybox was disabled.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/App.tsx",
+                    "packages/tools/viewer-configurator/src/components/babylonViewer/viewer.tsx",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.scss",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16445",
+                "title": "Ensure async templates fetch completes before enhancement",
+                "description": "This PR fixes the random missing of the snippets (helper functions) in the playground.\r\nForum discussion: https://forum.babylonjs.com/t/playground-snippet-menu-is-broken-ctrl-space/57593/16.\r\n\r\nAdditional info:\r\n- the variable `initialCall` ensures that the templates are not reloaded on language switch\r\n- if the templates loading fails, the error is silently handled ",
+                "author": {
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16446",
+                "title": "PBR: Add flags for translucency backward compatibility",
+                "description": "I will also update the breaking change doc.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
                 ]
             }
         ],

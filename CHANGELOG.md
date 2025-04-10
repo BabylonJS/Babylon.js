@@ -1,5 +1,54 @@
 # Changelog
 
+## 8.2.0
+
+### Core
+
+- Add empirical modification to specular reflectance to handle low IOR's - by [MiiBond](https://github.com/MiiBond) ([#16452](https://github.com/BabylonJS/Babylon.js/pull/16452))
+- glTF Loader: Get `mimeType` from URI if not defined - by [alexchuber](https://github.com/alexchuber) ([#16462](https://github.com/BabylonJS/Babylon.js/pull/16462))
+- Update dependencies, mainly React - by [RaananW](https://github.com/RaananW) ([#16461](https://github.com/BabylonJS/Babylon.js/pull/16461))
+- Fix double disconnect issue in `AbstractSound` class - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16463](https://github.com/BabylonJS/Babylon.js/pull/16463))
+- Frame Graph: Add image processing support - by [Popov72](https://github.com/Popov72) ([#16460](https://github.com/BabylonJS/Babylon.js/pull/16460))
+- SH fix SPZ+PLY - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16433](https://github.com/BabylonJS/Babylon.js/pull/16433))
+- doc: Correct epsilon default value for Ray - by [fazil47](https://github.com/fazil47) ([#16458](https://github.com/BabylonJS/Babylon.js/pull/16458))
+- CharCtrl setPosition teleporter - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16457](https://github.com/BabylonJS/Babylon.js/pull/16457))
+- PBR: Add flags for translucency backward compatibility - by [Popov72](https://github.com/Popov72) ([#16446](https://github.com/BabylonJS/Babylon.js/pull/16446))
+
+### GUI Editor
+
+- Update dependencies, mainly React - by [RaananW](https://github.com/RaananW) ([#16461](https://github.com/BabylonJS/Babylon.js/pull/16461))
+
+### Inspector
+
+- Update dependencies, mainly React - by [RaananW](https://github.com/RaananW) ([#16461](https://github.com/BabylonJS/Babylon.js/pull/16461))
+
+### Loaders
+
+- glTF Loader: Get `mimeType` from URI if not defined - by [alexchuber](https://github.com/alexchuber) ([#16462](https://github.com/BabylonJS/Babylon.js/pull/16462))
+- Frame Graph: Add image processing support - by [Popov72](https://github.com/Popov72) ([#16460](https://github.com/BabylonJS/Babylon.js/pull/16460))
+- SH fix SPZ+PLY - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16433](https://github.com/BabylonJS/Babylon.js/pull/16433))
+- fix SPZ loading - by [takeru](https://github.com/takeru) ([#16453](https://github.com/BabylonJS/Babylon.js/pull/16453))
+
+### Node Editor
+
+- Update dependencies, mainly React - by [RaananW](https://github.com/RaananW) ([#16461](https://github.com/BabylonJS/Babylon.js/pull/16461))
+
+### Playground
+
+- Update dependencies, mainly React - by [RaananW](https://github.com/RaananW) ([#16461](https://github.com/BabylonJS/Babylon.js/pull/16461))
+- Ensure async templates fetch completes before enhancement - by [simonedevit](https://github.com/simonedevit) ([#16445](https://github.com/BabylonJS/Babylon.js/pull/16445))
+
+### Serializers
+
+- glTF Exporter: Missing node metadata export - [_Breaking Change_] by [alexchuber](https://github.com/alexchuber) ([#16468](https://github.com/BabylonJS/Babylon.js/pull/16468))
+- glTF Loader: Get `mimeType` from URI if not defined - by [alexchuber](https://github.com/alexchuber) ([#16462](https://github.com/BabylonJS/Babylon.js/pull/16462))
+- glTF Exporter: Fix LH -> RH vertex data conversion bug - by [alexchuber](https://github.com/alexchuber) ([#16456](https://github.com/BabylonJS/Babylon.js/pull/16456))
+
+### Viewer
+
+- fix: only reload viewer when an engine was already set - by [alexandremottet](https://github.com/alexandremottet) ([#16454](https://github.com/BabylonJS/Babylon.js/pull/16454))
+- Viewer Configurator: Add json output + save/load snippet - by [ryantrem](https://github.com/ryantrem) ([#16447](https://github.com/BabylonJS/Babylon.js/pull/16447))
+
 ## 8.1.1
 
 ### Core

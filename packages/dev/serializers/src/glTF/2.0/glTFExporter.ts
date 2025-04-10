@@ -405,7 +405,7 @@ export class GLTFExporter {
         this._options = {
             shouldExportNode: () => true,
             shouldExportAnimation: () => true,
-            metadataSelector: (metadata) => metadata,
+            metadataSelector: (metadata) => metadata?.gltf?.extras,
             animationSampleRate: 1 / 60,
             exportWithoutWaitingForScene: false,
             exportUnusedUVs: false,
@@ -812,10 +812,9 @@ export class GLTFExporter {
 
         // Scene metadata
         if (this._babylonScene.metadata) {
-            if (this._options.metadataSelector) {
-                scene.extras = this._options.metadataSelector(this._babylonScene.metadata);
-            } else if (this._babylonScene.metadata.gltf) {
-                scene.extras = this._babylonScene.metadata.gltf.extras;
+            const extras = this._options.metadataSelector(this._babylonScene.metadata);
+            if (extras) {
+                scene.extras = extras;
             }
         }
 
@@ -1212,6 +1211,14 @@ export class GLTFExporter {
 
         if (babylonNode.name) {
             node.name = babylonNode.name;
+        }
+
+        // Node metadata
+        if (babylonNode.metadata) {
+            const extras = this._options.metadataSelector(babylonNode.metadata);
+            if (extras) {
+                node.extras = extras;
+            }
         }
 
         if (babylonNode instanceof TransformNode) {

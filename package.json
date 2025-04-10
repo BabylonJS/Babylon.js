@@ -86,6 +86,7 @@
         "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
         "test:performance": "playwright test -c ./playwright.config.ts --project=performance",
         "test:interactions": "playwright test -c ./playwright.config.ts --project=interaction",
+        "test:audioV2": "playwright test --project=audioV2",
         "test:escheck": "nx run-many --target=test:escheck --parallel --maxParallel=6",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
         "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
