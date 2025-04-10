@@ -42,6 +42,7 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public CLIPPLANE5 = false;
     public CLIPPLANE6 = false;
     public SH_DEGREE = 0;
+    public COMPENSATION = false;
 
     /**
      * Constructor of the defines.
@@ -69,9 +70,14 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
-     * Point spread function
+     * Point spread function (default 0.3)
      */
     public static KernelSize: number = 0.3;
+
+    /**
+     * Compensation
+     */
+    public static Compensation: boolean = false;
 
     /**
      * Gets a boolean indicating that current material needs to register RTT
@@ -139,6 +145,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
         if (engine.version > 1 || engine.isWebGPU) {
             defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
         }
+
+        // Compensation
+        defines["COMPENSATION"] = GaussianSplattingMaterial.Compensation;
 
         // Get correct effect
         if (defines.isDirty) {
