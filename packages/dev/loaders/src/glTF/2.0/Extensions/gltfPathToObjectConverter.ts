@@ -91,12 +91,10 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
                 if (objectTree === undefined) {
                     // check if the path is in the exception list. If it is, break and return the last object that was found
                     const exception = OptionalPathExceptionsList.find((e) => e.regex.test(path));
-                    if (exception) {
-                        break;
+                    if (!exception) {
+                        throw new Error(`Path ${path} is invalid`);
                     }
-                    throw new Error(`Path ${path} is invalid`);
-                }
-                if (!isLength) {
+                } else if (!isLength) {
                     objectTree = objectTree?.[part];
                 }
             }
