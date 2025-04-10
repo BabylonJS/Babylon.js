@@ -73,6 +73,35 @@ class AudioV2Test {
         return sound;
     }
 
+    static CreateAbstractSoundAsync(soundType, source, options = {}) {
+        if (soundType === "static") {
+            return AudioV2Test.CreateStreamingSoundAsync(source, options);
+        } else if (soundType === "streaming") {
+            return AudioV2Test.CreateSoundAsync(source, options);
+        } else {
+            throw new Error(`Unknown sound type: ${soundType}`);
+        }
+    }
+
+    static async CreateStreamingSoundAsync(source, options = {}) {
+        if (typeof source === "string") {
+            source = audioTestConfig.soundsUrl + source;
+        } else if (source instanceof Array) {
+            for (let i = 0; i < source.length; i++) {
+                if (typeof source[i] === "string") {
+                    source[i] = audioTestConfig.soundsUrl + source[i];
+                }
+            }
+        }
+        const sound = await BABYLON.CreateStreamingSoundAsync("", source, options);
+        audioTestSounds.push(sound);
+
+        // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
+        audioRecorder.start();
+
+        return sound;
+    }
+
     static async GetResultAsync() {
         if (audioTestResult) {
             return audioTestResult;
