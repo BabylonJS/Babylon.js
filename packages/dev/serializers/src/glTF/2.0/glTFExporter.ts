@@ -1219,6 +1219,7 @@ export class GLTFExporter {
             node.name = babylonNode.name;
         }
 
+        // Node metadata
         if (babylonNode.metadata) {
             const extras = this._options.metadataSelector(babylonNode.metadata);
             if (extras) {
