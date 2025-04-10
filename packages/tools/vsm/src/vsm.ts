@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Workbench } from "./workbench";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 
@@ -25,6 +25,7 @@ export class VSM {
             })!;
         }
         const vsm = React.createElement(Workbench);
-        ReactDOM.render(vsm, hostElement);
+        const root = createRoot(hostElement);
+        root.render(vsm);
     }
 }

@@ -31,6 +31,7 @@ import { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/B
 import { NodeRenderGraphSSRPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssrPostProcessBlock";
 import { NodeRenderGraphAnaglyphPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/anaglyphPostProcessBlock";
 import { NodeRenderGraphChromaticAberrationPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/chromaticAberrationPostProcessBlock";
+import { NodeRenderGraphImageProcessingPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/imageProcessingPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -146,6 +147,9 @@ export class BlockTools {
             }
             case "ChromaticAberrationBlock": {
                 return new NodeRenderGraphChromaticAberrationPostProcessBlock("Chromatic Aberration", frameGraph, scene);
+            }
+            case "ImageProcessingBlock": {
+                return new NodeRenderGraphImageProcessingPostProcessBlock("Image Processing", frameGraph, scene);
             }
         }
 

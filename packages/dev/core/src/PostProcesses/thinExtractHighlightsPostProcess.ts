@@ -53,8 +53,8 @@ export class ThinExtractHighlightsPostProcess extends EffectWrapper {
     /** @internal */
     public _exposure = 1;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         const effect = this._drawWrapper.effect!;
 

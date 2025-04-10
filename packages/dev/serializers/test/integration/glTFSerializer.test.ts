@@ -1,5 +1,6 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
+import { Constants } from "core/Engines";
 declare const BABYLON: typeof import("core/index") &
     typeof import("serializers/index") & {
         GLTF2: {
@@ -628,6 +629,26 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.scenes[0].nodes).toHaveLength(2);
             expect(assertionData.scenes[0].nodes).toContain(0);
             expect(assertionData.scenes[0].nodes).toContain(1);
+        });
+
+        it("converts a shared float MatricesIndicesKind vertex buffer", async () => {
+            const assertionData = await page.evaluate(async () => {
+                const mesh = BABYLON.MeshBuilder.CreatePlane("original", undefined, window.scene!);
+                const numVertices = mesh.getTotalVertices();
+                const joints = new Float32Array(new Array(numVertices * 4).fill(0));
+                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, joints);
+                mesh.clone("clone");
+
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            const jointAccessor = assertionData.meshes[0].primitives[0].attributes.JOINTS_0;
+            const accessorData = assertionData.accessors[jointAccessor];
+
+            expect(assertionData.meshes.every((mesh: any) => mesh.primitives[0].attributes.JOINTS_0 === jointAccessor)).toBe(true);
+            expect(accessorData.type).toEqual("VEC4");
+            expect(accessorData.componentType).toEqual(Constants.UNSIGNED_BYTE);
         });
     });
 });

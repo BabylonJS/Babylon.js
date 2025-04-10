@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui-editor",
-    "version": "8.0.1",
+    "version": "8.1.1",
     "main": "dist/babylon.guiEditor.max.js",
     "module": "dist/babylon.guiEditor.max.js",
     "esnext": "dist/babylon.guiEditor.max.js",
@@ -24,10 +24,10 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^8.0.1",
-        "@babylonjs/gui": "^8.0.1",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2"
+        "@babylonjs/core": "^8.1.1",
+        "@babylonjs/gui": "^8.1.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
     },
     "keywords": [
         "3D",

@@ -1072,6 +1072,8 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
+        this._engine.setAlphaMode(this.alphaMode);
+
         // Bind the output texture of the preivous post process as the input to this post process.
         let source: RenderTargetWrapper;
         if (this._shareOutputWithPostProcess) {
@@ -1090,7 +1092,7 @@ export class PostProcess {
         this._effectWrapper.drawWrapper.effect!.setVector2("scale", this._scaleRatio);
         this.onApplyObservable.notifyObservers(this._effectWrapper.drawWrapper.effect!);
 
-        this._effectWrapper.bind();
+        this._effectWrapper.bind(true);
 
         return this._effectWrapper.drawWrapper.effect;
     }

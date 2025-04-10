@@ -943,6 +943,12 @@
             "errorRatio": 1.1
         },
         {
+            "title": "GLTF Serializer Shared Buffer Conversions",
+            "playgroundId": "#KX53VK#85",
+            "referenceImage": "glTFSerializerSharedBufferConversions.png",
+            "replace": "//options//, meshCount = 2;"
+        },
+        {
             "title": "GLTF Serializer Skinning and Animation",
             "playgroundId": "#DMZBX1#1",
             "referenceImage": "gltfSerializerSkinningAndAnimation.png"
@@ -2510,6 +2516,10 @@
             "playgroundId": "#RM56RY#16"
         },
         {
+            "title": "FrameGraph image processing",
+            "playgroundId": "#PV8OLY#21"
+        },
+        {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#7"
         },
@@ -2543,6 +2553,10 @@
             "playgroundId": "#5H0H89#129",
             "renderCount": 10,
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Specular Reflectance with IOR",
+            "playgroundId": "#KQYNYS#2"
         }
     ]
 }

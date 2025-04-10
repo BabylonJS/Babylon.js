@@ -47,3 +47,5 @@ export * from "./Sprites/index";
 export * from "./States/index";
 export * from "./types";
 export * from "./XR/index";
+
+import "./Shaders/ShadersInclude/sceneFragmentDeclaration";

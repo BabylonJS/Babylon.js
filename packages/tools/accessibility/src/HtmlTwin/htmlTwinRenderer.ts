@@ -1,6 +1,6 @@
 import type { Scene } from "core/scene";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { HTMLTwinHostComponent } from "./htmlTwinHostComponent";
 
 /**
@@ -30,6 +30,7 @@ export class HTMLTwinRenderer {
             scene,
             options,
         });
-        ReactDOM.render(htmlTwinHost, scene.getEngine().getRenderingCanvas());
+        const root = createRoot(scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
+        root.render(htmlTwinHost);
     }
 }

@@ -43,6 +43,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _draggedItem: Nullable<string>;
     private _rootRef: React.RefObject<HTMLDivElement>;
     private _onErrorMessageObserver: Nullable<Observer<string>>;
+    private _workbenchRef: React.RefObject<WorkbenchComponent> = React.createRef();
 
     override componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -230,7 +231,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }}
                     >
                         <ArtBoardComponent globalState={this.props.globalState} />
-                        <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                        <WorkbenchComponent ref={this._workbenchRef} globalState={this.props.globalState} />
                         <GizmoWrapper globalState={this.props.globalState} />
                     </div>
                     {/* Property tab */}

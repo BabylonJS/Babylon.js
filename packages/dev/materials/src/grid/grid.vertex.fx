@@ -13,8 +13,7 @@ attribute vec2 uv2;
 #include<instancesDeclaration>
 
 // Uniforms
-uniform mat4 projection;
-uniform mat4 view;
+#include<__decl__sceneVertex>
 
 // Varying
 varying vec3 vPosition;

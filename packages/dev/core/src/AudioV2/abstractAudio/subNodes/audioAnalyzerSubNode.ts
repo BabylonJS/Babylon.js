@@ -35,11 +35,6 @@ export function _GetAudioAnalyzerSubNode(subGraph: _AbstractAudioSubGraph): Null
 }
 
 /** @internal */
-export function _GetAudioAnalyzerProperty<K extends keyof typeof _AudioAnalyzerDefaults>(subGraph: _AbstractAudioSubGraph, property: K): (typeof _AudioAnalyzerDefaults)[K] {
-    return _GetAudioAnalyzerSubNode(subGraph)?.[property] ?? _AudioAnalyzerDefaults[property];
-}
-
-/** @internal */
 export function _SetAudioAnalyzerProperty<K extends keyof typeof _AudioAnalyzerDefaults>(subGraph: _AbstractAudioSubGraph, property: K, value: _AudioAnalyzerSubNode[K]): void {
     subGraph.callOnSubNode<_AudioAnalyzerSubNode>(AudioSubNode.ANALYZER, (node) => {
         node[property] = value;

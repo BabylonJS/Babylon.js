@@ -365,6 +365,11 @@ export interface ICanvasRenderingContext {
     fillStyle: string | ICanvasGradient;
 
     /**
+     * Provides filter effects such as blurring and grayscaling. It is similar to the CSS filter property and accepts the same values.
+     */
+    filter: string;
+
+    /**
      * Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque).
      */
     globalAlpha: number;

@@ -11,6 +11,7 @@ import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedE
 
 import "./sceneExplorer.scss";
 import { Logger } from "core/Misc/logger";
+import type { PropsWithChildren } from "react";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;
@@ -43,7 +44,10 @@ interface ISceneExplorerComponentProps {
     onClose?: () => void;
 }
 
-export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }> {
+export class SceneExplorerComponent extends React.Component<
+    PropsWithChildren<ISceneExplorerComponentProps>,
+    { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }
+> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onParrentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;

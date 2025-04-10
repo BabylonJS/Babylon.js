@@ -1,6 +1,7 @@
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
 
+#include<helperFunctions>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<logDepthDeclaration>
@@ -46,7 +47,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vPosition = input.position;
 
 #if SH_DEGREE > 0
-    let dir: vec3f = normalize(worldPos.xyz - scene.vEyePosition.xyz);
+    let worldRot: mat3x3f =  mat3x3f(mesh.world[0].xyz, mesh.world[1].xyz, mesh.world[2].xyz);
+    let normWorldRot: mat3x3f = inverseMat3(worldRot);
+
+    var dir: vec3f = normalize(normWorldRot * (worldPos.xyz - scene.vEyePosition.xyz));
+    dir *= vec3f(1.,1.,-1.); // convert to Babylon Space
     vertexOutputs.vColor = vec4f(computeSH(splat, splat.color.xyz, dir), 1.0);
 #else
     vertexOutputs.vColor = splat.color;

@@ -2,6 +2,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
 import type { ThinEngine } from "core/Engines";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Utility class to help with bounding info management
@@ -63,6 +64,10 @@ export class BoundingInfoHelper {
      * If called multiple times, the second, third, etc calls will perform a union of the bounding boxes calculated in the previous calls
      */
     public batchProcess(): void {
+        if (this._platform === null) {
+            Logger.Warn("Helper is not initialized. Skipping batch.");
+            return;
+        }
         this._platform.processMeshList();
     }
 
@@ -71,6 +76,7 @@ export class BoundingInfoHelper {
      * @returns a promise that resolves when the bounding info is/are computed
      */
     public async batchFetchResultsAsync(): Promise<void> {
+        await this._initializePlatform();
         return this._platform.fetchResultsForMeshListAsync();
     }
 
@@ -78,6 +84,8 @@ export class BoundingInfoHelper {
      * Dispose and release associated resources
      */
     public dispose(): void {
-        this._platform.dispose();
+        if (this._platform) {
+            this._platform.dispose();
+        }
     }
 }

@@ -12,8 +12,7 @@ attribute vec3 normal;
 // Uniforms
 #include<instancesDeclaration>
 
-uniform mat4 view;
-uniform mat4 viewProjection;
+#include<__decl__sceneVertex>
 
 #ifdef POINTSIZE
 uniform float pointSize;
