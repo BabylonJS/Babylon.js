@@ -26,6 +26,7 @@ test("Sound at position (0, 0, -1) with no listener options set should be 1x vol
     // Test against 0.7 because the 1.0 amplitude sound is evenly distributed between the two speakers.
     expect(volumes[L]).toBeCloseTo(0.7, VolumePrecision);
     expect(volumes[R]).toBeCloseTo(0.7, VolumePrecision);
+    expect(true).toBe(false);
 });
 
 test("Sound at position (0, 0, 0) with listener position option set to (1, 0, 0) should be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
