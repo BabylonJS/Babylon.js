@@ -166,33 +166,35 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #ifdef METALLICWORKFLOW
-    var metallicReflectanceFactors: vec4f = uniforms.vMetallicReflectanceFactors;
+    var metallicReflectanceColor: vec4f = uniforms.vReflectivityColor;
     #ifdef REFLECTANCE
         var reflectanceFactorsMap: vec4f = textureSample(reflectanceSampler, reflectanceSamplerSampler, fragmentInputs.vReflectanceUV + uvOffset);
         #ifdef REFLECTANCE_GAMMA
             reflectanceFactorsMap = toLinearSpaceVec4(reflectanceFactorsMap);
         #endif
 
-        metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
+        metallicReflectanceColor = vec4f(metallicReflectanceColor.rgb * reflectanceFactorsMap.rgb, metallicReflectanceColor.a);
     #endif
     #ifdef METALLIC_REFLECTANCE
-        var metallicReflectanceFactorsMap: vec4f = textureSample(metallicReflectanceSampler, metallicReflectanceSamplerSampler, fragmentInputs.vMetallicReflectanceUV + uvOffset);
+        var metallicReflectanceColorsMap: vec4f = textureSample(metallicReflectanceSampler, metallicReflectanceSamplerSampler, fragmentInputs.vMetallicReflectanceUV + uvOffset);
         #ifdef METALLIC_REFLECTANCE_GAMMA
-            metallicReflectanceFactorsMap = toLinearSpaceVec4(metallicReflectanceFactorsMap);
+            metallicReflectanceColorsMap = toLinearSpaceVec4(metallicReflectanceColorsMap);
         #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
-            metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * metallicReflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
+            metallicReflectanceColor = vec4f(metallicReflectanceColor.rgb * metallicReflectanceColorsMap.rgb, metallicReflectanceColor.a);
         #endif
-        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
+        metallicReflectanceColor *= metallicReflectanceColorsMap.a;
     #endif
 #endif
 
     reflectivityOut = reflectivityBlock(
-        uniforms.vReflectivityColor
     #ifdef METALLICWORKFLOW
+        metallicReflectanceColor
         , surfaceAlbedo
-        , metallicReflectanceFactors
+        , uniforms.vMetallicReflectanceFactors
+    #else
+        uniforms.vReflectivityColor
     #endif
         , uniforms.baseDiffuseRoughness
     #ifdef BASE_DIFFUSE_ROUGHNESS

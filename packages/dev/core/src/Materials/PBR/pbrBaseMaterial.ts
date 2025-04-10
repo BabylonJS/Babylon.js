@@ -2363,22 +2363,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 // Colors
                 if (defines.METALLICWORKFLOW) {
-                    TmpColors.Color3[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
-                    TmpColors.Color3[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
+                    TmpColors.Color4[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
+                    TmpColors.Color4[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
                     const ior = this.subSurface?._indexOfRefraction ?? 1.5;
                     const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
-                    TmpColors.Color3[0].b = ior;
-                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
+                    TmpColors.Color4[0].b = ior;
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model
                     // for dielectrics.
                     const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
-
-                    // Tweak the default F0 and F90 based on our given setup
-                    this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
-                    const metallicF90 = this._metallicF0Factor;
-
-                    ubo.updateColor4("vMetallicReflectanceFactors", TmpColors.Color3[0], metallicF90);
+                    TmpColors.Color4[0].a = f0;
+                    ubo.updateDirectColor4("vMetallicReflectanceFactors", TmpColors.Color4[0]);
+                    ubo.updateColor4("vReflectivityColor", this._metallicReflectanceColor, this._metallicF0Factor);
                 } else {
                     ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                 }

@@ -6,6 +6,8 @@ struct reflectivityOutParams
     vec3 surfaceReflectivityColor;
 #ifdef METALLICWORKFLOW
     vec3 surfaceAlbedo;
+    vec3 reflectanceF0;
+    vec3 reflectanceF90;
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     vec3 ambientOcclusionColor;
@@ -60,7 +62,7 @@ reflectivityOutParams reflectivityBlock(
     vec3 surfaceReflectivityColor = reflectivityColor.rgb;
 
     #ifdef METALLICWORKFLOW
-        vec2 metallicRoughness = surfaceReflectivityColor.rg;
+        vec2 metallicRoughness = metallicReflectanceFactors.rg;
 
         #ifdef REFLECTIVITY
             #if DEBUGMODE > 0
@@ -123,17 +125,20 @@ reflectivityOutParams reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            vec3 metallicF0 = metallicReflectanceFactors.rgb;
-
             #if DEBUGMODE > 0
-                outParams.metallicF0 = metallicF0;
+                outParams.metallicF0 = vec3(metallicReflectanceFactors.a);
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0), vec3(0., 0., 0.), metallicRoughness.r);
+            outParams.surfaceAlbedo = mix(baseColor.rgb, vec3(0., 0., 0.), metallicRoughness.r);
 
             // Compute the converted reflectivity.
-            surfaceReflectivityColor = mix(metallicF0, baseColor, metallicRoughness.r);
+            surfaceReflectivityColor = mix(reflectivityColor.rgb, baseColor, metallicRoughness.r);
+
+            // Final F0 for dielectrics = F0 * specular_color * specular_weight
+            // Final F0 for metals = baseColor
+            outParams.reflectanceF0 = mix(vec3(metallicReflectanceFactors.a * reflectivityColor.rgb * reflectivityColor.a), baseColor, metallicRoughness.r);
+            outParams.reflectanceF90 = vec3(mix(reflectivityColor.a, 1.0, metallicRoughness.r));
         #endif
     #else
         #ifdef REFLECTIVITY
