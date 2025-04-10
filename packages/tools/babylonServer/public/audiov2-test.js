@@ -74,6 +74,10 @@ class AudioV2Test {
     }
 
     static async GetResultAsync() {
+        if (audioTestResult) {
+            return audioTestResult;
+        }
+
         // Wait for sounds to finish playing.
         for (const sound of audioTestSounds) {
             if (sound.state !== BABYLON.SoundState.STOPPED) {

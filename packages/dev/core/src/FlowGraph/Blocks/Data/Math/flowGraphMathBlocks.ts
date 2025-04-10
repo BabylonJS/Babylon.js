@@ -768,7 +768,7 @@ export class FlowGraphIsNanBlock extends FlowGraphUnaryOperationBlock<FlowGraphN
     }
 
     private _polymorphicIsNan(a: FlowGraphNumber) {
-        if (isNumeric(a)) {
+        if (isNumeric(a, true)) {
             return isNaN(getNumericValue(a));
         } else {
             throw new Error(`Cannot get NaN of ${a}`);
