@@ -154,6 +154,10 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
             }
         }
+        // in case of NaN, Infinity, we need to parse the string to the object itself
+        if (type.elementType === "number" && typeof value[0] === "string") {
+            value[0] = parseFloat(value[0]);
+        }
         return { type: type.flowGraphType, value: dataTransform ? dataTransform(value, this) : value };
     }
 
