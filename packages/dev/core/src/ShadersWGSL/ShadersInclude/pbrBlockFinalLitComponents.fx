@@ -37,7 +37,8 @@ aggShadow = aggShadow / numLights;
     #endif
 
     #ifndef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
-        finalIrradiance *= surfaceAlbedo.rgb;
+        // Lerp between dielectric and metallic albedo, after both lobes are ready.
+        finalIrradiance *= mix(surfaceAlbedo.rgb, vec3(0.0), uniforms.vMetallicReflectanceFactors.r);
     #endif
 
     #if defined(SS_REFRACTION)
@@ -76,7 +77,8 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Radiance ________________________________________
 #ifdef REFLECTION
     var finalRadiance: vec3f = reflectionOut.environmentRadiance.rgb;
-    finalRadiance *= subSurfaceOut.specularEnvironmentReflectance;
+    // Apply reflectance, mixed between dielectric and metallic.
+    finalRadiance *= mix(subSurfaceOut.specularEnvironmentReflectance, surfaceAlbedo, uniforms.vMetallicReflectanceFactors.r);
 
     var finalRadianceScaled: vec3f = finalRadiance * uniforms.vLightingIntensity.z;
 
