@@ -6,7 +6,7 @@ import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
 import type { IObjectAccessor } from "./typeDefinitions";
 
-const pathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}\//g);
+const pathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}(?=\/|$)/g);
 
 /**
  * @experimental
