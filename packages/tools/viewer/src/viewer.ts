@@ -1541,7 +1541,7 @@ export class Viewer implements IDisposable {
         this._startSceneOptimizer(true);
     }
 
-    private async _updateShadows() {
+    protected async _updateShadows() {
         if (this._shadowQuality) {
             if (this._shadowQuality === "none") {
                 this._disposeShadows();
