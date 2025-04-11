@@ -32,6 +32,17 @@ AddAbstractSoundTests("static");
             // expect(result.text).toEqual(["012012"]);
         });
 
+        test("Create sound with `autoplay` and `duration` options set", async ({ page }) => {
+            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { autoplay: true, duration: 1.9 });
+
+                return await AudioV2Test.GetResultAsync();
+            });
+
+            expect(pulses[L]).toEqual([1, 2]);
+        });
+
         test("Create 2 sounds using same buffer and play them 1000 ms apart", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync();

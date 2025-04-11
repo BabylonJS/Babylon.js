@@ -14,9 +14,9 @@ export const R = 1;
  */
 const MaxPulseVolume = 0.1;
 
-const PulseVolumeThreshold = 0.05;
-const PulseTrainLengthInSamples = 30;
 const PulseGapLengthThresholdInMilliseconds = 0.01;
+const PulseTrainLengthInSamples = 90;
+const PulseVolumeThreshold = 0.05;
 
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
@@ -130,6 +130,8 @@ export function GetPulseCounts(result: AudioTestResult): number[][] {
 
     const pulseCounts = new Array<number[]>(result.numberOfChannels);
 
+    const PulseGapLengthThresholdInSamples = PulseGapLengthThresholdInMilliseconds * result.sampleRate;
+
     for (let channel = 0; channel < result.numberOfChannels; channel++) {
         let channelPulseCounts: number[] = [];
         const samples = result.samples[channel];
@@ -146,7 +148,7 @@ export function GetPulseCounts(result: AudioTestResult): number[][] {
 
                     if (pulseEnd !== -1) {
                         const silenceLengthInSamples = i - pulseEnd;
-                        if (silenceLengthInSamples > PulseGapLengthThresholdInMilliseconds * result.sampleRate) {
+                        if (silenceLengthInSamples > PulseGapLengthThresholdInSamples) {
                             channelPulseCounts.push(pulseCount);
                             pulseCount = 0;
                         }
@@ -164,7 +166,7 @@ export function GetPulseCounts(result: AudioTestResult): number[][] {
 
         if (pulseEnd !== -1) {
             const silenceLengthInSamples = i - pulseEnd;
-            if (silenceLengthInSamples > PulseGapLengthThresholdInMilliseconds * result.sampleRate) {
+            if (silenceLengthInSamples > PulseGapLengthThresholdInSamples) {
                 channelPulseCounts.push(pulseCount);
             }
         }

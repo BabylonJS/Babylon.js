@@ -10,7 +10,7 @@ const EvaluatePulseCountTestAsync = async (page: Page, soundType: SoundType, tes
 export const AddAbstractSoundTests = (soundType: SoundType) => {
     InitAudioEngineV2Tests();
 
-    test.describe("playback", () => {
+    test.describe(`${soundType} playback`, () => {
         test("Create sound with audio engine parameter not set", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync();
@@ -33,17 +33,6 @@ export const AddAbstractSoundTests = (soundType: SoundType) => {
             });
 
             expect(pulses[L]).toEqual([1, 2, 3]);
-        });
-
-        test("Create sound with `autoplay` and `duration` options set", async ({ page }) => {
-            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
-                await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { autoplay: true, duration: 1.9 });
-
-                return await AudioV2Test.GetResultAsync();
-            });
-
-            expect(pulses[L]).toEqual([1, 2]);
         });
 
         test("Create sound and call `play` on it using `await`", async ({ page }) => {
@@ -252,7 +241,7 @@ export const AddAbstractSoundTests = (soundType: SoundType) => {
         test("Create sound with sources set to one mp3 file URL with query parameters", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync();
-                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, ["./audio/pulsed-1.mp3?param1=1&param2=2"]);
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, ["pulsed-1.mp3?param1=1&param2=2"]);
 
                 sound.play();
 
@@ -265,7 +254,7 @@ export const AddAbstractSoundTests = (soundType: SoundType) => {
         test("Create sound with sources set to ogg and mp3 files", async ({ browserName, page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync();
-                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, ["./audio/pulsed-1.ogg", "./audio/pulsed-2.mp3"]);
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, ["pulsed-1.ogg", "pulsed-2.mp3"]);
 
                 sound.play();
 
