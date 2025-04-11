@@ -189,16 +189,16 @@ function _BuildExpression(line: string, start: number): ShaderCodeTestNode {
     return node;
 }
 
-function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode) {
+function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }) {
     let line = cursor.currentLine;
-    while (_MoveCursor(cursor, ifNode)) {
+    while (_MoveCursor(cursor, ifNode, preProcessorsFromCode)) {
         line = cursor.currentLine;
         const first5 = line.substring(0, 5).toLowerCase();
 
         if (first5 === "#else") {
             const elseNode = new ShaderCodeNode();
             rootNode.children.push(elseNode);
-            _MoveCursor(cursor, elseNode);
+            _MoveCursor(cursor, elseNode, preProcessorsFromCode);
             return;
         } else if (first5 === "#elif") {
             const elifNode = _BuildExpression(line, 5);
@@ -209,7 +209,7 @@ function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeCondi
     }
 }
 
-function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
+function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }): boolean {
     while (cursor.canRead) {
         cursor.lineIndex++;
         const line = cursor.currentLine;
@@ -227,7 +227,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
 
                         const ifNode = _BuildExpression(line, 6);
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        _MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                     case "#else":
@@ -241,7 +241,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
 
                         const ifNode = _BuildExpression(line, 7);
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        _MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                     case "#if": {
@@ -250,7 +250,7 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
                         rootNode.children.push(newRootNode);
 
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        _MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                 }
@@ -275,7 +275,12 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
     return false;
 }
 
-function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
+function _EvaluatePreProcessors(
+    sourceCode: string,
+    preprocessors: { [key: string]: string },
+    options: ProcessingOptions,
+    preProcessorsFromCode: { [key: string]: string }
+): string {
     const rootNode = new ShaderCodeNode();
     const cursor = new ShaderCodeCursor();
 
@@ -283,10 +288,10 @@ function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: strin
     cursor.lines = sourceCode.split("\n");
 
     // Decompose (We keep it in 2 steps so it is easier to maintain and perf hit is insignificant)
-    _MoveCursor(cursor, rootNode);
+    _MoveCursor(cursor, rootNode, preProcessorsFromCode);
 
     // Recompose
-    return rootNode.process(preprocessors, options);
+    return rootNode.process(preprocessors, options, preProcessorsFromCode);
 }
 
 function _PreparePreProcessors(options: ProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
@@ -334,7 +339,9 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    const preProcessorsFromCode: { [key: string]: string } = {};
+
+    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options, preProcessorsFromCode);
 
     // Post processing
     if (options.processor.postProcessor) {
@@ -347,7 +354,9 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
                 ? {
                       drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
                   }
-                : {}
+                : {},
+            preprocessors,
+            preProcessorsFromCode
         );
     }
 
@@ -371,7 +380,9 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    const preProcessorsFromCode: { [key: string]: string } = {};
+
+    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options, preProcessorsFromCode);
 
     // Post processing
     if (options.processor?.postProcessor) {
@@ -384,7 +395,9 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
                 ? {
                       drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
                   }
-                : {}
+                : {},
+            preprocessors,
+            preProcessorsFromCode
         );
     }
 
