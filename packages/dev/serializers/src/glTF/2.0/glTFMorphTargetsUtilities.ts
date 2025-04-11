@@ -33,6 +33,12 @@ export function BuildMorphTargetBuffers(
         name: morphTarget.name,
     };
 
+    const geometry = mesh.geometry;
+    if (!geometry) {
+        Tools.Warn("Attempted to export morph target data from a mesh without geometry. This should not happen.");
+        return result;
+    }
+
     const flipX = convertToRightHanded ? -1 : 1;
     const floatSize = 4;
     const difference = Vector3.Zero();
@@ -41,7 +47,7 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasPositions) {
         const morphPositions = morphTarget.getPositions()!;
-        const originalPositions = mesh.geometry?.getVerticesData(VertexBuffer.PositionKind); // Bypasses mesh's instance data
+        const originalPositions = geometry.getVerticesData(VertexBuffer.PositionKind); // Bypasses any instance data of mesh
 
         if (originalPositions) {
             const positionData = new Float32Array(originalPositions.length);
@@ -80,7 +86,7 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasNormals) {
         const morphNormals = morphTarget.getNormals()!;
-        const originalNormals = mesh.geometry?.getVerticesData(VertexBuffer.NormalKind);
+        const originalNormals = geometry.getVerticesData(VertexBuffer.NormalKind);
 
         if (originalNormals) {
             const normalData = new Float32Array(originalNormals.length);
@@ -107,7 +113,7 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasTangents) {
         const morphTangents = morphTarget.getTangents()!;
-        const originalTangents = mesh.geometry?.getVerticesData(VertexBuffer.TangentKind);
+        const originalTangents = geometry.getVerticesData(VertexBuffer.TangentKind);
 
         if (originalTangents) {
             vertexCount = originalTangents.length / 4;
@@ -138,8 +144,8 @@ export function BuildMorphTargetBuffers(
 
     if (morphTarget.hasColors) {
         const morphColors = morphTarget.getColors()!;
-        const originalColors = mesh.geometry?.getVerticesData(VertexBuffer.ColorKind);
-        const buffer = mesh.geometry?.getVertexBuffer(VertexBuffer.ColorKind);
+        const originalColors = geometry.getVerticesData(VertexBuffer.ColorKind);
+        const buffer = geometry.getVertexBuffer(VertexBuffer.ColorKind);
 
         if (originalColors && buffer) {
             const componentSize = buffer.getSize();

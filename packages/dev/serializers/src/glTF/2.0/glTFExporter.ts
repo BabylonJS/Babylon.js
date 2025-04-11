@@ -947,10 +947,10 @@ export class GLTFExporter {
     private _exportBuffers(babylonRootNodes: Node[], state: ExporterState): void {
         const bufferToVertexBuffersMap = new Map<Buffer, VertexBuffer[]>();
         const vertexBufferToMeshesMap = new Map<VertexBuffer, AbstractMesh[]>();
-        const morphTagetsMeshesMap = new Map<MorphTarget, AbstractMesh[]>();
+        const morphTargetsMeshesMap = new Map<MorphTarget, AbstractMesh[]>();
 
         for (const babylonNode of babylonRootNodes) {
-            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTagetsMeshesMap, state);
+            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTargetsMeshesMap, state);
         }
 
         const buffers = Array.from(bufferToVertexBuffersMap.keys());
@@ -1099,10 +1099,10 @@ export class GLTFExporter {
         }
 
         // Build morph targets buffers
-        const morphTargets = Array.from(morphTagetsMeshesMap.keys());
+        const morphTargets = Array.from(morphTargetsMeshesMap.keys());
 
         for (const morphTarget of morphTargets) {
-            const meshes = morphTagetsMeshesMap.get(morphTarget);
+            const meshes = morphTargetsMeshesMap.get(morphTarget);
 
             if (!meshes) {
                 continue;
@@ -1432,7 +1432,7 @@ export class GLTFExporter {
         this._meshes.push(mesh);
         state.setMesh(babylonMesh, meshIndex);
 
-        const indices = babylonMesh._unIndexed ? null : babylonMesh.getIndices();
+        const indices = babylonMesh.isUnIndexed ? null : babylonMesh.getIndices();
         const vertexBuffers = babylonMesh.geometry?.getVertexBuffers();
         const morphTargets = state.getMorphTargetsFromMesh(babylonMesh);
 
