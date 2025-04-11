@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -186,6 +186,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
             (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
+        ),
+        this._createPropertyBinding(
+            "shadowQuality",
+            (details) => details.viewer.onShadowsConfigurationChanged,
+            (details) => (details.viewer.shadowConfig = { quality: this.shadowQuality ?? details.viewer.shadowConfig.quality }),
+            (details) => (this.shadowQuality = details.viewer.shadowConfig.quality ?? null)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -675,6 +681,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "environment-visible",
     })
     public environmentVisible: Nullable<boolean> = this._options.environmentConfig?.visible ?? null;
+
+    /**
+     * The type of shadows to use.
+     * "classic" for shadow maps, "environment" for environment shadows.
+     */
+    @property({
+        attribute: "shadow-quality",
+    })
+    public shadowQuality: Nullable<ShadowQuality> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1313,6 +1328,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
                             };
                         },
+                        get shadowConfig() {
+                            const shadowQuality = viewerElement.getAttribute("shadow-quality") as ShadowQuality;
+                            return {
+                                quality: shadowQuality ?? viewerElement._options.shadowConfig?.quality,
+                            };
+                        },
                         get cameraOrbit() {
                             return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
                         },
@@ -1421,7 +1442,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns The created viewer.
      */
     protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
-        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
+        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass, enableAllFeatures: true, setMaximumLimits: true }));
     }
 
     private async _tearDownViewer() {
@@ -1461,7 +1482,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private async _updateEnv(options: EnvironmentOptions) {
+    private async _updateEnv(options: EnvironmentOptions): Promise<void> {
         if (this._viewerDetails) {
             try {
                 const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
