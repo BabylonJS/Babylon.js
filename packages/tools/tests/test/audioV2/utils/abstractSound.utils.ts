@@ -1,5 +1,5 @@
-import type { AudioTestResult, SoundType } from "./audioEngineV2.utils";
-import { GetPulseCounts } from "./audioEngineV2.utils";
+import type { AudioTestResult, SoundType } from "./audioV2.utils";
+import { GetPulseCounts } from "./audioV2.utils";
 
 import { Page } from "@playwright/test";
 

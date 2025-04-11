@@ -1,5 +1,5 @@
 import { EvaluatePulseCountTestAsync } from "../utils/abstractSound.utils";
-import { AudioTestResult, GetVolumesAtTime, L, R, SoundType } from "../utils/audioEngineV2.utils";
+import { AudioTestResult, GetVolumesAtTime, L, R, SoundType } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 

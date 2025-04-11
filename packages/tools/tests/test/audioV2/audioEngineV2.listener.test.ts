@@ -1,4 +1,4 @@
-import { GetVolumesAtTime, InitAudioEngineV2Tests, L, R } from "./utils/audioEngineV2.utils";
+import { GetVolumesAtTime, InitAudioEngineV2Tests, L, R } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
