@@ -2,7 +2,7 @@ import type { Nullable } from "@dev/core/types";
 import { test, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
-export type SoundType = "static" | "streaming";
+export type SoundType = "Static" | "Streaming";
 
 /** Left speaker channel */
 export const L = 0;
