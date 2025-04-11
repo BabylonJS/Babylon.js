@@ -1639,6 +1639,12 @@ export class Viewer implements IDisposable {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { ShaderMaterial } = await import("core/Materials/shaderMaterial");
 
+        const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
+        if (!worldBounds) {
+            this._log("No models loaded, cannot create shadows.");
+            return;
+        }
+
         const updateMaterial = () => {
             if (!this._iblShadowsRenderPipeline) {
                 return;
@@ -1726,6 +1732,10 @@ export class Viewer implements IDisposable {
             ground.setEnabled(true);
         });
 
+        if (this._envShadowGround) {
+            this._envShadowGround.position.y = worldBounds.extents.min[1];
+        }
+
         // call the update now because a model might be loaded before the shadows are created
         this._iblShadowsRenderPipeline?.updateSceneBounds();
         this._iblShadowsRenderPipeline?.updateVoxelization();
@@ -1746,6 +1756,7 @@ export class Viewer implements IDisposable {
             this._log("No models loaded, cannot create shadows.");
             return;
         }
+
         const radius = Vector3.FromArray(worldBounds!.size).length();
         const x = Math.cos(this._reflectionsRotation);
         const z = Math.sin(this._reflectionsRotation);
@@ -1804,6 +1815,10 @@ export class Viewer implements IDisposable {
                 mesh.receiveShadows = true;
             });
         });
+
+        if (this._classicShadowGround) {
+            this._classicShadowGround.position.y = worldBounds.extents.min[1];
+        }
 
         this._envShadowGround?.setEnabled(false);
         this._iblShadowsRenderPipeline?.toggleShadow(false);
