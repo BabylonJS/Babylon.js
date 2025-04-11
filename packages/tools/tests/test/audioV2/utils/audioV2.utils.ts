@@ -213,12 +213,15 @@ function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
 
         const updateCurve = (pulseEndIndex: number) => {
             const pulseLength = pulseEndIndex - pulseStartIndex;
-            if (pulseLength > 0) {
+            if (pulseLength > 2) {
+                // Don't include the first and last samples in the average volume calculation. They are typically
+                // values transitioning across the zero line when the polarity changes, and are not representative of
+                // the actual pulse volume.
                 let totalVolume = 0;
-                for (let j = pulseStartIndex; j < pulseEndIndex; j++) {
+                for (let j = pulseStartIndex + 1; j < pulseEndIndex - 1; j++) {
                     totalVolume += Math.abs(samples[j]);
                 }
-                const avgVolume = totalVolume / pulseLength;
+                const avgVolume = totalVolume / (pulseLength - 2);
 
                 for (let j = pulseStartIndex; j < pulseEndIndex; j++) {
                     curve[j] = avgVolume;
