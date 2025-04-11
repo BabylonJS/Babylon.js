@@ -10,6 +10,15 @@ var BABYLON;
 const SilenceAudioOutput = true;
 
 class AudioV2Test {
+    static AddSound(sound) {
+        audioTestSounds.push(sound);
+
+        // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
+        if (audioRecorder.state === "inactive") {
+            audioRecorder.start();
+        }
+    }
+
     static async AfterEachAsync() {
         audioContext = null;
         audioRecorder = null;
@@ -65,10 +74,33 @@ class AudioV2Test {
             }
         }
         const sound = await BABYLON.CreateSoundAsync("", source, options);
-        audioTestSounds.push(sound);
+        AudioV2Test.AddSound(sound);
 
-        // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
-        audioRecorder.start();
+        return sound;
+    }
+
+    static CreateAbstractSoundAsync(soundType, source, options = {}) {
+        if (soundType === "Static") {
+            return AudioV2Test.CreateSoundAsync(source, options);
+        } else if (soundType === "Streaming") {
+            return AudioV2Test.CreateStreamingSoundAsync(source, options);
+        } else {
+            throw new Error(`Unknown sound type: ${soundType}`);
+        }
+    }
+
+    static async CreateStreamingSoundAsync(source, options = {}) {
+        if (typeof source === "string") {
+            source = audioTestConfig.soundsUrl + source;
+        } else if (source instanceof Array) {
+            for (let i = 0; i < source.length; i++) {
+                if (typeof source[i] === "string") {
+                    source[i] = audioTestConfig.soundsUrl + source[i];
+                }
+            }
+        }
+        const sound = await BABYLON.CreateStreamingSoundAsync("", source, options);
+        AudioV2Test.AddSound(sound);
 
         return sound;
     }
@@ -79,8 +111,9 @@ class AudioV2Test {
         }
 
         // Wait for sounds to finish playing.
-        for (const sound of audioTestSounds) {
-            if (sound.state !== BABYLON.SoundState.STOPPED) {
+        for (let i = 0; i < audioTestSounds.length; i++) {
+            const sound = audioTestSounds[i];
+            if (sound.state !== BABYLON.SoundState.Stopped) {
                 await new Promise((resolve) => {
                     sound.onEndedObservable.addOnce(() => {
                         resolve();
