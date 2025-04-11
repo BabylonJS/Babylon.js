@@ -1,4 +1,4 @@
-import { AddAbstractSoundTests } from "./common/abstractSound.playback";
+import { AddAbstractSoundTests } from "./shared/abstractSound.playback";
 import { GetPulseCounts, InitAudioEngineV2Tests, L } from "./utils/audioEngineV2.utils";
 
 import { expect, test } from "@playwright/test";
