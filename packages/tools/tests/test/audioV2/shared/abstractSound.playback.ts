@@ -117,7 +117,6 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
             expect(pulses[L]).toEqual([2, 3]);
         });
 
-        // TODO: Move this somewhere else. It doesn't make sense to have it here.
         test("Play sound with `volume` parameter set to 0.5", async ({ page }) => {
             const result = await page.evaluate(
                 async ({ soundType }) => {
