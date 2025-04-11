@@ -2,15 +2,36 @@ import type { Nullable } from "@dev/core/types";
 import { test, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
+export type SoundType = "Static" | "Streaming";
+
+/** Left speaker channel */
+export const L = 0;
+/** Right speaker channel */
+export const R = 1;
+
+/** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
+export const VolumePrecision = 1;
+
 /**
  * The maximum pulse volume in the sound test file containing the pulse train.
  */
 const MaxPulseVolume = 0.1;
 
+const PulseGapLengthThresholdInMilliseconds = 0.01;
+const PulseTrainLengthInSamples = 90;
+const PulseVolumeThreshold = 0.05;
+
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
     public soundsUrl = getGlobalConfig().assetsUrl + "/sound/testing/audioV2/";
 
+    public formatAc3SoundFile = "ac3.ac3";
+    public formatMp3SoundFile = "mp3.mp3";
+    public formatOggSoundFile = "ogg.ogg";
+    public hashedSoundFile = "pulsed#2.mp3";
+    public pulsed1CountSoundFile = "pulsed-1.mp3";
+    public pulsed3CountHalfSpeedSoundFile = "pulsed-3-count--1-second-each--0.5-speed.mp3";
+    public pulsed3CountSoundFile = "pulsed-3-count--1-second-each.mp3";
     public pulseTrainSoundFile = "square-1-khz-0.1-amp-for-10-seconds.flac";
 }
 
@@ -31,53 +52,133 @@ declare global {
         public static AfterEachAsync(): Promise<void>;
         public static BeforeEachAsync(): Promise<void>;
         public static CreateAudioEngineAsync(options?: Partial<BABYLON.IWebAudioEngineOptions>): Promise<BABYLON.AudioEngineV2>;
-        public static CreateSoundAsync(source: string | string[], options?: Partial<BABYLON.IStaticSoundOptions>): Promise<any>;
+        public static CreateAbstractSoundAsync(
+            soundType: SoundType,
+            source: string | string[],
+            options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions>
+        ): Promise<BABYLON.AbstractSound>;
+        public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
+        public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
         public static GetResultAsync(): Promise<AudioTestResult>;
         public static WaitAsync(seconds: number): Promise<void>;
     }
 }
 
-test.beforeEach(async ({ page }) => {
-    await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
-        timeout: 0,
+export const InitAudioV2Tests = () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
+            timeout: 0,
+        });
+
+        await page.waitForFunction(() => {
+            return window.BABYLON;
+        });
+
+        page.setDefaultTimeout(0);
+
+        await page.evaluate(
+            async ({ config }: { config: AudioTestConfig }) => {
+                audioTestConfig = config;
+
+                await BABYLON.Tools.LoadScriptAsync(audioTestConfig.baseUrl + "/audiov2-test.js");
+                await AudioV2Test.BeforeEachAsync();
+            },
+            { config: new AudioTestConfig() }
+        );
+
+        await page.waitForFunction(() => {
+            return AudioV2Test;
+        });
     });
 
-    await page.waitForFunction(() => {
-        return window.BABYLON;
-    });
+    test.afterEach(async ({ page }) => {
+        if (test.info().status === "failed") {
+            let result: AudioTestResult = (<any>test.info()).audioTestResult;
 
-    page.setDefaultTimeout(0);
+            if (!result) {
+                result = await page.evaluate(async () => {
+                    return await AudioV2Test.GetResultAsync();
+                });
+            }
 
-    await page.evaluate(
-        async ({ config }: { config: AudioTestConfig }) => {
-            audioTestConfig = config;
-
-            await BABYLON.Tools.LoadScriptAsync(audioTestConfig.baseUrl + "/audiov2-test.js");
-            await AudioV2Test.BeforeEachAsync();
-        },
-        { config: new AudioTestConfig() }
-    );
-});
-
-test.afterEach(async ({ page }) => {
-    if (test.info().status === "failed") {
-        let result: AudioTestResult = (<any>test.info()).audioTestResult;
-
-        if (!result) {
-            result = await page.evaluate(async () => {
-                return await AudioV2Test.GetResultAsync();
-            });
+            SaveAudioTestResult(test.info(), result);
         }
 
-        SaveAudioTestResult(test.info(), result);
+        await page.evaluate(async () => {
+            await AudioV2Test.AfterEachAsync();
+        });
+
+        // await page.close();
+    });
+};
+
+/**
+ * Gets the pulse counts of the given result's samples.
+ *
+ * Consecutive pulses are counted as a group, with the number of pulses in the group being the count. The group is
+ * ended when a silence of at least `PulseGapLengthThresholdInMilliseconds` is detected or the end of the captured
+ * audio is reached.
+ *
+ * For example, the shape of the returned pulse count arrays for a test result containing 2 channels with 3 groups of
+ * pulses detected as 5 pulses in the first group, 6 in the second and 7 in the third group, would look like this:
+ * [[5, 6, 7], [5, 6, 7]] ... assuming both test result channels contain the same audio output, which is typical.
+ *
+ * @param result - the test result containing the samples to calculate the pulse counts from
+ * @returns an array containing the pulse counts for each channel in the given result's samples
+ */
+export function GetPulseCounts(result: AudioTestResult): number[][] {
+    if (!result.samples?.length || !result.numberOfChannels) {
+        return [];
     }
 
-    await page.evaluate(async () => {
-        await AudioV2Test.AfterEachAsync();
-    });
+    const pulseCounts = new Array<number[]>(result.numberOfChannels);
 
-    await page.close();
-});
+    const PulseGapLengthThresholdInSamples = PulseGapLengthThresholdInMilliseconds * result.sampleRate;
+
+    for (let channel = 0; channel < result.numberOfChannels; channel++) {
+        let channelPulseCounts: number[] = [];
+        const samples = result.samples[channel];
+
+        let pulseStart = -1;
+        let pulseEnd = -1;
+        let pulseCount = 0;
+
+        let i = 0;
+        for (; i < result.length; i++) {
+            if (Math.abs(samples[i]) > PulseVolumeThreshold) {
+                if (pulseStart === -1) {
+                    pulseStart = i;
+
+                    if (pulseEnd !== -1) {
+                        const silenceLengthInSamples = i - pulseEnd;
+                        if (silenceLengthInSamples > PulseGapLengthThresholdInSamples) {
+                            channelPulseCounts.push(pulseCount);
+                            pulseCount = 0;
+                        }
+                    }
+                } else {
+                    pulseEnd = i;
+                }
+            } else if (i - pulseStart > PulseTrainLengthInSamples) {
+                if (pulseStart !== -1) {
+                    pulseCount++;
+                    pulseStart = -1;
+                }
+            }
+        }
+
+        if (pulseEnd !== -1) {
+            const silenceLengthInSamples = i - pulseEnd;
+            if (silenceLengthInSamples > PulseGapLengthThresholdInSamples) {
+                channelPulseCounts.push(pulseCount);
+            }
+        }
+
+        pulseCounts[channel] = channelPulseCounts;
+    }
+
+    return pulseCounts;
+}
 
 /**
  * Gets the volumes of the given result's samples.
@@ -112,12 +213,15 @@ function GetVolumeCurves(result: AudioTestResult): Float32Array[] {
 
         const updateCurve = (pulseEndIndex: number) => {
             const pulseLength = pulseEndIndex - pulseStartIndex;
-            if (pulseLength > 0) {
+            if (pulseLength > 2) {
+                // Don't include the first and last samples in the average volume calculation. They are typically
+                // values transitioning across the zero line when the polarity changes, and are not representative of
+                // the actual pulse volume.
                 let totalVolume = 0;
-                for (let j = pulseStartIndex; j < pulseEndIndex; j++) {
+                for (let j = pulseStartIndex + 1; j < pulseEndIndex - 1; j++) {
                     totalVolume += Math.abs(samples[j]);
                 }
-                const avgVolume = totalVolume / pulseLength;
+                const avgVolume = totalVolume / (pulseLength - 2);
 
                 for (let j = pulseStartIndex; j < pulseEndIndex; j++) {
                     curve[j] = avgVolume;
