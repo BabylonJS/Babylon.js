@@ -6,7 +6,8 @@ struct reflectivityOutParams
 #ifdef METALLICWORKFLOW
     surfaceAlbedo: vec3f,
     dielectricReflectanceF0: vec3f,
-    dielectricReflectanceF90: vec3f
+    dielectricReflectanceF90: vec3f,
+    metallic: f32,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     ambientOcclusionColor: vec3f,
@@ -136,6 +137,7 @@ fn reflectivityBlock(
             outParams.dielectricReflectanceF0 = vec3f(metallicReflectanceFactors.a * reflectivityColor.a) * reflectivityColor.rgb;
             outParams.dielectricReflectanceF90 = vec3f(reflectivityColor.a);
         #endif
+        outParams.metallic = metallicRoughness.r;
     #else
         #ifdef REFLECTIVITY
             surfaceReflectivityColor *= surfaceMetallicOrReflectivityColorMap.rgb;
