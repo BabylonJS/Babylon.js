@@ -3,7 +3,7 @@ import { AudioTestResult, GetVolumesAtTime, L, R, SoundType } from "../utils/aud
 
 import { expect, test } from "@playwright/test";
 
-export const AddAbstractSoundTests = (soundType: SoundType) => {
+export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
     test.describe(`${soundType} playback`, () => {
         test("Create sound with audio engine parameter not set", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {

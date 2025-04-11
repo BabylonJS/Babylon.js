@@ -1,5 +1,5 @@
-import { AddAbstractSoundTests } from "./shared/abstractSound.playback";
+import { AddSharedAbstractSoundPlaybackTests } from "./shared/abstractSound.playback";
 import { InitAudioEngineV2Tests } from "./utils/audioEngineV2.utils";
 
 InitAudioEngineV2Tests();
-AddAbstractSoundTests("Streaming");
+AddSharedAbstractSoundPlaybackTests("Streaming");

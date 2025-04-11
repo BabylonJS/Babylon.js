@@ -1,10 +1,10 @@
-import { AddAbstractSoundTests } from "./shared/abstractSound.playback";
+import { AddSharedAbstractSoundPlaybackTests } from "./shared/abstractSound.playback";
 import { GetPulseCounts, InitAudioEngineV2Tests, L } from "./utils/audioEngineV2.utils";
 
 import { expect, test } from "@playwright/test";
 
 InitAudioEngineV2Tests();
-AddAbstractSoundTests("Static");
+AddSharedAbstractSoundPlaybackTests("Static");
 
 test.describe("Static playback", () => {
     test("Play sound and call `stop` with `waitTime` parameter set to 1.8", async ({ page }) => {
