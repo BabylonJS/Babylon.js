@@ -75,9 +75,9 @@ class AudioV2Test {
 
     static CreateAbstractSoundAsync(soundType, source, options = {}) {
         if (soundType === "static") {
-            return AudioV2Test.CreateStreamingSoundAsync(source, options);
-        } else if (soundType === "streaming") {
             return AudioV2Test.CreateSoundAsync(source, options);
+        } else if (soundType === "streaming") {
+            return AudioV2Test.CreateStreamingSoundAsync(source, options);
         } else {
             throw new Error(`Unknown sound type: ${soundType}`);
         }
