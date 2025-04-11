@@ -68,7 +68,9 @@ class AudioV2Test {
         audioTestSounds.push(sound);
 
         // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
-        audioRecorder.start();
+        if (audioRecorder.state === "inactive") {
+            audioRecorder.start();
+        }
 
         return sound;
     }
