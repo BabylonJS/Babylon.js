@@ -22,6 +22,11 @@ export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
     public soundsUrl = getGlobalConfig().assetsUrl + "/sound/testing/audioV2/";
 
+    public formatAc3SoundFile = "ac3.ac3";
+    public formatMp3SoundFile = "mp3.mp3";
+    public formatOggSoundFile = "ogg.ogg";
+    public hashedSoundFile = "pulsed#2.mp3";
+    public pulsed1CountSoundFile = "pulsed-1.mp3";
     public pulsed3CountHalfSpeedSoundFile = "pulsed-3-count--1-second-each--0.5-speed.mp3";
     public pulsed3CountSoundFile = "pulsed-3-count--1-second-each.mp3";
     public pulseTrainSoundFile = "square-1-khz-0.1-amp-for-10-seconds.flac";
@@ -49,7 +54,7 @@ declare global {
             source: string | string[],
             options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions>
         ): Promise<BABYLON.AbstractSound>;
-        public static CreateSoundAsync(source: string | string[], options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
+        public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
         public static GetResultAsync(): Promise<AudioTestResult>;
         public static WaitAsync(seconds: number): Promise<void>;
