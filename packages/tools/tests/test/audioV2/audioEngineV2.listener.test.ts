@@ -1,8 +1,6 @@
-import { GetVolumesAtTime, InitAudioV2Tests, L, R } from "./utils/audioV2.utils";
+import { GetVolumesAtTime, InitAudioV2Tests, L, R, VolumePrecision } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
-
-const VolumePrecision = 1;
 
 InitAudioV2Tests();
 

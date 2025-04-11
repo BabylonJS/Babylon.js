@@ -9,6 +9,9 @@ export const L = 0;
 /** Right speaker channel */
 export const R = 1;
 
+/** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
+export const VolumePrecision = 1;
+
 /**
  * The maximum pulse volume in the sound test file containing the pulse train.
  */

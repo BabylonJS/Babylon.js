@@ -1,5 +1,5 @@
 import { EvaluatePulseCountTestAsync } from "../utils/abstractSound.utils";
-import { AudioTestResult, GetVolumesAtTime, L, R, SoundType } from "../utils/audioV2.utils";
+import { AudioTestResult, GetVolumesAtTime, L, R, SoundType, VolumePrecision } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -135,8 +135,8 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
 
             const volumes = GetVolumesAtTime(result, 0.5);
 
-            expect(volumes[L]).toBeCloseTo(0.5, 1);
-            expect(volumes[R]).toBeCloseTo(0.5, 1);
+            expect(volumes[L]).toBeCloseTo(0.5, VolumePrecision);
+            expect(volumes[R]).toBeCloseTo(0.5, VolumePrecision);
         });
 
         test("Play sound with `startOffset` option set to 1", async ({ page }) => {
