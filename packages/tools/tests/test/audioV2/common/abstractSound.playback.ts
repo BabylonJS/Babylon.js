@@ -283,10 +283,10 @@ export const AddAbstractSoundTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            // Speech output for each instance:
-            //               Instance 1: [1      ]
-            //               Instance 2: [ 1 2 3 ]
-            //               Instance 3: [  1 2 3]
+            // Pulse count output for each instance:
+            //            Instance 1: [1                  ]
+            //            Instance 2: [   1     2     3   ]
+            //            Instance 3: [      1     2     3]
             expect(pulses[L]).toEqual([1, 1, 1, 2, 2, 3, 3]);
         });
 
