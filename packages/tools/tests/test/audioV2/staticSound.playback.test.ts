@@ -1,9 +1,9 @@
 import { AddSharedAbstractSoundPlaybackTests } from "./shared/abstractSound.playback";
-import { GetPulseCounts, InitAudioEngineV2Tests, L } from "./utils/audioV2.utils";
+import { GetPulseCounts, InitAudioV2Tests, L } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
-InitAudioEngineV2Tests();
+InitAudioV2Tests();
 AddSharedAbstractSoundPlaybackTests("Static");
 
 test.describe("Static playback", () => {

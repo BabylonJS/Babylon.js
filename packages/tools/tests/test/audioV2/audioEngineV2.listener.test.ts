@@ -1,10 +1,10 @@
-import { GetVolumesAtTime, InitAudioEngineV2Tests, L, R } from "./utils/audioV2.utils";
+import { GetVolumesAtTime, InitAudioV2Tests, L, R } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
 const VolumePrecision = 1;
 
-InitAudioEngineV2Tests();
+InitAudioV2Tests();
 
 test("Sound at position (0, 0, -1) with no listener options set should be 1x volume in left and right speakers", async ({ page }) => {
     const result = await page.evaluate(async () => {

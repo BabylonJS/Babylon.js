@@ -61,7 +61,7 @@ declare global {
     }
 }
 
-export const InitAudioEngineV2Tests = () => {
+export const InitAudioV2Tests = () => {
     test.beforeEach(async ({ page }) => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
             timeout: 0,
