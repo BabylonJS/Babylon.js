@@ -1,4 +1,4 @@
-import { AddAbstractSoundTests } from "./common/abstractSound.common";
+import { AddAbstractSoundTests } from "./common/abstractSound.playback";
 import { InitAudioEngineV2Tests } from "./utils/audioEngineV2.utils";
 
 InitAudioEngineV2Tests();
