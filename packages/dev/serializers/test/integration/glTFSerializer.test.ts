@@ -1,6 +1,7 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { Constants } from "core/Engines";
+
 declare const BABYLON: typeof import("core/index") &
     typeof import("serializers/index") & {
         GLTF2: {
@@ -534,24 +535,39 @@ describe("Babylon glTF Serializer", () => {
             expect(box2.extras.foo).toEqual(2);
             expect(box2.extras.bar).toEqual("baz");
         });
-        it("should export instances as nodes pointing to same mesh", async () => {
+
+        describe("exporting instances", () => {
             const instanceCount = 3;
-            const assertionData = await page.evaluate(async (instanceCount) => {
+            const test = async (instanceCount: number, skipSource: boolean) => {
+                const shouldExportNode = (node: any) => !skipSource || node.name !== "box";
                 const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, window.scene!);
                 for (let i = 0; i < instanceCount; i++) {
                     mesh.createInstance("boxInstance" + i);
                 }
-                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", { shouldExportNode });
                 const jsonString = glTFData.files["test.gltf"] as string;
                 return JSON.parse(jsonString);
-            }, instanceCount);
-            expect(Object.keys(assertionData)).toHaveLength(9);
-            expect(assertionData.nodes).toHaveLength(instanceCount + 1);
-            expect(assertionData.meshes).toHaveLength(1);
-            for (const node of assertionData.nodes) {
-                expect(node.mesh).toEqual(0);
-            }
+            };
+
+            it("exports one mesh that is shared by all instances", async () => {
+                const assertionData = await page.evaluate(test, instanceCount, false);
+                expect(assertionData.nodes).toHaveLength(instanceCount + 1);
+                expect(assertionData.meshes).toHaveLength(1);
+                for (const node of assertionData.nodes) {
+                    expect(node.mesh).toEqual(0);
+                }
+            });
+
+            it("can export instances without their source mesh", async () => {
+                const assertionData = await page.evaluate(test, instanceCount, true);
+                expect(assertionData.nodes).toHaveLength(instanceCount);
+                expect(assertionData.meshes).toHaveLength(1);
+                for (const node of assertionData.nodes) {
+                    expect(node.mesh).toEqual(0);
+                }
+            });
         });
+
         it("should not export a root conversion node", async () => {
             const assertionData = await page.evaluate(async () => {
                 await BABYLON.SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/Tests/TwoQuads/", "TwoQuads.gltf", window.scene);

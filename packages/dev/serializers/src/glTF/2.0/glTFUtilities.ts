@@ -8,8 +8,7 @@ import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector"
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { InstancedMesh } from "core/Meshes/instancedMesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
@@ -30,7 +29,7 @@ const defaultScale = Vector3.One();
  * @param meshes the meshes that use the vertex buffer
  * @returns the information necessary to enumerate the vertex buffer
  */
-export function GetVertexBufferInfo(vertexBuffer: VertexBuffer, meshes: Mesh[]) {
+export function GetVertexBufferInfo(vertexBuffer: VertexBuffer, meshes: AbstractMesh[]) {
     const { byteOffset, byteStride, type, normalized } = vertexBuffer;
     const componentCount = vertexBuffer.getSize();
     const totalVertices = meshes.reduce((max, current) => {
@@ -303,7 +302,7 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     }
 
     // Geometry
-    if ((node instanceof Mesh && node.geometry) || (node instanceof InstancedMesh && node.sourceMesh.geometry)) {
+    if (node instanceof AbstractMesh && node.geometry) {
         return false;
     }
 

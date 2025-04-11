@@ -43,6 +43,7 @@ import type { TrianglePickingPredicate } from "../Culling/ray";
 import type { RenderingGroup } from "../Rendering/renderingGroup";
 import type { IEdgesRendererOptions } from "../Rendering/edgesRenderer";
 import type { MorphTarget } from "../Morph/morphTarget";
+import type { Geometry } from "./geometry";
 import { nativeOverride } from "../Misc/decorators";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
@@ -1091,7 +1092,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @returns a string representation of the current mesh
      */
     public override toString(fullDetails?: boolean): string {
-        let ret = "Name: " + this.name + ", isInstance: " + (this.getClassName() !== "InstancedMesh" ? "YES" : "NO");
+        let ret = "Name: " + this.name + ", isInstance: " + (this.getClassName() === "InstancedMesh" ? "YES" : "NO");
         ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
 
         const skeleton = this._internalAbstractMeshDataInfo._skeleton;
@@ -1299,6 +1300,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public getLOD(camera: Camera): Nullable<AbstractMesh> {
         return this;
     }
+
+    /**
+     * The mesh's internal Geometry object. Implemented by child classes.
+     */
+    public abstract get geometry(): Nullable<Geometry>;
 
     /**
      * Returns 0 by default. Implemented by child classes
