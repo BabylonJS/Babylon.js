@@ -65,6 +65,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
             blockCompilation: true,
         });
 
+        this._staticDefines = options ? (Array.isArray(options.defines) ? options.defines.join("\n") : options.defines || "") : "";
+
         this.options.blockCompilation = blockCompilationFinal;
 
         if (direction !== undefined) {
