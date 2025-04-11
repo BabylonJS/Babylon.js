@@ -21,6 +21,7 @@ export * from "./KHR_materials_transmission";
 export * from "./KHR_materials_diffuse_transmission";
 export * from "./KHR_materials_volume";
 export * from "./KHR_materials_dispersion";
+export * from "./EXT_materials_diffuse_roughness";
 export * from "./KHR_mesh_quantization";
 export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";

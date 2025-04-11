@@ -81,6 +81,8 @@ export * from "../ShadersWGSL/iblCdfDebug.fragment";
 export * from "../Shaders/iblCdfDebug.fragment";
 export * from "../ShadersWGSL/iblScaledLuminance.fragment";
 export * from "../Shaders/iblScaledLuminance.fragment";
+export * from "../ShadersWGSL/iblDominantDirection.fragment";
+export * from "../Shaders/iblDominantDirection.fragment";
 export * from "../Shaders/iblVoxelGrid2dArrayDebug.fragment";
 export * from "../ShadersWGSL/iblVoxelGrid2dArrayDebug.fragment";
 export * from "../Shaders/iblVoxelGrid.fragment";

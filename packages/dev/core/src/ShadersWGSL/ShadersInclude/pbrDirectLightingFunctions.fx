@@ -23,7 +23,7 @@ struct lightingInfo
 // Simulate area (small) lights by increasing roughness
 fn adjustRoughnessFromLightProperties(roughness: f32, lightRadius: f32, lightDistance: f32) -> f32 {
     #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
-        // At small angle this approximation works. 
+        // At small angle this approximation works.
         var lightRoughness: f32 = lightRadius / lightDistance;
         // Distribution can sum.
         var totalRoughness: f32 = saturate(lightRoughness + roughness);
@@ -44,7 +44,12 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
 #endif
 
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
-    var diffuseTerm: f32 = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
+    var diffuseTerm: vec3f = vec3f(1.0 / PI);
+    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
+        diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+        diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+    #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
@@ -70,12 +75,19 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             transmittanceNdotL = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
-
-        return (transmittanceNdotL / PI) * info.attenuation * lightColor;
-    #endif
-
+        var diffuseTerm : vec3f = vec3f(1.0 / PI);
+        #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
+        diffuseTerm = vec3f(diffuseBRDF_Burley(
+                    info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+        diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness,
+                    info.NdotL, info.NdotV, info.LdotV);
+        #endif
+        return (transmittanceNdotL * diffuseTerm) * info.attenuation * lightColor;
+    #else
         let diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
         return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
+    #endif
     }
 #endif
 
