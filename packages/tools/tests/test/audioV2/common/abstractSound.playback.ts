@@ -1,11 +1,7 @@
-import { AudioTestResult, GetPulseCounts, GetVolumesAtTime, L, R, SoundType } from "../utils/audioEngineV2.utils";
+import { EvaluatePulseCountTestAsync } from "../utils/abstractSound.utils";
+import { AudioTestResult, GetVolumesAtTime, L, R, SoundType } from "../utils/audioEngineV2.utils";
 
-import { expect, Page, test } from "@playwright/test";
-
-const EvaluatePulseCountTestAsync = async (page: Page, soundType: SoundType, testFn: ({ soundType }: { soundType: SoundType }) => Promise<AudioTestResult>) => {
-    const result = await page.evaluate(testFn, { soundType });
-    return GetPulseCounts(result);
-};
+import { expect, test } from "@playwright/test";
 
 export const AddAbstractSoundTests = (soundType: SoundType) => {
     test.describe(`${soundType} playback`, () => {
