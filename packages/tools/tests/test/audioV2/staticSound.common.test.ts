@@ -1,5 +1,7 @@
 import { AddAbstractSoundTests } from "./common/abstractSound.common";
+import { InitAudioEngineV2Tests } from "./utils/audioEngineV2.utils";
 
+InitAudioEngineV2Tests();
 AddAbstractSoundTests("static");
 
 /*
@@ -36,6 +38,73 @@ AddAbstractSoundTests("static");
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
                 await AudioV2Test.CreateAudioEngineAsync();
                 await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { autoplay: true, duration: 1.9 });
+
+                return await AudioV2Test.GetResultAsync();
+            });
+
+            expect(pulses[L]).toEqual([1, 2]);
+        });
+
+        test("Create sound with `loopStart` and `loopEnd` options set", async ({ page }) => {
+            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync();
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { loop: true, loopStart: 1, loopEnd: 2 });
+
+                sound.play();
+                await AudioV2Test.WaitAsync(2.8);
+                sound.stop();
+
+                return await AudioV2Test.GetResultAsync();
+            });
+
+            expect(pulses[L]).toEqual([1, 2, 2]);
+        });
+
+        test("Create sound with `pitch` option set to 1200", async ({ page }) => {
+            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync();
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountHalfSpeedSoundFile, { pitch: 1200 });
+
+                sound.play();
+
+                return await AudioV2Test.GetResultAsync();
+            });
+
+            expect(pulses[L]).toEqual([1, 2, 3]);
+        });
+
+        test("Create sound with `playbackRate` option set to 2", async ({ page }) => {
+            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync();
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountHalfSpeedSoundFile, { playbackRate: 2 });
+
+                sound.play();
+
+                return await AudioV2Test.GetResultAsync();
+            });
+
+            expect(pulses[L]).toEqual([1, 2, 3]);
+        });
+
+        test("Create sound with `playbackRate` option set to 1.5 and `pitch` option set to 500", async ({ page }) => {
+            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync();
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountHalfSpeedSoundFile, { playbackRate: 1.5, pitch: 500 });
+
+                sound.play();
+
+                return await AudioV2Test.GetResultAsync();
+            });
+
+            expect(pulses[L]).toEqual([1, 2, 3]);
+        });
+
+        test("Play sound with `duration` option set to 1.9", async ({ page }) => {
+            const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
+                await AudioV2Test.CreateAudioEngineAsync();
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { duration: 1.9 });
+
+                sound.play();
 
                 return await AudioV2Test.GetResultAsync();
             });

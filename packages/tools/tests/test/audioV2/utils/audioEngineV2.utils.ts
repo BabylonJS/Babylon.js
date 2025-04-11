@@ -105,7 +105,7 @@ export const InitAudioEngineV2Tests = () => {
             await AudioV2Test.AfterEachAsync();
         });
 
-        await page.close();
+        // await page.close();
     });
 };
 

@@ -108,8 +108,9 @@ class AudioV2Test {
         }
 
         // Wait for sounds to finish playing.
-        for (const sound of audioTestSounds) {
-            if (sound.state !== BABYLON.SoundState.STOPPED) {
+        for (let i = 0; i < audioTestSounds.length; i++) {
+            const sound = audioTestSounds[i];
+            if (sound.state !== BABYLON.SoundState.Stopped) {
                 await new Promise((resolve) => {
                     sound.onEndedObservable.addOnce(() => {
                         resolve();
