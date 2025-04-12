@@ -3,11 +3,11 @@ import { test, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "StaticSound" | "StreamingSound";
-export type SoundType = "Static" | "Streaming";
+export type SoundType = "StaticSound" | "StreamingSound";
 
-/** Left speaker channel */
+    /** Left speaker channel */
 export const L = 0;
-/** Right speaker channel */
+    /** Right speaker channel */
 export const R = 1;
 
 /** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */

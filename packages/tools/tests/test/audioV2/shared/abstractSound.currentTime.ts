@@ -136,7 +136,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 sound.play();
                 await AudioV2Test.WaitAsync(0.5);
                 sound.pause();
-                sound.currentTime = soundType === "Static" ? 2 : 1.5;
+                sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
                 sound.play();
 
                 return await AudioV2Test.GetResultAsync();
@@ -153,7 +153,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 sound.play();
                 await AudioV2Test.WaitAsync(0.5);
                 sound.stop();
-                sound.currentTime = soundType === "Static" ? 2 : 1.5;
+                sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
                 sound.play();
 
                 return await AudioV2Test.GetResultAsync();

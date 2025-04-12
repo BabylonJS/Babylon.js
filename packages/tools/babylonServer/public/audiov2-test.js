@@ -83,9 +83,9 @@ class AudioV2Test {
     }
 
     static CreateAbstractSoundAsync(soundType, source, options = {}) {
-        if (soundType === "Static") {
+        if (soundType === "StaticSound") {
             return AudioV2Test.CreateSoundAsync(source, options);
-        } else if (soundType === "Streaming") {
+        } else if (soundType === "StreamingSound") {
             return AudioV2Test.CreateStreamingSoundAsync(source, options);
         } else {
             throw new Error(`Unknown sound type: ${soundType}`);
@@ -93,7 +93,7 @@ class AudioV2Test {
     }
 
     static async CreateAbstractSoundAndOutputNodeAsync(audioNodeType, source, options = {}) {
-        const sound = await AudioV2Test.CreateAbstractSoundAsync(audioNodeType === "StreamingSound" ? "Streaming" : "Static", source, options);
+        const sound = await AudioV2Test.CreateAbstractSoundAsync(audioNodeType === "StreamingSound" ? "StreamingSound" : "StaticSound", source, options);
 
         let outputNode = null;
 
