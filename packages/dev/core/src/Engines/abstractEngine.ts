@@ -894,6 +894,7 @@ export abstract class AbstractEngine {
     protected _maxFPS: number | undefined;
     protected _minFrameTime: number;
     protected _lastFrameTime: number = 0;
+    protected _renderAccumulator: number = 0;
 
     /**
      * Skip frame rendering but keep the frame heartbeat (begin/end frame).
@@ -919,21 +920,30 @@ export abstract class AbstractEngine {
             return;
         }
 
-        this._minFrameTime = 1000 / (value + 1); // We need to provide a bit of leeway to ensure we don't go under because of vbl sync
+        this._minFrameTime = 1000 / value;
     }
 
     protected _isOverFrameTime(timestamp?: number): boolean {
-        if (!timestamp) {
+        if (!timestamp || this._maxFPS === undefined) {
             return false;
         }
 
         const elapsedTime = timestamp - this._lastFrameTime;
-        if (this._maxFPS === undefined || elapsedTime >= this._minFrameTime) {
-            this._lastFrameTime = timestamp;
-            return false;
+        this._lastFrameTime = timestamp;
+
+        this._renderAccumulator += elapsedTime;
+
+        if (this._renderAccumulator < this._minFrameTime) {
+            return true;
         }
 
-        return true;
+        this._renderAccumulator -= this._minFrameTime;
+
+        if (this._renderAccumulator > this._minFrameTime) {
+            this._renderAccumulator = this._minFrameTime;
+        }
+
+        return false;
     }
 
     protected _processFrame(timestamp?: number) {
