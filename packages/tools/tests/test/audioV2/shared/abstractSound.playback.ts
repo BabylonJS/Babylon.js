@@ -1,5 +1,5 @@
 import { EvaluatePulseCountTestAsync } from "../utils/abstractSound.utils";
-import { AudioTestResult, GetVolumesAtTime, L, R, SoundType, VolumePrecision } from "../utils/audioV2.utils";
+import { AudioTestResult, Channel, GetVolumesAtTime, SoundType, VolumePrecision } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -15,7 +15,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3]);
         });
 
         test("Create sound with `autoplay` option set to `true`", async ({ page }) => {
@@ -26,7 +26,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3]);
         });
 
         test("Create sound and call `play` on it using `await`", async ({ page }) => {
@@ -39,7 +39,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3]);
         });
 
         test("Create sound and call `play` on it using `then`", async ({ page }) => {
@@ -54,7 +54,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 });
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3]);
         });
 
         test("Create sound and call `play` on it twice", async ({ page }) => {
@@ -69,7 +69,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 1, 2, 2, 3, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 1, 2, 2, 3, 3]);
         });
 
         test("Create sound, call `play` on it twice, and call `stop` on it", async ({ page }) => {
@@ -86,7 +86,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 1]);
+            expect(pulses[Channel.L]).toEqual([1, 1]);
         });
 
         test("Create sound with `loop` option set to true", async ({ page }) => {
@@ -101,7 +101,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3, 1]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3, 1]);
         });
 
         test("Create sound with `startOffset` option set to 1", async ({ page }) => {
@@ -114,7 +114,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([2, 3]);
+            expect(pulses[Channel.L]).toEqual([2, 3]);
         });
 
         test("Play sound with `volume` parameter set to 0.5", async ({ page }) => {
@@ -134,8 +134,8 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
 
             const volumes = GetVolumesAtTime(result, 0.5);
 
-            expect(volumes[L]).toBeCloseTo(0.5, VolumePrecision);
-            expect(volumes[R]).toBeCloseTo(0.5, VolumePrecision);
+            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+            expect(volumes[Channel.R]).toBeCloseTo(0.5, VolumePrecision);
         });
 
         test("Play sound with `startOffset` option set to 1", async ({ page }) => {
@@ -148,7 +148,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([2, 3]);
+            expect(pulses[Channel.L]).toEqual([2, 3]);
         });
 
         test("Create sound with sources set to one mp3 file URL with no query parameters", async ({ page }) => {
@@ -161,7 +161,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1]);
+            expect(pulses[Channel.L]).toEqual([1]);
         });
 
         test("Create sound with sources set to one mp3 file URL with query parameters", async ({ page }) => {
@@ -174,7 +174,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1]);
+            expect(pulses[Channel.L]).toEqual([1]);
         });
 
         test("Create sound with sources set to ogg and mp3 files", async ({ browserName, page }) => {
@@ -189,10 +189,10 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
 
             // Webkit doesn't support .ogg files, so the .mp3 file 2nd in the list should play.
             if (browserName === "webkit") {
-                expect(pulses[L]).toEqual([2]);
+                expect(pulses[Channel.L]).toEqual([2]);
             } else {
                 // Everything else should support .ogg files, so the .ogg file 1st in the list should play.
-                expect(pulses[L]).toEqual([1]);
+                expect(pulses[Channel.L]).toEqual([1]);
             }
         });
 
@@ -233,7 +233,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3]);
         });
 
         test("Play sound, pause it, and resume it by calling play", async ({ page }) => {
@@ -250,7 +250,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 2, 3]);
         });
 
         test("Create sound with `maxInstances` set to 1", async ({ page }) => {
@@ -265,7 +265,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 1, 2, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 1, 2, 3]);
         });
 
         test("Create sound with `maxInstances` set to 2", async ({ page }) => {
@@ -286,7 +286,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
             //            Instance 1: [1                  ]
             //            Instance 2: [   1     2     3   ]
             //            Instance 3: [      1     2     3]
-            expect(pulses[L]).toEqual([1, 1, 1, 2, 2, 3, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 1, 1, 2, 2, 3, 3]);
         });
 
         test("Create sound with url containing a # character", async ({ page }) => {
@@ -299,7 +299,7 @@ export const AddSharedAbstractSoundPlaybackTests = (soundType: SoundType) => {
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([2]);
+            expect(pulses[Channel.L]).toEqual([2]);
         });
     });
 };

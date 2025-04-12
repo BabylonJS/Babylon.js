@@ -1,4 +1,4 @@
-import { GetVolumesAtTime, InitAudioV2Tests, L, R, VolumePrecision } from "./utils/audioV2.utils";
+import { Channel, GetVolumesAtTime, InitAudioV2Tests, VolumePrecision } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -20,8 +20,8 @@ test.describe("AudioEngineV2 listener", () => {
         const volumes = GetVolumesAtTime(result, 0.5);
 
         // Test against 0.7 because the 1.0 amplitude sound is evenly distributed between the two speakers.
-        expect(volumes[L]).toBeCloseTo(0.7, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(0.7, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(0.7, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(0.7, VolumePrecision);
     });
 
     test("Sound at position (0, 0, 0) with listener position option set to (1, 0, 0) should be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
@@ -38,8 +38,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(1, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(0, VolumePrecision);
     });
 
     test("Sound at position (0, 0, 0) with listener position option set to (-1, 0, 0) should be 0 volume in left speaker and 1x volume in right speaker", async ({ page }) => {
@@ -56,8 +56,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(0, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(1, VolumePrecision);
     });
 
     test("Sound at position (0, 0, -1) with listener rotation option set to 90 degrees should be 0 volume in left speaker and 1x volume in right speaker", async ({ page }) => {
@@ -74,8 +74,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(0, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(1, VolumePrecision);
     });
 
     test("Sound at position (0, 0, -1) with listener rotation option set to -90 degrees should be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
@@ -92,8 +92,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(1, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(0, VolumePrecision);
     });
 
     test("Sound at position (0, 0, 0) with listener position property set to (1, 0, 0) should be 1x volume in left speaker and 0 volume in right speaker", async ({ page }) => {
@@ -112,8 +112,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(1, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(0, VolumePrecision);
     });
 
     test("Sound at position (0, 0, 0) with listener position property set to (1, 0, 0) via Vector3.set should be 1x volume in left speaker and 0 volume in right speaker", async ({
@@ -134,8 +134,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(1, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(0, VolumePrecision);
     });
 
     test("Sound at position (0, 0, 0) with `listenerAttachedMesh` option set to mesh at position (1, 0, 0) should be 1x volume in left speaker and 0 volume in right speaker", async ({
@@ -162,8 +162,8 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(1, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(0, VolumePrecision);
     });
 
     test("Sound at position (0, 0, -1) with `listenerAttachedMesh` option set to mesh rotated 90 degrees should be 0 volume in left speaker and 1x volume in right speaker", async ({
@@ -190,7 +190,7 @@ test.describe("AudioEngineV2 listener", () => {
 
         const volumes = GetVolumesAtTime(result, 0.5);
 
-        expect(volumes[L]).toBeCloseTo(0, VolumePrecision);
-        expect(volumes[R]).toBeCloseTo(1, VolumePrecision);
+        expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+        expect(volumes[Channel.R]).toBeCloseTo(1, VolumePrecision);
     });
 });

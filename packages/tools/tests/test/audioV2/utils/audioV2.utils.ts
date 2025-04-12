@@ -5,10 +5,12 @@ import { getGlobalConfig } from "@tools/test-tools";
 export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "StaticSound" | "StreamingSound";
 export type SoundType = "StaticSound" | "StreamingSound";
 
+export const enum Channel {
     /** Left speaker channel */
-export const L = 0;
+    L = 0,
     /** Right speaker channel */
-export const R = 1;
+    R = 1,
+}
 
 /** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
 export const VolumePrecision = 1;

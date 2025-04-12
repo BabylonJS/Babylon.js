@@ -1,5 +1,5 @@
 import { AddSharedAbstractSoundPlaybackTests } from "./shared/abstractSound.playback";
-import { GetPulseCounts, InitAudioV2Tests, L } from "./utils/audioV2.utils";
+import { Channel, GetPulseCounts, InitAudioV2Tests } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -20,7 +20,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2]);
+        expect(pulses[Channel.L]).toEqual([1, 2]);
     });
 
     test("Play two sounds, with the second sound's `waitTime` parameter set to 3", async ({ page }) => {
@@ -36,7 +36,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2, 3, 1, 2, 3]);
+        expect(pulses[Channel.L]).toEqual([1, 2, 3, 1, 2, 3]);
     });
 
     test("Create sound with `autoplay` and `duration` options set", async ({ page }) => {
@@ -49,7 +49,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2]);
+        expect(pulses[Channel.L]).toEqual([1, 2]);
     });
 
     test("Create sound with `loopStart` and `loopEnd` options set", async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2, 2]);
+        expect(pulses[Channel.L]).toEqual([1, 2, 2]);
     });
 
     test("Create sound with `pitch` option set to 1200", async ({ page }) => {
@@ -81,7 +81,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2, 3]);
+        expect(pulses[Channel.L]).toEqual([1, 2, 3]);
     });
 
     test("Create sound with `playbackRate` option set to 2", async ({ page }) => {
@@ -96,7 +96,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2, 3]);
+        expect(pulses[Channel.L]).toEqual([1, 2, 3]);
     });
 
     test("Create sound with `playbackRate` option set to 1.5 and `pitch` option set to 500", async ({ page }) => {
@@ -111,7 +111,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2, 3]);
+        expect(pulses[Channel.L]).toEqual([1, 2, 3]);
     });
 
     test("Play sound with `duration` option set to 1.9", async ({ page }) => {
@@ -126,7 +126,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2]);
+        expect(pulses[Channel.L]).toEqual([1, 2]);
     });
 
     test("Create 2 sounds using same buffer and play them 500 ms apart", async ({ page }) => {
@@ -144,7 +144,7 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 1, 2, 2, 3, 3]);
+        expect(pulses[Channel.L]).toEqual([1, 1, 2, 2, 3, 3]);
     });
 
     test("Create sound with `source` parameter set to a buffer", async ({ page }) => {
@@ -160,6 +160,6 @@ test.describe("Static playback", () => {
             })
         );
 
-        expect(pulses[L]).toEqual([1, 2, 3]);
+        expect(pulses[Channel.L]).toEqual([1, 2, 3]);
     });
 });

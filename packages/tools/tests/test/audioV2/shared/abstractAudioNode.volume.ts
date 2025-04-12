@@ -1,6 +1,6 @@
 import { EvaluateAbstractAudioNodeTestAsync } from "../utils/abstractAudioNode.utils";
 import type { AudioNodeType } from "../utils/audioV2.utils";
-import { GetVolumesAtTime, L, VolumePrecision } from "../utils/audioV2.utils";
+import { Channel, GetVolumesAtTime, VolumePrecision } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -20,7 +20,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = GetVolumesAtTime(result, 0.5);
 
-            expect(volumes[L]).toBeCloseTo(1, VolumePrecision);
+            expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
         });
 
         test("Setting `volume` to 0.5 should play sound at 0.5x volume ", async ({ page }) => {
@@ -38,7 +38,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = GetVolumesAtTime(result, 0.5);
 
-            expect(volumes[L]).toBeCloseTo(0.5, VolumePrecision);
+            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
         });
 
         test("Setting `volume` to 2 should play sound at 2x volume ", async ({ page }) => {
@@ -56,7 +56,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = GetVolumesAtTime(result, 0.5);
 
-            expect(volumes[L]).toBeCloseTo(2, 0);
+            expect(volumes[Channel.L]).toBeCloseTo(2, 0);
         });
     });
 };
