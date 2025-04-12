@@ -2,6 +2,7 @@ import type { Nullable } from "@dev/core/types";
 import { test, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
+export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "StaticSound" | "StreamingSound";
 export type SoundType = "Static" | "Streaming";
 
 /** Left speaker channel */
@@ -57,6 +58,13 @@ declare global {
             source: string | string[],
             options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions>
         ): Promise<BABYLON.AbstractSound>;
+        public static CreateAbstractSoundAndOutputNodeAsync(
+            audioNodeType: AudioNodeType,
+            source: string | string[],
+            options?: {
+                volume?: number;
+            }
+        ): Promise<{ sound: BABYLON.AbstractSound; outputNode: BABYLON.AbstractAudioBus | BABYLON.AudioEngineV2 }>;
         public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
         public static GetResultAsync(): Promise<AudioTestResult>;
