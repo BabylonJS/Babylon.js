@@ -1,13 +1,13 @@
 #ifdef METALLICWORKFLOW
     float reflectance = vMetallicReflectanceFactors.a;
-    vec3 specularEnvironmentR0 = reflectivityOut.dielectricReflectanceF0;
+    vec3 specularEnvironmentR0 = reflectivityOut.reflectanceF0;
 #else
     float reflectance = max(max(reflectivityOut.surfaceReflectivityColor.r, reflectivityOut.surfaceReflectivityColor.g), reflectivityOut.surfaceReflectivityColor.b);
     vec3 specularEnvironmentR0 = reflectivityOut.surfaceReflectivityColor.rgb;
 #endif
 
 #ifdef METALLICWORKFLOW
-    vec3 specularEnvironmentR90 = reflectivityOut.dielectricReflectanceF90;
+    vec3 specularEnvironmentR90 = reflectivityOut.reflectanceF90;
 #else 
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
 #endif
