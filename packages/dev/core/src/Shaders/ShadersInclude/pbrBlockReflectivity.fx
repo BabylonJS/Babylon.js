@@ -6,9 +6,8 @@ struct reflectivityOutParams
     vec3 surfaceReflectivityColor;
 #ifdef METALLICWORKFLOW
     vec3 surfaceAlbedo;
-    vec3 dielectricReflectanceF0;
-    vec3 dielectricReflectanceF90;
-    float metallic;
+    vec3 reflectanceF0;
+    vec3 reflectanceF90;
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     vec3 ambientOcclusionColor;
@@ -112,7 +111,7 @@ reflectivityOutParams reflectivityBlock(
 
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
-
+        float metallic = metallicRoughness.r;
         #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
@@ -131,16 +130,17 @@ reflectivityOutParams reflectivityBlock(
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = baseColor.rgb;
+            outParams.surfaceAlbedo = mix(baseColor.rgb, vec3(0.0), metallic);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = reflectivityColor.rgb;
 
             // Final F0 for dielectrics = F0 * specular_color * specular_weight
-            outParams.dielectricReflectanceF0 = vec3(metallicReflectanceFactors.a * reflectivityColor.rgb * reflectivityColor.a);
-            outParams.dielectricReflectanceF90 = vec3(reflectivityColor.a);
+            vec3 metallicColorF0 = baseColor.rgb;
+            vec3 dielectricColorF0 = vec3(metallicReflectanceFactors.a * reflectivityColor.rgb * reflectivityColor.a);
+            outParams.reflectanceF0 = mix(dielectricColorF0, metallicColorF0, metallic);
+            outParams.reflectanceF90 = vec3(mix(reflectivityColor.a, 1.0, metallic));
         #endif
-        outParams.metallic = metallicRoughness.r;
     #else
         #ifdef REFLECTIVITY
             surfaceReflectivityColor *= surfaceMetallicOrReflectivityColorMap.rgb;
