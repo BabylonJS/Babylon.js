@@ -442,7 +442,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * can be treated as the most dominant direction but it's magnitude also
      * tells you something about how dominant that direction is.
      */
-    public dominantDirection: Nullable<Vector3> = null;
+    /** @internal */
+    public _dominantDirection: Nullable<Vector3> = null;
 
     /**
      * Define if the texture is a render target.

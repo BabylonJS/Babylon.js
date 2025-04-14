@@ -221,7 +221,7 @@ export class HDRIrradianceFiltering {
 
         if (this.useCdf) {
             await this._cdfGenerator.findDominantDirection().then((dir) => {
-                irradianceTexture.dominantDirection = dir;
+                irradianceTexture._dominantDirection = dir;
             });
         }
         this._effectRenderer.dispose();

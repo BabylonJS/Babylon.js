@@ -1814,7 +1814,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
                             defines.USESPHERICALINVERTEX = false;
-                            if (reflectionTexture.irradianceTexture.dominantDirection) {
+                            if (reflectionTexture.irradianceTexture._dominantDirection) {
                                 defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
                             }
                         }
@@ -2303,8 +2303,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             // If we're using an irradiance map with a dominant direction assigned, set it.
                             if (defines.USEIRRADIANCEMAP && reflectionTexture.irradianceTexture) {
                                 const irradianceTexture = reflectionTexture.irradianceTexture;
-                                if (irradianceTexture.dominantDirection) {
-                                    ubo.updateVector3("vReflectionDominantDirection", irradianceTexture.dominantDirection);
+                                if (irradianceTexture._dominantDirection) {
+                                    ubo.updateVector3("vReflectionDominantDirection", irradianceTexture._dominantDirection);
                                 } else {
                                     ubo.updateVector3("vReflectionDominantDirection", Vector3.Up());
                                 }
