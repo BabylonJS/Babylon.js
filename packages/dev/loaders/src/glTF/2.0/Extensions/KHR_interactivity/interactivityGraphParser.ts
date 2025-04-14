@@ -210,8 +210,9 @@ export class InteractivityGraphToFlowGraphParser {
                 throw new Error("Error parsing nodes");
             }
             if (mapping.flowGraphMapping.validation) {
-                if (!mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf)) {
-                    throw new Error(`Error validating interactivity node ${node}`);
+                const validationResult = mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf);
+                if (!validationResult.valid) {
+                    throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
             }
             const blocks: ISerializedFlowGraphBlock[] = [];
