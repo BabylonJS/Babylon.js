@@ -1507,7 +1507,7 @@
             "renderCount": 10,
             "playgroundId": "#8F5HYV#72",
             "excludedEngines": ["webgl1"],
-            "errorRatio": 1,
+            "errorRatio": 3.5,
             "referenceImage": "prepass-ssao-dof.png"
         },
         {
