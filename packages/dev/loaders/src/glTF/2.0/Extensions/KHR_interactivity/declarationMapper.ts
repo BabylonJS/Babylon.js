@@ -370,6 +370,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // configure it to work the way glTF specifies
             serializedObjects[0].config = serializedObjects[0].config || {};
             serializedObjects[0].config.useMatrixPerComponent = true;
+            serializedObjects[0].config.preventIntegerFloatArithmetic = true;
             // try to infer the type or fallback to Integer
             // check the gltf block for the inputs, see if they have a type
             let type = -1;
@@ -1587,6 +1588,7 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
             if (inferType) {
                 // configure it to work the way glTF specifies
                 serializedObjects[0].config = serializedObjects[0].config || {};
+                serializedObjects[0].config.preventIntegerFloatArithmetic = true;
                 // try to infer the type or fallback to Integer
                 // check the gltf block for the inputs, see if they have a type
                 let type = -1;
