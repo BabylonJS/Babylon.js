@@ -1942,6 +1942,10 @@ export class ThinEngine extends AbstractEngine {
             resetCachedPipeline(webGLPipelineContext);
             if (this._gl) {
                 this._gl.deleteProgram(webGLPipelineContext.program);
+                if (this._currentProgram === webGLPipelineContext.program) {
+                    this._gl.useProgram(null);
+                    this._currentProgram = null;
+                }
             }
         }
     }
