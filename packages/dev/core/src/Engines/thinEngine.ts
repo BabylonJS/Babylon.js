@@ -1941,11 +1941,8 @@ export class ThinEngine extends AbstractEngine {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
             resetCachedPipeline(webGLPipelineContext);
             if (this._gl) {
+                this._setProgram(null);
                 this._gl.deleteProgram(webGLPipelineContext.program);
-                if (this._currentProgram === webGLPipelineContext.program) {
-                    _setProgram(null!, this._gl);
-                    this._currentProgram = null;
-                }
             }
         }
     }
@@ -3717,7 +3714,7 @@ export class ThinEngine extends AbstractEngine {
         texture?.release();
     }
 
-    protected _setProgram(program: WebGLProgram): void {
+    protected _setProgram(program: Nullable<WebGLProgram>): void {
         if (this._currentProgram !== program) {
             _setProgram(program, this._gl);
             this._currentProgram = program;

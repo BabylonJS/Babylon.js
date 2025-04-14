@@ -351,7 +351,7 @@ function _compileRawShader(source: string, type: string, gl: WebGLContext, _cont
 /**
  * @internal
  */
-export function _setProgram(program: WebGLProgram, gl: WebGLContext): void {
+export function _setProgram(program: Nullable<WebGLProgram>, gl: WebGLContext): void {
     gl.useProgram(program);
 }
 
