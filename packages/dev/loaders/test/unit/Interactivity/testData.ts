@@ -52,15 +52,15 @@ export const mathExample: IKHRInteractivity_Graph = {
             // was type: "math/dot"
             declaration: 1,
             values: {
-                a: { value: [10, 10, 10], type: 4 },
-                b: { value: [1, 2, 3], type: 4 },
+                a: { value: [10, 10, 10], type: 1 },
+                b: { value: [1, 2, 3], type: 1 },
             },
         },
         {
             // was type: "math/mul"
             declaration: 2,
             values: {
-                b: { value: [2], type: 2 },
+                b: { value: [2], type: 0 },
                 a: { node: 1, socket: "value" },
             },
         },
@@ -68,7 +68,7 @@ export const mathExample: IKHRInteractivity_Graph = {
             // was type: "math/sub"
             declaration: 3,
             values: {
-                b: { value: [78], type: 2 },
+                b: { value: [78], type: 0 },
                 a: { node: 2, socket: "value" },
             },
         },
@@ -80,7 +80,7 @@ export const mathExample: IKHRInteractivity_Graph = {
             },
         },
     ],
-    types: [{ signature: "bool" }, { signature: "int" }, { signature: "float" }, { signature: "float2" }, { signature: "float3" }],
+    types: [{ signature: "float" }, { signature: "float3" }],
 };
 
 export const intMathExample: IKHRInteractivity_Graph = {
