@@ -1943,7 +1943,7 @@ export class ThinEngine extends AbstractEngine {
             if (this._gl) {
                 this._gl.deleteProgram(webGLPipelineContext.program);
                 if (this._currentProgram === webGLPipelineContext.program) {
-                    this._gl.useProgram(null);
+                    _setProgram(null!, this._gl);
                     this._currentProgram = null;
                 }
             }
