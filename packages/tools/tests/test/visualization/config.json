@@ -1505,8 +1505,9 @@
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
-            "playgroundId": "#8F5HYV#16",
+            "playgroundId": "#8F5HYV#72",
             "excludedEngines": ["webgl1"],
+            "errorRatio": 1,
             "referenceImage": "prepass-ssao-dof.png"
         },
         {
