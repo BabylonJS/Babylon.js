@@ -177,25 +177,25 @@ void main(void) {
 #endif
 
 #ifdef METALLICWORKFLOW
-    vec4 metallicReflectanceColor = vReflectivityColor;
+    vec4 metallicReflectanceFactors = vMetallicReflectanceFactors;
     #ifdef REFLECTANCE
         vec4 reflectanceFactorsMap = texture2D(reflectanceSampler, vReflectanceUV + uvOffset);
         #ifdef REFLECTANCE_GAMMA
             reflectanceFactorsMap = toLinearSpace(reflectanceFactorsMap);
         #endif
 
-        metallicReflectanceColor.rgb *= reflectanceFactorsMap.rgb;
+        metallicReflectanceFactors.rgb *= reflectanceFactorsMap.rgb;
     #endif
     #ifdef METALLIC_REFLECTANCE
-        vec4 metallicReflectanceColorMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
+        vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
         #ifdef METALLIC_REFLECTANCE_GAMMA
-            metallicReflectanceColorMap = toLinearSpace(metallicReflectanceColorMap);
+            metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
         #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
-            metallicReflectanceColor.rgb *= metallicReflectanceColorMap.rgb;
+            metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
         #endif
-        metallicReflectanceColor *= metallicReflectanceColorMap.a;
+        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
     #endif
 #endif
 
@@ -204,12 +204,10 @@ void main(void) {
 #endif
 
     reflectivityOut = reflectivityBlock(
-    #ifdef METALLICWORKFLOW
-        metallicReflectanceColor
-        , surfaceAlbedo
-        , vMetallicReflectanceFactors
-    #else
         vReflectivityColor
+    #ifdef METALLICWORKFLOW
+        , surfaceAlbedo
+        , metallicReflectanceFactors
     #endif
         , baseDiffuseRoughness
     #ifdef BASE_DIFFUSE_ROUGHNESS

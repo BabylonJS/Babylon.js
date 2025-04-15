@@ -1,5 +1,5 @@
 #ifdef METALLICWORKFLOW
-    var reflectance: f32 = uniforms.vMetallicReflectanceFactors.a;
+    var reflectance: f32 = uniforms.vReflectivityColor.a;
     var specularEnvironmentR0: vec3f = reflectivityOut.reflectanceF0;
 #else
     var reflectance: f32 = max(max(reflectivityOut.surfaceReflectivityColor.r, reflectivityOut.surfaceReflectivityColor.g), reflectivityOut.surfaceReflectivityColor.b);

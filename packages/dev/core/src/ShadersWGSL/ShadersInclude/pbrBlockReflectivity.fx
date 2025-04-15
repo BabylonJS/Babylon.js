@@ -62,7 +62,7 @@ fn reflectivityBlock(
     var surfaceReflectivityColor: vec3f = reflectivityColor.rgb;
 
     #ifdef METALLICWORKFLOW
-        var metallicRoughness: vec2f = metallicReflectanceFactors.rg;
+        var metallicRoughness: vec2f = surfaceReflectivityColor.rg;
 
         #ifdef REFLECTIVITY
             #if DEBUGMODE > 0
@@ -125,24 +125,24 @@ fn reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            var metallicF0: vec3f = metallicReflectanceFactors.rgb;
+            var metallicF0: vec3f = vec3f(reflectivityColor.a);
 
             #if DEBUGMODE > 0
-                outParams.metallicF0 = metallicF0;
+                outParams.metallicF0 = metallicF0 * metallicReflectanceFactors.rgb;
             #endif
 
             // Compute the converted diffuse.
             outParams.surfaceAlbedo = baseColor.rgb * (1.0 - metallic);
 
             // Compute the converted reflectivity.
-            surfaceReflectivityColor = reflectivityColor.rgb;
+            surfaceReflectivityColor = metallicReflectanceFactors.rgb;
             
             // Final F0 for dielectrics = F0 * specular_color * specular_weight
+            var dielectricColorF0: vec3f = vec3f(reflectivityColor.a * metallicReflectanceFactors.rgb * metallicReflectanceFactors.a);
             // Final F0 for metals = baseColor
             var metallicColorF0: vec3f = baseColor.rgb;
-            var dielectricColorF0: vec3f = vec3f(metallicReflectanceFactors.a * reflectivityColor.rgb * reflectivityColor.a);
             outParams.reflectanceF0 = mix(dielectricColorF0, metallicColorF0, metallic);
-            outParams.reflectanceF90 = vec3f(mix(reflectivityColor.a, 1.0, metallic));
+            outParams.reflectanceF90 = vec3f(mix(metallicReflectanceFactors.a, 1.0, metallic));
         #endif
     #else
         #ifdef REFLECTIVITY

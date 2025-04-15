@@ -1,6 +1,6 @@
 #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
     #ifdef METALLICWORKFLOW
-        vec3 specularEnvironmentReflectance = getReflectanceFromBRDFLookup(clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, vMetallicReflectanceFactors.b, environmentBrdf);
+        vec3 specularEnvironmentReflectance = getReflectanceFromBRDFLookup(clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, vReflectivityColor.b, environmentBrdf);
     #else
         vec3 specularEnvironmentReflectance = getReflectanceFromBRDFLookup(clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, 1.5, environmentBrdf);
     #endif

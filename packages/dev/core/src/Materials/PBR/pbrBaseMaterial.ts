@@ -2373,8 +2373,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     // for dielectrics.
                     const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
                     TmpColors.Color4[0].a = f0;
-                    ubo.updateDirectColor4("vMetallicReflectanceFactors", TmpColors.Color4[0]);
-                    ubo.updateColor4("vReflectivityColor", this._metallicReflectanceColor, this._metallicF0Factor);
+                    ubo.updateDirectColor4("vReflectivityColor", TmpColors.Color4[0]);
+                    ubo.updateColor4("vMetallicReflectanceFactors", this._metallicReflectanceColor, this._metallicF0Factor);
                 } else {
                     ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                 }
