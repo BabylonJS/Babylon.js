@@ -389,11 +389,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         validation(gltfBlock) {
             // make sure types are the same
             if (gltfBlock.values) {
-                const types = Object.keys(gltfBlock.values).map((key) => gltfBlock.values![key].type);
-                const allSameType = types.every((type) => type === undefined || type === types[0]);
-                if (!allSameType) {
-                    return { valid: false, error: "All inputs must be of the same type" };
-                }
+                // make sure types are the same
+                return ValidateTypes(gltfBlock);
             }
             return { valid: true };
         },
@@ -1619,17 +1616,24 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
         validation(gltfBlock) {
             if (inferType) {
                 // make sure types are the same
-                if (gltfBlock.values) {
-                    const types = Object.keys(gltfBlock.values).map((key) => gltfBlock.values![key].type);
-                    const allSameType = types.every((type) => type === undefined || type === types[0]);
-                    if (!allSameType) {
-                        return { valid: false, error: "All inputs must be of the same type" };
-                    }
-                }
+                return ValidateTypes(gltfBlock);
             }
             return { valid: true };
         },
     };
+}
+
+function ValidateTypes(gltfBlock: IKHRInteractivity_Node): { valid: boolean; error?: string } {
+    if (gltfBlock.values) {
+        const types = Object.keys(gltfBlock.values)
+            .map((key) => gltfBlock.values![key].type)
+            .filter((type) => type !== undefined);
+        const allSameType = types.every((type) => type === types[0]);
+        if (!allSameType) {
+            return { valid: false, error: "All inputs must be of the same type" };
+        }
+    }
+    return { valid: true };
 }
 
 export function getAllSupportedNativeNodeTypes(): string[] {
