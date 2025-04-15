@@ -2585,21 +2585,17 @@ export class Viewer implements IDisposable {
         return null;
     }
 
-    protected _startSceneOptimizer(reset = false, shadows: boolean = false, targetFps: number = 60) {
+    protected _startSceneOptimizer(reset = false) {
         this._stopSceneOptimizer();
 
         if (reset) {
             this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
         }
 
-        const sceneOptimizerOptions = new SceneOptimizerOptions(targetFps, 1000);
+        const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
 
         const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
         sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
-
-        if (shadows) {
-            // create IblShadowsOptimization
-        }
 
         this._sceneOptimizer = new SceneOptimizer(this._scene, sceneOptimizerOptions);
 
