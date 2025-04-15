@@ -1621,7 +1621,6 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
                 // make sure types are the same
                 if (gltfBlock.values) {
                     const types = Object.keys(gltfBlock.values).map((key) => gltfBlock.values![key].type);
-                    console.log(types);
                     const allSameType = types.every((type) => type === undefined || type === types[0]);
                     if (!allSameType) {
                         return { valid: false, error: "All inputs must be of the same type" };
