@@ -93,18 +93,21 @@ class AudioV2Test {
     }
 
     static async CreateAbstractSoundAndOutputNodeAsync(audioNodeType, source, options = {}) {
-        const sound = await AudioV2Test.CreateAbstractSoundAsync(audioNodeType === "StreamingSound" ? "StreamingSound" : "StaticSound", source, options);
+        const sound =
+            audioNodeType === "StaticSound" || audioNodeType === "StreamingSound"
+                ? await AudioV2Test.CreateAbstractSoundAsync(audioNodeType, source, options)
+                : await AudioV2Test.CreateAbstractSoundAsync("StaticSound", source, {});
 
         let outputNode = null;
 
         if (audioNodeType === "AudioBus") {
-            outputNode = await audioEngine.createBusAsync();
+            outputNode = await audioEngine.createBusAsync("", options);
             sound.outBus = outputNode;
             outputNode.outBus = audioEngine.defaultMainBus;
         } else if (audioNodeType === "AudioEngineV2") {
             outputNode = audioEngine;
         } else if (audioNodeType === "MainAudioBus") {
-            outputNode = await audioEngine.createMainBusAsync();
+            outputNode = await audioEngine.createMainBusAsync("", options);
             sound.outBus = outputNode;
         } else if (audioNodeType === "StaticSound") {
             outputNode = sound;
