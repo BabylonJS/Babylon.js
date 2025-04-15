@@ -153,7 +153,7 @@ export const AddSharedAbstractAudioNodeStereoTests = (audioNodeType: AudioNodeTy
             expect(volumes[Channel.R]).toBeCloseTo(0.38, VolumePrecision);
         });
 
-        test("Setting `stereo.pan` property to -0.5 should play sound at 0.38x volume in left speaker and 0.91x volume in right speaker", async ({ page }) => {
+        test("Setting `stereo.pan` property to 0.5 should play sound at 0.38x volume in left speaker and 0.91x volume in right speaker", async ({ page }) => {
             const result = await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                 await AudioV2Test.CreateAudioEngineAsync();
                 const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile);
