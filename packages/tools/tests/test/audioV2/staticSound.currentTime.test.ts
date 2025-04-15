@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 InitAudioV2Tests();
 AddSharedAbstractSoundCurrentTimeTests("StaticSound");
 
-test.describe("Static currentTime", () => {
+test.describe("StaticSound currentTime", () => {
     test("The `currentTime` property should equal the `play` function's `waitTime` parameter", async ({ page }) => {
         const result = await page.evaluate(async () => {
             await AudioV2Test.CreateAudioEngineAsync();

@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 InitAudioV2Tests();
 AddSharedAbstractSoundPlaybackTests("StaticSound");
 
-test.describe("Static playback", () => {
+test.describe("StaticSound playback", () => {
     test("Play sound and call `stop` with `waitTime` parameter set to 1.8", async ({ page }) => {
         const pulses = GetPulseCounts(
             await page.evaluate(async () => {
