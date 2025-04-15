@@ -389,8 +389,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         validation(gltfBlock) {
             // make sure types are the same
             if (gltfBlock.values) {
-                const types = Object.keys(gltfBlock.values).map((key) => gltfBlock.values![key].type);
-                const allSameType = types.every((type) => type === undefined || type === types[0]);
+                const types = Object.keys(gltfBlock.values)
+                    .map((key) => gltfBlock.values![key].type)
+                    .filter((type) => type !== undefined);
+                const allSameType = types.every((type) => type === types[0]);
                 if (!allSameType) {
                     return { valid: false, error: "All inputs must be of the same type" };
                 }
@@ -1620,8 +1622,10 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
             if (inferType) {
                 // make sure types are the same
                 if (gltfBlock.values) {
-                    const types = Object.keys(gltfBlock.values).map((key) => gltfBlock.values![key].type);
-                    const allSameType = types.every((type) => type === undefined || type === types[0]);
+                    const types = Object.keys(gltfBlock.values)
+                        .map((key) => gltfBlock.values![key].type)
+                        .filter((type) => type !== undefined);
+                    const allSameType = types.every((type) => type === types[0]);
                     if (!allSameType) {
                         return { valid: false, error: "All inputs must be of the same type" };
                     }
