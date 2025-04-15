@@ -235,10 +235,10 @@ export function RemoveUnreferencedVerticesData(meshes: readonly Mesh[]) {
             unreferencedUVSets.delete(uvIndexToKind[texture.coordinatesIndex]);
         });
 
-        for (const unreferencedUVSet of unreferencedUVSets) {
+        unreferencedUVSets.forEach((unreferencedUVSet) => {
             if (mesh.isVerticesDataPresent(unreferencedUVSet)) {
                 mesh.removeVerticesData(unreferencedUVSet);
             }
-        }
+        });
     }
 }
