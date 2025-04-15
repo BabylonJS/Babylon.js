@@ -2405,7 +2405,7 @@ export class Viewer implements IDisposable {
                 // to render after the scene is ready.
                 if (!shouldRender && this._renderedLastFrame && !renderedReadyFrame) {
                     renderedReadyFrame = this._scene.isReady(true);
-                    shouldRender = this._shouldRender;
+                    shouldRender = true;
                 }
 
                 if (shouldRender) {
