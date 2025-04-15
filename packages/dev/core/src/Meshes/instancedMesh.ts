@@ -278,28 +278,6 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * Delete a vertex buffer associated with this mesh
-     * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
-     * - VertexBuffer.PositionKind
-     * - VertexBuffer.UVKind
-     * - VertexBuffer.UV2Kind
-     * - VertexBuffer.UV3Kind
-     * - VertexBuffer.UV4Kind
-     * - VertexBuffer.UV5Kind
-     * - VertexBuffer.UV6Kind
-     * - VertexBuffer.ColorKind
-     * - VertexBuffer.MatricesIndicesKind
-     * - VertexBuffer.MatricesIndicesExtraKind
-     * - VertexBuffer.MatricesWeightsKind
-     * - VertexBuffer.MatricesWeightsExtraKind
-     */
-    public override removeVerticesData(kind: string) {
-        if (this.sourceMesh) {
-            this.sourceMesh.removeVerticesData(kind);
-        }
-    }
-
-    /**
      * Updates the existing vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, it is simply returned as it is.
      * The `data` are either a numeric array either a Float32Array.
