@@ -1759,7 +1759,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
      */
-    public removeVerticesData(kind: string) {
+    public override removeVerticesData(kind: string) {
         if (!this._geometry) {
             return;
         }

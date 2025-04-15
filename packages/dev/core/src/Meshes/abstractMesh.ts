@@ -1376,6 +1376,25 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /**
+     * Delete a vertex buffer associated with this mesh
+     * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public removeVerticesData(kind: string) {}
+
+    /**
      * Updates the existing vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, it is simply returned as it is.
      * @param kind defines vertex data kind:

@@ -1,8 +1,9 @@
 import type { AnimationGroup } from "../Animations/animationGroup";
-import { VertexBuffer } from "../Buffers/buffer";
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { FloatArray, Nullable } from "../types";
 import type { AbstractMesh } from "./abstractMesh";
+
+import { VertexBuffer } from "../Buffers/buffer";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
 
 function getExtentCorners(extent: { minimum: Vector3; maximum: Vector3 }): Array<Vector3> {
     const minX = extent.minimum.x;
@@ -215,4 +216,26 @@ export function computeMaxExtents(
     }
 
     return maxExtents;
+}
+
+/**
+ * Removes unreferenced vertex data from the given meshes.
+ * This is useful for cleaning up unused vertex data, such as UV sets, to reduce memory usage and stay under graphics device limits.
+ * @param meshes The array of meshes to clean up.
+ */
+export function RemoveUnreferencedVerticesData(meshes: readonly AbstractMesh[]) {
+    const uvIndexToKind = [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind] as const;
+    for (const mesh of meshes) {
+        const unreferencedUVSets = new Set(uvIndexToKind);
+        mesh.material?.getActiveTextures().forEach((texture) => {
+            unreferencedUVSets.delete(uvIndexToKind[texture.coordinatesIndex]);
+        });
+
+        for (const unreferencedUVSet of unreferencedUVSets) {
+            const data = mesh.getVerticesData(unreferencedUVSet);
+            if (data) {
+                mesh.removeVerticesData(unreferencedUVSet);
+            }
+        }
+    }
 }
