@@ -2593,10 +2593,8 @@ export class Viewer implements IDisposable {
         }
 
         const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
-
         const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
         sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
-
         this._sceneOptimizer = new SceneOptimizer(this._scene, sceneOptimizerOptions);
 
         this._sceneOptimizer.start();
