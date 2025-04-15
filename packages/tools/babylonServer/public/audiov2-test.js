@@ -10,13 +10,32 @@ var BABYLON;
 const SilenceAudioOutput = true;
 
 class AudioV2Test {
-    static AddSound(sound) {
+    static #AddSound(sound) {
         audioTestSounds.push(sound);
 
         // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
         if (audioRecorder.state === "inactive") {
             audioRecorder.start();
         }
+    }
+
+    static #ExpandSource(source) {
+        let sourceUrl;
+
+        if (typeof source === "string") {
+            sourceUrl = audioTestConfig.soundsUrl + source;
+        } else if (source instanceof Array) {
+            sourceUrl = new Array(source.length);
+            for (let i = 0; i < source.length; i++) {
+                if (typeof source[i] === "string") {
+                    sourceUrl[i] = audioTestConfig.soundsUrl + source[i];
+                }
+            }
+        } else {
+            return source;
+        }
+
+        return sourceUrl;
     }
 
     static async AfterEachAsync() {
@@ -63,44 +82,49 @@ class AudioV2Test {
         return audioEngine;
     }
 
-    static async CreateSoundAsync(source, options = {}) {
-        if (typeof source === "string") {
-            source = audioTestConfig.soundsUrl + source;
-        } else if (source instanceof Array) {
-            for (let i = 0; i < source.length; i++) {
-                if (typeof source[i] === "string") {
-                    source[i] = audioTestConfig.soundsUrl + source[i];
-                }
-            }
-        }
-        const sound = await BABYLON.CreateSoundAsync("", source, options);
-        AudioV2Test.AddSound(sound);
-
-        return sound;
-    }
-
     static CreateAbstractSoundAsync(soundType, source, options = {}) {
-        if (soundType === "Static") {
+        if (soundType === "StaticSound") {
             return AudioV2Test.CreateSoundAsync(source, options);
-        } else if (soundType === "Streaming") {
+        } else if (soundType === "StreamingSound") {
             return AudioV2Test.CreateStreamingSoundAsync(source, options);
         } else {
             throw new Error(`Unknown sound type: ${soundType}`);
         }
     }
 
-    static async CreateStreamingSoundAsync(source, options = {}) {
-        if (typeof source === "string") {
-            source = audioTestConfig.soundsUrl + source;
-        } else if (source instanceof Array) {
-            for (let i = 0; i < source.length; i++) {
-                if (typeof source[i] === "string") {
-                    source[i] = audioTestConfig.soundsUrl + source[i];
-                }
-            }
+    static async CreateAbstractSoundAndOutputNodeAsync(audioNodeType, source, options = {}) {
+        const sound = await AudioV2Test.CreateAbstractSoundAsync(audioNodeType === "StreamingSound" ? "StreamingSound" : "StaticSound", source, options);
+
+        let outputNode = null;
+
+        if (audioNodeType === "AudioBus") {
+            outputNode = await audioEngine.createBusAsync();
+            sound.outBus = outputNode;
+            outputNode.outBus = audioEngine.defaultMainBus;
+        } else if (audioNodeType === "AudioEngineV2") {
+            outputNode = audioEngine;
+        } else if (audioNodeType === "MainAudioBus") {
+            outputNode = await audioEngine.createMainBusAsync();
+            sound.outBus = outputNode;
+        } else if (audioNodeType === "StaticSound") {
+            outputNode = sound;
+        } else if (audioNodeType === "StreamingSound") {
+            outputNode = sound;
         }
-        const sound = await BABYLON.CreateStreamingSoundAsync("", source, options);
-        AudioV2Test.AddSound(sound);
+
+        return { sound, outputNode };
+    }
+
+    static async CreateSoundAsync(source, options = {}) {
+        const sound = await BABYLON.CreateSoundAsync("", AudioV2Test.#ExpandSource(source), options);
+        AudioV2Test.#AddSound(sound);
+
+        return sound;
+    }
+
+    static async CreateStreamingSoundAsync(source, options = {}) {
+        const sound = await BABYLON.CreateStreamingSoundAsync("", AudioV2Test.#ExpandSource(source), options);
+        AudioV2Test.#AddSound(sound);
 
         return sound;
     }

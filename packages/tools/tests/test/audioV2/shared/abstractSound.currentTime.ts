@@ -1,5 +1,5 @@
 import { EvaluatePulseCountTestAsync, EvaluateTestAsync } from "../utils/abstractSound.utils";
-import { L, SoundType } from "../utils/audioV2.utils";
+import { Channel, SoundType } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -110,7 +110,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([2, 3]);
+            expect(pulses[Channel.L]).toEqual([2, 3]);
         });
 
         test("Setting the `currentTime` property while playing should seek to the given time", async ({ page }) => {
@@ -125,7 +125,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 3]);
         });
 
         test("Setting the `currentTime` property while paused should seek to the given time", async ({ page }) => {
@@ -136,13 +136,13 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 sound.play();
                 await AudioV2Test.WaitAsync(0.5);
                 sound.pause();
-                sound.currentTime = soundType === "Static" ? 2 : 1.5;
+                sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
                 sound.play();
 
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 3]);
         });
 
         test("Setting the `currentTime` property while stopped should seek to the given time", async ({ page }) => {
@@ -153,13 +153,13 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 sound.play();
                 await AudioV2Test.WaitAsync(0.5);
                 sound.stop();
-                sound.currentTime = soundType === "Static" ? 2 : 1.5;
+                sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
                 sound.play();
 
                 return await AudioV2Test.GetResultAsync();
             });
 
-            expect(pulses[L]).toEqual([1, 3]);
+            expect(pulses[Channel.L]).toEqual([1, 3]);
         });
     });
 };

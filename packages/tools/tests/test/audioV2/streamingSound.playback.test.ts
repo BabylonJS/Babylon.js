@@ -2,4 +2,4 @@ import { AddSharedAbstractSoundPlaybackTests } from "./shared/abstractSound.play
 import { InitAudioV2Tests } from "./utils/audioV2.utils";
 
 InitAudioV2Tests();
-AddSharedAbstractSoundPlaybackTests("Streaming");
+AddSharedAbstractSoundPlaybackTests("StreamingSound");
