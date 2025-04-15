@@ -10,7 +10,7 @@ var BABYLON;
 const SilenceAudioOutput = true;
 
 class AudioV2Test {
-    static _AddSound(sound) {
+    static #AddSound(sound) {
         audioTestSounds.push(sound);
 
         // Start the audio recorder after the sound loads to avoid capturing silence while we wait.
@@ -19,7 +19,7 @@ class AudioV2Test {
         }
     }
 
-    static _ExpandSource(source) {
+    static #ExpandSource(source) {
         let sourceUrl;
 
         if (typeof source === "string") {
@@ -116,15 +116,15 @@ class AudioV2Test {
     }
 
     static async CreateSoundAsync(source, options = {}) {
-        const sound = await BABYLON.CreateSoundAsync("", AudioV2Test._ExpandSource(source), options);
-        AudioV2Test._AddSound(sound);
+        const sound = await BABYLON.CreateSoundAsync("", AudioV2Test.#ExpandSource(source), options);
+        AudioV2Test.#AddSound(sound);
 
         return sound;
     }
 
     static async CreateStreamingSoundAsync(source, options = {}) {
-        const sound = await BABYLON.CreateStreamingSoundAsync("", AudioV2Test._ExpandSource(source), options);
-        AudioV2Test._AddSound(sound);
+        const sound = await BABYLON.CreateStreamingSoundAsync("", AudioV2Test.#ExpandSource(source), options);
+        AudioV2Test.#AddSound(sound);
 
         return sound;
     }
