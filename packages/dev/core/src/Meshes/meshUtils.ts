@@ -232,8 +232,7 @@ export function RemoveUnreferencedVerticesData(meshes: readonly AbstractMesh[]) 
         });
 
         for (const unreferencedUVSet of unreferencedUVSets) {
-            const data = mesh.getVerticesData(unreferencedUVSet);
-            if (data) {
+            if (mesh.isVerticesDataPresent(unreferencedUVSet)) {
                 mesh.removeVerticesData(unreferencedUVSet);
             }
         }
