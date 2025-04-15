@@ -1687,9 +1687,9 @@ export class Viewer implements IDisposable {
                 shaderLanguage,
                 extraInitializationsAsync: async () => {
                     if (shaderLanguage === ShaderLanguage.WGSL) {
-                        await Promise.all([import("core/ShadersWGSL/customGround.vertex"), import("core/ShadersWGSL/customGround.fragment")]);
+                        await Promise.all([import("./ShadersWGSL/customGround.vertex"), import("./ShadersWGSL/customGround.fragment")]);
                     } else {
-                        await Promise.all([import("core/Shaders/customGround.vertex"), import("core/Shaders/customGround.fragment")]);
+                        await Promise.all([import("./Shaders/customGround.vertex"), import("./Shaders/customGround.fragment")]);
                     }
                 },
             };
