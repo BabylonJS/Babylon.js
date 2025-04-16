@@ -21,6 +21,7 @@ struct preLightingInfo
      // TODO: the code would probably be leaner with material properties out of the structure.
     float roughness;
     float diffuseRoughness;
+    vec3 surfaceAlbedo;
 
     #ifdef IRIDESCENCE
         float iridescenceIntensity;

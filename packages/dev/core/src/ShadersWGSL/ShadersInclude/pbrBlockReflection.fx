@@ -238,6 +238,7 @@
     #endif
         , viewDirectionW: vec3f
         , diffuseRoughness: f32
+        , surfaceAlbedo: vec3f
     ) -> reflectionOutParams
     {
         var outParams: reflectionOutParams;
@@ -320,7 +321,7 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
+                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, surfaceAlbedo, irradianceView
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                         , icdfSamplerSampler
@@ -352,7 +353,9 @@
                 #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
                     var LoV: f32 = dot(Ls, irradianceView);
                     var mag: f32 = length(reflectionDominantDirection) * 2.0f;
-                    diffuseRoughnessTerm = diffuseBRDF_EON(vec3f(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                    var clampedAlbedo: vec3f = clamp(surfaceAlbedo, vec3f(0.1), vec3f(1.0));
+                    diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
+                    diffuseRoughnessTerm = diffuseRoughnessTerm / clampedAlbedo;
                     diffuseRoughnessTerm = mix(vec3f(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0f)));
                 #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
                     var H: vec3f = (irradianceView + Ls) * 0.5f;

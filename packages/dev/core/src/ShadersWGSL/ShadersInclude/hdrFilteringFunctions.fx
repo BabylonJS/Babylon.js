@@ -157,7 +157,7 @@
         //
         //
 
-        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, inputV: vec3f
+        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, surfaceAlbedo: vec3f, inputV: vec3f
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
@@ -177,7 +177,7 @@
             var maxLevel: f32 = filteringInfo.y;
             var dim0: f32 = filteringInfo.x;
             var omegaP: f32 = (4. * PI) / (6. * dim0 * dim0);
-
+            var clampedAlbedo: vec3f = clamp(surfaceAlbedo, vec3f(0.1), vec3f(1.0));
             for(var i: u32 = 0u; i < NUM_SAMPLES; i++)
             {
                 var Xi: vec2f = hammersley(i, NUM_SAMPLES);
@@ -229,7 +229,7 @@
 
                     var diffuseRoughnessTerm: vec3f = vec3f(1.0);
                     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0
-                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3f(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                        diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
                     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1
                         diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
@@ -247,6 +247,10 @@
             }
 
             result = result * NUM_SAMPLES_FLOAT_INVERSED;
+
+            #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                result = result / clampedAlbedo;
+            #endif
 
             return result;
         }

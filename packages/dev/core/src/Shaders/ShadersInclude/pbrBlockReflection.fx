@@ -211,6 +211,7 @@
     #endif
         , in vec3 viewDirectionW
         , in float diffuseRoughness
+        , in vec3 surfaceAlbedo
     )
     {
         reflectionOutParams outParams;
@@ -291,7 +292,7 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, irradianceView
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, surfaceAlbedo, irradianceView
                     #ifdef IBL_CDF_FILTERING
                         , icdfSampler
                     #endif
@@ -311,6 +312,14 @@
                 vec4 environmentIrradiance4 = sampleReflection(irradianceSampler, reflectionCoords);
             #endif
             
+            environmentIrradiance = environmentIrradiance4.rgb;
+            #ifdef RGBDREFLECTION
+                environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
+            #endif
             // If we have a predominant light direction, use it to compute the diffuse roughness term.abort
             // Otherwise, bend the irradiance vector to simulate retro-reflectivity of diffuse roughness.
             #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
@@ -322,23 +331,16 @@
                 #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
                     float LoV = dot (Ls, irradianceView);
                     float mag = length(reflectionDominantDirection) * 2.0;
-                    diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                    vec3 clampedAlbedo = clamp(surfaceAlbedo, vec3(0.1), vec3(1.0));
+                    diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
+                    diffuseRoughnessTerm = diffuseRoughnessTerm / clampedAlbedo;
                     diffuseRoughnessTerm = mix(vec3(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0)));
                 #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
                     vec3 H = (irradianceView + Ls)*0.5;
                     float VoH = dot(irradianceView, H);
                     diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                 #endif
-                environmentIrradiance = environmentIrradiance4.rgb * diffuseRoughnessTerm;
-            #else
-                environmentIrradiance = environmentIrradiance4.rgb;
-            #endif
-            #ifdef RGBDREFLECTION
-                environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
-            #endif
-
-            #ifdef GAMMAREFLECTION
-                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
+                environmentIrradiance = environmentIrradiance.rgb * diffuseRoughnessTerm;
             #endif
         #endif
 

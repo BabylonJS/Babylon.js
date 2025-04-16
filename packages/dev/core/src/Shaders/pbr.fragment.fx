@@ -326,6 +326,7 @@ void main(void) {
             #endif
                 , viewDirectionW
                 , diffuseRoughness
+                , baseColor
             );
         #else
             #define CUSTOM_REFLECTION

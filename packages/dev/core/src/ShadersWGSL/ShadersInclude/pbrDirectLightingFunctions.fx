@@ -48,7 +48,9 @@ fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
         diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
-        diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+        var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
+        diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+        diffuseTerm /= clampedAlbedo;
     #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
@@ -80,8 +82,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         diffuseTerm = vec3f(diffuseBRDF_Burley(
                     info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
         #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
-        diffuseTerm = diffuseBRDF_EON(vec3f(1.0), info.diffuseRoughness,
+        var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
+        diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness,
                     info.NdotL, info.NdotV, info.LdotV);
+                    diffuseTerm /= clampedAlbedo;
         #endif
         return (transmittanceNdotL * diffuseTerm) * info.attenuation * lightColor;
     #else
