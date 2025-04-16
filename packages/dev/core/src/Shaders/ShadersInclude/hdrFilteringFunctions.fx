@@ -184,7 +184,7 @@
         //
 
         #define inline
-        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 inputV
+        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 surfaceAlbedo, vec3 inputV
         #ifdef IBL_CDF_FILTERING
         , sampler2D icdfSampler
         #endif
@@ -206,7 +206,7 @@
             float maxLevel = filteringInfo.y;
             float dim0 = filteringInfo.x;
             float omegaP = (4. * PI) / (6. * dim0 * dim0);
-
+            vec3 clampedAlbedo = clamp(surfaceAlbedo, vec3(0.1), vec3(1.0));
             #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
             for(uint i = 0u; i < NUM_SAMPLES; ++i)
             #else
@@ -261,7 +261,7 @@
 
                     vec3 diffuseRoughnessTerm = vec3(1.0);
                     #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
-                        diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;
+                        diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
                     #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
                         diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
@@ -276,6 +276,10 @@
             }
 
             result = result * NUM_SAMPLES_FLOAT_INVERSED;
+
+            #if BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+                result = result / clampedAlbedo;
+            #endif
 
             return result;
         }

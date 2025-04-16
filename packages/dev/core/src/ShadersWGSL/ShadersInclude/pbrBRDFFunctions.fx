@@ -437,7 +437,7 @@ fn E_FON_approx(mu: f32, roughness: f32) -> f32
 
 fn diffuseBRDF_EON(albedo: vec3f, roughness: f32, NdotL: f32, NdotV: f32, LdotV: f32) -> vec3f
 {
-    var rho: vec3f = vec3f(0.5f);
+    var rho: vec3f = albedo;
     var sigma: f32 = roughness;                            // FON sigma prime
     var mu_i: f32 = NdotL;                            // input angle cos
     var mu_o: f32 = NdotV;                            // output angle cos
@@ -453,7 +453,7 @@ fn diffuseBRDF_EON(albedo: vec3f, roughness: f32, NdotL: f32, NdotV: f32, LdotV:
     var f_ms: vec3f = (rho_ms * RECIPROCAL_PI) * max(eps, 1.0f - EFo) // multi-scatter lobe
                                  * max(eps, 1.0f - EFi)
                                  / max(eps, 1.0f - avgEF);
-    return (f_ss + f_ms) / rho;
+    return (f_ss + f_ms);
 }
 
 

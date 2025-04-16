@@ -464,6 +464,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #endif
             , viewDirectionW
             , diffuseRoughness
+            , surfaceAlbedo
             );
         #endif\n`;
 

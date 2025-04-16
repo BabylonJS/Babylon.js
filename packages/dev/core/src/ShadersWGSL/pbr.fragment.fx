@@ -316,6 +316,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
                 , viewDirectionW
                 , diffuseRoughness
+                , surfaceAlbedo
             );
         #else
             #define CUSTOM_REFLECTION
