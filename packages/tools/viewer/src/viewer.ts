@@ -1547,6 +1547,7 @@ export class Viewer implements IDisposable {
                 await this._updateClassicShadow();
             } else if (this._shadowQuality === "high") {
                 const isWebGPU = this._scene.getEngine().isWebGPU;
+                // there is some issue with meshes with indices, so disable environment shadows for now
                 const hasAnyAnimation = this._loadedModelsBacking.some(
                     (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
                 );
