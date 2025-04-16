@@ -54,8 +54,6 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { Constants } from "core/Engines/constants";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
-import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -1636,6 +1634,7 @@ export class Viewer implements IDisposable {
     private async _updateEnvironmentShadow() {
         const imports = await Promise.all([
             import("core/Materials/shaderMaterial"),
+            import("core/Materials/shaderLanguage"),
             import("core/Engines/Extensions/engine.multiRender"),
             import("core/Engines/WebGPU/Extensions/engine.multiRender"),
             import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
@@ -1643,6 +1642,10 @@ export class Viewer implements IDisposable {
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const ShaderMaterial = imports[0].ShaderMaterial;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const ShaderLanguageGLSL = imports[1].ShaderLanguage.GLSL;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const ShaderLanguageWGSL = imports[1].ShaderLanguage.WGSL;
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
@@ -1688,14 +1691,14 @@ export class Viewer implements IDisposable {
             // this._iblShadowsRenderPipeline.accumulationPassDebugEnabled = false;
 
             const isWebGPU = this._scene.getEngine().isWebGPU;
-            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            const shaderLanguage = isWebGPU ? ShaderLanguageWGSL : ShaderLanguageGLSL;
             const options = {
                 attributes: ["position", "uv"],
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
                 samplers: ["shadowTexture"],
                 shaderLanguage,
                 extraInitializationsAsync: async () => {
-                    if (shaderLanguage === ShaderLanguage.WGSL) {
+                    if (shaderLanguage === ShaderLanguageWGSL) {
                         await Promise.all([import("./ShadersWGSL/customGround.vertex"), import("./ShadersWGSL/customGround.fragment")]);
                     } else {
                         await Promise.all([import("./Shaders/customGround.vertex"), import("./Shaders/customGround.fragment")]);
@@ -1756,9 +1759,16 @@ export class Viewer implements IDisposable {
     }
 
     private async _updateClassicShadow() {
-        await import("core/Lights/Shadows/shadowGeneratorSceneComponent");
+        const imports = await Promise.all([
+            import("materials/shadowOnly/shadowOnlyMaterial"),
+            import("core/Materials/Textures/renderTargetTexture"),
+            import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
+        ]);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { ShadowOnlyMaterial } = await import("materials/shadowOnly/shadowOnlyMaterial");
+        const ShadowOnlyMaterial = imports[0].ShadowOnlyMaterial;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const RenderTargetTexture = imports[1].RenderTargetTexture;
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
