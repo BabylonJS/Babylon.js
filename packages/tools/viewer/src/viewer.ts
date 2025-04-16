@@ -1582,14 +1582,16 @@ export class Viewer implements IDisposable {
         this._startIblShadowsRenderTime();
     }
 
-    private _createClassicShadowGround() {
+    private _createClassicShadowGround(radius: number) {
         if (this._classicShadowGround) {
             return this._classicShadowGround;
         }
 
         this._snapshotHelper.disableSnapshotRendering();
 
-        this._classicShadowGround = CreateDisc("classic_shadow_ground", { radius: 25, tessellation: 64 }, this._scene);
+        const groundSize = this._shadowGroundScalingFactor * radius;
+
+        this._classicShadowGround = CreateDisc("classic_shadow_ground", { radius: groundSize, tessellation: 64 }, this._scene);
         this._classicShadowGround.rotation.x = Math.PI / 2;
         this._classicShadowGround.receiveShadows = true;
         this._classicShadowGround.position.y = 0;
@@ -1600,14 +1602,16 @@ export class Viewer implements IDisposable {
         return this._classicShadowGround;
     }
 
-    private _createEnvironmentShadowGround() {
+    private _createEnvironmentShadowGround(radius: number) {
         if (this._envShadowGround) {
             return this._envShadowGround;
         }
 
         this._snapshotHelper.disableSnapshotRendering();
 
-        this._envShadowGround = CreateDisc("env_shadow_ground", { radius: 25, tessellation: 64 }, this._scene);
+        const groundSize = this._shadowGroundScalingFactor * radius;
+
+        this._envShadowGround = CreateDisc("env_shadow_ground", { radius: groundSize, tessellation: 64 }, this._scene);
         this._envShadowGround.rotation.x = Math.PI / 2;
         this._envShadowGround.position.y = 0;
 
@@ -1645,6 +1649,8 @@ export class Viewer implements IDisposable {
             this._log("No models loaded, cannot create shadows.");
             return;
         }
+
+        const radius = Vector3.FromArray(worldBounds!.size).length();
 
         const updateMaterial = () => {
             if (!this._iblShadowsRenderPipeline) {
@@ -1727,7 +1733,7 @@ export class Viewer implements IDisposable {
 
         this._iblShadowsRenderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
             updateMaterial();
-            const ground = this._createEnvironmentShadowGround();
+            const ground = this._createEnvironmentShadowGround(radius);
             ground.material = this._groundShadowMaterial;
             this._iblShadowsRenderPipeline?.toggleShadow(true);
             ground.setEnabled(true);
@@ -1789,7 +1795,7 @@ export class Viewer implements IDisposable {
             }
 
             const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
-            const ground = this._createClassicShadowGround();
+            const ground = this._createClassicShadowGround(radius);
             ground.material = shadowMaterial;
             this._shadowLight.includedOnlyMeshes = [ground];
         }
@@ -1805,9 +1811,6 @@ export class Viewer implements IDisposable {
             this._shadowLight.orthoTop = radius * 2;
             this._shadowLight.orthoBottom = -radius * 2;
         }
-
-        const groundSize = this._shadowGroundScalingFactor * radius;
-        this._classicShadowGround?.scaling.set(groundSize, groundSize, groundSize);
 
         this._loadedModelsBacking.forEach((model) => {
             const mesh = model.assetContainer.meshes[0];
