@@ -2,12 +2,15 @@ import type { Nullable } from "@dev/core/types";
 import { test, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
-export type SoundType = "Static" | "Streaming";
+export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "StaticSound" | "StreamingSound";
+export type SoundType = "StaticSound" | "StreamingSound";
 
-/** Left speaker channel */
-export const L = 0;
-/** Right speaker channel */
-export const R = 1;
+export const enum Channel {
+    /** Left speaker channel */
+    L = 0,
+    /** Right speaker channel */
+    R = 1,
+}
 
 /** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
 export const VolumePrecision = 1;
@@ -57,6 +60,11 @@ declare global {
             source: string | string[],
             options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions>
         ): Promise<BABYLON.AbstractSound>;
+        public static CreateAbstractSoundAndOutputNodeAsync(
+            audioNodeType: AudioNodeType,
+            source: string | string[],
+            options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions> | Partial<BABYLON.IAudioBusOptions>
+        ): Promise<{ sound: BABYLON.AbstractSound; outputNode: { spatial: BABYLON.AbstractSpatialAudio; stereo: BABYLON.AbstractStereoAudio; volume: number } }>;
         public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
         public static GetResultAsync(): Promise<AudioTestResult>;

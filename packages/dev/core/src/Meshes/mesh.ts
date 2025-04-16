@@ -1212,7 +1212,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Gets the mesh internal Geometry object
      */
-    public get geometry(): Nullable<Geometry> {
+    public override get geometry(): Nullable<Geometry> {
         return this._geometry;
     }
 
@@ -1387,7 +1387,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns a positive integer : the total number of indices in this mesh geometry.
-     * @returns the numner of indices or zero if the mesh has no geometry.
+     * @returns the number of indices or zero if the mesh has no geometry.
      */
     public override getTotalIndices(): number {
         if (!this._geometry) {

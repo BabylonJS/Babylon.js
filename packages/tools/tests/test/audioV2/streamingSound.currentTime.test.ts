@@ -2,4 +2,4 @@ import { AddSharedAbstractSoundCurrentTimeTests } from "./shared/abstractSound.c
 import { InitAudioV2Tests } from "./utils/audioV2.utils";
 
 InitAudioV2Tests();
-AddSharedAbstractSoundCurrentTimeTests("Streaming");
+AddSharedAbstractSoundCurrentTimeTests("StreamingSound");

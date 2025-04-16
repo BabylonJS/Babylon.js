@@ -1,59 +1,107 @@
 {
-    "fromTag": "8.1.1",
+    "fromTag": "8.2.1",
     "changelog": {
-        "8.1.1": [
+        "8.2.1": [
             {
-                "pr": "16436",
-                "title": "Viewer: More options + reset logic in Viewer layer",
-                "description": "This PR aims to solve a couple of different but overlapping problems:\r\n- More flexibility in the reset logic (forum issue: https://forum.babylonjs.com/t/viewer-v2-reset-button-to-the-initial-explicitly-specified-camera-pose/56925)\r\n- Make it possible to initialize the Viewer from JSON (allows the Viewer Configurator to be used with all layers of the Viewer, not just the HTML layer, and also creates a path for saving/loading to/from snippet server)\r\n\r\nChanges to the Configurator will come in a subsequent PR. For this PR, the overall changes are as follows:\r\n## Viewer\r\n- Flesh out `ViewerOptions` with *most* properties of the Viewer.\r\n- Expose a `DefaultViewerOptions` object, which is used for Viewer initialization and will also be used by the Configurator.\r\n- Add a `reset` function that helps reset Viewer state to the initial state (based on passed in options and default options).\r\n- Use this reset state and logic in the Viewer layer and remove old `UpdateModelOptions` that was needed to coordinate reset logic that was spread across `Viewer` and `ViewerElement`.\r\n- Update the `resetCamera` function to be more configurable (reframe the camera (current logic), reset the camera to the initial state, or pick a reasonable default based on Viewer state).\r\n- Add an `updateCamera` function that will interpolate to a new pose.\r\n- Remove `FramingBehavior`. It was used in early versions of the Viewer, but at this point the Viewer's framing logic has superseded `FramingBehavior` and it is no longer needed.\r\n- Move all hotspot state and logic down to the Viewer layer.\r\n\r\n## ViewerFactory\r\n- Wrap the passed through options in a `Proxy`, which makes is possible for the higher layers (e.g. `ViewerElement`) to override the default options dynamically (used to allow element attributes to behave as default options).\r\n\r\n## ViewerElement\r\n- Initialize properties/attributes based on the passed in options (since they now have most of the Viewer properties).\r\n- Pass `ViewerOptions` down that return attributes if they are set, otherwise the passed in option value. This makes it so if an attribute is dynamically updated, it becomes the configured value that is used by the reset logic.\r\n- Change `camera-orbit` and `camera-target` to be custom handled attributes (not reactive properties). There is a lot of special handling to get the desired behavior for camera pose, so the reactive property pattern is not helpful anymore.\r\n- Add a `resetMode` property/attribute, and a `reset` function. The behavior of the `reset` function (called when the reset button is clicked) depends on the `resetMode`. This is what finally addresses the forum issue.\r\n- Remove `syncToAttribute` logic that was previously used for reset logic (since reset logic moved down to the Viewer layer).\r\n- Remove logic to reset camera state, since it also moved down to the Viewer layer.\r\n- Remove `UpdateModelOptions` related args previously passed to `Viewer.loadModel` as this is now all handled in the Viewer layer.\r\n- Remove all hotspot implementation since it is now handled in the Viewer layer.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/tools/viewer/src/index.ts",
-                    "packages/tools/viewer/src/viewer.ts",
-                    "packages/tools/viewer/src/viewerElement.ts",
-                    "packages/tools/viewer/src/viewerFactory.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16444",
-                "title": "Add support for BasedOnInput connection point type in node port design",
-                "description": "Fixes #16441\r\n\r\n![image](https://github.com/user-attachments/assets/a0164b69-cef2-43d8-a93e-b7165eb004b3)\r\n",
+                "pr": "16486",
+                "title": "Prevent floats and integers from working together in glTF interactivity",
+                "description": "Introduce a configuration option to disallow arithmetic operations between integers and floats, aligning behavior with glTF specifications. Update relevant classes and functions to enforce this restriction.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/tools/nodeEditor/src/graphSystem/registerNodePortDesign.ts"
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/testData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16469",
+                "title": "glTF Exporter: Replace AbstractMesh with Mesh to capture InstancedMesh",
+                "description": "Fixes issue where InstancedMeshes exported without their source mesh would error.\r\n\r\nThis could have been solved by just adding `|| node instanceof InstancedMesh` in `_collectBuffers`, but there's no reason to not use `AbstractMesh` throughout the exporter, so opted for that instead. ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMorphTargetsUtilities.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16467",
+                "title": "Prepare for support of NodeNext and Node16 module resolutions",
+                "description": "Details in this issue - #13797 , which this PR fixes.\r\n\r\nMerging this PR will technically make babylon compatible with typescript 4.7 and above. For context, 4.7 is 3 years old.\r\n\r\nWhat this change does it add .js extensions to imports in the .d.ts files generated in the public es6 packages.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16482",
+                "title": "Add `currentTime` playwright sound tests for static and streaming sounds",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.currentTime.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractSound.utils.ts"
                 ],
                 "tags": [
-                    "bug"
+                    "audio",
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "16443",
-                "title": "Post Processes: Fix scale being overwritten by default (1,1) values",
-                "description": "See https://forum.babylonjs.com/t/environment-texture-flipped-when-created-using-imagebitmap/57572",
+                "pr": "16485",
+                "title": "NME: Fix wrong prefix for vReflectivityColor in WebGPU",
+                "description": "Follow up to #16479 ",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/effectRenderer.ts",
-                    "packages/dev/core/src/PostProcesses/postProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinBlackAndWhitePostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinBloomMergePostProcess.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16480",
+                "title": "Post processes: Fix Depth of Field effect",
+                "description": "See https://forum.babylonjs.com/t/depth-of-field-adding-dark-blur-outline/57720",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/depthOfFieldBlurPostProcess.ts",
                     "packages/dev/core/src/PostProcesses/thinBlurPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinChromaticAberrationPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinCircleOfConfusionPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinExtractHighlightsPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinSSRBlurCombinerPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinSSRBlurPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinSSRPostProcess.ts",
-                    "packages/dev/core/src/PostProcesses/thinTAAPostProcess.ts"
+                    "packages/dev/core/src/PostProcesses/thinDepthOfFieldEffect.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-depth-of-field.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bakedVertexAnimationDOF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-dof.png",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
                     "bug",
@@ -61,20 +109,314 @@
                 ]
             },
             {
-                "pr": "16442",
-                "title": "PhysicsViewer, bbhelper fixes",
-                "description": "follow up\r\nhttps://forum.babylonjs.com/t/customizable-utility-layer-for-physics-viewer/57591/2\r\nhttps://forum.babylonjs.com/t/boundinginfohelper-dispose/57588/2",
+                "pr": "16479",
+                "title": "NME - indexOfRefraction is optional, so it has no variable name. defaulting to 1.5",
+                "description": "I am not sure this is the best solution here, but indexOfRefraction is not treated as not optional. When it is not connected it has no variable name and thus the shader compilation is failing.\r\n\r\nTest PG - https://playground.babylonjs.com/?snapshot=refs/pull/16479/merge#UUXABN (compilation error without this PR)\r\n\r\nCC @deltakosh for visibility (probably way after this is merged)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16477",
+                "title": "Add static and streaming sound playback tests",
+                "description": "Adds static and streaming sound playwright playback tests, including a shared test module for tests common to both types of sounds, and some helpful utility code.\r\n\r\n*Note that some of the changes in this PR are trivial and should be viewed with whitespace changes hidden.*",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.listener.test.ts",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.state.test.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.playback.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractSound.utils.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16478",
+                "title": "Fix flaky playwright audio tests",
+                "description": "The playwright audio tests expecting volume curve values are flaky because the volume curve analysis algorithm is leaving a zero volume gap sample between each pulse. If the time the volume is checked at falls on that gap, the test fails.\r\n\r\nThis change fixes the issue by removing the gap in the volume curve and writing the average volume sample values across the entire span of the pulse without skipping a sample between pulses.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/tests/test/audioV2/utils/audioEngineV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16466",
+                "title": "bind eye position GS",
+                "description": "Nothing else could work :(",
                 "author": {
                     "name": "CedricGuillemet",
                     "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
-                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
+            },
+            {
+                "pr": "16475",
+                "title": "force npm to re-install the contextmenu dependency",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16474",
+                "title": "Shader pre-processor: Improve parsing + fix WGSL",
+                "description": "I have improved the shader pre-processor so that constructions of this type are analyzed correctly:\r\n```glsl\r\n#define BRDF_DIFFUSE_ROUGHNESS_EON 0\r\n#define BRDF_DIFFUSE_ROUGHNESS_BURLEY 1\r\n\r\n#if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON\r\n    diffuseRoughnessTerm = diffuseBRDF_EON(vec3(1.0), diffuseRoughness, NoL, NoV, LoV) * PI;\r\n#elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY\r\n    diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);\r\n#endif\r\n```\r\nBefore the PR, you couldn't test against a name, you had to use immediate values (0 instead of `BRDF_DIFFUSE_ROUGHNESS_EON` and 1 instead of `BRDF_DIFFUSE_ROUGHNESS_BURLEY`  in the example above).\r\n\r\nI have also reworked the way we handle preprocessing in WGSL, as it was causing some problems before. I have tried to add a number of comments in the code to explain why things are done in that way.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineArithmeticOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/iShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeConditionNode.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16473",
+                "title": "Interactivity fixes",
+                "description": "A few fixes after testing some more demo files:\n\n1. Extension path matching is optional in certain cases. So even if a value doesn't exist in the glTF tree itself, we should still be able to get and set it. Good examples are selectability and visibility - both exist on the babylon object, but are optional in the glTF tree.\n2. Parsing NaN and Infinity now works (if they are provided as strings)\n3. Interpolation block was not providing the context to the animation function\n4. Matcher for json pointer didn't work correctly if the matched item was at the end of the string\n5. pointer/interpolate should use the BezierEasing and not the normal easing block\n6. Small fix for out flow of the send event block.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathConverterComponent.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/gltfPathToObjectConverter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16470",
+                "title": "Attach playwright audio test result .wav files to test info on failure",
+                "description": "This change makes the playwright audio test result data available in the test report when an audio test fails. It attaches the captured audio output as a .wav file, and the resulting volume curves as a .wav file if they were used by the test.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/utils/audioEngineV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16472",
+                "title": "GS Kernel size & opacity compensation",
+                "description": "### kernel Size to simulate point spread function (default 0.3).\r\n```\r\nBABYLON.GaussianSplattingMaterial.KernelSize = 0.1;\r\n```\r\n\r\nhttps://github.com/autonomousvision/mip-splatting/issues/18#issuecomment-1929388931\r\n\r\n### Compensation\r\n\r\n```\r\nBABYLON.GaussianSplattingMaterial.Compensation = true;\r\n```\r\n\r\nhttps://github.com/nerfstudio-project/gsplat/pull/117\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gsplat-loading.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gsplat-nme.png"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            }
+        ],
+        "8.2.2": [
+            {
+                "pr": "16488",
+                "title": "Clear engine and webgl state on program delete",
+                "description": "Maintain correct state of WebGL context after shader program is deleted. \r\nThis may help when WebGL context is shared with other engines.",
+                "author": {
+                    "name": "EvgeniyPeshkov",
+                    "url": "https://github.com/EvgeniyPeshkov"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16494",
+                "title": "Clear engine and webgl state on program delete",
+                "description": "supersedes #16488",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16492",
+                "title": "Add spatial and stereo playwright audio tests",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/audioBus.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/audioBus.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.spatial.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.stereo.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16493",
+                "title": "Refactor type validation logic for uniformity checks",
+                "description": "Ensure all input types are defined before checking for uniformity, improving the validation process for input types.\n\nSmall fix for PR #16486",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16487",
+                "title": "Add volume playwright audio tests",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/audioBus.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.listener.test.ts",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/mainAudioBus.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.volume.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.currentTime.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.playback.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractAudioNode.utils.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16491",
+                "title": "Fix for null TypeError in dynamicTexture",
+                "description": "It's possible that when rapidly disposing a dynamicTexture, a delayed callback gets ran on the disposed instance, resulting in a TypeError exception caused by accessing a null instance. The specific case that was causing this issue was when `Tools.SetImmediate` is used to pend some future work to `update` the dynamic texture, and by the time this delayed callback was running, the dynamicTexture had already been disposed.\r\n\r\nThe fix here is to early out of the `update` function if `this._texture` is already null. This simply avoids dereferencing a null engine when calling `_getEngine().updateDynamicTexture(this._texture, ...)`. In any case, `updateDynamicTexture` itself already early outs when the texture parameter is null, so it should not change that behavior.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16489",
+                "title": "Visu test: Fix error ratio for Webkit",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16490",
+                "title": "Sandbox: adapt panning sensitivity based on radius (same as viewer)",
+                "description": "The viewer adapts the camera's panning sensitivity based on the radius of the object being viewed, and this change duplicates that logic for the sandbox.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
             }
         ],
         "8.2.0": [
@@ -457,6 +799,82 @@
                 "tags": [
                     "enhancement",
                     "materials"
+                ]
+            }
+        ],
+        "8.1.1": [
+            {
+                "pr": "16436",
+                "title": "Viewer: More options + reset logic in Viewer layer",
+                "description": "This PR aims to solve a couple of different but overlapping problems:\r\n- More flexibility in the reset logic (forum issue: https://forum.babylonjs.com/t/viewer-v2-reset-button-to-the-initial-explicitly-specified-camera-pose/56925)\r\n- Make it possible to initialize the Viewer from JSON (allows the Viewer Configurator to be used with all layers of the Viewer, not just the HTML layer, and also creates a path for saving/loading to/from snippet server)\r\n\r\nChanges to the Configurator will come in a subsequent PR. For this PR, the overall changes are as follows:\r\n## Viewer\r\n- Flesh out `ViewerOptions` with *most* properties of the Viewer.\r\n- Expose a `DefaultViewerOptions` object, which is used for Viewer initialization and will also be used by the Configurator.\r\n- Add a `reset` function that helps reset Viewer state to the initial state (based on passed in options and default options).\r\n- Use this reset state and logic in the Viewer layer and remove old `UpdateModelOptions` that was needed to coordinate reset logic that was spread across `Viewer` and `ViewerElement`.\r\n- Update the `resetCamera` function to be more configurable (reframe the camera (current logic), reset the camera to the initial state, or pick a reasonable default based on Viewer state).\r\n- Add an `updateCamera` function that will interpolate to a new pose.\r\n- Remove `FramingBehavior`. It was used in early versions of the Viewer, but at this point the Viewer's framing logic has superseded `FramingBehavior` and it is no longer needed.\r\n- Move all hotspot state and logic down to the Viewer layer.\r\n\r\n## ViewerFactory\r\n- Wrap the passed through options in a `Proxy`, which makes is possible for the higher layers (e.g. `ViewerElement`) to override the default options dynamically (used to allow element attributes to behave as default options).\r\n\r\n## ViewerElement\r\n- Initialize properties/attributes based on the passed in options (since they now have most of the Viewer properties).\r\n- Pass `ViewerOptions` down that return attributes if they are set, otherwise the passed in option value. This makes it so if an attribute is dynamically updated, it becomes the configured value that is used by the reset logic.\r\n- Change `camera-orbit` and `camera-target` to be custom handled attributes (not reactive properties). There is a lot of special handling to get the desired behavior for camera pose, so the reactive property pattern is not helpful anymore.\r\n- Add a `resetMode` property/attribute, and a `reset` function. The behavior of the `reset` function (called when the reset button is clicked) depends on the `resetMode`. This is what finally addresses the forum issue.\r\n- Remove `syncToAttribute` logic that was previously used for reset logic (since reset logic moved down to the Viewer layer).\r\n- Remove logic to reset camera state, since it also moved down to the Viewer layer.\r\n- Remove `UpdateModelOptions` related args previously passed to `Viewer.loadModel` as this is now all handled in the Viewer layer.\r\n- Remove all hotspot implementation since it is now handled in the Viewer layer.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16444",
+                "title": "Add support for BasedOnInput connection point type in node port design",
+                "description": "Fixes #16441\r\n\r\n![image](https://github.com/user-attachments/assets/a0164b69-cef2-43d8-a93e-b7165eb004b3)\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16443",
+                "title": "Post Processes: Fix scale being overwritten by default (1,1) values",
+                "description": "See https://forum.babylonjs.com/t/environment-texture-flipped-when-created-using-imagebitmap/57572",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBlackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBloomMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinChromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinCircleOfConfusionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinExtractHighlightsPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRBlurCombinerPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinTAAPostProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "16442",
+                "title": "PhysicsViewer, bbhelper fixes",
+                "description": "follow up\r\nhttps://forum.babylonjs.com/t/customizable-utility-layer-for-physics-viewer/57591/2\r\nhttps://forum.babylonjs.com/t/boundinginfohelper-dispose/57588/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
