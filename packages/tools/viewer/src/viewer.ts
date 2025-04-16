@@ -1628,16 +1628,9 @@ export class Viewer implements IDisposable {
 
     private async _updateEnvironmentShadow() {
         await Promise.all([
-            import("core/Materials/standardMaterial"),
-            import("core/Rendering/geometryBufferRendererSceneComponent"),
             import("core/Engines/Extensions/engine.multiRender"),
             import("core/Engines/WebGPU/Extensions/engine.multiRender"),
-            import("core/Rendering/iblCdfGeneratorSceneComponent"),
             import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
-            import("core/Shaders/copyTexture3DLayerToTexture.fragment"),
-            import("core/ShadersWGSL/copyTexture3DLayerToTexture.fragment"),
-            import("core/Shaders/iblScaledLuminance.fragment"),
-            import("core/ShadersWGSL/iblScaledLuminance.fragment"),
         ]);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
