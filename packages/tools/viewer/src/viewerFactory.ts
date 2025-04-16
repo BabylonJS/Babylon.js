@@ -16,6 +16,8 @@ export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) =
 const defaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
+    enableAllFeatures: true,
+    setMaximumLimits: true,
 } as const satisfies CanvasViewerOptions;
 
 /**
@@ -78,7 +80,13 @@ export async function CreateViewerForCanvas(
     } else {
         options = defaultCanvasViewerOptions;
     }
+
     const disposeActions: (() => void)[] = [];
+
+    if (options.engine === "WebGPU") {
+        options.enableAllFeatures = options.enableAllFeatures ?? defaultCanvasViewerOptions.enableAllFeatures;
+        options.setMaximumLimits = options.setMaximumLimits ?? defaultCanvasViewerOptions.setMaximumLimits;
+    }
 
     // Create an engine instance.
     let engine: AbstractEngine;
