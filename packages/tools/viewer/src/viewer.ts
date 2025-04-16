@@ -1835,6 +1835,8 @@ export class Viewer implements IDisposable {
     private _disposeShadows() {
         this._snapshotHelper.disableSnapshotRendering();
 
+        clearTimeout(this._iblRenderTimer!);
+
         this._loadedModelsBacking.forEach((model) => {
             const meshes = model.assetContainer.meshes as Mesh[];
 
