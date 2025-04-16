@@ -68,6 +68,7 @@ export interface INativeEngine {
     loadCubeTextureWithMips(texture: NativeTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
+    copyTexture(desination: NativeTexture, source: NativeTexture): void;
     deleteTexture(texture: NativeTexture): void;
     readTexture(
         texture: NativeTexture,
