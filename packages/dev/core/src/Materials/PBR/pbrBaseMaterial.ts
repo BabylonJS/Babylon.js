@@ -820,7 +820,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY;
+    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
     /**
      * Defines the base diffuse roughness model of the material.
      */
@@ -2404,7 +2404,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 ubo.updateFloat("baseWeight", this._baseWeight);
-                ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness ?? this._roughness ?? 1.0);
+                ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness ?? 0.0);
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
