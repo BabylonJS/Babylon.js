@@ -32,6 +32,7 @@ import { NodeRenderGraphSSRPostProcessBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphAnaglyphPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/anaglyphPostProcessBlock";
 import { NodeRenderGraphChromaticAberrationPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/chromaticAberrationPostProcessBlock";
 import { NodeRenderGraphImageProcessingPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/imageProcessingPostProcessBlock";
+import { NodeRenderGraphFXAAPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/fxaaPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -150,6 +151,9 @@ export class BlockTools {
             }
             case "ImageProcessingBlock": {
                 return new NodeRenderGraphImageProcessingPostProcessBlock("Image Processing", frameGraph, scene);
+            }
+            case "FXAABlock": {
+                return new NodeRenderGraphFXAAPostProcessBlock("FXAA", frameGraph, scene);
             }
         }
 
