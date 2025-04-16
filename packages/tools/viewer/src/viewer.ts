@@ -1680,10 +1680,12 @@ export class Viewer implements IDisposable {
             );
 
             this._iblShadowsRenderPipeline.toggleShadow(false);
-            this._iblShadowsRenderPipeline.allowDebugPasses = false;
-            this._iblShadowsRenderPipeline.gbufferDebugEnabled = false;
-            this._iblShadowsRenderPipeline.voxelDebugEnabled = false;
-            this._iblShadowsRenderPipeline.accumulationPassDebugEnabled = false;
+
+            // Useful for debugging, but not needed in production
+            // this._iblShadowsRenderPipeline.allowDebugPasses = false;
+            // this._iblShadowsRenderPipeline.gbufferDebugEnabled = false;
+            // this._iblShadowsRenderPipeline.voxelDebugEnabled = false;
+            // this._iblShadowsRenderPipeline.accumulationPassDebugEnabled = false;
 
             const isWebGPU = this._scene.getEngine().isWebGPU;
             const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
