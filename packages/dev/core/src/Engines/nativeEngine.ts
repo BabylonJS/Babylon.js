@@ -1635,15 +1635,15 @@ export class NativeEngine extends Engine {
         }
 
         if (!!texture && !!texture._hardwareTexture) {
-            const context = canvas.getContext();
-            if (context.flush) {
-                context.flush();
-            }
-            const source = canvas.getCanvasTexture();
             const destination = texture._hardwareTexture.underlyingResource;
             if (this._engine.copyTexture) {
+                const source = canvas.getCanvasTexture();
                 this._engine.copyTexture(destination, source);
-            } else {
+            } else if (_native.Engine.COMMAND_COPYTEXTURE) {
+                const context = canvas.getContext();
+                // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
+                context.flush();
+                const source = canvas.getCanvasTexture();
                 this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
                 this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
                 this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
