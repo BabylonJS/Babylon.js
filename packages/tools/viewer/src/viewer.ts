@@ -114,7 +114,7 @@ export type ShadowParams = {
     /**
      * The quality of shadow being used
      */
-    quality?: ShadowQuality;
+    quality: ShadowQuality;
 };
 
 export type PostProcessing = {
@@ -984,7 +984,7 @@ export class Viewer implements IDisposable {
             return { quality: this._shadowQuality };
         }
         return {
-            quality: undefined,
+            quality: "none",
         };
     }
 

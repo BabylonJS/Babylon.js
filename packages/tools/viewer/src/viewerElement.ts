@@ -191,7 +191,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             "shadowQuality",
             (details) => details.viewer.onShadowsConfigurationChanged,
             (details) => (details.viewer.shadowConfig = { quality: this.shadowQuality ?? details.viewer.shadowConfig.quality }),
-            (details) => (this.shadowQuality = details.viewer.shadowConfig.quality ?? null)
+            (details) => (this.shadowQuality = details.viewer.shadowConfig.quality)
         ),
         this._createPropertyBinding(
             "toneMapping",
