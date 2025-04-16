@@ -959,17 +959,11 @@ export class Viewer implements IDisposable {
         }
         if (value.intensity !== undefined) {
             this._changeEnvironmentIntensity(value.intensity);
-            if (this._iblShadowsRenderPipeline && this._groundShadowMaterial) {
-                this._groundShadowMaterial.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
-            }
-            this._iblShadowsRenderPipeline?.resetAccumulation();
-            this._startIblShadowsRenderTime();
+            this._changeShadowLightIntensity();
         }
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
             this._rotateShadowLightWithEnvironment();
-            this._iblShadowsRenderPipeline?.resetAccumulation();
-            this._startIblShadowsRenderTime();
         }
         if (value.visible !== undefined) {
             // Dynamically create the skybox if it doesn't exist yet
@@ -1569,6 +1563,11 @@ export class Viewer implements IDisposable {
         }
     }
 
+    private _changeShadowLightIntensity() {
+        this._iblShadowsRenderPipeline?.resetAccumulation();
+        this._startIblShadowsRenderTime();
+    }
+
     private _rotateShadowLightWithEnvironment(): void {
         const x = Math.cos(this._reflectionsRotation);
         const z = Math.sin(this._reflectionsRotation);
@@ -1577,6 +1576,9 @@ export class Viewer implements IDisposable {
             this._shadowLight.position.set(x * radius, this._shadowLight.position.y, z * radius);
             this._shadowLight.direction.set(-x, -1, -z);
         }
+
+        this._iblShadowsRenderPipeline?.resetAccumulation();
+        this._startIblShadowsRenderTime();
     }
 
     private _createClassicShadowGround() {
