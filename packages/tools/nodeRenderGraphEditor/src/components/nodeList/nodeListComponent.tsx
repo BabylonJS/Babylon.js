@@ -61,6 +61,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ChromaticAberrationBlock: "Applies a chromatic aberration post process",
         ImageProcessingBlock: "Applies an image processing post process",
         FXAABlock: "Applies a FXAA post process",
+        GrainBlock: "Applies a grain post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -166,6 +167,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "DepthOfFieldBlock",
                 "ExtractHighlightsBlock",
                 "FXAABlock",
+                "GrainBlock",
                 "ImageProcessingBlock",
                 "PassBlock",
                 "PassCubeBlock",

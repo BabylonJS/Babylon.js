@@ -17,6 +17,7 @@ export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
 export * from "./PostProcesses/fxaaPostProcessBlock";
+export * from "./PostProcesses/grainPostProcessBlock";
 export * from "./PostProcesses/imageProcessingPostProcessBlock";
 export * from "./PostProcesses/passPostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";

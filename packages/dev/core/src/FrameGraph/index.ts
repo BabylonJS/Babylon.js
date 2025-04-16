@@ -24,6 +24,7 @@ export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/depthOfFieldTask";
 export * from "./Tasks/PostProcesses/extractHighlightsTask";
 export * from "./Tasks/PostProcesses/fxaaTask";
+export * from "./Tasks/PostProcesses/grainTask";
 export * from "./Tasks/PostProcesses/imageProcessingTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
