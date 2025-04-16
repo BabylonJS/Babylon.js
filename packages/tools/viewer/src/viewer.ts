@@ -419,6 +419,9 @@ export type ViewerOptions = Partial<{
      */
     postProcessing: Partial<PostProcessing>;
 
+    /**
+     * Shadow configuration.
+     */
     shadowConfig: Partial<ShadowParams>;
 
     /**
