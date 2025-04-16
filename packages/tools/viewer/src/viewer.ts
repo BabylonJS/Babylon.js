@@ -1627,14 +1627,15 @@ export class Viewer implements IDisposable {
     }
 
     private async _updateEnvironmentShadow() {
-        await Promise.all([
+        const imports = await Promise.all([
+            import("core/Materials/shaderMaterial"),
             import("core/Engines/Extensions/engine.multiRender"),
             import("core/Engines/WebGPU/Extensions/engine.multiRender"),
             import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
         ]);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { ShaderMaterial } = await import("core/Materials/shaderMaterial");
+        const ShaderMaterial = imports[0].ShaderMaterial;
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
