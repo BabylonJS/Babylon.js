@@ -160,7 +160,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get state(): AudioEngineV2State {
-        return this._audioContext.state;
+        // Always return "running" for OfflineAudioContext so sound `play` calls work while the context is suspended.
+        return <any>this._audioContext instanceof OfflineAudioContext ? "running" : this._audioContext.state;
     }
 
     /** @internal */
@@ -245,7 +246,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._listener?.dispose();
         this._listener = null;
 
-        if (this._audioContext.state !== "closed") {
+        // Note that OfflineAudioContext does not have a `close` method.
+        if (this._audioContext.state !== "closed" && this._audioContext.close) {
             this._audioContext.close();
         }
 
