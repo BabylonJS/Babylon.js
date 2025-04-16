@@ -66,10 +66,11 @@ async function evaluateStateTestScript(browser: Browser, onLoadScript: string, c
  * - Firefox requires the element selected for `page.click` to have a non-zero width and height.
  */
 
-test('State should be "suspended" if no user gesture occurs', async ({ browser }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+test.describe("AudioEngineV2 state", () => {
+    test('State should be "suspended" if no user gesture occurs', async ({ browser }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync();
 
             audioEngine.unlockAsync();
@@ -78,16 +79,16 @@ test('State should be "suspended" if no user gesture occurs', async ({ browser }
                 window.audioEngineState = audioEngine.state;
             }, ${StateChangeWaitTime});
             `,
-        false
-    );
+            false
+        );
 
-    expect(state).toBe("suspended");
-});
+        expect(state).toBe("suspended");
+    });
 
-test('State should change to "running" on user gesture', async ({ browser }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+    test('State should change to "running" on user gesture', async ({ browser }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync();
 
             document.addEventListener('click', async () => {
@@ -96,15 +97,15 @@ test('State should change to "running" on user gesture', async ({ browser }) => 
                 }, 500);
             });
         `
-    );
+        );
 
-    expect(state).toBe("running");
-});
+        expect(state).toBe("running");
+    });
 
-test('State should change to "running" on user gesture after engine is paused', async ({ browser }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+    test('State should change to "running" on user gesture after engine is paused', async ({ browser }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync();
 
             audioEngine.unlockAsync();
@@ -123,22 +124,22 @@ test('State should change to "running" on user gesture after engine is paused', 
                 }
             });
         `,
-        async (page) => {
-            await page.click("#content");
-            await page.waitForFunction(() => (window as any).clickCount, { timeout: ClickWaitTime });
+            async (page) => {
+                await page.click("#content");
+                await page.waitForFunction(() => (window as any).clickCount, { timeout: ClickWaitTime });
 
-            await page.click("#content");
-            await page.waitForFunction(() => (window as any).audioEngineState, { timeout: StateWaitTime });
-        }
-    );
+                await page.click("#content");
+                await page.waitForFunction(() => (window as any).audioEngineState, { timeout: StateWaitTime });
+            }
+        );
 
-    expect(state).toBe("running");
-});
+        expect(state).toBe("running");
+    });
 
-test('State should be "suspended" if `resumeOnInteraction` option is `false` and user gesture occurs', async ({ browser }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+    test('State should be "suspended" if `resumeOnInteraction` option is `false` and user gesture occurs', async ({ browser }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync({ resumeOnInteraction: false });
 
             audioEngine.unlockAsync();
@@ -149,15 +150,15 @@ test('State should be "suspended" if `resumeOnInteraction` option is `false` and
                 }, ${StateChangeWaitTime});
             });
         `
-    );
+        );
 
-    expect(state).toBe("suspended");
-});
+        expect(state).toBe("suspended");
+    });
 
-test('State should be "suspended" if `resumeOnInteraction` option is `false` and user gesture occurs after engine is paused', async ({ browser, browserName }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+    test('State should be "suspended" if `resumeOnInteraction` option is `false` and user gesture occurs after engine is paused', async ({ browser, browserName }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync({ resumeOnInteraction: false });
 
             audioEngine.unlockAsync();
@@ -176,22 +177,22 @@ test('State should be "suspended" if `resumeOnInteraction` option is `false` and
                 }
             });
         `,
-        async (page) => {
-            await page.click("#content");
-            await page.waitForFunction(() => (window as any).clickCount, { timeout: ClickWaitTime });
+            async (page) => {
+                await page.click("#content");
+                await page.waitForFunction(() => (window as any).clickCount, { timeout: ClickWaitTime });
 
-            await page.click("#content");
-            await page.waitForFunction(() => (window as any).audioEngineState, { timeout: StateWaitTime });
-        }
-    );
+                await page.click("#content");
+                await page.waitForFunction(() => (window as any).audioEngineState, { timeout: StateWaitTime });
+            }
+        );
 
-    expect(state).toBe("suspended");
-});
+        expect(state).toBe("suspended");
+    });
 
-test("State should stay paused before default resume interval has elapsed when engine is unlocked then paused", async ({ browser }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+    test("State should stay paused before default resume interval has elapsed when engine is unlocked then paused", async ({ browser }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync();
 
             audioEngine.unlockAsync();
@@ -206,15 +207,15 @@ test("State should stay paused before default resume interval has elapsed when e
                 }, ${StateChangeWaitTime});
             });
         `
-    );
+        );
 
-    expect(state).toBe("suspended");
-});
+        expect(state).toBe("suspended");
+    });
 
-test("State should automatically resume after default resume interval has elapsed when engine is unlocked then paused", async ({ browser }) => {
-    const state = await evaluateStateTestScript(
-        browser,
-        `
+    test("State should automatically resume after default resume interval has elapsed when engine is unlocked then paused", async ({ browser }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync();
 
             audioEngine.unlockAsync();
@@ -230,17 +231,17 @@ test("State should automatically resume after default resume interval has elapse
                 }, ${StateChangeWaitTime});
             });
         `
-    );
+        );
 
-    expect(state).toBe("running");
-});
+        expect(state).toBe("running");
+    });
 
-test("State should not automatically resume when `resumeOnPause` option is `false` after default resume interval has elapsed when engine is unlocked then paused", async ({
-    browser,
-}) => {
-    const state = await evaluateStateTestScript(
+    test("State should not automatically resume when `resumeOnPause` option is `false` after default resume interval has elapsed when engine is unlocked then paused", async ({
         browser,
-        `
+    }) => {
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync({ resumeOnPause: false });
 
             audioEngine.unlockAsync();
@@ -255,19 +256,19 @@ test("State should not automatically resume when `resumeOnPause` option is `fals
                 }, ${StateChangeWaitTime});
             });
         `
-    );
+        );
 
-    expect(state).toBe("suspended");
-});
+        expect(state).toBe("suspended");
+    });
 
-test("State should automatically resume when `resumeOnPauseRetryInterval` option is `2000` after 2 seconds have elapsed when engine is unlocked then paused", async ({
-    browser,
-}) => {
-    const resumeOnPauseRetryInterval = 2000;
-
-    const state = await evaluateStateTestScript(
+    test("State should automatically resume when `resumeOnPauseRetryInterval` option is `2000` after 2 seconds have elapsed when engine is unlocked then paused", async ({
         browser,
-        `
+    }) => {
+        const resumeOnPauseRetryInterval = 2000;
+
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync({ resumeOnPauseRetryInterval: ${resumeOnPauseRetryInterval} });
             
             audioEngine.unlockAsync();
@@ -283,19 +284,19 @@ test("State should automatically resume when `resumeOnPauseRetryInterval` option
                 }, ${StateChangeWaitTime});
             });
         `
-    );
+        );
 
-    expect(state).toBe("running");
-});
+        expect(state).toBe("running");
+    });
 
-test("State should not automatically resume when `resumeOnPauseRetryInterval` option is `2000` after default resume interval has elapsed when engine is unlocked then paused", async ({
-    browser,
-}) => {
-    const resumeOnPauseRetryInterval = 2000;
-
-    const state = await evaluateStateTestScript(
+    test("State should not automatically resume when `resumeOnPauseRetryInterval` option is `2000` after default resume interval has elapsed when engine is unlocked then paused", async ({
         browser,
-        `
+    }) => {
+        const resumeOnPauseRetryInterval = 2000;
+
+        const state = await evaluateStateTestScript(
+            browser,
+            `
             const audioEngine = await BABYLON.CreateAudioEngineAsync({ resumeOnPauseRetryInterval: ${resumeOnPauseRetryInterval} });
             
             audioEngine.unlockAsync();
@@ -310,7 +311,8 @@ test("State should not automatically resume when `resumeOnPauseRetryInterval` op
                 }, ${StateChangeWaitTime});
             });
         `
-    );
+        );
 
-    expect(state).toBe("suspended");
+        expect(state).toBe("suspended");
+    });
 });

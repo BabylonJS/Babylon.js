@@ -16,6 +16,7 @@ export * from "./PostProcesses/chromaticAberrationPostProcessBlock";
 export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
+export * from "./PostProcesses/imageProcessingPostProcessBlock";
 export * from "./PostProcesses/passPostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
 

@@ -6,7 +6,6 @@ import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
-import * as ReactDOM from "react-dom";
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 
@@ -25,6 +24,7 @@ export interface ITreeItemSelectableComponentProps {
 
 export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean; isSelected: boolean }> {
     private _wasSelected = false;
+    private _thisRef: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
 
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
@@ -62,7 +62,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     }
 
     scrollIntoView() {
-        const element = ReactDOM.findDOMNode(this) as Element;
+        const element = this._thisRef.current;
 
         if (element) {
             element.scrollIntoView(false);
@@ -156,7 +156,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
 
         return (
-            <div>
+            <div ref={this._thisRef}>
                 <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"} style={marginStyle}>
                     {hasChildren && (
                         <div className="arrow icon" onClick={() => this.switchExpandedState()}>

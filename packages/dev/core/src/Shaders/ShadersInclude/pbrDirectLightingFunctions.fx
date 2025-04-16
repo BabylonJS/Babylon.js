@@ -81,11 +81,15 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 #endif
 
 #ifdef SPECULARTERM
-    vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
+    vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor, float ior) {
         float NdotH = saturateEps(dot(N, info.H));
         float roughness = max(info.roughness, geometricRoughnessFactor);
         float alphaG = convertRoughnessToAverageSlope(roughness);
 
+        #ifdef METALLICWORKFLOW
+            // Scale the reflectance by the IOR for values less than 1.5
+            reflectance90 = clamp(reflectance90 * 2.0 * (ior - 1.0), 0.0, 1.0);
+        #endif
         vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
 
         #ifdef IRIDESCENCE

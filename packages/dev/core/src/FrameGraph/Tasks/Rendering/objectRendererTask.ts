@@ -72,9 +72,10 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public disableShadows = false;
 
     /**
-     * If the rendering should be done in linear space (default is false).
+     * If image processing should be disabled (default is false).
+     * false means that the default image processing configuration will be applied (the one from the scene)
      */
-    public renderInLinearSpace = false;
+    public disableImageProcessing = false;
 
     /**
      * The output texture.
@@ -156,7 +157,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
-        this._renderer.renderInLinearSpace = this.renderInLinearSpace;
+        this._renderer.disableImageProcessing = this.disableImageProcessing;
 
         const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.targetTexture);
 
@@ -199,7 +200,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
-            this._renderer.renderInLinearSpace = this.renderInLinearSpace;
+            this._renderer.disableImageProcessing = this.disableImageProcessing;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             context.render(this._renderer, this._textureWidth, this._textureHeight);

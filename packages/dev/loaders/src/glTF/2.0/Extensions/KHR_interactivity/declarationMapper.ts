@@ -140,7 +140,7 @@ export interface IGLTFToFlowGraphMapping {
      * @param glTFObject the glTF object
      * @returns true if validated, false if not.
      */
-    validation?: (gltfBlock: IKHRInteractivity_Node, interactivityGraph: IKHRInteractivity_Graph, glTFObject?: IGLTF) => boolean;
+    validation?: (gltfBlock: IKHRInteractivity_Node, interactivityGraph: IKHRInteractivity_Graph, glTFObject?: IGLTF) => { valid: boolean; error?: string };
 
     /**
      * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
@@ -264,11 +264,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
-        outputs: {
-            flows: {
-                out: { name: "done" },
-            },
-        },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
@@ -298,24 +293,24 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         validation(gltfBlock, interactivityGraph) {
             if (!gltfBlock.configuration) {
                 Logger.Error("Receive event should have a configuration object");
-                return false;
+                return { valid: false, error: "Receive event should have a configuration object" };
             }
             const eventConfiguration = gltfBlock.configuration["event"];
             if (!eventConfiguration) {
                 Logger.Error("Receive event should have a single configuration object, the event itself");
-                return false;
+                return { valid: false, error: "Receive event should have a single configuration object, the event itself" };
             }
             const eventId = eventConfiguration.value[0];
             if (typeof eventId !== "number") {
                 Logger.Error("Event id should be a number");
-                return false;
+                return { valid: false, error: "Event id should be a number" };
             }
             const event = interactivityGraph.events?.[eventId];
             if (!event) {
                 Logger.Error(`Event with id ${eventId} not found`);
-                return false;
+                return { valid: false, error: `Event with id ${eventId} not found` };
             }
-            return true;
+            return { valid: true };
         },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
@@ -375,6 +370,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // configure it to work the way glTF specifies
             serializedObjects[0].config = serializedObjects[0].config || {};
             serializedObjects[0].config.useMatrixPerComponent = true;
+            serializedObjects[0].config.preventIntegerFloatArithmetic = true;
             // try to infer the type or fallback to Integer
             // check the gltf block for the inputs, see if they have a type
             let type = -1;
@@ -389,6 +385,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 serializedObjects[0].config.type = _parser.arrays.types[type].flowGraphType;
             }
             return serializedObjects;
+        },
+        validation(gltfBlock) {
+            // make sure types are the same
+            if (gltfBlock.values) {
+                // make sure types are the same
+                return ValidateTypes(gltfBlock);
+            }
+            return { valid: true };
         },
     },
     "math/div": getSimpleInputMapping(FlowGraphBlockNames.Divide, ["a", "b"], true),
@@ -936,13 +940,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 });
                 if (!onlyIntegers) {
                     gltfBlock.configuration.cases.value = [] as number[];
-                    return true;
+                    return { valid: true };
                 }
                 // check for duplicates
                 const uniqueCases = new Set(cases);
                 gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
             }
-            return true;
+            return { valid: true };
         },
         extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
             // convert all names of output flow to out_$1 apart from "default"
@@ -1037,7 +1041,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 };
                 gltfBlock.configuration.inputFlows.value = [0];
             }
-            return true;
+            return { valid: true };
         },
     },
     "flow/throttle": {
@@ -1064,9 +1068,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         validation(gltfBlock) {
             if (!gltfBlock.configuration?.variable?.value) {
                 Logger.Error("Variable get block should have a variable configuration");
-                return false;
+                return { valid: false, error: "Variable get block should have a variable configuration" };
             }
-            return true;
+            return { valid: true };
         },
         configuration: {
             variable: {
@@ -1322,7 +1326,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
-        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing],
+        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing],
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1331,8 +1335,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value_1" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
                 duration: { name: "duration_1", gltfType: "number" /*, inOptions: true */ },
-                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.Easing },
-                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.Easing },
+                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
             },
             flows: {
                 in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
@@ -1545,13 +1549,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 });
                 if (!onlyIntegers) {
                     gltfBlock.configuration.cases.value = [] as number[];
-                    return true;
+                    return { valid: true };
                 }
                 // check for duplicates
                 const uniqueCases = new Set(cases);
                 gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
             }
-            return true;
+            return { valid: true };
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
@@ -1588,16 +1592,17 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
                 value: { name: "value" },
             },
         },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+        extraProcessor(gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
             if (inferType) {
                 // configure it to work the way glTF specifies
                 serializedObjects[0].config = serializedObjects[0].config || {};
+                serializedObjects[0].config.preventIntegerFloatArithmetic = true;
                 // try to infer the type or fallback to Integer
                 // check the gltf block for the inputs, see if they have a type
                 let type = -1;
-                Object.keys(_gltfBlock.values || {}).find((value) => {
-                    if (_gltfBlock.values?.[value].type !== undefined) {
-                        type = _gltfBlock.values[value].type;
+                Object.keys(gltfBlock.values || {}).find((value) => {
+                    if (gltfBlock.values?.[value].type !== undefined) {
+                        type = gltfBlock.values[value].type;
                         return true;
                     }
                     return false;
@@ -1608,7 +1613,27 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
             }
             return serializedObjects;
         },
+        validation(gltfBlock) {
+            if (inferType) {
+                // make sure types are the same
+                return ValidateTypes(gltfBlock);
+            }
+            return { valid: true };
+        },
     };
+}
+
+function ValidateTypes(gltfBlock: IKHRInteractivity_Node): { valid: boolean; error?: string } {
+    if (gltfBlock.values) {
+        const types = Object.keys(gltfBlock.values)
+            .map((key) => gltfBlock.values![key].type)
+            .filter((type) => type !== undefined);
+        const allSameType = types.every((type) => type === types[0]);
+        if (!allSameType) {
+            return { valid: false, error: "All inputs must be of the same type" };
+        }
+    }
+    return { valid: true };
 }
 
 export function getAllSupportedNativeNodeTypes(): string[] {

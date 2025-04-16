@@ -8,8 +8,7 @@ import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector"
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { InstancedMesh } from "core/Meshes/instancedMesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
@@ -23,6 +22,24 @@ const rotation180Y = new Quaternion(0, 1, 0, 0);
 const epsilon = 1e-6;
 const defaultTranslation = Vector3.Zero();
 const defaultScale = Vector3.One();
+
+/**
+ * Get the information necessary for enumerating a vertex buffer.
+ * @param vertexBuffer the vertex buffer to enumerate
+ * @param meshes the meshes that use the vertex buffer
+ * @returns the information necessary to enumerate the vertex buffer
+ */
+export function GetVertexBufferInfo(vertexBuffer: VertexBuffer, meshes: AbstractMesh[]) {
+    const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+    const componentCount = vertexBuffer.getSize();
+    const totalVertices = meshes.reduce((max, current) => {
+        return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+    }, -Number.MAX_VALUE); // Get the max total vertices count, to ensure we capture the full range of vertex data used by the meshes.
+    const count = totalVertices * componentCount;
+    const kind = vertexBuffer.getKind();
+
+    return { byteOffset, byteStride, componentCount, type, count, normalized, totalVertices, kind };
+}
 
 export function GetAccessorElementCount(accessorType: AccessorType): number {
     switch (accessorType) {
@@ -285,7 +302,7 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     }
 
     // Geometry
-    if ((node instanceof Mesh && node.geometry) || (node instanceof InstancedMesh && node.sourceMesh.geometry)) {
+    if (node instanceof AbstractMesh && node.geometry) {
         return false;
     }
 

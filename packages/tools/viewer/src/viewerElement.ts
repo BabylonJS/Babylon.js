@@ -14,7 +14,7 @@ import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { IsToneMapping, Viewer } from "./viewer";
-import { CreateViewerForCanvas, GetDefaultEngine } from "./viewerFactory";
+import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
 const playFilledIcon =
@@ -926,6 +926,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._reset("reframe");
     }
 
+    /**
+     * Reloads the viewer. This is typically only needed when the viewer is in a faulted state (e.g. due to the context being lost).
+     */
+    public reload() {
+        this._tearDownViewer();
+        this._setupViewer();
+    }
+
     /** @internal */
     public override connectedCallback(): void {
         super.connectedCallback();
@@ -975,8 +983,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         if (changedProperties.get("renderWhenIdle") != null) {
             needsReload = true;
         } else if (changedProperties.has("engine")) {
-            const previous = changedProperties.get("engine") ?? GetDefaultEngine();
-            if (this.engine !== previous) {
+            const previous = changedProperties.get("engine");
+            if (previous && this.engine !== previous) {
                 needsReload = true;
             }
         }
@@ -1145,7 +1153,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     protected _renderReloadButton(): TemplateResult {
         return html`${this._isFaulted
             ? html`
-                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this._setupViewer}">
+                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this.reload}">
                       <svg viewBox="0 0 24 24">
                           <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
                       </svg>

@@ -274,7 +274,7 @@ class TransmissionHelper {
         this._opaqueRenderTarget.samples = this._options.samples;
         this._opaqueRenderTarget.renderSprites = true;
         this._opaqueRenderTarget.renderParticles = true;
-        this._opaqueRenderTarget.renderInLinearSpace = true;
+        this._opaqueRenderTarget.disableImageProcessing = true;
 
         let saveSceneEnvIntensity: number;
         this._opaqueRenderTarget.onBeforeBindObservable.add((opaqueRenderTarget) => {

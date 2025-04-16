@@ -185,7 +185,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private _parseSPZ(data: ArrayBuffer, scene: Scene): Promise<ParsedPLY> {
         const ubuf = new Uint8Array(data);
-        const ubufu32 = new Uint32Array(data);
+        const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
         // debug infos
         const splatCount = ubufu32[2];
 
@@ -364,7 +364,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
-                                    gaussianSplatting.updateData(parsedPLY.data);
+                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
                                 }
                                 break;
                             case Mode.PointCloud:

@@ -29,9 +29,14 @@
         return brdfLookup.rgb;
     }
 
-    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, environmentBrdf: vec3f) -> vec3f {
+    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, ior: f32, environmentBrdf: vec3f) -> vec3f {
         #ifdef BRDF_V_HEIGHT_CORRELATED
-            var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
+            #ifdef METALLICWORKFLOW
+                // Scale the reflectance by the IOR for values less than 1.5
+                var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * clamp(environmentBrdf.x * 2.0 * (ior - 1.0), 0.0, 1.0) + specularEnvironmentR0 * environmentBrdf.y;
+            #else
+                var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
+            #endif
             // Simplification if F90 = 1 var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.xxx + specularEnvironmentR0 * environmentBrdf.yyy;
         #else
             var reflectance: vec3f = specularEnvironmentR0 * environmentBrdf.x + specularEnvironmentR90 * environmentBrdf.y;
