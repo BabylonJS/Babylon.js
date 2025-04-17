@@ -20,10 +20,13 @@ import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
+    // From particle.vertex:
     particle_uv: "vUV",
     particle_color: "vColor",
     particle_texturemask: "textureMask",
     particle_positionw: "vPositionW",
+    // From postprocess.vertex:
+    postprocess_uv: "vUV",
 };
 
 const attributeInFragmentOnly: { [name: string]: boolean } = {
@@ -31,6 +34,7 @@ const attributeInFragmentOnly: { [name: string]: boolean } = {
     particle_color: true,
     particle_texturemask: true,
     particle_positionw: true,
+    postprocess_uv: true,
 };
 
 const attributeAsUniform: { [name: string]: boolean } = {
@@ -145,6 +149,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position2d":
                     case "particle_uv":
                     case "splatScale":
+                    case "postprocess_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":

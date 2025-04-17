@@ -653,6 +653,7 @@ export class NodeMaterialBlock {
             "uv6",
             "position2d",
             "particle_uv",
+            "postprocess_uv",
             "matricesIndices",
             "matricesWeights",
             "world0",
