@@ -56,6 +56,9 @@ import { Constants } from "core/Engines/constants";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
+const shadowQualityOptions = ["none", "normal", "high"] as const;
+export type ShadowQuality = (typeof shadowQualityOptions)[number];
+
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
@@ -105,8 +108,6 @@ export type EnvironmentParams = {
     visible: boolean;
 };
 
-export type ShadowQuality = "none" | "normal" | "high";
-
 export type ShadowParams = {
     /**
      * The quality of shadow being used
@@ -138,6 +139,15 @@ export type PostProcessing = {
  */
 export function IsToneMapping(value: string): value is ToneMapping {
     return toneMappingOptions.includes(value as ToneMapping);
+}
+
+/**
+ * Checks if the given value is a valid shadow quality option.
+ * @param value The value to check.
+ * @returns True if the value is a valid shadow quality option, otherwise false.
+ */
+export function IsShadowQuality(value: string): value is ShadowQuality {
+    return shadowQualityOptions.includes(value as ShadowQuality);
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {

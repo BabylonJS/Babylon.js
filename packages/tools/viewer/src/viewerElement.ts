@@ -13,7 +13,7 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsToneMapping, Viewer } from "./viewer";
+import { IsShadowQuality, IsToneMapping, Viewer } from "./viewer";
 import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -80,6 +80,13 @@ function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, numb
 
 function coerceToneMapping(value: string | null): Nullable<ToneMapping> {
     if (!value || !IsToneMapping(value)) {
+        return null;
+    }
+    return value;
+}
+
+function coerceShadowQuality(value: string | null): Nullable<ShadowQuality> {
+    if (!value || !IsShadowQuality(value)) {
         return null;
     }
     return value;
@@ -1337,9 +1344,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                             };
                         },
                         get shadowConfig() {
-                            const shadowQuality = viewerElement.getAttribute("shadow-quality") as ShadowQuality;
                             return {
-                                quality: shadowQuality ?? viewerElement._options.shadowConfig?.quality,
+                                quality: coerceShadowQuality(viewerElement.getAttribute("shadow-quality")) ?? viewerElement._options.shadowConfig?.quality,
                             };
                         },
                         get cameraOrbit() {
