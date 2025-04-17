@@ -782,6 +782,8 @@ export class Viewer implements IDisposable {
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
+    private _shadowsAbortController: Nullable<AbortController> = null;
+
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
@@ -1547,11 +1549,14 @@ export class Viewer implements IDisposable {
     }
 
     protected async _updateShadows() {
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being change before previous shadows finished initializing."));
+        const abortController = (this._shadowsAbortController = new AbortController());
+
         if (this._shadowQuality) {
             if (this._shadowQuality === "none") {
                 this._disposeShadows();
             } else if (this._shadowQuality === "normal") {
-                await this._updateClassicShadow();
+                this._updateClassicShadow(abortController.signal);
             } else if (this._shadowQuality === "high") {
                 const isWebGPU = this._scene.getEngine().isWebGPU;
                 // there is some issue with meshes with indices, so disable environment shadows for now
@@ -1560,10 +1565,7 @@ export class Viewer implements IDisposable {
                 );
 
                 if (!(isWebGPU && hasAnyAnimation)) {
-                    await this._updateEnvironmentShadow();
-                    this._classicShadowGround?.setEnabled(false);
-                    this._iblShadowsRenderPipeline?.toggleShadow(true);
-                    this._envShadowGround?.setEnabled(true);
+                    await this._updateEnvironmentShadow(abortController.signal);
                 } else {
                     this._log("Environment shadows are not supported in WebGPU with animated meshes.");
                 }
@@ -1601,7 +1603,7 @@ export class Viewer implements IDisposable {
         );
     }
 
-    private async _updateEnvironmentShadow() {
+    private async _updateEnvironmentShadow(abortSignal?: AbortSignal) {
         const imports = await Promise.all([
             import("core/Materials/shaderMaterial"),
             import("core/Materials/shaderLanguage"),
@@ -1610,6 +1612,9 @@ export class Viewer implements IDisposable {
             import("core/Engines/WebGPU/Extensions/engine.multiRender"),
             import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
         ]);
+
+        // cancel if the model is unloaded before the shadows are created
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const ShaderMaterial = imports[0].ShaderMaterial;
@@ -1733,17 +1738,24 @@ export class Viewer implements IDisposable {
         this._iblShadowsRenderPipeline?.resetAccumulation();
         this._startIblShadowsRenderTime();
 
+        this._classicShadowGround?.setEnabled(false);
+        this._iblShadowsRenderPipeline?.toggleShadow(true);
+        this._envShadowGround?.setEnabled(true);
+
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
     }
 
-    private async _updateClassicShadow() {
+    private async _updateClassicShadow(abortSignal?: AbortSignal) {
         const imports = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
             import("materials/shadowOnly/shadowOnlyMaterial"),
             import("core/Materials/Textures/renderTargetTexture"),
             import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
         ]);
+
+        // cancel if the model is unloaded before the shadows are created
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const CreateDisc = imports[0].CreateDisc;
@@ -2172,6 +2184,7 @@ export class Viewer implements IDisposable {
         this._loadSkyboxAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
