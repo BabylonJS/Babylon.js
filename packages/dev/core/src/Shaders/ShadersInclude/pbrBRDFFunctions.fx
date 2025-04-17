@@ -1,8 +1,8 @@
 // Constants
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
-#define BRDF_DIFFUSE_ROUGHNESS_EON 0
-#define BRDF_DIFFUSE_ROUGHNESS_BURLEY 1
-#define BRDF_DIFFUSE_ROUGHNESS_LAMBERT 2
+#define BRDF_DIFFUSE_MODEL_EON 0
+#define BRDF_DIFFUSE_MODEL_BURLEY 1
+#define BRDF_DIFFUSE_MODEL_LAMBERT 2
 
 // ______________________________________________________________________
 //

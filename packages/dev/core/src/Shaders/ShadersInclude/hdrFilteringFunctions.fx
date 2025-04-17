@@ -222,9 +222,9 @@
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                     float NoV = dot(n, inputV);
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
+                    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
                         float LoV = dot (Ls, inputV);
-                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY
+                    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
                         vec3 H = (inputV + Ls) * 0.5;
                         float VoH = dot(inputV, H);
                     #endif
@@ -235,9 +235,9 @@
                     float NoL = dot(Ns, Ls);
                     vec3 V = tbnInverse * inputV;
                     float NoV = dot(Ns, V);
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
+                    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
                         float LoV = dot (Ls, V);
-                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY
+                    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
                         vec3 H = (V + Ls) * 0.5;
                         float VoH = dot(V, H);
                     #endif
@@ -260,9 +260,9 @@
                     #endif
 
                     vec3 diffuseRoughnessTerm = vec3(1.0);
-                    #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
+                    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
                         diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
-                    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY
+                    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
                         diffuseRoughnessTerm = vec3(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
                     #endif
 
@@ -277,7 +277,7 @@
 
             result = result * NUM_SAMPLES_FLOAT_INVERSED;
 
-            #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
+            #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
                 result = result / clampedAlbedo;
             #endif
 
