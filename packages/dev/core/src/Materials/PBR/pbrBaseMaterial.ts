@@ -81,7 +81,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-    public BASE_DIFFUSE_ROUGHNESS_MODEL = 0;
+    public BASE_DIFFUSE_MODEL = 0;
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -820,15 +820,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    private _baseDiffuseRoughnessModel: number = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
+    private _baseDiffuseModel: number = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
     /**
      * Defines the base diffuse roughness model of the material.
      */
-    public get baseDiffuseRoughnessModel(): number {
-        return this._baseDiffuseRoughnessModel;
+    public get baseDiffuseModel(): number {
+        return this._baseDiffuseModel;
     }
-    public set baseDiffuseRoughnessModel(v: number) {
-        this._baseDiffuseRoughnessModel = v;
+    public set baseDiffuseModel(v: number) {
+        this._baseDiffuseModel = v;
         this.markAsDirty(Constants.MATERIAL_MiscDirtyFlag);
     }
 
@@ -1667,7 +1667,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
-        defines.BASE_DIFFUSE_ROUGHNESS_MODEL = this.baseDiffuseRoughnessModel;
+        defines.BASE_DIFFUSE_MODEL = this.baseDiffuseModel;
 
         // Multiview
         PrepareDefinesForMultiview(scene, defines);

@@ -273,17 +273,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
-     * Base Diffuse Roughness Model
+     * Base Diffuse Model
      */
-    @editableInPropertyPage("Diffuse Roughness Model", PropertyTypeForEdition.List, "RENDERING", {
+    @editableInPropertyPage("Diffuse Model", PropertyTypeForEdition.List, "RENDERING", {
         notifiers: { update: true },
         options: [
-            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
-            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
-            { label: "Oren-Nayar", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR },
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_MODEL_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_MODEL_BURLEY },
+            { label: "Oren-Nayar", value: Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR },
         ],
     })
-    public baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
+    public baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
 
     /**
      * Defines if the material uses energy conservation.
@@ -776,7 +776,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
-        defines.setValue("BASE_DIFFUSE_ROUGHNESS_MODEL", this.baseDiffuseRoughnessModel, true);
+        defines.setValue("BASE_DIFFUSE_MODEL", this.baseDiffuseModel, true);
 
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);

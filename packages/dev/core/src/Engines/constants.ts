@@ -472,17 +472,17 @@ export class Constants {
     /**
      * Energy-conserving Oren Nayar diffuse model type.
      */
-    public static readonly MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR = 0;
+    public static readonly MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR = 0;
 
     /**
      * Burley diffuse model type.
      */
-    public static readonly MATERIAL_DIFFUSE_ROUGHNESS_BURLEY = 1;
+    public static readonly MATERIAL_DIFFUSE_MODEL_BURLEY = 1;
 
     /**
      * Lambertian diffuse model type.
      */
-    public static readonly MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT = 2;
+    public static readonly MATERIAL_DIFFUSE_MODEL_LAMBERT = 2;
 
     /**
      * Nothing

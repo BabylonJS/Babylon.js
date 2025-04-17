@@ -302,7 +302,7 @@
             var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 // Approximate diffuse roughness by bending the surface normal away from the view.
-                #if BASE_DIFFUSE_ROUGHNESS_MODEL != BRDF_DIFFUSE_ROUGHNESS_LAMBERT
+                #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
                     var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
                     irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
                 #endif
@@ -350,14 +350,14 @@
                 var NoV: f32 = dot(irradianceVector, irradianceView);
                 
                 var diffuseRoughnessTerm: vec3f = vec3f(1.0);
-                #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
+                #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
                     var LoV: f32 = dot(Ls, irradianceView);
                     var mag: f32 = length(reflectionDominantDirection) * 2.0f;
                     var clampedAlbedo: vec3f = clamp(surfaceAlbedo, vec3f(0.1), vec3f(1.0));
                     diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
                     diffuseRoughnessTerm = diffuseRoughnessTerm / clampedAlbedo;
                     diffuseRoughnessTerm = mix(vec3f(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0f)));
-                #elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY
+                #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
                     var H: vec3f = (irradianceView + Ls) * 0.5f;
                     var VoH: f32 = dot(irradianceView, H);
                     diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);

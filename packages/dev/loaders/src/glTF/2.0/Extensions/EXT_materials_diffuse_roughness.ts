@@ -77,7 +77,7 @@ export class EXT_materials_diffuse_roughness implements IGLTFLoaderExtension {
 
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.baseDiffuseRoughnessModel = Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR;
+        babylonMaterial.baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
 
         if (properties.diffuseRoughnessFactor != undefined) {
             babylonMaterial.baseDiffuseRoughness = properties.diffuseRoughnessFactor;

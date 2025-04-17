@@ -18,30 +18,30 @@
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
-            "playgroundId": "#MXACV7#13",
+            "playgroundId": "#MXACV7#23",
             "referenceImage": "openpbr_base_diffuse_roughness.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
-            "playgroundId": "#MXACV7#12",
+            "playgroundId": "#MXACV7#22",
             "renderCount": 15,
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
-            "playgroundId": "#MXACV7#9",
+            "playgroundId": "#MXACV7#19",
             "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
-            "playgroundId": "#MXACV7#10",
+            "playgroundId": "#MXACV7#20",
             "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness SH IBL",
-            "playgroundId": "#MXACV7#11",
+            "playgroundId": "#MXACV7#21",
             "renderCount": 2,
             "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png"
         },

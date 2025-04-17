@@ -172,7 +172,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        #if BASE_DIFFUSE_ROUGHNESS_MODEL != BRDF_DIFFUSE_ROUGHNESS_LAMBERT
+        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
             // Bend the normal towards the viewer based on the diffuse roughness
             var viewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - vertexOutputs.vPositionW);
             var NdotV: f32 = max(dot(vertexOutputs.vNormalW, viewDirectionW), 0.0);

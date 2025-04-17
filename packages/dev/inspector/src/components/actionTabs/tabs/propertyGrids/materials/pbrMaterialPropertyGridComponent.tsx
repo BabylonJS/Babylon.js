@@ -263,10 +263,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
         ];
 
-        const baseDiffuseRoughnessModelOptions = [
-            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_LAMBERT },
-            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_BURLEY },
-            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_ROUGHNESS_E_OREN_NAYAR },
+        const baseDiffuseModelOptions = [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_MODEL_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_MODEL_BURLEY },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR },
         ];
 
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
@@ -1257,10 +1257,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     />
                     <OptionsLine
                         allowNullValue={true}
-                        label="Base Diffuse Roughness Model"
-                        options={baseDiffuseRoughnessModelOptions}
+                        label="Base Diffuse Model"
+                        options={baseDiffuseModelOptions}
                         target={material}
-                        propertyName="baseDiffuseRoughnessModel"
+                        propertyName="baseDiffuseModel"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
