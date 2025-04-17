@@ -2120,8 +2120,8 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (flags.includes("shadow") && this._options?.shadowConfig?.quality) {
-            this._shadowQuality = this._options?.shadowConfig?.quality;
+        if (flags.length === 0 || flags.includes("shadow")) {
+            this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
             this._updateShadows();
         }
 
