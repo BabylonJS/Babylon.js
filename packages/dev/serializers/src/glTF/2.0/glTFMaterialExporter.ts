@@ -936,8 +936,8 @@ export class GLTFMaterialExporter {
                         mimeType = textureMimeType as ImageMimeType;
                         break;
                     default:
-                        Tools.Warn(`Unsupported media type: ${textureMimeType}`);
-                        // Will later fallback to default mime type, image/png
+                        Tools.Warn(`Unsupported media type: ${textureMimeType}. Exporting texture as PNG.`);
+                        // Will later fallback to default mime type, image/png, from Canvas API
                         break;
                 }
             }
