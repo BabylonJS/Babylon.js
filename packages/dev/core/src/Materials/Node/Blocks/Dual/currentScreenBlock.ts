@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { SfeSyntaxDefine } from "../../nodeMaterialBuildState";
+import { SfeModeDefine } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -258,7 +258,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         this._mainUVName = state.isSFEMode ? "vUV" : "vMain" + this.uv.associatedVariableName;
 
         // SFE: Wrap the varying in a define, as it won't be needed there.
-        const define = state.isSFEMode ? SfeSyntaxDefine : undefined;
+        const define = state.isSFEMode ? SfeModeDefine : undefined;
         state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, define, true);
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {

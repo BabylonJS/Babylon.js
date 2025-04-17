@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { SfeSyntaxDefine } from "../../nodeMaterialBuildState";
+import { SfeModeDefine } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -185,7 +185,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             // SFE: Use an intermediate variable to control whether to use gl_FragColor or return the color
             state.compilationString += `vec4 outColor = vec4(0.0);`;
             outputString = "outColor";
-            state._injectAtEnd += `\n#ifndef ${SfeSyntaxDefine}\n`;
+            state._injectAtEnd += `\n#ifndef ${SfeModeDefine}\n`;
             state._injectAtEnd += `gl_FragColor = outColor;\n`;
             state._injectAtEnd += `#else\n`;
             state._injectAtEnd += `return outColor;\n`;

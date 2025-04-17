@@ -9,7 +9,7 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 
 /** @internal */
-export const SfeSyntaxDefine = "USE_SFE_SYNTAX";
+export const SfeModeDefine = "USE_SFE_FRAMEWORK";
 
 /**
  * Class used to store node based material build state
@@ -124,7 +124,7 @@ export class NodeMaterialBuildState {
             }
         } else if (this.isSFEMode) {
             // SFE: Replace the entry with a helper function
-            entryPointString += `#ifdef ${SfeSyntaxDefine}\n`;
+            entryPointString += `#ifdef ${SfeModeDefine}\n`;
             entryPointString += `vec4 nmeMain(vec2 vUV) { // main\n`;
             entryPointString += `#else\n`;
             entryPointString += `void main(void) {\n`;
