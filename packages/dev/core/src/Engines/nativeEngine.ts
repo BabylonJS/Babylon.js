@@ -219,7 +219,7 @@ const remappedAttributesNames: string[] = [];
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 8;
+    private static readonly PROTOCOL_VERSION = 9;
 
     private readonly _engine: INativeEngine = new _native.Engine({
         version: Engine.Version,
@@ -1636,19 +1636,14 @@ export class NativeEngine extends Engine {
 
         if (!!texture && !!texture._hardwareTexture) {
             const destination = texture._hardwareTexture.underlyingResource;
-            if (this._engine.copyTexture) {
-                const source = canvas.getCanvasTexture();
-                this._engine.copyTexture(destination, source);
-            } else if (_native.Engine.COMMAND_COPYTEXTURE) {
-                const context = canvas.getContext();
-                // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
-                context.flush();
-                const source = canvas.getCanvasTexture();
-                this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
-                this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
-                this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
-                this._commandBufferEncoder.finishEncodingCommand();
-            }
+            const context = canvas.getContext();
+            // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
+            context.flush();
+            const source = canvas.getCanvasTexture();
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
             texture.isReady = true;
         }
     }
