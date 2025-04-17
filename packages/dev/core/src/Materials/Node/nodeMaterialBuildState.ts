@@ -97,6 +97,13 @@ export class NodeMaterialBuildState {
     }
 
     /**
+     * Gets whether the current compilation should inject SFE syntax or not
+     */
+    public get isSFEMode() {
+        return this.sharedData.nodeMaterial.mode === NodeMaterialModes.SFE;
+    }
+
+    /**
      * Finalize the compilation strings
      * @param state defines the current compilation state
      */
