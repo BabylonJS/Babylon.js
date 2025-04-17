@@ -409,9 +409,8 @@ export class IblCdfGenerator {
         return new Promise((resolve) => {
             this._dominantDirectionPT.onGeneratedObservable.addOnce(() => {
                 const data = new Float32Array(4);
-                this._dominantDirectionPT.readPixels(0, 0, data, true)?.then((value) => {
-                    const floatArray = new Float32Array(value.buffer);
-                    const dominantDirection = new Vector3(floatArray[0], floatArray[1], floatArray[2]);
+                this._dominantDirectionPT.readPixels(0, 0, data, true)!.then(() => {
+                    const dominantDirection = new Vector3(data[0], data[1], data[2]);
                     this._cachedDominantDirection = dominantDirection;
                     resolve(dominantDirection);
                 });
