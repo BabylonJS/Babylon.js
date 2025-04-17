@@ -45,9 +45,9 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
 
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     var diffuseTerm: vec3f = vec3f(1.0 / PI);
-    #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
+    #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY
         diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
-    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+    #elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
         var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
         diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
         diffuseTerm /= clampedAlbedo;
@@ -78,10 +78,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
         var diffuseTerm : vec3f = vec3f(1.0 / PI);
-        #if BASE_DIFFUSE_ROUGHNESS_MODEL == 1 // Burley
+        #if BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_BURLEY
         diffuseTerm = vec3f(diffuseBRDF_Burley(
                     info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
-        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == 0 // EON
+        #elif BASE_DIFFUSE_ROUGHNESS_MODEL == BRDF_DIFFUSE_ROUGHNESS_EON
         var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
         diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness,
                     info.NdotL, info.NdotV, info.LdotV);
