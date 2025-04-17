@@ -103,7 +103,7 @@ export interface INativeEngine {
     setCommandDataStream(dataStream: NativeDataStream): void;
     submitCommands(): void;
 
-    populateFrameStats?(stats: NativeFrameStats): void;
+    populateFrameStats(stats: NativeFrameStats): void;
 }
 
 /** @internal */
@@ -322,8 +322,8 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETTEXTUREWRAPMODE: NativeData;
     readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeData;
     readonly COMMAND_SETTEXTURE: NativeData;
-    readonly COMMAND_UNSETTEXTURE?: NativeData;
-    readonly COMMAND_DISCARDALLTEXTURES?: NativeData;
+    readonly COMMAND_UNSETTEXTURE: NativeData;
+    readonly COMMAND_DISCARDALLTEXTURES: NativeData;
     readonly COMMAND_BINDVERTEXARRAY: NativeData;
     readonly COMMAND_SETSTATE: NativeData;
     readonly COMMAND_DELETEPROGRAM: NativeData;
@@ -341,9 +341,9 @@ interface INativeEngineConstructor {
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
-    readonly COMMAND_DRAWINDEXEDINSTANCED?: NativeData;
+    readonly COMMAND_DRAWINDEXEDINSTANCED: NativeData;
     readonly COMMAND_DRAW: NativeData;
-    readonly COMMAND_DRAWINSTANCED?: NativeData;
+    readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
