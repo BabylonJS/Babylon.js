@@ -5,6 +5,8 @@ struct reflectivityOutParams
     surfaceReflectivityColor: vec3f,
 #ifdef METALLICWORKFLOW
     surfaceAlbedo: vec3f,
+    reflectanceF0: vec3f,
+    reflectanceF90: vec3f,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     ambientOcclusionColor: vec3f,
@@ -103,7 +105,7 @@ fn reflectivityBlock(
 
         // Diffuse is used as the base of the reflectivity.
         var baseColor: vec3f = surfaceAlbedo;
-
+        var metallic: f32 = metallicRoughness.r;
         #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
@@ -112,22 +114,29 @@ fn reflectivityBlock(
             // where 0.16 * reflectance * reflectance remaps the reflectance to allow storage in 8 bit texture
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - metallicRoughness.r);
+            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - metallic);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            var metallicF0: vec3f = metallicReflectanceFactors.rgb;
+            var metallicF0: vec3f = vec3f(reflectivityColor.a);
 
             #if DEBUGMODE > 0
-                outParams.metallicF0 = metallicF0;
+                outParams.metallicF0 = metallicF0 * metallicReflectanceFactors.rgb;
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0),  vec3f(0., 0., 0.), metallicRoughness.r);
+            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - metallic);
 
             // Compute the converted reflectivity.
-            surfaceReflectivityColor = mix(metallicF0, baseColor, metallicRoughness.r);
+            surfaceReflectivityColor = metallicReflectanceFactors.rgb;
+            
+            // Final F0 for dielectrics = F0 * specular_color * specular_weight
+            var dielectricColorF0: vec3f = vec3f(reflectivityColor.a * metallicReflectanceFactors.rgb * metallicReflectanceFactors.a);
+            // Final F0 for metals = baseColor
+            var metallicColorF0: vec3f = baseColor.rgb;
+            outParams.reflectanceF0 = mix(dielectricColorF0, metallicColorF0, metallic);
+            outParams.reflectanceF90 = vec3f(mix(metallicReflectanceFactors.a, 1.0, metallic));
         #endif
     #else
         #ifdef REFLECTIVITY

@@ -5,6 +5,8 @@ struct reflectivityOutParams
     vec3 surfaceReflectivityColor;
 #ifdef METALLICWORKFLOW
     vec3 surfaceAlbedo;
+    vec3 reflectanceF0;
+    vec3 reflectanceF90;
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     vec3 ambientOcclusionColor;
@@ -103,7 +105,7 @@ reflectivityOutParams reflectivityBlock(
 
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
-
+        float metallic = metallicRoughness.r;
         #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
@@ -117,17 +119,21 @@ reflectivityOutParams reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            vec3 metallicF0 = metallicReflectanceFactors.rgb;
-
             #if DEBUGMODE > 0
-                outParams.metallicF0 = metallicF0;
+                outParams.metallicF0 = vec3(reflectivityColor.a) * metallicReflectanceFactors.rgb;
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0), vec3(0., 0., 0.), metallicRoughness.r);
+            outParams.surfaceAlbedo = mix(baseColor.rgb, vec3(0.0), metallic);
 
             // Compute the converted reflectivity.
-            surfaceReflectivityColor = mix(metallicF0, baseColor, metallicRoughness.r);
+            surfaceReflectivityColor = metallicReflectanceFactors.rgb;
+
+            // Final F0 for dielectrics = F0 * specular_color * specular_weight
+            vec3 dielectricColorF0 = vec3(reflectivityColor.a * metallicReflectanceFactors.rgb * metallicReflectanceFactors.a);
+            vec3 metallicColorF0 = baseColor.rgb;
+            outParams.reflectanceF0 = mix(dielectricColorF0, metallicColorF0, metallic);
+            outParams.reflectanceF90 = vec3(mix(metallicReflectanceFactors.a, 1.0, metallic));
         #endif
     #else
         #ifdef REFLECTIVITY
