@@ -28,28 +28,6 @@ interface ICommonMaterialPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-/**
- * Function used to filter constants and format into the type used by commonMaterialPropertyGridComponents
- * Today it is only being used for the ALPHA constants
- * @param prefix The prefix used to find the constants which will then be formatted
- * @param exclude List of strings to exclude when filtering
- * @returns array of objects containing the label and value of the constants
- */
-export const filterAndFormatConstants = (prefix: string, exclude: string[]) => {
-    // Filter to just the entries which begin with the provided prefix
-    const filteredList = Object.entries(Constants).filter(([key, _]) => key.startsWith(prefix) && !exclude.some((exclude) => key.includes(exclude)));
-    const formatter = (key: string, prefix: string) =>
-        key
-            .replace(new RegExp(`^${prefix}_`), "")
-            .toLowerCase()
-            .replace(/_/g, " ");
-    return filteredList.map(([key, value]) => ({ label: formatter(key, prefix), value }));
-};
-
-// Creating all the options arrays outside of the render function which gets called many times
-
-const alphaModeOptions = filterAndFormatConstants("ALPHA", ["EQUATION", "INTERPOLATE"]);
-
 const orientationOptions = [
     { label: "<None>", value: Number.MAX_SAFE_INTEGER },
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
@@ -62,6 +40,25 @@ const transparencyModeOptions = [
     { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
     { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
     { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
+];
+
+const alphaModeOptions = [
+    { label: "Combine", value: Constants.ALPHA_COMBINE },
+    { label: "One one", value: Constants.ALPHA_ONEONE },
+    { label: "Add", value: Constants.ALPHA_ADD },
+    { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+    { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+    { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+    { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+    { label: "Pre-multiplied Porter Duff", value: Constants.ALPHA_PREMULTIPLIED_PORTERDUFF },
+    { label: "Screen mode", value: Constants.ALPHA_SCREENMODE },
+    { label: "OneOne OneOne", value: Constants.ALPHA_ONEONE_ONEONE },
+    { label: "Alpha to color", value: Constants.ALPHA_ALPHATOCOLOR },
+    { label: "Reverse one minus", value: Constants.ALPHA_REVERSEONEMINUS },
+    { label: "Source+Dest * (1 - SourceAlpha)", value: Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA },
+    { label: "OneOne OneZero", value: Constants.ALPHA_ONEONE_ONEZERO },
+    { label: "Exclusion", value: Constants.ALPHA_EXCLUSION },
+    { label: "Layer accumulate", value: Constants.ALPHA_LAYER_ACCUMULATE },
 ];
 
 const depthfunctionOptions = [
@@ -107,6 +104,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         const material = this.props.material;
 
         material.depthFunction = material.depthFunction ?? 0;
+
         return (
             <div>
                 <CustomPropertyGridComponent
