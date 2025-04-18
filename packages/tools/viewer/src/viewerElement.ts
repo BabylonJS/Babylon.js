@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -13,7 +13,7 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsToneMapping, Viewer } from "./viewer";
+import { IsShadowQuality, IsToneMapping, Viewer } from "./viewer";
 import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -80,6 +80,13 @@ function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, numb
 
 function coerceToneMapping(value: string | null): Nullable<ToneMapping> {
     if (!value || !IsToneMapping(value)) {
+        return null;
+    }
+    return value;
+}
+
+function coerceShadowQuality(value: string | null): Nullable<ShadowQuality> {
+    if (!value || !IsShadowQuality(value)) {
         return null;
     }
     return value;
@@ -186,6 +193,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
             (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
+        ),
+        this._createPropertyBinding(
+            "shadowQuality",
+            (details) => details.viewer.onShadowsConfigurationChanged,
+            (details) => (details.viewer.shadowConfig = { quality: this.shadowQuality ?? details.viewer.shadowConfig.quality }),
+            (details) => (this.shadowQuality = details.viewer.shadowConfig.quality)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -675,6 +688,15 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "environment-visible",
     })
     public environmentVisible: Nullable<boolean> = this._options.environmentConfig?.visible ?? null;
+
+    /**
+     * The type of shadows to use.
+     * "classic" for shadow maps, "environment" for environment shadows.
+     */
+    @property({
+        attribute: "shadow-quality",
+    })
+    public shadowQuality: Nullable<ShadowQuality> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -1321,6 +1343,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
                             };
                         },
+                        get shadowConfig() {
+                            return {
+                                quality: coerceShadowQuality(viewerElement.getAttribute("shadow-quality")) ?? viewerElement._options.shadowConfig?.quality,
+                            };
+                        },
                         get cameraOrbit() {
                             return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
                         },
@@ -1469,7 +1496,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private async _updateEnv(options: EnvironmentOptions) {
+    private async _updateEnv(options: EnvironmentOptions): Promise<void> {
         if (this._viewerDetails) {
             try {
                 const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];

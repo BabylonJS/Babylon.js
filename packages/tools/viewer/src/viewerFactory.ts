@@ -16,6 +16,8 @@ export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) =
 const defaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
+    enableAllFeatures: true,
+    setMaximumLimits: true,
 } as const satisfies CanvasViewerOptions;
 
 /**
@@ -78,6 +80,7 @@ export async function CreateViewerForCanvas(
     } else {
         options = defaultCanvasViewerOptions;
     }
+
     const disposeActions: (() => void)[] = [];
 
     // Create an engine instance.
@@ -92,7 +95,11 @@ export async function CreateViewerForCanvas(
         case "WebGPU": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
-            const webGPUEngine = new WebGPUEngine(canvas, options);
+            const webGPUEngine = new WebGPUEngine(canvas, {
+                ...options,
+                enableAllFeatures: defaultCanvasViewerOptions.enableAllFeatures,
+                setMaximumLimits: defaultCanvasViewerOptions.setMaximumLimits,
+            });
             await webGPUEngine.initAsync();
             engine = webGPUEngine;
             break;
