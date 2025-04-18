@@ -28,6 +28,76 @@ interface ICommonMaterialPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
+/**
+ * Function used to filter constants and format into the type used by commonMaterialPropertyGridComponents
+ * Today it is only being used for the ALPHA constants
+ * @param prefix The prefix used to find the constants which will then be formatted
+ * @param exclude List of strings to exclude when filtering
+ * @returns array of objects containing the label and value of the constants
+ */
+export const filterAndFormatConstants = (prefix: string, exclude: string[]) => {
+    // Filter to just the entries which begin with the provided prefix
+    const filteredList = Object.entries(Constants).filter(([key, _]) => key.startsWith(prefix) && !exclude.some((exclude) => key.includes(exclude)));
+    const formatter = (key: string, prefix: string) =>
+        key
+            .replace(new RegExp(`^${prefix}_`), "")
+            .toLowerCase()
+            .replace(/_/g, " ");
+    return filteredList.map(([key, value]) => ({ label: formatter(key, prefix), value }));
+};
+
+// Creating all the options arrays outside of the render function which gets called many times
+
+const alphaModeOptions = filterAndFormatConstants("ALPHA", ["EQUATION", "INTERPOLATE"]);
+
+const orientationOptions = [
+    { label: "<None>", value: Number.MAX_SAFE_INTEGER },
+    { label: "Clockwise", value: Material.ClockWiseSideOrientation },
+    { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
+];
+
+const transparencyModeOptions = [
+    { label: "<Not Defined>", value: Null_Value },
+    { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
+    { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
+    { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
+    { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
+];
+
+const depthfunctionOptions = [
+    { label: "<Engine Default>", value: 0 },
+    { label: "Never", value: Engine.NEVER },
+    { label: "Always", value: Engine.ALWAYS },
+    { label: "Equal", value: Engine.EQUAL },
+    { label: "Less", value: Engine.LESS },
+    { label: "Less or equal", value: Engine.LEQUAL },
+    { label: "Greater", value: Engine.GREATER },
+    { label: "Greater or equal", value: Engine.GEQUAL },
+    { label: "Not equal", value: Engine.NOTEQUAL },
+];
+
+const stencilFunctionOptions = [
+    { label: "Never", value: Constants.NEVER },
+    { label: "Always", value: Constants.ALWAYS },
+    { label: "Equal", value: Constants.EQUAL },
+    { label: "Less", value: Constants.LESS },
+    { label: "Less or equal", value: Constants.LEQUAL },
+    { label: "Greater", value: Constants.GREATER },
+    { label: "Greater or equal", value: Constants.GEQUAL },
+    { label: "Not equal", value: Constants.NOTEQUAL },
+];
+
+const stencilOperationOptions = [
+    { label: "Keep", value: Constants.KEEP },
+    { label: "Zero", value: Constants.ZERO },
+    { label: "Replace", value: Constants.REPLACE },
+    { label: "Incr", value: Constants.INCR },
+    { label: "Decr", value: Constants.DECR },
+    { label: "Invert", value: Constants.INVERT },
+    { label: "Incr wrap", value: Constants.INCR_WRAP },
+    { label: "Decr wrap", value: Constants.DECR_WRAP },
+];
+
 export class CommonMaterialPropertyGridComponent extends React.Component<ICommonMaterialPropertyGridComponentProps> {
     constructor(props: ICommonMaterialPropertyGridComponentProps) {
         super(props);
@@ -37,65 +107,6 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         const material = this.props.material;
 
         material.depthFunction = material.depthFunction ?? 0;
-
-        const orientationOptions = [
-            { label: "<None>", value: Number.MAX_SAFE_INTEGER },
-            { label: "Clockwise", value: Material.ClockWiseSideOrientation },
-            { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
-        ];
-
-        const transparencyModeOptions = [
-            { label: "<Not Defined>", value: Null_Value },
-            { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
-            { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
-            { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
-            { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
-        ];
-
-        const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
-        ];
-
-        const depthfunctionOptions = [
-            { label: "<Engine Default>", value: 0 },
-            { label: "Never", value: Engine.NEVER },
-            { label: "Always", value: Engine.ALWAYS },
-            { label: "Equal", value: Engine.EQUAL },
-            { label: "Less", value: Engine.LESS },
-            { label: "Less or equal", value: Engine.LEQUAL },
-            { label: "Greater", value: Engine.GREATER },
-            { label: "Greater or equal", value: Engine.GEQUAL },
-            { label: "Not equal", value: Engine.NOTEQUAL },
-        ];
-
-        const stencilFunctionOptions = [
-            { label: "Never", value: Constants.NEVER },
-            { label: "Always", value: Constants.ALWAYS },
-            { label: "Equal", value: Constants.EQUAL },
-            { label: "Less", value: Constants.LESS },
-            { label: "Less or equal", value: Constants.LEQUAL },
-            { label: "Greater", value: Constants.GREATER },
-            { label: "Greater or equal", value: Constants.GEQUAL },
-            { label: "Not equal", value: Constants.NOTEQUAL },
-        ];
-
-        const stencilOperationOptions = [
-            { label: "Keep", value: Constants.KEEP },
-            { label: "Zero", value: Constants.ZERO },
-            { label: "Replace", value: Constants.REPLACE },
-            { label: "Incr", value: Constants.INCR },
-            { label: "Decr", value: Constants.DECR },
-            { label: "Invert", value: Constants.INVERT },
-            { label: "Incr wrap", value: Constants.INCR_WRAP },
-            { label: "Decr wrap", value: Constants.DECR_WRAP },
-        ];
-
         return (
             <div>
                 <CustomPropertyGridComponent
