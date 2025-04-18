@@ -1,6 +1,51 @@
 {
-    "fromTag": "8.2.2",
+    "fromTag": "8.3.0",
     "changelog": {
+        "8.3.1": [
+            {
+                "pr": "16508",
+                "title": "Remove legacy copyTexture and bump the native protocol version",
+                "description": "It's quite hard to make new BN compatible with old BJS, so after some discussion with @bghgary we decided to remove the old contract and bump the protocol version.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16507",
+                "title": "glTF Exporter: Export compressed textures as PNG",
+                "description": "The follow up to https://github.com/BabylonJS/Babylon.js/pull/14312/. Partially addresses https://github.com/BabylonJS/Babylon.js/issues/12257 -- while we can't recompress the image back to KTX2, we can at least export it as PNG, which is better than nothing.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16504",
+                "title": "Playground: Prevents crashes when running multiple PG's in succession",
+                "description": "Quickly clicking the “Play” button may cause PG to crash, as a new execution may be created before the previous one is fully processed by `_compileAndRunAsync`.\r\n\r\nWithout the PR, the crash can be reproduced with [this PG](https://playground.babylonjs.com/?webgpu#VW8IG3#160), by quickly clicking the “Play” button several times in a row.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "Playground"
+                ]
+            }
+        ],
         "8.3.0": [
             {
                 "pr": "16502",
