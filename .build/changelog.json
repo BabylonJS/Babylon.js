@@ -1,6 +1,350 @@
 {
-    "fromTag": "8.2.1",
+    "fromTag": "8.3.0",
     "changelog": {
+        "8.3.1": [
+            {
+                "pr": "16508",
+                "title": "Remove legacy copyTexture and bump the native protocol version",
+                "description": "It's quite hard to make new BN compatible with old BJS, so after some discussion with @bghgary we decided to remove the old contract and bump the protocol version.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16507",
+                "title": "glTF Exporter: Export compressed textures as PNG",
+                "description": "The follow up to https://github.com/BabylonJS/Babylon.js/pull/14312/. Partially addresses https://github.com/BabylonJS/Babylon.js/issues/12257 -- while we can't recompress the image back to KTX2, we can at least export it as PNG, which is better than nothing.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16504",
+                "title": "Playground: Prevents crashes when running multiple PG's in succession",
+                "description": "Quickly clicking the “Play” button may cause PG to crash, as a new execution may be created before the previous one is fully processed by `_compileAndRunAsync`.\r\n\r\nWithout the PR, the crash can be reproduced with [this PG](https://playground.babylonjs.com/?webgpu#VW8IG3#160), by quickly clicking the “Play” button several times in a row.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "Playground"
+                ]
+            }
+        ],
+        "8.3.0": [
+            {
+                "pr": "16502",
+                "title": "Native copy texture protocol",
+                "description": "revert protocol increment introduced with https://github.com/BabylonJS/Babylon.js/pull/16497\r\nuse with https://github.com/BabylonJS/BabylonNative/pull/1503",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16503",
+                "title": "Fix sandbox animation issue",
+                "description": "The sandbox errors out when the following steps occur:\r\n1. Load a model with multiple animations.\r\n2. Select the 2nd animation, or any animation other than the 1st.\r\n3. Load a model with one animation.\r\n\r\nThe animation group index set on the 1st model does not get updated when a new scene is loaded which makes the animation renderer index into a non-existent animation group after the 2nd model is loaded.\r\n\r\nThis change fixes the issue by resetting the animation state's `groupIndex` to `0` when a new model/scene is loaded.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/animationBar.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "16496",
+                "title": "Speed up playwright audio tests",
+                "description": "This change does 3 things to speed up the playwright audio tests:\r\n\r\n1. Loads only the bare minimum html needed to run the tests:\r\n\t- The tests are currently loading empty.html from the CDN, which downloads a lot more than the audio tests need.\r\n\t- This change loads custom html with an empty body and 2 scripts from the CDN; babylon.js and audiov2-test.js.\r\n\r\n2. Uses the WebAudio API `OfflineAudioContext` in place of the realtime `AudioContext` where possible.\r\n\t- The `OfflineAudioContext` renders audio faster than realtime and can be used for most of the audio tests. Notable exceptions are the streaming sound tests and the current time tests.\r\n\r\n3. Passes less test result info from the playwright browser back to Node:\r\n\t- The tests are currently passing the captured audio to Node after every test, which is expensive.\r\n\t- This change does the required audio processing in the playwright browser and only passes the result back to Node, which is much smaller than the entire captured audio array.\r\n\r\nThis takes the AudioEngineCI pipeline \"run tests\" step from 38 minutes to 12.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.listener.test.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.spatial.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.stereo.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.volume.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.currentTime.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.playback.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractAudioNode.utils.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractSound.utils.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16501",
+                "title": "Better fix for inertia blockers",
+                "description": "Better fix than https://github.com/BabylonJS/Babylon.js/pull/16411/files",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16500",
+                "title": "update treeitemselectablecomponent to accept shiftclick to expand all",
+                "description": "Adding ability to shift+click on the plus sign in the inspector to expand all the children \n\nNote that the top-level 'expandAll' will still supersede this ",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSelectableComponent.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16499",
+                "title": "FrameGraph: add FXAA and Grain post-processes",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/fxaaPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/grainPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/fxaaTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/grainTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/PostProcesses/fxaaPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/grainPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/thinFXAAPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinGrainPostProcess.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16497",
+                "title": "CopyTexture Native rendering command",
+                "description": "Copy texture as a rendering command. More explanations in [BN PR](https://github.com/BabylonJS/BabylonNative/pull/1503).",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "native"
+                ]
+            },
+            {
+                "pr": "16495",
+                "title": "Viewer: Remove unused UV sets",
+                "description": "This change is in response to feedback from users that certain models don't render in the Viewer (@alexandremottet). For the model in question, the problem is that it has a bunch of unused uv sets in the vertex data, which exceed the WebGPU limits, and WebGPU is the default for the Viewer in many cases. The fix is to add a utility function that removes uv sets that are in the vertex data but unreferenced by any material.\r\n- Add `removeVerticesData` to `AbstractMesh`, and add an implementation in `InstancedMesh`.\r\n- Add a `RemoveUnreferencedVerticesData` helper function to core.\r\n- Call `RemoveUnreferencedVerticesData` after loading a model in the Viewer.\r\n\r\nI also included a few other small fixes in this PR:\r\n- Fix the naming of `CreateViewerForCanvas` (it was inadvertently exported with the wrong casing). This is a breaking change, but the API is marked as `@experimental`, so I think we should go ahead and fix it and if we get asks, we can always export the old casing and mark it deprecated.\r\n- Export `ConfigureCustomViewerElement` (it was missing from the top level exports, but is part of the public API).\r\n- Expose a `ViewerElement.reload` function, which is needed when replacing the `reload-button` slot (previously it called a private function, which external code could not do).\r\n- Remove the `animationAutoPlay` option from the Configurator's use of `LoadModelOptions` as this option no longer exists.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/viewer-configurator/src/modelLoader.ts",
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "8.2.2": [
+            {
+                "pr": "16488",
+                "title": "Clear engine and webgl state on program delete",
+                "description": "Maintain correct state of WebGL context after shader program is deleted. \r\nThis may help when WebGL context is shared with other engines.",
+                "author": {
+                    "name": "EvgeniyPeshkov",
+                    "url": "https://github.com/EvgeniyPeshkov"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16494",
+                "title": "Clear engine and webgl state on program delete",
+                "description": "supersedes #16488",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16492",
+                "title": "Add spatial and stereo playwright audio tests",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/audioBus.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/audioBus.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.spatial.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.stereo.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16493",
+                "title": "Refactor type validation logic for uniformity checks",
+                "description": "Ensure all input types are defined before checking for uniformity, improving the validation process for input types.\n\nSmall fix for PR #16486",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16487",
+                "title": "Add volume playwright audio tests",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/audioBus.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.listener.test.ts",
+                    "packages/tools/tests/test/audioV2/audioEngineV2.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/mainAudioBus.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.volume.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.currentTime.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.playback.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.currentTime.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.playback.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractAudioNode.utils.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16491",
+                "title": "Fix for null TypeError in dynamicTexture",
+                "description": "It's possible that when rapidly disposing a dynamicTexture, a delayed callback gets ran on the disposed instance, resulting in a TypeError exception caused by accessing a null instance. The specific case that was causing this issue was when `Tools.SetImmediate` is used to pend some future work to `update` the dynamic texture, and by the time this delayed callback was running, the dynamicTexture had already been disposed.\r\n\r\nThe fix here is to early out of the `update` function if `this._texture` is already null. This simply avoids dereferencing a null engine when calling `_getEngine().updateDynamicTexture(this._texture, ...)`. In any case, `updateDynamicTexture` itself already early outs when the texture parameter is null, so it should not change that behavior.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16489",
+                "title": "Visu test: Fix error ratio for Webkit",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16490",
+                "title": "Sandbox: adapt panning sensitivity based on radius (same as viewer)",
+                "description": "The viewer adapts the camera's panning sensitivity based on the radius of the object being viewed, and this change duplicates that logic for the sandbox.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            }
+        ],
         "8.2.1": [
             {
                 "pr": "16486",
@@ -273,150 +617,6 @@
                 "tags": [
                     "enhancement"
                 ]
-            }
-        ],
-        "8.2.2": [
-            {
-                "pr": "16488",
-                "title": "Clear engine and webgl state on program delete",
-                "description": "Maintain correct state of WebGL context after shader program is deleted. \r\nThis may help when WebGL context is shared with other engines.",
-                "author": {
-                    "name": "EvgeniyPeshkov",
-                    "url": "https://github.com/EvgeniyPeshkov"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16494",
-                "title": "Clear engine and webgl state on program delete",
-                "description": "supersedes #16488",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16492",
-                "title": "Add spatial and stereo playwright audio tests",
-                "description": null,
-                "author": {
-                    "name": "docEdub",
-                    "url": "https://github.com/docEdub"
-                },
-                "files": [
-                    "packages/tools/babylonServer/public/audiov2-test.js",
-                    "packages/tools/tests/test/audioV2/audioBus.spatial.test.ts",
-                    "packages/tools/tests/test/audioV2/audioBus.stereo.test.ts",
-                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.spatial.ts",
-                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.stereo.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.spatial.test.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.stereo.test.ts",
-                    "packages/tools/tests/test/audioV2/streamingSound.spatial.test.ts",
-                    "packages/tools/tests/test/audioV2/streamingSound.stereo.test.ts",
-                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
-                ],
-                "tags": [
-                    "audio",
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16493",
-                "title": "Refactor type validation logic for uniformity checks",
-                "description": "Ensure all input types are defined before checking for uniformity, improving the validation process for input types.\n\nSmall fix for PR #16486",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16487",
-                "title": "Add volume playwright audio tests",
-                "description": null,
-                "author": {
-                    "name": "docEdub",
-                    "url": "https://github.com/docEdub"
-                },
-                "files": [
-                    "packages/tools/babylonServer/public/audiov2-test.js",
-                    "packages/tools/tests/test/audioV2/audioBus.volume.test.ts",
-                    "packages/tools/tests/test/audioV2/audioEngineV2.listener.test.ts",
-                    "packages/tools/tests/test/audioV2/audioEngineV2.volume.test.ts",
-                    "packages/tools/tests/test/audioV2/mainAudioBus.volume.test.ts",
-                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.volume.ts",
-                    "packages/tools/tests/test/audioV2/shared/abstractSound.currentTime.ts",
-                    "packages/tools/tests/test/audioV2/shared/abstractSound.playback.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.currentTime.test.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.playback.test.ts",
-                    "packages/tools/tests/test/audioV2/staticSound.volume.test.ts",
-                    "packages/tools/tests/test/audioV2/streamingSound.currentTime.test.ts",
-                    "packages/tools/tests/test/audioV2/streamingSound.playback.test.ts",
-                    "packages/tools/tests/test/audioV2/streamingSound.volume.test.ts",
-                    "packages/tools/tests/test/audioV2/utils/abstractAudioNode.utils.ts",
-                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
-                ],
-                "tags": [
-                    "audio",
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16491",
-                "title": "Fix for null TypeError in dynamicTexture",
-                "description": "It's possible that when rapidly disposing a dynamicTexture, a delayed callback gets ran on the disposed instance, resulting in a TypeError exception caused by accessing a null instance. The specific case that was causing this issue was when `Tools.SetImmediate` is used to pend some future work to `update` the dynamic texture, and by the time this delayed callback was running, the dynamicTexture had already been disposed.\r\n\r\nThe fix here is to early out of the `update` function if `this._texture` is already null. This simply avoids dereferencing a null engine when calling `_getEngine().updateDynamicTexture(this._texture, ...)`. In any case, `updateDynamicTexture` itself already early outs when the texture parameter is null, so it should not change that behavior.",
-                "author": {
-                    "name": "kircher1",
-                    "url": "https://github.com/kircher1"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16489",
-                "title": "Visu test: Fix error ratio for Webkit",
-                "description": null,
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "16490",
-                "title": "Sandbox: adapt panning sensitivity based on radius (same as viewer)",
-                "description": "The viewer adapts the camera's panning sensitivity based on the radius of the object being viewed, and this change duplicates that logic for the sandbox.",
-                "author": {
-                    "name": "AmoebaChant",
-                    "url": "https://github.com/AmoebaChant"
-                },
-                "files": [
-                    "packages/tools/sandbox/src/components/renderingZone.tsx"
-                ],
-                "tags": []
             }
         ],
         "8.2.0": [
