@@ -90,7 +90,7 @@ void main(void) {
     vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
     vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
 #endif
 
@@ -109,7 +109,7 @@ void main(void) {
         , vAlbedoInfos
     #endif
         , baseWeight
-    #ifdef BASEWEIGHT
+    #ifdef BASE_WEIGHT
         , baseWeightTexture
         , vBaseWeightInfos
     #endif
@@ -199,11 +199,20 @@ void main(void) {
     #endif
 #endif
 
+#ifdef BASE_DIFFUSE_ROUGHNESS
+    float baseDiffuseRoughnessTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
+#endif
+
     reflectivityOut = reflectivityBlock(
         vReflectivityColor
     #ifdef METALLICWORKFLOW
         , surfaceAlbedo
         , metallicReflectanceFactors
+    #endif
+        , baseDiffuseRoughness
+    #ifdef BASE_DIFFUSE_ROUGHNESS
+        , baseDiffuseRoughnessTexture
+        , vBaseDiffuseRoughnessInfos
     #endif
     #ifdef REFLECTIVITY
         , vReflectivityInfos
@@ -223,6 +232,7 @@ void main(void) {
 
     float microSurface = reflectivityOut.microSurface;
     float roughness = reflectivityOut.roughness;
+    float diffuseRoughness = reflectivityOut.diffuseRoughness;
 
     #ifdef METALLICWORKFLOW
         surfaceAlbedo = reflectivityOut.surfaceAlbedo;
@@ -300,6 +310,9 @@ void main(void) {
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
+                #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                    , vReflectionDominantDirection
+                #endif
             #endif
             #ifndef LODBASEDMICROSFURACE
                 , reflectionSamplerLow
@@ -311,6 +324,9 @@ void main(void) {
                     , icdfSampler
                 #endif
             #endif
+                , viewDirectionW
+                , diffuseRoughness
+                , baseColor
             );
         #else
             #define CUSTOM_REFLECTION

@@ -16,7 +16,7 @@ varying direction: vec3f;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var color: vec3f = irradiance(inputTexture, inputTextureSampler, input.direction, uniforms.vFilteringInfo
+    var color: vec3f = irradiance(inputTexture, inputTextureSampler, input.direction, uniforms.vFilteringInfo, 0.0, vec3f(1.0), input.direction
     #ifdef IBL_CDF_FILTERING
         , icdfTexture, icdfTextureSampler
     #endif

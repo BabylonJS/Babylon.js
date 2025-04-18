@@ -157,7 +157,7 @@
         //
         //
 
-        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f
+        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, surfaceAlbedo: vec3f, inputV: vec3f
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
@@ -171,12 +171,13 @@
             tangent = normalize(cross(tangent, n));
             var bitangent: vec3f = cross(n, tangent);
             var tbn: mat3x3f =  mat3x3f(tangent, bitangent, n);
+            var tbnInverse: mat3x3f = transpose(tbn);
             #endif
 
             var maxLevel: f32 = filteringInfo.y;
             var dim0: f32 = filteringInfo.x;
             var omegaP: f32 = (4. * PI) / (6. * dim0 * dim0);
-
+            var clampedAlbedo: vec3f = clamp(surfaceAlbedo, vec3f(0.1), vec3f(1.0));
             for(var i: u32 = 0u; i < NUM_SAMPLES; i++)
             {
                 var Xi: vec2f = hammersley(i, NUM_SAMPLES);
@@ -187,11 +188,26 @@
                     T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
                     var Ls: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
                     var NoL: f32 = dot(n, Ls);
+                    var NoV: f32 = dot(n, inputV);
+                    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+                        var LoV: f32 = dot(Ls, inputV);
+                    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+                        var H: vec3f = (inputV + Ls) * 0.5;
+                        var VoH: f32 = dot(inputV, H);
+                    #endif                    
                 #else
                     var Ls: vec3f = hemisphereCosSample(Xi);
                     Ls = normalize(Ls);
                     var Ns: vec3f =  vec3f(0., 0., 1.);
                     var NoL: f32 = dot(Ns, Ls);
+                    var V: vec3f = tbnInverse * inputV;
+                    var NoV: f32 = dot(Ns, V);
+                    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+                        var LoV: f32 = dot(Ls, V);
+                    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+                        var H: vec3f = (V + Ls) * 0.5;
+                        var VoH: f32 = dot(V, H);
+                    #endif
                 #endif
 
                 if (NoL > 0.) {
@@ -211,19 +227,30 @@
                         c = toLinearSpaceVec3(c);
                     #endif
 
+                    var diffuseRoughnessTerm: vec3f = vec3f(1.0);
+                    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+                        diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
+                    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+                        diffuseRoughnessTerm = vec3f(diffuseBRDF_Burley(NoL, NoV, VoH, diffuseRoughness) * PI);
+                    #endif
+
                     #ifdef IBL_CDF_FILTERING
                         var light: vec3f = vec3f(0.0);
                         if (pdf > 1e-6) {
                             light = vec3f(1.0) / vec3f(pdf) * c;
                         }
-                        result += NoL * light;
+                        result += NoL * diffuseRoughnessTerm * light;
                     #else
-                        result += c;
+                        result += c * diffuseRoughnessTerm;
                     #endif
                 }
             }
 
             result = result * NUM_SAMPLES_FLOAT_INVERSED;
+
+            #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+                result = result / clampedAlbedo;
+            #endif
 
             return result;
         }

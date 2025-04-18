@@ -12,7 +12,7 @@ albedoOpacityOutParams albedoOpacityBlock(
     ,in vec2 albedoInfos
 #endif
     , in float baseWeight
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
     , in vec4 baseWeightTexture
     , in vec2 vBaseWeightInfos
 #endif
@@ -75,7 +75,7 @@ albedoOpacityOutParams albedoOpacityBlock(
     //   applied in computeDiffuseLighting), but with the diffuse model *currently* used
     //   in Babylon.js, factoring it into the surfaceAlbedo is equivalent.
     surfaceAlbedo *= baseWeight;
-    #ifdef BASEWEIGHT
+    #ifdef BASE_WEIGHT
         surfaceAlbedo *= baseWeightTexture.r;
     #endif
 
