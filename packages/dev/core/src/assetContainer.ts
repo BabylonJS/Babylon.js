@@ -382,7 +382,7 @@ export class AssetContainer extends AbstractAssetContainer {
 
         if (nodesUidMap.size > 0) {
             Logger.Error("SceneSerializer._topologicalSort: There were unvisited nodes:");
-            for (const [n, node] of nodesUidMap) {
+            for (const [, node] of nodesUidMap) {
                 Logger.Error(node.name);
             }
         }

@@ -246,10 +246,11 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+        const materials = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
+        for (const matl of materials) {
             if (matl) {
                 matl.dispose();
             }
-        });
+        }
     }
 }

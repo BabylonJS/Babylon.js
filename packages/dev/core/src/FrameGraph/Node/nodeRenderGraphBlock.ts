@@ -481,7 +481,7 @@ export class NodeRenderGraphBlock {
         const serializedOutputs = serializationObject.outputs;
 
         if (serializedInputs) {
-            serializedInputs.forEach((port: any) => {
+            for (const port of serializedInputs) {
                 const input = this.inputs.find((i) => i.name === port.name);
                 if (!input) {
                     return;
@@ -493,7 +493,7 @@ export class NodeRenderGraphBlock {
                     input.isExposedOnFrame = port.isExposedOnFrame;
                     input.exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
 
         if (serializedOutputs) {

@@ -214,9 +214,10 @@ export class Gizmo implements IGizmo {
             // eslint-disable-next-line no-throw-literal
             throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
         }
-        this._rootMesh.getChildMeshes().forEach((c) => {
+        const children = this._rootMesh.getChildMeshes();
+        for (const c of children) {
             c.dispose();
-        });
+        }
         mesh.parent = this._rootMesh;
         this._customMeshSet = true;
     }
@@ -588,12 +589,12 @@ export class Gizmo implements IGizmo {
      */
     protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial) {
         if (gizmoMeshes) {
-            gizmoMeshes.forEach((m: Mesh) => {
+            for (const m of gizmoMeshes) {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
                     (<LinesMesh>m).color = material.diffuseColor;
                 }
-            });
+            }
         }
     }
 
@@ -622,12 +623,12 @@ export class Gizmo implements IGizmo {
                         cache.active = false;
                         dragging = false;
                         activeDragButton = -1;
-                        cache.gizmoMeshes.forEach((m: Mesh) => {
+                        for (const m of cache.gizmoMeshes) {
                             m.material = cache.dragBehavior.enabled ? cache.material : cache.disableMaterial;
                             if ((m as LinesMesh).color) {
                                 (m as LinesMesh).color = cache.material.diffuseColor;
                             }
-                        });
+                        }
                     });
                 } else if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
                     // On Hover Logic
@@ -638,12 +639,12 @@ export class Gizmo implements IGizmo {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = cache.dragBehavior.enabled ? (isHovered || cache.active ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                            for (const m of cache.gizmoMeshes) {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
                                     (m as LinesMesh).color = material.diffuseColor;
                                 }
-                            });
+                            }
                         }
                     });
                 } else if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
@@ -657,12 +658,12 @@ export class Gizmo implements IGizmo {
                         gizmoAxisCache.forEach((cache) => {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = (isHovered || cache.active) && cache.dragBehavior.enabled ? cache.hoverMaterial : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                            for (const m of cache.gizmoMeshes) {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
                                     (m as LinesMesh).color = material.diffuseColor;
                                 }
-                            });
+                            }
                         });
                     }
                 }
