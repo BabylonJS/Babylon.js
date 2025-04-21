@@ -1448,9 +1448,10 @@ async function importAnimationsImplAsync(
     } else {
         switch (animationGroupLoadingMode) {
             case SceneLoaderAnimationGroupLoadingMode.Clean:
-                scene.animationGroups.slice().forEach((animationGroup) => {
+                const animationGroups = scene.animationGroups.slice();
+                for (const animationGroup of animationGroups) {
                     animationGroup.dispose();
-                });
+                }
                 break;
             case SceneLoaderAnimationGroupLoadingMode.Stop:
                 for (const animationGroup of scene.animationGroups) {

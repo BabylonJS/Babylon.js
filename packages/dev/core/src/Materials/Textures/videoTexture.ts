@@ -271,11 +271,11 @@ export class VideoTexture extends Texture {
             video.src = src;
         } else {
             Tools.SetCorsBehavior(src[0], video);
-            src.forEach((url) => {
+            for (const url of src) {
                 const source = document.createElement("source");
                 source.src = url;
                 video.appendChild(source);
-            });
+            }
         }
 
         this.onDisposeObservable.addOnce(() => {
@@ -546,9 +546,10 @@ export class VideoTexture extends Texture {
 
             const videoTexture = await this.CreateFromStreamAsync(scene, stream, constraints, invertY);
             videoTexture.onDisposeObservable.addOnce(() => {
-                stream.getTracks().forEach((track) => {
+                const tracks = stream.getTracks();
+                for (const track of tracks) {
                     track.stop();
-                });
+                }
             });
 
             return videoTexture;

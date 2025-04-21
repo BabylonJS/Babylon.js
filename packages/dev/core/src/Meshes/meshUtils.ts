@@ -231,14 +231,17 @@ export function RemoveUnreferencedVerticesData(meshes: readonly Mesh[]) {
     const uvIndexToKind = [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind] as const;
     for (const mesh of meshes) {
         const unreferencedUVSets = new Set(uvIndexToKind);
-        mesh.material?.getActiveTextures().forEach((texture) => {
-            unreferencedUVSets.delete(uvIndexToKind[texture.coordinatesIndex]);
-        });
+        const textures = mesh.material?.getActiveTextures();
+        if (textures) {
+            for (const texture of textures) {
+                unreferencedUVSets.delete(uvIndexToKind[texture.coordinatesIndex]);
+            }
+        }
 
-        unreferencedUVSets.forEach((unreferencedUVSet) => {
+        for (const unreferencedUVSet of unreferencedUVSets) {
             if (mesh.isVerticesDataPresent(unreferencedUVSet)) {
                 mesh.removeVerticesData(unreferencedUVSet);
             }
-        });
+        }
     }
 }
