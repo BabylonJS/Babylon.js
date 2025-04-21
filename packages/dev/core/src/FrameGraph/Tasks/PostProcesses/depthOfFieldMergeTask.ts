@@ -31,7 +31,7 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);
             for (let i = 0; i < this.blurSteps.length; i++) {
                 const handle = this.blurSteps[i];
-                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "blurStep" + (this.blurSteps.length - index - 1), handle);
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "blurStep" + (this.blurSteps.length - i - 1), handle);
             }
         });
 

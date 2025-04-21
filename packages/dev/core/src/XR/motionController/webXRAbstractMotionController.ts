@@ -307,7 +307,10 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     ) {
         // initialize the components
         if (layout.components) {
-            Object.keys(layout.components).forEach(this._initComponent);
+            const keys = Object.keys(layout.components);
+            for (const key of keys) {
+                this._initComponent(key);
+            }
         }
         // Model is loaded in WebXRInput
     }
@@ -316,11 +319,15 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Dispose this controller, the model mesh and all its components
      */
     public dispose(): void {
-        this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
+        const ids = this.getComponentIds();
+        for (const id of ids) {
+            this.getComponent(id).dispose();
+        }
         if (this.rootMesh) {
-            this.rootMesh.getChildren(undefined, true).forEach((node) => {
+            const nodes = this.rootMesh.getChildren(undefined, true);
+            for (const node of nodes) {
                 node.setEnabled(false);
-            });
+            }
             this.rootMesh.dispose(!!this._controllerCache, !this._controllerCache);
         }
         this.onModelLoadedObservable.clear();
@@ -403,7 +410,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
                     return c.filename === loadingParams.filename && c.path === loadingParams.path;
                 });
                 if (found[0]) {
-                    found[0].meshes.forEach((mesh) => mesh.setEnabled(true));
+                    for (const mesh of found[0].meshes) {
+                        mesh.setEnabled(true);
+                    }
                     meshesLoaded(found[0].meshes);
                     return;
                     // found, don't continue to load
