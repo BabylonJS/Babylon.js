@@ -24,7 +24,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         const split = value.split(",");
         line.dash = [];
 
-        split.forEach((v) => {
+        for (const v of split) {
             const int = parseInt(v);
 
             if (isNaN(int)) {
@@ -32,7 +32,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
             }
 
             line.dash.push(int);
-        });
+        }
     }
 
     override render() {

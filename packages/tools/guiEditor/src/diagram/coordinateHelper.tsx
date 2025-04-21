@@ -251,9 +251,9 @@ export class CoordinateHelper {
     }
 
     private static _ResetMatrixArray() {
-        this._MatrixCache.forEach((matrix) => {
+        for (const matrix of this._MatrixCache) {
             Matrix2D.IdentityToRef(matrix);
-        });
+        }
     }
 
     public static ComputeLocalBounds(node: Control) {

@@ -163,13 +163,16 @@ export class SideBarComponent extends React.Component<ISideBarComponentProps, IS
                         complement=" fps"
                         isNumber={true}
                         onValueAsNumberChanged={(value) => {
-                            this.props.context.animations?.forEach((anim: Animation | TargetedAnimation) => {
+                            if (!this.props.context.animations) {
+                                return;
+                            }
+                            for (const anim of this.props.context.animations) {
                                 if (this.props.context.useTargetAnimations) {
                                     (anim as TargetedAnimation).animation.framePerSecond = value;
                                 } else {
                                     (anim as Animation).framePerSecond = value;
                                 }
-                            });
+                            }
                         }}
                         tooltip="Framerate"
                         id="framerate-animation"

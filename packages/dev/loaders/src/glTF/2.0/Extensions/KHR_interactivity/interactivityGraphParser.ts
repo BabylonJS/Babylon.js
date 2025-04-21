@@ -250,7 +250,8 @@ export class InteractivityGraphToFlowGraphParser {
     private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
         const configuration = block.config;
         if (node.configuration) {
-            Object.keys(node.configuration).forEach((key) => {
+            const keys = Object.keys(node.configuration);
+            for (const key of keys) {
                 const value = node.configuration?.[key];
                 // value is always an array, never a number or string
                 if (!value) {
@@ -279,7 +280,7 @@ export class InteractivityGraphToFlowGraphParser {
                         configuration[configKey].value = configMapping.dataTransformer([configuration[configKey].value], this)[0];
                     }
                 }
-            });
+            }
         }
     }
 

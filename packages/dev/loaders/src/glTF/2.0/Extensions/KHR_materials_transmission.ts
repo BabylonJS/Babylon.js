@@ -290,11 +290,11 @@ class TransmissionHelper {
             this._scene.environmentIntensity = saveSceneEnvIntensity;
         });
 
-        this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
+        for (const mesh of this._transparentMeshesCache) {
             if (this._shouldRenderAsTransmission(mesh.material)) {
                 (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
             }
-        });
+        }
     }
 
     /**
