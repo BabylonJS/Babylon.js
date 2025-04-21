@@ -319,14 +319,14 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                     return this._trackedAnchors.indexOf(anchor);
                 });
             let idxTracker = 0;
-            toRemove.forEach((index) => {
+            for (const index of toRemove) {
                 const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
                 anchor.xrAnchor.delete();
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
                 idxTracker++;
-            });
+            }
             // now check for new ones
-            trackedAnchors.forEach((xrAnchor) => {
+            for (const xrAnchor of trackedAnchors) {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {
                         id: anchorIdProvider++,
@@ -360,12 +360,12 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                         Tools.Warn(`Anchor could not be updated`);
                     }
                 }
-            });
+            }
             this._lastFrameDetected = trackedAnchors;
         }
 
         // process future anchors
-        this._futureAnchors.forEach((futureAnchor) => {
+        for (const futureAnchor of this._futureAnchors) {
             if (!futureAnchor.resolved && !futureAnchor.submitted) {
                 this._createAnchorAtTransformation(futureAnchor.xrTransformation, frame).then(
                     (nativeAnchor) => {
@@ -378,7 +378,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 );
                 futureAnchor.submitted = true;
             }
-        });
+        }
     }
 
     /**
