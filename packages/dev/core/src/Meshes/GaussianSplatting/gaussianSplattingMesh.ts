@@ -1177,9 +1177,9 @@ export class GaussianSplattingMesh extends Mesh {
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
         if (this._shTextures) {
-            this._shTextures.forEach((shTexture) => {
+            for (const shTexture of this._shTextures) {
                 shTexture.dispose();
-            });
+            }
         }
 
         this._covariancesATexture = null;
@@ -1201,9 +1201,9 @@ export class GaussianSplattingMesh extends Mesh {
         this._colorsTexture = source.colorsTexture?.clone()!;
         if (source._shTextures) {
             this._shTextures = [];
-            this._shTextures.forEach((shTexture) => {
+            for (const shTexture of this._shTextures) {
                 this._shTextures?.push(shTexture.clone()!);
-            });
+            }
         }
     }
 
@@ -1384,13 +1384,13 @@ export class GaussianSplattingMesh extends Mesh {
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             if (sh) {
                 this._shTextures = [];
-                sh.forEach((shData) => {
+                for (const shData of sh) {
                     const buffer = new Uint32Array(shData.buffer);
                     const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
-                });
+                }
             }
             this._instanciateWorker();
         }

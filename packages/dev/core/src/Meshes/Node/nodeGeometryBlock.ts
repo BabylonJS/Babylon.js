@@ -290,7 +290,9 @@ export class NodeGeometryBlock {
                 return false;
             }
 
-            this.outputs.forEach((o) => o._resetCounters());
+            for (const o of this.outputs) {
+                o._resetCounters();
+            }
         }
 
         this._buildId = state.buildId;
@@ -421,7 +423,7 @@ export class NodeGeometryBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any) => {
+            for (const port of serializedInputs) {
                 const input = this.inputs.find((i) => i.name === port.name);
 
                 if (!input) {
@@ -446,10 +448,11 @@ export class NodeGeometryBlock {
                         }
                     }
                 }
-            });
+            }
         }
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -457,7 +460,7 @@ export class NodeGeometryBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 
