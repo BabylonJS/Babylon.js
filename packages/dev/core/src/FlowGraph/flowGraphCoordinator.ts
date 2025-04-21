@@ -96,14 +96,14 @@ export class FlowGraphCoordinator {
             const executeOnNextFrame = this._executeOnNextFrame.slice(0);
             if (executeOnNextFrame.length) {
                 // Execute the events that were triggered on the next frame.
-                executeOnNextFrame.forEach((event) => {
+                for (const event of executeOnNextFrame) {
                     this.notifyCustomEvent(event.id, event.data, false);
                     // remove the event from the array
                     const index = this._executeOnNextFrame.findIndex((e) => e.uniqueId === event.uniqueId);
                     if (index !== -1) {
                         this._executeOnNextFrame.splice(index, 1);
                     }
-                });
+                }
             }
         });
 
@@ -138,14 +138,18 @@ export class FlowGraphCoordinator {
      * Starts all graphs
      */
     public start() {
-        this._flowGraphs.forEach((graph) => graph.start());
+        for (const graph of this._flowGraphs) {
+            graph.start();
+        }
     }
 
     /**
      * Disposes all graphs
      */
     public dispose() {
-        this._flowGraphs.forEach((graph) => graph.dispose());
+        for (const graph of this._flowGraphs) {
+            graph.dispose();
+        }
         this._flowGraphs.length = 0;
         this._disposeObserver?.remove();
         this._onBeforeRenderObserver?.remove();
@@ -165,11 +169,11 @@ export class FlowGraphCoordinator {
      */
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
-        this._flowGraphs.forEach((graph) => {
+        for (const graph of this._flowGraphs) {
             const serializedGraph = {};
             graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
-        });
+        }
         serializationObject.dispatchEventsSynchronously = this.dispatchEventsSynchronously;
     }
 

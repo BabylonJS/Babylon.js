@@ -641,7 +641,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 } else {
                     this._adapter = adapter!;
                     this._adapterSupportedExtensions = [];
-                    this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
+                    const features = this._adapter.features;
+                    if (features) {
+                        for (const feature of features) {
+                            this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName);
+                        }
+                    }
                     this._adapterSupportedLimits = this._adapter.limits;
                     this._adapterInfo = this._adapter.info;
 
@@ -680,7 +685,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             .then((device: GPUDevice) => {
                 this._device = device;
                 this._deviceEnabledExtensions = [];
-                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
+                const features = this._device.features;
+                if (features) {
+                    for (const feature of features) {
+                        this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName);
+                    }
+                }
                 this._deviceLimits = device.limits;
 
                 let numUncapturedErrors = -1;

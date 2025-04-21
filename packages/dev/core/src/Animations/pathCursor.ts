@@ -96,7 +96,9 @@ export class PathCursor {
      * @returns This path cursor
      */
     private _raiseOnChange(): PathCursor {
-        this._onchange.forEach((f) => f(this));
+        for (const f of this._onchange) {
+            f(this);
+        }
 
         return this;
     }

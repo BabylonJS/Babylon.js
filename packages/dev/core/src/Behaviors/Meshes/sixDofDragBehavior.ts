@@ -74,9 +74,10 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
         ownerNode.isNearGrabbable = true;
         // if it has children, make sure they are grabbable too
-        ownerNode.getChildMeshes().forEach((m) => {
+        const children = ownerNode.getChildMeshes();
+        for (const m of children) {
             m.isNearGrabbable = true;
-        });
+        }
 
         // Node that will save the owner's transform
         this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._virtualScene);

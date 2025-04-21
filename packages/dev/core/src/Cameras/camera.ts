@@ -1091,10 +1091,10 @@ export class Camera extends Node {
 
         if (checkRigCameras && this.rigCameras.length > 0) {
             let result = false;
-            this.rigCameras.forEach((cam) => {
+            for (const cam of this.rigCameras) {
                 cam._updateFrustumPlanes();
                 result = result || target.isInFrustum(cam._frustumPlanes);
-            });
+            }
             return result;
         } else {
             return target.isInFrustum(this._frustumPlanes);
