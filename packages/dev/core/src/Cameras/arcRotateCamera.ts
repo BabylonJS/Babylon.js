@@ -1147,6 +1147,10 @@ export class ArcRotateCamera extends TargetCamera {
                 if ((Vector3.Distance(this.target, goalTarget) * 10) / goalRadius < Epsilon) {
                     this._goalTarget.set(NaN, NaN, NaN);
                     this.target.copyFrom(goalTarget);
+                    // Call setTarget to trigger side effects like onMeshTargetChangedObservable.
+                    // NOTE: We pass in true for allowSamePosition because we already checked that the goal target is different from the current target,
+                    // but since we are updating the existing target Vector3 instance, it will otherwise look like the value has not changed.
+                    this.setTarget(this.target, false, true, true);
                 } else {
                     isInterpolating = true;
                 }
