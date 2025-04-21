@@ -7,6 +7,9 @@ import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
+import { Process } from "core/Engines/Processors/shaderProcessor";
+import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 
 /** @internal */
 export const SfeModeDefine = "USE_SFE_FRAMEWORK";
@@ -105,6 +108,54 @@ export class NodeMaterialBuildState {
      */
     public get isSFEMode() {
         return this.sharedData.nodeMaterial.mode === NodeMaterialModes.SFE;
+    }
+
+    /**
+     * Returns the processed, compiled shader code
+     * @returns the raw shader code used by the engine
+     */
+    public getProcessedShaderAsync(): Promise<string> {
+        if (!this._builtCompilationString) {
+            throw new Error("Shader not built yet.");
+        }
+
+        const engine = this.sharedData.nodeMaterial.getScene().getEngine();
+        const options: ProcessingOptions = {
+            defines: [],
+            indexParameters: undefined,
+            isFragment: this.target === NodeMaterialBlockTargets.Fragment,
+            shouldUseHighPrecisionShader: engine._shouldUseHighPrecisionShader,
+            processor: engine._getShaderProcessor(this.shaderLanguage),
+            supportsUniformBuffers: engine.supportsUniformBuffers,
+            shadersRepository: EngineShaderStore.GetShadersRepository(this.shaderLanguage),
+            includesShadersStore: EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage),
+            version: (engine.version * 100).toString(),
+            platformName: engine.shaderPlatformName,
+            processingContext: null,
+            isNDCHalfZRange: engine.isNDCHalfZRange,
+            useReverseDepthBuffer: engine.useReverseDepthBuffer,
+        };
+
+        // Export WebGL2 shaders with WebGL1 syntax for max compatibility
+        if (!engine.isWebGPU && engine.version > 1.0) {
+            options.processor = new WebGLShaderProcessor();
+        }
+
+        // For SFE, use the SFE define to toggle the SFE syntax in the shader
+        if (this.isSFEMode) {
+            options.defines.push(SfeModeDefine);
+        }
+
+        return new Promise((resolve) => {
+            Process(
+                this._builtCompilationString,
+                options,
+                (migratedCode, _) => {
+                    resolve(migratedCode);
+                },
+                engine
+            );
+        });
     }
 
     /**
