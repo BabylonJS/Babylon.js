@@ -349,11 +349,11 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                         if (options.preserveEdges) {
                             const edgeSet = existingEdges[positionHash];
                             let hasPair = true;
-                            for (const edgeHash of edgeSet) {
+                            edgeSet.forEach((edgeHash) => {
                                 if (flatOpposites[edgeHash] && flatOpposites[edgeHash].length % 2 !== 0) {
                                     hasPair = false;
                                 }
-                            }
+                            });
                             if (!hasPair) {
                                 // If edges aren't paired, skip adjustment.
                                 continue;
