@@ -126,7 +126,9 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
         }
 
         if (this.options.backgroundMeshes) {
-            this.options.backgroundMeshes.forEach((mesh) => mesh.setEnabled(newState));
+            for (const mesh of this.options.backgroundMeshes) {
+                mesh.setEnabled(newState);
+            }
         }
 
         this.onBackgroundStateChangedObservable.notifyObservers(newState);

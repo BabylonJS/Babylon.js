@@ -1368,9 +1368,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             const result: string[] = [];
             if (this._delayInfo) {
-                this._delayInfo.forEach(function (kind) {
+                for (const kind of this._delayInfo) {
                     result.push(kind);
-                });
+                }
             }
             return result;
         }
@@ -2924,10 +2924,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     this._delayLoadingFunction(JSON.parse(data), this);
                 }
 
-                this.instances.forEach((instance) => {
+                for (const instance of this.instances) {
                     instance.refreshBoundingInfo();
                     instance._syncSubMeshes();
-                });
+                }
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene.removePendingData(this);
@@ -4839,7 +4839,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let minVector: Nullable<Vector3> = null;
         let maxVector: Nullable<Vector3> = null;
 
-        meshes.forEach(function (mesh) {
+        for (const mesh of meshes) {
             const boundingInfo = mesh.getBoundingInfo();
 
             const boundingBox = boundingInfo.boundingBox;
@@ -4850,7 +4850,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 minVector.minimizeInPlace(boundingBox.minimumWorld);
                 maxVector.maximizeInPlace(boundingBox.maximumWorld);
             }
-        });
+        }
 
         if (!minVector || !maxVector) {
             return {

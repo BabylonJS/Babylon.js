@@ -571,7 +571,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         nodes = nodes.concat(this.lights);
         nodes = nodes.concat(this.cameras);
         nodes = nodes.concat(this.transformNodes); // dummies
-        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
+        for (const skeleton of this.skeletons) {
+            nodes = nodes.concat(skeleton.bones);
+        }
         return nodes;
     }
 
@@ -2699,9 +2701,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         });
 
         if (recursive) {
-            newMesh.getChildMeshes().forEach((m) => {
+            const children = newMesh.getChildMeshes();
+
+            for (const m of children) {
                 this.addMesh(m);
-            });
+            }
         }
     }
 
@@ -2727,9 +2731,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onMeshRemovedObservable.notifyObservers(toRemove);
         if (recursive) {
-            toRemove.getChildMeshes().forEach((m) => {
+            const children = toRemove.getChildMeshes();
+            for (const m of children) {
                 this.removeMesh(m);
-            });
+            }
         }
         return index;
     }
@@ -4928,7 +4933,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._defaultFrameBufferCleared = false;
         this._checkCameraRenderTarget(this.activeCamera);
         if (this.activeCameras?.length) {
-            this.activeCameras.forEach(this._checkCameraRenderTarget);
+            for (const c of this.activeCameras) {
+                this._checkCameraRenderTarget(c);
+            }
         }
 
         // Register components that have been associated lately to the scene.
@@ -5160,10 +5167,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         if (this._activeAnimatables && this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
-            this._activeAnimatables.forEach((animatable) => {
+            for (const animatable of this._activeAnimatables) {
                 animatable.onAnimationEndObservable.clear();
                 animatable.onAnimationEnd = null;
-            });
+            }
             this.stopAllAnimations();
         }
 
@@ -5394,11 +5401,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         filterPredicate = filterPredicate || (() => true);
-        this.meshes.filter(filterPredicate).forEach((mesh) => {
+        const meshes = this.meshes.filter(filterPredicate);
+        for (const mesh of meshes) {
             mesh.computeWorldMatrix(true);
 
             if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
-                return;
+                continue;
             }
 
             const boundingInfo = mesh.getBoundingInfo();
@@ -5408,7 +5416,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             Vector3.CheckExtends(minBox, min, max);
             Vector3.CheckExtends(maxBox, min, max);
-        });
+        }
 
         return {
             min: min,

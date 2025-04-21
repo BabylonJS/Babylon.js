@@ -868,9 +868,9 @@ export class PhysicsImpostor {
                 this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this._tmpQuat);
         }
 
-        this._onBeforePhysicsStepCallbacks.forEach((func) => {
+        for (const func of this._onBeforePhysicsStepCallbacks) {
             func(this);
-        });
+        }
     };
 
     /**
@@ -881,9 +881,9 @@ export class PhysicsImpostor {
             return;
         }
 
-        this._onAfterPhysicsStepCallbacks.forEach((func) => {
+        for (const func of this._onAfterPhysicsStepCallbacks) {
             func(this);
-        });
+        }
 
         this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
         // object has now its world rotation. needs to be converted to local.
@@ -927,13 +927,13 @@ export class PhysicsImpostor {
             if (this.onCollideEvent) {
                 this.onCollideEvent(this, otherImpostor);
             }
-            this._onPhysicsCollideCallbacks
-                .filter((obj) => {
-                    return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
-                })
-                .forEach((obj) => {
-                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point, e.distance, e.impulse, e.normal);
-                });
+            const callbacks = this._onPhysicsCollideCallbacks.filter((obj) => {
+                return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
+            });
+
+            for (const obj of callbacks) {
+                obj.callback(this, <PhysicsImpostor>otherImpostor, e.point, e.distance, e.impulse, e.normal);
+            }
         }
     };
 
@@ -1087,24 +1087,15 @@ export class PhysicsImpostor {
             return;
         }
 
-        this._joints.forEach((j) => {
+        for (const j of this._joints) {
             if (this._physicsEngine) {
                 this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
             }
-        });
+        }
         //dispose the physics body
         this._physicsEngine.removeImpostor(this);
         if (this.parent) {
             this.parent.forceUpdate();
-        } else {
-            /*this._object.getChildMeshes().forEach(function(mesh) {
-                if (mesh.physicsImpostor) {
-                    if (disposeChildren) {
-                        mesh.physicsImpostor.dispose();
-                        mesh.physicsImpostor = null;
-                    }
-                }
-            })*/
         }
 
         this._isDisposed = true;

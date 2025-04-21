@@ -56,11 +56,11 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             const animatables = animatableAsAny.getAnimatables();
             this._animations = new Array<Animation>();
 
-            animatables.forEach((animatable: IAnimatable) => {
+            for (const animatable of animatables) {
                 if (animatable.animations) {
                     this._animations!.push(...animatable.animations);
                 }
-            });
+            }
 
             if (animatableAsAny.animations) {
                 this._animations!.push(...animatableAsAny.animations);
@@ -68,7 +68,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
 
             // Extract from and to
             if (this._animations && this._animations.length) {
-                this._animations.forEach((animation) => {
+                for (const animation of this._animations) {
                     const keys = animation.getKeys();
 
                     if (keys && keys.length > 0) {
@@ -80,7 +80,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                             this._animationControl.to = keys[lastKeyIndex].frame;
                         }
                     }
-                });
+                }
             }
         }
 
@@ -221,9 +221,9 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     onSelect={(value) => {
                                         this._animationControl.loop = value;
 
-                                        animatablesForTarget.forEach((at) => {
+                                        for (const at of animatablesForTarget) {
                                             at.loopAnimation = value;
-                                        });
+                                        }
                                     }}
                                     isSelected={() => this._animationControl.loop}
                                 />

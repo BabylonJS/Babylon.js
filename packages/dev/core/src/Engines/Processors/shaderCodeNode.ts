@@ -80,9 +80,9 @@ export class ShaderCodeNode {
             result += value + "\n";
         }
 
-        this.children.forEach((child) => {
+        for (const child of this.children) {
             result += child.process(preprocessors, options, preProcessorsFromCode);
-        });
+        }
 
         if (this.additionalDefineKey) {
             preprocessors[this.additionalDefineKey] = this.additionalDefineValue || "true";

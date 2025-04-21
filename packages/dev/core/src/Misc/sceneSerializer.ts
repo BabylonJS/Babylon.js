@@ -429,11 +429,12 @@ export class SceneSerializer {
             //deliberate for loop! not for each, appended should be processed as well.
             for (let i = 0; i < toSerialize.length; ++i) {
                 if (withChildren) {
-                    toSerialize[i].getDescendants().forEach((node: Node) => {
+                    const descendants = toSerialize[i].getDescendants();
+                    for (const node of descendants) {
                         if (toSerialize.indexOf(node) < 0 && !node.doNotSerialize) {
                             toSerialize.push(node);
                         }
-                    });
+                    }
                 }
                 //make sure the array doesn't contain the object already
                 if (withParents && toSerialize[i].parent && toSerialize.indexOf(toSerialize[i].parent) < 0 && !toSerialize[i].parent.doNotSerialize) {
@@ -442,9 +443,9 @@ export class SceneSerializer {
             }
         }
 
-        toSerialize.forEach((mesh: Node) => {
+        for (const mesh of toSerialize) {
             FinalizeSingleNode(mesh, serializationObject);
-        });
+        }
 
         return serializationObject;
     }

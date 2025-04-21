@@ -276,7 +276,9 @@ export class PreviewManager {
         this._globalState.envType = PreviewType.Room;
         this._globalState.previewType = PreviewType.Box;
         this._globalState.listOfCustomPreviewFiles = [];
-        this._scene.meshes.forEach((m) => m.dispose());
+        for (const m of this._scene.meshes) {
+            m.dispose();
+        }
         this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
         this._refreshPreviewMesh(true);
     }

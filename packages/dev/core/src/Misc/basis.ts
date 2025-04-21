@@ -301,9 +301,12 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
             BindTexture(texture, engine);
 
             // Upload all mip levels in the file
-            transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
+            const levels = transcodeResult.fileInfo.images[i].levels;
+
+            for (let index = 0; index < levels.length; index++) {
+                const level = levels[index];
                 engine._uploadCompressedDataToTextureDirectly(texture, format, level.width, level.height, level.transcodedPixels, i, index);
-            });
+            }
 
             if (engine._features.basisNeedsPOT && (Math.log2(texture.width) % 1 !== 0 || Math.log2(texture.height) % 1 !== 0)) {
                 Tools.Warn(

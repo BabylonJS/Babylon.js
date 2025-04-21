@@ -104,19 +104,19 @@ class MeshAccumulator {
             //  Ignore any children which have a physics body.
             //  Other plugin implementations do not have this check, which appears to be
             //  a bug, as otherwise, the mesh will have a duplicate collider
-            children
-                .filter((m: any) => !m.physicsBody)
-                .forEach((m: TransformNode) => {
-                    const childToWorld = m.computeWorldMatrix();
-                    const childToRootScaled = TmpVectors.Matrix[3];
-                    childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+            const transformNodes = children.filter((m: any) => !m.physicsBody);
 
-                    if (m instanceof Mesh) {
-                        this._addMesh(m, childToRootScaled);
-                    } else if (m instanceof InstancedMesh) {
-                        this._addMesh(m.sourceMesh, childToRootScaled);
-                    }
-                });
+            for (const m of transformNodes) {
+                const childToWorld = m.computeWorldMatrix();
+                const childToRootScaled = TmpVectors.Matrix[3];
+                childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+
+                if (m instanceof Mesh) {
+                    this._addMesh(m, childToRootScaled);
+                } else if (m instanceof InstancedMesh) {
+                    this._addMesh(m.sourceMesh, childToRootScaled);
+                }
+            }
         }
     }
 
@@ -499,9 +499,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return; // TODO: error handling
         }
         this._createOrUpdateBodyInstances(body, motionType, matrixData, 0, instancesCount, false);
-        body._pluginDataInstances.forEach((bodyId, index) => {
+        for (let index = 0; index < body._pluginDataInstances.length; index++) {
+            const bodyId = body._pluginDataInstances[index];
             this._bodies.set(bodyId.hpBodyId[0], { body: body, index: index });
-        });
+        }
     }
 
     private _createOrUpdateBodyInstances(body: PhysicsBody, motionType: PhysicsMotionType, matrixData: Float32Array, startIndex: number, endIndex: number, update: boolean): void {
@@ -2245,9 +2246,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         // Register for collide events by default
         const collideEvents = this._hknp.EventType.COLLISION_STARTED.value | this._hknp.EventType.COLLISION_CONTINUED.value | this._hknp.EventType.COLLISION_FINISHED.value;
         if (body._pluginDataInstances && body._pluginDataInstances.length) {
-            body._pluginDataInstances.forEach((bodyId) => {
+            for (let index = 0; index < body._pluginDataInstances.length; index++) {
+                const bodyId = body._pluginDataInstances[index];
                 this._hknp.HP_Body_SetEventMask(bodyId.hpBodyId, enabled ? collideEvents : 0);
-            });
+            }
         } else if (body._pluginData) {
             this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, enabled ? collideEvents : 0);
         }
@@ -2267,9 +2269,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             ? currentCollideEvents | this._hknp.EventType.COLLISION_FINISHED.value
             : currentCollideEvents & ~this._hknp.EventType.COLLISION_FINISHED.value;
         if (body._pluginDataInstances && body._pluginDataInstances.length) {
-            body._pluginDataInstances.forEach((bodyId) => {
+            for (let index = 0; index < body._pluginDataInstances.length; index++) {
+                const bodyId = body._pluginDataInstances[index];
                 this._hknp.HP_Body_SetEventMask(bodyId.hpBodyId, currentCollideEvents);
-            });
+            }
         } else if (body._pluginData) {
             this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, currentCollideEvents);
         }

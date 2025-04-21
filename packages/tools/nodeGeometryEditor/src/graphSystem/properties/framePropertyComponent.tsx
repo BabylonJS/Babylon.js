@@ -36,12 +36,12 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
 
     override render() {
         let configurableInputBlocks: GeometryInputBlock[] = [];
-        this.props.frame.nodes.forEach((node) => {
+        for (const node of this.props.frame.nodes) {
             const block = node.content.data as NodeGeometryBlock;
             if (block.isInput && block.visibleOnFrame) {
                 configurableInputBlocks.push(block as GeometryInputBlock);
             }
-        });
+        }
 
         configurableInputBlocks = configurableInputBlocks.sort((a, b) => {
             return a.name.localeCompare(b.name);

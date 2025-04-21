@@ -964,7 +964,9 @@ export class NodeMaterialBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedInputs.length; i++) {
+                const port = serializedInputs[i];
+
                 if (port.displayName) {
                     this.inputs[i].displayName = port.displayName;
                 }
@@ -972,10 +974,11 @@ export class NodeMaterialBlock {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -983,7 +986,7 @@ export class NodeMaterialBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 

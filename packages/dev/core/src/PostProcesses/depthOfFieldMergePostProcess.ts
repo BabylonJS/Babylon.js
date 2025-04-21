@@ -69,9 +69,10 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", originalFromInput);
             effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-            _blurSteps.forEach((step, index) => {
-                effect.setTextureFromPostProcessOutput("blurStep" + (_blurSteps.length - index - 1), step);
-            });
+            for (let i = 0; i < _blurSteps.length; i++) {
+                const step = _blurSteps[i];
+                effect.setTextureFromPostProcessOutput("blurStep" + (_blurSteps.length - i - 1), step);
+            }
         });
 
         if (!blockCompilationFinal) {

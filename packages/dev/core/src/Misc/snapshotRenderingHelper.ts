@@ -96,7 +96,9 @@ export class SnapshotRenderingHelper {
             }
 
             // Animate skeletons
-            scene.skeletons.forEach((skeleton) => skeleton.prepare(true));
+            for (const skeleton of scene.skeletons) {
+                skeleton.prepare(true);
+            }
 
             for (const mesh of scene.meshes) {
                 if (mesh.infiniteDistance) {

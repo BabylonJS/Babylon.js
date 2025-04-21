@@ -1633,13 +1633,13 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Shared defines
-        this._sharedData.blocksWithDefines.forEach((b) => {
+        for (const b of this._sharedData.blocksWithDefines) {
             b.initializeDefines(mesh, this, defines, useInstances);
-        });
+        }
 
-        this._sharedData.blocksWithDefines.forEach((b) => {
+        for (const b of this._sharedData.blocksWithDefines) {
             b.prepareDefines(mesh, this, defines, useInstances, subMesh);
-        });
+        }
 
         // Need to recompile?
         if (defines.isDirty) {
@@ -1650,42 +1650,42 @@ export class NodeMaterial extends PushMaterial {
             this._vertexCompilationState.compilationString = this._vertexCompilationState._builtCompilationString;
             this._fragmentCompilationState.compilationString = this._fragmentCompilationState._builtCompilationString;
 
-            this._sharedData.repeatableContentBlocks.forEach((b) => {
+            for (const b of this._sharedData.repeatableContentBlocks) {
                 b.replaceRepeatableContent(this._vertexCompilationState, this._fragmentCompilationState, mesh, defines);
-            });
+            }
 
             // Uniforms
             const uniformBuffers: string[] = [];
-            this._sharedData.dynamicUniformBlocks.forEach((b) => {
+            for (const b of this._sharedData.dynamicUniformBlocks) {
                 b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
-            });
+            }
 
             const mergedUniforms = this._vertexCompilationState.uniforms;
 
-            this._fragmentCompilationState.uniforms.forEach((u) => {
+            for (const u of this._fragmentCompilationState.uniforms) {
                 const index = mergedUniforms.indexOf(u);
 
                 if (index === -1) {
                     mergedUniforms.push(u);
                 }
-            });
+            }
 
             // Samplers
             const mergedSamplers = this._vertexCompilationState.samplers;
 
-            this._fragmentCompilationState.samplers.forEach((s) => {
+            for (const s of this._fragmentCompilationState.samplers) {
                 const index = mergedSamplers.indexOf(s);
 
                 if (index === -1) {
                     mergedSamplers.push(s);
                 }
-            });
+            }
 
             const fallbacks = new EffectFallbacks();
 
-            this._sharedData.blocksWithFallbacks.forEach((b) => {
+            for (const b of this._sharedData.blocksWithFallbacks) {
                 b.provideFallbacks(mesh, fallbacks);
-            });
+            }
 
             result = {
                 lightDisposed,
@@ -2567,7 +2567,8 @@ export class NodeMaterial extends PushMaterial {
     public whenTexturesReadyAsync(): Promise<void[]> {
         // Ensures all textures are ready to render.
         const textureReadyPromises: Promise<void>[] = [];
-        this.getActiveTextures().forEach((texture) => {
+        const activeTextures = this.getActiveTextures();
+        for (const texture of activeTextures) {
             const internalTexture = texture.getInternalTexture();
             if (internalTexture && !internalTexture.isReady) {
                 textureReadyPromises.push(
@@ -2581,7 +2582,7 @@ export class NodeMaterial extends PushMaterial {
                     })
                 );
             }
-        });
+        }
 
         return Promise.all(textureReadyPromises);
     }

@@ -545,10 +545,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     // Recycle by swapping with last particle
                     this._emitFromParticle(particle);
                     if (particle._attachedSubEmitters) {
-                        particle._attachedSubEmitters.forEach((subEmitter) => {
+                        for (const subEmitter of particle._attachedSubEmitters) {
                             subEmitter.particleSystem.disposeOnStop = true;
                             subEmitter.particleSystem.stop();
-                        });
+                        }
                         particle._attachedSubEmitters = null;
                     }
                     this.recycleParticle(particle);
