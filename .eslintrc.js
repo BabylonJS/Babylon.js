@@ -175,6 +175,7 @@ const rules = {
         jest: true,
     },
     plugins: [
+        "github",
         //   "react"
         "prettier",
         "jest",
@@ -191,6 +192,7 @@ const rules = {
         "plugin:jest/recommended",
         // "plugin:jsdoc/recommended",
         "plugin:prettier/recommended",
+        "plugin:github/recommended",
     ],
     settings: {
         react: {
@@ -263,6 +265,9 @@ const rules = {
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
+        "no-then": "off",
+        "no-implicit-buggy-globals": "off",
+        "no-dynamic-script-tag": "off",
     },
 };
 
