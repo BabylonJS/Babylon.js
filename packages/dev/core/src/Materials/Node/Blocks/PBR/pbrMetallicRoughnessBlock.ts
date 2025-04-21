@@ -59,7 +59,7 @@ const mapOutputToVariable: { [name: string]: [string, string] } = {
 
 /**
  * Block used to implement the PBR metallic/roughness model
- * #D8AK3Z#80
+ * @see https://playground.babylonjs.com/#D8AK3Z#80
  */
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
@@ -408,6 +408,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("reflectivityOut");
         state._excludeVariableName("microSurface");
         state._excludeVariableName("roughness");
+        state._excludeVariableName("vReflectivityColor");
 
         state._excludeVariableName("NdotVUnclamped");
         state._excludeVariableName("NdotV");
@@ -1013,9 +1014,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
-
+            ${isWebGPU ? "let" : `vec4${state.fSuffix}`} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName || "1.5"}, 1.0);
             reflectivityOut = reflectivityBlock(
-                vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.)
+                vReflectivityColor
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
@@ -1295,6 +1296,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             ],
         });
 
+        // ____________________ Clear Coat Initialization Code _____________________
+        const clearcoatBlock = this.clearcoat.isConnected ? (this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock) : null;
+
+        state.compilationString += ClearCoatBlock._GetInitializationCode(state, clearcoatBlock);
+
         // _____________________________ Iridescence _______________________________
         const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
         state.compilationString += IridescenceBlock.GetCode(iridescenceBlock, state);
@@ -1304,7 +1310,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Clear Coat ____________________________
-        const clearcoatBlock = this.clearcoat.isConnected ? (this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock) : null;
         const generateTBNSpace = !this.perturbedNormal.isConnected && !this.anisotropy.isConnected;
         const isTangentConnectedToPerturbNormal =
             this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent?.isConnected;
@@ -1335,6 +1340,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+                { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
             ],
         });
 
@@ -1371,12 +1377,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() },
                     { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vPositionW`, "g"), replace: worldPosVarName + ".xyz" },
+                    { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
                 ],
             });
         } else {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
-                substitutionVars: `${isWebGPU ? "fragmentInputs." : ""}vPositionW,${worldPosVarName}.xyz`,
+                substitutionVars: `${isWebGPU ? "fragmentInputs." : ""}vPositionW,${worldPosVarName}.xyz,uniforms.vReflectivityColor,vReflectivityColor`,
             });
         }
 
@@ -1431,6 +1438,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         replaceStrings = [
             { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vNormalW`, "g"), replace: this._vNormalWName },
             { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vPositionW`, "g"), replace: worldPosVarName },
+            { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
             {
                 search: /albedoTexture\.rgb;/g,
                 replace: `vec3${state.fSuffix}(1.);\n${colorOutput}.rgb = toGammaSpace(${colorOutput}.rgb);\n`,

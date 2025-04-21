@@ -118,9 +118,9 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
                 break;
         }
 
-        actions.forEach((action) => {
+        for (const action of actions) {
             action._executeCurrent();
-        });
+        }
     }
 
     private _getTriggerActions(node: Node, trigger: number): IAction[] {

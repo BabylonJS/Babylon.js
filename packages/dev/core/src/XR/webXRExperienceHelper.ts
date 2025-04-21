@@ -191,9 +191,9 @@ export class WebXRExperienceHelper implements IDisposable {
                     this._setState(WebXRState.EXITING_XR);
                 }
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
-                this.camera.rigCameras.forEach((c) => {
+                for (const c of this.camera.rigCameras) {
                     c.outputRenderTarget = null;
-                });
+                }
 
                 // Restore scene settings
                 this._scene.autoClear = this._originalSceneAutoClear;

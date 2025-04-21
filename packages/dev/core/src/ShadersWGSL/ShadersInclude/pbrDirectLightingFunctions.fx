@@ -4,6 +4,9 @@
 struct lightingInfo
 {
     diffuse: vec3f,
+    #ifdef SS_TRANSLUCENCY
+        diffuseTransmission: vec3f,
+    #endif
     #ifdef SPECULARTERM
         specular: vec3f,
     #endif
@@ -34,6 +37,12 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
     return mix(groundColor, lightColor, info.NdotL);
 }
 
+#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+    fn computeAreaDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
+        return info.areaLightDiffuse * lightColor;
+    }
+#endif
+
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     var diffuseTerm: f32 = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
@@ -47,28 +56,42 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 }
 
 #ifdef SS_TRANSLUCENCY
-    fn computeDiffuseAndTransmittedLighting(info: preLightingInfo, lightColor: vec3f, transmittance: vec3f) -> vec3f {
+    fn computeDiffuseTransmittedLighting(info: preLightingInfo, lightColor: vec3f, transmittance: vec3f) -> vec3f {
+        var transmittanceNdotL = vec3f(0.0);
         var NdotL: f32 = absEps(info.NdotLUnclamped);
+    #ifndef SS_TRANSLUCENCY_LEGACY
+        if (info.NdotLUnclamped < 0.0) {
+    #endif
+            // Use wrap lighting to simulate SSS.
+            var wrapNdotL: f32 = computeWrappedDiffuseNdotL(NdotL, 0.02);
 
-        // Use wrap lighting to simulate SSS.
-        var wrapNdotL: f32 = computeWrappedDiffuseNdotL(NdotL, 0.02);
+            // Remap transmittance from tr to 1. if ndotl is negative.
+            var trAdapt: f32 = step(0., info.NdotLUnclamped);
+            transmittanceNdotL = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
+    #ifndef SS_TRANSLUCENCY_LEGACY
+        }
 
-        // Remap transmittance from tr to 1. if ndotl is negative.
-        var trAdapt: f32 = step(0., info.NdotLUnclamped);
-        var transmittanceNdotL: vec3f = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
+        return (transmittanceNdotL / PI) * info.attenuation * lightColor;
+    #endif
 
-        var diffuseTerm: f32 = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
+        let diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
         return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
     }
 #endif
 
 #ifdef SPECULARTERM
-    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
+    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f, ior: f32) -> vec3f {
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
 
-        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90);
+        #ifdef METALLICWORKFLOW
+            // Scale the reflectance by the IOR for values less than 1.5
+            var f90Mod = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
+        #else
+            var f90Mod = 1.0;
+        #endif
+        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90 * f90Mod);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
@@ -85,6 +108,13 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var specTerm: vec3f = fresnel * distribution * smithVisibility;
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
+
+    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+        fn computeAreaSpecularLighting(info: preLightingInfo, specularColor: vec3f) -> vec3f {
+            var fresnel:vec3f  = ( specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
+            return specularColor * fresnel * info.areaLightSpecular;
+        }
+    #endif
 #endif
 
 #ifdef ANISOTROPIC
@@ -161,16 +191,5 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 
         var sheenTerm: f32 = fresnel * distribution * visibility;
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
-    }
-#endif
-
-#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-    fn computeAreaDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
-        return info.areaLightDiffuse * lightColor;
-    }
-
-    fn computeAreaSpecularLighting(info: preLightingInfo, specularColor: vec3f) -> vec3f {
-        var fresnel:vec3f  = ( specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
-	    return specularColor * fresnel * info.areaLightSpecular;
     }
 #endif

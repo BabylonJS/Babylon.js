@@ -364,7 +364,9 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             return false;
         }
 
-        this._xrInput.controllers.forEach(this._attachController);
+        for (const controller of this._xrInput.controllers) {
+            this._attachController(controller);
+        }
         this._addNewAttachObserver(this._xrInput.onControllerAddedObservable, this._attachController);
         this._addNewAttachObserver(this._xrInput.onControllerRemovedObservable, (controller: WebXRInputSource) => {
             // REMOVE the controller
@@ -378,10 +380,11 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
+        const keys = Object.keys(this._controllers);
 
-        Object.keys(this._controllers).forEach((controllerId) => {
+        for (const controllerId of keys) {
             this._detachController(controllerId);
-        });
+        }
 
         this._controllers = {};
 

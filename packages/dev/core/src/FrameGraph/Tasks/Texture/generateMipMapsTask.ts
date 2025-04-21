@@ -9,10 +9,10 @@ export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
     /**
      * The texture to generate mipmaps for.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle;
 
     /**
-     * The output texture (same as destinationTexture, but the handle may be different).
+     * The output texture (same as targetTexture, but the handle may be different).
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -28,16 +28,16 @@ export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
     }
 
     public record() {
-        if (this.destinationTexture === undefined) {
-            throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: destinationTexture is required`);
+        if (this.targetTexture === undefined) {
+            throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: targetTexture is required`);
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.destinationTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.targetTexture);
 
         if (!outputTextureDescription.options.createMipMaps) {
-            throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: destinationTexture must have createMipMaps set to true`);
+            throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: targetTexture must have createMipMaps set to true`);
         }
 
         const pass = this._frameGraph.addRenderPass(this.name);

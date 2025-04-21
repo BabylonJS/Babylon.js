@@ -17,25 +17,41 @@ export class NodeRenderGraphResourceContainerBlock extends NodeRenderGraphBlock 
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("resource0", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource1", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource2", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource3", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource4", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource5", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource6", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("resource7", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("resource0", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource1", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource2", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource3", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource4", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource5", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource6", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("resource7", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
 
-        this.resource0.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource1.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource2.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource3.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource4.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource5.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource6.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
-        this.resource7.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
+        this.resource0.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource1.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource2.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource3.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource4.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource5.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource6.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
+        this.resource7.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer | NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+        );
     }
 
     /**

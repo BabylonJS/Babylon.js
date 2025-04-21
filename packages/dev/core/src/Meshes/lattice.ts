@@ -2,8 +2,8 @@ import { Vector3 } from "core/Maths/math.vector";
 import type { Mesh } from "./mesh";
 import type { FloatArray } from "core/types";
 import { VertexBuffer } from "./buffer";
-import { Clamp } from "core/Maths/math.scalar.functions";
-
+import { Clamp, OutsideRange } from "core/Maths/math.scalar.functions";
+import { Epsilon } from "core/Maths/math.constants";
 /**
  * Interface used to define options for creating a lattice
  */
@@ -24,8 +24,8 @@ export interface ILatticeOptions {
 
 /**
  * Class used to represent a lattice
- * #MDVD75#18 - Moving lattice bounds
- * #MDVD75#23 - Twist
+ * @see [Moving lattice bounds](https://playground.babylonjs.com/#MDVD75#18)
+ * @see [Twist](https://playground.babylonjs.com/#MDVD75#23)
  */
 export class Lattice {
     private _resolutionX: number;
@@ -229,7 +229,7 @@ export class Lattice {
             const vertex = this._tmpVector.fromArray(positions, i);
 
             // Check we are inside
-            if (vertex.x < min.x || vertex.x > max.x || vertex.y < min.y || vertex.y > max.y || vertex.z < min.z || vertex.z > max.z) {
+            if (OutsideRange(vertex.x, min.x, max.x, Epsilon) || OutsideRange(vertex.y, min.y, max.y, Epsilon) || OutsideRange(vertex.z, min.z, max.z, Epsilon)) {
                 if (target) {
                     vertex.toArray(target, i);
                 }

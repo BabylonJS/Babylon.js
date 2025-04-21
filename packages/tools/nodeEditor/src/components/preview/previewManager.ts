@@ -220,7 +220,7 @@ export class PreviewManager {
         }
 
         // Adding a rtt to read from
-        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false);
+        this._globalState.previewTexture = new RenderTargetTexture("rtt", 256, this._scene, false, false);
         this._globalState.pickingTexture = new RenderTargetTexture("rtt2", 256, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
         this._globalState.previewTexture.renderList = null;
         this._globalState.pickingTexture.renderList = null;
@@ -276,7 +276,9 @@ export class PreviewManager {
         this._globalState.envType = PreviewType.Room;
         this._globalState.previewType = PreviewType.Box;
         this._globalState.listOfCustomPreviewFiles = [];
-        this._scene.meshes.forEach((m) => m.dispose());
+        for (const m of this._scene.meshes) {
+            m.dispose();
+        }
         this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
         this._refreshPreviewMesh(true);
     }

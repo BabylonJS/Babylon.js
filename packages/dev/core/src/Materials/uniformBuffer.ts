@@ -1175,6 +1175,9 @@ export class UniformBuffer {
                 this._buffer = dataBuffer;
                 this._createBufferOnWrite = false;
                 this._currentEffect = undefined as any;
+                // The following line prevents the current buffer (_buffer / _bufferIndex) from being updated during subsequent calls to updateXXX() due to a call to _checkNewFrame()
+                // If we called setDataBuffer, it means that we want to update the buffer we just defined and not another one (_checkNewFrame() can modify the current buffer).
+                this._currentFrameId = this._engine.frameId;
                 return true;
             }
         }

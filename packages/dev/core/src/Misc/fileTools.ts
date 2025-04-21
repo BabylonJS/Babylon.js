@@ -172,7 +172,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 
 /**
  * Configuration used to load images
- * @see #DKMEZK#2
+ * @see https://playground.babylonjs.com/#DKMEZK#2
  */
 export const LoadImageConfiguration: {
     /**
@@ -196,6 +196,7 @@ export const LoadImageConfiguration: {
  * @param offlineProvider offline provider for caching
  * @param mimeType optional mime type
  * @param imageBitmapOptions
+ * @param engine the engine instance to use
  * @returns the HTMLImageElement of the loaded image
  * @internal
  */
@@ -205,9 +206,9 @@ export const LoadImage = (
     onError: (message?: string, exception?: any) => void,
     offlineProvider: Nullable<IOfflineProvider>,
     mimeType: string = "",
-    imageBitmapOptions?: ImageBitmapOptions
+    imageBitmapOptions?: ImageBitmapOptions,
+    engine = EngineStore.LastCreatedEngine
 ): Nullable<HTMLImageElement> => {
-    const engine = EngineStore.LastCreatedEngine;
     if (typeof HTMLImageElement === "undefined" && !engine?._features.forceBitmapOverHTMLImageElement) {
         onError("LoadImage is only supported in web or BabylonNative environments.");
         return null;
@@ -282,15 +283,15 @@ export const LoadImage = (
     const handlersList: { target: any; name: string; handler: any }[] = [];
 
     const loadHandlersList = () => {
-        handlersList.forEach((handler) => {
+        for (const handler of handlersList) {
             handler.target.addEventListener(handler.name, handler.handler);
-        });
+        }
     };
 
     const unloadHandlersList = () => {
-        handlersList.forEach((handler) => {
+        for (const handler of handlersList) {
             handler.target.removeEventListener(handler.name, handler.handler);
-        });
+        }
         handlersList.length = 0;
     };
 
@@ -759,6 +760,39 @@ export const RequestFile = (
     }
 
     return fileRequest;
+};
+
+/**
+ * Reads the mime type from a URL, if available.
+ * @param url
+ * @returns
+ */
+export const GetMimeType = (url: string): string | undefined => {
+    const { match, type } = TestBase64DataUrl(url);
+    if (match) {
+        return type || undefined;
+    }
+
+    const lastDot = url.lastIndexOf(".");
+    const extension = url.substring(lastDot + 1).toLowerCase();
+
+    switch (extension) {
+        case "glb":
+            return "model/gltf-binary";
+        case "bin":
+            return "application/octet-stream";
+        case "gltf":
+            return "model/gltf+json";
+        case "jpg":
+        case "jpeg":
+            return "image/jpeg";
+        case "png":
+            return "image/png";
+        case "webp":
+            return "image/webp";
+        default:
+            return undefined;
+    }
 };
 
 /**

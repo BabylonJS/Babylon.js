@@ -214,9 +214,10 @@ export class Gizmo implements IGizmo {
             // eslint-disable-next-line no-throw-literal
             throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
         }
-        this._rootMesh.getChildMeshes().forEach((c) => {
+        const children = this._rootMesh.getChildMeshes();
+        for (const c of children) {
             c.dispose();
-        });
+        }
         mesh.parent = this._rootMesh;
         this._customMeshSet = true;
     }
@@ -588,12 +589,12 @@ export class Gizmo implements IGizmo {
      */
     protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial) {
         if (gizmoMeshes) {
-            gizmoMeshes.forEach((m: Mesh) => {
+            for (const m of gizmoMeshes) {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
                     (<LinesMesh>m).color = material.diffuseColor;
                 }
-            });
+            }
         }
     }
 
@@ -605,11 +606,32 @@ export class Gizmo implements IGizmo {
      */
     public static GizmoAxisPointerObserver(gizmoLayer: UtilityLayerRenderer, gizmoAxisCache: Map<Mesh, GizmoAxisCache>): Observer<PointerInfo> {
         let dragging = false;
+        let activeDragButton = -1;
+        let forcePointerUp = false;
 
         const pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.pickInfo) {
-                // On Hover Logic
-                if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
+                // If we are dragging and the user presses another button, end the drag.
+                // Otherwise, tracking when the drag should end becomes very complex.
+                // pointerDragBehavior.ts has similar logic.
+                forcePointerUp = dragging && pointerInfo.event.button !== -1 && pointerInfo.event.button !== activeDragButton;
+
+                if (forcePointerUp || pointerInfo.type === PointerEventTypes.POINTERUP) {
+                    // On Mouse Up
+
+                    gizmoAxisCache.forEach((cache) => {
+                        cache.active = false;
+                        dragging = false;
+                        activeDragButton = -1;
+                        for (const m of cache.gizmoMeshes) {
+                            m.material = cache.dragBehavior.enabled ? cache.material : cache.disableMaterial;
+                            if ((m as LinesMesh).color) {
+                                (m as LinesMesh).color = cache.material.diffuseColor;
+                            }
+                        }
+                    });
+                } else if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
+                    // On Hover Logic
                     if (dragging) {
                         return;
                     }
@@ -617,48 +639,33 @@ export class Gizmo implements IGizmo {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = cache.dragBehavior.enabled ? (isHovered || cache.active ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                            for (const m of cache.gizmoMeshes) {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
                                     (m as LinesMesh).color = material.diffuseColor;
                                 }
-                            });
+                            }
                         }
                     });
-                }
-
-                // On Mouse Down
-                if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                } else if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                    // On Mouse Down
                     // If user Clicked Gizmo
                     if (gizmoAxisCache.has(pointerInfo.pickInfo.pickedMesh?.parent as Mesh)) {
                         dragging = true;
+                        activeDragButton = pointerInfo.event.button;
                         const statusMap = gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
                         statusMap!.active = true;
                         gizmoAxisCache.forEach((cache) => {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = (isHovered || cache.active) && cache.dragBehavior.enabled ? cache.hoverMaterial : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                            for (const m of cache.gizmoMeshes) {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
                                     (m as LinesMesh).color = material.diffuseColor;
                                 }
-                            });
-                        });
-                    }
-                }
-
-                // On Mouse Up
-                if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                    gizmoAxisCache.forEach((cache) => {
-                        cache.active = false;
-                        dragging = false;
-                        cache.gizmoMeshes.forEach((m: Mesh) => {
-                            m.material = cache.dragBehavior.enabled ? cache.material : cache.disableMaterial;
-                            if ((m as LinesMesh).color) {
-                                (m as LinesMesh).color = cache.material.diffuseColor;
                             }
                         });
-                    });
+                    }
                 }
             }
         });

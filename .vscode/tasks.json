@@ -510,7 +510,21 @@
             "problemMatcher": []
         },
         {
-            "label": "Viewer (Web)",
+            "label": "Watch Viewer",
+            "type": "shell",
+            "command": "npm",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "watch:dev", "-w", "@tools/viewer"],
+            "isBackground": true,
+            "problemMatcher": ["$tsc-watch"]
+        },
+        {
+            "label": "Viewer Test App (Web)",
             "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
             "command": "npm",
@@ -534,6 +548,24 @@
                     }
                 }
             }
+        },
+        {
+            "label": "Viewer Configurator Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": ["Watch all (Dev)", "Watch Viewer"],
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/viewer-configurator"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         }
     ],
     "inputs": [

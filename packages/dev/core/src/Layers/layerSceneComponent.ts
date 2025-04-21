@@ -154,9 +154,9 @@ export class LayerSceneComponent implements ISceneComponent {
         if (!container.layers) {
             return;
         }
-        container.layers.forEach((layer) => {
+        for (const layer of container.layers) {
             this.scene.layers.push(layer);
-        });
+        }
     }
 
     /**
@@ -168,7 +168,7 @@ export class LayerSceneComponent implements ISceneComponent {
         if (!container.layers) {
             return;
         }
-        container.layers.forEach((layer) => {
+        for (const layer of container.layers) {
             const index = this.scene.layers.indexOf(layer);
             if (index !== -1) {
                 this.scene.layers.splice(index, 1);
@@ -176,6 +176,6 @@ export class LayerSceneComponent implements ISceneComponent {
             if (dispose) {
                 layer.dispose();
             }
-        });
+        }
     }
 }

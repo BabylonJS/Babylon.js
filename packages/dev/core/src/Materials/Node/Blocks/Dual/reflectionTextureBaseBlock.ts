@@ -420,15 +420,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         onlyReflectionVector = false,
         doNotEmitInvertZ = false
     ): string {
-        if (!worldPos) {
-            worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `v_${this.worldPosition.associatedVariableName}`;
-        }
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
         const reflectionMatrix = (isWebGPU ? "uniforms." : "") + this._reflectionMatrixName;
         const direction = `normalize(${this._directionWName})`;
         const positionUVW = `${this._positionUVWName}`;
         const vEyePosition = `${this.cameraPosition.associatedVariableName}`;
         const view = `${this.view.associatedVariableName}`;
+        const fragmentInputsPrefix = isWebGPU ? "fragmentInputs." : "";
+
+        if (!worldPos) {
+            worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `${fragmentInputsPrefix}v_${this.worldPosition.associatedVariableName}`;
+        }
 
         worldNormalVarName += ".xyz";
 

@@ -231,9 +231,9 @@ export class RuntimeAnimation {
         // Cloning events locally
         const events = animation.getEvents();
         if (events && events.length > 0) {
-            events.forEach((e) => {
+            for (const e of events) {
                 this._events.push(e._clone());
-            });
+            }
         }
 
         this._enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;

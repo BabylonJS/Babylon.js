@@ -201,9 +201,11 @@ export function _isRenderingStateCompiled(pipelineContext: IPipelineContext, gl:
         return false;
     }
     const stateObject = getStateObject(gl);
-    if (gl.getProgramParameter(webGLPipelineContext.program!, stateObject.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
-        _finalizePipelineContext(webGLPipelineContext, gl, validateShaderPrograms);
-        return true;
+    if (stateObject && stateObject.parallelShaderCompile && stateObject.parallelShaderCompile.COMPLETION_STATUS_KHR && webGLPipelineContext.program) {
+        if (gl.getProgramParameter(webGLPipelineContext.program, stateObject.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
+            _finalizePipelineContext(webGLPipelineContext, gl, validateShaderPrograms);
+            return true;
+        }
     }
 
     return false;
@@ -349,7 +351,7 @@ function _compileRawShader(source: string, type: string, gl: WebGLContext, _cont
 /**
  * @internal
  */
-export function _setProgram(program: WebGLProgram, gl: WebGLContext): void {
+export function _setProgram(program: Nullable<WebGLProgram>, gl: WebGLContext): void {
     gl.useProgram(program);
 }
 

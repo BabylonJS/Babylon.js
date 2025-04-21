@@ -160,6 +160,7 @@ export class HardwareScalingOptimization extends SceneOptimization {
         }
 
         this._currentScale += this._directionOffset * this.step;
+        this._currentScale = Math.min(this.maximumScale, this._currentScale);
 
         scene.getEngine().setHardwareScalingLevel(this._currentScale);
 

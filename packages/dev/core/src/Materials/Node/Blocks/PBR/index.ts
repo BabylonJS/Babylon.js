@@ -5,3 +5,4 @@ export * from "./reflectionBlock";
 export * from "./clearCoatBlock";
 export * from "./refractionBlock";
 export * from "./subSurfaceBlock";
+export * from "./iridescenceBlock";

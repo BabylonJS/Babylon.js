@@ -169,6 +169,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+        // While we do lock when getting focus, it's possible that as the user changes this value,
+        // that the UI hosting us has reacted by hiding another line component, and that line component
+        // will release the lock we took. Since the user is typing now, we ensure we have the lock.
+        this.lock();
+
         const step = parseFloat(this.props.step || this.props.isInteger ? "1" : "0.01");
         const handleArrowKey = (sign: number) => {
             if (event.shiftKey) {

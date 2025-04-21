@@ -198,8 +198,9 @@ export class WebGPUCacheBindGroups {
                     if (bindingInfo) {
                         if (this._engine.dbgSanityChecks && bindingInfo.texture === null) {
                             Logger.Error(
-                                `Trying to bind a null texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) =>
-                                    key === "texture" ? "<no dump>" : value
+                                `Trying to bind a null texture! name="${name}", entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(
+                                    bindingInfo,
+                                    (key: string, value: any) => (key === "texture" ? "<no dump>" : value)
                                 )}, materialContext.uniqueId=${materialContext.uniqueId}`,
                                 50
                             );

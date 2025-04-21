@@ -38,8 +38,8 @@ export class ThinBloomMergePostProcess extends EffectWrapper {
     /** Weight of the bloom to be added to the original input. */
     public weight = 1;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
         this._drawWrapper.effect!.setFloat("bloomWeight", this.weight);
     }
 }

@@ -1,0 +1,19 @@
+{
+    "root": "https://cdn.babylonjs.com",
+    "tests": [
+        {
+            "title": "Basic scene with a sphere",
+            "playgroundId": "#9K3MRA#1",
+            "referenceImage": "webxr-basic-scene.png",
+            "renderCount": 10,
+            "continueRenderingOnDone": true
+        },
+        {
+            "title": "WebXR goalie scene",
+            "playgroundId": "#PPM311#148",
+            "referenceImage": "webxr-goalie-scene.png",
+            "renderCount": 10,
+            "continueRenderingOnDone": true
+        }
+    ]
+}

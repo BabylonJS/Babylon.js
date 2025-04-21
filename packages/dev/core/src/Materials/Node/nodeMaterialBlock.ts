@@ -617,9 +617,17 @@ export class NodeMaterialBlock {
                 const connectedPoint = input.connectedPoint!;
                 if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.declarationVariableName, connectedPoint.type)) {
                     const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "";
-                    state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName} = ${connectedPoint.associatedVariableName};\n`;
+                    if (state.shaderLanguage === ShaderLanguage.WGSL && connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Matrix) {
+                        // We can't pass a matrix as a varying in WGSL, so we need to split it into 4 vectors
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r0 = ${connectedPoint.associatedVariableName}[0];\n`;
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r1 = ${connectedPoint.associatedVariableName}[1];\n`;
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r2 = ${connectedPoint.associatedVariableName}[2];\n`;
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName}_r3 = ${connectedPoint.associatedVariableName}[3];\n`;
+                    } else {
+                        state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName} = ${connectedPoint.associatedVariableName};\n`;
+                    }
                 }
-                const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
+                const prefix = state.shaderLanguage === ShaderLanguage.WGSL && connectedPoint.type !== NodeMaterialBlockConnectionPointTypes.Matrix ? "fragmentInputs." : "";
                 input.associatedVariableName = prefix + "v_" + connectedPoint.declarationVariableName;
                 input._enforceAssociatedVariableName = true;
             }
@@ -645,6 +653,7 @@ export class NodeMaterialBlock {
             "uv6",
             "position2d",
             "particle_uv",
+            "postprocess_uv",
             "matricesIndices",
             "matricesWeights",
             "world0",
@@ -955,7 +964,9 @@ export class NodeMaterialBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedInputs.length; i++) {
+                const port = serializedInputs[i];
+
                 if (port.displayName) {
                     this.inputs[i].displayName = port.displayName;
                 }
@@ -963,10 +974,11 @@ export class NodeMaterialBlock {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -974,7 +986,7 @@ export class NodeMaterialBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 

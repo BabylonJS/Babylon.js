@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "outDir": "./dist/tsbuild",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "composite": true
     },
 
     "references": [

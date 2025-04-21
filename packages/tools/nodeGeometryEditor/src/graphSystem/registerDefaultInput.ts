@@ -15,6 +15,9 @@ export const RegisterDefaultInput = (stateManager: StateManager) => {
         if (point.type === NodeGeometryBlockConnectionPointTypes.AutoDetect) {
             return null;
         }
+        if (point.type === NodeGeometryBlockConnectionPointTypes.Geometry) {
+            return null;
+        }
         const emittedBlock = new GeometryInputBlock(NodeGeometryBlockConnectionPointTypes[point.type], point.type);
 
         const nodeGeometry = (rootData as GlobalState).nodeGeometry;

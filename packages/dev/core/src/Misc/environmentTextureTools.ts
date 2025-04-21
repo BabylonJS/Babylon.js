@@ -872,6 +872,8 @@ async function _UploadLevelsAsync(
         }
     }
 
+    await Promise.all(promises);
+
     // Fill remaining mipmaps with black textures.
     if (imageData.length < mipmapsCount) {
         let data: ArrayBufferView;
@@ -893,12 +895,10 @@ async function _UploadLevelsAsync(
         }
         for (let i = imageData.length; i < mipmapsCount; i++) {
             for (let face = 0; face < 6; face++) {
-                engine._uploadArrayBufferViewToTexture(texture, data!, face, i);
+                engine._uploadArrayBufferViewToTexture(cubeRtt?.texture || texture, data!, face, i);
             }
         }
     }
-
-    await Promise.all(promises);
 
     // Release temp RTT.
     if (cubeRtt) {

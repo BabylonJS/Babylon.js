@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
@@ -259,7 +259,7 @@ export class Sandbox extends React.Component<
             <div id="root">
                 <span>
                     <p id="droptext" ref={this._dropTextRef}>
-                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat or babylon files to view them"}
+                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat, spz or babylon files to view them"}
                     </p>
                     {this._globalState.reflector ? (
                         <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
@@ -304,7 +304,8 @@ export class Sandbox extends React.Component<
 
     public static Show(hostElement: HTMLElement): void {
         const sandbox = React.createElement(Sandbox, {});
-        ReactDOM.render(sandbox, hostElement);
+        const root = createRoot(hostElement);
+        root.render(sandbox);
     }
 
     public static CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {

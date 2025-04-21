@@ -283,15 +283,16 @@ export class NodeRenderGraphBlock {
         return this;
     }
 
-    protected _addDependenciesInput() {
-        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+    protected _addDependenciesInput(additionalAllowedTypes = 0) {
+        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
         const dependencies = this.getInputByName("dependencies")!;
 
-        dependencies.addAcceptedConnectionPointTypes(
+        dependencies.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
-                NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+                NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator |
+                additionalAllowedTypes
         );
 
         return dependencies;
@@ -480,7 +481,7 @@ export class NodeRenderGraphBlock {
         const serializedOutputs = serializationObject.outputs;
 
         if (serializedInputs) {
-            serializedInputs.forEach((port: any) => {
+            for (const port of serializedInputs) {
                 const input = this.inputs.find((i) => i.name === port.name);
                 if (!input) {
                     return;
@@ -492,11 +493,12 @@ export class NodeRenderGraphBlock {
                     input.isExposedOnFrame = port.isExposedOnFrame;
                     input.exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
 
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -504,7 +506,7 @@ export class NodeRenderGraphBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 
@@ -568,7 +570,7 @@ export class NodeRenderGraphBlock {
             codeString += `// ${this.comments}\n`;
         }
         const className = this.getClassName();
-        if (className === "RenderGraphInputBlock") {
+        if (className === "NodeRenderGraphInputBlock") {
             const block = this as unknown as NodeRenderGraphInputBlock;
             const blockType = block.type;
 

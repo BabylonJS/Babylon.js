@@ -754,9 +754,9 @@ export class SolidParser {
                 // Define a mesh or an object
                 // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
             } else if ((result = SolidParser._GetZbrushMRGB(line, !this._loadingOptions.importVertexColors))) {
-                result.forEach((element) => {
+                for (const element of result) {
                     this._extColors.push(element);
-                });
+                }
             } else if ((result = SolidParser.LinePattern3.exec(line)) !== null) {
                 //Value of result
                 //["l 1/1/1 2/2/2"]

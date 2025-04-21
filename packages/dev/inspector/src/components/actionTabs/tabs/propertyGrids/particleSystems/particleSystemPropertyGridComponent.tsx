@@ -355,7 +355,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={system.id} />
+                    <TextLineComponent label="ID" value={system.id} onCopy />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"

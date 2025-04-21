@@ -193,11 +193,12 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         } else {
             canvases.push(this._renderingCanvas);
         }
-        canvases.forEach((canvas, index) => {
+        for (let i = 0; i < canvases.length; i++) {
+            const canvas = canvases[i];
             const clonedLoadingDiv = loadingDiv!.cloneNode(true) as HTMLDivElement;
-            clonedLoadingDiv.id += `-${index}`;
+            clonedLoadingDiv.id += `-${i}`;
             this._loadingDivToRenderingCanvasMap.set(clonedLoadingDiv, [canvas, null]);
-        });
+        }
 
         this._resizeLoadingUI();
 
@@ -263,7 +264,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingText = text;
 
         if (this._loadingTextDiv) {
-            this._loadingTextDiv.innerHTML = this._loadingText;
+            this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
+                // set loadingTextDiv of current loadingDiv
+                loadingDiv.children[0].innerHTML = this._loadingText;
+            });
         }
     }
 

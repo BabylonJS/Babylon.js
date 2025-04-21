@@ -693,12 +693,12 @@ export class Skeleton implements IAnimatable {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      */
     public enableBlending(blendingSpeed = 0.01) {
-        this.bones.forEach((bone) => {
-            bone.animations.forEach((animation: Animation) => {
+        for (const bone of this.bones) {
+            for (const animation of bone.animations) {
                 animation.enableBlending = true;
                 animation.blendingSpeed = blendingSpeed;
-            });
-        });
+            }
+        }
     }
 
     /**
@@ -922,8 +922,8 @@ export class Skeleton implements IAnimatable {
      * Set the current local matrix as the restPose for all bones in the skeleton.
      */
     public setCurrentPoseAsRest(): void {
-        this.bones.forEach((b) => {
+        for (const b of this.bones) {
             b.setCurrentPoseAsRest();
-        });
+        }
     }
 }

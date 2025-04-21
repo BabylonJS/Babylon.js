@@ -27,8 +27,8 @@ export class FrameGraphBlurTask extends FrameGraphPostProcessTask {
     ): FrameGraphRenderPass {
         const pass = super.record(skipCreationOfDisabledPasses, additionalExecute, additionalBindings);
 
-        this.postProcess.textureWidth = this._outputWidth;
-        this.postProcess.textureHeight = this._outputHeight;
+        this.postProcess.textureWidth = this._outputWidth; // should be _sourceWidth, but to avoid a breaking change, we use _outputWidth (BlurPostProcess uses _outputTexture to get width/height)
+        this.postProcess.textureHeight = this._outputHeight; // same as above for height
 
         return pass;
     }

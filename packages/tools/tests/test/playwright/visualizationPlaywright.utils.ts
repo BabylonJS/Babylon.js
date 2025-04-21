@@ -4,7 +4,19 @@ import * as fs from "fs";
 import { test, expect, Page } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
-export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
+export const evaluatePlaywrightVisTests = async (
+    engineType = "webgl2",
+    testFileName = "config",
+    debug = false,
+    debugWait = false,
+    logToConsole = true,
+    logToFile = false,
+    optionalStateChanges?: {
+        beforeScene?: (page: Page) => Promise<void>;
+        beforeRender?: (page: Page) => Promise<void>;
+    },
+    dimensions?: { width?: number; height?: number }
+) => {
     debug = process.env.DEBUG === "true" || debug;
 
     const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 100000;
@@ -18,8 +30,6 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
     }
 
     const configPath = process.env.CONFIG_PATH || path.resolve(__dirname, "../visualization", testFileName + ".json");
-    //TODO
-    const useStandardTestList = testFileName === "config";
     // load the config
     const rawJsonData = fs.readFileSync(configPath, "utf8");
     const config = JSON.parse(rawJsonData.replace(/^\uFEFF/, ""));
@@ -62,7 +72,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             return window.BABYLON;
         });
         page.setDefaultTimeout(0);
-        page.setViewportSize({ width: 600, height: 400 });
+        page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
     });
 
     test.afterAll(async () => {
@@ -113,12 +123,18 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             page.on("console", logCallback);
             console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
             test.setTimeout(timeout);
+            if (optionalStateChanges?.beforeScene) {
+                await optionalStateChanges.beforeScene(page);
+            }
             await page.evaluate(evaluatePrepareScene, {
                 sceneMetadata: testCase,
                 globalConfig: getGlobalConfig({ root: config.root }),
             });
+            if (optionalStateChanges?.beforeRender) {
+                await optionalStateChanges.beforeRender(page);
+            }
             const renderCount = testCase.renderCount || 1;
-            const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, { renderCount });
+            const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, { renderCount, continueRenderingOnDone: !!testCase.continueRenderingOnDone });
             expect(renderResult).toBeTruthy();
             if (engineType.startsWith("webgl")) {
                 const glError = await page.evaluate(evaluateIsGLError);
@@ -188,6 +204,8 @@ export const evaluateInitEngineForVisualization = async ({
 
     BABYLON.BasisToolsOptions.JSModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.js";
     BABYLON.BasisToolsOptions.WasmModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.wasm";
+
+    BABYLON.NodeMaterial.UseNativeShaderLanguageOfEngine = true;
 
     window.forceUseReverseDepthBuffer = useReverseDepthBuffer === 1 || useReverseDepthBuffer === "true";
     window.forceUseNonCompatibilityMode = useNonCompatibilityMode === 1 || useNonCompatibilityMode === "true";
@@ -355,7 +373,7 @@ export const evaluatePrepareScene = async ({
     return true;
 };
 
-export const evaluateRenderSceneForVisualization = async ({ renderCount }: { renderCount: number }) => {
+export const evaluateRenderSceneForVisualization = async ({ renderCount, continueRenderingOnDone }: { renderCount: number; continueRenderingOnDone: boolean }) => {
     return new Promise((resolve) => {
         if (!window.scene || !window.engine) {
             return resolve(false);
@@ -379,13 +397,18 @@ export const evaluateRenderSceneForVisualization = async ({ renderCount }: { ren
                 try {
                     if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
                         if (window.scene!.isReady()) {
-                            window.engine && window.engine.stopRenderLoop();
+                            if (continueRenderingOnDone) {
+                                window.scene && window.scene.render();
+                            } else {
+                                window.engine && window.engine.stopRenderLoop();
+                            }
                             return resolve(true);
                         } else {
                             console.error("Scene is not ready after rendering is done");
                             return resolve(false);
                         }
                     } else {
+                        (window as any).onRenderCallback && (window as any).onRenderCallback();
                         window.scene && window.scene.render();
                         renderCount--;
                         if (adtsAreReady()) {

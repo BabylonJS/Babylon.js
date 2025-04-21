@@ -27,9 +27,7 @@ export class NodeRenderGraphExecuteBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        const dependencies = this._addDependenciesInput();
-
-        dependencies.addAcceptedConnectionPointTypes(
+        this._addDependenciesInput(
             NodeRenderGraphBlockConnectionPointTypes.Camera | NodeRenderGraphBlockConnectionPointTypes.ShadowLight | NodeRenderGraphBlockConnectionPointTypes.ObjectList
         );
 

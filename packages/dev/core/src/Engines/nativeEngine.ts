@@ -28,7 +28,7 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from "./Native/nativeShaderProcessors";
 import type { IMaterialContext } from "./IMaterialContext";
 import type { IDrawContext } from "./IDrawContext";
-import type { ICanvas, IImage } from "./ICanvas";
+import type { ICanvas, IImage, IPath2D } from "./ICanvas";
 import type { IStencilState } from "../States/IStencilState";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { NativeData } from "./Native/nativeDataStream";
@@ -219,7 +219,7 @@ const remappedAttributesNames: string[] = [];
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 8;
+    private static readonly PROTOCOL_VERSION = 9;
 
     private readonly _engine: INativeEngine = new _native.Engine({
         version: Engine.Version,
@@ -689,7 +689,7 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
+        if (instancesCount) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
@@ -703,7 +703,6 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.finishEncodingCommand();
-        // }
     }
 
     /**
@@ -720,7 +719,7 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        if (instancesCount && _native.Engine.COMMAND_DRAWINSTANCED) {
+        if (instancesCount) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
@@ -734,11 +733,10 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.finishEncodingCommand();
-        // }
     }
 
     public override createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        const isAsync = !!(this._caps.parallelShaderCompile && this._engine.createProgramAsync);
+        const isAsync = !!this._caps.parallelShaderCompile;
         return new NativePipelineContext(this, isAsync, shaderProcessingContext as Nullable<NativeShaderProcessingContext>);
     }
 
@@ -943,6 +941,10 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    public override setStateCullFaceType(_cullBackFaces?: boolean, _force?: boolean): void {
+        throw new Error("setStateCullFaceType: Not Implemented");
     }
 
     public override setState(
@@ -1631,9 +1633,15 @@ export class NativeEngine extends Engine {
         }
 
         if (!!texture && !!texture._hardwareTexture) {
-            const source = canvas.getCanvasTexture();
             const destination = texture._hardwareTexture.underlyingResource;
-            this._engine.copyTexture(destination, source);
+            const context = canvas.getContext();
+            // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
+            context.flush();
+            const source = canvas.getCanvasTexture();
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
             texture.isReady = true;
         }
     }
@@ -2507,10 +2515,6 @@ export class NativeEngine extends Engine {
     }
 
     private _unsetNativeTexture(uniform: NativeUniform) {
-        if (!_native.Engine.COMMAND_UNSETTEXTURE) {
-            return;
-        }
-
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_UNSETTEXTURE);
         this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform);
         this._commandBufferEncoder.finishEncodingCommand();
@@ -2556,10 +2560,6 @@ export class NativeEngine extends Engine {
      * Unbind all textures
      */
     public override unbindAllTextures(): void {
-        if (!_native.Engine.COMMAND_DISCARDALLTEXTURES) {
-            return;
-        }
-
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DISCARDALLTEXTURES);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -2606,6 +2606,19 @@ export class NativeEngine extends Engine {
         }
         const image = new _native.Image();
         return image;
+    }
+
+    /**
+     * Create a 2D path to use with canvas
+     * @returns IPath2D interface
+     * @param d SVG path string
+     */
+    public override createCanvasPath2D(d?: string): IPath2D {
+        if (!_native.Canvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const path2d = new _native.Path2D(d);
+        return path2d;
     }
 
     /**
@@ -2728,7 +2741,7 @@ export class NativeEngine extends Engine {
     }
 
     override endTimeQuery(token: _TimeToken): int {
-        this._engine.populateFrameStats?.(this._frameStats);
+        this._engine.populateFrameStats(this._frameStats);
         return this._frameStats.gpuTimeNs;
     }
 }

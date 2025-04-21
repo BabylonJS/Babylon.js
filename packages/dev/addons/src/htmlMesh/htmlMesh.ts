@@ -15,8 +15,8 @@ import { FitStrategy } from "./fitStrategy";
  * the HTML content so that it matches the camera and mesh orientation.  The class supports interactions in editable and non-editable mode.
  * In non-editable mode (the default), events are passed to the HTML content when the pointer is over the mask (and not occluded by other meshes
  * in the scene).
- * #HVHYJC#5
- * #B17TC7#112
+ * @see https://playground.babylonjs.com/#HVHYJC#5
+ * @see https://playground.babylonjs.com/#B17TC7#112
  */
 export class HtmlMesh extends Mesh {
     /**

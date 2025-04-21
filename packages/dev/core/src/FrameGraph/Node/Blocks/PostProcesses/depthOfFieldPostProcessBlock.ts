@@ -38,7 +38,7 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
 
         this._finalizeInputOutputRegistering();
 
-        this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, frameGraph, scene.getEngine(), blurLevel, hdr);
+        this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, frameGraph, blurLevel, hdr);
     }
 
     private _createTask(blurLevel: ThinDepthOfFieldEffectBlurLevel, hdr: boolean) {
@@ -51,7 +51,7 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
 
         this._frameGraphTask.dispose();
 
-        this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, this._frameGraph, this._scene.getEngine(), blurLevel, hdr);
+        this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, this._frameGraph, blurLevel, hdr);
         this._frameGraphTask.sourceSamplingMode = sourceSamplingMode;
         this._frameGraphTask.depthSamplingMode = depthSamplingMode;
         this._frameGraphTask.depthOfField.focalLength = focalLength;

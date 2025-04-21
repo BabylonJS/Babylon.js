@@ -186,14 +186,15 @@ export class WebXREnterExitUI implements IDisposable {
             }
         });
         const results = await Promise.all(supportedPromises);
-        results.forEach((supported, i) => {
+        for (let i = 0; i < results.length; i++) {
+            const supported = results[i];
             if (supported) {
                 this.overlay.appendChild(this._buttons[i].element);
                 this._buttons[i].element.onclick = this._enterXRWithButtonIndex.bind(this, i);
             } else {
                 Tools.Warn(`Session mode "${this._buttons[i].sessionMode}" not supported in browser`);
             }
-        });
+        }
     }
 
     /**
@@ -270,9 +271,9 @@ export class WebXREnterExitUI implements IDisposable {
 
     private _updateButtons(activeButton: Nullable<WebXREnterExitUIButton>) {
         this._activeButton = activeButton;
-        this._buttons.forEach((b) => {
+        for (const b of this._buttons) {
             b.update(this._activeButton);
-        });
+        }
         this.activeButtonChangedObservable.notifyObservers(this._activeButton);
     }
 }

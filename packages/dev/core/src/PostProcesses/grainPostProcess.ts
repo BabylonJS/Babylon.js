@@ -1,6 +1,5 @@
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -11,6 +10,7 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
+import { ThinGrainPostProcess } from "./thinGrainPostProcess";
 
 /**
  * The GrainPostProcess adds noise to the image at mid luminance levels
@@ -20,12 +20,25 @@ export class GrainPostProcess extends PostProcess {
      * The intensity of the grain added (default: 30)
      */
     @serialize()
-    public intensity: number = 30;
+    public get intensity() {
+        return this._effectWrapper.intensity;
+    }
+
+    public set intensity(value: number) {
+        this._effectWrapper.intensity = value;
+    }
+
     /**
      * If the grain should be randomized on every frame
      */
     @serialize()
-    public animated: boolean = false;
+    public get animated() {
+        return this._effectWrapper.animated;
+    }
+
+    public set animated(value: boolean) {
+        this._effectWrapper.animated = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -34,6 +47,8 @@ export class GrainPostProcess extends PostProcess {
     public override getClassName(): string {
         return "GrainPostProcess";
     }
+
+    protected override _effectWrapper: ThinGrainPostProcess;
 
     /**
      * Creates a new instance of @see GrainPostProcess
@@ -56,22 +71,22 @@ export class GrainPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
-        super(name, "grain", ["intensity", "animatedSeed"], [], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
-        this.onApplyObservable.add((effect: Effect) => {
-            effect.setFloat("intensity", this.intensity);
-            effect.setFloat("animatedSeed", this.animated ? Math.random() + 1 : 1);
+        const localOptions = {
+            uniforms: ThinGrainPostProcess.Uniforms,
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinGrainPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinGrainPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/grain.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/grain.fragment")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
     }
 
     /**

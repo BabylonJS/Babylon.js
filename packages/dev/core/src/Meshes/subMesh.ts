@@ -301,7 +301,7 @@ export class SubMesh implements ICullable {
         const rootMaterial = this._renderingMesh.getMaterialForRenderPass(this._engine.currentRenderPassId) ?? this._renderingMesh.material;
 
         if (!rootMaterial) {
-            return getDefaultMaterial ? this._mesh.getScene().defaultMaterial : null;
+            return getDefaultMaterial && this._mesh.getScene()._hasDefaultMaterial ? this._mesh.getScene().defaultMaterial : null;
         } else if (this._isMultiMaterial(rootMaterial)) {
             const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 

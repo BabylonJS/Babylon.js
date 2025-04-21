@@ -161,21 +161,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
-
-            const meshes = this._scene.meshes;
-            for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-                const mesh = meshes[meshIndex];
-
-                if (!mesh || !mesh.isVisible || !mesh.isEnabled || !mesh.receiveShadows) {
-                    continue;
-                }
-
-                const boundingInfo = mesh.getBoundingInfo(),
-                    boundingBox = boundingInfo.boundingBox;
-
-                this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
-                this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
-            }
         }
 
         this._shadowCastersBoundingInfo.reConstruct(this._scbiMin, this._scbiMax);
@@ -568,22 +553,47 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             // Come up with a new orthographic camera for the shadow caster
             Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cascadeIndex]);
 
-            let minZ = 0,
-                maxZ = tmpv1.z;
+            // Z extents of the current cascade, in cascade view coordinate system
+            let viewMinZ = 0,
+                viewMaxZ = tmpv1.z;
 
             // Try to tighten minZ and maxZ based on the bounding box of the shadow casters
             const boundingInfo = this._shadowCastersBoundingInfo;
 
             boundingInfo.update(this._viewMatrices[cascadeIndex]);
+            // Note that after the call to update, the boundingInfo properties that are identified as "world" coordinates are in fact view coordinates for the current cascade!
+            // This is because the boundingInfo properties that are identifed as "local" are in fact world coordinates (see _computeShadowCastersBoundingInfo()), and we multiply them by the current cascade view matrix when we call update.
 
-            maxZ = Math.min(maxZ, boundingInfo.boundingBox.maximumWorld.z);
+            const castersViewMinZ = boundingInfo.boundingBox.minimumWorld.z;
+            const castersViewMaxZ = boundingInfo.boundingBox.maximumWorld.z;
 
-            if (!this._depthClamp || this.filter === ShadowGenerator.FILTER_PCSS) {
-                // If we don't use depth clamping, we must set minZ so that all shadow casters are in the light frustum
-                minZ = Math.min(minZ, boundingInfo.boundingBox.minimumWorld.z);
+            if (castersViewMinZ > viewMaxZ) {
+                // Do nothing, keep the current z extents.
+                // All the casters are too far from the light to have an impact on the current cascade.
+                // Possible optimization: skip the rendering of the shadow map for this cascade, as all the casters will be clipped by the GPU anyway.
             } else {
-                // If using depth clamping, we can adjust minZ to reduce the [minZ, maxZ] range (and get some additional precision in the shadow map)
-                minZ = Math.max(minZ, boundingInfo.boundingBox.minimumWorld.z);
+                if (!this._depthClamp || this.filter === ShadowGenerator.FILTER_PCSS) {
+                    // If we don't use depth clamping, we must define minZ so that all shadow casters are in the cascade frustum
+                    viewMinZ = Math.min(viewMinZ, castersViewMinZ);
+
+                    if (this.filter !== ShadowGenerator.FILTER_PCSS) {
+                        // We do not need the actual distance between the currently shaded pixel and the occluder when generating shadows, so we can lower the far plane to increase the accuracy of the shadow map.
+                        viewMaxZ = Math.min(viewMaxZ, castersViewMaxZ);
+                    }
+                } else {
+                    // If we use depth clamping (but not PCSS!), we can adjust minZ/maxZ to reduce the range [minZ, maxZ] (and obtain additional precision in the shadow map)
+                    viewMaxZ = Math.min(viewMaxZ, castersViewMaxZ);
+
+                    // Thanks to depth clamping, casters won't be Z clipped even if they fall outside the [-1,1] range, so we can move the near plane to 0 if castersViewMinZ < 0.
+                    // We will generate negative Z values in the shadow map, but that's okay (they will be clamped to the 0..1 range anyway), except in PCSS case
+                    // where we need the actual distance between the currently shader pixel and the occluder: that's why we don't use depth clamping in PCSS case.
+                    viewMinZ = Math.max(viewMinZ, castersViewMinZ);
+
+                    // If all the casters are behind the near plane of the cascade, minZ = 0 due to the previous line, and maxZ < 0 at this point.
+                    // We need to make sure that maxZ > minZ, so in this case we set maxZ a little higher than minZ. As we are using depth clamping, the casters won't be Z clipped, so we just need to make sure that we have a valid Z range for the cascade.
+                    // Having a 0 range is not ok, due to undefined behavior in the calculation in this case.
+                    viewMaxZ = Math.max(viewMinZ + 1.0, viewMaxZ);
+                }
             }
 
             Matrix.OrthoOffCenterLHToRef(
@@ -591,14 +601,14 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 this._cascadeMaxExtents[cascadeIndex].x,
                 this._cascadeMinExtents[cascadeIndex].y,
                 this._cascadeMaxExtents[cascadeIndex].y,
-                useReverseDepthBuffer ? maxZ : minZ,
-                useReverseDepthBuffer ? minZ : maxZ,
+                useReverseDepthBuffer ? viewMaxZ : viewMinZ,
+                useReverseDepthBuffer ? viewMinZ : viewMaxZ,
                 this._projectionMatrices[cascadeIndex],
                 scene.getEngine().isNDCHalfZRange
             );
 
-            this._cascadeMinExtents[cascadeIndex].z = minZ;
-            this._cascadeMaxExtents[cascadeIndex].z = maxZ;
+            this._cascadeMinExtents[cascadeIndex].z = viewMinZ;
+            this._cascadeMaxExtents[cascadeIndex].z = viewMaxZ;
 
             this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
 

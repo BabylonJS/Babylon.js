@@ -27,3 +27,28 @@ export function CopyStyles(source: Document, target: DocumentOrShadowRoot) {
         }
     });
 }
+
+/**
+ * Merges classNames by array of strings or conditions
+ * @param classNames Array of className strings or truthy conditions
+ * @returns A concatenated string, suitable for the className attribute
+ */
+export function MergeClassNames(classNames: ClassNameCondition[]): string {
+    return classNames
+        .reduce((accumulator: string[], className: ClassNameCondition) => {
+            if (typeof className === "string") {
+                accumulator.push(className);
+            } else if (className) {
+                if (className[1]) {
+                    accumulator.push(className[0]);
+                }
+            }
+            return accumulator;
+        }, [])
+        .join(" ");
+}
+
+/**
+ * className (replicating React type) or a tuple with the second member being any truthy value ["className", true]
+ */
+type ClassNameCondition = string | undefined | [string, any];

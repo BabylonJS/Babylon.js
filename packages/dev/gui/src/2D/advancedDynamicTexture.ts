@@ -108,6 +108,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
     private _rootChildrenHaveChanged: boolean = false;
+    private _adjustToEngineHardwareScalingLevel = false;
 
     /** @internal */
     public _capturedPointerIds = new Set<number>();
@@ -179,6 +180,23 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * If set to true, the POINTERTAP event type will be used for "click", instead of POINTERUP
      */
     public usePointerTapForClickEvent = false;
+
+    /**
+     * If set to true, the renderScale will be adjusted automatically to the engine's hardware scaling
+     * If this is set to true, manually setting the renderScale will be ignored
+     * This is useful when the engine's hardware scaling is set to a value other than 1
+     */
+    public get adjustToEngineHardwareScalingLevel(): boolean {
+        return this._adjustToEngineHardwareScalingLevel;
+    }
+
+    public set adjustToEngineHardwareScalingLevel(value: boolean) {
+        if (this._adjustToEngineHardwareScalingLevel === value) {
+            return;
+        }
+        this._adjustToEngineHardwareScalingLevel = value;
+        this._onResize();
+    }
     /**
      * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
      * Useful when you want more antialiasing
@@ -619,11 +637,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             controlsForGroup = overlapGroup === undefined ? descendants.filter((c) => c.overlapGroup !== undefined) : descendants.filter((c) => c.overlapGroup === overlapGroup);
         }
 
-        controlsForGroup.forEach((control1) => {
+        for (const control1 of controlsForGroup) {
             let velocity = Vector2.Zero();
             const center = new Vector2(control1.centerX, control1.centerY);
 
-            controlsForGroup.forEach((control2) => {
+            for (const control2 of controlsForGroup) {
                 if (control1 !== control2 && AdvancedDynamicTexture._Overlaps(control1, control2)) {
                     // if the two controls overlaps get a direction vector from one control's center to another control's center
                     const diff = center.subtract(new Vector2(control2.centerX, control2.centerY));
@@ -634,7 +652,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         velocity = velocity.add(diff.normalize().scale(repelFactor / diffLength));
                     }
                 }
-            });
+            }
 
             if (velocity.length() > 0) {
                 // move the control along the direction vector away from the overlapping control
@@ -642,7 +660,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 control1.linkOffsetXInPixels += velocity.x;
                 control1.linkOffsetYInPixels += velocity.y;
             }
-        });
+        }
     }
     /**
      * Release all resources
@@ -696,6 +714,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onGuiReadyObservable.clear();
         super.dispose();
     }
+
+    private _alreadyRegisteredForRender = false;
     private _onResize(): void {
         const scene = this.getScene();
         if (!scene) {
@@ -703,6 +723,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         // Check size
         const engine = scene.getEngine();
+        if (this.adjustToEngineHardwareScalingLevel) {
+            // force the renderScale to the engine's hardware scaling level
+            this._renderScale = engine.getHardwareScalingLevel();
+        }
         const textureSize = this.getSize();
         let renderWidth = engine.getRenderWidth() * this._renderScale;
         let renderHeight = engine.getRenderHeight() * this._renderScale;
@@ -721,6 +745,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
+            }
+            if (!this._alreadyRegisteredForRender) {
+                this._alreadyRegisteredForRender = true;
+                Tools.SetImmediate(() => {
+                    // We want to force an update so the texture can be set as ready
+                    this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+                    this._alreadyRegisteredForRender = false;
+                });
             }
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
@@ -980,7 +1012,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (camera.rigCameras.length) {
                 // rig camera - we need to find the camera to use for this event
                 const rigViewport = new Viewport(0, 0, 1, 1);
-                camera.rigCameras.forEach((rigCamera) => {
+                for (const rigCamera of camera.rigCameras) {
                     // generate the viewport of this camera
                     rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
                     const transformedX = x / engine.getHardwareScalingLevel() - rigViewport.x;
@@ -997,7 +1029,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     tempViewport.y = rigViewport.y;
                     tempViewport.width = rigViewport.width;
                     tempViewport.height = rigViewport.height;
-                });
+                }
             } else {
                 camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
             }
@@ -1657,11 +1689,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             layer.layerMask = 0;
         }
 
-        if (adaptiveScaling && resultScene) {
-            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
-            result._rootContainer.scaleX = newScale;
-            result._rootContainer.scaleY = newScale;
-        }
+        result.adjustToEngineHardwareScalingLevel = adaptiveScaling;
 
         // Attach
         result.attach();

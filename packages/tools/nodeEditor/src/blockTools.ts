@@ -110,6 +110,7 @@ import { StorageReadBlock } from "core/Materials/Node/Blocks/storageReadBlock";
 import { StorageWriteBlock } from "core/Materials/Node/Blocks/storageWriteBlock";
 import { MatrixSplitterBlock } from "core/Materials/Node/Blocks/matrixSplitterBlock";
 import { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
+import { IridescenceBlock } from "core/Materials/Node/Blocks/PBR/iridescenceBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -589,6 +590,8 @@ export class BlockTools {
                 return new RefractionBlock("Refraction");
             case "SubSurfaceBlock":
                 return new SubSurfaceBlock("SubSurface");
+            case "IridescenceBlock":
+                return new IridescenceBlock("Iridescence");
             case "CurrentScreenBlock":
                 return new CurrentScreenBlock("CurrentScreen");
             case "ParticleUVBlock": {
@@ -698,7 +701,7 @@ export class BlockTools {
     }
 
     public static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        let color = "#880000";
+        let color = "#964848";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 color = "#cb9e27";

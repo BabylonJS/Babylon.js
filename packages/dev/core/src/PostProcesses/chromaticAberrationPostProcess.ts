@@ -1,8 +1,7 @@
-import { Vector2 } from "../Maths/math.vector";
+import type { Vector2 } from "../Maths/math.vector";
 import type { Nullable } from "../types";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Effect } from "../Materials/effect";
 import type { Camera } from "../Cameras/camera";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
@@ -12,6 +11,7 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
+import { ThinChromaticAberrationPostProcess } from "./thinChromaticAberrationPostProcess";
 
 /**
  * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
@@ -21,33 +21,69 @@ export class ChromaticAberrationPostProcess extends PostProcess {
      * The amount of separation of rgb channels (default: 30)
      */
     @serialize()
-    aberrationAmount = 30;
+    public get aberrationAmount() {
+        return this._effectWrapper.aberrationAmount;
+    }
+
+    public set aberrationAmount(value: number) {
+        this._effectWrapper.aberrationAmount = value;
+    }
 
     /**
      * The amount the effect will increase for pixels closer to the edge of the screen. (default: 0)
      */
     @serialize()
-    radialIntensity = 0;
+    public get radialIntensity() {
+        return this._effectWrapper.radialIntensity;
+    }
+
+    public set radialIntensity(value: number) {
+        this._effectWrapper.radialIntensity = value;
+    }
 
     /**
      * The normalized direction in which the rgb channels should be separated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
      */
     @serialize()
-    direction = new Vector2(0.707, 0.707);
+    public get direction() {
+        return this._effectWrapper.direction;
+    }
+
+    public set direction(value: Vector2) {
+        this._effectWrapper.direction = value;
+    }
 
     /**
      * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corner] (default: Vector2(0.5 ,0.5))
      */
     @serialize()
-    centerPosition = new Vector2(0.5, 0.5);
+    public get centerPosition() {
+        return this._effectWrapper.centerPosition;
+    }
+
+    public set centerPosition(value: Vector2) {
+        this._effectWrapper.centerPosition = value;
+    }
 
     /** The width of the screen to apply the effect on */
     @serialize()
-    screenWidth: number;
+    public get screenWidth() {
+        return this._effectWrapper.screenWidth;
+    }
+
+    public set screenWidth(value: number) {
+        this._effectWrapper.screenWidth = value;
+    }
 
     /** The height of the screen to apply the effect on */
     @serialize()
-    screenHeight: number;
+    public get screenHeight() {
+        return this._effectWrapper.screenHeight;
+    }
+
+    public set screenHeight(value: number) {
+        this._effectWrapper.screenHeight = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -56,6 +92,8 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     public override getClassName(): string {
         return "ChromaticAberrationPostProcess";
     }
+
+    protected override _effectWrapper: ThinChromaticAberrationPostProcess;
 
     /**
      * Creates a new instance ChromaticAberrationPostProcess
@@ -82,45 +120,25 @@ export class ChromaticAberrationPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
-        super(
-            name,
-            "chromaticAberration",
-            ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"],
-            [],
-            options,
+        const localOptions = {
+            uniforms: ThinChromaticAberrationPostProcess.Uniforms,
+            size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
-            null,
             textureType,
-            undefined,
-            null,
-            blockCompilation
-        );
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinChromaticAberrationPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinChromaticAberrationPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
 
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-
-        this.onApplyObservable.add((effect: Effect) => {
-            effect.setFloat("chromatic_aberration", this.aberrationAmount);
-            effect.setFloat("screen_width", screenWidth);
-            effect.setFloat("screen_height", screenHeight);
-            effect.setFloat("radialIntensity", this.radialIntensity);
-            effect.setFloat2("direction", this.direction.x, this.direction.y);
-            effect.setFloat2("centerPosition", this.centerPosition.x, this.centerPosition.y);
-        });
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/chromaticAberration.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/chromaticAberration.fragment")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
     }
 
     /**

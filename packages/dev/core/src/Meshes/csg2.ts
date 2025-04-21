@@ -101,9 +101,9 @@ interface IManifoldVertexComponent {
  * Wrapper around the Manifold library
  * https://manifoldcad.org/
  * Use this class to perform fast boolean operations on meshes
- * #IW43EB#15 - basic operations
- * #JUKXQD#6104 - skull vs box
- * #JUKXQD#6111 - skull vs vertex data
+ * @see [basic operations](https://playground.babylonjs.com/#IW43EB#15)
+ * @see [skull vs box](https://playground.babylonjs.com/#JUKXQD#6218)
+ * @see [skull vs vertex data](https://playground.babylonjs.com/#JUKXQD#6219)
  */
 export class CSG2 implements IDisposable {
     private _manifold: any;
@@ -265,6 +265,10 @@ export class CSG2 implements IDisposable {
                 multiMaterial.subMaterials = materials;
                 output.material = multiMaterial;
             } else {
+                if (output.subMeshes.length > 1) {
+                    // Remove the submeshes as they are not needed
+                    output._createGlobalSubMesh(true);
+                }
                 output.material = materials[0];
             }
         }

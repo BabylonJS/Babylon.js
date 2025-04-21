@@ -12,6 +12,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 
 export class ConnectionPointPortData implements IPortData {
@@ -105,11 +106,11 @@ export class ConnectionPointPortData implements IPortData {
     public get endpoints() {
         const endpoints: IPortData[] = [];
 
-        this.data.endpoints.forEach((endpoint) => {
+        for (const endpoint of this.data.endpoints) {
             const endpointOwnerBlock = endpoint.ownerBlock;
             const endpointNode = this._nodeContainer.nodes.find((n) => n.content.data === endpointOwnerBlock);
             endpoints.push(endpointNode!.getPortDataForPortDataContent(endpoint)!);
-        });
+        }
 
         return endpoints;
     }
@@ -152,12 +153,13 @@ export class ConnectionPointPortData implements IPortData {
     public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
         switch (issue) {
             case NodeRenderGraphConnectionPointCompatibilityStates.TypeIncompatible: {
-                const port = targetPort.data as NodeRenderGraphConnectionPoint;
-                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeRenderGraphBlockConnectionPointTypes[t]).join(", ");
-
-                acceptedTypes = `${NodeRenderGraphBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
-
-                return `Cannot connect two different connection types:\nSource is ${NodeRenderGraphBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+                return GetConnectionErrorMessage(
+                    this.data.type,
+                    NodeRenderGraphBlockConnectionPointTypes,
+                    NodeRenderGraphBlockConnectionPointTypes.All,
+                    NodeRenderGraphBlockConnectionPointTypes.AutoDetect,
+                    targetPort.data as NodeRenderGraphConnectionPoint
+                );
             }
             case NodeRenderGraphConnectionPointCompatibilityStates.HierarchyIssue:
                 return "Source block cannot be connected with one of its ancestors";

@@ -4,14 +4,15 @@ import type {
     AnimationGroup,
     AssetContainer,
     AutoRotationBehavior,
+    BaseTexture,
     Camera,
-    FramingBehavior,
+    CubeTexture,
+    HDRCubeTexture,
     HotSpotQuery,
     IDisposable,
     IMeshDataCache,
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
-    Mesh,
     Nullable,
     Observer,
     PickingInfo,
@@ -20,48 +21,44 @@ import type {
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
+import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { computeMaxExtents } from "core/Meshes/meshUtils";
+import { Mesh } from "core/Meshes/mesh";
+import { computeMaxExtents, RemoveUnreferencedVerticesData } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
+import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+
+export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-type UpdateModelOptions = {
-    /**
-     * The default animation index.
-     */
-    defaultAnimation?: number;
+type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
-    /**
-     * Whether to play the default animation immediately after loading.
-     */
-    animationAutoPlay?: boolean;
-};
+export type LoadModelOptions = LoadAssetContainerOptions;
 
-type ActivateModelOptions = UpdateModelOptions & Partial<{ source: string | File | ArrayBufferView; interpolateCamera: boolean }>;
-
-export type LoadModelOptions = LoadAssetContainerOptions & UpdateModelOptions;
+export type CameraOrbit = [alpha: number, beta: number, radius: number];
+export type CameraTarget = [x: number, y: number, z: number];
 
 export type CameraAutoOrbit = {
     /**
@@ -124,7 +121,7 @@ export type PostProcessing = {
  * @param value The value to check.
  * @returns True if the value is a valid tone mapping option, otherwise false.
  */
-export function isToneMapping(value: string): value is ToneMapping {
+export function IsToneMapping(value: string): value is ToneMapping {
     return toneMappingOptions.includes(value as ToneMapping);
 }
 
@@ -134,33 +131,62 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
     }
 }
 
-function createSkybox(scene: Scene, camera: Camera, reflectionTexture: CubeTexture, blur: number): Mesh {
-    const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
-    const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
-    // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
-    hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
-    hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
-    if (hdrSkyboxMaterial.reflectionTexture) {
-        hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+async function createCubeTexture(url: string, scene: Scene, extension?: string) {
+    extension = extension ?? GetExtensionFromUrl(url);
+    const instantiateTexture = await (async () => {
+        if (extension === ".hdr") {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { HDRCubeTexture } = await import("core/Materials/Textures/hdrCubeTexture");
+            return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
+        } else {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { CubeTexture } = await import("core/Materials/Textures/cubeTexture");
+            return () => new CubeTexture(url, scene, null, false, null, null, null, undefined, true, extension, true);
+        }
+    })();
+
+    const originalUseDelayedTextureLoading = scene.useDelayedTextureLoading;
+    try {
+        scene.useDelayedTextureLoading = false;
+        return instantiateTexture();
+    } finally {
+        scene.useDelayedTextureLoading = originalUseDelayedTextureLoading;
     }
-    hdrSkyboxMaterial.microSurface = 1.0 - blur;
-    hdrSkyboxMaterial.disableLighting = true;
-    hdrSkyboxMaterial.twoSidedLighting = true;
-    hdrSkybox.material = hdrSkyboxMaterial;
-    hdrSkybox.isPickable = false;
-    hdrSkybox.infiniteDistance = true;
+}
 
-    updateSkybox(hdrSkybox, camera);
+function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTexture, blur: number): Mesh {
+    const originalBlockMaterialDirtyMechanism = scene.blockMaterialDirtyMechanism;
+    scene.blockMaterialDirtyMechanism = true;
+    try {
+        const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
+        const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+        // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
+        hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
+        hdrSkyboxMaterial.backFaceCulling = false;
+        hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
+        if (hdrSkyboxMaterial.reflectionTexture) {
+            hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        }
+        hdrSkyboxMaterial.microSurface = 1.0 - blur;
+        hdrSkyboxMaterial.disableLighting = true;
+        hdrSkyboxMaterial.twoSidedLighting = true;
+        hdrSkybox.material = hdrSkyboxMaterial;
+        hdrSkybox.isPickable = false;
+        hdrSkybox.infiniteDistance = true;
 
-    return hdrSkybox;
+        updateSkybox(hdrSkybox, camera);
+
+        return hdrSkybox;
+    } finally {
+        scene.blockMaterialDirtyMechanism = originalBlockMaterialDirtyMechanism;
+    }
 }
 
 function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
     skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
-function computeModelsMaxExtents(models: Model[]): Array<{ minimum: Vector3; maximum: Vector3 }> {
+function computeModelsMaxExtents(models: readonly Model[]): Array<{ minimum: Vector3; maximum: Vector3 }> {
     return models.flatMap((model) => {
         return computeMaxExtents(model.assetContainer.meshes, model.assetContainer.animationGroups[model.selectedAnimation]);
     });
@@ -187,9 +213,73 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
  * @param models The models to consider when computing the bounding info
  * @returns The computed bounding info for the models or null
  */
-function computeModelsBoundingInfos(models: Model[]): Nullable<ViewerBoundingInfo> {
+function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
     const maxExtents = computeModelsMaxExtents(models);
     return reduceMeshesExtendsToBoundingInfo(maxExtents);
+}
+
+// This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
+// If there is any error (other than AbortError) in the async function, it will be logged.
+function observePromise(promise: Promise<unknown>): void {
+    (async () => {
+        try {
+            await promise;
+        } catch (error) {
+            if (!(error instanceof AbortError)) {
+                Logger.Error(error);
+            }
+        }
+    })();
+}
+
+/**
+ * Generates a HotSpot from a camera by computing its spherical coordinates (alpha, beta, radius) relative to a target point.
+ *
+ * The target point is determined using the camera's forward ray:
+ *   - If the ray intersects with a mesh in the model, the intersection point is used as the target.
+ *   - If no intersection is found, a fallback target is calculated by projecting the distance
+ *     between the camera and the model's center along the camera's forward direction.
+ *
+ * @param model The reference model used to determine the target point.
+ * @param camera The camera from which the HotSpot is generated.
+ * @returns A HotSpot object.
+ */
+export async function CreateHotSpotFromCamera(model: Model, camera: Camera): Promise<HotSpot> {
+    await import("core/Culling/ray");
+    const scene = model.assetContainer.scene;
+    const ray = camera.getForwardRay(100, camera.getWorldMatrix(), camera.globalPosition); // Set starting point to camera global position
+    const camGlobalPos = camera.globalPosition.clone();
+
+    // Target
+    let radius: number = 0.0001; // Just to avoid division by zero
+    const targetPoint = Vector3.Zero();
+    const pickingInfo = scene.pickWithRay(ray, (mesh) => model.assetContainer.meshes.includes(mesh));
+    if (pickingInfo && pickingInfo.hit) {
+        targetPoint.copyFrom(pickingInfo.pickedPoint!); // Use intersection point as target
+    } else {
+        const worldBounds = model.getWorldBounds();
+        const centerArray = worldBounds ? worldBounds.center : [0, 0, 0];
+        const distancePoint = Vector3.FromArray(centerArray);
+        const direction = ray.direction.clone();
+        targetPoint.copyFrom(camGlobalPos);
+        radius = Vector3.Distance(camGlobalPos, distancePoint);
+        direction.scaleAndAddToRef(radius, targetPoint); // Compute fallback target
+    }
+
+    const computationVector = Vector3.Zero();
+    camGlobalPos.subtractToRef(targetPoint, computationVector);
+
+    // Radius
+    if (pickingInfo && pickingInfo.hit) {
+        radius = computationVector.length();
+    }
+
+    // Alpha and Beta
+    const alpha = ComputeAlpha(computationVector);
+    const beta = ComputeBeta(computationVector.y, radius);
+
+    const targetArray = targetPoint.asArray();
+    return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [alpha, beta, radius] };
 }
 
 export type ViewerDetails = {
@@ -229,21 +319,131 @@ export type ViewerDetails = {
     pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>>;
 };
 
-export type ViewerOptions = Partial<
-    Readonly<{
-        /**
-         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-         */
-        onInitialized: (details: Readonly<ViewerDetails>) => void;
+/**
+ * The options for the Viewer.
+ */
+export type ViewerOptions = Partial<{
+    /**
+     * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+     */
+    onInitialized: (details: Readonly<ViewerDetails>) => void;
 
-        /**
-         * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
-         * This can reduce resource CPU/GPU pressure when the scene is static.
-         * Enabled by default.
-         */
-        autoSuspendRendering: boolean;
-    }>
->;
+    /**
+     * The default clear color of the scene.
+     */
+    clearColor: [r: number, g: number, b: number, a?: number];
+
+    /**
+     * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
+     * This can reduce resource CPU/GPU pressure when the scene is static.
+     * Enabled by default.
+     */
+    autoSuspendRendering: boolean;
+
+    /**
+     * The default source model to load into the viewer.
+     */
+    source: string;
+
+    /**
+     * The default environment to load into the viewer for lighting (IBL).
+     */
+    environmentLighting: string;
+
+    /**
+     * The default environment to load into the viewer for the skybox.
+     */
+    environmentSkybox: string;
+
+    /**
+     * The default environment configuration.
+     */
+    environmentConfig: Partial<EnvironmentParams>;
+
+    /**
+     * The default camera orbit.
+     * @remarks The default camera orbit is restored when a new model is loaded.
+     */
+    cameraOrbit: Partial<CameraOrbit>;
+
+    /**
+     * The default camera target.
+     * @remarks The default camera target is restored when a new model is loaded.
+     */
+    cameraTarget: Partial<CameraTarget>;
+
+    /**
+     * Automatically rotates a 3D model or scene without requiring user interaction.
+     * @remarks The default camera auto orbit is restored when a new model is loaded.
+     */
+    cameraAutoOrbit: Partial<CameraAutoOrbit>;
+
+    /**
+     * Whether to play the default animation immediately after loading.
+     * @remarks The default animation auto play is restored when a new model is loaded.
+     */
+    animationAutoPlay: boolean;
+
+    /**
+     * The default speed of the animation.
+     * @remarks The default animation speed is restored when a new model is loaded.
+     */
+    animationSpeed: number;
+
+    /**
+     * The default selected animation.
+     * @remarks The default selected animation is restored when a new model is loaded.
+     */
+    selectedAnimation: number;
+
+    /**
+     * The default post processing configuration.
+     */
+    postProcessing: Partial<PostProcessing>;
+
+    /**
+     * The default selected material variant.
+     * @remarks The default material variant is restored when a new model is loaded.
+     */
+    selectedMaterialVariant: string;
+
+    /**
+     * The default hotspots.
+     */
+    hotSpots: Record<string, HotSpot>;
+
+    /**
+     * Boolean indicating if the scene must use right-handed coordinates system.
+     */
+    useRightHandedSystem: boolean;
+}>;
+
+/**
+ * The default options for the Viewer.
+ */
+export const DefaultViewerOptions = {
+    clearColor: [0, 0, 0, 0],
+    autoSuspendRendering: true,
+    environmentConfig: {
+        intensity: 1,
+        blur: 0.3,
+        rotation: 0,
+        visible: true,
+    },
+    cameraAutoOrbit: {
+        enabled: false,
+        delay: 2000,
+        speed: 0.05,
+    },
+    animationAutoPlay: false,
+    animationSpeed: 1,
+    postProcessing: {
+        toneMapping: "neutral",
+        contrast: 1,
+        exposure: 1,
+    },
+    useRightHandedSystem: false,
+} as const satisfies ViewerOptions;
 
 export type EnvironmentOptions = Partial<
     Readonly<{
@@ -258,6 +458,17 @@ export type EnvironmentOptions = Partial<
         skybox: boolean;
     }>
 >;
+
+export type LoadEnvironmentOptions = EnvironmentOptions &
+    Partial<
+        Readonly<{
+            /**
+             * Specifies the extension of the environment texture to load.
+             * This must be specified when the extension cannot be determined from the url.
+             */
+            extension: string;
+        }>
+    >;
 
 const defaultLoadEnvironmentOptions = {
     lighting: true,
@@ -292,6 +503,13 @@ export type ViewerHotSpotQuery =
            */
           normal: [x: number, y: number, z: number];
       };
+
+export type HotSpot = ViewerHotSpotQuery & {
+    /**
+     * An optional camera pose to associate with the hotspot.
+     */
+    cameraOrbit?: CameraOrbit;
+};
 
 /**
  * Provides the result of a hot spot query.
@@ -364,10 +582,10 @@ export type Model = IDisposable & {
     /**
      * Compute and return the world bounds of the model.
      * The minimum and maximum extents, the size and the center.
-     * @param animationIndex The index of the animation group to consider when computing the bounding info.
+     * @param animationIndex The index of the animation group to use for computation. If omitted, the current selected animation is used.
      * @returns The computed bounding info for the model or null if no meshes are present in the asset container.
      */
-    getWorldBounds(animationIndex: number): Nullable<ViewerBoundingInfo>;
+    getWorldBounds(animationIndex?: number): Nullable<ViewerBoundingInfo>;
 
     /**
      * Resets the computed world bounds of the model.
@@ -407,6 +625,7 @@ export class Viewer implements IDisposable {
      * Fired when the environment has changed.
      */
     public readonly onEnvironmentChanged = new Observable<void>();
+
     /**
      * Fired when the environment configuration has changed.
      */
@@ -469,9 +688,24 @@ export class Viewer implements IDisposable {
      */
     public readonly onSelectedMaterialVariantChanged = new Observable<void>();
 
+    /**
+     * Fired when the hot spots object changes to a complete new object instance.
+     */
+    public readonly onHotSpotsChanged = new Observable<void>();
+
+    /**
+     * Fired when the cameras as hot spots property changes.
+     */
+    public readonly onCamerasAsHotSpotsChanged = new Observable<void>();
+
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
     protected readonly _snapshotHelper: SnapshotRenderingHelper;
+
+    private readonly _defaultHardwareScalingLevel: number;
+    private _lastHardwareScalingLevel: number;
+    private _renderedLastFrame: Nullable<boolean> = null;
+    private _sceneOptimizer: Nullable<SceneOptimizer> = null;
 
     private readonly _tempVectors = BuildTuple(4, Vector3.Zero);
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
@@ -482,19 +716,19 @@ export class Viewer implements IDisposable {
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
     private _skybox: Nullable<Mesh> = null;
-    private _skyboxBlur: number = 0.3;
-    private _skyboxVisible: boolean = true;
-    private _skyboxTexture: Nullable<CubeTexture> = null;
-    private _reflectionTexture: Nullable<CubeTexture> = null;
-    private _reflectionsIntensity: number = 1;
-    private _reflectionsRotation: number = 0;
+    private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
+    private _skyboxVisible = this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible;
+    private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
+    private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
+    private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
+    private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
     private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
 
-    private readonly _autoSuspendRendering: boolean;
+    private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
     private _suspendRenderCount = 0;
     private _isDisposed = false;
@@ -508,18 +742,24 @@ export class Viewer implements IDisposable {
     private readonly _loadSkyboxLock = new AsyncLock();
     private _loadSkyboxAbortController: Nullable<AbortController> = null;
 
+    private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
+
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
-    private _animationSpeed = 1;
+    private _animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
+
+    private _camerasAsHotSpots = false;
+    private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
     public constructor(
         private readonly _engine: AbstractEngine,
-        options?: ViewerOptions
+        private readonly _options?: ViewerOptions
     ) {
-        this._autoSuspendRendering = options?.autoSuspendRendering ?? true;
+        this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
+            scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -557,6 +797,7 @@ export class Viewer implements IDisposable {
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
+            camera.useAutoRotationBehavior = true;
             camera.onViewMatrixChangedObservable.add(() => {
                 this._markSceneMutated();
             });
@@ -575,13 +816,24 @@ export class Viewer implements IDisposable {
                     camera.radius = distance;
                     camera.interpolateTo(undefined, undefined, undefined, pickingInfo.pickedPoint);
                 } else {
-                    camera.restoreState();
+                    this.resetCamera(true);
                 }
             }, PointerEventTypes.POINTERDOUBLETAP);
+
+            scene.onNewCameraAddedObservable.add((camera) => {
+                if (this.camerasAsHotSpots) {
+                    observePromise(this._addCameraHotSpot(camera, this._camerasAsHotSpotsAbortController?.signal));
+                }
+            });
+
+            scene.onCameraRemovedObservable.add((camera) => {
+                this._removeCameraHotSpot(camera);
+            });
 
             this._scene = scene;
             this._camera = camera;
         }
+
         this._scene.skipFrustumClipping = true;
         this._scene.skipPointerDownPicking = true;
         this._scene.skipPointerUpPicking = true;
@@ -591,13 +843,8 @@ export class Viewer implements IDisposable {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
         this._camera.attachControl();
-        this._reframeCamera(); // set default camera values
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
-
-        // Default to KHR PBR Neutral tone mapping.
-        this.postProcessing = {
-            toneMapping: "neutral",
-        };
+        this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -606,7 +853,7 @@ export class Viewer implements IDisposable {
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const viewer = this;
-        options?.onInitialized?.({
+        this._options?.onInitialized?.({
             scene: viewer._scene,
             camera: viewer._camera,
             get model() {
@@ -616,6 +863,8 @@ export class Viewer implements IDisposable {
             markSceneMutated: () => this._markSceneMutated(),
             pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
+
+        this._reset(false, "source", "environment", "post-processing");
     }
 
     /**
@@ -754,20 +1003,19 @@ export class Viewer implements IDisposable {
      * The post processing configuration.
      */
     public get postProcessing(): PostProcessing {
-        let toneMapping: ToneMapping;
-        switch (this._toneMappingType) {
-            case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                toneMapping = "standard";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                toneMapping = "aces";
-                break;
-            case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                toneMapping = "neutral";
-                break;
-            default:
-                toneMapping = "none";
-                break;
+        let toneMapping: ToneMapping = "none";
+        if (this._toneMappingEnabled) {
+            switch (this._toneMappingType) {
+                case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
+                    toneMapping = "standard";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                    toneMapping = "aces";
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
+                    toneMapping = "neutral";
+                    break;
+            }
         }
 
         return {
@@ -850,12 +1098,9 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = model;
             this._updateLight();
             this._applyAnimationSpeed();
-            this._selectAnimation(options?.defaultAnimation ?? 0, false);
-            if (options?.animationAutoPlay) {
-                this.playAnimation();
-            }
+            this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this._reframeCamera(options?.interpolateCamera);
+            this._reframeCamera(true);
             this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
@@ -965,13 +1210,46 @@ export class Viewer implements IDisposable {
         return this._activeModel?.materialVariantsController?.selectedVariant ?? null;
     }
 
-    public set selectedMaterialVariant(value: string) {
-        if (value !== this.selectedMaterialVariant && this._activeModel?.materialVariantsController?.variants.includes(value)) {
-            this._snapshotHelper.disableSnapshotRendering();
-            this._activeModel.materialVariantsController.selectedVariant = value;
-            this._snapshotHelper.enableSnapshotRendering();
-            this._markSceneMutated();
-            this.onSelectedMaterialVariantChanged.notifyObservers();
+    public set selectedMaterialVariant(value: Nullable<string>) {
+        if (this._activeModel?.materialVariantsController) {
+            if (!value) {
+                value = this._activeModel.materialVariantsController.variants[0];
+            }
+
+            if (value !== this.selectedMaterialVariant && this._activeModel.materialVariantsController.variants.includes(value)) {
+                this._snapshotHelper.disableSnapshotRendering();
+                this._activeModel.materialVariantsController.selectedVariant = value;
+                this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
+                this.onSelectedMaterialVariantChanged.notifyObservers();
+            }
+        }
+    }
+
+    /**
+     * The set of defined hotspots.
+     */
+    public get hotSpots() {
+        return this._hotSpots;
+    }
+
+    public set hotSpots(value: Record<string, HotSpot>) {
+        this._hotSpots = value;
+        this.onHotSpotsChanged.notifyObservers();
+    }
+
+    /**
+     * True if scene cameras should be used as hotspots.
+     */
+    public get camerasAsHotSpots() {
+        return this._camerasAsHotSpots;
+    }
+
+    public set camerasAsHotSpots(value: boolean) {
+        if (this._camerasAsHotSpots !== value) {
+            this._camerasAsHotSpots = value;
+            this._toggleCamerasAsHotSpots();
+            this.onCamerasAsHotSpotsChanged.notifyObservers();
         }
     }
 
@@ -1064,6 +1342,7 @@ export class Viewer implements IDisposable {
 
         try {
             const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
+            RemoveUnreferencedVerticesData(assetContainer.meshes.filter((mesh) => mesh instanceof Mesh));
             assetContainer.animationGroups.forEach((group) => {
                 group.start(true, this.animationSpeed);
                 group.pause();
@@ -1105,8 +1384,9 @@ export class Viewer implements IDisposable {
                     }
 
                     this._snapshotHelper.enableSnapshotRendering();
+                    this._markSceneMutated();
                 },
-                getWorldBounds: (animationIndex: number): Nullable<ViewerBoundingInfo> => {
+                getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
                     let worldBounds: Nullable<ViewerBoundingInfo> = cachedWorldBounds[animationIndex];
                     if (!worldBounds) {
                         worldBounds = computeModelsBoundingInfos([model]);
@@ -1175,8 +1455,16 @@ export class Viewer implements IDisposable {
             if (source) {
                 const model = await this._loadModel(source, options, abortController.signal);
                 model.makeActive(Object.assign({ source, interpolateCamera: false }, options));
+                this._reset(false, "camera", "animation", "material-variant");
             }
         });
+
+        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
+        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            await this.resetEnvironment({ lighting: true }, abortSignal);
+        }
+
+        this._startSceneOptimizer(true);
     }
 
     /**
@@ -1187,21 +1475,36 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
     /**
-     * Unloads the current environment if one is loaded.
+     * Resets the environment to its default state.
      * @param options The options to use when resetting the environment.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironment(undefined, options, abortSignal);
+        const promises: Promise<void>[] = [];
+        // When there are PBR materials, the default environment should be used for lighting.
+        if (options?.lighting && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+            const lightingOptions = { ...options, skybox: false };
+            options = { ...options, lighting: false };
+            promises.push(this._updateEnvironment("auto", lightingOptions, abortSignal));
+        }
+
+        promises.push(this._updateEnvironment(undefined, options, abortSignal));
+        await Promise.all(promises);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
+
+        let urlPromise: Nullable<string | undefined> | Promise<string> = url;
+        if (url && url.trim() === "auto") {
+            options = { ...options, extension: ".env" };
+            urlPromise = (async () => (await import("./defaultEnvironment")).default)();
+        }
 
         options = options ?? defaultLoadEnvironmentOptions;
         if (!options.lighting && !options.skybox) {
@@ -1229,6 +1532,7 @@ export class Viewer implements IDisposable {
                 if (options.lighting) {
                     this._reflectionTexture?.dispose();
                     this._reflectionTexture = null;
+                    this._scene.environmentTexture = null;
                 }
                 if (options.skybox) {
                     this._skybox?.dispose(undefined, true);
@@ -1242,8 +1546,9 @@ export class Viewer implements IDisposable {
             dispose();
 
             try {
+                url = await urlPromise;
                 if (url) {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
+                    const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
                         this._reflectionTexture = cubeTexture;
@@ -1262,7 +1567,7 @@ export class Viewer implements IDisposable {
                     }
 
                     await new Promise<void>((resolve, reject) => {
-                        const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
+                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
                             resolve();
@@ -1318,9 +1623,123 @@ export class Viewer implements IDisposable {
 
     /**
      * Resets the camera to its initial pose.
+     * @param reframe If true, the camera will be reframed to fit the model bounds. If false, it will use the default camera pose passed in with the options to the constructor (if present).
+     *                If undefined, default to false if other viewer state matches the default state (such as the selected animation), otherwise true.
      */
-    public resetCamera() {
-        this._camera.restoreState();
+    public resetCamera(reframe?: boolean): void {
+        if (reframe == undefined) {
+            // If the selected animation is different from the default, there is a good chance the default explicit camera framing won't make sense
+            // and the model may not even be in view. So when this is the case, by default we reframe the camera.
+            reframe = this.selectedAnimation !== (this._options?.selectedAnimation ?? 0);
+        }
+
+        if (reframe) {
+            this._reframeCamera(true);
+        } else {
+            this._reset(true, "camera");
+        }
+    }
+
+    /**
+     * Updates the camera pose.
+     * @param pose The new pose of the camera.
+     * @remarks Any unspecified values are left unchanged.
+     */
+    public updateCamera(pose: { alpha?: number; beta?: number; radius?: number; targetX?: number; targetY?: number; targetZ?: number }): void {
+        // undefined means default for _resetCameraFromBounds, so convert to NaN if needed.
+        this._reframeCameraFromBounds(
+            true,
+            this._loadedModels,
+            pose.alpha ?? NaN,
+            pose.beta ?? NaN,
+            pose.radius ?? NaN,
+            pose.targetX ?? NaN,
+            pose.targetY ?? NaN,
+            pose.targetZ ?? NaN
+        );
+    }
+
+    /**
+     * Resets the viewer to its initial state based on the options passed in to the constructor.
+     * @param flags The flags that specify which parts of the viewer to reset. If no flags are provided, all parts will be reset.
+     * - "source": Reset the loaded model.
+     * - "environment": Reset environment related state.
+     * - "animation": Reset animation related state.
+     * - "camera": Reset camera related state.
+     * - "post-processing": Reset post-processing related state.
+     * - "material-variant": Reset material variant related state.
+     */
+    public reset(...flags: ResetFlag[]) {
+        this._reset(true, ...flags);
+    }
+
+    private _reset(interpolate: boolean, ...flags: ResetFlag[]) {
+        if (flags.length === 0 || flags.includes("source")) {
+            observePromise(this._updateModel(this._options?.source));
+        }
+
+        if (flags.length === 0 || flags.includes("environment")) {
+            this._scene.clearColor = new Color4(...(this._options?.clearColor ?? DefaultViewerOptions.clearColor));
+            this.environmentConfig = {
+                intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
+                blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
+                rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
+                visible: this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible,
+            };
+            if (this._options?.environmentLighting === this._options?.environmentSkybox) {
+                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
+            } else {
+                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
+                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("animation")) {
+            this.animationSpeed = this._options?.animationSpeed ?? DefaultViewerOptions.animationSpeed;
+            this.selectedAnimation = this._options?.selectedAnimation ?? 0;
+            if (this._options?.animationAutoPlay) {
+                this.playAnimation();
+            } else {
+                this.pauseAnimation();
+            }
+        }
+
+        if (flags.length === 0 || flags.includes("camera")) {
+            // In the case of resetting the camera, we always want to restore default states, so convert NaN to undefined.
+            const alpha = Number(this._options?.cameraOrbit?.[0]);
+            const beta = Number(this._options?.cameraOrbit?.[1]);
+            const radius = Number(this._options?.cameraOrbit?.[2]);
+            const targetX = Number(this._options?.cameraTarget?.[0]);
+            const targetY = Number(this._options?.cameraTarget?.[1]);
+            const targetZ = Number(this._options?.cameraTarget?.[2]);
+            this._reframeCameraFromBounds(
+                interpolate,
+                this._loadedModels,
+                isNaN(alpha) ? undefined : alpha,
+                isNaN(beta) ? undefined : beta,
+                isNaN(radius) ? undefined : radius,
+                isNaN(targetX) ? undefined : targetX,
+                isNaN(targetY) ? undefined : targetY,
+                isNaN(targetZ) ? undefined : targetZ
+            );
+            this.cameraAutoOrbit = {
+                enabled: this._options?.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
+                speed: this._options?.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
+                delay: this._options?.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
+            };
+        }
+
+        if (flags.length === 0 || flags.includes("post-processing")) {
+            this.postProcessing = {
+                toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
+                contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
+                exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+            };
+        }
+
+        if (flags.length === 0 || flags.includes("material-variant")) {
+            this.selectedMaterialVariant = this._options?.selectedMaterialVariant ?? null;
+        }
     }
 
     /**
@@ -1331,7 +1750,9 @@ export class Viewer implements IDisposable {
         this.animationProgress = 0;
 
         this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._loadSkyboxAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
@@ -1349,6 +1770,9 @@ export class Viewer implements IDisposable {
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
         this.onAnimationProgressChanged.clear();
+        this.onSelectedMaterialVariantChanged.clear();
+        this.onHotSpotsChanged.clear();
+        this.onCamerasAsHotSpotsChanged.clear();
         this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
@@ -1368,16 +1792,12 @@ export class Viewer implements IDisposable {
     }
 
     protected _getHotSpotToRef(assetContainer: Nullable<AssetContainer>, query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
-        if (!assetContainer) {
-            return false;
-        }
-
         const worldNormal = this._tempVectors[2];
         const worldPos = this._tempVectors[1];
         const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
-            const mesh = assetContainer.meshes[query.meshIndex];
+            const mesh = assetContainer?.meshes[query.meshIndex];
             if (!mesh) {
                 return false;
             }
@@ -1390,11 +1810,8 @@ export class Viewer implements IDisposable {
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
         }
 
-        const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
-        const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
-
-        const viewportWidth = this._camera.viewport.width * renderWidth;
-        const viewportHeight = this._camera.viewport.height * renderHeight;
+        const viewportWidth = this._camera.viewport.width * this._engine.getRenderWidth() * this._engine.getHardwareScalingLevel();
+        const viewportHeight = this._camera.viewport.height * this._engine.getRenderHeight() * this._engine.getHardwareScalingLevel();
         const scene = this._scene;
 
         Vector3.ProjectToRef(worldPos, Matrix.IdentityReadOnly, scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
@@ -1412,6 +1829,89 @@ export class Viewer implements IDisposable {
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 
         return true;
+    }
+
+    /**
+     * Get hotspot world and screen values from a named hotspot
+     * @param name slot of the hot spot
+     * @param result resulting world and screen positions
+     * @returns world position, world normal and screen space coordinates
+     */
+    public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
+        return this._queryHotSpot(name, result) != null;
+    }
+
+    /**
+     * Updates the camera to focus on a named hotspot.
+     * @param name The name of the hotspot to focus on.
+     * @returns true if the hotspot was found and the camera was updated, false otherwise.
+     */
+    public focusHotSpot(name: string): boolean {
+        const result = new ViewerHotSpotResult();
+        const query = this._queryHotSpot(name, result);
+        if (query) {
+            this.pauseAnimation();
+            const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
+            this._camera.interpolateTo(cameraOrbit[0], cameraOrbit[1], cameraOrbit[2], new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2]));
+            return true;
+        }
+        return false;
+    }
+
+    private _queryHotSpot(name: string, result: ViewerHotSpotResult): Nullable<HotSpot> {
+        const hotSpot = this.hotSpots?.[name];
+        if (hotSpot) {
+            if (this.getHotSpotToRef(hotSpot, result)) {
+                return hotSpot;
+            }
+        }
+        return null;
+    }
+
+    private async _addCameraHotSpot(camera: Camera, signal?: AbortSignal) {
+        if (camera !== this._camera) {
+            const hotSpot = await this._createHotSpotFromCamera(camera);
+            if (hotSpot && !signal?.aborted) {
+                this.hotSpots = {
+                    ...this.hotSpots,
+                    [`camera-${camera.name}`]: hotSpot,
+                };
+            }
+        }
+    }
+
+    private _removeCameraHotSpot(camera: Camera) {
+        delete this.hotSpots[`camera-${camera.name}`];
+        this.hotSpots = { ...this.hotSpots };
+    }
+
+    private _toggleCamerasAsHotSpots() {
+        if (!this.camerasAsHotSpots) {
+            this._camerasAsHotSpotsAbortController?.abort();
+            this._camerasAsHotSpotsAbortController = null;
+            this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+        } else {
+            const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
+            this._scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+        }
+    }
+
+    /**
+     * Creates a world HotSpot from a camera.
+     * @param camera The camera to create a HotSpot from.
+     * @returns A HotSpot created from the camera.
+     */
+    private async _createHotSpotFromCamera(camera: Camera): Promise<Nullable<HotSpot>> {
+        if (camera instanceof ArcRotateCamera) {
+            const targetArray = camera.target.asArray();
+            return { type: "world", position: targetArray, normal: targetArray, cameraOrbit: [camera.alpha, camera.beta, camera.radius] };
+        }
+
+        if (this._activeModel) {
+            return CreateHotSpotFromCamera(this._activeModel, camera);
+        }
+
+        return null;
     }
 
     protected get _shouldRender() {
@@ -1446,8 +1946,35 @@ export class Viewer implements IDisposable {
 
     private _beginRendering(): void {
         if (!this._renderLoopController) {
-            let renderedLastFrame: Nullable<boolean> = null;
             let renderedReadyFrame = false;
+
+            const onRenderingResumed = () => {
+                this._log("Viewer Resumed Rendering");
+                // Resume rendering with the hardware scaling level from prior to suspending.
+                this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
+                this._engine.performanceMonitor.enable();
+                this._snapshotHelper.enableSnapshotRendering();
+                this._startSceneOptimizer();
+            };
+
+            const onRenderingSuspended = () => {
+                this._log("Viewer Suspended Rendering");
+                this._renderedLastFrame = false;
+                renderedReadyFrame = false;
+                // Take note of the current hardware scaling level for when rendering is resumed.
+                this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
+                this._stopSceneOptimizer();
+                this._snapshotHelper.disableSnapshotRendering();
+                // We want a high quality render right before suspending, so set the hardware scaling level back to the default,
+                // disable the performance monitor (so the SceneOptimizer doesn't take into account this potentially slower frame),
+                // and then render the scene once.
+                this._engine.performanceMonitor.disable();
+                this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+                this._engine.beginFrame();
+                this._scene.render();
+                this._engine.endFrame();
+            };
+
             const render = () => {
                 // First check if we have indicators that we should render.
                 let shouldRender = this._shouldRender;
@@ -1457,17 +1984,17 @@ export class Viewer implements IDisposable {
                 // a bunch of the same work that happens when we actually render a frame, so we don't want to check
                 // this unless we know we are in a state where there were mutations and now we are waiting for a frame
                 // to render after the scene is ready.
-                if (!shouldRender && renderedLastFrame && !renderedReadyFrame) {
+                if (!shouldRender && this._renderedLastFrame && !renderedReadyFrame) {
                     renderedReadyFrame = this._scene.isReady(true);
                     shouldRender = true;
                 }
 
                 if (shouldRender) {
-                    if (!renderedLastFrame) {
-                        if (renderedLastFrame !== null) {
-                            this._log("Viewer Resumed Rendering");
+                    if (!this._renderedLastFrame) {
+                        if (this._renderedLastFrame !== null) {
+                            onRenderingResumed();
                         }
-                        renderedLastFrame = true;
+                        this._renderedLastFrame = true;
                     }
 
                     this._sceneMutated = false;
@@ -1484,10 +2011,8 @@ export class Viewer implements IDisposable {
                 } else {
                     this._camera.update();
 
-                    if (renderedLastFrame) {
-                        this._log("Viewer Suspended Rendering");
-                        renderedLastFrame = false;
-                        renderedReadyFrame = false;
+                    if (this._renderedLastFrame) {
+                        onRenderingSuspended();
                     }
                 }
             };
@@ -1502,8 +2027,8 @@ export class Viewer implements IDisposable {
                         this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
 
-                        if (renderedLastFrame) {
-                            this._log("Viewer Suspended Rendering");
+                        if (this._renderedLastFrame) {
+                            onRenderingSuspended();
                         }
                     }
                 },
@@ -1511,36 +2036,30 @@ export class Viewer implements IDisposable {
         }
     }
 
-    protected _reframeCamera(interpolateCamera: boolean = false, models: Model[] = this._loadedModelsBacking): void {
-        const worldBounds = computeModelsBoundingInfos(models);
-        this._reframeCameraFromBounds(worldBounds, interpolateCamera);
+    protected _reframeCamera(interpolate: boolean = false, models: readonly Model[] = this._loadedModelsBacking): void {
+        this._reframeCameraFromBounds(interpolate, models);
     }
 
-    private _reframeCameraFromBounds(worldBounds?: Nullable<ViewerBoundingInfo>, interpolate: boolean = false): void {
-        this._camera.useFramingBehavior = true;
-        const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
-
-        this._camera.useAutoRotationBehavior = true;
-
-        const currentAlpha = this._camera.alpha;
-        const currentBeta = this._camera.beta;
-        const currentRadius = this._camera.radius;
-        const currentTarget = this._camera.target;
-
-        const goalAlpha = Math.PI / 2;
-        const goalBeta = Math.PI / 2.4;
+    // For rotation/radius/target, undefined means default framing, NaN means keep current value.
+    private _reframeCameraFromBounds(
+        interpolate: boolean,
+        models: readonly Model[],
+        alpha?: number,
+        beta?: number,
+        radius?: number,
+        targetX?: number,
+        targetY?: number,
+        targetZ?: number
+    ): void {
+        let goalAlpha = Math.PI / 2;
+        let goalBeta = Math.PI / 2.4;
         let goalRadius = 1;
-        let goalTarget = currentTarget;
+        let goalTarget = Vector3.Zero();
 
+        const worldBounds = computeModelsBoundingInfos(models);
         if (worldBounds) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
-
-            const worldExtentsMin = this._tempVectors[0].copyFromFloats(...worldBounds.extents.min);
-            const worldExtentsMax = this._tempVectors[1].copyFromFloats(...worldBounds.extents.max);
-            framingBehavior.zoomOnBoundingInfo(worldExtentsMin, worldExtentsMax);
 
             goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
             goalTarget = Vector3.FromArray(worldBounds.center);
@@ -1549,26 +2068,46 @@ export class Viewer implements IDisposable {
                 goalTarget.copyFromFloats(0, 0, 0);
             }
         }
-        this._camera.alpha = Math.PI / 2;
-        this._camera.beta = Math.PI / 2.4;
-        this._camera.radius = goalRadius;
-        this._camera.target = goalTarget;
-        this._camera.lowerRadiusLimit = goalRadius * 0.001;
-        this._camera.upperRadiusLimit = goalRadius * 5;
-        this._camera.minZ = goalRadius * 0.001;
-        this._camera.maxZ = goalRadius * 1000;
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.useNaturalPinchZoom = true;
-        this._camera.restoreStateInterpolationFactor = 0.1;
-        this._camera.storeState();
+
+        goalAlpha = alpha ?? goalAlpha;
+        goalBeta = beta ?? goalBeta;
+        goalRadius = radius ?? goalRadius;
+        goalTarget.x = targetX ?? goalTarget.x;
+        goalTarget.y = targetY ?? goalTarget.y;
+        goalTarget.z = targetZ ?? goalTarget.z;
 
         if (interpolate) {
-            this._camera.alpha = currentAlpha;
-            this._camera.beta = currentBeta;
-            this._camera.radius = currentRadius;
-            this._camera.target = currentTarget;
-            this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget);
+            this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget, undefined, 0.1);
+        } else {
+            this._camera.stopInterpolation();
+
+            if (!isNaN(goalAlpha)) {
+                this._camera.alpha = goalAlpha;
+            }
+            if (!isNaN(goalBeta)) {
+                this._camera.beta = goalBeta;
+            }
+            if (!isNaN(goalRadius)) {
+                this._camera.radius = goalRadius;
+                this._camera.lowerRadiusLimit = goalRadius * 0.001;
+                this._camera.upperRadiusLimit = goalRadius * 5;
+                this._camera.minZ = goalRadius * 0.001;
+                this._camera.maxZ = goalRadius * 1000;
+            }
+            this._camera.setTarget(
+                new Vector3(
+                    isNaN(goalTarget.x) ? this._camera.target.x : goalTarget.x,
+                    isNaN(goalTarget.y) ? this._camera.target.y : goalTarget.y,
+                    isNaN(goalTarget.z) ? this._camera.target.z : goalTarget.z
+                ),
+                undefined,
+                undefined,
+                true
+            );
         }
+
+        this._camera.wheelDeltaPercentage = 0.01;
+        this._camera.useNaturalPinchZoom = true;
 
         updateSkybox(this._skybox, this._camera);
     }
@@ -1625,6 +2164,26 @@ export class Viewer implements IDisposable {
         }
 
         return null;
+    }
+
+    protected _startSceneOptimizer(reset = false) {
+        this._stopSceneOptimizer();
+
+        if (reset) {
+            this._engine.setHardwareScalingLevel(this._defaultHardwareScalingLevel);
+        }
+
+        const sceneOptimizerOptions = new SceneOptimizerOptions(60, 1000);
+        const hardwareScalingOptimization = new HardwareScalingOptimization(undefined, 1);
+        sceneOptimizerOptions.addOptimization(hardwareScalingOptimization);
+        this._sceneOptimizer = new SceneOptimizer(this._scene, sceneOptimizerOptions);
+
+        this._sceneOptimizer.start();
+    }
+
+    protected _stopSceneOptimizer() {
+        this._sceneOptimizer?.dispose();
+        this._sceneOptimizer = null;
     }
 
     protected _log(message: string) {

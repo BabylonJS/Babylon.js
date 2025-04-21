@@ -3,13 +3,14 @@ import type { RichType } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
- * @experimental
  * Block that outputs a value of type ResultT, resulting of an operation with no inputs.
+ * This block is being extended by some math operations and should not be used directly.
+ * @internal
  */
 export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
     constructor(
         richType: RichType<ResultT>,
-        private _operation: () => ResultT,
+        private _operation: (context: FlowGraphContext) => ResultT,
         private _className: string,
         config?: IFlowGraphBlockConfiguration
     ) {
@@ -18,11 +19,11 @@ export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOpe
 
     /**
      * the operation performed by this block
-     * @param _context the graph context
+     * @param context the graph context
      * @returns the result of the operation
      */
-    public override _doOperation(_context: FlowGraphContext): ResultT {
-        return this._operation();
+    public override _doOperation(context: FlowGraphContext): ResultT {
+        return this._operation(context);
     }
 
     /**

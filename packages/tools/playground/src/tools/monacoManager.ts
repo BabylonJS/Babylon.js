@@ -8,7 +8,7 @@ import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/lang
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { CompilationError } from "../components/errorDisplayComponent";
-import { Observable } from "@dev/core";
+import { Observable, Logger } from "@dev/core";
 import { debounce } from "ts-debounce";
 
 import type { editor } from "monaco-editor/esm/vs/editor/editor.api";
@@ -34,15 +34,8 @@ export class MonacoManager {
     private _isDirty = false;
 
     public constructor(public globalState: GlobalState) {
-        // First Fetch JSON data for templates code
         this._templates = [];
         this._load(globalState);
-        const url = "templates.json?uncacher=" + Date.now();
-        fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
-                this._templates = data;
-            });
     }
 
     private _load(globalState: GlobalState) {
@@ -396,11 +389,19 @@ declare var canvas: HTMLCanvasElement;
         this._setupMonacoColorProvider();
 
         if (initialCall) {
-            // enhance templates with extra properties
-            for (const template of this._templates) {
-                template.kind = monaco.languages.CompletionItemKind.Snippet;
-                template.sortText = "!" + template.label; // make sure templates are on top of the completion window
-                template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+            try {
+                // Fetch JSON data for templates code
+                const templatesCodeUrl = "templates.json?uncacher=" + Date.now();
+                this._templates = await (await fetch(templatesCodeUrl)).json();
+
+                // enhance templates with extra properties
+                for (const template of this._templates) {
+                    template.kind = monaco.languages.CompletionItemKind.Snippet;
+                    template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+                    template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+                }
+            } catch {
+                Logger.Log("Error loading templates code");
             }
 
             this._hookMonacoCompletionProvider();

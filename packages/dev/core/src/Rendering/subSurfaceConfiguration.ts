@@ -6,6 +6,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _WarnImport } from "../Misc/devTools";
 import { Constants } from "../Engines/constants";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Contains all parameters needed for the prepass to perform
@@ -135,7 +136,11 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * @returns The created post process
      */
     public createPostProcess(): SubSurfaceScatteringPostProcess {
-        this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());
+        this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, {
+            size: 1,
+            engine: this._scene.getEngine(),
+            shaderLanguage: this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        });
         this.postProcess.autoClear = false;
 
         return this.postProcess;

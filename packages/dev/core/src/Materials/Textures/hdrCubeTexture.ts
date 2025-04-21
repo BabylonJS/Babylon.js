@@ -160,7 +160,10 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._noMipmap = noMipmap;
         this._size = size;
-        this._supersample = supersample;
+        // CDF is very sensitive to lost precision due to downsampling. This can result in
+        // noticeable brightness differences with different resolutions. Enabling supersampling
+        // mitigates this.
+        this._supersample = supersample || prefilterUsingCdf;
         this._generateHarmonics = generateHarmonics;
 
         this._texture = this._getFromCache(url, this._noMipmap, undefined, undefined, undefined, this.isCube);

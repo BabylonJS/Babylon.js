@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createRoot } from "react-dom/client";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
@@ -14,7 +15,6 @@ import { PreviewManager } from "./components/preview/previewManager";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
-import * as ReactDOM from "react-dom";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 
@@ -133,10 +133,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
-            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
-        }
-
         this.props.globalState.onPopupClosedObservable.addOnce(() => {
             this.componentWillUnmount();
         });
@@ -147,10 +143,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
+        const globalState = this.props.globalState;
 
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+        if (globalState.hostDocument) {
+            globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
+
+        globalState.stateManager.onUpdateRequiredObservable.clear();
+        globalState.stateManager.onRebuildRequiredObservable.clear();
+        globalState.stateManager.onNodeMovedObservable.clear();
+        globalState.stateManager.onNewNodeCreatedObservable.clear();
+        globalState.onClearUndoStack.clear();
 
         if (this._historyStack) {
             this._historyStack.dispose();
@@ -222,9 +225,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const frameData = source.editorData.frames[0];
 
             // create new graph nodes for only blocks from frame (last blocks added)
-            this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeMaterialBlock) => {
+            const blocks = this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length);
+
+            for (const block of blocks) {
                 this.appendBlock(block);
-            });
+            }
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
         });
@@ -314,19 +319,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     loadGraph() {
         const material = this.props.globalState.nodeMaterial;
-        material._vertexOutputNodes.forEach((n: any) => {
+        for (const n of material._vertexOutputNodes) {
             this.appendBlock(n, true);
-        });
-        material._fragmentOutputNodes.forEach((n: any) => {
+        }
+        for (const n of material._fragmentOutputNodes) {
             this.appendBlock(n, true);
-        });
+        }
 
-        material.attachedBlocks.forEach((n: any) => {
+        for (const n of material.attachedBlocks) {
             this.appendBlock(n, true);
-        });
+        }
 
         // Links
-        material.attachedBlocks.forEach((n: any) => {
+        for (const n of material.attachedBlocks) {
             if (n.inputs.length) {
                 const nodeData = this._graphCanvas.findNodeFromData(n);
                 for (const input of nodeData.content.inputs) {
@@ -335,7 +340,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
                 }
             }
-        });
+        }
     }
 
     showWaitScreen() {
@@ -553,7 +558,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 globalState: this.props.globalState,
                 togglePreviewAreaComponent: this.handlePopUp,
             });
-            ReactDOM.render(previewMeshControlComponentHost, host);
+            const root = createRoot(host);
+            root.render(previewMeshControlComponentHost);
         }
     };
 
@@ -584,7 +590,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
             });
-            ReactDOM.render(previewAreaComponentHost, this._previewHost);
+            const root = createRoot(this._previewHost);
+            root.render(previewAreaComponentHost);
         }
     };
 
@@ -669,7 +676,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                <div className="blocker">Node Material Editor runs only on desktop</div>
+                <div className="blocker">Node Material Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );

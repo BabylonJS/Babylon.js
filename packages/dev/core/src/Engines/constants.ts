@@ -392,9 +392,13 @@ export class Constants {
      */
     public static readonly MATERIAL_PrePassDirtyFlag = 32;
     /**
+     * The dirty image processing flag value
+     */
+    public static readonly MATERIAL_ImageProcessingDirtyFlag = 64;
+    /**
      * The all dirty flag value
      */
-    public static readonly MATERIAL_AllDirtyFlag = 63;
+    public static readonly MATERIAL_AllDirtyFlag = 127;
 
     /**
      * Returns the triangle fill mode
@@ -948,6 +952,40 @@ export class Constants {
      * Additional matrix weights (for bones)
      */
     public static MatricesWeightsExtraKind = "matricesWeightsExtra";
+
+    // Animation type
+    /**
+     * Float animation type
+     */
+    public static readonly ANIMATIONTYPE_FLOAT = 0;
+    /**
+     * Vector3 animation type
+     */
+    public static readonly ANIMATIONTYPE_VECTOR3 = 1;
+    /**
+     * Quaternion animation type
+     */
+    public static readonly ANIMATIONTYPE_QUATERNION = 2;
+    /**
+     * Matrix animation type
+     */
+    public static readonly ANIMATIONTYPE_MATRIX = 3;
+    /**
+     * Color3 animation type
+     */
+    public static readonly ANIMATIONTYPE_COLOR3 = 4;
+    /**
+     * Color3 animation type
+     */
+    public static readonly ANIMATIONTYPE_COLOR4 = 7;
+    /**
+     * Vector2 animation type
+     */
+    public static readonly ANIMATIONTYPE_VECTOR2 = 5;
+    /**
+     * Size animation type
+     */
+    public static readonly ANIMATIONTYPE_SIZE = 6;
 
     /**
      * The default minZ value for the near plane of a frustum light

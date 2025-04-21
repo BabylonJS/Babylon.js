@@ -233,6 +233,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
+     * If true, the renderer will render all objects without any image processing applied.
+     * If false (default value), the renderer will use the current setting of the scene's image processing configuration.
+     */
+    public get disableImageProcessing() {
+        return this._objectRenderer.disableImageProcessing;
+    }
+
+    public set disableImageProcessing(value: boolean) {
+        this._objectRenderer.disableImageProcessing = value;
+    }
+
+    /**
      * Override the mesh isReady function with your own one.
      */
     public get customIsReadyFunction(): (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean {

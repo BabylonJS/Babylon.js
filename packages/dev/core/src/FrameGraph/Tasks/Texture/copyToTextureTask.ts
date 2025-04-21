@@ -12,12 +12,12 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
 
     /**
-     * The destination texture to copy to.
+     * The target texture to copy to.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle;
 
     /**
-     * The output texture (same as destinationTexture, but the handle may be different).
+     * The output texture (same as targetTexture, but the handle may be different).
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -33,11 +33,11 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
     }
 
     public record() {
-        if (this.sourceTexture === undefined || this.destinationTexture === undefined) {
-            throw new Error(`FrameGraphCopyToTextureTask "${this.name}": sourceTexture and destinationTexture are required`);
+        if (this.sourceTexture === undefined || this.targetTexture === undefined) {
+            throw new Error(`FrameGraphCopyToTextureTask "${this.name}": sourceTexture and targetTexture are required`);
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 

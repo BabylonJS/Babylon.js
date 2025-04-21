@@ -5,6 +5,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ThinAnaglyphPostProcess } from "./thinAnaglyphPostProcess";
 
 /**
  * Postprocess used to generate anaglyphic rendering
@@ -30,23 +31,26 @@ export class AnaglyphPostProcess extends PostProcess {
      * @param reusable defines if the postprocess will be reused multiple times per frame
      */
     constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: AbstractEngine, reusable?: boolean) {
-        super(name, "anaglyph", null, ["leftSampler"], options, rigCameras[1], samplingMode, engine, reusable);
+        const localOptions = {
+            samplers: ThinAnaglyphPostProcess.Samplers,
+            size: typeof options === "number" ? options : undefined,
+            camera: rigCameras[1],
+            samplingMode,
+            engine,
+            reusable,
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinAnaglyphPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinAnaglyphPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
+
         this._passedProcess = rigCameras[0]._rigPostProcess;
 
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("leftSampler", this._passedProcess);
         });
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/anaglyph.fragment"));
-        } else {
-            list.push(import("../Shaders/anaglyph.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
     }
 }
 

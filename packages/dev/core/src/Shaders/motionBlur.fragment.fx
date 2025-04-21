@@ -26,7 +26,8 @@ void main(void)
             vec2 texelSize = 1.0 / screenSize;
             vec4 velocityColor = texture2D(velocitySampler, vUV);
             velocityColor.rg = velocityColor.rg * 2.0 - vec2(1.0);
-            vec2 velocity = vec2(pow(velocityColor.r, 3.0), pow(velocityColor.g, 3.0)) * velocityColor.a;
+            vec2 signs = sign(velocityColor.rg);
+            vec2 velocity = pow(abs(velocityColor.rg), vec2(3.0)) * signs * velocityColor.a;
             velocity *= motionScale * motionStrength;
             float speed = length(velocity / texelSize);
             int samplesCount = int(clamp(speed, 1.0, SAMPLES));

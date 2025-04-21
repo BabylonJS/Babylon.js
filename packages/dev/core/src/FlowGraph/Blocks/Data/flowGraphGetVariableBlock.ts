@@ -4,55 +4,52 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
- * @experimental
  * The configuration of the FlowGraphGetVariableBlock.
  */
-export interface IFlowGraphGetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+export interface IFlowGraphGetVariableBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
     /**
      * The name of the variable to get.
      */
-    variableName: string;
+    variable: string;
+
+    /**
+     * The initial value of the variable.
+     */
+    initialValue?: T;
 }
 
 /**
  * A block that gets the value of a variable.
- * @experimental
+ * Variables are an stored in the context of the flow graph.
  */
 export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     /**
      * Output connection: The value of the variable.
      */
-    public readonly output: FlowGraphDataConnection<T>;
+    public readonly value: FlowGraphDataConnection<T>;
 
     /**
      * Construct a FlowGraphGetVariableBlock.
      * @param config construction parameters
      */
-    constructor(public override config: IFlowGraphGetVariableBlockConfiguration) {
+    constructor(public override config: IFlowGraphGetVariableBlockConfiguration<T>) {
         super(config);
 
         // The output connection has to have the name of the variable.
-        this.output = this.registerDataOutput(config.variableName, RichTypeAny);
+        this.value = this.registerDataOutput("value", RichTypeAny, config.initialValue);
     }
 
     /**
      * @internal
      */
     public override _updateOutputs(context: FlowGraphContext): void {
-        const variableNameValue = this.config.variableName;
+        const variableNameValue = this.config.variable;
         if (context.hasVariable(variableNameValue)) {
-            this.output.setValue(context.getVariable(variableNameValue), context);
+            this.value.setValue(context.getVariable(variableNameValue), context);
         }
-    }
-
-    /**
-     * Gets the class name of this block
-     * @returns the class name
-     */
-    public override getClassName(): string {
-        return FlowGraphGetVariableBlock.ClassName;
     }
 
     /**
@@ -61,12 +58,12 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      */
     public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
-        serializationObject.config.variableName = this.config.variableName;
+        serializationObject.config.variable = this.config.variable;
     }
 
-    /**
-     * Class name of the block.
-     */
-    public static ClassName = "FGGetVariableBlock";
+    public override getClassName(): string {
+        return FlowGraphBlockNames.GetVariable;
+    }
 }
-RegisterClass(FlowGraphGetVariableBlock.ClassName, FlowGraphGetVariableBlock);
+
+RegisterClass(FlowGraphBlockNames.GetVariable, FlowGraphGetVariableBlock);

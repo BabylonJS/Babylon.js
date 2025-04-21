@@ -317,7 +317,9 @@ export class MathBlock extends NodeGeometryBlock {
      */
     public override dispose() {
         super.dispose();
-        this._connectionObservers.forEach((observer) => observer.remove());
+        for (const observer of this._connectionObservers) {
+            observer.remove();
+        }
         this._connectionObservers.length = 0;
     }
 

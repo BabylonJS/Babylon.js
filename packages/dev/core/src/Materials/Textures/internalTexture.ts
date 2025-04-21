@@ -585,9 +585,9 @@ export class InternalTexture extends TextureSampler {
      */
     public dispose(): void {
         this._references--;
-        this.onLoadedObservable.clear();
-        this.onErrorObservable.clear();
         if (this._references === 0) {
+            this.onLoadedObservable.clear();
+            this.onErrorObservable.clear();
             this._engine._releaseTexture(this);
             this._hardwareTexture = null;
             this._dynamicTextureSource = null;

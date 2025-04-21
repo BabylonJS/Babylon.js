@@ -50,7 +50,7 @@ export interface IGetSetVerticesData {
      * @param updatable defines if the vertex must be flagged as updatable (false as default)
      * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
      */
-    setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
+    setVerticesData(kind: string, data: FloatArray, updatable: boolean, stride?: number): void;
     /**
      * Update a specific associated vertex buffer
      * @param kind defines which buffer to write to (positions, indices, normals, etc). Possible `kind` values :
@@ -470,7 +470,8 @@ export class VertexData implements IVertexDataLike {
         }
 
         if (this.colors) {
-            meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
+            const stride = this.positions && this.colors.length === this.positions!.length ? 3 : 4;
+            meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable, stride);
             if (this.hasVertexAlpha && (meshOrGeometry as any).hasVertexAlpha !== undefined) {
                 (meshOrGeometry as any).hasVertexAlpha = true;
             }
@@ -1414,7 +1415,7 @@ export class VertexData implements IVertexDataLike {
             serializationObject.matricesWeightsExtra = Array.from(this.matricesWeightsExtra);
         }
 
-        serializationObject.indices = Array.from(this.indices as number[]);
+        serializationObject.indices = this.indices ? Array.from(this.indices as number[]) : [];
 
         if (this.materialInfos) {
             serializationObject.materialInfos = [];

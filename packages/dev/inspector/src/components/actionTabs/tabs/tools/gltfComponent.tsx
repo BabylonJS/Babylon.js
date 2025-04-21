@@ -41,13 +41,18 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps, IGLTFCom
     openValidationDetails() {
         const validationResults = this.props.globalState.validationResults;
         const win = window.open("", "_blank");
-        if (win) {
+        if (win && validationResults) {
             // TODO: format this better and use generator registry (https://github.com/KhronosGroup/glTF-Generator-Registry)
-            win.document.title = "glTF Validation Results";
-            win.document.body.innerText = JSON.stringify(validationResults, null, 2);
-            win.document.body.style.whiteSpace = "pre";
-            win.document.body.style.fontFamily = `monospace`;
-            win.document.body.style.fontSize = `14px`;
+            win.document.title = `${validationResults.uri} - glTF Validation Results`;
+            win.document.body.style.backgroundColor = "#333333";
+            win.document.body.style.color = "#fff";
+            win.document.body.style.padding = "1rem";
+            const pre = win.document.createElement("pre");
+            const code = win.document.createElement("code");
+            const textNode = win.document.createTextNode(JSON.stringify(validationResults, null, 2));
+            code.append(textNode);
+            pre.append(code);
+            win.document.body.append(pre);
             win.focus();
         }
     }
@@ -92,7 +97,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps, IGLTFCom
                 <TextLineComponent label="Warnings" value={issues.numWarnings.toString()} />
                 <TextLineComponent label="Infos" value={issues.numInfos.toString()} />
                 <TextLineComponent label="Hints" value={issues.numHints.toString()} />
-                <TextLineComponent label="More details" value="Click here" onLink={() => this.openValidationDetails()} />
+                <TextLineComponent label="Report Details" value="Open" onLink={() => this.openValidationDetails()} onCopy={() => JSON.stringify(validationResults)} />
             </LineContainerComponent>
         );
     }

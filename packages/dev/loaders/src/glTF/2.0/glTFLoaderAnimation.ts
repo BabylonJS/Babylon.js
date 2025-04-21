@@ -2,6 +2,7 @@ import { Animation } from "core/Animations/animation";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { INode } from "./glTFLoaderInterfaces";
 import type { IAnimatable } from "core/Animations/animatable.interface";
+import { SetInterpolationForKey } from "./Extensions/objectModelMapping";
 
 /** @internal */
 export type GetValueFn = (target: any, source: Float32Array, offset: number, scale: number) => any;
@@ -43,20 +44,23 @@ export abstract class AnimationPropertyInfo {
     }
 
     /** @internal */
-    public abstract buildAnimations(target: any, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void;
+    public abstract buildAnimations(target: any, name: string, fps: number, keys: any[]): { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[];
 }
 
 /** @internal */
 export class TransformNodeAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: INode, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
-        callback(target._babylonTransformNode!, this._buildAnimation(name, fps, keys));
+    public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
+        const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
+        babylonAnimations.push({ babylonAnimatable: target._babylonTransformNode!, babylonAnimation: this._buildAnimation(name, fps, keys) });
+        return babylonAnimations;
     }
 }
 
 /** @internal */
 export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
-    public buildAnimations(target: INode, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
+    public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
+        const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
         if (target._numMorphTargets) {
             for (let targetIndex = 0; targetIndex < target._numMorphTargets; targetIndex++) {
                 const babylonAnimation = new Animation(`${name}_${targetIndex}`, this.name, fps, this.type);
@@ -76,19 +80,17 @@ export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
                             const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
                             const babylonAnimationClone = babylonAnimation.clone();
                             morphTarget.animations.push(babylonAnimationClone);
-                            callback(morphTarget, babylonAnimationClone);
+                            babylonAnimations.push({ babylonAnimatable: morphTarget, babylonAnimation: babylonAnimationClone });
                         }
                     }
                 }
             }
         }
+        return babylonAnimations;
     }
 }
 
-/** @internal */
-export const nodeAnimationData = {
-    translation: [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "position", getVector3, () => 3)],
-    rotation: [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", getQuaternion, () => 4)],
-    scale: [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "scaling", getVector3, () => 3)],
-    weights: [new WeightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "influence", getWeights, (target) => target._numMorphTargets!)],
-};
+SetInterpolationForKey("/nodes/{}/translation", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "position", getVector3, () => 3)]);
+SetInterpolationForKey("/nodes/{}/rotation", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", getQuaternion, () => 4)]);
+SetInterpolationForKey("/nodes/{}/scale", [new TransformNodeAnimationPropertyInfo(Animation.ANIMATIONTYPE_VECTOR3, "scaling", getVector3, () => 3)]);
+SetInterpolationForKey("/nodes/{}/weights", [new WeightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "influence", getWeights, (target) => target._numMorphTargets!)]);

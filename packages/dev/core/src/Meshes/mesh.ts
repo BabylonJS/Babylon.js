@@ -1212,7 +1212,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Gets the mesh internal Geometry object
      */
-    public get geometry(): Nullable<Geometry> {
+    public override get geometry(): Nullable<Geometry> {
         return this._geometry;
     }
 
@@ -1368,9 +1368,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             const result: string[] = [];
             if (this._delayInfo) {
-                this._delayInfo.forEach(function (kind) {
+                for (const kind of this._delayInfo) {
                     result.push(kind);
-                });
+                }
             }
             return result;
         }
@@ -1387,7 +1387,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns a positive integer : the total number of indices in this mesh geometry.
-     * @returns the numner of indices or zero if the mesh has no geometry.
+     * @returns the number of indices or zero if the mesh has no geometry.
      */
     public override getTotalIndices(): number {
         if (!this._geometry) {
@@ -1897,13 +1897,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param indexBuffer Defines the index buffer to use for this mesh
      * @param totalVertices Defines the total number of vertices used by the buffer
      * @param totalIndices Defines the total number of indices in the index buffer
+     * @param is32Bits Defines if the indices are 32 bits. If null (default), the value is guessed from the number of vertices
      */
-    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number, is32Bits: Nullable<boolean> = null): void {
         let geometry = this._geometry;
         if (!geometry) {
             geometry = new Geometry(Geometry.RandomId(), this.getScene(), undefined, undefined, this);
         }
-        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices);
+        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices, is32Bits);
     }
 
     /**
@@ -2499,8 +2500,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Render a complete mesh by going through all submeshes
      * @returns the current mesh
-     * #5SPY1V#2: simple test
-     * #5SPY1V#5: perf test
+     * @see [simple test](https://playground.babylonjs.com/#5SPY1V#2)
+     * @see [perf test](https://playground.babylonjs.com/#5SPY1V#5)
      */
     public directRender(): Mesh {
         if (!this.subMeshes) {
@@ -2923,10 +2924,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     this._delayLoadingFunction(JSON.parse(data), this);
                 }
 
-                this.instances.forEach((instance) => {
+                for (const instance of this.instances) {
                     instance.refreshBoundingInfo();
                     instance._syncSubMeshes();
-                });
+                }
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene.removePendingData(this);
@@ -4838,7 +4839,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let minVector: Nullable<Vector3> = null;
         let maxVector: Nullable<Vector3> = null;
 
-        meshes.forEach(function (mesh) {
+        for (const mesh of meshes) {
             const boundingInfo = mesh.getBoundingInfo();
 
             const boundingBox = boundingInfo.boundingBox;
@@ -4849,7 +4850,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 minVector.minimizeInPlace(boundingBox.minimumWorld);
                 maxVector.maximizeInPlace(boundingBox.maximumWorld);
             }
-        });
+        }
 
         if (!minVector || !maxVector) {
             return {

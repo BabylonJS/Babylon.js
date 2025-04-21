@@ -28,6 +28,73 @@ interface ICommonMaterialPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
+const orientationOptions = [
+    { label: "<None>", value: Number.MAX_SAFE_INTEGER },
+    { label: "Clockwise", value: Material.ClockWiseSideOrientation },
+    { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
+];
+
+const transparencyModeOptions = [
+    { label: "<Not Defined>", value: Null_Value },
+    { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
+    { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
+    { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
+    { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
+];
+
+const alphaModeOptions = [
+    { label: "Combine", value: Constants.ALPHA_COMBINE },
+    { label: "One one", value: Constants.ALPHA_ONEONE },
+    { label: "Add", value: Constants.ALPHA_ADD },
+    { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+    { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+    { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+    { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+    { label: "Pre-multiplied Porter Duff", value: Constants.ALPHA_PREMULTIPLIED_PORTERDUFF },
+    { label: "Screen mode", value: Constants.ALPHA_SCREENMODE },
+    { label: "OneOne OneOne", value: Constants.ALPHA_ONEONE_ONEONE },
+    { label: "Alpha to color", value: Constants.ALPHA_ALPHATOCOLOR },
+    { label: "Reverse one minus", value: Constants.ALPHA_REVERSEONEMINUS },
+    { label: "Source+Dest * (1 - SourceAlpha)", value: Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA },
+    { label: "OneOne OneZero", value: Constants.ALPHA_ONEONE_ONEZERO },
+    { label: "Exclusion", value: Constants.ALPHA_EXCLUSION },
+    { label: "Layer accumulate", value: Constants.ALPHA_LAYER_ACCUMULATE },
+];
+
+const depthfunctionOptions = [
+    { label: "<Engine Default>", value: 0 },
+    { label: "Never", value: Engine.NEVER },
+    { label: "Always", value: Engine.ALWAYS },
+    { label: "Equal", value: Engine.EQUAL },
+    { label: "Less", value: Engine.LESS },
+    { label: "Less or equal", value: Engine.LEQUAL },
+    { label: "Greater", value: Engine.GREATER },
+    { label: "Greater or equal", value: Engine.GEQUAL },
+    { label: "Not equal", value: Engine.NOTEQUAL },
+];
+
+const stencilFunctionOptions = [
+    { label: "Never", value: Constants.NEVER },
+    { label: "Always", value: Constants.ALWAYS },
+    { label: "Equal", value: Constants.EQUAL },
+    { label: "Less", value: Constants.LESS },
+    { label: "Less or equal", value: Constants.LEQUAL },
+    { label: "Greater", value: Constants.GREATER },
+    { label: "Greater or equal", value: Constants.GEQUAL },
+    { label: "Not equal", value: Constants.NOTEQUAL },
+];
+
+const stencilOperationOptions = [
+    { label: "Keep", value: Constants.KEEP },
+    { label: "Zero", value: Constants.ZERO },
+    { label: "Replace", value: Constants.REPLACE },
+    { label: "Incr", value: Constants.INCR },
+    { label: "Decr", value: Constants.DECR },
+    { label: "Invert", value: Constants.INVERT },
+    { label: "Incr wrap", value: Constants.INCR_WRAP },
+    { label: "Decr wrap", value: Constants.DECR_WRAP },
+];
+
 export class CommonMaterialPropertyGridComponent extends React.Component<ICommonMaterialPropertyGridComponentProps> {
     constructor(props: ICommonMaterialPropertyGridComponentProps) {
         super(props);
@@ -38,64 +105,6 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
 
         material.depthFunction = material.depthFunction ?? 0;
 
-        const orientationOptions = [
-            { label: "<None>", value: Number.MAX_SAFE_INTEGER },
-            { label: "Clockwise", value: Material.ClockWiseSideOrientation },
-            { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
-        ];
-
-        const transparencyModeOptions = [
-            { label: "<Not Defined>", value: Null_Value },
-            { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
-            { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
-            { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
-            { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
-        ];
-
-        const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
-        ];
-
-        const depthfunctionOptions = [
-            { label: "<Engine Default>", value: 0 },
-            { label: "Never", value: Engine.NEVER },
-            { label: "Always", value: Engine.ALWAYS },
-            { label: "Equal", value: Engine.EQUAL },
-            { label: "Less", value: Engine.LESS },
-            { label: "Less or equal", value: Engine.LEQUAL },
-            { label: "Greater", value: Engine.GREATER },
-            { label: "Greater or equal", value: Engine.GEQUAL },
-            { label: "Not equal", value: Engine.NOTEQUAL },
-        ];
-
-        const stencilFunctionOptions = [
-            { label: "Never", value: Constants.NEVER },
-            { label: "Always", value: Constants.ALWAYS },
-            { label: "Equal", value: Constants.EQUAL },
-            { label: "Less", value: Constants.LESS },
-            { label: "Less or equal", value: Constants.LEQUAL },
-            { label: "Greater", value: Constants.GREATER },
-            { label: "Greater or equal", value: Constants.GEQUAL },
-            { label: "Not equal", value: Constants.NOTEQUAL },
-        ];
-
-        const stencilOperationOptions = [
-            { label: "Keep", value: Constants.KEEP },
-            { label: "Zero", value: Constants.ZERO },
-            { label: "Replace", value: Constants.REPLACE },
-            { label: "Incr", value: Constants.INCR },
-            { label: "Decr", value: Constants.DECR },
-            { label: "Invert", value: Constants.INVERT },
-            { label: "Incr wrap", value: Constants.INCR_WRAP },
-            { label: "Decr wrap", value: Constants.DECR_WRAP },
-        ];
-
         return (
             <div>
                 <CustomPropertyGridComponent
@@ -105,7 +114,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={material.id} />
+                    <TextLineComponent label="ID" value={material.id} onCopy />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"

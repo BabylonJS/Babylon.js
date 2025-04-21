@@ -16,6 +16,7 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
     BABYLON.Tools.ScriptBaseUrl = baseUrl;
+    BABYLON.NodeMaterial.UseNativeShaderLanguageOfEngine = true;
 
     window.forceUseReverseDepthBuffer = useReverseDepthBuffer === 1 || useReverseDepthBuffer === "true";
     window.forceUseNonCompatibilityMode = useNonCompatibilityMode === 1 || useNonCompatibilityMode === "true";

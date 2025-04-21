@@ -24,12 +24,12 @@
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
         "@fortawesome/free-solid-svg-icons": "^6.1.0",
         "@fortawesome/react-fontawesome": "^0.2.0",
-        "@types/react": "^17.0.30",
-        "@types/react-dom": "^17.0.10",
-        "react": "^17.0.2",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "react": "^18.2.0",
         "react-dnd": "15.0.1",
         "react-dnd-touch-backend": "15.0.1",
-        "react-dom": "^17.0.2"
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
         "@babel/core": "^7.17.9",
@@ -42,6 +42,6 @@
     },
     "sideEffects": false,
     "resolutions": {
-        "webpack": "^5.73.0"
+        "webpack": "^5.98.0"
     }
 }

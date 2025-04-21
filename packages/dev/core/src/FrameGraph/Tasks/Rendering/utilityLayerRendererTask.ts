@@ -8,9 +8,9 @@ import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
  */
 export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
     /**
-     * The destination texture of the task.
+     * The target texture of the task.
      */
-    public destinationTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle;
 
     /**
      * The camera used to render the utility layer.
@@ -19,7 +19,7 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
 
     /**
      * The output texture of the task.
-     * This is the same texture as the destination texture, but the handles are different!
+     * This is the same texture as the target texture, but the handles are different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -45,11 +45,11 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
     }
 
     public record(): void {
-        if (!this.destinationTexture || !this.camera) {
-            throw new Error("FrameGraphUtilityLayerRendererTask: destinationTexture and camera are required");
+        if (!this.targetTexture || !this.camera) {
+            throw new Error("FrameGraphUtilityLayerRendererTask: targetTexture and camera are required");
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 

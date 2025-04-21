@@ -148,7 +148,8 @@ export class NodeRenderGraph {
 
         this._options = options;
 
-        this._frameGraph = new FrameGraph(this._engine, options.debugTextures, this._scene);
+        this._frameGraph = new FrameGraph(this._scene, options.debugTextures, this);
+        this._frameGraph.name = name;
 
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(() => {
@@ -612,7 +613,7 @@ export class NodeRenderGraph {
         clear.clearDepth = true;
         clear.clearStencil = true;
 
-        colorTexture.output.connectTo(clear.texture);
+        colorTexture.output.connectTo(clear.target);
         depthTexture.output.connectTo(clear.depth);
 
         // Render objects
@@ -623,7 +624,7 @@ export class NodeRenderGraph {
 
         camera.output.connectTo(mainRendering.camera);
         objectList.output.connectTo(mainRendering.objects);
-        clear.output.connectTo(mainRendering.destination);
+        clear.output.connectTo(mainRendering.target);
         clear.outputDepth.connectTo(mainRendering.depth);
 
         // Final output

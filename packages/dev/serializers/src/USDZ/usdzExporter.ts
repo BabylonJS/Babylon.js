@@ -181,7 +181,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
 
     if (colorAttribute) {
         string += `
-	color3f[] primvars:displayColor = [${BuildVector3Array(colorAttribute, options, 4)}] (
+	color3f[] primvars:displayColor = [${BuildVector3Array(colorAttribute, options, colorAttribute.length / geometry.getTotalVertices())}] (
 		interpolation = "vertex"
 		)`;
     }
@@ -601,9 +601,9 @@ function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
  * @param options options to configure the export
  * @param meshPredicate predicate to filter the meshes to export
  * @returns a uint8 array containing the USDZ file
- * #H2G5XW#6 - Simple sphere
- * #H2G5XW#7 - Red sphere
- * #5N3RWK#5 - Boombox
+ * @see [Simple sphere](https://playground.babylonjs.com/#H2G5XW#6)
+ * @see [Red sphere](https://playground.babylonjs.com/#H2G5XW#7)
+ * @see [Boombox](https://playground.babylonjs.com/#5N3RWK#5)
  */
 export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExportOptions>, meshPredicate?: (m: Mesh) => boolean): Promise<Uint8Array> {
     const localOptions = {

@@ -30,9 +30,9 @@ export function registerBuiltInLoaders() {
     // Register the OBJ loader.
     RegisterSceneLoaderPlugin({
         ...OBJFileLoaderMetadata,
-        createPlugin: async () => {
+        createPlugin: async (options: SceneLoaderPluginOptions) => {
             const { OBJFileLoader } = await import("./OBJ/objFileLoader");
-            return new OBJFileLoader();
+            return new OBJFileLoader(options[OBJFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
 

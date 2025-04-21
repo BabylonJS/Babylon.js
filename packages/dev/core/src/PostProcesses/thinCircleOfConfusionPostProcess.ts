@@ -92,8 +92,8 @@ export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
      */
     public focalLength = 50;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         const options = this.options as ThinCircleOfConfusionPostProcessOptions;
 

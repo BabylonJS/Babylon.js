@@ -1,3 +1,4 @@
+export * from "./cullObjectsBlock";
 export * from "./elbowBlock";
 export * from "./executeBlock";
 export * from "./inputBlock";
@@ -7,16 +8,21 @@ export * from "./resourceContainerBlock";
 export * from "./Layers/glowLayerBlock";
 export * from "./Layers/highlightLayerBlock";
 
+export * from "./PostProcesses/anaglyphPostProcessBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
+export * from "./PostProcesses/chromaticAberrationPostProcessBlock";
 export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
+export * from "./PostProcesses/fxaaPostProcessBlock";
+export * from "./PostProcesses/grainPostProcessBlock";
+export * from "./PostProcesses/imageProcessingPostProcessBlock";
 export * from "./PostProcesses/passPostProcessBlock";
+export * from "./PostProcesses/ssrPostProcessBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
-export * from "./Rendering/cullObjectsBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";

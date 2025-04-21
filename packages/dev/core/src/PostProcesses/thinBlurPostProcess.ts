@@ -65,6 +65,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
             blockCompilation: true,
         });
 
+        this._staticDefines = options ? (Array.isArray(options.defines) ? options.defines.join("\n") : options.defines || "") : "";
+
         this.options.blockCompilation = blockCompilationFinal;
 
         if (direction !== undefined) {
@@ -131,8 +133,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
         return this._packedFloat;
     }
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
         this._drawWrapper.effect!.setFloat2("delta", (1 / this.textureWidth) * this.direction.x, (1 / this.textureHeight) * this.direction.y);
     }
 

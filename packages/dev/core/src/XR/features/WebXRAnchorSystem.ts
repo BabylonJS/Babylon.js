@@ -54,6 +54,11 @@ export interface IWebXRAnchor {
      * Remove this anchor from the scene
      */
     remove(): void;
+
+    /**
+     * @internal - set to true when the anchor was removed
+     */
+    _removed: boolean;
 }
 
 /**
@@ -278,9 +283,10 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         if (!this._options.doNotRemoveAnchorsOnSessionEnded) {
             while (this._trackedAnchors.length) {
                 const toRemove = this._trackedAnchors.pop();
-                if (toRemove) {
+                if (toRemove && !toRemove._removed) {
                     // as the xr frame loop is removed, we need to notify manually
                     this.onAnchorRemovedObservable.notifyObservers(toRemove);
+                    toRemove._removed = true;
                     // no need to call the remove fn as the anchor is already removed from the session
                 }
             }
@@ -308,24 +314,26 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         const trackedAnchors = frame.trackedAnchors;
         if (trackedAnchors) {
             const toRemove = this._trackedAnchors
-                .filter((anchor) => !trackedAnchors.has(anchor.xrAnchor))
+                .filter((anchor) => anchor._removed)
                 .map((anchor) => {
-                    const index = this._trackedAnchors.indexOf(anchor);
-                    return index;
+                    return this._trackedAnchors.indexOf(anchor);
                 });
             let idxTracker = 0;
-            toRemove.forEach((index) => {
+            for (const index of toRemove) {
                 const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
+                anchor.xrAnchor.delete();
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
                 idxTracker++;
-            });
+            }
             // now check for new ones
             trackedAnchors.forEach((xrAnchor) => {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {
                         id: anchorIdProvider++,
                         xrAnchor: xrAnchor,
-                        remove: () => xrAnchor.delete(),
+                        remove: () => {
+                            newAnchor._removed = true;
+                        },
                     };
                     const anchor = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
                     this._trackedAnchors.push(anchor);
@@ -357,7 +365,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         }
 
         // process future anchors
-        this._futureAnchors.forEach((futureAnchor) => {
+        for (const futureAnchor of this._futureAnchors) {
             if (!futureAnchor.resolved && !futureAnchor.submitted) {
                 this._createAnchorAtTransformation(futureAnchor.xrTransformation, frame).then(
                     (nativeAnchor) => {
@@ -370,7 +378,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 );
                 futureAnchor.submitted = true;
             }
-        });
+        }
     }
 
     /**

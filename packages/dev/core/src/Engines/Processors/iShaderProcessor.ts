@@ -31,9 +31,11 @@ export interface IShaderProcessor {
         defines: string[],
         isFragment: boolean,
         processingContext: Nullable<ShaderProcessingContext>,
-        patameters: {
+        parameters: {
             [key: string]: number | string | boolean | undefined;
-        }
+        },
+        preProcessors: { [key: string]: string },
+        preProcessorsFromCode: { [key: string]: string }
     ) => string;
     initializeShaders?: (processingContext: Nullable<ShaderProcessingContext>) => void;
     finalizeShaders?: (vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>) => { vertexCode: string; fragmentCode: string };

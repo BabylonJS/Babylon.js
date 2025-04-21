@@ -4,7 +4,6 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
- * @experimental
  * The base block for all binary operation blocks. Receives an input of type
  * LeftT, one of type RightT, and outputs a value of type ResultT.
  */
@@ -37,7 +36,9 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
      * @returns the result of the operation
      */
     public override _doOperation(context: FlowGraphContext): ResultT {
-        return this._operation(this.a.getValue(context), this.b.getValue(context));
+        const a = this.a.getValue(context);
+        const b = this.b.getValue(context);
+        return this._operation(a, b);
     }
 
     /**

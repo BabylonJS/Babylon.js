@@ -151,8 +151,8 @@ export interface IShadowGenerator {
  * Default implementation IShadowGenerator.
  * This is the main object responsible of generating shadows in the framework.
  * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
- * #IFYDRS#0: WebGL
- * #IFYDRS#835: WebGPU
+ * @see [WebGL](https://playground.babylonjs.com/#IFYDRS#0)
+ * @see [WebGPU](https://playground.babylonjs.com/#IFYDRS#835)
  */
 export class ShadowGenerator implements IShadowGenerator {
     /**
@@ -2156,15 +2156,15 @@ export class ShadowGenerator implements IShadowGenerator {
 
         for (let meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
             const meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
-            meshes.forEach(function (mesh) {
+            for (const mesh of meshes) {
                 if (!shadowMap) {
-                    return;
+                    continue;
                 }
                 if (!shadowMap.renderList) {
                     shadowMap.renderList = [];
                 }
                 shadowMap.renderList.push(mesh);
-            });
+            }
         }
 
         if (parsedShadowGenerator.id !== undefined) {

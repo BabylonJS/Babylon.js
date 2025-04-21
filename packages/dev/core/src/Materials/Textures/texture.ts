@@ -893,11 +893,12 @@ export class Texture extends BaseTexture {
         }
 
         if (Texture.SerializeBuffers || Texture.ForceSerializeBuffers) {
-            if (typeof this._buffer === "string" && (this._buffer as string).substring(0, 5) === "data:") {
+            if (typeof this._buffer === "string" && this._buffer.startsWith("data:")) {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && this.url.startsWith("data:") && this._buffer instanceof Uint8Array) {
-                serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
+                const mimeType = this.mimeType || "image/png";
+                serializationObject.base64String = `data:${mimeType};base64,${EncodeArrayBufferToBase64(this._buffer)}`;
             } else if (Texture.ForceSerializeBuffers || (this.url && this.url.startsWith("blob:")) || this._forceSerialize) {
                 serializationObject.base64String =
                     !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);

@@ -3,7 +3,7 @@ import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
-import type { ICanvas, IImage } from "../ICanvas";
+import type { ICanvas, IImage, IPath2D } from "../ICanvas";
 import type { NativeData, NativeDataStream } from "./nativeDataStream";
 
 export type NativeTexture = NativeData;
@@ -68,7 +68,6 @@ export interface INativeEngine {
     loadCubeTextureWithMips(texture: NativeTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
-    copyTexture(desination: NativeTexture, source: NativeTexture): void;
     deleteTexture(texture: NativeTexture): void;
     readTexture(
         texture: NativeTexture,
@@ -104,7 +103,7 @@ export interface INativeEngine {
     setCommandDataStream(dataStream: NativeDataStream): void;
     submitCommands(): void;
 
-    populateFrameStats?(stats: NativeFrameStats): void;
+    populateFrameStats(stats: NativeFrameStats): void;
 }
 
 /** @internal */
@@ -323,8 +322,8 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETTEXTUREWRAPMODE: NativeData;
     readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeData;
     readonly COMMAND_SETTEXTURE: NativeData;
-    readonly COMMAND_UNSETTEXTURE?: NativeData;
-    readonly COMMAND_DISCARDALLTEXTURES?: NativeData;
+    readonly COMMAND_UNSETTEXTURE: NativeData;
+    readonly COMMAND_DISCARDALLTEXTURES: NativeData;
     readonly COMMAND_BINDVERTEXARRAY: NativeData;
     readonly COMMAND_SETSTATE: NativeData;
     readonly COMMAND_DELETEPROGRAM: NativeData;
@@ -342,13 +341,14 @@ interface INativeEngineConstructor {
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
-    readonly COMMAND_DRAWINDEXEDINSTANCED?: NativeData;
+    readonly COMMAND_DRAWINDEXEDINSTANCED: NativeData;
     readonly COMMAND_DRAW: NativeData;
-    readonly COMMAND_DRAWINSTANCED?: NativeData;
+    readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
     readonly COMMAND_SETSCISSOR: NativeData;
+    readonly COMMAND_COPYTEXTURE: NativeData;
 }
 
 /** @internal */
@@ -375,6 +375,12 @@ interface INativeCanvasConstructor {
 interface INativeImageConstructor {
     prototype: IImage;
     new (): IImage;
+}
+
+/** @internal */
+interface INativePath2DConstructor {
+    prototype: IPath2D;
+    new (d?: string): IPath2D;
 }
 
 /** @internal */
@@ -414,6 +420,7 @@ export interface INative {
     Camera: INativeCameraConstructor;
     Canvas: INativeCanvasConstructor;
     Image: INativeImageConstructor;
+    Path2D: INativePath2DConstructor;
     XMLHttpRequest: any; // TODO: how to do this?
     DeviceInputSystem: IDeviceInputSystemConstructor;
     NativeDataStream: INativeDataStreamConstructor;

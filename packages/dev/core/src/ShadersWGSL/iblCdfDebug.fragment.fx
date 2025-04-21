@@ -40,7 +40,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var uv: vec2f =
        vec2f((uniforms.sizeParams.x + input.vUV.x) * uniforms.sizeParams.z, (uniforms.sizeParams.y + input.vUV.y) * uniforms.sizeParams.w);
   var backgroundColour: vec3f = textureSample(textureSampler, textureSamplerSampler, input.vUV).rgb;
-
+  var cdfxWidth: u32 = textureDimensions(cdfx, 0).x;
+  var cdfyHeight: u32 = textureDimensions(cdfy, 0).y;
   const iblStart: f32 = 1.0 - cdfyVSize;
   const pdfStart: f32 = 1.0 - 2.0 * cdfyVSize;
   const cdfyStart: f32 = 1.0 - 3.0 * cdfyVSize;
@@ -75,11 +76,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   } else if (uv.y > pdfStart) {
     colour += pdfColour;
   } else if (uv.y > cdfyStart && uv.x < 0.5) {
-    colour.r += 0.003 * cdfyColour;
+    colour.r += cdfyColour / f32(cdfyHeight);
   } else if (uv.y > cdfyStart && uv.x > 0.5) {
     colour.r += icdfyColour;
   } else if (uv.y > cdfxStart) {
-    colour.r += 0.00003 * cdfxColour;
+    colour.r += cdfxColour / f32(cdfxWidth);
   } else if (uv.y > icdfxStart) {
     colour.r += icdfxColour;
   }

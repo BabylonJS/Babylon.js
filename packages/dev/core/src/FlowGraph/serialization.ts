@@ -1,7 +1,12 @@
+import type { IAssetContainer } from "core/IAssetContainer";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
-import { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
+import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
+import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
+import type { TransformNode } from "core/Meshes/transformNode";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
 function isMeshClassName(className: string) {
     return (
@@ -17,21 +22,43 @@ function isMeshClassName(className: string) {
 }
 
 function isVectorClassName(className: string) {
-    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion" || className === "Color3" || className === "Color4";
+    return (
+        className === FlowGraphTypes.Vector2 ||
+        className === FlowGraphTypes.Vector3 ||
+        className === FlowGraphTypes.Vector4 ||
+        className === FlowGraphTypes.Quaternion ||
+        className === FlowGraphTypes.Color3 ||
+        className === FlowGraphTypes.Color4
+    );
 }
 
-function parseVector(className: string, value: Array<number>) {
-    if (className === "Vector2") {
+function isMatrixClassName(className: string) {
+    return className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D;
+}
+
+function isAnimationGroupClassName(className: string) {
+    return className === "AnimationGroup";
+}
+
+function parseVector(className: string, value: Array<number>, flipHandedness = false) {
+    if (className === FlowGraphTypes.Vector2) {
         return Vector2.FromArray(value);
-    } else if (className === "Vector3") {
+    } else if (className === FlowGraphTypes.Vector3) {
+        if (flipHandedness) {
+            value[2] *= -1;
+        }
         return Vector3.FromArray(value);
-    } else if (className === "Vector4") {
+    } else if (className === FlowGraphTypes.Vector4) {
         return Vector4.FromArray(value);
-    } else if (className === "Quaternion") {
+    } else if (className === FlowGraphTypes.Quaternion) {
+        if (flipHandedness) {
+            value[2] *= -1;
+            value[3] *= -1;
+        }
         return Quaternion.FromArray(value);
-    } else if (className === "Color3") {
+    } else if (className === FlowGraphTypes.Color3) {
         return new Color3(value[0], value[1], value[2]);
-    } else if (className === "Color4") {
+    } else if (className === FlowGraphTypes.Color4) {
         return new Color4(value[0], value[1], value[2], value[3]);
     } else {
         throw new Error(`Unknown vector class name ${className}`);
@@ -46,18 +73,31 @@ function parseVector(className: string, value: Array<number>) {
  */
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
     const className = value?.getClassName?.() ?? "";
-    if (isMeshClassName(className)) {
-        serializationObject[key] = {
-            name: value.name,
-            className,
-        };
-    } else if (isVectorClassName(className)) {
+    if (isVectorClassName(className) || isMatrixClassName(className)) {
         serializationObject[key] = {
             value: value.asArray(),
             className,
         };
+    } else if (className === FlowGraphTypes.Integer) {
+        serializationObject[key] = {
+            value: value.value,
+            className,
+        };
     } else {
-        serializationObject[key] = value;
+        if (className && (value.id || value.name)) {
+            serializationObject[key] = {
+                id: value.id,
+                name: value.name,
+                className,
+            };
+        } else {
+            // only if it is not an object
+            if (typeof value !== "object") {
+                serializationObject[key] = value;
+            } else {
+                throw new Error(`Could not serialize value ${value}`);
+            }
+        }
     }
 }
 
@@ -65,25 +105,57 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * The default function that parses values stored in a serialization object
  * @param key the key to the value that will be parsed
  * @param serializationObject the object that will be parsed
+ * @param assetsContainer the assets container that will be used to find the objects
  * @param scene
  * @returns
  */
-export function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
+export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
     const intermediateValue = serializationObject[key];
     let finalValue;
-    const className = intermediateValue?.className;
+    const className = intermediateValue?.type ?? intermediateValue?.className;
     if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(intermediateValue.name);
+        let nodes: TransformNode[] = scene.meshes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
+        if (nodes.length === 0) {
+            nodes = scene.transformNodes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
+        }
+        finalValue = intermediateValue.uniqueId ? nodes.find((m) => m.uniqueId === intermediateValue.uniqueId) : nodes[0];
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
-    } else if (className === "Matrix") {
+    } else if (isAnimationGroupClassName(className)) {
+        // do not use the scene.getAnimationGroupByName because it is possible that two AGs will have the same name
+        const ags = scene.animationGroups.filter((ag) => ag.name === intermediateValue.name);
+        // uniqueId changes on each load. this is used for the glTF loader, that uses serialization after the scene was loaded.
+        finalValue = ags.length === 1 ? ags[0] : ags.find((ag) => ag.uniqueId === intermediateValue.uniqueId);
+    } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
-    } else if (className === FlowGraphInteger.ClassName) {
-        finalValue = FlowGraphInteger.Parse(intermediateValue);
+    } else if (className === FlowGraphTypes.Matrix2D) {
+        finalValue = new FlowGraphMatrix2D(intermediateValue.value);
+    } else if (className === FlowGraphTypes.Matrix3D) {
+        finalValue = new FlowGraphMatrix3D(intermediateValue.value);
+    } else if (className === FlowGraphTypes.Integer) {
+        finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
+    } else if (className === FlowGraphTypes.Number || className === FlowGraphTypes.String || className === FlowGraphTypes.Boolean) {
+        finalValue = intermediateValue.value[0];
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {
-        finalValue = intermediateValue;
+        if (Array.isArray(intermediateValue)) {
+            // configuration data of an event
+            finalValue = intermediateValue.reduce((acc, val) => {
+                if (!val.eventData) {
+                    return acc;
+                }
+                acc[val.id] = {
+                    type: getRichTypeByFlowGraphType(val.type),
+                };
+                if (typeof val.value !== "undefined") {
+                    acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
+                }
+                return acc;
+            }, {});
+        } else {
+            finalValue = intermediateValue;
+        }
     }
     return finalValue;
 }
@@ -98,5 +170,5 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
     // that jest didn't like!
-    return className === "FGSetPropertyBlock" || className === "FGGetPropertyBlock" || className === "FGPlayAnimationBlock" || className === "FGMeshPickEventBlock";
+    return className === FlowGraphBlockNames.JsonPointerParser;
 }

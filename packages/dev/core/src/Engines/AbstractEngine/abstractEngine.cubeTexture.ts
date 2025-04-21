@@ -7,6 +7,7 @@ import { RandomGUID } from "../../Misc/guid";
 import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { AbstractEngine } from "../abstractEngine";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
+import { GetExtensionFromUrl } from "core/Misc/urlTools";
 
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -202,9 +203,7 @@ AbstractEngine.prototype.createCubeTextureBase = function (
         rootUrl = this._transformTextureUrl(rootUrl);
     }
 
-    const rootUrlWithoutUriParams = rootUrl.split("?")[0];
-    const lastDot = rootUrlWithoutUriParams.lastIndexOf(".");
-    const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrlWithoutUriParams.substring(lastDot).toLowerCase() : "";
+    const extension = forcedExtension ?? GetExtensionFromUrl(rootUrl);
 
     const loaderPromise = _GetCompatibleTextureLoader(extension);
 

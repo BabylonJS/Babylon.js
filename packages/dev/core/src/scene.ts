@@ -180,6 +180,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         throw _WarnImport("StandardMaterial");
     }
 
+    private static readonly _OriginalDefaultMaterialFactory = Scene.DefaultMaterialFactory;
+
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the a collision coordinator.
@@ -258,12 +260,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public environmentBRDFTexture: BaseTexture;
 
     /**
-     * Intensity of the environment in all pbr material.
-     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+     * Intensity of the environment (i.e. all indirect lighting) in all pbr material.
+     * This dims or reinforces the indirect lighting overall (reflection and diffuse).
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
+     * Note that this is more of a debugging parameter and is not physically accurate.
+     * If you want to modify the intensity of the IBL texture, you should update iblIntensity instead.
      */
     public environmentIntensity: number = 1;
+
+    /**
+     * Overall intensity of the IBL texture.
+     * This value is multiplied with the reflectionTexture.level value to calculate the final IBL intensity.
+     */
+    public iblIntensity = 1;
 
     /** @internal */
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
@@ -561,7 +571,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         nodes = nodes.concat(this.lights);
         nodes = nodes.concat(this.cameras);
         nodes = nodes.concat(this.transformNodes); // dummies
-        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
+        for (const skeleton of this.skeletons) {
+            nodes = nodes.concat(skeleton.bones);
+        }
         return nodes;
     }
 
@@ -1385,6 +1397,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onActiveCameraChanged.notifyObservers(this);
     }
 
+    /** @internal */
+    public get _hasDefaultMaterial() {
+        return Scene.DefaultMaterialFactory !== Scene._OriginalDefaultMaterialFactory;
+    }
+
     private _defaultMaterial: Material;
 
     /** The default material used on meshes when no material is affected */
@@ -1442,6 +1459,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this.customRenderFunction = this._renderWithFrameGraph;
         }
     }
+
+    /**
+     * List of frame graphs associated with the scene
+     */
+    public frameGraphs: FrameGraph[] = [];
 
     // Physics
     /**
@@ -2354,6 +2376,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        // Effect layers
+        if (this.effectLayers) {
+            for (const effectLayer of this.effectLayers) {
+                if (!effectLayer.isLayerReady()) {
+                    isReady = false;
+                }
+            }
+        }
+
         // Effects
         if (!engine.areAllEffectsReady()) {
             isReady = false;
@@ -2670,9 +2701,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         });
 
         if (recursive) {
-            newMesh.getChildMeshes().forEach((m) => {
+            const children = newMesh.getChildMeshes();
+
+            for (const m of children) {
                 this.addMesh(m);
-            });
+            }
         }
     }
 
@@ -2698,9 +2731,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onMeshRemovedObservable.notifyObservers(toRemove);
         if (recursive) {
-            toRemove.getChildMeshes().forEach((m) => {
+            const children = toRemove.getChildMeshes();
+            for (const m of children) {
                 this.removeMesh(m);
-            });
+            }
         }
         return index;
     }
@@ -3492,6 +3526,21 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 if (this.geometries[index].uniqueId === uniqueId) {
                     return this.geometries[index];
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a frame graph using its name
+     * @param name defines the frame graph's name
+     * @returns the frame graph or null if none found.
+     */
+    public getFrameGraphByName(name: string): Nullable<FrameGraph> {
+        for (let index = 0; index < this.frameGraphs.length; index++) {
+            if (this.frameGraphs[index].name === name) {
+                return this.frameGraphs[index];
             }
         }
 
@@ -4884,7 +4933,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._defaultFrameBufferCleared = false;
         this._checkCameraRenderTarget(this.activeCamera);
         if (this.activeCameras?.length) {
-            this.activeCameras.forEach(this._checkCameraRenderTarget);
+            for (const c of this.activeCameras) {
+                this._checkCameraRenderTarget(c);
+            }
         }
 
         // Register components that have been associated lately to the scene.
@@ -5116,10 +5167,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         if (this._activeAnimatables && this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
-            this._activeAnimatables.forEach((animatable) => {
+            for (const animatable of this._activeAnimatables) {
                 animatable.onAnimationEndObservable.clear();
                 animatable.onAnimationEnd = null;
-            });
+            }
             this.stopAllAnimations();
         }
 
@@ -5350,11 +5401,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         filterPredicate = filterPredicate || (() => true);
-        this.meshes.filter(filterPredicate).forEach((mesh) => {
+        const meshes = this.meshes.filter(filterPredicate);
+        for (const mesh of meshes) {
             mesh.computeWorldMatrix(true);
 
             if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
-                return;
+                continue;
             }
 
             const boundingInfo = mesh.getBoundingInfo();
@@ -5364,7 +5416,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             Vector3.CheckExtends(minBox, min, max);
             Vector3.CheckExtends(maxBox, min, max);
-        });
+        }
 
         return {
             min: min,

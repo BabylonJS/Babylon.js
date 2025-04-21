@@ -133,6 +133,10 @@ export class ShadowMapBlock extends NodeMaterialBlock {
                     search: /vertexOutputs.position/g,
                     replace: "clipPos",
                 },
+                {
+                    search: /vertexOutputs\.vDepthMetricSM/g,
+                    replace: "vDepthMetricSM",
+                },
             ],
         });
 
@@ -141,6 +145,10 @@ export class ShadowMapBlock extends NodeMaterialBlock {
                 {
                     search: /return;/g,
                     replace: "",
+                },
+                {
+                    search: /fragmentInputs\.vDepthMetricSM/g,
+                    replace: "vDepthMetricSM",
                 },
             ],
         });

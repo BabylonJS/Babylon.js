@@ -96,9 +96,10 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
                 }
                 this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
 
-                this._cameraMesh.getChildMeshes(false).forEach((m) => {
+                const childMeshes = this._cameraMesh.getChildMeshes(false);
+                for (const m of childMeshes) {
                     m.material = this._material;
-                });
+                }
                 this._cameraMesh.parent = this._rootMesh;
             }
 

@@ -11,7 +11,7 @@ export interface ICheckBoxLineComponentProps {
     label?: string;
     target?: any;
     propertyName?: string;
-    isSelected?: () => boolean;
+    isSelected?: boolean | (() => boolean);
     onSelect?: (value: boolean) => void;
     onValueChanged?: () => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -46,8 +46,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     constructor(props: ICheckBoxLineComponentProps) {
         super(props);
 
-        if (this.props.isSelected) {
-            this.state = { isSelected: this.props.isSelected(), isConflict: false };
+        if (this.props.isSelected !== undefined) {
+            this.state = {
+                isSelected: typeof this.props.isSelected === "boolean" ? this.props.isSelected : this.props.isSelected(),
+                isConflict: false,
+            };
         } else {
             this.state = {
                 isSelected: this.props.target[this.props.propertyName!] === true,
@@ -63,8 +66,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     override shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean; isConflict: boolean }) {
         let selected: boolean;
 
-        if (nextProps.isSelected) {
-            selected = nextProps.isSelected!();
+        if (nextProps.isSelected !== undefined) {
+            selected = typeof nextProps.isSelected === "boolean" ? nextProps.isSelected : nextProps.isSelected();
         } else {
             selected = nextProps.target[nextProps.propertyName!] === true;
             if (nextProps.target[nextProps.propertyName!] === conflictingValuesPlaceholder) {

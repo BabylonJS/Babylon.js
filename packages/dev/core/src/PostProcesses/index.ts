@@ -33,12 +33,17 @@ export * from "./vrMultiviewToSingleviewPostProcess";
 export * from "./screenSpaceReflectionPostProcess";
 export * from "./screenSpaceCurvaturePostProcess";
 
+export * from "./thinAnaglyphPostProcess";
 export * from "./thinBlackAndWhitePostProcess";
 export * from "./thinBloomEffect";
 export * from "./thinBlurPostProcess";
+export * from "./thinChromaticAberrationPostProcess";
 export * from "./thinCircleOfConfusionPostProcess";
 export * from "./thinDepthOfFieldEffect";
 export * from "./thinExtractHighlightsPostProcess";
+export * from "./thinFXAAPostProcess";
+export * from "./thinGrainPostProcess";
+export * from "./thinImageProcessingPostProcess";
 export * from "./thinPassPostProcess";
 
 // Postprocess

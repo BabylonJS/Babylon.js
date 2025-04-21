@@ -1,5 +1,7 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
+import { Constants } from "core/Engines";
+
 declare const BABYLON: typeof import("core/index") &
     typeof import("serializers/index") & {
         GLTF2: {
@@ -509,24 +511,63 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(3);
             expect(assertionData.nodes).toHaveLength(3);
         });
-        it("should export instances as nodes pointing to same mesh", async () => {
+        it("serializes scene and node metadata", async () => {
+            const assertionData = await page.evaluate(async () => {
+                window.scene!.metadata = { gltf: { extras: { high: "five" } } };
+                const box = BABYLON.CreateBox("box");
+                box.metadata = { test: "test" };
+                const box2 = BABYLON.CreateBox("box2");
+                box2.metadata = { gltf: { extras: { foo: 2, bar: "baz" } } };
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            const scene = assertionData.scenes[0];
+            const box1 = assertionData.nodes.find((node: any) => node.name == "box");
+            const box2 = assertionData.nodes.find((node: any) => node.name == "box2");
+            expect(scene).toBeDefined();
+            expect(scene.extras).toBeDefined();
+            expect(scene.extras.high).toEqual("five");
+            expect(box1).toBeDefined();
+            expect(box1.extras).toBeUndefined();
+            expect(box2).toBeDefined();
+            expect(box2.extras).toBeDefined();
+            expect(box2.extras.foo).toEqual(2);
+            expect(box2.extras.bar).toEqual("baz");
+        });
+
+        describe("exporting instances", () => {
             const instanceCount = 3;
-            const assertionData = await page.evaluate(async (instanceCount) => {
+            const test = async (instanceCount: number, skipSource: boolean) => {
+                const shouldExportNode = (node: any) => !skipSource || node.name !== "box";
                 const mesh = BABYLON.MeshBuilder.CreateBox("box", {}, window.scene!);
                 for (let i = 0; i < instanceCount; i++) {
                     mesh.createInstance("boxInstance" + i);
                 }
-                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", { shouldExportNode });
                 const jsonString = glTFData.files["test.gltf"] as string;
                 return JSON.parse(jsonString);
-            }, instanceCount);
-            expect(Object.keys(assertionData)).toHaveLength(9);
-            expect(assertionData.nodes).toHaveLength(instanceCount + 1);
-            expect(assertionData.meshes).toHaveLength(1);
-            for (const node of assertionData.nodes) {
-                expect(node.mesh).toEqual(0);
-            }
+            };
+
+            it("exports one mesh that is shared by all instances", async () => {
+                const assertionData = await page.evaluate(test, instanceCount, false);
+                expect(assertionData.nodes).toHaveLength(instanceCount + 1);
+                expect(assertionData.meshes).toHaveLength(1);
+                for (const node of assertionData.nodes) {
+                    expect(node.mesh).toEqual(0);
+                }
+            });
+
+            it("can export instances without their source mesh", async () => {
+                const assertionData = await page.evaluate(test, instanceCount, true);
+                expect(assertionData.nodes).toHaveLength(instanceCount);
+                expect(assertionData.meshes).toHaveLength(1);
+                for (const node of assertionData.nodes) {
+                    expect(node.mesh).toEqual(0);
+                }
+            });
         });
+
         it("should not export a root conversion node", async () => {
             const assertionData = await page.evaluate(async () => {
                 await BABYLON.SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/Tests/TwoQuads/", "TwoQuads.gltf", window.scene);
@@ -628,6 +669,26 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.scenes[0].nodes).toHaveLength(2);
             expect(assertionData.scenes[0].nodes).toContain(0);
             expect(assertionData.scenes[0].nodes).toContain(1);
+        });
+
+        it("converts a shared float MatricesIndicesKind vertex buffer", async () => {
+            const assertionData = await page.evaluate(async () => {
+                const mesh = BABYLON.MeshBuilder.CreatePlane("original", undefined, window.scene!);
+                const numVertices = mesh.getTotalVertices();
+                const joints = new Float32Array(new Array(numVertices * 4).fill(0));
+                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, joints);
+                mesh.clone("clone");
+
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            const jointAccessor = assertionData.meshes[0].primitives[0].attributes.JOINTS_0;
+            const accessorData = assertionData.accessors[jointAccessor];
+
+            expect(assertionData.meshes.every((mesh: any) => mesh.primitives[0].attributes.JOINTS_0 === jointAccessor)).toBe(true);
+            expect(accessorData.type).toEqual("VEC4");
+            expect(accessorData.componentType).toEqual(Constants.UNSIGNED_BYTE);
         });
     });
 });

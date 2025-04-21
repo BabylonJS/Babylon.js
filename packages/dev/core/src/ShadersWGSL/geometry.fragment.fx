@@ -82,7 +82,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #ifdef NORMAL_WORLDSPACE
             normalOutput = normalW;
         #else
-            normalOutput = normalize( vec3f(mat4x4f(input.vWorldView0, input.vWorldView0, input.vWorldView2, input.vWorldView3) *  vec4f(normalW, 0.0)));
+            normalOutput = normalize( (mat4x4f(input.vWorldView0, input.vWorldView1, input.vWorldView2, input.vWorldView3) *  vec4f(normalW, 0.0)).xyz);
         #endif
     #else
         normalOutput = normalize(input.vNormalV);

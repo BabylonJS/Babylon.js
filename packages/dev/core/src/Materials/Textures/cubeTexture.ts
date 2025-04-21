@@ -183,7 +183,9 @@ export class CubeTexture extends BaseTexture {
     public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
         let rootUrlKey = "";
 
-        files.forEach((url) => (rootUrlKey += url));
+        for (const url of files) {
+            rootUrlKey += url;
+        }
 
         return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
     }
