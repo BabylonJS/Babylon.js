@@ -674,12 +674,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass.enabled = enabled;
         this._spatialBlurPass.enabled = enabled;
         this._accumulationPass.enabled = enabled;
-        this._materialsWithRenderPlugin.forEach((mat) => {
+        for (const mat of this._materialsWithRenderPlugin) {
             if (mat.pluginManager) {
                 const plugin = mat.pluginManager.getPlugin(IBLShadowsPluginMaterial.Name) as IBLShadowsPluginMaterial;
                 plugin.isEnabled = enabled;
             }
-        });
+        }
         this._setPluginParameters();
     }
 
@@ -706,11 +706,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             min: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
             max: new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE),
         };
-        this._shadowCastingMeshes.forEach((mesh) => {
+        for (const mesh of this._shadowCastingMeshes) {
             const localBounds = mesh.getHierarchyBoundingVectors(true);
             bounds.min = Vector3.Minimize(bounds.min, localBounds.min);
             bounds.max = Vector3.Maximize(bounds.max, localBounds.max);
-        });
+        }
 
         const size = bounds.max.subtract(bounds.min);
         this.voxelGridSize = Math.max(size.x, size.y, size.z);
@@ -996,16 +996,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     public addShadowReceivingMaterial(material?: Material | Material[]) {
         if (material) {
             if (Array.isArray(material)) {
-                material.forEach((m) => {
+                for (const m of material) {
                     this._addShadowSupportToMaterial(m);
-                });
+                }
             } else {
                 this._addShadowSupportToMaterial(material);
             }
         } else {
-            this.scene.materials.forEach((mat) => {
+            for (const mat of this.scene.materials) {
                 this._addShadowSupportToMaterial(mat);
-            });
+            }
         }
     }
 
@@ -1016,14 +1016,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public removeShadowReceivingMaterial(material: Material | Material[]) {
         if (Array.isArray(material)) {
-            material.forEach((m) => {
+            for (const m of material) {
                 const matIndex = this._materialsWithRenderPlugin.indexOf(m);
                 if (matIndex !== -1) {
                     this._materialsWithRenderPlugin.splice(matIndex, 1);
                     const plugin = m.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                     plugin.isEnabled = false;
                 }
-            });
+            }
         } else {
             const matIndex = this._materialsWithRenderPlugin.indexOf(material);
             if (matIndex !== -1) {
@@ -1062,14 +1062,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return;
         }
 
-        this._materialsWithRenderPlugin.forEach((mat) => {
+        for (const mat of this._materialsWithRenderPlugin) {
             if (mat.pluginManager) {
                 const plugin = mat.pluginManager.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                 plugin.iblShadowsTexture = this._getAccumulatedTexture().getInternalTexture()!;
                 plugin.shadowOpacity = this.shadowOpacity;
                 plugin.isColored = this._coloredShadows;
             }
-        });
+        }
     }
 
     private _updateBeforeRender() {
@@ -1112,9 +1112,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public override dispose() {
         const materials = this._materialsWithRenderPlugin.splice(0);
-        materials.forEach((mat) => {
+        for (const mat of materials) {
             this.removeShadowReceivingMaterial(mat);
-        });
+        }
         this._disposeEffectPasses();
         this._noiseTexture.dispose();
         this._voxelRenderer.dispose();
