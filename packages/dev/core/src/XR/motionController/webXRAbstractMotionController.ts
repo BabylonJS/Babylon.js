@@ -447,7 +447,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param xrFrame the current xr frame to use and update the model
      */
     public updateFromXRFrame(xrFrame: XRFrame): void {
-        this.getComponentIds().forEach((id) => this.getComponent(id).update(this.gamepadObject));
+        for (const id of this.getComponentIds()) {
+            this.getComponent(id).update(this.gamepadObject);
+        }
         this.updateModel(xrFrame);
     }
 
@@ -558,12 +560,12 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     private _getGenericParentMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
-        meshes.forEach((mesh) => {
+        for (const mesh of meshes) {
             if (!mesh.parent) {
                 mesh.isPickable = false;
                 mesh.setParent(this.rootMesh);
             }
-        });
+        }
 
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
     }

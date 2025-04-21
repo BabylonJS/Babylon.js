@@ -183,13 +183,13 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                         toRemove.add(xrMesh);
                     }
                 });
-                for (const xrMesh of toRemove) {
+                toRemove.forEach((xrMesh) => {
                     const vertexData = this._detectedMeshes.get(xrMesh);
                     if (vertexData) {
                         this.onMeshRemovedObservable.notifyObservers(vertexData);
                         this._detectedMeshes.delete(xrMesh);
                     }
-                }
+                });
 
                 // now check for new ones
                 detectedMeshes.forEach((xrMesh) => {

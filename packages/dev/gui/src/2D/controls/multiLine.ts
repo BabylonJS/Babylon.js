@@ -144,11 +144,11 @@ export class MultiLine extends Control {
      * Resets all links
      */
     public resetLinks(): void {
-        this._points.forEach((point) => {
+        for (const point of this._points) {
             if (point != null) {
                 point.resetLinks();
             }
-        });
+        }
     }
 
     /** Gets or sets line width */
@@ -198,7 +198,7 @@ export class MultiLine extends Control {
         let first: boolean = true; //first index is not necessarily 0
         let previousPoint: Vector3;
 
-        this._points.forEach((point) => {
+        for (const point of this._points) {
             if (!point) {
                 return;
             }
@@ -208,14 +208,14 @@ export class MultiLine extends Control {
 
                 first = false;
             } else {
-                if (point._point.z < 1 && previousPoint.z < 1) {
+                if (point._point.z < 1 && previousPoint!.z < 1) {
                     context.lineTo(point._point.x, point._point.y);
                 } else {
                     context.moveTo(point._point.x, point._point.y);
                 }
             }
             previousPoint = point._point;
-        });
+        }
 
         context.stroke();
 
@@ -228,7 +228,7 @@ export class MultiLine extends Control {
         this._maxX = null;
         this._maxY = null;
 
-        this._points.forEach((point) => {
+        for (const point of this._points) {
             if (!point) {
                 return;
             }
@@ -247,7 +247,7 @@ export class MultiLine extends Control {
             if (this._maxY == null || point._point.y > this._maxY) {
                 this._maxY = point._point.y;
             }
-        });
+        }
 
         if (this._minX == null) {
             this._minX = 0;

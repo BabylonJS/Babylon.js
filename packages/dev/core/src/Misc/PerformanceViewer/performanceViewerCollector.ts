@@ -183,9 +183,9 @@ export class PerformanceViewerCollector {
      */
     private _restoreStringEvents() {
         if (this._eventRestoreSet.size !== this._customEventObservable.observers.length) {
-            for (const event of this._eventRestoreSet) {
+            this._eventRestoreSet.forEach((event) => {
                 this.registerEvent(event, true);
-            }
+            });
         }
     }
 
