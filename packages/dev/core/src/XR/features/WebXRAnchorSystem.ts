@@ -326,7 +326,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 idxTracker++;
             }
             // now check for new ones
-            for (const xrAnchor of trackedAnchors) {
+            trackedAnchors.forEach((xrAnchor) => {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {
                         id: anchorIdProvider++,
@@ -360,7 +360,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                         Tools.Warn(`Anchor could not be updated`);
                     }
                 }
-            }
+            });
             this._lastFrameDetected = trackedAnchors;
         }
 

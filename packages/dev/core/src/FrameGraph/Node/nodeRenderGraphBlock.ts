@@ -497,7 +497,8 @@ export class NodeRenderGraphBlock {
         }
 
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -505,7 +506,7 @@ export class NodeRenderGraphBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 

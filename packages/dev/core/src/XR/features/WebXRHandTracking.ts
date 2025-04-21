@@ -407,19 +407,21 @@ export class WebXRHand implements IDisposable {
 
         // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
         handMesh.alwaysSelectAsActiveMesh = true;
-        handMesh.getChildMeshes().forEach((mesh) => {
+        const children = handMesh.getChildMeshes();
+        for (const mesh of children) {
             mesh.alwaysSelectAsActiveMesh = true;
-        });
+        }
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
             const handMeshSkeleton = this._handMesh.skeleton;
-            handJointReferenceArray.forEach((jointName, jointIdx) => {
+            for (let jointIdx = 0; jointIdx < handJointReferenceArray.length; jointIdx++) {
+                const jointName = handJointReferenceArray[jointIdx];
                 const jointBoneIdx = handMeshSkeleton.getBoneIndexByName(rigMapping ? rigMapping[jointName] : jointName);
                 if (jointBoneIdx !== -1) {
                     handMeshSkeleton.bones[jointBoneIdx].linkTransformNode(this._jointTransforms[jointIdx]);
                 }
-            });
+            }
         }
 
         this.onHandMeshSetObservable.notifyObservers(this);

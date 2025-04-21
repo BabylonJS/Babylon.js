@@ -140,9 +140,9 @@ export class FluidRendererSceneComponent implements ISceneComponent {
             }
         }
 
-        for (const buffer of buffers) {
+        buffers.forEach((buffer) => {
             buffer._rebuild();
-        }
+        });
     }
 
     /**
@@ -572,12 +572,12 @@ export class FluidRenderer {
             this.targetRenderers[i].dispose();
         }
 
-        for (const list of this._cameras) {
+        this._cameras.forEach((list) => {
             const copyDepthTextures = list[1];
             for (const key in copyDepthTextures) {
-                (copyDepthTextures[key] as any).dispose();
+                copyDepthTextures[key].dispose();
             }
-        }
+        });
 
         (this.renderObjects as Array<IFluidRenderingRenderObject>) = [];
         (this.targetRenderers as FluidRenderingTargetRenderer[]) = [];
