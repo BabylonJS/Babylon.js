@@ -57,7 +57,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * Subtracts source (particle) from destination (current color), leading to darker results
      * - NOTE: Init as 9 but mapped to ALPHA_SUBTRACT for backwards compatibility
      */
-    public static BLENDMODE_SUBTRACT = 5;
+    public static BLENDMODE_SUBTRACT = 9;
     /**
      * Prioritizes area with high source (particle) alpha, strongly emphasizes the particle
      */
