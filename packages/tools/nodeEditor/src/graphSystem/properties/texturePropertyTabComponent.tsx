@@ -94,7 +94,8 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     this.textureBlock instanceof ReflectionTextureBlock ||
                         this.textureBlock instanceof ReflectionBlock ||
                         this.textureBlock instanceof RefractionBlock ||
-                        globalState.mode === NodeMaterialModes.PostProcess
+                        globalState.mode === NodeMaterialModes.PostProcess ||
+                        globalState.mode === NodeMaterialModes.SFE
                 );
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;

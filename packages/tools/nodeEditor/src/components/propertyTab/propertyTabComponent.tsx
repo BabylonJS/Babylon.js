@@ -440,7 +440,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Particle", value: NodeMaterialModes.Particle },
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
             { label: "Gaussian Splatting", value: NodeMaterialModes.GaussianSplatting },
-            { label: "SFE", value: NodeMaterialModes.SFE },
+            { label: "Smart Filters", value: NodeMaterialModes.SFE },
         ];
 
         const engineList = [
