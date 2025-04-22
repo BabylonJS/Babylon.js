@@ -1703,20 +1703,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         // Draw order
-        switch (blendMode) {
-            case ParticleSystem.BLENDMODE_ADD:
-                this._engine.setAlphaMode(Constants.ALPHA_ADD);
-                break;
-            case ParticleSystem.BLENDMODE_ONEONE:
-                this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
-                break;
-            case ParticleSystem.BLENDMODE_STANDARD:
-                this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
-                break;
-            case ParticleSystem.BLENDMODE_MULTIPLY:
-                this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
-                break;
-        }
+        this._engine.setAlphaMode(this._blendModeParticleToEngineConst(blendMode));
 
         // Bind source VAO
         this._platform.bindDrawBuffers(this._targetIndex, effect, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null);

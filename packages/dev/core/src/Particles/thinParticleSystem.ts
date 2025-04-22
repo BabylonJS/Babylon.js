@@ -2078,20 +2078,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         // Draw order
-        switch (blendMode) {
-            case BaseParticleSystem.BLENDMODE_ADD:
-                engine.setAlphaMode(Constants.ALPHA_ADD);
-                break;
-            case BaseParticleSystem.BLENDMODE_ONEONE:
-                engine.setAlphaMode(Constants.ALPHA_ONEONE);
-                break;
-            case BaseParticleSystem.BLENDMODE_STANDARD:
-                engine.setAlphaMode(Constants.ALPHA_COMBINE);
-                break;
-            case BaseParticleSystem.BLENDMODE_MULTIPLY:
-                engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
-                break;
-        }
+        this._engine.setAlphaMode(this._blendModeParticleToEngineConst(blendMode));
 
         if (this._onBeforeDrawParticlesObservable) {
             this._onBeforeDrawParticlesObservable.notifyObservers(effect);
