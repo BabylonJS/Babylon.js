@@ -470,7 +470,8 @@ export class _GLTFAnimation {
                         // this is the place for the KHR_animation_pointer.
                     }
                 }
-                for (const mesh of morphAnimationMeshes) {
+                // eslint-disable-next-line github/array-foreach
+                morphAnimationMeshes.forEach((mesh) => {
                     const morphTargetManager = mesh.morphTargetManager!;
                     let combinedAnimationGroup: Nullable<Animation> = null;
                     const animationKeys: IAnimationKey[] = [];
@@ -535,7 +536,7 @@ export class _GLTFAnimation {
                             morphTargetManager?.numTargets
                         );
                     }
-                }
+                });
                 if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                     glTFAnimations.push(glTFAnimation);
                 }
