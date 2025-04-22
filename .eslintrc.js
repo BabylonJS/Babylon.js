@@ -265,9 +265,6 @@ const rules = {
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
-        "no-then": "off",
-        "no-implicit-buggy-globals": "off",
-        "no-dynamic-script-tag": "off",
         "github/array-foreach": "error",
     },
 };
