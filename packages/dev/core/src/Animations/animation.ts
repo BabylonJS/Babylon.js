@@ -155,6 +155,9 @@ export class Animation {
      */
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
+    /** @internal */
+    public _coreAnimation: Nullable<Animation> = null;
+
     /**
      * @internal Internal use
      */
@@ -952,6 +955,9 @@ export class Animation {
         return this._interpolate(currentFrame, evaluateAnimationState);
     }
 
+    /** @internal */
+    public _key: number;
+
     /**
      * @internal Internal use only
      */
@@ -961,24 +967,32 @@ export class Animation {
         }
 
         const keys = this._keys;
-        const keysLength = keys.length;
+        let key: number;
 
-        let key = state.key;
+        if (!this._coreAnimation) {
+            const keysLength = keys.length;
 
-        while (key >= 0 && currentFrame < keys[key].frame) {
-            --key;
-        }
+            key = state.key;
 
-        while (key + 1 <= keysLength - 1 && currentFrame >= keys[key + 1].frame) {
-            ++key;
-        }
+            while (key >= 0 && currentFrame < keys[key].frame) {
+                --key;
+            }
 
-        state.key = key;
+            while (key + 1 <= keysLength - 1 && currentFrame >= keys[key + 1].frame) {
+                ++key;
+            }
 
-        if (key < 0) {
-            return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[0].value);
-        } else if (key + 1 > keysLength - 1) {
-            return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[keysLength - 1].value);
+            state.key = key;
+
+            if (key < 0) {
+                return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[0].value);
+            } else if (key + 1 > keysLength - 1) {
+                return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[keysLength - 1].value);
+            }
+
+            this._key = key;
+        } else {
+            key = this._coreAnimation._key;
         }
 
         const startKey = keys[key];
@@ -987,7 +1001,6 @@ export class Animation {
         if (searchClosestKeyOnly && (currentFrame === startKey.frame || currentFrame === endKey.frame)) {
             return undefined;
         }
-
         const startValue = this._getKeyValue(startKey.value);
         const endValue = this._getKeyValue(endKey.value);
         if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
