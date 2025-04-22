@@ -5,11 +5,12 @@ import { ParticleSystem } from "core/Particles";
  * Used to populated the blendMode dropdown in our various tools (Node Editor, Inspector, etc.)
  */
 export const blendModeOptions = [
-    { label: "Combine (Standard)", value: ParticleSystem.BLENDMODE_STANDARD },
-    { label: "One one", value: ParticleSystem.BLENDMODE_ONEONE },
     { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
-    { label: "Subtract", value: ParticleSystem.BLENDMODE_SUBTRACT },
     { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
+    { label: "Multiply add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
+    { label: "One one", value: ParticleSystem.BLENDMODE_ONEONE },
+    { label: "Standard)", value: ParticleSystem.BLENDMODE_STANDARD },
+    { label: "Subtract", value: ParticleSystem.BLENDMODE_SUBTRACT },
     { label: "Maximized", value: ParticleSystem.BLENDMODE_MAXIMIZED },
     { label: "Pre-multiplied", value: ParticleSystem.BLENDMODE_PREMULTIPLIED },
     { label: "Pre-multiplied Porter Duff", value: ParticleSystem.BLENDMODE_PREMULTIPLIED_PORTERDUFF },

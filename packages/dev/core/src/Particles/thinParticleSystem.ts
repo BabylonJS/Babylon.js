@@ -2078,7 +2078,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         // Draw order
-        this._engine.setAlphaMode(this._blendModeParticleToEngineConst(blendMode));
+        this._setEngineBasedOnBlendMode(blendMode);
 
         if (this._onBeforeDrawParticlesObservable) {
             this._onBeforeDrawParticlesObservable.notifyObservers(effect);

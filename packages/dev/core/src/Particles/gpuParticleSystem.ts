@@ -1703,7 +1703,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         // Draw order
-        this._engine.setAlphaMode(this._blendModeParticleToEngineConst(blendMode));
+        this._setEngineBasedOnBlendMode(blendMode);
 
         // Bind source VAO
         this._platform.bindDrawBuffers(this._targetIndex, effect, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null);
