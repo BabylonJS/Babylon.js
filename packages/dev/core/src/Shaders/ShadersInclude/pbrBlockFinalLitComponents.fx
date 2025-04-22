@@ -10,12 +10,6 @@ aggShadow = aggShadow / numLights;
     #endif
 #endif
 
-#ifndef METALLICWORKFLOW
-    #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
-    #endif
-#endif
-
 #if defined(SHEEN) && defined(SHEEN_ALBEDOSCALING) && defined(ENVIRONMENTBRDF)
     surfaceAlbedo.rgb = sheenOut.sheenAlbedoScaling * surfaceAlbedo.rgb;
 #endif
@@ -24,9 +18,16 @@ aggShadow = aggShadow / numLights;
 #ifdef REFLECTION
     vec3 finalIrradiance = reflectionOut.environmentIrradiance;
 
-    #ifdef METALLICWORKFLOW
+    #if defined(METALLICWORKFLOW) || defined(SPECULAR_GLOSSINESS_ENERGY_CONSERVATION)
         // Account for energy loss due to specular reflectance
-        finalIrradiance *= (1.0 - subSurfaceOut.specularEnvironmentReflectance);
+        // glTF specifies that diffuse energy is reduced by max_value(fresnel(ior, specular_color))
+        vec3 specEnergy = vec3(max(subSurfaceOut.specularEnvironmentReflectance.r, max(subSurfaceOut.specularEnvironmentReflectance.g, subSurfaceOut.specularEnvironmentReflectance.b)));
+        #if defined(ENVIRONMENTBRDF)
+            #ifdef MS_BRDF_ENERGY_CONSERVATION
+            specEnergy *= energyConservationFactor;
+            #endif
+        #endif
+        finalIrradiance *= (1.0 - specEnergy);
     #endif
 
     #if defined(CLEARCOAT)
