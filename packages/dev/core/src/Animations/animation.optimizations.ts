@@ -3,13 +3,19 @@ import type { Scene } from "core/scene";
 /**
  * Interface used to define the optimization options for animations
  */
-export interface IAnimationOptimization {
+export type AnimationOptimization = {
     /**
-     * If true, all runtime animations will be merged into the first animatable
+     * Do not merge runtime animations
      * @defaultValue true
      */
-    mergeRuntimeAnimations: boolean;
+    mergeRuntimeAnimations: false;
+} | {
     /**
+     * All runtime animations will be merged into the first animatable
+     * @defaultValue true
+     */
+    mergeRuntimeAnimations: true;
+     /**
      * If true, all keyframes evaluation will be merged from the first runtime animation
      * You need to turn on `mergeRuntimeAnimations` for this to work
      * @defaultValue false
