@@ -905,9 +905,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
             serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows || []).length;
-            for (const [index, output] of serializedObject.signalOutputs.entries()) {
+            // eslint-disable-next-line github/array-foreach
+            serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
-            }
+            });
             return serializedObjects;
         },
     },
@@ -1016,9 +1017,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
             serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows).length;
-            for (const [index, output] of serializedObject.signalOutputs.entries()) {
+            // eslint-disable-next-line github/array-foreach
+            serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
-            }
+            });
             return serializedObjects;
         },
     },
