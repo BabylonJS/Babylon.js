@@ -192,7 +192,7 @@ const rules = {
         "plugin:jest/recommended",
         // "plugin:jsdoc/recommended",
         "plugin:prettier/recommended",
-        "plugin:github/recommended",
+        // "plugin:github/recommended",
     ],
     settings: {
         react: {
@@ -268,6 +268,7 @@ const rules = {
         "no-then": "off",
         "no-implicit-buggy-globals": "off",
         "no-dynamic-script-tag": "off",
+        "github/array-foreach": "error",
     },
 };
 
