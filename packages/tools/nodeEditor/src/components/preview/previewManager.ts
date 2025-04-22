@@ -379,6 +379,7 @@ export class PreviewManager {
                 this._handleAnimations();
                 break;
             }
+            case NodeMaterialModes.SFE:
             case NodeMaterialModes.PostProcess:
             case NodeMaterialModes.ProceduralTexture: {
                 this._camera.radius = 4;
@@ -674,6 +675,7 @@ export class PreviewManager {
             }
 
             switch (this._globalState.mode) {
+                case NodeMaterialModes.SFE:
                 case NodeMaterialModes.PostProcess: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
