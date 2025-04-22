@@ -11,7 +11,7 @@ import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
