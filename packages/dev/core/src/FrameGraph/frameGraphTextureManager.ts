@@ -399,6 +399,7 @@ export class FrameGraphTextureManager {
     public computeTotalTextureSize(optimizedSize: boolean, outputWidth: number, outputHeight: number) {
         let totalSize = 0;
 
+        // eslint-disable-next-line github/array-foreach
         this._textures.forEach((entry, handle) => {
             if (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle || entry.refHandle !== undefined) {
                 return;
@@ -446,6 +447,7 @@ export class FrameGraphTextureManager {
             this._optimizeTextureAllocation(tasks);
         }
 
+        // eslint-disable-next-line github/array-foreach
         this._textures.forEach((entry) => {
             if (!entry.texture) {
                 if (entry.refHandle !== undefined) {
@@ -510,6 +512,7 @@ export class FrameGraphTextureManager {
             }
         });
 
+        // eslint-disable-next-line github/array-foreach
         this._historyTextures.forEach((entry) => {
             for (let i = 0; i < entry.handles.length; i++) {
                 entry.textures[i] = this._textures.get(entry.handles[i])!.texture;
@@ -519,6 +522,7 @@ export class FrameGraphTextureManager {
 
     /** @internal */
     public _releaseTextures(releaseAll = true): void {
+        // eslint-disable-next-line github/array-foreach
         this._textures.forEach((entry, handle) => {
             if (entry.lifespan) {
                 entry.lifespan.firstTask = Number.MAX_VALUE;
@@ -544,6 +548,7 @@ export class FrameGraphTextureManager {
             }
         });
 
+        // eslint-disable-next-line github/array-foreach
         this._historyTextures.forEach((entry) => {
             for (let i = 0; i < entry.handles.length; i++) {
                 entry.textures[i] = null;
@@ -559,6 +564,7 @@ export class FrameGraphTextureManager {
 
     /** @internal */
     public _updateHistoryTextures(): void {
+        // eslint-disable-next-line github/array-foreach
         this._historyTextures.forEach((entry) => {
             entry.index = entry.index ^ 1;
             const currentTexture = entry.textures[entry.index];
