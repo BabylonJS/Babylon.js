@@ -1245,7 +1245,7 @@ export class NodeMaterial extends PushMaterial {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ): Nullable<PostProcess> {
-        if (this.mode !== NodeMaterialModes.PostProcess) {
+        if (this.mode !== NodeMaterialModes.PostProcess && this.mode !== NodeMaterialModes.SFE) {
             Logger.Log("Incompatible material mode");
             return null;
         }
@@ -1280,7 +1280,10 @@ export class NodeMaterial extends PushMaterial {
 
         this._processDefines(dummyMesh, defines);
 
-        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
+        // If no vertex shader emitted, fallback to default postprocess vertex shader
+        const vertexCode = this._sharedData.checks.emitVertex ? this._vertexCompilationState._builtCompilationString : undefined;
+
+        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, vertexCode, this.shaderLanguage);
 
         if (!postProcess) {
             postProcess = new PostProcess(
@@ -1295,7 +1298,7 @@ export class NodeMaterial extends PushMaterial {
                 reusable,
                 defines.toString(),
                 textureType,
-                tempName,
+                vertexCode ? tempName : "postprocess",
                 { maxSimultaneousLights: this.maxSimultaneousLights },
                 false,
                 textureFormat,

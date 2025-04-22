@@ -616,6 +616,11 @@ export class BlockTools {
                 pos.setAsAttribute("particle_positionw");
                 return pos;
             }
+            case "ScreenUVBlock": {
+                const uv = new InputBlock("uv");
+                uv.setAsAttribute("postprocess_uv");
+                return uv;
+            }
             case "ParticleRampGradientBlock":
                 return new ParticleRampGradientBlock("ParticleRampGradient");
             case "ParticleBlendMultiplyBlock":
