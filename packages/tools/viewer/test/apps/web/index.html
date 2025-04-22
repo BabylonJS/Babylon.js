@@ -297,18 +297,16 @@
                 }
             };
 
-            let isInspectorVisible = false;
             globalThis.onToggleInspector = async () => {
-                const { Inspector } = await import("inspector/inspector");
+                const { Inspector } = await import("inspector-v2/inspector");
                 console.log("toggle inspector");
-                if (isInspectorVisible) {
+                if (Inspector.IsVisible) {
                     Inspector.Hide();
                 } else {
                     console.log(viewerDetails != null);
                     console.log(viewerDetails?.scene != null);
                     Inspector.Show(viewerDetails.scene, {});
                 }
-                isInspectorVisible = !isInspectorVisible;
             };
 
             let isTopContentVisible = false;

@@ -55,6 +55,7 @@ export default defineConfig(({ mode }) => {
                 core: `@${source}/core/dist`,
                 loaders: `@${source}/loaders/dist`,
                 inspector: `@${source}/inspector/dist`,
+                "inspector-v2": `@${source}/inspector-v2/dist`,
                 materials: `@${source}/materials/dist`,
                 serializers: `@${source}/serializers/dist`,
                 gui: `@${source}/gui/dist`,
