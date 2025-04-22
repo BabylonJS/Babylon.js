@@ -1126,7 +1126,9 @@ export class Viewer implements IDisposable {
     protected _selectAnimation(index: number, interpolateCamera = true) {
         index = Math.round(Clamp(index, -1, this.animations.length - 1));
         if (this._activeModel && index !== this._activeModel.selectedAnimation) {
-            this._activeAnimationObservers.forEach((observer) => observer.remove());
+            for (const observer of this._activeAnimationObservers) {
+                observer.remove();
+            }
             this._activeAnimationObservers = [];
 
             this._activeModel.selectedAnimation = index;
@@ -1343,10 +1345,10 @@ export class Viewer implements IDisposable {
         try {
             const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
             RemoveUnreferencedVerticesData(assetContainer.meshes.filter((mesh) => mesh instanceof Mesh));
-            assetContainer.animationGroups.forEach((group) => {
+            for (const group of assetContainer.animationGroups) {
                 group.start(true, this.animationSpeed);
                 group.pause();
-            });
+            }
             assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
 
@@ -1372,7 +1374,9 @@ export class Viewer implements IDisposable {
                 },
                 dispose: () => {
                     this._snapshotHelper.disableSnapshotRendering();
-                    assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
+                    for (const mesh of assetContainer.meshes) {
+                        this._meshDataCache.delete(mesh);
+                    }
                     assetContainer.dispose();
 
                     const index = this._loadedModelsBacking.indexOf(model);
@@ -1756,7 +1760,9 @@ export class Viewer implements IDisposable {
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
-        this._loadedModelsBacking.forEach((model) => model.dispose());
+        for (const model of this._loadedModelsBacking) {
+            model.dispose();
+        }
         this._scene.dispose();
 
         this.onEnvironmentChanged.clear();
@@ -1889,10 +1895,14 @@ export class Viewer implements IDisposable {
         if (!this.camerasAsHotSpots) {
             this._camerasAsHotSpotsAbortController?.abort();
             this._camerasAsHotSpotsAbortController = null;
-            this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
+            for (const camera of this._scene.cameras) {
+                this._removeCameraHotSpot(camera);
+            }
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            for (const camera of this._scene.cameras) {
+                this._addCameraHotSpot(camera, abortController.signal);
+            }
         }
     }
 
@@ -2140,7 +2150,11 @@ export class Viewer implements IDisposable {
     }
 
     private _applyAnimationSpeed() {
-        this._activeModel?.assetContainer.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
+        if (this._activeModel) {
+            for (const group of this._activeModel.assetContainer.animationGroups) {
+                group.speedRatio = this._animationSpeed;
+            }
+        }
     }
 
     protected async _pick(screenX: number, screenY: number): Promise<Nullable<PickingInfo>> {
@@ -2148,14 +2162,14 @@ export class Viewer implements IDisposable {
         if (this._loadedModels.length > 0) {
             const meshes = this._loadedModelsBacking.flatMap((model) => model.assetContainer.meshes);
             // Refresh bounding info to ensure morph target and skeletal animations are taken into account.
-            meshes.forEach((mesh) => {
+            for (const mesh of meshes) {
                 let cache = this._meshDataCache.get(mesh);
                 if (!cache) {
                     cache = {};
                     this._meshDataCache.set(mesh, cache);
                 }
                 mesh.refreshBoundingInfo({ applyMorph: true, applySkeleton: true, cache });
-            });
+            }
 
             const pickingInfo = this._scene.pick(screenX, screenY, (mesh) => meshes.includes(mesh));
             if (pickingInfo.hit) {

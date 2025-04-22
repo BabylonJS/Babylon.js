@@ -161,6 +161,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         await Promise.all(this._encodePromises);
 
         // Cull obsolete bufferViews that were replaced with Draco data
+        // eslint-disable-next-line github/array-foreach
         this._bufferViewsUsed.forEach((bufferView) => {
             const references = bufferManager.getPropertiesWithBufferView(bufferView);
             const onlyUsedByEncodedPrimitives = references.every((object) => {

@@ -64,9 +64,11 @@ export class NativePipelineContext implements IPipelineContext {
         }
 
         const effectAvailableUniforms = this._engine.getUniforms(this, uniformsNames);
-        effectAvailableUniforms.forEach((uniform, index) => {
+        for (let index = 0; index < effectAvailableUniforms.length; index++) {
+            const uniform = effectAvailableUniforms[index];
+
             uniforms[uniformsNames[index]] = uniform;
-        });
+        }
         this._uniforms = uniforms;
 
         let index: number;
@@ -78,9 +80,9 @@ export class NativePipelineContext implements IPipelineContext {
             }
         }
 
-        samplerList.forEach((name, index) => {
-            samplers[name] = index;
-        });
+        for (index = 0; index < samplerList.length; index++) {
+            samplers[samplerList[index]] = index;
+        }
 
         attributes.push(...engine.getAttributes(this, attributesNames));
     }

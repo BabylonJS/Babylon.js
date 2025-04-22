@@ -430,6 +430,7 @@ export class GizmoManager implements IDisposable {
      */
     public addToAxisCache(gizmoAxisCache: Map<Mesh, GizmoAxisCache>) {
         if (gizmoAxisCache.size > 0) {
+            // eslint-disable-next-line github/array-foreach
             gizmoAxisCache.forEach((v, k) => {
                 this._gizmoAxisCache.set(k, v);
             });

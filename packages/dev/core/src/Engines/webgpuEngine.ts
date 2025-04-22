@@ -641,6 +641,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 } else {
                     this._adapter = adapter!;
                     this._adapterSupportedExtensions = [];
+                    // eslint-disable-next-line github/array-foreach
                     this._adapter.features?.forEach((feature) => {
                         this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName);
                     });
@@ -682,6 +683,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             .then((device: GPUDevice) => {
                 this._device = device;
                 this._deviceEnabledExtensions = [];
+                // eslint-disable-next-line github/array-foreach
                 this._device.features?.forEach((feature) => {
                     this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName);
                 });

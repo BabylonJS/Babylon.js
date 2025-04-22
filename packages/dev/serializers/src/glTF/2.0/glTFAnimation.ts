@@ -407,8 +407,7 @@ export class _GLTFAnimation {
                     channels: [],
                     samplers: [],
                 };
-                for (let i = 0; i < animationGroup.targetedAnimations.length; ++i) {
-                    const targetAnimation = animationGroup.targetedAnimations[i];
+                for (const targetAnimation of animationGroup.targetedAnimations) {
                     const target = targetAnimation.target;
                     const animation = targetAnimation.animation;
                     if (shouldExportAnimation && !shouldExportAnimation(animation)) {
@@ -471,7 +470,7 @@ export class _GLTFAnimation {
                         // this is the place for the KHR_animation_pointer.
                     }
                 }
-                morphAnimationMeshes.forEach((mesh) => {
+                for (const mesh of morphAnimationMeshes) {
                     const morphTargetManager = mesh.morphTargetManager!;
                     let combinedAnimationGroup: Nullable<Animation> = null;
                     const animationKeys: IAnimationKey[] = [];
@@ -536,7 +535,7 @@ export class _GLTFAnimation {
                             morphTargetManager?.numTargets
                         );
                     }
-                });
+                }
                 if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                     glTFAnimations.push(glTFAnimation);
                 }
@@ -608,7 +607,8 @@ export class _GLTFAnimation {
 
             const elementCount = GetAccessorElementCount(dataAccessorType);
             const outputData = new Float32Array(animationData.outputs.length * elementCount);
-            animationData.outputs.forEach(function (output: number[], index: number) {
+            for (let index = 0; index < animationData.outputs.length; index++) {
+                const output = animationData.outputs[index];
                 let outputToWrite: number[] = output;
                 if (convertToRightHanded) {
                     switch (animationChannelTargetPath) {
@@ -657,7 +657,7 @@ export class _GLTFAnimation {
                     }
                 }
                 outputData.set(outputToWrite, index * elementCount);
-            });
+            }
 
             // Create buffer view and accessor for keyed values.
             bufferView = bufferManager.createBufferView(outputData);
@@ -886,13 +886,13 @@ export class _GLTFAnimation {
         outputs: number[][],
         useQuaternion: boolean
     ) {
-        animation.getKeys().forEach(function (keyFrame) {
+        for (const keyFrame of animation.getKeys()) {
             inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
             _GLTFAnimation._AddSplineTangent(_TangentType.INTANGENT, outputs, animationChannelTargetPath, AnimationSamplerInterpolation.CUBICSPLINE, keyFrame, useQuaternion);
             _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, useQuaternion);
 
             _GLTFAnimation._AddSplineTangent(_TangentType.OUTTANGENT, outputs, animationChannelTargetPath, AnimationSamplerInterpolation.CUBICSPLINE, keyFrame, useQuaternion);
-        });
+        }
     }
 
     private static _GetBasePositionRotationOrScale(babylonTransformNode: Node, animationChannelTargetPath: AnimationChannelTargetPath, useQuaternion: boolean) {
@@ -1088,10 +1088,10 @@ export class _GLTFAnimation {
     private static _CalculateMinMaxKeyFrames(keyFrames: IAnimationKey[]): { min: number; max: number } {
         let min: number = Infinity;
         let max: number = -Infinity;
-        keyFrames.forEach(function (keyFrame) {
+        for (const keyFrame of keyFrames) {
             min = Math.min(min, keyFrame.frame);
             max = Math.max(max, keyFrame.frame);
-        });
+        }
 
         return { min: min, max: max };
     }

@@ -5,7 +5,7 @@
  */
 export function CopyStyles(source: Document, target: DocumentOrShadowRoot) {
     // Copy all <style> elements
-    Array.from(source.querySelectorAll("style")).forEach((style) => {
+    for (const style of source.querySelectorAll("style")) {
         const newStyle = source.createElement("style");
         newStyle.textContent = style.textContent;
         if ((target as Document).head) {
@@ -13,10 +13,10 @@ export function CopyStyles(source: Document, target: DocumentOrShadowRoot) {
         } else {
             (target as ShadowRoot).appendChild(newStyle);
         }
-    });
+    }
 
     // Copy all <link> elements for stylesheets
-    Array.from(source.querySelectorAll('link[rel="stylesheet"]')).forEach((link) => {
+    for (const link of source.querySelectorAll('link[rel="stylesheet"]')) {
         const newLink = source.createElement("link");
         newLink.rel = "stylesheet";
         newLink.href = (link as HTMLLinkElement).href;
@@ -25,7 +25,7 @@ export function CopyStyles(source: Document, target: DocumentOrShadowRoot) {
         } else {
             (target as ShadowRoot).appendChild(newLink);
         }
-    });
+    }
 }
 
 /**

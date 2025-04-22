@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable github/array-foreach */
 import { kebabize } from "./utils.js";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";

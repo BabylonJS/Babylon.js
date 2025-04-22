@@ -31,8 +31,8 @@ export class ActionCoordinator {
     }
 
     private _checkTriggers(scene: Scene) {
-        this._triggers.forEach((trigger) => {
+        for (const trigger of this._triggers) {
             trigger._check(scene);
-        });
+        }
     }
 }

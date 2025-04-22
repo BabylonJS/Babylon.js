@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 /* eslint-disable import/no-internal-modules */
 import type { IDisposable } from "core/scene";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";

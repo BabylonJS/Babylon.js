@@ -619,6 +619,7 @@ export class Gizmo implements IGizmo {
                 if (forcePointerUp || pointerInfo.type === PointerEventTypes.POINTERUP) {
                     // On Mouse Up
 
+                    // eslint-disable-next-line github/array-foreach
                     gizmoAxisCache.forEach((cache) => {
                         cache.active = false;
                         dragging = false;
@@ -635,6 +636,7 @@ export class Gizmo implements IGizmo {
                     if (dragging) {
                         return;
                     }
+                    // eslint-disable-next-line github/array-foreach
                     gizmoAxisCache.forEach((cache) => {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
@@ -655,6 +657,7 @@ export class Gizmo implements IGizmo {
                         activeDragButton = pointerInfo.event.button;
                         const statusMap = gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
                         statusMap!.active = true;
+                        // eslint-disable-next-line github/array-foreach
                         gizmoAxisCache.forEach((cache) => {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = (isHovered || cache.active) && cache.dragBehavior.enabled ? cache.hoverMaterial : cache.disableMaterial;

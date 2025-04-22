@@ -159,6 +159,7 @@ export class SnapshotRenderingHelper {
             this._log("enableSnapshotRendering", `cancelling ${this._disableCancelFunctions.size} "disable" callbacks`);
         }
 
+        // eslint-disable-next-line github/array-foreach
         this._disableCancelFunctions.forEach((cancel) => cancel());
         this._disableCancelFunctions.clear();
 
@@ -210,6 +211,7 @@ export class SnapshotRenderingHelper {
                 this._log("disableSnapshotRendering", `cancelling ${this._enableCancelFunctions.size} "enable" callbacks`);
             }
 
+            // eslint-disable-next-line github/array-foreach
             this._enableCancelFunctions.forEach((cancel) => cancel());
             this._enableCancelFunctions.clear();
 

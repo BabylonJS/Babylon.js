@@ -349,6 +349,7 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                         if (options.preserveEdges) {
                             const edgeSet = existingEdges[positionHash];
                             let hasPair = true;
+                            // eslint-disable-next-line github/array-foreach
                             edgeSet.forEach((edgeHash) => {
                                 if (flatOpposites[edgeHash] && flatOpposites[edgeHash].length % 2 !== 0) {
                                     hasPair = false;

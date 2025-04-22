@@ -165,9 +165,11 @@ AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_hoverability/hoverable", {
         return true;
     },
     set: (value: boolean, node: INode) => {
-        node._primitiveBabylonMeshes?.forEach((mesh) => {
-            mesh.pointerOverDisableMeshTesting = !value;
-        });
+        if (node._primitiveBabylonMeshes) {
+            for (const mesh of node._primitiveBabylonMeshes) {
+                mesh.pointerOverDisableMeshTesting = !value;
+            }
+        }
     },
     getTarget: (node: INode) => node._babylonTransformNode,
     getPropertyName: [() => "pointerOverDisableMeshTesting"],
@@ -200,14 +202,16 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
     }
 
     public async onReady(): Promise<void> {
-        this._loader.gltf.nodes?.forEach((node) => {
-            // default is true, so only apply if false
-            if (node.extensions?.KHR_node_hoverability && node.extensions?.KHR_node_hoverability.hoverable === false) {
-                node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
-                    mesh.pointerOverDisableMeshTesting = true;
-                });
+        if (this._loader.gltf.nodes) {
+            for (const node of this._loader.gltf.nodes) {
+                // default is true, so only apply if false
+                if (node.extensions?.KHR_node_hoverability && node.extensions?.KHR_node_hoverability.hoverable === false) {
+                    for (const mesh of node._babylonTransformNode?.getChildMeshes() || []) {
+                        mesh.pointerOverDisableMeshTesting = true;
+                    }
+                }
             }
-        });
+        }
     }
 
     public dispose() {

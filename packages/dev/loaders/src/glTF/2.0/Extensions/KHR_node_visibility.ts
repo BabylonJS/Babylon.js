@@ -28,15 +28,19 @@ AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_visibility/visible", {
         return true;
     },
     set: (value: boolean, node: INode) => {
-        node._primitiveBabylonMeshes?.forEach((mesh) => {
-            mesh.inheritVisibility = true;
-        });
+        if (node._primitiveBabylonMeshes) {
+            for (const mesh of node._primitiveBabylonMeshes) {
+                mesh.inheritVisibility = true;
+            }
+        }
         if (node._babylonTransformNode) {
             (node._babylonTransformNode as AbstractMesh).isVisible = value;
         }
-        node._primitiveBabylonMeshes?.forEach((mesh) => {
-            mesh.isVisible = value;
-        });
+        if (node._primitiveBabylonMeshes) {
+            for (const mesh of node._primitiveBabylonMeshes) {
+                mesh.isVisible = value;
+            }
+        }
     },
     getTarget: (node: INode) => node._babylonTransformNode,
     getPropertyName: [() => "isVisible"],
@@ -68,22 +72,28 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
     }
 
     public async onReady(): Promise<void> {
-        this._loader.gltf.nodes?.forEach((node) => {
-            node._primitiveBabylonMeshes?.forEach((mesh) => {
-                mesh.inheritVisibility = true;
-            });
-            // When the JSON Pointer is used we need to change both the transform node and the primitive meshes to the new value.
-            if (node.extensions?.KHR_node_visibility) {
-                if (node.extensions?.KHR_node_visibility.visible === false) {
-                    if (node._babylonTransformNode) {
-                        (node._babylonTransformNode as AbstractMesh).isVisible = false;
+        if (this._loader.gltf.nodes) {
+            for (const node of this._loader.gltf.nodes) {
+                if (node._primitiveBabylonMeshes) {
+                    for (const mesh of node._primitiveBabylonMeshes) {
+                        mesh.inheritVisibility = true;
                     }
-                    node._primitiveBabylonMeshes?.forEach((mesh) => {
-                        mesh.isVisible = false;
-                    });
+                }
+                // When the JSON Pointer is used we need to change both the transform node and the primitive meshes to the new value.
+                if (node.extensions?.KHR_node_visibility) {
+                    if (node.extensions?.KHR_node_visibility.visible === false) {
+                        if (node._babylonTransformNode) {
+                            (node._babylonTransformNode as AbstractMesh).isVisible = false;
+                        }
+                        if (node._primitiveBabylonMeshes) {
+                            for (const mesh of node._primitiveBabylonMeshes) {
+                                mesh.isVisible = false;
+                            }
+                        }
+                    }
                 }
             }
-        });
+        }
     }
 
     public dispose() {

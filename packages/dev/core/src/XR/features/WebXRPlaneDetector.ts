@@ -181,6 +181,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
             }
 
             // now check for new ones
+            // eslint-disable-next-line github/array-foreach
             detectedPlanes.forEach((xrPlane) => {
                 if (!this._lastFrameDetected.has(xrPlane)) {
                     const newPlane: Partial<IWebXRPlane> = {

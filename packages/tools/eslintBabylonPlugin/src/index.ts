@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type * as eslint from "eslint";
 import type * as ESTree from "estree";

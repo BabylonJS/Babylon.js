@@ -348,14 +348,14 @@ export class GraphFrame {
 
         this._outputPortContainer.innerHTML = "";
         this._inputPortContainer.innerHTML = "";
-        this.ports.forEach((framePort: FrameNodePort) => {
+        for (const framePort of this.ports) {
             framePort.dispose();
-        });
+        }
 
-        this._controlledPorts.forEach((port) => {
+        for (const port of this._controlledPorts) {
             port.delegatedPort = null;
             port.refresh();
-        });
+        }
 
         this._frameInPorts = [];
         this._frameOutPorts = [];
@@ -363,7 +363,9 @@ export class GraphFrame {
 
         this._createFramePorts();
         this._markFramePortPositions();
-        this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
+        for (const framePort of this.ports) {
+            framePort.node._refreshLinks();
+        }
     }
 
     public set isCollapsed(value: boolean) {
@@ -393,18 +395,18 @@ export class GraphFrame {
             this._outputPortContainer.innerHTML = "";
             this._inputPortContainer.innerHTML = "";
 
-            this._frameInPorts.forEach((p) => {
+            for (const p of this._frameInPorts) {
                 p.dispose();
-            });
+            }
 
-            this._frameOutPorts.forEach((p) => {
+            for (const p of this._frameOutPorts) {
                 p.dispose();
-            });
+            }
 
-            this._controlledPorts.forEach((port) => {
+            for (const port of this._controlledPorts) {
                 port.delegatedPort = null;
                 port.refresh();
-            });
+            }
 
             this._frameInPorts = [];
             this._frameOutPorts = [];
@@ -951,7 +953,9 @@ export class GraphFrame {
             ]; // swap idicies
             this._movePortUp(elementsArray, nodePort, this._frameOutPorts);
         }
-        this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
+        for (const framePort of this.ports) {
+            framePort.node._refreshLinks();
+        }
     }
 
     private _movePortUp(elementsArray: ChildNode[], nodePort: FrameNodePort, framePortList: FrameNodePort[]) {
@@ -1012,7 +1016,9 @@ export class GraphFrame {
             this._movePortDown(elementsArray, nodePort, this._frameOutPorts);
         }
 
-        this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
+        for (const framePort of this.ports) {
+            framePort.node._refreshLinks();
+        }
     }
 
     private _movePortDown(elementsArray: ChildNode[], nodePort: FrameNodePort, framePortList: FrameNodePort[]) {

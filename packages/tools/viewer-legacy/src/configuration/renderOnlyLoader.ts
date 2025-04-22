@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 import { mapperManager } from "./mappers";
 import type { ViewerConfiguration } from "./configuration";
 import { processConfigurationCompatibility } from "./configurationCompatibility";

@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import type { GlobalState } from "../globalState";

@@ -1383,9 +1383,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     private _attachToOnBlur(scene: Scene): void {
         this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
-            Object.entries(this._lastControlDown).forEach(([, value]) => {
+            for (const [, value] of Object.entries(this._lastControlDown)) {
                 value._onCanvasBlur();
-            });
+            }
             this.focusedControl = null;
             this._lastControlDown = {};
         });

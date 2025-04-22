@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable github/array-foreach */
 import * as fs from "fs";
 import * as path from "path";
 import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";

@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable github/array-foreach */
 import { checkArgs, findRootDirectory } from "./utils.js";
 import { spawn } from "child_process";
 

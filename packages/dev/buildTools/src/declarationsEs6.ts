@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 import { checkArgs } from "./utils.js";
 import * as fs from "fs";
 import * as path from "path";

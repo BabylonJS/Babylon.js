@@ -206,6 +206,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             this._resizeLoadingUI();
         });
 
+        // eslint-disable-next-line github/array-foreach
         this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
             document.body.appendChild(loadingDiv);
         });
@@ -250,6 +251,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             }
         };
 
+        // eslint-disable-next-line github/array-foreach
         this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
             loadingDiv.style.opacity = "0";
         });
@@ -264,6 +266,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingText = text;
 
         if (this._loadingTextDiv) {
+            // eslint-disable-next-line github/array-foreach
             this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
                 // set loadingTextDiv of current loadingDiv
                 loadingDiv.children[0].innerHTML = this._loadingText;
@@ -289,6 +292,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             return;
         }
 
+        // eslint-disable-next-line github/array-foreach
         this._loadingDivToRenderingCanvasMap.forEach((_, loadingDiv) => {
             loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
         });
@@ -326,6 +330,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             return;
         }
 
+        // eslint-disable-next-line github/array-foreach
         this._loadingDivToRenderingCanvasMap.forEach(([canvas, previousCanvasRect], loadingDiv) => {
             const currentCanvasRect = canvas.getBoundingClientRect();
             if (this._isCanvasLayoutChanged(previousCanvasRect, currentCanvasRect)) {

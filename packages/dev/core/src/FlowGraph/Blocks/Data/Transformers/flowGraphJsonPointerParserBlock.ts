@@ -132,27 +132,29 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                     };
                 });
             }
-            accessorContainer.info.interpolation?.forEach((info, index) => {
-                const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
-                // generate the keys based on interpolation info
-                let newKeys: any[] = keys;
-                if (animationType !== info.type) {
-                    // convert the keys to the right type
-                    newKeys = keys.map((key) => {
-                        return {
-                            frame: key.frame,
-                            value: info.getValue(undefined, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
-                        };
-                    });
-                }
-                const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
-                for (const animation of animationData) {
-                    if (easingFunction) {
-                        animation.babylonAnimation.setEasingFunction(easingFunction);
+            if (accessorContainer.info.interpolation) {
+                for (const [index, info] of accessorContainer.info.interpolation.entries()) {
+                    const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
+                    // generate the keys based on interpolation info
+                    let newKeys: any[] = keys;
+                    if (animationType !== info.type) {
+                        // convert the keys to the right type
+                        newKeys = keys.map((key) => {
+                            return {
+                                frame: key.frame,
+                                value: info.getValue(undefined, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
+                            };
+                        });
                     }
-                    animations.push(animation.babylonAnimation);
+                    const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
+                    for (const animation of animationData) {
+                        if (easingFunction) {
+                            animation.babylonAnimation.setEasingFunction(easingFunction);
+                        }
+                        animations.push(animation.babylonAnimation);
+                    }
                 }
-            });
+            }
 
             return animations;
         };

@@ -382,6 +382,7 @@ export class AssetContainer extends AbstractAssetContainer {
 
         if (nodesUidMap.size > 0) {
             Logger.Error("SceneSerializer._topologicalSort: There were unvisited nodes:");
+            // eslint-disable-next-line github/array-foreach
             nodesUidMap.forEach((node) => {
                 Logger.Error(node.name);
             });

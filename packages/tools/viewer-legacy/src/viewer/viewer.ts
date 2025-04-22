@@ -428,11 +428,11 @@ export abstract class AbstractViewer {
         }
         // TODO remove this after testing, as this is done in the updateConfiguration as well.
         if (this.configuration.loaderPlugins) {
-            Object.keys(this.configuration.loaderPlugins).forEach((name) => {
+            for (const name of Object.keys(this.configuration.loaderPlugins)) {
                 if (this.configuration.loaderPlugins && this.configuration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
                 }
-            });
+            }
         }
 
         this.observablesManager.onViewerInitStartedObservable.notifyObservers(this);
@@ -531,11 +531,11 @@ export abstract class AbstractViewer {
             }
 
             if (newConfiguration.loaderPlugins) {
-                Object.keys(newConfiguration.loaderPlugins).forEach((name) => {
+                for (const name of Object.keys(newConfiguration.loaderPlugins)) {
                     if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                         this.modelLoader.addPlugin(name);
                     }
-                });
+                }
             }
         }
     }
@@ -844,16 +844,16 @@ export abstract class AbstractViewer {
             return;
         }
         if (customShaders.shaders) {
-            Object.keys(customShaders.shaders).forEach((key) => {
+            for (const key of Object.keys(customShaders.shaders)) {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.ShadersStore[key] = customShaders!.shaders![key];
-            });
+            }
         }
         if (customShaders.includes) {
-            Object.keys(customShaders.includes).forEach((key) => {
+            for (const key of Object.keys(customShaders.includes)) {
                 // typescript considers a callback "unsafe", so... '!'
                 Effect.IncludesShadersStore[key] = customShaders!.includes![key];
-            });
+            }
         }
     }
 }

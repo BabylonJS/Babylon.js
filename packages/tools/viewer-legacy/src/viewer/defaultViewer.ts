@@ -99,7 +99,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         }
 
         if (plugin.eventsToAttach) {
-            plugin.eventsToAttach.forEach((eventName) => {
+            for (const eventName of plugin.eventsToAttach) {
                 plugin.onEvent &&
                     this.templateManager.eventManager.registerCallback(
                         plugin.templateName,
@@ -110,7 +110,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                         },
                         eventName
                     );
-            });
+            }
         }
     }
 

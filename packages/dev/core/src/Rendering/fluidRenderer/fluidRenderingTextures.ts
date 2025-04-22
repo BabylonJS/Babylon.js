@@ -276,6 +276,7 @@ export class FluidRenderingTextures {
                 this._postProcessRunningIndex++;
             });
             kernelBlurXPostprocess.onSizeChangedObservable.add(() => {
+                // eslint-disable-next-line github/array-foreach
                 kernelBlurXPostprocess._textures.forEach((rt) => {
                     rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
                     rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -315,6 +316,7 @@ export class FluidRenderingTextures {
                 this._postProcessRunningIndex++;
             });
             kernelBlurYPostprocess.onSizeChangedObservable.add(() => {
+                // eslint-disable-next-line github/array-foreach
                 kernelBlurYPostprocess._textures.forEach((rt) => {
                     rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
                     rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -374,6 +376,7 @@ export class FluidRenderingTextures {
                 this._postProcessRunningIndex++;
             });
             kernelBlurXPostprocess.onSizeChangedObservable.add(() => {
+                // eslint-disable-next-line github/array-foreach
                 kernelBlurXPostprocess._textures.forEach((rt) => {
                     rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
                     rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -415,6 +418,7 @@ export class FluidRenderingTextures {
                 this._postProcessRunningIndex++;
             });
             kernelBlurYPostprocess.onSizeChangedObservable.add(() => {
+                // eslint-disable-next-line github/array-foreach
                 kernelBlurYPostprocess._textures.forEach((rt) => {
                     rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
                     rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;

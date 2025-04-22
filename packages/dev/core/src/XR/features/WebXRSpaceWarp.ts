@@ -85,6 +85,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         const scene = this.getScene();
         // set the velocity material to render the velocity RTT
         if (scene && this._velocityMaterial) {
+            // eslint-disable-next-line github/array-foreach
             scene.getActiveMeshes().forEach((mesh) => {
                 this._originalPairing.push([mesh, mesh.material]);
                 mesh.material = this._velocityMaterial;
@@ -249,6 +250,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
     }
 
     public dispose() {
+        // eslint-disable-next-line github/array-foreach
         this._renderTargetTextures.forEach((rtt) => rtt.dispose());
         this._renderTargetTextures.clear();
     }

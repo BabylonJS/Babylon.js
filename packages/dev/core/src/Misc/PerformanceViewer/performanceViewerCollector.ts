@@ -183,6 +183,7 @@ export class PerformanceViewerCollector {
      */
     private _restoreStringEvents() {
         if (this._eventRestoreSet.size !== this._customEventObservable.observers.length) {
+            // eslint-disable-next-line github/array-foreach
             this._eventRestoreSet.forEach((event) => {
                 this.registerEvent(event, true);
             });
@@ -345,6 +346,7 @@ export class PerformanceViewerCollector {
         this.datasets.ids.length = 0;
         this.datasets.startingIndices = new DynamicFloat32Array(InitialArraySize);
         this._datasetMeta.clear();
+        // eslint-disable-next-line github/array-foreach
         this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
 
@@ -442,6 +444,7 @@ export class PerformanceViewerCollector {
         if (!keepDatasetMeta) {
             this._datasetMeta.clear();
         }
+        // eslint-disable-next-line github/array-foreach
         this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
 
@@ -536,6 +539,7 @@ export class PerformanceViewerCollector {
     public dispose() {
         this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
         this._datasetMeta.clear();
+        // eslint-disable-next-line github/array-foreach
         this._strategies.forEach((strategy) => {
             strategy.dispose();
         });

@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 /* eslint-disable import/no-internal-modules */
 import type {
     ILightConfiguration,

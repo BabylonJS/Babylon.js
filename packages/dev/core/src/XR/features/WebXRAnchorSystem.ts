@@ -326,6 +326,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 idxTracker++;
             }
             // now check for new ones
+            // eslint-disable-next-line github/array-foreach
             trackedAnchors.forEach((xrAnchor) => {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {

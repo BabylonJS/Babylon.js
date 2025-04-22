@@ -42,6 +42,7 @@ export class BufferManager {
     public generateBinary(bufferViews: IBufferView[]): Uint8Array {
         // Construct a DataWriter with the total byte length to prevent resizing
         let totalByteLength = 0;
+        // eslint-disable-next-line github/array-foreach
         this._bufferViewToData.forEach((data) => {
             totalByteLength += data.byteLength;
         });
@@ -147,6 +148,7 @@ export class BufferManager {
 
         this._bufferViewToData.delete(bufferView);
         this._bufferViewToProperties.delete(bufferView);
+        // eslint-disable-next-line github/array-foreach
         this._accessorToBufferView.forEach((bv, accessor) => {
             if (bv === bufferView) {
                 // Additionally, remove byteOffset from accessor referencing this bufferView

@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 import type { ViewerConfiguration } from "./configuration";
 import { getConfigurationKey } from "./configuration";
 /**

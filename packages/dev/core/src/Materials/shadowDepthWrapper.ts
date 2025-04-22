@@ -135,6 +135,7 @@ export class ShadowDepthWrapper {
         const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh);
         if (depthWrapperEntries) {
             // find and release the previous depth effect
+            // eslint-disable-next-line github/array-foreach
             depthWrapperEntries.forEach((depthWrapper) => {
                 depthWrapper.mainDrawWrapper.effect?.dispose();
             });

@@ -45,6 +45,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
             const newCategoryIdMap = new Map<string, string[]>();
             const newCategoryCheckedMap = new Map<string, number>();
 
+            // eslint-disable-next-line github/array-foreach
             metadata.forEach((value: IPerfMetadata, id: string) => {
                 const currentCategory = value.category ?? "";
                 const currentIds: string[] = newCategoryIdMap.get(currentCategory) ?? [];
