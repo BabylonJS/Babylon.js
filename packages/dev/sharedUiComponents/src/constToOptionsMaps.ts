@@ -9,7 +9,7 @@ export const blendModeOptions = [
     { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
     { label: "Multiply add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
     { label: "One one", value: ParticleSystem.BLENDMODE_ONEONE },
-    { label: "Standard)", value: ParticleSystem.BLENDMODE_STANDARD },
+    { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
     { label: "Subtract", value: ParticleSystem.BLENDMODE_SUBTRACT },
     { label: "Maximized", value: ParticleSystem.BLENDMODE_MAXIMIZED },
     { label: "Pre-multiplied", value: ParticleSystem.BLENDMODE_PREMULTIPLIED },

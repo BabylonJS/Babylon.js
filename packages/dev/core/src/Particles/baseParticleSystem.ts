@@ -459,14 +459,19 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         switch (blendMode) {
             case BaseParticleSystem.BLENDMODE_ADD:
                 mode = Constants.ALPHA_ADD;
+                break;
             case BaseParticleSystem.BLENDMODE_ONEONE:
                 mode = Constants.ALPHA_ONEONE;
+                break;
             case BaseParticleSystem.BLENDMODE_STANDARD:
                 mode = Constants.ALPHA_COMBINE;
+                break;
             case BaseParticleSystem.BLENDMODE_MULTIPLY:
                 mode = Constants.ALPHA_MULTIPLY;
+                break;
             case BaseParticleSystem.BLENDMODE_SUBTRACT:
                 mode = Constants.ALPHA_SUBTRACT;
+                break;
             case BaseParticleSystem.BLENDMODE_MULTIPLYADD:
                 break; // There is no equivalent engine const for multiplyAdd - the logic lives within the particle system
             default:
@@ -474,7 +479,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
                 // the ParticleSystem.BLENDMODE_FOO are already mapped to the underlying Constants.ALPHA_FOO
                 mode = blendMode;
         }
-        mode && this._engine.setAlphaMode(mode);
+        mode !== undefined && this._engine.setAlphaMode(mode);
     };
     /**
      * Defines the delay in milliseconds before starting the system (0 by default)
