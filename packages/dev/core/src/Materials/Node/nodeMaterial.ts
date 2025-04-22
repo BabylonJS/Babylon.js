@@ -1837,6 +1837,18 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Get a string representing the fragment shader used by the engine for the current node graph
+     * @internal
+     */
+    public async _getProcessedFragmentAsync(): Promise<string> {
+        if (!this._buildWasSuccessful) {
+            this.build();
+        }
+
+        return this._fragmentCompilationState.getProcessedShaderAsync();
+    }
+
+    /**
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
      */
