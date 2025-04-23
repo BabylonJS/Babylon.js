@@ -412,7 +412,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         );
     }
 
-    protected _setEngineBasedOnBlendMode = (blendMode: number): void => {
+    protected _setEngineBasedOnBlendMode(blendMode: number): void {
         switch (blendMode) {
             case BaseParticleSystem.BLENDMODE_MULTIPLYADD:
                 // Don't want to update engine since there is no equivalent engine alpha mode, instead it gets handled within particleSystem
@@ -438,7 +438,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
                 break;
         }
         this._engine.setAlphaMode(blendMode);
-    };
+    }
 
     /**
      * Defines the delay in milliseconds before starting the system (0 by default)
