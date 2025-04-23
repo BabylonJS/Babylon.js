@@ -15,9 +15,6 @@ import type { Node } from "core/node";
 // Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
-// 180 degrees rotation in Y.
-const rotation180Y = new Quaternion(0, 1, 0, 0);
-
 // Default values for comparison.
 const epsilon = 1e-6;
 const defaultTranslation = Vector3.Zero();
@@ -265,18 +262,18 @@ export function ConvertToRightHandedNode(value: INode) {
 }
 
 /**
- * Rotation by 180 as glTF has a different convention than Babylon.
+ * Pre-multiplies a 180-degree Y rotation to the quaternion, in order to match glTF's flipped forward direction for cameras.
  * @param rotation Target camera rotation.
- * @returns Ref to camera rotation.
  */
-export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
-    return rotation.multiplyInPlace(rotation180Y);
+export function ConvertCameraRotationToGLTF(rotation: Quaternion): void {
+    // Simplified from: rotation * (0, 1, 0, 0).
+    rotation.copyFromFloats(-rotation.z, rotation.w, rotation.x, -rotation.y);
 }
 
-export function RotateNode180Y(node: INode) {
-    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    rotation180Y.multiplyToRef(rotation, rotation);
-    node.rotation = rotation.asArray();
+export function RotateNode180Y(node: INode): void {
+    Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    ConvertCameraRotationToGLTF(TmpVectors.Quaternion[1]);
+    node.rotation = TmpVectors.Quaternion[1].asArray();
 }
 
 /**
