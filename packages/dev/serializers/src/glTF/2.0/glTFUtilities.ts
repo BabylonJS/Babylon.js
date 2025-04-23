@@ -13,6 +13,7 @@ import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
 // Matrix that converts handedness on the X-axis.
+// This can be used for converting from left-handed to right-handed systems and vice versa.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // 180 degrees rotation in Y.
@@ -194,9 +195,86 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     return value;
 }
 
+/**
+ * Converts a left-handed quaternion to a right-handed quaternion
+ * via a change of basis.
+ *
+ * It is the simplified version of the following equation:
+ *    q' = to_quaternion(M * to_matrix(q) * M^-1)
+ * where M is the handedness conversion matrix, q is the quaternion,
+ * and q' is the converted quaternion.
+ *
+ * NOTE: The name is a bit misleading. Technically, this function can convert
+ * both LH -> RH and RH -> LH, as M is a reflection matrix and thus involutory (M = M^-1).
+ * @param value unit quaternion to convert
+ * @returns the converted quaternion
+ */
 export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
-    value.x *= -1;
-    value.y *= -1;
+    const x = value.x;
+    const y = value.y;
+    const z = value.z;
+    const w = value.w;
+
+    // Rotation matrix to quaternion method:
+    // https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+
+    // The following expressions were derived from the result of (M * to_matrix(q) * M^-1),
+    // which is why they seem inverted from the usual rotation matrix of a quaternion.
+    // Ordered as [row, column]
+    const m00 = 1 - 2 * (y * y + z * z),
+        m01 = -2 * (w * z + x * y),
+        m02 = -2 * (x * z - w * y);
+    const m10 = -2 * (x * y - w * z),
+        m11 = 1 - 2 * (x * x + z * z),
+        m12 = 2 * (w * x + y * z);
+    const m20 = -2 * (w * y + x * z),
+        m21 = 2 * (y * z - w * x),
+        m22 = 1 - 2 * (x * x + y * y);
+
+    // From here, we proceed with the quaternion extraction from the matrix.
+    // Because we know the quaternion we used to calculate the rotation matrix,
+    // we have the original expressions used to calculate the matrix elements.
+    // We can thus directly calculate the quaternion values below--
+    // which I'm leaving in comments for now.
+    if (m22 < 0) {
+        // if (x^2+y^2) < 1/2
+        if (m00 > m11) {
+            // if |x| > |y|
+            const t = 1 + m00 - m11 - m22; // t = 4x^2
+            const s = 0.5 / Math.sqrt(t);
+            value.x = t * s; // |x|
+            value.y = (m01 + m10) * s; // -y * sign(x)
+            value.z = (m20 + m02) * s; // -z * sign(x)
+            value.w = (m12 - m21) * s; // w * sign(x)
+        } else {
+            // if |y| >= |x|
+            const t = 1 - m00 + m11 - m22; // t = 4y^2
+            const s = 0.5 / Math.sqrt(t);
+            value.x = (m01 + m10) * s; // -x * sign(y)
+            value.y = t * s; // |y|
+            value.z = (m12 + m21) * s; // z * sign(y)
+            value.w = (m20 + m02) * s; // -w * sign(y)
+        }
+    } else {
+        if (m00 < -m11) {
+            // if |z| > |w|
+            const t = 1 - m00 - m11 + m22; // t = 4z^2
+            const s = 0.5 / Math.sqrt(t);
+            value.x = (m20 + m02) * s; // -x * sign(z)
+            value.y = (m12 + m21) * s; // y * sign(z)
+            value.z = t * s; // |z|
+            value.w = (m01 - m10) * s; // -w * sign(z)
+        } else {
+            // if |w| >= |z|
+            const t = 1 + m00 + m11 + m22; // t = 4w^2
+            const s = 0.5 / Math.sqrt(t);
+            value.x = (m12 - m21) * s; // x * sign(w)
+            value.y = (m20 - m02) * s; // -y * sign(w)
+            value.z = (m01 - m10) * s; // -z * sign(w)
+            value.w = t * s; // |w|
+        }
+    }
+
     return value;
 }
 
