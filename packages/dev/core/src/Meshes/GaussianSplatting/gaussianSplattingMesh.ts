@@ -1005,10 +1005,10 @@ export class GaussianSplattingMesh extends Mesh {
                     r1 = value;
                     break;
                 case PLYValue.ROT_2:
-                    r2 = value;
+                    r2 = -value;
                     break;
                 case PLYValue.ROT_3:
-                    r3 = value;
+                    r3 = -value;
                     break;
             }
             if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
