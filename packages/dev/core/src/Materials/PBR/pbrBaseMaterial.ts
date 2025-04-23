@@ -821,16 +821,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     private _baseDiffuseModel: number = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
-    /**
-     * Defines the base diffuse roughness model of the material.
-     */
-    public get baseDiffuseModel(): number {
-        return this._baseDiffuseModel;
-    }
-    public set baseDiffuseModel(v: number) {
-        this._baseDiffuseModel = v;
-        this.markAsDirty(Constants.MATERIAL_MiscDirtyFlag);
-    }
 
     /**
      * Can this material render to several textures at once
@@ -1667,7 +1657,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
-        defines.BASE_DIFFUSE_MODEL = this.baseDiffuseModel;
+        defines.BASE_DIFFUSE_MODEL = this._baseDiffuseModel;
 
         // Multiview
         PrepareDefinesForMultiview(scene, defines);

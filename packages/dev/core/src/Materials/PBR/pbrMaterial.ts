@@ -3,6 +3,7 @@ import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
+import { Constants } from "../../Engines/constants";
 import type { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { ColorCurves } from "../../Materials/colorCurves";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -297,6 +298,13 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serialize("baseDiffuseRoughness")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public baseDiffuseRoughness: Nullable<number>;
+
+    /**
+     * Defines the base diffuse roughness model of the material.
+     */
+    @serialize("baseDiffuseModel")
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public baseDiffuseModel: number = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
 
     /**
      * AKA Specular Color in other nomenclature.
