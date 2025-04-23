@@ -8,6 +8,7 @@ struct reflectivityOutParams
     surfaceAlbedo: vec3f,
     reflectanceF0: vec3f,
     reflectanceF90: vec3f,
+    metallic: f32,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     ambientOcclusionColor: vec3f,
@@ -111,7 +112,7 @@ fn reflectivityBlock(
 
         // Diffuse is used as the base of the reflectivity.
         var baseColor: vec3f = surfaceAlbedo;
-        var metallic: f32 = metallicRoughness.r;
+        outParams.metallic = metallicRoughness.r;
         #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
@@ -120,7 +121,7 @@ fn reflectivityBlock(
             // where 0.16 * reflectance * reflectance remaps the reflectance to allow storage in 8 bit texture
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - metallic);
+            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - outParams.metallic);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
@@ -132,7 +133,7 @@ fn reflectivityBlock(
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - metallic);
+            outParams.surfaceAlbedo = baseColor.rgb * (1.0 - outParams.metallic);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = metallicReflectanceFactors.rgb;
@@ -141,8 +142,8 @@ fn reflectivityBlock(
             var dielectricColorF0: vec3f = vec3f(reflectivityColor.a * metallicReflectanceFactors.rgb * metallicReflectanceFactors.a);
             // Final F0 for metals = baseColor
             var metallicColorF0: vec3f = baseColor.rgb;
-            outParams.reflectanceF0 = mix(dielectricColorF0, metallicColorF0, metallic);
-            outParams.reflectanceF90 = vec3f(mix(metallicReflectanceFactors.a, 1.0, metallic));
+            outParams.reflectanceF0 = mix(dielectricColorF0, metallicColorF0, outParams.metallic);
+            outParams.reflectanceF90 = vec3f(mix(metallicReflectanceFactors.a, 1.0, outParams.metallic));
         #endif
     #else
         #ifdef REFLECTIVITY
