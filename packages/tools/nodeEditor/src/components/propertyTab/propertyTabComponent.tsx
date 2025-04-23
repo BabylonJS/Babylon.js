@@ -19,7 +19,6 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { PreviewType } from "../preview/previewType";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
-import { Constants } from "core/Engines/constants";
 import { LogEntry } from "../log/logComponent";
 import "./propertyTab.scss";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
@@ -40,6 +39,8 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { SetToDefaultGaussianSplatting, SetToDefaultSFE } from "core/Materials/Node/nodeMaterialDefault";
+import { alphaModeOptions } from "shared-ui-components/constToOptionsMaps";
+
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
     lockObject: LockObject;
@@ -446,16 +447,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const engineList = [
             { label: "WebGL", value: 0 },
             { label: "WebGPU", value: 1 },
-        ];
-
-        const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
         ];
 
         return (

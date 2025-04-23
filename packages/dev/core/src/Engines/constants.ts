@@ -9,15 +9,27 @@ export class Constants {
     public static readonly ALPHA_DISABLE = 0;
     /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
     public static readonly ALPHA_ADD = 1;
-    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+    /**
+     *  Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST
+     *  Blends src and dest using src alpha. Go-to for transparency. 100% alpha means source, 0% alpha means background. Glass, UI fade, smoke
+     */
     public static readonly ALPHA_COMBINE = 2;
-    /** Defines that alpha blending is DEST - SRC * DEST */
+    /**
+     * Defines that alpha blending is DEST - SRC * DEST
+     * Subtracts source from destination, leading to darker results
+     * */
     public static readonly ALPHA_SUBTRACT = 3;
     /** Defines that alpha blending is SRC * DEST */
     public static readonly ALPHA_MULTIPLY = 4;
-    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST */
+    /**
+     * Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST
+     * Prioritizes area with high source alpha, strongly emphasizes the source
+     */
     public static readonly ALPHA_MAXIMIZED = 5;
-    /** Defines that alpha blending is SRC + DEST */
+    /**
+     * Defines that alpha blending is SRC + DEST
+     * Source color is added to the destination color without alpha affecting the result. Great for additive glow effects (fire, magic, lasers)
+     */
     public static readonly ALPHA_ONEONE = 6;
     /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_PREMULTIPLIED = 7;
@@ -26,16 +38,21 @@ export class Constants {
      * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-    /** Defines that alpha blending is CST * SRC + (1 - CST) * DEST */
+    /**
+     * Defines that alpha blending is CST * SRC + (1 - CST) * DEST
+     * Where CST is user-supplied color
+     */
     public static readonly ALPHA_INTERPOLATE = 9;
     /**
      * Defines that alpha blending is SRC + (1 - SRC) * DEST
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+     * Brightens, good for soft light or UI highlights (like photoshop's screen blend)
      */
     public static readonly ALPHA_SCREENMODE = 10;
     /**
      * Defines that alpha blending is SRC + DST
      * Alpha will be set to SRC ALPHA + DST ALPHA
+     * Straight addition of color and alpha- use when you want both source and destination colors and opacities to stack
      */
     public static readonly ALPHA_ONEONE_ONEONE = 11;
     /**
@@ -45,26 +62,31 @@ export class Constants {
     public static readonly ALPHA_ALPHATOCOLOR = 12;
     /**
      * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     * Result is between source and destination, used for experimental blending or styled effects
      */
     public static readonly ALPHA_REVERSEONEMINUS = 13;
     /**
      * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
      * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+     * Smooths blending between source and destination, useful in layered alpha masks
      */
     public static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA = 14;
     /**
      * Defines that alpha blending is SRC + DST
      * Alpha will be set to SRC ALPHA
+     * Color stacks, but only source alpha is kept
      */
     public static readonly ALPHA_ONEONE_ONEZERO = 15;
     /**
      * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
      * Alpha will be set to DST ALPHA
+     * Produces inverted look (negative space), like 'exclusion' mode in photoshop
      */
     public static readonly ALPHA_EXCLUSION = 16;
     /**
      * Defines that alpha blending is SRC * SRC ALPHA + DST * (1 - SRC ALPHA)
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DST ALPHA
+     * Great for layered rendering (particles, fog volumes), accumulates transparency in a more physically accurate way
      */
     public static readonly ALPHA_LAYER_ACCUMULATE = 17;
 

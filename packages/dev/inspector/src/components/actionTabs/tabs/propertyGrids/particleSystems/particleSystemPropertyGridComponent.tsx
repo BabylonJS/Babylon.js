@@ -42,6 +42,7 @@ import { ParticleHelper } from "core/Particles/particleHelper";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
+import { blendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -50,6 +51,16 @@ interface IParticleSystemPropertyGridComponentProps {
     onSelectionChangedObservable?: Observable<any>;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
+
+const particleEmitterTypeOptions = [
+    { label: "Box", value: 0 },
+    { label: "Cone", value: 1 },
+    { label: "Cylinder", value: 2 },
+    { label: "Hemispheric", value: 3 },
+    { label: "Mesh", value: 4 },
+    { label: "Point", value: 5 },
+    { label: "Sphere", value: 6 },
+];
 
 export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
     private _snippetUrl = Constants.SnippetUrl;
@@ -312,24 +323,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     override render() {
         const system = this.props.system;
-
-        const blendModeOptions = [
-            { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
-            { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
-            { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
-            { label: "OneOne", value: ParticleSystem.BLENDMODE_ONEONE },
-            { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
-        ];
-
-        const particleEmitterTypeOptions = [
-            { label: "Box", value: 0 },
-            { label: "Cone", value: 1 },
-            { label: "Cylinder", value: 2 },
-            { label: "Hemispheric", value: 3 },
-            { label: "Mesh", value: 4 },
-            { label: "Point", value: 5 },
-            { label: "Sphere", value: 6 },
-        ];
 
         const meshEmitters = this.props.system.getScene()!.meshes.filter((m) => !!m.name);
 

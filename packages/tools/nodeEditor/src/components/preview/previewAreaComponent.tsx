@@ -4,7 +4,6 @@ import { DataStorage } from "core/Misc/dataStorage";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { ParticleSystem } from "core/Particles/particleSystem";
 
 import doubleSided from "./svgs/doubleSided.svg";
 import depthPass from "./svgs/depthPass.svg";
@@ -13,6 +12,7 @@ import directionalRight from "./svgs/directionalRight.svg";
 import directionalLeft from "./svgs/directionalLeft.svg";
 import background from "./svgs/icon-ibl.svg";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { blendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -104,14 +104,6 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
     }
 
     override render() {
-        const blendModeOptions = [
-            { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
-            { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
-            { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
-            { label: "OneOne", value: ParticleSystem.BLENDMODE_ONEONE },
-            { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
-        ];
-
         return (
             <>
                 <div id="preview">
