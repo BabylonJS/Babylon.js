@@ -55,53 +55,9 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     public static BLENDMODE_MULTIPLYADD = 4;
     /**
      * Subtracts source (particle) from destination (current color), leading to darker results
-     * - NOTE: Init as 9 but mapped to ALPHA_SUBTRACT for backwards compatibility
+     * - NOTE: Init as -1 so we can properly map all modes to Engine Const's (otherwise ALPHA_SUBTRACT will conflict with BLENDMODE_MULTIPLY since both use 3)
      */
-    public static BLENDMODE_SUBTRACT = 9;
-    /**
-     * Prioritizes area with high source (particle) alpha, strongly emphasizes the particle
-     */
-    public static BLENDMODE_MAXIMIZED = Constants.ALPHA_MAXIMIZED;
-    /**
-     * Assumes source colors are already multiplied by alpha, saves perf if texture are premultiplied
-     */
-    public static BLENDMODE_PREMULTIPLIED = Constants.ALPHA_PREMULTIPLIED;
-    /**
-     * Assumes source colors are already multiplied , precise porter-duff alpha behavior
-     */
-    public static BLENDMODE_PREMULTIPLIED_PORTERDUFF = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
-    /**
-     * Brightens, good for soft light or UI highlights (like photoshop's screen blend)
-     */
-    public static BLENDMODE_SCREENMODE = Constants.ALPHA_SCREENMODE;
-    /**
-     * Straight addition of color and alpha- use when you want both source and destination colors and opacities to stack
-     */
-    public static BLENDMODE_ONEONE_ONEONE = Constants.ALPHA_ONEONE_ONEONE;
-    /**
-     * Converts alpha into color
-     */
-    public static BLENDMODE_ALPHATOCOLOR = Constants.ALPHA_ALPHATOCOLOR;
-    /**
-     * Result is between source and destination, used for experimental blending or styled effects
-     */
-    public static BLENDMODE_REVERSEONEMINUS = Constants.ALPHA_REVERSEONEMINUS;
-    /**
-     * Smooths blending between source and destination, useful in layered alpha masks
-     */
-    public static BLENDMODE_SRC_DSTONEMINUSSRCALPHA = Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA;
-    /**
-     * Color stacks, but only source alpha is kept
-     */
-    public static BLENDMODE_ONEONE_ONEZERO = Constants.ALPHA_ONEONE_ONEZERO;
-    /**
-     * LIke 'exclusion' mode in photoshop, produces inverted look (negative space)
-     */
-    public static BLENDMODE_EXCLUSION = Constants.ALPHA_EXCLUSION;
-    /**
-     * Great for layered rendering (particles, fog volumes), accumulates transparency in a more physically accurate way
-     */
-    public static BLENDMODE_LAYER_ACCUMULATE = Constants.ALPHA_LAYER_ACCUMULATE;
+    public static BLENDMODE_SUBTRACT = -1;
 
     /**
      * List of animations used by the particle system.
@@ -284,7 +240,9 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     public onAnimationEnd: Nullable<() => void> = null;
 
     /**
-     * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+     * Blend mode use to render the particle
+     * For original blend modes which are exposed from ParticleSystem (OneOne, Standard, Add, Multiply, MultiplyAdd, and Subtract), use ParticleSystem.BLENDMODE_FOO
+     * For all other blend modes, use Engine Constants.ALPHA_FOO blend modes
      */
     public blendMode = BaseParticleSystem.BLENDMODE_ONEONE;
 
@@ -454,33 +412,34 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         );
     }
 
-    protected _setEngineBasedOnBlendMode = (blendMode: number) => {
-        let mode;
+    protected _setEngineBasedOnBlendMode = (blendMode: number): void => {
         switch (blendMode) {
+            case BaseParticleSystem.BLENDMODE_MULTIPLYADD:
+                // Don't want to update engine since there is no equivalent engine alpha mode, instead it gets handled within particleSystem
+                return;
             case BaseParticleSystem.BLENDMODE_ADD:
-                mode = Constants.ALPHA_ADD;
+                blendMode = Constants.ALPHA_ADD;
                 break;
             case BaseParticleSystem.BLENDMODE_ONEONE:
-                mode = Constants.ALPHA_ONEONE;
+                blendMode = Constants.ALPHA_ONEONE;
                 break;
             case BaseParticleSystem.BLENDMODE_STANDARD:
-                mode = Constants.ALPHA_COMBINE;
+                blendMode = Constants.ALPHA_COMBINE;
                 break;
             case BaseParticleSystem.BLENDMODE_MULTIPLY:
-                mode = Constants.ALPHA_MULTIPLY;
+                blendMode = Constants.ALPHA_MULTIPLY;
                 break;
             case BaseParticleSystem.BLENDMODE_SUBTRACT:
-                mode = Constants.ALPHA_SUBTRACT;
+                blendMode = Constants.ALPHA_SUBTRACT;
                 break;
-            case BaseParticleSystem.BLENDMODE_MULTIPLYADD:
-                break; // There is no equivalent engine const for multiplyAdd - the logic lives within the particle system
             default:
                 // For all other blend modes that were added after the initial particleSystem implementation,
                 // the ParticleSystem.BLENDMODE_FOO are already mapped to the underlying Constants.ALPHA_FOO
-                mode = blendMode;
+                break;
         }
-        mode !== undefined && this._engine.setAlphaMode(mode);
+        this._engine.setAlphaMode(blendMode);
     };
+
     /**
      * Defines the delay in milliseconds before starting the system (0 by default)
      */
