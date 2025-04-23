@@ -12,8 +12,7 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
-// Matrix that converts handedness on the X-axis.
-// This can be used for converting from left-handed to right-handed systems and vice versa.
+// Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // 180 degrees rotation in Y.
@@ -196,53 +195,49 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
 }
 
 /**
- * Converts a left-handed quaternion to a right-handed quaternion
- * via a change of basis.
- *
- * It is the simplified version of the following equation:
- *    q' = to_quaternion(M * to_matrix(q) * M^-1)
- * where M is the handedness conversion matrix,
- * q is the quaternion, and q' is the converted quaternion.
- * The methods for converting a quaternion to a matrix and vice versa
- * are described in the following reference:
- * https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
- *
- * NOTE: The name is a bit misleading. Technically, this function can convert
- * both LH -> RH and RH -> LH, as M is a reflection matrix and thus involutory (M = M^-1).
- * @param value unit quaternion to convert
+ * Converts a left-handed quaternion to a right-handed quaternion via a change of basis.
+ * @param value the unit quaternion to convert
  * @returns the converted quaternion
  */
 export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
-    const x = value.x;
-    const y = value.y;
-    const z = value.z;
-    const w = value.w;
-
-    if (x * x + y * y < 0.5) {
-        if (Math.abs(x) > Math.abs(y)) {
-            value.x = Math.abs(x);
-            value.y *= -1 * Math.sign(x);
-            value.z *= -1 * Math.sign(x);
-            value.w *= Math.sign(x);
+    /**
+     * This is the simplified version of the following equation:
+     *    q' = to_quaternion(M * to_matrix(q) * M^-1)
+     * where M is the conversion matrix `convertHandednessMatrix`,
+     * q is the input quaternion, and q' is the converted quaternion.
+     * Reference: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+     */
+    if (value.x * value.x + value.y * value.y < 0.5) {
+        const absX = Math.abs(value.x);
+        const absY = Math.abs(value.y);
+        if (absX > absY) {
+            const sign = Math.sign(value.x);
+            value.x = absX;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w *= sign;
         } else {
-            // if |y| >= |x|
-            value.x *= -1 * Math.sign(y);
-            value.y = Math.abs(y);
-            value.z *= Math.sign(y);
-            value.w *= -1 * Math.sign(y);
+            const sign = Math.sign(value.y);
+            value.x *= -sign;
+            value.y = absY;
+            value.z *= sign;
+            value.w *= -sign;
         }
     } else {
-        if (Math.abs(z) > Math.abs(w)) {
-            value.x *= -1 * Math.sign(z);
-            value.y *= Math.sign(z);
-            value.z = Math.abs(z);
-            value.w *= -1 * Math.sign(z);
+        const absZ = Math.abs(value.z);
+        const absW = Math.abs(value.w);
+        if (absZ > absW) {
+            const sign = Math.sign(value.z);
+            value.x *= -sign;
+            value.y *= sign;
+            value.z = absZ;
+            value.w *= -sign;
         } else {
-            // if |w| >= |z|
-            value.x *= Math.sign(w);
-            value.y *= -1 * Math.sign(w);
-            value.z *= -1 * Math.sign(w);
-            value.w = Math.abs(w);
+            const sign = Math.sign(value.w);
+            value.x *= sign;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w = absW;
         }
     }
 
