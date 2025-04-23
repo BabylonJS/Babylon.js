@@ -192,7 +192,7 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
 }
 
 /**
- * Converts a left-handed quaternion to a right-handed quaternion via a change of basis.
+ * Converts, in-place, a left-handed quaternion to a right-handed quaternion via a change of basis.
  * @param value the unit quaternion to convert
  * @returns the converted quaternion
  */
