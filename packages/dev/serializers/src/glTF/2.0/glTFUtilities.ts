@@ -204,7 +204,7 @@ export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
      * q is the input quaternion, and q' is the converted quaternion.
      * Reference: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
      */
-    if (value.x * value.x + value.y * value.y < 0.5) {
+    if (value.x * value.x + value.y * value.y > 0.5) {
         const absX = Math.abs(value.x);
         const absY = Math.abs(value.y);
         if (absX > absY) {
