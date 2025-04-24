@@ -1204,7 +1204,7 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
             serializationObject.matricesIndices = this._toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
-            serializationObject.matricesIndices._isExpanded = true;
+            serializationObject.matricesIndicesExpanded = true;
             if (this.isVertexBufferUpdatable(VertexBuffer.MatricesIndicesKind)) {
                 serializationObject.matricesIndices._updatable = true;
             }
@@ -1446,7 +1446,7 @@ export class Geometry implements IGetSetVerticesData {
             }
 
             if (parsedGeometry.matricesIndices) {
-                if (!parsedGeometry.matricesIndices._isExpanded) {
+                if (!parsedGeometry.matricesIndices._isExpanded && !parsedGeometry.matricesIndicesExpanded) {
                     const floatIndices = [];
 
                     for (let i = 0; i < parsedGeometry.matricesIndices.length; i++) {
@@ -1461,12 +1461,13 @@ export class Geometry implements IGetSetVerticesData {
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, parsedGeometry.matricesIndices._updatable);
                 } else {
                     delete parsedGeometry.matricesIndices._isExpanded;
+                    delete parsedGeometry.matricesIndicesExpanded;
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, parsedGeometry.matricesIndices._updatable);
                 }
             }
 
             if (parsedGeometry.matricesIndicesExtra) {
-                if (!parsedGeometry.matricesIndicesExtra._isExpanded) {
+                if (!parsedGeometry.matricesIndicesExtra._isExpanded && !parsedGeometry.matricesIndicesExtraExpanded) {
                     const floatIndices = [];
 
                     for (let i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
@@ -1481,6 +1482,7 @@ export class Geometry implements IGetSetVerticesData {
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
                 } else {
                     delete parsedGeometry.matricesIndices._isExpanded;
+                    delete parsedGeometry.matricesIndicesExtraExpande;
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, parsedGeometry.matricesIndicesExtra._updatable);
                 }
             }
