@@ -40,7 +40,6 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
-    private _bypassMatrixCache: boolean;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -251,7 +250,6 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
-        this._bypassMatrixCache = false;
 
         if (this._engine._features.trackUbosInFrame) {
             this._buffers = [];
@@ -644,8 +642,6 @@ export class UniformBuffer {
      * Otherwise, the buffer will be updated only if the cache differs.
      */
     public update(): void {
-        this._bypassMatrixCache = false;
-
         if (this._noUBO) {
             return;
         }
@@ -741,7 +737,7 @@ export class UniformBuffer {
             for (let i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
                 // Hence the test for size === 16 to simply commit the matrix values
-                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix && !this._bypassMatrixCache) || this._bufferData[location + i] !== Math.fround(data[i])) {
+                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Math.fround(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
                         this._createNewBuffer();
@@ -816,10 +812,6 @@ export class UniformBuffer {
     private _valueCache: { [key: string]: number } = {};
     private _cacheMatrix(name: string, matrix: IMatrixLike): boolean {
         this._checkNewFrame();
-
-        if (this._bypassMatrixCache) {
-            return true;
-        }
 
         const cache = this._valueCache[name];
         const flag = matrix.updateFlag;
@@ -1186,7 +1178,7 @@ export class UniformBuffer {
                 if (this._buffers[b][1]) {
                     this._bufferData.set(this._buffers[b][1]!);
                 }
-                this._bypassMatrixCache = true;
+                this._valueCache = {};
                 // The following line prevents the current buffer (_buffer / _bufferIndex) from being updated during subsequent calls to updateXXX() due to a call to _checkNewFrame()
                 // If we called setDataBuffer, it means that we want to update the buffer we just defined and not another one (_checkNewFrame() can modify the current buffer).
                 this._currentFrameId = this._engine.frameId;
