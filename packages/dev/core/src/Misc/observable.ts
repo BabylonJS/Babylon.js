@@ -83,7 +83,7 @@ export class Observer<T> {
      * It will be set by the observable that the observer belongs to.
      * @internal
      */
-    public _remove: Nullable<() => void> = null;
+    public _remove: Nullable<(defer?: boolean) => void> = null;
 
     /**
      * Creates a new observer
@@ -109,10 +109,11 @@ export class Observer<T> {
     /**
      * Remove the observer from its observable
      * This can be used instead of using the observable's remove function.
+     * @param defer if true, the removal will be deferred to avoid callback skipping (default: false)
      */
-    public remove() {
+    public remove(defer = false) {
         if (this._remove) {
-            this._remove();
+            this._remove(defer);
         }
     }
 }
@@ -241,10 +242,10 @@ export class Observable<T> {
 
         // attach the remove function to the observer
         const observableWeakRef = isWeakRefSupported ? new WeakRef(this) : { deref: () => this };
-        observer._remove = () => {
+        observer._remove = (defer = false) => {
             const observable = observableWeakRef.deref();
             if (observable) {
-                observable._remove(observer);
+                defer ? observable.remove(observer) : observable._remove(observer);
             }
         };
 
