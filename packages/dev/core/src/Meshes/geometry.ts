@@ -1482,7 +1482,7 @@ export class Geometry implements IGetSetVerticesData {
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
                 } else {
                     delete parsedGeometry.matricesIndices._isExpanded;
-                    delete parsedGeometry.matricesIndicesExtraExpande;
+                    delete parsedGeometry.matricesIndicesExtraExpanded;
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, parsedGeometry.matricesIndicesExtra._updatable);
                 }
             }
