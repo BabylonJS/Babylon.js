@@ -12,7 +12,7 @@ aggShadow = aggShadow / numLights;
 
 #if !defined(METALLICWORKFLOW) && !defined(REFLECTION)
     #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        surfaceAlbedo = vec3f(1.f - reflectance) * surfaceAlbedo.rgb;
     #endif
 #endif
 
