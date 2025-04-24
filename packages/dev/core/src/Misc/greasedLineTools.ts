@@ -37,9 +37,9 @@ export class GreasedLineTools {
         } else if (points.length > 0 && Array.isArray(points[0]) && points[0].length > 0 && points[0][0] instanceof Vector3) {
             const positions: number[][] = [];
             const vectorPoints = points as Vector3[][];
-            vectorPoints.forEach((p) => {
+            for (const p of vectorPoints) {
                 positions.push(p.flatMap((p2) => [p2.x, p2.y, p2.z]));
-            });
+            }
             return positions;
         } else if (points instanceof Float32Array) {
             if (options?.floatArrayStride) {
@@ -58,9 +58,9 @@ export class GreasedLineTools {
             }
         } else if (points.length && points[0] instanceof Float32Array) {
             const positions: number[][] = [];
-            points.forEach((p) => {
+            for (const p of points) {
                 positions.push(Array.from(p as Float32Array));
-            });
+            }
 
             return positions;
         }
@@ -155,9 +155,10 @@ export class GreasedLineTools {
     ) {
         const points: Vector3[][] = [];
 
-        meshes.forEach((m, meshIndex) => {
-            const vertices = m.getVerticesData(VertexBuffer.PositionKind);
-            const indices = m.getIndices();
+        for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+            const mesh = meshes[meshIndex];
+            const vertices = mesh.getVerticesData(VertexBuffer.PositionKind);
+            const indices = mesh.getIndices();
             if (vertices && indices) {
                 for (let i = 0, ii = 0; i < indices.length; i++) {
                     const vi1 = indices[ii++] * 3;
@@ -169,7 +170,7 @@ export class GreasedLineTools {
                     const p3 = new Vector3(vertices[vi3], vertices[vi3 + 1], vertices[vi3 + 2]);
 
                     if (predicate) {
-                        const pointsFromPredicate = predicate(p1, p2, p3, points, i, vi1, m, meshIndex, vertices, indices);
+                        const pointsFromPredicate = predicate(p1, p2, p3, points, i, vi1, mesh, meshIndex, vertices, indices);
                         if (pointsFromPredicate) {
                             for (const p of pointsFromPredicate) {
                                 points.push(p);
@@ -180,7 +181,7 @@ export class GreasedLineTools {
                     }
                 }
             }
-        });
+        }
 
         return points;
     }
@@ -329,17 +330,17 @@ export class GreasedLineTools {
                   ? GreasedLineTools.GetLineSegments(GreasedLineTools.ToVector3Array(what as number[]) as Vector3[])
                   : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
-        subLines.forEach((s) => {
+        for (const s of subLines) {
             if (s.length > segmentLength) {
                 const segments = GreasedLineTools.SegmentizeSegmentByCount(s.point1, s.point2, Math.ceil(s.length / segmentLength));
-                segments.forEach((seg) => {
+                for (const seg of segments) {
                     points.push(seg);
-                });
+                }
             } else {
                 points.push(s.point1);
                 points.push(s.point2);
             }
-        });
+        }
         return points;
     }
 

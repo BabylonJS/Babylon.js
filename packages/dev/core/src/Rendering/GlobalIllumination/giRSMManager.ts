@@ -91,12 +91,12 @@ export class GIRSMManager {
 
         this._enable = enable;
         this._debugLayer.isEnabled = this._showOnlyGI && enable;
-        this._materialsWithRenderPlugin.forEach((mat) => {
+        for (const mat of this._materialsWithRenderPlugin) {
             if (mat.pluginManager) {
                 const plugin = mat.pluginManager.getPlugin(GIRSMRenderPluginMaterial.Name) as GIRSMRenderPluginMaterial;
                 plugin.isEnabled = enable;
             }
-        });
+        }
 
         this.recreateResources(!enable);
     }
@@ -343,11 +343,11 @@ export class GIRSMManager {
         if (material) {
             this._addGISupportToMaterial(material);
         } else {
-            this._scene.meshes.forEach((mesh) => {
+            for (const mesh of this._scene.meshes) {
                 if (mesh.getTotalVertices() > 0 && mesh.isEnabled() && mesh.material) {
                     this._addGISupportToMaterial(mesh.material);
                 }
-            });
+            }
         }
     }
 
@@ -557,14 +557,14 @@ export class GIRSMManager {
             return;
         }
 
-        this._materialsWithRenderPlugin.forEach((mat) => {
+        for (const mat of this._materialsWithRenderPlugin) {
             if (mat.pluginManager) {
                 const plugin = mat.pluginManager.getPlugin<GIRSMRenderPluginMaterial>(GIRSMRenderPluginMaterial.Name)!;
                 plugin.textureGIContrib = this.enableBlur ? this._blurRTT!.renderTarget!.texture! : this._ppGlobalIllumination[0].inputTexture.texture!;
                 plugin.outputTextureWidth = this._outputDimensions.width;
                 plugin.outputTextureHeight = this._outputDimensions.height;
             }
-        });
+        }
     }
 
     protected _createPostProcesses() {

@@ -1,5 +1,4 @@
-import type { AudioTestResult, SoundType } from "./audioV2.utils";
-import { GetPulseCounts } from "./audioV2.utils";
+import type { SoundType } from "./audioV2.utils";
 
 import { Page } from "@playwright/test";
 
@@ -7,6 +6,12 @@ export const EvaluateTestAsync = async <T>(page: Page, soundType: SoundType, tes
     return await page.evaluate(testFn, { soundType });
 };
 
-export const EvaluatePulseCountTestAsync = async (page: Page, soundType: SoundType, testFn: ({ soundType }: { soundType: SoundType }) => Promise<AudioTestResult>) => {
-    return GetPulseCounts(await EvaluateTestAsync(page, soundType, testFn));
+export const EvaluatePulseCountTestAsync = async (page: Page, soundType: SoundType, testFn: ({ soundType }: { soundType: SoundType }) => Promise<void>) => {
+    await EvaluateTestAsync(page, soundType, testFn);
+
+    const pulses = await page.evaluate(() => {
+        return AudioV2Test.GetPulseCountsAsync();
+    });
+
+    return pulses;
 };

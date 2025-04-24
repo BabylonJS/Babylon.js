@@ -179,7 +179,9 @@ export class PreviewManager {
         this._globalState.envType = PreviewType.Room;
         this._globalState.previewType = PreviewType.Box;
         this._globalState.listOfCustomPreviewFiles = [];
-        this._scene.meshes.forEach((m) => m.dispose());
+        for (const m of this._scene.meshes) {
+            m.dispose();
+        }
         this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
         this._refreshPreviewMesh(true);
     }
@@ -231,9 +233,9 @@ export class PreviewManager {
             dir1.position = findLightPosition(dir1.direction);
         }
 
-        this._scene.meshes.forEach((m) => {
+        for (const m of this._scene.meshes) {
             m.receiveShadows = true;
-        });
+        }
     }
 
     private _createNodeRenderGraph() {
@@ -385,7 +387,8 @@ export class PreviewManager {
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<NodeRenderGraphGUIBlock>((block) => block.getClassName() === "GUI.NodeRenderGraphGUIBlock");
         let guiIndex = 0;
-        guiBlocks.forEach((block, i) => {
+        for (let i = 0; i < guiBlocks.length; ++i) {
+            const block = guiBlocks[i];
             const gui = block.gui;
 
             if (!block.isAnAncestorOfType("NodeRenderGraphOutputBlock")) {
@@ -411,7 +414,7 @@ export class PreviewManager {
             }
 
             gui.addControl(button);
-        });
+        }
 
         try {
             this._nodeRenderGraph.build();

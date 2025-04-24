@@ -637,11 +637,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             controlsForGroup = overlapGroup === undefined ? descendants.filter((c) => c.overlapGroup !== undefined) : descendants.filter((c) => c.overlapGroup === overlapGroup);
         }
 
-        controlsForGroup.forEach((control1) => {
+        for (const control1 of controlsForGroup) {
             let velocity = Vector2.Zero();
             const center = new Vector2(control1.centerX, control1.centerY);
 
-            controlsForGroup.forEach((control2) => {
+            for (const control2 of controlsForGroup) {
                 if (control1 !== control2 && AdvancedDynamicTexture._Overlaps(control1, control2)) {
                     // if the two controls overlaps get a direction vector from one control's center to another control's center
                     const diff = center.subtract(new Vector2(control2.centerX, control2.centerY));
@@ -652,7 +652,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         velocity = velocity.add(diff.normalize().scale(repelFactor / diffLength));
                     }
                 }
-            });
+            }
 
             if (velocity.length() > 0) {
                 // move the control along the direction vector away from the overlapping control
@@ -660,7 +660,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 control1.linkOffsetXInPixels += velocity.x;
                 control1.linkOffsetYInPixels += velocity.y;
             }
-        });
+        }
     }
     /**
      * Release all resources
@@ -1012,7 +1012,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (camera.rigCameras.length) {
                 // rig camera - we need to find the camera to use for this event
                 const rigViewport = new Viewport(0, 0, 1, 1);
-                camera.rigCameras.forEach((rigCamera) => {
+                for (const rigCamera of camera.rigCameras) {
                     // generate the viewport of this camera
                     rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
                     const transformedX = x / engine.getHardwareScalingLevel() - rigViewport.x;
@@ -1029,7 +1029,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     tempViewport.y = rigViewport.y;
                     tempViewport.width = rigViewport.width;
                     tempViewport.height = rigViewport.height;
-                });
+                }
             } else {
                 camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
             }

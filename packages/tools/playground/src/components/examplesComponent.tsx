@@ -104,14 +104,14 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
             return 1;
         });
 
-        this._scripts.forEach((s) => {
+        for (const s of this._scripts) {
             s.samples.sort((a, b) => {
                 if (a.title < b.title) {
                     return -1;
                 }
                 return 1;
             });
-        });
+        }
 
         // Update
         this.forceUpdate();

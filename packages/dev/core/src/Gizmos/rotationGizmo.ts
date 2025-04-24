@@ -132,13 +132,14 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         this._checkBillboardTransform();
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
             } else {
                 gizmo.attachedMesh = null;
             }
-        });
+        }
     }
 
     public override get attachedNode() {
@@ -148,13 +149,14 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this._meshAttached = null;
         this._nodeAttached = node;
         this._checkBillboardTransform();
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
             } else {
                 gizmo.attachedNode = null;
             }
-        });
+        }
     }
 
     protected _checkBillboardTransform() {
@@ -168,11 +170,12 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      */
     public set sensitivity(value: number) {
         this._sensitivity = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.sensitivity = value;
             }
-        });
+        }
     }
     public get sensitivity() {
         return this._sensitivity;
@@ -197,9 +200,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     }
 
     public override set additionalTransformNode(transformNode: TransformNode | undefined) {
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             gizmo.additionalTransformNode = transformNode;
-        });
+        }
     }
 
     /**
@@ -230,7 +234,8 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this.additionalTransformNode = options?.additionalTransformNode;
 
         // Relay drag events and set update scale
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
             //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
             if (options && options.updateScale != undefined) {
@@ -245,7 +250,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
             gizmo.dragBehavior.onDragEndObservable.add(() => {
                 this.onDragEndObservable.notifyObservers({});
             });
-        });
+        }
 
         this.attachedMesh = null;
         this.attachedNode = null;
@@ -286,9 +291,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
 
     public override set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             gizmo.anchorPoint = value;
-        });
+        }
     }
     public override get anchorPoint() {
         return this._anchorPoint;
@@ -300,9 +306,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
     public override set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             gizmo.coordinatesMode = coordinatesMode;
-        });
+        }
     }
 
     public override set updateScale(value: boolean) {
@@ -353,11 +360,12 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
 
     public override set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.customRotationQuaternion = customRotationQuaternion;
             }
-        });
+        }
     }
 
     /**
@@ -388,9 +396,9 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this.onDragStartObservable.clear();
         this.onDragObservable.clear();
         this.onDragEndObservable.clear();
-        this._observables.forEach((obs) => {
+        for (const obs of this._observables) {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
-        });
+        }
         super.dispose();
     }
 

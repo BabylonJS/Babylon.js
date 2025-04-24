@@ -54,9 +54,10 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         }
 
         const eventObserver = observable.add((eventData: { [key: string]: any }) => {
-            Object.keys(eventData).forEach((key) => {
+            const keys = Object.keys(eventData);
+            for (const key of keys) {
                 this.getDataOutput(key)?.setValue(eventData[key], context);
-            });
+            }
             this._execute(context);
         });
         context._setExecutionVariable(this, "_eventObserver", eventObserver);

@@ -71,12 +71,12 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
 
         let colorPointer = 0;
         this._colorPointers = [];
-        this._points.forEach((p) => {
+        for (const p of this._points) {
             for (let jj = 0; jj < p.length; jj += 3) {
                 this._colorPointers.push(colorPointer);
                 this._colorPointers.push(colorPointer++);
             }
-        });
+        }
     }
 
     protected _updateWidths(): void {
@@ -94,12 +94,12 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             indicesLength = 0,
             uvLength = 0,
             previousAndSideLength = 0;
-        points.forEach((p) => {
+        for (const p of points) {
             vertexPositionsLen += p.length * 2;
             indicesLength += (p.length - 3) * 2;
             uvLength += (p.length * 4) / 3;
             previousAndSideLength += (p.length * 8) / 3;
-        });
+        }
         const vertexPositionsArr = new Float32Array(vertexPositionsLen);
         const indicesArr = vertexPositionsLen > 65535 ? new Uint32Array(indicesLength) : new Uint16Array(indicesLength);
         const uvArr = new Float32Array(uvLength);
@@ -112,7 +112,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             previousAndSideOffset = 0,
             nextAndCountersOffset = 0;
 
-        points.forEach((p) => {
+        for (const p of points) {
             const lengthArray = GreasedLineTools.GetLineLengthArray(p);
             const totalLength = lengthArray[lengthArray.length - 1];
             for (let j = 0, jj = 0; jj < p.length; j++, jj += 3) {
@@ -189,7 +189,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                     uvArr[uvOffsetBase + 3] = 1;
                 }
             }
-        });
+        }
         this._vertexPositions = vertexPositionsArr;
         this._indices = indicesArr;
         this._uvs = uvArr;

@@ -200,11 +200,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         if (shadowGeneratorsConnectedPoint) {
             if (shadowGeneratorsConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
                 const container = shadowGeneratorsConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
-                container.inputs.forEach((input) => {
+                for (const input of container.inputs) {
                     if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsShadowGenerator(input.connectedPoint.value)) {
                         this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as FrameGraphShadowGeneratorTask);
                     }
-                });
+                }
             } else if (NodeRenderGraphConnectionPoint.IsShadowGenerator(shadowGeneratorsConnectedPoint.value)) {
                 this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as FrameGraphShadowGeneratorTask;
             }

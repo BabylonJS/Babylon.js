@@ -1075,9 +1075,9 @@ export class VRExperienceHelper {
                     }
                 }
                 if (this.xr) {
-                    floorMeshes.forEach((mesh) => {
+                    for (const mesh of floorMeshes) {
                         this.xr.teleportation.addFloorMesh(mesh);
-                    });
+                    }
                     if (!this.xr.teleportation.attached) {
                         this.xr.teleportation.attach();
                     }

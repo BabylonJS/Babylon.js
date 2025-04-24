@@ -763,22 +763,22 @@ export class Engine extends ThinEngine {
         super._releaseRenderTargetWrapper(rtWrapper);
 
         // Set output texture of post process to null if the framebuffer has been released/disposed
-        this.scenes.forEach((scene) => {
-            scene.postProcesses.forEach((postProcess) => {
+        for (const scene of this.scenes) {
+            for (const postProcess of scene.postProcesses) {
                 if (postProcess._outputTexture === rtWrapper) {
                     postProcess._outputTexture = null;
                 }
-            });
-            scene.cameras.forEach((camera) => {
-                camera._postProcesses.forEach((postProcess) => {
+            }
+            for (const camera of scene.cameras) {
+                for (const postProcess of camera._postProcesses) {
                     if (postProcess) {
                         if (postProcess._outputTexture === rtWrapper) {
                             postProcess._outputTexture = null;
                         }
                     }
-                });
-            });
-        });
+                }
+            }
+        }
     }
 
     /**

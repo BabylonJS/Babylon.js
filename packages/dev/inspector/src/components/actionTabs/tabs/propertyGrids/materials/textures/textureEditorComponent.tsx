@@ -185,7 +185,9 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     override componentDidUpdate() {
         const channelsClone: IChannel[] = [];
-        this.state.channels.forEach((channel) => channelsClone.push({ ...channel }));
+        for (const channel of this.state.channels) {
+            channelsClone.push({ ...channel });
+        }
         this._textureCanvasManager.channels = channelsClone;
         this._textureCanvasManager.face = this.state.face;
         this._textureCanvasManager.mipLevel = this.state.mipLevel;
@@ -213,13 +215,13 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     addTools(tools: IToolData[]) {
         let newTools: ITool[] = [];
-        tools.forEach((toolData) => {
+        for (const toolData of tools) {
             const tool: ITool = {
                 ...toolData,
                 instance: new toolData.type(() => this.getToolParameters()),
             };
             newTools = newTools.concat(tool);
-        });
+        }
         newTools = this.state.tools.concat(newTools);
         this.setState({ tools: newTools });
     }

@@ -654,17 +654,17 @@ export class GraphNode {
      */
     public collapse() {
         this._headerCollapse.classList.add(localStyles.collapsed);
-        this._inputPorts
-            .filter((p) => !p.portData.isConnected)
-            .forEach((p) => {
-                p.container.classList.add(commonStyles.hidden);
-            });
+        const inputs = this._inputPorts.filter((p) => !p.portData.isConnected);
 
-        this._outputPorts
-            .filter((p) => !p.portData.isConnected)
-            .forEach((p) => {
-                p.container.classList.add(commonStyles.hidden);
-            });
+        for (const p of inputs) {
+            p.container.classList.add(commonStyles.hidden);
+        }
+
+        const outputs = this._outputPorts.filter((p) => !p.portData.isConnected);
+
+        for (const p of outputs) {
+            p.container.classList.add(commonStyles.hidden);
+        }
 
         this._refreshLinks();
     }
@@ -674,17 +674,15 @@ export class GraphNode {
      */
     public expand() {
         this._headerCollapse.classList.remove(localStyles.collapsed);
-        this._inputPorts
-            .filter((p) => !p.portData.isConnected)
-            .forEach((p) => {
-                p.container.classList.remove(commonStyles.hidden);
-            });
+        const inputs = this._inputPorts.filter((p) => !p.portData.isConnected);
+        for (const p of inputs) {
+            p.container.classList.remove(commonStyles.hidden);
+        }
 
-        this._outputPorts
-            .filter((p) => !p.portData.isConnected)
-            .forEach((p) => {
-                p.container.classList.remove(commonStyles.hidden);
-            });
+        const outputs = this._outputPorts.filter((p) => !p.portData.isConnected);
+        for (const p of outputs) {
+            p.container.classList.remove(commonStyles.hidden);
+        }
 
         this._refreshLinks();
     }

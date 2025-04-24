@@ -11,6 +11,7 @@ import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
+import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -59,6 +60,7 @@ export class GPUPicker {
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
     private readonly _attributeName = "instanceMeshID";
+    private _warningIssued = false;
 
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -162,6 +164,15 @@ export class GPUPicker {
         }
 
         const material = this._meshMaterialMap.get(mesh)!;
+
+        if (!material) {
+            if (!this._warningIssued) {
+                this._warningIssued = true;
+                Logger.Warn("GPUPicker issue: Mesh not found in the material map. This may happen when the root mesh of an instance is not in the picking list.");
+            }
+            return;
+        }
+
         const effect = material.getEffect()!;
 
         if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {

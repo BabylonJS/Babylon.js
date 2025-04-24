@@ -85,12 +85,12 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
     state.userInfo = userInfo;
 
     // execute one callback after another (not using Promise.all, the order is important)
-    this.observers.forEach((obs) => {
+    for (const obs of this.observers) {
         if (state.skipNextObservers) {
-            return;
+            continue;
         }
         if (obs._willBeUnregistered) {
-            return;
+            continue;
         }
         if (obs.mask & mask) {
             if (obs.scope) {
@@ -108,7 +108,7 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
                 this._deferUnregister(obs);
             }
         }
-    });
+    }
 
     // return the eventData
     await p;

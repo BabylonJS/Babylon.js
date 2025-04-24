@@ -411,7 +411,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         return this.importMeshAsync(null, scene, data, rootUrl)
             .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
+                for (const mesh of result.meshes) {
+                    container.meshes.push(mesh);
+                }
                 // mesh material will be null before 1st rendered frame.
                 this._assetContainer = null;
                 return container;

@@ -96,9 +96,10 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
                 }
                 this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
 
-                this._cameraMesh.getChildMeshes(false).forEach((m) => {
+                const childMeshes = this._cameraMesh.getChildMeshes(false);
+                for (const m of childMeshes) {
                     m.material = this._material;
-                });
+                }
                 this._cameraMesh.parent = this._rootMesh;
             }
 
@@ -109,7 +110,11 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
             this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene, linesColor);
             this._cameraLinesMesh.parent = this._rootMesh;
 
-            if (this.gizmoLayer.utilityLayerScene.activeCamera && this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ * 1.5) {
+            if (
+                this.gizmoLayer.utilityLayerScene.activeCamera &&
+                this.gizmoLayer.utilityLayerScene.activeCamera != camera &&
+                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ * 1.5
+            ) {
                 this.gizmoLayer.utilityLayerScene.activeCamera.maxZ = camera.maxZ * 1.5;
             }
 

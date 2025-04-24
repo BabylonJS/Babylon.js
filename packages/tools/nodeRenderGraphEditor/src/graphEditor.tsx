@@ -246,9 +246,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const frameData = source.editorData.frames[0];
 
             // create new graph nodes for only blocks from frame (last blocks added)
-            this.props.globalState.nodeRenderGraph.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeRenderGraphBlock) => {
+            const blocks = this.props.globalState.nodeRenderGraph.attachedBlocks.slice(-frameData.blocks.length);
+            for (const block of blocks) {
                 this.appendBlock(block);
-            });
+            }
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeRenderGraph.editorData, true);
         });
@@ -396,12 +397,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.appendBlock(renderGraph.outputBlock, true);
         }
 
-        renderGraph.attachedBlocks.forEach((n: any) => {
+        for (const n of renderGraph.attachedBlocks) {
             this.appendBlock(n, true);
-        });
+        }
 
         // Links
-        renderGraph.attachedBlocks.forEach((n: any) => {
+        for (const n of renderGraph.attachedBlocks) {
             if (n.inputs.length) {
                 const nodeData = this._graphCanvas.findNodeFromData(n);
                 for (const input of nodeData.content.inputs) {
@@ -410,7 +411,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
                 }
             }
-        });
+        }
     }
 
     showWaitScreen() {

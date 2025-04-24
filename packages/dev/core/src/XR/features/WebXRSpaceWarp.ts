@@ -94,9 +94,9 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         super.render(useCameraPostProcess, dumpForDebug);
 
         // Restore original materials
-        this._originalPairing.forEach((tuple) => {
+        for (const tuple of this._originalPairing) {
             tuple[0].material = tuple[1];
-        });
+        }
     }
 
     /**

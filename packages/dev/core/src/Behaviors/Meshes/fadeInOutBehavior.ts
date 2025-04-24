@@ -150,9 +150,12 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
 
     private _setAllVisibility(mesh: AbstractMesh, value: number) {
         mesh.visibility = value;
-        mesh.getChildMeshes().forEach((c) => {
+
+        const children = mesh.getChildMeshes();
+
+        for (const c of children) {
             this._setAllVisibility(c, value);
-        });
+        }
     }
 
     private _attachObserver() {
