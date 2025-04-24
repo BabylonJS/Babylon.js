@@ -498,11 +498,11 @@ export function MakeShellServiceDefinition({
             };
 
             return {
-                addToTopBar: topBarComponentCollection.add,
-                addToBottomBar: bottomBarComponentCollection.add,
-                addToLeftPane: leftPaneComponentCollection.add,
-                addToRightPane: rightPaneComponentCollection.add,
-                addToContent: contentComponentCollection.add,
+                addToTopBar: topBarComponentCollection.add.bind(topBarComponentCollection),
+                addToBottomBar: bottomBarComponentCollection.add.bind(bottomBarComponentCollection),
+                addToLeftPane: leftPaneComponentCollection.add.bind(leftPaneComponentCollection),
+                addToRightPane: rightPaneComponentCollection.add.bind(rightPaneComponentCollection),
+                addToContent: contentComponentCollection.add.bind(contentComponentCollection),
                 dispose: () => {
                     viewHost.mainView = undefined;
                 },

@@ -25,7 +25,11 @@
     "dependencies": {
         "@dev/core": "1.0.0",
         "@dev/loaders": "1.0.0",
-        "lit": "^3.2.0"
+        "@fluentui/react-components": "^9.62.0",
+        "@fluentui/react-icons": "^2.0.297",
+        "@griffel/shadow-dom": "^0.2.10",
+        "lit": "^3.2.0",
+        "usehooks-ts": "^3.1.1"
     },
     "devDependencies": {
         "@rollup/plugin-alias": "^5.1.0",

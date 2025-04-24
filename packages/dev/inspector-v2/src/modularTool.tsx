@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
-import type { ComponentType } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 import type { AspectContext } from "./contexts/aspectContext";
 import type { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import type { Extension } from "./extensibility/extensionManager";
@@ -10,7 +10,8 @@ import type { ShellServiceOptions } from "./services/shellService";
 import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
 import { Deferred } from "core/Misc/deferred";
 import { Observable } from "core/Misc/observable";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { useTernaryDarkMode } from "usehooks-ts";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { AppContext } from "./contexts/appContext";
@@ -24,6 +25,9 @@ import { MakeShellServiceDefinition } from "./services/shellService";
 import { aspectSelectorServiceDefinition } from "./services/aspectSelectorService";
 import { extensionListServiceDefinition } from "./services/extensionsListService";
 import { themeSelectorServiceDefinition } from "./services/themeSelectorService";
+
+// import { createDOMRenderer, RendererProvider } from "@griffel/react";
+// import { createShadowDOMRenderer } from "@griffel/shadow-dom";
 
 const aspectSettingsKey = "Settings/LastActiveAspect";
 
@@ -69,6 +73,8 @@ function useViewHostBootstrapper() {
 }
 
 export type ModularToolOptions = {
+    containerElement: HTMLElement;
+    // containerElement: Element;
     defaultAspect: WeaklyTypedAspectDefinition;
     additionalAspects?: readonly WeaklyTypedAspectDefinition[];
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
@@ -76,10 +82,15 @@ export type ModularToolOptions = {
     isThemeable?: boolean;
 } & ShellServiceOptions;
 
-export function MakeModularTool(options: ModularToolOptions): ComponentType {
-    const { defaultAspect, additionalAspects, serviceDefinitions, isExtensible = true, isThemeable = true } = options;
+export function MakeModularTool(options: ModularToolOptions): IDisposable {
+    const { containerElement, defaultAspect, additionalAspects, serviceDefinitions, isExtensible = true, isThemeable = true } = options;
+    // const containerElement = options.containerElement;
+    // const containerElement = document.getElementById("viewerContainer")!;
 
-    return () => {
+    // const documentOrShadowRoot = containerElement.getRootNode() as Document | ShadowRoot;
+    // const griffelRenderer = documentOrShadowRoot instanceof ShadowRoot ? createShadowDOMRenderer(documentOrShadowRoot) : createDOMRenderer(documentOrShadowRoot);
+
+    const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
         const [aspectContext, setAspectContext] = useState<AspectContext>();
@@ -153,11 +164,11 @@ export function MakeModularTool(options: ModularToolOptions): ComponentType {
                 // Register a ViewHost service (where the main view can be displayed).
                 await bootstrapViewHost(serviceCatalog);
 
-                // Register well known aspects.
+                // Register configured aspects.
                 registry.registerAspect(defaultAspect);
                 additionalAspects?.forEach((aspect) => registry.registerAspect(aspect));
 
-                // Register well known services.
+                // Register configured services.
                 await registry.registerServices(...serviceDefinitions);
 
                 // Register built in services.
@@ -172,15 +183,15 @@ export function MakeModularTool(options: ModularToolOptions): ComponentType {
                     }
                 }
 
-                // Dynamically load entire modules for shared dependencies since we can't know what parts an extension might use.
+                // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
                 // TODO: Try to replace this with import maps.
                 const externalDependencies = new Map<string, unknown>([
                     // eslint-disable-next-line import/no-internal-modules
-                    // ["@babylonjs/inspector", await import("./index")], // TODO: Make sure this doesn't create a circular dependency.
-                    ["@babylonjs/core", await import("@babylonjs/core")],
-                    ["@babylonjs/loaders", await import("@babylonjs/loaders")],
-                    ["@babylonjs/materials", await import("@babylonjs/materials")],
-                    ["@babylonjs/viewer", await import("@babylonjs/viewer")],
+                    ["@babylonjs/inspector", await import("./index")],
+                    ["@babylonjs/core", await import("@dev/core")],
+                    ["@babylonjs/loaders", await import("@dev/loaders")],
+                    ["@babylonjs/materials", await import("@dev/materials")],
+                    // ["@babylonjs/viewer", await import("@tools/viewer")],
                     ["@fluentui/react-components", await import("@fluentui/react-components")],
                     ["@fluentui/react-icons", await import("@fluentui/react-icons")],
                     ["react", await import("react")],
@@ -274,6 +285,7 @@ export function MakeModularTool(options: ModularToolOptions): ComponentType {
 
         return (
             <AppContext.Provider value={{ extensionManagerContext, aspectContext }}>
+                {/* <RendererProvider renderer={griffelRenderer}> */}
                 <FluentProvider className={classes.app} theme={isDarkMode ? darkTheme : lightTheme}>
                     <>
                         <Dialog open={!!requiredExtensions} modalType="alert">
@@ -300,7 +312,20 @@ export function MakeModularTool(options: ModularToolOptions): ComponentType {
                         </Suspense>
                     </>
                 </FluentProvider>
+                {/* </RendererProvider> */}
             </AppContext.Provider>
         );
+    };
+
+    const originalContainerElementDisplay = containerElement.style.display;
+    containerElement.style.display = "flex";
+    const reactRoot = createRoot(containerElement);
+    reactRoot.render(createElement(modularToolRootComponent));
+
+    return {
+        dispose: () => {
+            reactRoot.unmount();
+            containerElement.style.display = originalContainerElementDisplay;
+        },
     };
 }
