@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.3.0",
+    "fromTag": "8.3.1",
     "changelog": {
         "8.3.1": [
             {
@@ -44,6 +44,345 @@
                     "bug",
                     "Playground"
                 ]
+            }
+        ],
+        "8.4.0": [
+            {
+                "pr": "16522",
+                "title": "glTF Exporter: Fix handedness conversion for rotations",
+                "description": "Our previous heuristic worked well for the most common cases (a bit surprising in hindsight), but it was incorrect.\r\nThis new implementation is derived from a change the basis of the quaternion. It is the simplification off the following equation:\r\n`q' = to_quaternion(M * to_matrix(q) * M^-1)`\r\n     * where M is the conversion matrix `convertHandednessMatrix`, M^-1 is its inverse, \r\n     * q is the input quaternion, q' is the converted quaternion.\r\n     * to_matrix() and to_quaternion() are derived from [the figures and methods here](https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf)\r\n     \r\nIt's possible to simplify further, but less readable IMO, so I've left its structure as similar as possible to the reference above.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerRotationConversionLH.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16521",
+                "title": "Fix rotation values in GaussianSplattingMesh to use negative values f…",
+                "description": "…or ROT_2 and ROT_3 cases\r\n\r\nI noticed that the appearance differs between ply and spz.\r\nIt seems that the rot (rotation) of ply needs to be adjusted.\r\n\r\n## Lego left=ply, right=spz\r\n\r\n### Before(differ):\r\nhttps://sandbox.babylonjs.com/?version=8.3.1\r\n<img width=\"1686\" alt=\"image\" src=\"https://github.com/user-attachments/assets/78c5cda1-4b92-4b96-987d-fa2f493ca946\" />\r\n\r\nAfter(same):\r\nhttps://sandbox.babylonjs.com/?snapshot=refs/pull/16521/merge\r\n<img width=\"1679\" alt=\"image\" src=\"https://github.com/user-attachments/assets/de204459-0709-4814-bb9e-e59aee79f4f2\" />\r\n\r\n\r\n## Debug\r\n- Before(differ): https://playground.babylonjs.com/?version=8.3.1#3QY4KP#6\r\n- After(same): https://playground.babylonjs.com/?snapshot=refs/pull/16521/merge#3QY4KP#6\r\n\r\n\r\n\r\n\r\n\r\n",
+                "author": {
+                    "name": "takeru",
+                    "url": "https://github.com/takeru"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16520",
+                "title": "Add missing blend modes to the particle system dropdown",
+                "description": "- Move the mappings of const to label into sharedui component package\r\n- Add missing blendmode support to baseparticlesystem\r\n- Plumb all alphablendmodes to node editor (missed in last PR)",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/constToOptionsMaps.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16519",
+                "title": "Optimization tool for animation",
+                "description": "Test PG: #28JAK6#1",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.optimizations.ts",
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/index.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16484",
+                "title": "Implement accumulator pattern for precise frame rate limiting",
+                "description": "This commit replaces the simple frame time threshold check with an accumulator-based approach for more accurate frame rate control. Changes include:\r\n\r\n- Remove the \"+1\" adjustment in maxFPS calculation that caused target FPS to drift\r\n- Add a time accumulator to track elapsed time between frames\r\n- Only render when sufficient time has accumulated\r\n- Prevent accumulator from growing too large during slow frames\r\n\r\nFixes issue where setting maxFPS to 60 resulted in actual FPS of 48.",
+                "author": {
+                    "name": "ertugrulcetin",
+                    "url": "https://github.com/ertugrulcetin"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16512",
+                "title": "Add warning message when core mesh is not in the GPU picking list",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16516",
+                "title": "NME: Support core SFE mode",
+                "description": "This PR adds everything needed to support the “happy path” for creating SFE-compatible shaders in the Node Material Editor. In other words, all the core pieces are in place to build a default SFE NodeMaterial, as long as everything is set up correctly.\r\n\r\nThat said, there aren’t any UI guardrails yet — it’s still possible to break things or go off track. Guardrails and validation will come in future PRs.\r\n\r\n- Add `ScreenUVBlock`, which corresponds to the UV varying passed by `postprocess.vertex`, which is used by Smart Filters\r\n- Reuse `NodeMaterialModes.PostProcess` logic for creating the effect in the preview canvas. This avoid adding any more SFE-specific logic to `NodeMaterial` proper.\r\n- Add `Export to SFE` button",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16518",
+                "title": "Fix timing issue with ACE when used with complex animations",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/graphComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16517",
+                "title": "fix cam far plane",
+                "description": "https://forum.babylonjs.com/t/cameragizmo-changes-maxz-every-time-it-shows/57966",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "16514",
+                "title": "NodeMaterial: Expose method to get processed fragment shader",
+                "description": "Exposes an (internal) NodeMaterial method to retrieve the processed fragment shader in use. This will be a quick way to process the define that is needed to export SFE-compatible GLSL.\r\n\r\nI tucked away the process logic in NodeMaterialBuildState to be with the rest of the shader-building code.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16513",
+                "title": "Replace forEach by for..of for performance reasons",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/core/src/Animations/pathCursor.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/attachToBoxBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/multiPointerScaleBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/deviceOrientationCamera.ts",
+                    "packages/dev/core/src/Debug/axesViewer.ts",
+                    "packages/dev/core/src/Debug/directionalLightFrustumViewer.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphDataSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAsyncExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/Gamepads/gamepadManager.ts",
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/lightGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/core/src/Layers/effectLayerSceneComponent.ts",
+                    "packages/dev/core/src/Layers/layerSceneComponent.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystemSceneComponent.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Loading/loadingScreen.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/baseMathBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/customBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Materials/materialDefines.ts",
+                    "packages/dev/core/src/Materials/multiMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/geodesicMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.functions.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.subdivide.ts",
+                    "packages/dev/core/src/Meshes/meshSimplification.ts",
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/dev/core/src/Meshes/polygonMesh.ts",
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollector.ts",
+                    "packages/dev/core/src/Misc/arrayTools.ts",
+                    "packages/dev/core/src/Misc/asyncLock.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/deepCopier.ts",
+                    "packages/dev/core/src/Misc/deepMerger.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Misc/logger.ts",
+                    "packages/dev/core/src/Misc/observable.extensions.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts",
+                    "packages/dev/core/src/Misc/tags.ts",
+                    "packages/dev/core/src/Misc/trajectoryClassifier.ts",
+                    "packages/dev/core/src/Particles/particle.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v1/physicsImpostor.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16511",
+                "title": "Restore side effects (e.g. observable) of updating target in ArcRotateCamera interpolation",
+                "description": "This is a follow up from: https://github.com/BabylonJS/Babylon.js/pull/16510#pullrequestreview-2779507285",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16509",
+                "title": "Add missing alpha blend modes to inspector dropdown",
+                "description": "Moving the consts outside of the render function because it is being rendered multiple times (we will address the unnecessary re-renders as part of the inspector rewrite)\r\n\r\nSince the list of blend modes is not changing often a manual population of the options is sufficient (vs previous commits where I dynamically parse the alpha values from the constants object, which ends up being more computationally expensive and unnecessary)",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16510",
+                "title": "Reduce allocations in ArcRotateCamera interpolation",
+                "description": "Interpolation happens every frame, and currently there are some unnecessary allocations. This change just eliminates those unnecessary allocations to reduce GC pressure.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16505",
+                "title": "NodeMaterial: Add structural support for building SFE-readable GLSL",
+                "description": "This PR includes \"just the basics\" for generating GLSL following a framework that SFE can read. \r\n\r\n- Add support for SFE-readable GLSL, which can be toggled via a define\r\n- Add separate UV attribute remap to correspond to `postprocess.vertex`'s UV varying, which is used by SFE shaders by default.\r\n- Prepare CurrentScreenBlock to be used with SFE NodeMaterials\r\n- Cleanup unused code surrounding `define`s in InputBlock",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Enums/nodeMaterialModes.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
+                ],
+                "tags": []
             }
         ],
         "8.3.0": [
