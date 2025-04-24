@@ -62,6 +62,12 @@ export type ShadowQuality = (typeof shadowQualityOptions)[number];
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
+const environmentSkyboxMode = ["auto", "lighting", "url"] as const;
+export type EnvironmentSkybox = (typeof environmentSkyboxMode)[number];
+
+const environmentLightingMode = ["auto", "skybox", "url"] as const;
+export type EnvironmentLighting = (typeof environmentLightingMode)[number];
+
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
 export type LoadModelOptions = LoadAssetContainerOptions;
@@ -101,11 +107,6 @@ export type EnvironmentParams = {
      * The rotation of the environment lighting in radians.
      */
     rotation: number;
-
-    /**
-     * If the environment should be visible.
-     */
-    visible: boolean;
 };
 
 export type ShadowParams = {
@@ -458,7 +459,6 @@ export const DefaultViewerOptions = {
         intensity: 1,
         blur: 0.3,
         rotation: 0,
-        visible: true,
     },
     cameraAutoOrbit: {
         enabled: false,
@@ -753,9 +753,10 @@ export class Viewer implements IDisposable {
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
+    private _environmentSkyboxMode: Nullable<EnvironmentSkybox> = null;
+    private _environmentLightingMode: Nullable<EnvironmentLighting> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
-    private _skyboxVisible = this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
@@ -958,7 +959,6 @@ export class Viewer implements IDisposable {
             intensity: this._reflectionsIntensity,
             blur: this._skyboxBlur,
             rotation: this._reflectionsRotation,
-            visible: this._skyboxVisible,
         };
     }
 
@@ -973,14 +973,6 @@ export class Viewer implements IDisposable {
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
             this._rotateShadowLightWithEnvironment();
-        }
-        if (value.visible !== undefined) {
-            // Dynamically create the skybox if it doesn't exist yet
-            if (value.visible && !this._skybox && this._reflectionTexture) {
-                this._setEnvironmentSkybox(this._reflectionTexture, true);
-            }
-
-            this._changeSkyboxVisible(value.visible);
         }
         this.onEnvironmentConfigurationChanged.notifyObservers();
     }
@@ -1054,19 +1046,6 @@ export class Viewer implements IDisposable {
             }
             this._snapshotHelper.enableSnapshotRendering();
             this._markSceneMutated();
-        }
-    }
-
-    private _changeSkyboxVisible(value: boolean) {
-        if (value !== this._skyboxVisible) {
-            this._skyboxVisible = value;
-            if (this._skybox) {
-                this._snapshotHelper.disableSnapshotRendering();
-                this._skybox.setEnabled(this._skyboxVisible);
-                this._updateAutoClear();
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
-            }
         }
     }
 
@@ -1914,6 +1893,40 @@ export class Viewer implements IDisposable {
         await Promise.all(promises);
     }
 
+    /**
+     * The current environment skybox mode.
+     * - auto: The default environment is used as the skybox.
+     * - lighting: The environment lighting is used as the skybox.
+     * - url: The specified URL is used as the skybox.
+     */
+    public get environmentSkybox() {
+        if (this._environmentSkyboxMode === "url" && this._skyboxTexture) {
+            return this._skyboxTexture.url;
+        }
+        return this._environmentSkyboxMode ?? "auto";
+    }
+
+    public set environmentSkybox(skybox: string) {
+        this.loadEnvironment(skybox, { skybox: true });
+    }
+
+    /**
+     * The current environment lighting mode.
+     * - auto: The default environment is used as the lighting.
+     * - skybox: The environment skybox is used as the lighting.
+     * - url: The specified URL is used as the lighting.
+     */
+    public get environmentLighting() {
+        if (this._environmentLightingMode === "url" && this._reflectionTexture) {
+            return this._reflectionTexture.url;
+        }
+        return this._environmentLightingMode ?? "auto";
+    }
+
+    public set environmentLighting(lighting: string) {
+        this.loadEnvironment(lighting, { lighting: true });
+    }
+
     private _setEnvironmentLighting(cubeTexture: CubeTexture | HDRCubeTexture): void {
         this._reflectionTexture = cubeTexture;
         this._scene.environmentTexture = this._reflectionTexture;
@@ -1921,12 +1934,12 @@ export class Viewer implements IDisposable {
         this._reflectionTexture.rotationY = this.environmentConfig.rotation;
     }
 
-    private _setEnvironmentSkybox(cubeTexture: CubeTexture | HDRCubeTexture, lighting?: boolean): void {
-        this._skyboxTexture = lighting ? cubeTexture.clone() : cubeTexture;
+    private _setEnvironmentSkybox(cubeTexture: CubeTexture | HDRCubeTexture): void {
+        this._skyboxTexture = cubeTexture;
         this._skyboxTexture.level = this.environmentConfig.intensity;
         this._skyboxTexture.rotationY = this.environmentConfig.rotation;
         this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
-        this._skybox.setEnabled(this._skyboxVisible);
+        this._skybox.setEnabled(true);
         this._snapshotHelper.fixMeshes([this._skybox]);
         this._updateAutoClear();
     }
@@ -1985,11 +1998,27 @@ export class Viewer implements IDisposable {
                     const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
+                        if (url === "auto" || url === "skybox") {
+                            this._environmentLightingMode = url;
+                        } else {
+                            this._environmentLightingMode = "url";
+                        }
+                        if (this._environmentSkyboxMode === "lighting") {
+                            this._setEnvironmentSkybox(cubeTexture.clone());
+                        }
                         this._setEnvironmentLighting(cubeTexture);
                     }
 
                     if (options.skybox) {
-                        this._setEnvironmentSkybox(cubeTexture, options.lighting);
+                        if (url === "auto" || url === "lighting") {
+                            this._environmentSkyboxMode = url;
+                        } else {
+                            this._environmentSkyboxMode = "url";
+                        }
+                        if (this._environmentLightingMode === "skybox") {
+                            this._setEnvironmentLighting(cubeTexture.clone());
+                        }
+                        this._setEnvironmentSkybox(cubeTexture);
                     }
 
                     await new Promise<void>((resolve, reject) => {
@@ -2110,7 +2139,6 @@ export class Viewer implements IDisposable {
                 intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
                 blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
                 rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
-                visible: this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible,
             };
             if (this._options?.environmentLighting === this._options?.environmentSkybox) {
                 observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));

@@ -189,10 +189,16 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
         ),
         this._createPropertyBinding(
-            "environmentVisible",
-            (details) => details.viewer.onEnvironmentConfigurationChanged,
-            (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
-            (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
+            "environmentSkybox",
+            (details) => details.viewer.onEnvironmentChanged,
+            (details) => (details.viewer.environmentSkybox = this.environmentSkybox ?? details.viewer.environmentSkybox),
+            (details) => (this.environmentSkybox = details.viewer.environmentSkybox)
+        ),
+        this._createPropertyBinding(
+            "environmentLighting",
+            (details) => details.viewer.onEnvironmentChanged,
+            (details) => (details.viewer.environmentLighting = this.environmentLighting ?? details.viewer.environmentLighting),
+            (details) => (this.environmentLighting = details.viewer.environmentLighting)
         ),
         this._createPropertyBinding(
             "shadowQuality",
@@ -680,14 +686,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         attribute: "environment-rotation",
     })
     public environmentRotation: Nullable<number> = this._options.environmentConfig?.rotation ?? null;
-
-    /**
-     * Wether or not the environment is visible.
-     */
-    @property({
-        attribute: "environment-visible",
-    })
-    public environmentVisible: Nullable<boolean> = this._options.environmentConfig?.visible ?? null;
 
     /**
      * The type of shadows to use.
@@ -1340,7 +1338,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? viewerElement._options.environmentConfig?.intensity,
                                 blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
                                 rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
-                                visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
                             };
                         },
                         get shadowConfig() {
