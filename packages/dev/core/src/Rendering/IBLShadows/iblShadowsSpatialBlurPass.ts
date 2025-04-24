@@ -161,33 +161,37 @@ export class _IblShadowsSpatialBlurPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setBindings();
 
-        let counter = 0;
-        this._scene.onBeforeRenderObservable.add(() => {
-            counter = 0;
-        });
-        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-            if (++counter == 2) {
-                if (this.enabled && this._outputTexture.isReady()) {
-                    this._setBindings();
-                    this._outputTexture.render();
+        this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
+            let counter = 0;
+            this._scene.onBeforeRenderObservable.add(() => {
+                counter = 0;
+            });
+            this._scene.onAfterRenderTargetsRenderObservable.add(() => {
+                if (++counter == 2) {
+                    if (this.enabled && this._outputTexture.isReady()) {
+                        if (this._setBindings()) {
+                            this._outputTexture.render();
+                        }
+                    }
                 }
-            }
+            });
         });
     }
 
-    private _setBindings() {
+    private _setBindings(): boolean {
         this._outputTexture.setTexture("voxelTracingSampler", this._renderPipeline._getVoxelTracingTexture());
         const iterationCount = 1;
         this._blurParameters.set(iterationCount, this._worldScale, 0.0, 0.0);
         this._outputTexture.setVector4("blurParameters", this._blurParameters);
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
-            return;
+            return false;
         }
         const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
         this._outputTexture.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         const wnormalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
         this._outputTexture.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
+        return true;
     }
 
     /**
@@ -199,6 +203,10 @@ export class _IblShadowsSpatialBlurPass {
             width: Math.max(1.0, Math.floor(this._engine.getRenderWidth() * scaleFactor)),
             height: Math.max(1.0, Math.floor(this._engine.getRenderHeight() * scaleFactor)),
         };
+        // Don't resize if the size is the same as the current size.
+        if (this._outputTexture.getSize().width === newSize.width && this._outputTexture.getSize().height === newSize.height) {
+            return;
+        }
         this._outputTexture.resize(newSize, false);
     }
 

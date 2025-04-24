@@ -207,17 +207,22 @@ export class _IblShadowsAccumulationPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setOutputTextureBindings();
 
-        let counter = 0;
-        this._scene.onBeforeRenderObservable.add(() => {
-            counter = 0;
-        });
-        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-            if (++counter == 2) {
-                if (this.enabled && this._outputTexture.isReady()) {
-                    this._setOutputTextureBindings();
-                    this._outputTexture.render();
+        this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
+            let counter = 0;
+            this._scene.onBeforeRenderObservable.add(() => {
+                counter = 0;
+            });
+            // onAfterRenderTargetsRenderObservable is called twice during a frame and we only want to render
+            // on the second call, after the scene has been rendered to the GBuffer.
+            this._scene.onAfterRenderTargetsRenderObservable.add(() => {
+                if (++counter == 2) {
+                    if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+                        if (this._setOutputTextureBindings()) {
+                            this._outputTexture.render();
+                        }
+                    }
                 }
-            }
+            });
         });
 
         // Create the accumulation texture for the previous frame.
@@ -284,7 +289,7 @@ export class _IblShadowsAccumulationPass {
         this._oldPositionCopy.onBeforeGenerationObservable.add(this._updatePositionCopy.bind(this));
     }
 
-    private _setOutputTextureBindings() {
+    private _setOutputTextureBindings(): boolean {
         const remanence = this._isMoving ? this.remanence : 0.99;
         this._accumulationParams.set(remanence, this.reset ? 1.0 : 0.0, this._renderPipeline.voxelGridSize, 0.0);
         this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline._getSpatialBlurTexture());
@@ -294,7 +299,7 @@ export class _IblShadowsAccumulationPass {
 
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
-            return;
+            return false;
         }
         const velocityIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE);
         this._outputTexture.setTexture("motionSampler", geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
@@ -303,6 +308,7 @@ export class _IblShadowsAccumulationPass {
 
         this.reset = false;
         this._isMoving = false;
+        return true;
     }
 
     private _updatePositionCopy() {
@@ -324,6 +330,10 @@ export class _IblShadowsAccumulationPass {
             width: Math.max(1.0, Math.floor(this._engine.getRenderWidth() * scaleFactor)),
             height: Math.max(1.0, Math.floor(this._engine.getRenderHeight() * scaleFactor)),
         };
+        // Don't resize if the size is the same as the current size.
+        if (this._outputTexture.getSize().width === newSize.width && this._outputTexture.getSize().height === newSize.height) {
+            return;
+        }
         this._outputTexture.resize(newSize, false);
         this._oldAccumulationCopy.resize(newSize, false);
         this._oldPositionCopy.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
