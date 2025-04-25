@@ -317,8 +317,8 @@ export class GPUPicker {
                 id++;
 
                 if (mesh.hasInstances) {
-					const numInstances = (mesh as Mesh).instances.filter(instance => this._pickableMeshes.indexOf(instance) !== -1).length;
-					const allInstancesForPick = this._pickableMeshes.filter(m => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
+                    const numInstances = (mesh as Mesh).instances.filter(instance => this._pickableMeshes.indexOf(instance) !== -1).length;
+                    const allInstancesForPick = this._pickableMeshes.filter(m => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
                     const colorData = this._generateColorData(numInstances, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
                         const instance = allInstancesForPick[i];
                         this._idMap[id] = this._pickableMeshes.indexOf(instance);
