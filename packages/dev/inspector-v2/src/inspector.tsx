@@ -1,22 +1,28 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IInspectorOptions, Nullable, Observer, Scene } from "core/index";
+import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
+import type { ModularToolOptions } from "./modularTool";
 
-import { EngineStore } from "core/Engines/engineStore";
-import { MakeModularTool } from "./modularTool";
-import { InspectorAspect } from "./aspects/inspectorAspect";
-import { ShellService } from "./services/shellService";
 import { makeStyles } from "@fluentui/react-components";
+import { EngineStore } from "core/Engines/engineStore";
+import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
+import { InspectorAspect } from "./aspects/inspectorAspect";
+import { MakeModularTool } from "./modularTool";
+import { SceneContext } from "./services/sceneContext";
+import { SceneExplorerServiceDefinition } from "./services/sceneExplorerService";
+import { ShellService } from "./services/shellService";
 
 let currentInspectorToken: Nullable<IDisposable> = null;
+
+type InspectorV2Options = Pick<ModularToolOptions, "defaultAspect" | "additionalAspects" | "serviceDefinitions" | "isExtensible" | "isThemeable">;
 
 export function IsInspectorVisible(): boolean {
     return currentInspectorToken != null;
 }
 
-export function ShowInspector(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-    _ShowInspector(scene, userOptions);
+export function ShowInspector(scene: Scene, options: Partial<IInspectorOptions> & InspectorV2Options) {
+    _ShowInspector(scene, options);
 }
 
 function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions>) {
@@ -64,9 +70,10 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     const canvasContainerDisplay = parentElement.style.display;
     const canvasContainerChildren: ChildNode[] = [];
 
-    while (parentElement.childElementCount > 0) {
-        canvasContainerChildren.push(parentElement.removeChild(parentElement.childNodes[0]));
-    }
+    canvasContainerChildren.push(...parentElement.childNodes);
+    // while (parentElement.childElementCount > 0) {
+    //     canvasContainerChildren.push(parentElement.removeChild(parentElement.childNodes[0]));
+    // }
 
     disposeActions.push(() => {
         canvasContainerChildren.forEach((child) => parentElement.appendChild(child));
@@ -109,6 +116,17 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         },
     };
 
+    const sceneContextServiceDefinition: ServiceDefinition<[SceneContext], []> = {
+        friendlyName: "Inspector Scene Context",
+        produces: [SceneContext],
+        factory: () => {
+            return {
+                currentScene: scene,
+                currentSceneObservable: new Observable<Nullable<Scene>>(),
+            };
+        },
+    };
+
     if (options.handleResize) {
         const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
         disposeActions.push(() => observer.remove());
@@ -121,7 +139,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     const modularTool = MakeModularTool({
         containerElement: parentElement,
         defaultAspect: InspectorAspect,
-        serviceDefinitions: [canvasInjectorServiceDefinition],
+        serviceDefinitions: [canvasInjectorServiceDefinition, sceneContextServiceDefinition, SceneExplorerServiceDefinition],
     });
     disposeActions.push(() => modularTool.dispose());
 

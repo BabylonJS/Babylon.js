@@ -185,18 +185,19 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
                 // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
                 // TODO: Try to replace this with import maps.
+                // TODO: Re-enable this when we want to support dynamic extensions.
                 const externalDependencies = new Map<string, unknown>([
-                    // eslint-disable-next-line import/no-internal-modules
-                    ["@babylonjs/inspector", await import("./index")],
-                    ["@babylonjs/core", await import("@dev/core")],
-                    ["@babylonjs/loaders", await import("@dev/loaders")],
-                    ["@babylonjs/materials", await import("@dev/materials")],
-                    // ["@babylonjs/viewer", await import("@tools/viewer")],
-                    ["@fluentui/react-components", await import("@fluentui/react-components")],
-                    ["@fluentui/react-icons", await import("@fluentui/react-icons")],
-                    ["react", await import("react")],
-                    ["react-dom", await import("react-dom")],
-                    ["react/jsx-runtime", await import("react/jsx-runtime")],
+                    // // eslint-disable-next-line import/no-internal-modules
+                    // ["@babylonjs/inspector", await import("./index")],
+                    // ["@babylonjs/core", await import("@dev/core")],
+                    // ["@babylonjs/loaders", await import("@dev/loaders")],
+                    // ["@babylonjs/materials", await import("@dev/materials")],
+                    // // ["@babylonjs/viewer", await import("@tools/viewer")],
+                    // ["@fluentui/react-components", await import("@fluentui/react-components")],
+                    // ["@fluentui/react-icons", await import("@fluentui/react-icons")],
+                    // ["react", await import("react")],
+                    // ["react-dom", await import("react-dom")],
+                    // ["react/jsx-runtime", await import("react/jsx-runtime")],
                 ]);
 
                 const extensionManager = await ExtensionManager.CreateAsync(registry, externalDependencies, [new BuiltInsExtensionFeed()]);

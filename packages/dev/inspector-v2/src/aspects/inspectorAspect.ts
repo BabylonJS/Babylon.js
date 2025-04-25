@@ -5,5 +5,5 @@ export const InspectorAspectIdentity = Symbol("Inspector");
 export const InspectorAspect = {
     identity: InspectorAspectIdentity,
     friendlyName: "Inspector",
-    tags: ["diagnostics"],
+    tags: ["diagnostics", "scene"],
 } as const satisfies AspectDefinition<typeof InspectorAspectIdentity>;
