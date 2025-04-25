@@ -6,7 +6,7 @@ import type { ComponentInfo } from "../modularity/componentInfo";
 import type { Service, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { Button, Divider, makeStyles, shorthands, Tab, TabList, Text, tokens, Tooltip } from "@fluentui/react-components";
-import { PanelRightExpandRegular, PanelRightContractRegular } from "@fluentui/react-icons";
+import { PanelLeftExpandRegular, PanelLeftContractRegular, PanelRightExpandRegular, PanelRightContractRegular } from "@fluentui/react-icons";
 import { ObservableCollection } from "../misc/observableCollection";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { ViewHost } from "../services/viewHost";
@@ -291,6 +291,14 @@ function usePane(alignment: "left" | "right", defaultWidth: number, minWidth: nu
         }
     }, [components]);
 
+    const expandCollapseIcon = useMemo(() => {
+        if (alignment === "left") {
+            return collapsed ? <PanelLeftExpandRegular /> : <PanelLeftContractRegular />;
+        } else {
+            return collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />;
+        }
+    }, [collapsed, alignment]);
+
     const onResizerPointerDown = useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
             const currentTarget = event.currentTarget;
@@ -356,12 +364,7 @@ function usePane(alignment: "left" | "right", defaultWidth: number, minWidth: nu
                             </TabList>
                         )}
                         <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
-                            <Button
-                                className={classes.paneCollapseButton}
-                                appearance="subtle"
-                                icon={collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />}
-                                onClick={onExpandCollapseClick}
-                            />
+                            <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
                         </Tooltip>
                     </div>
                 )}

@@ -85,6 +85,7 @@
                 selected-animation="1"
                 camera-orbit="auto auto auto"
                 camera-target="auto auto auto"
+                render-when-idle
                 hotspots='{
                     "antenna": {
                         "type": "surface",
@@ -298,14 +299,32 @@
             };
 
             globalThis.onToggleInspector = async () => {
-                const { Inspector } = await import("inspector-v2/inspector");
+                const { Inspector, ShellService } = await import("inspector-v2");
+                const { EmojiRegular} = await import("@fluentui/react-icons");
                 console.log("toggle inspector");
                 if (Inspector.IsVisible) {
                     Inspector.Hide();
                 } else {
                     console.log(viewerDetails != null);
                     console.log(viewerDetails?.scene != null);
-                    Inspector.Show(viewerDetails.scene, {});
+                    Inspector.Show(viewerDetails.scene, {
+                        serviceDefinitions: [
+                            {
+                                friendlyName: "Custom Module",
+                                consumes: [ShellService],
+                                factory: (shellService) => {
+                                    shellService.addToLeftPane({
+                                        key: "Custom Module",
+                                        title: "Custom Module",
+                                        icon: EmojiRegular,
+                                        content: () => {
+                                            return "Some custom module...";
+                                        },
+                                    });
+                                },
+                            },
+                        ],
+                    });
                 }
             };
 

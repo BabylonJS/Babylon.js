@@ -12,20 +12,21 @@ import { MakeModularTool } from "./modularTool";
 import { SceneContext } from "./services/sceneContext";
 import { SceneExplorerServiceDefinition } from "./services/sceneExplorerService";
 import { ShellService } from "./services/shellService";
+import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 
 let currentInspectorToken: Nullable<IDisposable> = null;
 
-type InspectorV2Options = Pick<ModularToolOptions, "defaultAspect" | "additionalAspects" | "serviceDefinitions" | "isExtensible" | "isThemeable">;
+type InspectorV2Options = Pick<ModularToolOptions, "defaultAspect" | "additionalAspects" | "serviceDefinitions" | "extensionFeeds" | "isThemeable">;
 
 export function IsInspectorVisible(): boolean {
     return currentInspectorToken != null;
 }
 
-export function ShowInspector(scene: Scene, options: Partial<IInspectorOptions> & InspectorV2Options) {
-    _ShowInspector(scene, options);
+export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions & InspectorV2Options>) {
+    _ShowInspector(scene, options ?? {});
 }
 
-function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions>) {
+function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>) {
     options = {
         overlay: false,
         showExplorer: true,
@@ -138,8 +139,11 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
     const modularTool = MakeModularTool({
         containerElement: parentElement,
-        defaultAspect: InspectorAspect,
-        serviceDefinitions: [canvasInjectorServiceDefinition, sceneContextServiceDefinition, SceneExplorerServiceDefinition],
+        defaultAspect: options.defaultAspect ?? InspectorAspect,
+        additionalAspects: options.additionalAspects ?? [],
+        serviceDefinitions: [canvasInjectorServiceDefinition, sceneContextServiceDefinition, SceneExplorerServiceDefinition, ...(options.serviceDefinitions ?? [])],
+        isThemeable: options.isThemeable ?? true,
+        extensionFeeds: [new BuiltInsExtensionFeed(), ...(options.extensionFeeds ?? [])],
     });
     disposeActions.push(() => modularTool.dispose());
 

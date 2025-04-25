@@ -180,7 +180,7 @@ export class ExtensionManager implements IDisposable {
      * @param installedOnly Whether to only include installed extensions.
      * @returns A promise that resolves to the extension query.
      */
-    public async queryExtensionsAsync(filter = "", feeds: string[] = [], installedOnly = false): Promise<ExtensionQuery> {
+    public async queryExtensionsAsync(filter = "", feeds: string[] = this.feedNames, installedOnly = false): Promise<ExtensionQuery> {
         if (installedOnly) {
             const installedExtensions = Array.from(this._installedExtensions.values()).filter((installedExtension) => feeds.includes(installedExtension.feed.name));
             return {
@@ -228,7 +228,7 @@ export class ExtensionManager implements IDisposable {
      */
     public dispose() {
         for (const installedExtension of this._installedExtensions.values()) {
-            this._disable(installedExtension.metadata, false);
+            this._disable(installedExtension.metadata, false, false);
         }
 
         this._stateChangedHandlers.clear();
@@ -307,7 +307,7 @@ export class ExtensionManager implements IDisposable {
                 }
 
                 // Disable the extension.
-                await this._disable(metadata, true);
+                await this._disable(metadata, true, true);
 
                 // Remove the extension from in memory.
                 this._installedExtensions.delete(metadata.name);
@@ -390,7 +390,7 @@ export class ExtensionManager implements IDisposable {
         }
     }
 
-    private async _disable(metadata: ExtensionMetadata, isNestedStateChange: boolean): Promise<void> {
+    private async _disable(metadata: ExtensionMetadata, isNestedStateChange: boolean, permanent: boolean): Promise<void> {
         const installedExtension = this._installedExtensions.get(metadata.name);
         if (installedExtension?.isEnabled && (isNestedStateChange || !installedExtension.isStateChanging)) {
             try {
@@ -398,12 +398,14 @@ export class ExtensionManager implements IDisposable {
 
                 // Inspect dependents for other extensions that need to be disabled first.
                 for (const dependent of installedExtension.dependents) {
-                    await this._disable(dependent, false);
+                    await this._disable(dependent, false, permanent);
                 }
 
                 // Mark the extension as being disabled.
                 installedExtension.isEnabled = false;
-                localStorage.removeItem(getExtensionEnabledKey(getExtensionIdentity(installedExtension.feed.name, metadata.name)));
+                if (permanent) {
+                    localStorage.removeItem(getExtensionEnabledKey(getExtensionIdentity(installedExtension.feed.name, metadata.name)));
+                }
 
                 // Unregister the service registrations.
                 installedExtension.registrationToken?.dispose();
@@ -450,7 +452,7 @@ export class ExtensionManager implements IDisposable {
             },
             uninstall: () => extensionManager._uninstall(metadata, false),
             enable: () => extensionManager._enable(metadata, false),
-            disable: () => extensionManager._disable(metadata, false),
+            disable: () => extensionManager._disable(metadata, false, true),
             addStateChangedHandler: (handler: () => void) => extensionManager._addStateChangedHandler(metadata, handler),
         };
     }

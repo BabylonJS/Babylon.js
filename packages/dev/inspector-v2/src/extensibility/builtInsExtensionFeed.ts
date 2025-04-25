@@ -1,6 +1,15 @@
 import type { ExtensionMetadata, ExtensionMetadataQuery, ExtensionFeed, ExtensionModule } from "./extensionFeed";
 
-const extensions: readonly ExtensionMetadata[] = [];
+const exploderExtensionMetadata = {
+    name: "Exploder",
+    author: "Ryan Tremblay",
+    description: "Explode a model",
+    keywords: ["exploder", "sandbox"],
+    version: "0.0.1",
+    license: "MIT",
+} as const;
+
+const extensions: readonly ExtensionMetadata[] = [exploderExtensionMetadata];
 
 export class BuiltInsExtensionFeed implements ExtensionFeed {
     public readonly name = "Built-ins";
@@ -28,9 +37,8 @@ export class BuiltInsExtensionFeed implements ExtensionFeed {
     }
 
     public async getExtensionModuleAsync(name: string, version: string): Promise<ExtensionModule | undefined> {
-        // if (name === "extension1" && version === "1.0.0") {
-        //     return await import("../extensions/extension1");
-        // } else if ...
-        return undefined;
+        if (name === exploderExtensionMetadata.name && version === exploderExtensionMetadata.version) {
+            return await import("../services/exploderService");
+        }
     }
 }

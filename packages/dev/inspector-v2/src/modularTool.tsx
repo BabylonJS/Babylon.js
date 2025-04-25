@@ -4,6 +4,7 @@ import type { ComponentType, FunctionComponent } from "react";
 import type { AspectContext } from "./contexts/aspectContext";
 import type { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import type { Extension } from "./extensibility/extensionManager";
+import type { ExtensionFeed } from "./extensibility/extensionFeed";
 import type { AspectRegistry, ServiceRegistry, WeaklyTypedAspectDefinition, WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
 import type { ShellServiceOptions } from "./services/shellService";
 
@@ -13,7 +14,6 @@ import { Observable } from "core/Misc/observable";
 import { createRoot } from "react-dom/client";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { useTernaryDarkMode } from "usehooks-ts";
-import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { AppContext } from "./contexts/appContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ObservableCollection } from "./misc/observableCollection";
@@ -78,12 +78,12 @@ export type ModularToolOptions = {
     defaultAspect: WeaklyTypedAspectDefinition;
     additionalAspects?: readonly WeaklyTypedAspectDefinition[];
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
-    isExtensible?: boolean;
     isThemeable?: boolean;
+    extensionFeeds?: readonly ExtensionFeed[];
 } & ShellServiceOptions;
 
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { containerElement, defaultAspect, additionalAspects, serviceDefinitions, isExtensible = true, isThemeable = true } = options;
+    const { containerElement, defaultAspect, additionalAspects = [], serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
     // const containerElement = options.containerElement;
     // const containerElement = document.getElementById("viewerContainer")!;
 
@@ -166,7 +166,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
                 // Register configured aspects.
                 registry.registerAspect(defaultAspect);
-                additionalAspects?.forEach((aspect) => registry.registerAspect(aspect));
+                additionalAspects.forEach((aspect) => registry.registerAspect(aspect));
 
                 // Register configured services.
                 await registry.registerServices(...serviceDefinitions);
@@ -175,7 +175,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 {
                     await registry.registerServices(MakeShellServiceDefinition(options));
                     await registry.registerServices(aspectSelectorServiceDefinition);
-                    if (isExtensible) {
+                    if (extensionFeeds.length > 0) {
                         await registry.registerServices(extensionListServiceDefinition);
                     }
                     if (isThemeable) {
@@ -200,7 +200,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     // ["react/jsx-runtime", await import("react/jsx-runtime")],
                 ]);
 
-                const extensionManager = await ExtensionManager.CreateAsync(registry, externalDependencies, [new BuiltInsExtensionFeed()]);
+                const extensionManager = await ExtensionManager.CreateAsync(registry, externalDependencies, extensionFeeds);
 
                 const queryParams = new URLSearchParams(window.location.search);
                 const requiredExtensions = queryParams.getAll("requiredExtension");
