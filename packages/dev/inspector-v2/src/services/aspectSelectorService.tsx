@@ -21,7 +21,7 @@ const useTeachingMoment = MakePopoverTeachingMoment("Aspects");
 export const aspectSelectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "AspectSelector",
     consumes: [ShellService],
-    factory: (shellService: ShellService) => {
+    factory: (shellService) => {
         const registration = shellService.addToTopBar({
             key: "AspectSelector",
             alignment: "right",

@@ -83,7 +83,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     const canvasInjectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
         friendlyName: "Canvas Injector",
         consumes: [ShellService],
-        factory: (shellService: ShellService) => {
+        factory: (shellService) => {
             const useStyles = makeStyles({
                 canvasContainer: {
                     display: canvasContainerDisplay,

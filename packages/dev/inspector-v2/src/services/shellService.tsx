@@ -455,7 +455,7 @@ export function MakeShellServiceDefinition({
         friendlyName: "MainView",
         produces: [ShellService],
         consumes: [ViewHost],
-        factory: (viewHost: ViewHost) => {
+        factory: (viewHost) => {
             const topBarComponentCollection = new ObservableCollection<BarComponentInfo>();
             const bottomBarComponentCollection = new ObservableCollection<BarComponentInfo>();
             const leftPaneComponentCollection = new ObservableCollection<PaneComponentInfo>();

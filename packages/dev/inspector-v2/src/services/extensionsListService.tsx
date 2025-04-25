@@ -167,7 +167,7 @@ type TabValue = "available" | "installed";
 export const extensionListServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "ExtensionList",
     consumes: [ShellService],
-    factory: (shellService: ShellService) => {
+    factory: (shellService) => {
         const registration = shellService.addToTopBar({
             key: "ExtensionList",
             alignment: "right",

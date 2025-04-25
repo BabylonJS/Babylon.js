@@ -20,7 +20,7 @@ const useStyles = makeStyles({
 export const themeSelectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "ThemeSelector",
     consumes: [ShellService],
-    factory: (shellService: ShellService) => {
+    factory: (shellService) => {
         const registration = shellService.addToTopBar({
             key: "ThemeSelector",
             alignment: "right",
