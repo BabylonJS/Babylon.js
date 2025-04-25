@@ -11,6 +11,7 @@ import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
+import type { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
@@ -317,8 +318,8 @@ export class GPUPicker {
                 id++;
 
                 if (mesh.hasInstances) {
-                    const numInstances = (mesh as Mesh).instances.filter(instance => this._pickableMeshes.indexOf(instance) !== -1).length;
-                    const allInstancesForPick = this._pickableMeshes.filter(m => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
+                    const numInstances = (mesh as Mesh).instances.filter((instance) => this._pickableMeshes.indexOf(instance) !== -1).length;
+                    const allInstancesForPick = this._pickableMeshes.filter((m) => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
                     const colorData = this._generateColorData(numInstances, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
                         const instance = allInstancesForPick[i];
                         this._idMap[id] = this._pickableMeshes.indexOf(instance);
