@@ -72,6 +72,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (
     }
 
     let readType = texture.type !== undefined ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
+    let readFormat = texture.format !== undefined ? this._getInternalFormat(texture.format) " gl.RGBA;
 
     if (!noDataConversion) {
         switch (readType) {
@@ -96,7 +97,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (
         this.flushFramebuffer();
     }
 
-    gl.readPixels(x, y, width, height, gl.RGBA, readType, <DataView>buffer);
+    gl.readPixels(x, y, width, height, readFormat, readType, <DataView>buffer);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
     return buffer;
