@@ -320,11 +320,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public setColor(color: Color3) {
         this._coloredMaterial.emissiveColor = color;
         this._hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
-        this._lineBoundingBox.getChildren().forEach((l) => {
+        const children = this._lineBoundingBox.getChildren();
+        for (const l of children) {
             if ((l as LinesMesh).color) {
                 (l as LinesMesh).color = color;
             }
-        });
+        }
     }
     /**
      * Creates an BoundingBoxGizmo
@@ -429,12 +430,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 gizmoLayer.utilityLayerScene
             )
         );
-        lines.forEach((l) => {
+        for (const l of lines) {
             l.color = color;
             l.position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
             l.isPickable = false;
             this._lineBoundingBox.addChild(l);
-        });
+        }
         this._rootMesh.addChild(this._lineBoundingBox);
 
         this.setColor(color);
@@ -710,17 +711,16 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         const pointerIds: AbstractMesh[] = [];
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (!pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
-                this._rotateAnchorsParent
-                    .getChildMeshes()
-                    .concat(this._scaleBoxesParent.getChildMeshes())
-                    .forEach((mesh) => {
-                        if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
-                            pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
-                            mesh.material = this._hoverColoredMaterial;
-                            this.onHoverStartObservable.notifyObservers();
-                            this._isHovered = true;
-                        }
-                    });
+                const meshes = this._rotateAnchorsParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes());
+
+                for (const mesh of meshes) {
+                    if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
+                        pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
+                        mesh.material = this._hoverColoredMaterial;
+                        this.onHoverStartObservable.notifyObservers();
+                        this._isHovered = true;
+                    }
+                }
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                     pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
@@ -776,9 +776,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             value.setParent(originalParent);
             PivotTools._RestorePivotPoint(value);
             this.updateBoundingBox();
-            value.getChildMeshes(false).forEach((m) => {
+            const children = value.getChildMeshes(false);
+            for (const m of children) {
                 m.markAsDirty("scaling");
-            });
+            }
 
             this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
                 this._updateDummy();
@@ -787,12 +788,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     }
 
     protected _selectNode(selectedMesh: Nullable<Mesh>) {
-        this._rotateAnchorsParent
-            .getChildMeshes()
-            .concat(this._scaleBoxesParent.getChildMeshes())
-            .forEach((m) => {
-                m.isVisible = !selectedMesh || m == selectedMesh;
-            });
+        const meshes = this._rotateAnchorsParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes());
+
+        for (const m of meshes) {
+            m.isVisible = !selectedMesh || m == selectedMesh;
+        }
     }
 
     protected _unhoverMeshOnTouchUp(pointerInfo: Nullable<PointerInfo>, selectedMesh: AbstractMesh) {
@@ -954,7 +954,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
      */
     public setEnabledRotationAxis(axis: string) {
-        this._rotateAnchorsParent.getChildMeshes().forEach((m, i) => {
+        const meshes = this._rotateAnchorsParent.getChildMeshes();
+        for (let i = 0; i < meshes.length; i++) {
+            const m = meshes[i] as Mesh;
             if (i < 4) {
                 m.setEnabled(axis.indexOf("x") != -1);
             } else if (i < 8) {
@@ -962,7 +964,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             } else {
                 m.setEnabled(axis.indexOf("z") != -1);
             }
-        });
+        }
     }
 
     /**
@@ -971,14 +973,15 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * @param homogeneousScaling defines if scaling should only be homogeneous
      */
     public setEnabledScaling(enable: boolean, homogeneousScaling = false) {
-        this._scaleBoxesParent.getChildMeshes().forEach((m) => {
+        const meshes = this._scaleBoxesParent.getChildMeshes();
+        for (const m of meshes) {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
             if (homogeneousScaling && m._internalMetadata === true) {
                 enableMesh = false;
             }
             m.setEnabled(enableMesh);
-        });
+        }
     }
 
     protected _updateDummy() {
@@ -1004,12 +1007,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * Force release the drag action by code
      */
     public releaseDrag() {
-        this._scaleBoxesDragBehaviors.forEach((dragBehavior) => {
+        for (const dragBehavior of this._scaleBoxesDragBehaviors) {
             dragBehavior.releaseDrag();
-        });
-        this._rotateAnchorsDragBehaviors.forEach((dragBehavior) => {
+        }
+        for (const dragBehavior of this._rotateAnchorsDragBehaviors) {
             dragBehavior.releaseDrag();
-        });
+        }
         this._pointerDragBehavior.releaseDrag();
     }
 
@@ -1045,9 +1048,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh {
         const makeNotPickable = (root: AbstractMesh) => {
             root.isPickable = false;
-            root.getChildMeshes().forEach((c) => {
+            const children = root.getChildMeshes();
+            for (const c of children) {
                 makeNotPickable(c);
-            });
+            }
         };
         makeNotPickable(mesh);
 

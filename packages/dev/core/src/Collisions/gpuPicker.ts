@@ -11,6 +11,8 @@ import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
+import type { InstancedMesh } from "core/Meshes/instancedMesh";
+import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -59,6 +61,7 @@ export class GPUPicker {
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
     private readonly _attributeName = "instanceMeshID";
+    private _warningIssued = false;
 
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -162,6 +165,15 @@ export class GPUPicker {
         }
 
         const material = this._meshMaterialMap.get(mesh)!;
+
+        if (!material) {
+            if (!this._warningIssued) {
+                this._warningIssued = true;
+                Logger.Warn("GPUPicker issue: Mesh not found in the material map. This may happen when the root mesh of an instance is not in the picking list.");
+            }
+            return;
+        }
+
         const effect = material.getEffect()!;
 
         if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
@@ -306,13 +318,14 @@ export class GPUPicker {
                 id++;
 
                 if (mesh.hasInstances) {
-                    const instances = (mesh as Mesh).instances;
-                    const colorData = this._generateColorData(instances.length, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
-                        const instance = instances[i];
+                    const numInstances = (mesh as Mesh).instances.filter((instance) => this._pickableMeshes.indexOf(instance) !== -1).length;
+                    const allInstancesForPick = this._pickableMeshes.filter((m) => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
+                    const colorData = this._generateColorData(numInstances, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
+                        const instance = allInstancesForPick[i];
                         this._idMap[id] = this._pickableMeshes.indexOf(instance);
                     });
 
-                    id += instances.length;
+                    id += numInstances;
                     const engine = mesh.getEngine();
 
                     const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);

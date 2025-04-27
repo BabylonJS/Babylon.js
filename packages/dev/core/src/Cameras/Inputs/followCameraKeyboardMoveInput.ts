@@ -233,7 +233,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
-            this._keys.forEach((keyCode) => {
+            for (const keyCode of this._keys) {
                 if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 && this._modifierHeightOffset()) {
                     this.camera.heightOffset += this.heightSensibility;
                 } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 && this._modifierHeightOffset()) {
@@ -249,7 +249,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                 } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 && this._modifierRadius()) {
                     this.camera.radius -= this.radiusSensibility;
                 }
-            });
+            }
         }
     }
 

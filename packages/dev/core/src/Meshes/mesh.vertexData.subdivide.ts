@@ -333,11 +333,11 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                     const startWeight = 1.0 - beta * k;
                     readVector(_vertex[v], flattenedAttribute, i + v, 3);
                     _vertex[v].scaleInPlace(startWeight);
-                    positionsArr.forEach((positionIndex) => {
+                    for (const positionIndex of positionsArr) {
                         readVector(_average, flattenedAttribute, positionIndex, 3);
                         _average.scaleInPlace(beta);
                         _vertex[v].addInPlace(_average);
-                    });
+                    }
                 } else {
                     // 'positions', 'colors', etc.
                     readVector(_vertex[v], flattenedAttribute, i + v, itemSize);
@@ -369,10 +369,10 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                         for (const neighborHash in neighbors) {
                             const neighborIndices = neighbors[neighborHash];
                             _average.set(0, 0, 0);
-                            neighborIndices.forEach((neighborIndex) => {
+                            for (const neighborIndex of neighborIndices) {
                                 readVector(_temp, existingAttribute, neighborIndex, itemSize);
                                 _average.addInPlace(_temp);
-                            });
+                            }
                             _average.scaleInPlace(1 / neighborIndices.length);
                             _average.scaleInPlace(weight);
                             _vertex[v].addInPlace(_average);
@@ -382,11 +382,11 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                         const beta = 0.125; // 1/8
                         const startWeight = 1.0 - beta * k;
                         _vertex[v].scaleInPlace(startWeight);
-                        opposites.forEach((oppositeIndex) => {
+                        for (const oppositeIndex of opposites) {
                             readVector(_average, existingAttribute, oppositeIndex, itemSize);
                             _average.scaleInPlace(beta);
                             _vertex[v].addInPlace(_average);
-                        });
+                        }
                     }
                 }
             }
@@ -399,18 +399,18 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
 
     // Build new attributes for the smoothed geometry.
     const smoothData = new VertexData();
-    attributeList.forEach((attributeName) => {
+    for (const attributeName of attributeList) {
         if (attributeName === "indices") {
-            return;
+            continue;
         }
         const existingAttribute = (sourceData as any)[attributeName] as number[];
         const flattenedAttribute = (flatData as any)[attributeName] as number[];
         if (!existingAttribute || !flattenedAttribute) {
-            return;
+            continue;
         }
         const newArray = subdivideAttribute(attributeName, existingAttribute, flattenedAttribute);
         (smoothData as any)[attributeName] = newArray;
-    });
+    }
 
     // Rebuild indices sequentially.
     const newPositions = smoothData.positions!;

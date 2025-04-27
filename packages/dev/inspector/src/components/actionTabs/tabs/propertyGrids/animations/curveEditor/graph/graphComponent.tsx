@@ -11,6 +11,7 @@ import type { IAnimationKey } from "core/Animations/animationKey";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
+import { Tools } from "core/Misc/tools";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -67,15 +68,19 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         this._evaluateKeys();
 
         this.props.context.onHostWindowResized.add(() => {
-            this._computeSizes();
+            Tools.SetImmediate(() => {
+                this._computeSizes();
+            });
         });
 
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({ evaluateKeys = true, frame = true, range = true }) => {
             if (evaluateKeys) {
                 this._evaluateKeys(frame, range);
             }
-            this._computeSizes();
-            this.forceUpdate();
+            Tools.SetImmediate(() => {
+                this._computeSizes();
+                this.forceUpdate();
+            });
         });
 
         this.props.context.onFrameRequired.add(() => {
@@ -810,7 +815,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         }
 
         const startPosition = this._offsetX * convertRatio;
-        const start = -((startPosition / offset) | 0) * offset;
+        const start = ((startPosition / offset) | 0) * offset;
         const end = start + (this._viewWidth - 40) * this._viewScale * convertRatio;
 
         for (let step = start - offset; step <= end + offset; step += offset) {

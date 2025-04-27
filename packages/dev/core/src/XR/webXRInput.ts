@@ -99,9 +99,9 @@ export class WebXRInput implements IDisposable {
 
         this._frameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
             // Update controller pose info
-            this.controllers.forEach((controller) => {
+            for (const controller of this.controllers) {
                 controller.updateFromXRFrame(frame, this.xrSessionManager.referenceSpace, this.xrCamera, this.xrSessionManager);
-            });
+            }
         });
 
         if (this._options.customControllersRepositoryURL) {
@@ -146,27 +146,27 @@ export class WebXRInput implements IDisposable {
         // Remove and dispose of controllers to be disposed
         const keepControllers: Array<WebXRInputSource> = [];
         const removedControllers: Array<WebXRInputSource> = [];
-        this.controllers.forEach((c) => {
+        for (const c of this.controllers) {
             if (removeInputs.indexOf(c.inputSource) === -1) {
                 keepControllers.push(c);
             } else {
                 removedControllers.push(c);
             }
-        });
+        }
         this.controllers = keepControllers;
-        removedControllers.forEach((c) => {
+        for (const c of removedControllers) {
             this.onControllerRemovedObservable.notifyObservers(c);
             c.dispose();
-        });
+        }
     }
 
     /**
      * Disposes of the object
      */
     public dispose() {
-        this.controllers.forEach((c) => {
+        for (const c of this.controllers) {
             c.dispose();
-        });
+        }
         this.xrSessionManager.onXRFrameObservable.remove(this._frameObserver);
         this.xrSessionManager.onXRSessionInit.remove(this._sessionInitObserver);
         this.xrSessionManager.onXRSessionEnded.remove(this._sessionEndedObserver);

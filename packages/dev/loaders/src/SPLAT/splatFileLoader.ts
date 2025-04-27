@@ -411,7 +411,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         return this.importMeshAsync(null, scene, data, rootUrl)
             .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
+                for (const mesh of result.meshes) {
+                    container.meshes.push(mesh);
+                }
                 // mesh material will be null before 1st rendered frame.
                 this._assetContainer = null;
                 return container;
@@ -489,6 +491,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const enum ElementMode {
             Vertex = 0,
             Chunk = 1,
+            SH = 2,
         }
 
         let chunkMode = ElementMode.Chunk;
@@ -505,8 +508,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 } else if (chunkMode == ElementMode.Vertex) {
                     vertexProperties.push({ name, type, offset: rowVertexOffset });
                     rowVertexOffset += offsets[type];
+                } else if (chunkMode == ElementMode.SH) {
+                    vertexProperties.push({ name, type, offset: rowVertexOffset });
                 }
-
                 if (!offsets[type]) {
                     Logger.Warn(`Unsupported property type: ${type}.`);
                 }
@@ -516,6 +520,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     chunkMode = ElementMode.Chunk;
                 } else if (type == "vertex") {
                     chunkMode = ElementMode.Vertex;
+                } else if (type == "sh") {
+                    chunkMode = ElementMode.SH;
                 }
             }
         }

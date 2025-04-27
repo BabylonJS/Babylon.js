@@ -283,7 +283,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return false;
         }
 
-        this._options.xrInput.controllers.forEach(this._attachController);
+        for (const controller of this._options.xrInput.controllers) {
+            this._attachController(controller);
+        }
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
@@ -305,9 +307,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
             this._detachController(controllerId);
-        });
+        }
 
         return true;
     }
@@ -464,7 +467,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
-        Object.keys(this._controllers).forEach((id) => {
+        const keys = Object.keys(this._controllers);
+        for (const id of keys) {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
             const handData = controllerData.xrController?.inputSource.hand;
@@ -620,7 +624,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 state = ControllerOrbAnimationState.HOVER;
             }
             this._handleTransitionAnimation(controllerData, state);
-        });
+        }
     }
 
     private get _utilityLayerScene() {
@@ -805,12 +809,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             this._xrSessionManager.onXRFrameObservable.remove(controllerData.onFrameObserver);
         }
         if (controllerData.eventListeners) {
-            Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
+            const keys = Object.keys(controllerData.eventListeners);
+            for (const eventName of keys) {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
                     this._xrSessionManager.session.removeEventListener(eventName as XREventType, func as any);
                 }
-            });
+            }
         }
         controllerData.touchCollisionMesh.dispose();
         controllerData.pickedPointVisualCue.dispose();

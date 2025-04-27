@@ -369,9 +369,9 @@ export class Ragdoll {
     public ragdoll(): void {
         this._ragdollMode = true;
         // detach bones with link transform to let physics have control
-        this._skeleton.bones.forEach((bone) => {
+        for (const bone of this._skeleton.bones) {
             bone.linkTransformNode(null);
-        });
+        }
         for (let i = 0; i < this._constraints.length; i++) {
             this._constraints[i].isEnabled = true;
         }
@@ -384,8 +384,8 @@ export class Ragdoll {
      * Dispose resources and remove physics objects
      */
     dispose(): void {
-        this._aggregates.forEach((aggregate: PhysicsAggregate) => {
+        for (const aggregate of this._aggregates) {
             aggregate.dispose();
-        });
+        }
     }
 }

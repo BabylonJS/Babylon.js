@@ -17,6 +17,7 @@ attribute float splatIndex;
 uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
 uniform vec2 focal;
+uniform float kernelSize;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;

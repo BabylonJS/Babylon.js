@@ -543,9 +543,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             }
 
             if (impostor._pluginData) {
-                impostor._pluginData.toDispose.forEach((d: any) => {
+                for (const d of impostor._pluginData.toDispose) {
                     this.bjsAMMO.destroy(d);
-                });
+                }
                 impostor._pluginData.toDispose = [];
             }
         }
@@ -718,9 +718,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 triangleCount++;
             }
 
-            object.getChildMeshes().forEach((m) => {
+            const childMeshes = object.getChildMeshes();
+            for (const m of childMeshes) {
                 triangleCount += this._addMeshVerts(btTriangleMesh, topLevelObject, m);
-            });
+            }
         }
         return triangleCount;
     }
@@ -990,9 +991,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 triangleCount++;
             }
 
-            object.getChildMeshes().forEach((m) => {
+            const childMeshes = object.getChildMeshes();
+            for (const m of childMeshes) {
                 triangleCount += this._addHullVerts(btConvexHullShape, topLevelObject, m);
-            });
+            }
         }
         return triangleCount;
     }
@@ -1009,7 +1011,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
             // Add shape of all children to the compound shape
             let childrenAdded = 0;
-            meshChildren.forEach((childMesh) => {
+            for (const childMesh of meshChildren) {
                 const childImpostor = childMesh.getPhysicsImpostor();
                 if (childImpostor) {
                     if (childImpostor.type == PhysicsImpostor.MeshImpostor) {
@@ -1035,7 +1037,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     childImpostor.dispose();
                     childrenAdded++;
                 }
-            });
+            }
 
             if (childrenAdded > 0) {
                 // Add parents shape as a child if present

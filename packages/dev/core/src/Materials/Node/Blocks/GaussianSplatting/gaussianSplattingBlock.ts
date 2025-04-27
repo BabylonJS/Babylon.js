@@ -86,6 +86,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("focal");
         state._excludeVariableName("invViewport");
+        state._excludeVariableName("kernelSize");
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {
@@ -100,6 +101,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("gaussianSplatting", comments);
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
+        state._emitUniformFromString("kernelSize", NodeMaterialBlockConnectionPointTypes.Float);
         state.attributes.push(VertexBuffer.PositionKind);
         state.sharedData.nodeMaterial.backFaceCulling = false;
 
@@ -120,7 +122,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         let uniforms = "";
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             input = "input.position";
-            uniforms = ", uniforms.focal, uniforms.invViewport";
+            uniforms = ", uniforms.focal, uniforms.invViewport, uniforms.kernelSize";
         }
         state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;

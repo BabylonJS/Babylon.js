@@ -545,10 +545,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     // Recycle by swapping with last particle
                     this._emitFromParticle(particle);
                     if (particle._attachedSubEmitters) {
-                        particle._attachedSubEmitters.forEach((subEmitter) => {
+                        for (const subEmitter of particle._attachedSubEmitters) {
                             subEmitter.particleSystem.disposeOnStop = true;
                             subEmitter.particleSystem.stop();
-                        });
+                        }
                         particle._attachedSubEmitters = null;
                     }
                     this.recycleParticle(particle);
@@ -2078,20 +2078,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         // Draw order
-        switch (blendMode) {
-            case BaseParticleSystem.BLENDMODE_ADD:
-                engine.setAlphaMode(Constants.ALPHA_ADD);
-                break;
-            case BaseParticleSystem.BLENDMODE_ONEONE:
-                engine.setAlphaMode(Constants.ALPHA_ONEONE);
-                break;
-            case BaseParticleSystem.BLENDMODE_STANDARD:
-                engine.setAlphaMode(Constants.ALPHA_COMBINE);
-                break;
-            case BaseParticleSystem.BLENDMODE_MULTIPLY:
-                engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
-                break;
-        }
+        this._setEngineBasedOnBlendMode(blendMode);
 
         if (this._onBeforeDrawParticlesObservable) {
             this._onBeforeDrawParticlesObservable.notifyObservers(effect);

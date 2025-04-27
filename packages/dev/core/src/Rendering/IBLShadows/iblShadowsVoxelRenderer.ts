@@ -519,9 +519,9 @@ export class _IblShadowsVoxelRenderer {
             this._voxelGridRT?.dispose();
         }
         this._voxelGridZaxis?.dispose();
-        this._mipArray.forEach((mip) => {
+        for (const mip of this._mipArray) {
             mip.dispose();
-        });
+        }
         this._voxelMaterial?.dispose();
         this._voxelSlabDebugMaterial?.dispose();
         this._mipArray = [];
@@ -652,9 +652,9 @@ export class _IblShadowsVoxelRenderer {
                 allReady &&= rttReady;
             }
             if (allReady) {
-                this._renderTargets.forEach((rt) => {
+                for (const rt of this._renderTargets) {
                     rt.render();
-                });
+                }
                 this._stopVoxelization();
 
                 if (this._triPlanarVoxelization) {
@@ -681,7 +681,8 @@ export class _IblShadowsVoxelRenderer {
         }
 
         // We need to update the world scale uniform for every mesh being rendered to the voxel grid.
-        mrts.forEach((mrt, mrtIndex) => {
+        for (let mrtIndex = 0; mrtIndex < mrts.length; mrtIndex++) {
+            const mrt = mrts[mrtIndex];
             mrt.renderList = [];
             const nearPlane = mrtIndex * slabSize;
             const farPlane = (mrtIndex + 1) * slabSize;
@@ -710,29 +711,30 @@ export class _IblShadowsVoxelRenderer {
             if (includedMeshes.length === 0) {
                 return;
             }
-            includedMeshes.forEach((mesh) => {
+            for (const mesh of includedMeshes) {
                 if (mesh) {
                     if (mesh.subMeshes && mesh.subMeshes.length > 0) {
                         mrt.renderList?.push(mesh);
                         mrt.setMaterialForRendering(mesh, voxelMaterial);
                     }
-                    mesh.getChildMeshes().forEach((childMesh) => {
+                    const meshes = mesh.getChildMeshes();
+                    for (const childMesh of meshes) {
                         if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
                             mrt.renderList?.push(childMesh);
                             mrt.setMaterialForRendering(childMesh, voxelMaterial);
                         }
-                    });
+                    }
                 }
-            });
-        });
+            }
+        }
 
         // Add the MRT's to render.
         if (continuousRender) {
-            mrts.forEach((mrt) => {
+            for (const mrt of mrts) {
                 if (this._scene.customRenderTargets.indexOf(mrt) === -1) {
                     this._scene.customRenderTargets.push(mrt);
                 }
-            });
+            }
         } else {
             this._renderTargets = this._renderTargets.concat(mrts);
         }

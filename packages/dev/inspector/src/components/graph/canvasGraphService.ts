@@ -328,7 +328,9 @@ export class CanvasGraphService {
 
         const { left, right, bottom, top } = this._drawableArea;
         // process, and then draw our points
-        this.datasets.ids.forEach((id, idOffset) => {
+        for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
+            const id = this.datasets.ids[idOffset];
+
             let valueMinMax: IPerfMinMax | undefined;
             let prevPoint = this._prevPointById.get(id);
             let prevValue = this._prevValueById.get(id);
@@ -417,7 +419,7 @@ export class CanvasGraphService {
             }
 
             ctx.stroke();
-        });
+        }
 
         ctx.globalAlpha = defaultAlpha;
 
@@ -436,7 +438,8 @@ export class CanvasGraphService {
         let longestText: string = "";
         this._numberOfTickers = 0;
         const valueMap = new Map<string, IPerfMinMax>();
-        this.datasets.ids.forEach((id, idOffset) => {
+        for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
+            const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
                 return;
             }
@@ -457,7 +460,7 @@ export class CanvasGraphService {
             this._tickerItems[this._numberOfTickers].min = valueMinMax.min;
             this._tickerItems[this._numberOfTickers].text = text;
             this._numberOfTickers++;
-        });
+        }
         this._onVisibleRangeChangedObservable?.notifyObservers({ valueMap });
 
         ctx.save();
@@ -554,7 +557,7 @@ export class CanvasGraphService {
 
         const timestampUnit: TimestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
 
-        this._ticks.forEach((tick: number) => {
+        for (const tick of this._ticks) {
             let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
                 position = spaceAvailable;
@@ -562,7 +565,7 @@ export class CanvasGraphService {
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
             ctx.fillText(this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
-        });
+        }
         ctx.stroke();
         ctx.restore();
     }
@@ -877,7 +880,8 @@ export class CanvasGraphService {
         let closestLineValueMinMax: IPerfMinMax = { min: 0, max: 0 };
         let closestLineDistance: number = Number.POSITIVE_INFINITY;
 
-        this.datasets.ids.forEach((id, idOffset) => {
+        for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
+            const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
                 return;
             }
@@ -957,7 +961,7 @@ export class CanvasGraphService {
                 closestLineDistance = distance;
                 closestLineValueMinMax = valueMinMax;
             }
-        });
+        }
 
         const xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
 

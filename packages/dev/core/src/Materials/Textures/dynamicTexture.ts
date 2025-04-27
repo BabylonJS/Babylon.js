@@ -202,6 +202,11 @@ export class DynamicTexture extends Texture {
      * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
      */
     public update(invertY?: boolean, premulAlpha = false, allowGPUOptimization = false): void {
+        // When disposed, this._texture will be null.
+        if (!this._texture) {
+            return;
+        }
+
         this._getEngine()!.updateDynamicTexture(
             this._texture,
             this._canvas,

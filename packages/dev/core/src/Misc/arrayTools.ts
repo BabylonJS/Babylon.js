@@ -111,8 +111,8 @@ export function _ObserveArray<T>(array: T[], callback: _ObserveCallback) {
 
     // Returns a function that unhook all the observed functions
     return () => {
-        unObserveFunctions.forEach((unObserveFunction) => {
+        for (const unObserveFunction of unObserveFunctions) {
             unObserveFunction?.();
-        });
+        }
     };
 }
