@@ -1799,11 +1799,12 @@ export class Viewer implements IDisposable {
             this._shadowMapLight.includedOnlyMeshes = [this._shadowsMapGround];
         }
 
-        // manually set the extends to take into account animated meshes
         if (this._shadowMapLight) {
             this._shadowMapLight.position.set(x * radius, radius, z * radius);
+            // manually set the extends to take into account animated meshes
             this._shadowMapLight.autoUpdateExtends = false;
             this._shadowMapLight.shadowMinZ = 0.000000007;
+            // arbitrary extend the value to let space for animated meshes
             this._shadowMapLight.shadowMaxZ = radius * 4;
             this._shadowMapLight.orthoLeft = -radius * 2;
             this._shadowMapLight.orthoRight = radius * 2;
