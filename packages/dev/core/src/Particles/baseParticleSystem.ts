@@ -109,10 +109,21 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public updateSpeed = 0.01;
 
+    protected _targetStopDuration = 0;
     /**
      * The amount of time the particle system is running (depends of the overall update speed).
      */
-    public targetStopDuration = 0;
+    public get targetStopDuration() {
+        return this._targetStopDuration;
+    }
+
+    public set targetStopDuration(value: number) {
+        if (this._targetStopDuration === value) {
+            return;
+        }
+
+        this._targetStopDuration = value;
+    }
 
     /**
      * Specifies whether the particle system will be disposed once it reaches the end of the animation.
@@ -213,7 +224,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     _wasDispatched = false;
 
     protected _rootUrl = "";
-    private _noiseTexture: Nullable<ProceduralTexture>;
+    protected _noiseTexture: Nullable<ProceduralTexture>;
 
     /**
      * Gets or sets a texture used to add random noise to particle positions
@@ -395,7 +406,8 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     public _colorGradients: Nullable<Array<ColorGradient>> = null;
     /** @internal */
     public _sizeGradients: Nullable<Array<FactorGradient>> = null;
-    protected _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
     /** @internal */
     public _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
     /** @internal */
