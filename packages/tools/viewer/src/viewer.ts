@@ -1694,11 +1694,13 @@ export class Viewer implements IDisposable {
         }
 
         this._loadedModelsBacking.forEach((model) => {
-            const meshes = model.assetContainer.meshes as Mesh[];
+            const meshes = model.assetContainer.meshes;
             meshes.forEach((mesh) => {
-                this._envShadowsRenderPipeline?.addShadowCastingMesh(mesh);
-                if (mesh.material) {
-                    this._envShadowsRenderPipeline?.addShadowReceivingMaterial(mesh.material);
+                if (mesh instanceof Mesh) {
+                    this._envShadowsRenderPipeline?.addShadowCastingMesh(mesh);
+                    if (mesh.material) {
+                        this._envShadowsRenderPipeline?.addShadowReceivingMaterial(mesh.material);
+                    }
                 }
             });
         });
@@ -1836,16 +1838,18 @@ export class Viewer implements IDisposable {
         this._snapshotHelper.disableSnapshotRendering();
 
         this._loadedModelsBacking.forEach((model) => {
-            const meshes = model.assetContainer.meshes as Mesh[];
+            const meshes = model.assetContainer.meshes;
 
             const mesh = model.assetContainer.meshes[0];
             this._shadowGenerator?.removeShadowCaster(mesh, true);
             mesh.receiveShadows = false;
 
             meshes.forEach((mesh) => {
-                this._envShadowsRenderPipeline?.removeShadowCastingMesh(mesh);
-                if (mesh.material) {
-                    this._envShadowsRenderPipeline?.removeShadowReceivingMaterial(mesh.material);
+                if (mesh instanceof Mesh) {
+                    this._envShadowsRenderPipeline?.removeShadowCastingMesh(mesh);
+                    if (mesh.material) {
+                        this._envShadowsRenderPipeline?.removeShadowReceivingMaterial(mesh.material);
+                    }
                 }
             });
         });
