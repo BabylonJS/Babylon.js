@@ -62,11 +62,8 @@ export type ShadowQuality = (typeof shadowQualityOptions)[number];
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
-const environmentSkyboxMode = ["auto", "lighting", "url"] as const;
-export type EnvironmentSkybox = (typeof environmentSkyboxMode)[number];
-
-const environmentLightingMode = ["auto", "skybox", "url"] as const;
-export type EnvironmentLighting = (typeof environmentLightingMode)[number];
+const environmentMode = ["none", "auto", "url"] as const;
+export type EnvironmentMode = (typeof environmentMode)[number];
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
@@ -460,6 +457,8 @@ export const DefaultViewerOptions = {
         blur: 0.3,
         rotation: 0,
     },
+    environmentLighting: "auto",
+    environmentSkybox: "none",
     cameraAutoOrbit: {
         enabled: false,
         delay: 2000,
@@ -753,8 +752,8 @@ export class Viewer implements IDisposable {
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
-    private _environmentSkyboxMode: Nullable<EnvironmentSkybox> = null;
-    private _environmentLightingMode: Nullable<EnvironmentLighting> = null;
+    private _environmentSkyboxMode: Nullable<EnvironmentMode> = null;
+    private _environmentLightingMode: Nullable<EnvironmentMode> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
@@ -793,6 +792,7 @@ export class Viewer implements IDisposable {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
+    private readonly _updateShadowsLock = new AsyncLock();
     private _shadowGroundScalingFactor = 4.0;
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private _shadowGenerator: Nullable<ShadowGenerator> = null;
@@ -990,7 +990,7 @@ export class Viewer implements IDisposable {
     }
 
     public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
-        if (value.quality) {
+        if (value.quality && this._shadowQuality !== value.quality) {
             this._shadowQuality = value.quality;
 
             this._updateShadows();
@@ -1531,25 +1531,33 @@ export class Viewer implements IDisposable {
         this._shadowsAbortController?.abort(new AbortError("Shadows quality is being change before previous shadows finished initializing."));
         const abortController = (this._shadowsAbortController = new AbortController());
 
-        if (this._shadowQuality) {
-            if (this._shadowQuality === "none") {
-                this._disposeShadows();
-            } else if (this._shadowQuality === "normal") {
-                this._updateClassicShadow(abortController.signal);
-            } else if (this._shadowQuality === "high") {
-                const isWebGPU = this._scene.getEngine().isWebGPU;
-                // there is some issue with meshes with indices, so disable environment shadows for now
-                const hasAnyAnimation = this._loadedModelsBacking.some(
-                    (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
-                );
+        const locks: AsyncLock[] = [];
+        locks.push(this._updateShadowsLock);
 
-                if (!(isWebGPU && hasAnyAnimation)) {
-                    await this._updateEnvironmentShadow(abortController.signal);
+        await AsyncLock.LockAsync(async () => {
+            if (this._shadowQuality) {
+                if (this._shadowQuality === "none") {
+                    this._disposeShadows();
                 } else {
-                    this._log("Environment shadows are not supported in WebGPU with animated meshes.");
+                    this.loadEnvironment("auto", { lighting: true });
+                    if (this._shadowQuality === "normal") {
+                        this._updateClassicShadow(abortController.signal);
+                    } else if (this._shadowQuality === "high") {
+                        const isWebGPU = this._scene.getEngine().isWebGPU;
+                        // there is some issue with meshes with indices, so disable environment shadows for now
+                        const hasAnyAnimation = this._loadedModelsBacking.some(
+                            (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
+                        );
+
+                        if (!(isWebGPU && hasAnyAnimation)) {
+                            await this._updateEnvironmentShadow(abortController.signal);
+                        } else {
+                            this._log("Environment shadows are not supported in WebGPU with animated meshes.");
+                        }
+                    }
                 }
             }
-        }
+        }, locks);
     }
 
     private _changeShadowLightIntensity() {
@@ -1907,7 +1915,17 @@ export class Viewer implements IDisposable {
     }
 
     public set environmentSkybox(skybox: string) {
-        this.loadEnvironment(skybox, { skybox: true });
+        if ((this._environmentSkyboxMode === skybox && "auto" === skybox) || skybox === this._skyboxTexture?.url) {
+            return;
+        }
+
+        if (skybox === "none" || skybox === "auto") {
+            this._environmentSkyboxMode = skybox;
+        } else {
+            this._environmentSkyboxMode = "url";
+        }
+
+        this.loadEnvironment(skybox, { skybox: skybox !== "none" });
     }
 
     /**
@@ -1924,7 +1942,17 @@ export class Viewer implements IDisposable {
     }
 
     public set environmentLighting(lighting: string) {
-        this.loadEnvironment(lighting, { lighting: true });
+        if ((this._environmentLightingMode === lighting && "auto" === lighting) || lighting === this._reflectionTexture?.url) {
+            return;
+        }
+
+        if (lighting === "none" || lighting === "auto") {
+            this._environmentLightingMode = lighting;
+        } else {
+            this._environmentLightingMode = "url";
+        }
+
+        this.loadEnvironment(lighting, { skybox: lighting !== "none" });
     }
 
     private _setEnvironmentLighting(cubeTexture: CubeTexture | HDRCubeTexture): void {
@@ -1954,9 +1982,6 @@ export class Viewer implements IDisposable {
         }
 
         options = options ?? defaultLoadEnvironmentOptions;
-        if (!options.lighting && !options.skybox) {
-            return;
-        }
 
         const locks: AsyncLock[] = [];
         if (options.lighting) {
@@ -1981,7 +2006,7 @@ export class Viewer implements IDisposable {
                     this._reflectionTexture = null;
                     this._scene.environmentTexture = null;
                 }
-                if (options.skybox) {
+                if (options.skybox || url === "none") {
                     this._skybox?.dispose(undefined, true);
                     this._skyboxTexture = null;
                     this._skybox = null;
@@ -1992,30 +2017,24 @@ export class Viewer implements IDisposable {
             // First dispose the current environment and/or skybox.
             dispose();
 
+            if (!options.lighting && !options.skybox) {
+                return;
+            }
+
             try {
                 url = await urlPromise;
                 if (url) {
                     const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
 
                     if (options.lighting) {
-                        if (url === "auto" || url === "skybox") {
-                            this._environmentLightingMode = url;
-                        } else {
-                            this._environmentLightingMode = "url";
-                        }
-                        if (this._environmentSkyboxMode === "lighting") {
+                        if (this._environmentSkyboxMode === "auto" && !this._skyboxTexture) {
                             this._setEnvironmentSkybox(cubeTexture.clone());
                         }
                         this._setEnvironmentLighting(cubeTexture);
                     }
 
                     if (options.skybox) {
-                        if (url === "auto" || url === "lighting") {
-                            this._environmentSkyboxMode = url;
-                        } else {
-                            this._environmentSkyboxMode = "url";
-                        }
-                        if (this._environmentLightingMode === "skybox") {
+                        if (this._environmentLightingMode === "auto" && !this._reflectionTexture) {
                             this._setEnvironmentLighting(cubeTexture.clone());
                         }
                         this._setEnvironmentSkybox(cubeTexture);
@@ -2140,12 +2159,8 @@ export class Viewer implements IDisposable {
                 blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
                 rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
             };
-            if (this._options?.environmentLighting === this._options?.environmentSkybox) {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
-            } else {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
-                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
-            }
+            this.environmentLighting = this._options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
+            this.environmentSkybox = this._options?.environmentSkybox ?? DefaultViewerOptions.environmentSkybox;
         }
 
         if (flags.length === 0 || flags.includes("shadow")) {

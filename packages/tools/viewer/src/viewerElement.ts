@@ -1003,13 +1003,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (changedProperties.has("source")) {
                 this._updateModel();
             }
-
-            if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
-                this._updateEnv({
-                    lighting: changedProperties.has("environmentLighting"),
-                    skybox: changedProperties.has("environmentSkybox"),
-                });
-            }
         }
     }
 
@@ -1434,7 +1427,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 });
 
                 this._updateModel();
-                this._updateEnv({ lighting: true, skybox: true });
 
                 this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 

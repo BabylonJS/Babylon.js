@@ -372,7 +372,7 @@
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.env = { visible: checked };
+                viewer.environmentSkybox = checked ? "auto" : "none";
             };
             globalThis.onShadowQuality = () => {
                 const value = document.querySelector("#shadowQualityInput").value;
