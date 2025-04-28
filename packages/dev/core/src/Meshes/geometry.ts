@@ -1467,7 +1467,7 @@ export class Geometry implements IGetSetVerticesData {
             }
 
             if (parsedGeometry.matricesIndicesExtra) {
-                if (!parsedGeometry.matricesIndicesExtra._isExpanded && !parsedGeometry.matricesIndicesExtraExpanded) {
+                if (!(parsedGeometry.matricesIndicesExtraExpanded || parsedGeometry.matricesIndicesExtra._isExpanded)) {
                     const floatIndices = [];
 
                     for (let i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
