@@ -7,8 +7,10 @@ import type {
     BaseTexture,
     Camera,
     CubeTexture,
+    Engine,
     HDRCubeTexture,
     HotSpotQuery,
+    IblShadowsRenderPipeline,
     IDisposable,
     IMeshDataCache,
     ISceneLoaderProgressEvent,
@@ -17,16 +19,16 @@ import type {
     Observer,
     PickingInfo,
     ShaderMaterial,
-    Engine,
+    ShadowGenerator,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
-import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
-import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
+import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
+import { DirectionalLight } from "core/Lights/directionalLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -51,8 +53,6 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
-import { Constants } from "core/Engines/constants";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -782,6 +782,7 @@ export class Viewer implements IDisposable {
 
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
 
+    private readonly _updateShadowsLock = new AsyncLock();
     private _shadowsAbortController: Nullable<AbortController> = null;
 
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
@@ -792,8 +793,7 @@ export class Viewer implements IDisposable {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
-    private readonly _updateShadowsLock = new AsyncLock();
-    private _shadowGroundScalingFactor = 4.0;
+    private readonly _shadowGroundScalingFactor = 4.0;
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private _shadowGenerator: Nullable<ShadowGenerator> = null;
     private _envShadowsRenderPipeline: Nullable<IblShadowsRenderPipeline> = null;
@@ -981,12 +981,7 @@ export class Viewer implements IDisposable {
      * Get the current shadow configuration
      */
     public get shadowConfig(): Readonly<ShadowParams> {
-        if (this._shadowQuality) {
-            return { quality: this._shadowQuality };
-        }
-        return {
-            quality: "none",
-        };
+        return { quality: this._shadowQuality };
     }
 
     public set shadowConfig(value: Partial<Readonly<ShadowParams>>) {
@@ -1535,26 +1530,24 @@ export class Viewer implements IDisposable {
         locks.push(this._updateShadowsLock);
 
         await AsyncLock.LockAsync(async () => {
-            if (this._shadowQuality) {
-                if (this._shadowQuality === "none") {
-                    this._disposeShadows();
-                } else {
-                    // make sure there is an env light before creating shadows
-                    this.environmentLighting = "auto";
-                    if (this._shadowQuality === "normal") {
-                        this._updateShadowMap(abortController.signal);
-                    } else if (this._shadowQuality === "high") {
-                        const isWebGPU = this._scene.getEngine().isWebGPU;
-                        // there is some issue with meshes with indices, so disable environment shadows for now
-                        const hasAnyAnimation = this._loadedModelsBacking.some(
-                            (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
-                        );
+            if (this._shadowQuality === "none") {
+                this._disposeShadows();
+            } else {
+                // make sure there is an env light before creating shadows
+                this.environmentLighting = "auto";
+                if (this._shadowQuality === "normal") {
+                    this._updateShadowMap(abortController.signal);
+                } else if (this._shadowQuality === "high") {
+                    const isWebGPU = this._scene.getEngine().isWebGPU;
+                    // there is some issue with meshes with indices, so disable environment shadows for now
+                    const hasAnyAnimation = this._loadedModelsBacking.some(
+                        (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
+                    );
 
-                        if (!(isWebGPU && hasAnyAnimation)) {
-                            await this._updateEnvShadow(abortController.signal);
-                        } else {
-                            this._log("Environment shadows are not supported in WebGPU with animated meshes.");
-                        }
+                    if (!(isWebGPU && hasAnyAnimation)) {
+                        await this._updateEnvShadow(abortController.signal);
+                    } else {
+                        this._log("Environment shadows are not supported in WebGPU with animated meshes.");
                     }
                 }
             }
@@ -1579,8 +1572,11 @@ export class Viewer implements IDisposable {
         this._startIblShadowsRenderTime();
     }
 
+    // maybe move this into shadow state
     private _startIblShadowsRenderTime() {
-        clearTimeout(this._envShadowsRenderTimer!);
+        if (this._envShadowsRenderTimer != null) {
+            clearTimeout(this._envShadowsRenderTimer);
+        }
         this._envShadowsRender = true;
         this._envShadowsRenderTimer = setTimeout(
             () => {
@@ -1592,10 +1588,12 @@ export class Viewer implements IDisposable {
     }
 
     private async _updateEnvShadow(abortSignal?: AbortSignal) {
-        const imports = await Promise.all([
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const [{ ShaderMaterial }, { ShaderLanguage }, { CreateDisc }, { IblShadowsRenderPipeline }] = await Promise.all([
             import("core/Materials/shaderMaterial"),
             import("core/Materials/shaderLanguage"),
             import("core/Meshes/Builders/discBuilder"),
+            import("core/Rendering/IBLShadows/iblShadowsRenderPipeline"),
             import("core/Engines/Extensions/engine.multiRender"),
             import("core/Engines/WebGPU/Extensions/engine.multiRender"),
             import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
@@ -1604,22 +1602,13 @@ export class Viewer implements IDisposable {
         // cancel if the model is unloaded before the shadows are created
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal);
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const ShaderMaterial = imports[0].ShaderMaterial;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const ShaderLanguageGLSL = imports[1].ShaderLanguage.GLSL;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const ShaderLanguageWGSL = imports[1].ShaderLanguage.WGSL;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const CreateDisc = imports[2].CreateDisc;
-
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
             this._log("No models loaded, cannot create shadows.");
             return;
         }
 
-        const radius = Vector3.FromArray(worldBounds!.size).length();
+        const radius = Vector3.FromArray(worldBounds.size).length();
         const groundSize = this._shadowGroundScalingFactor * radius;
 
         const updateMaterial = () => {
@@ -1658,14 +1647,14 @@ export class Viewer implements IDisposable {
             // this._envShadowsRenderPipeline.accumulationPassDebugEnabled = false;
 
             const isWebGPU = this._scene.getEngine().isWebGPU;
-            const shaderLanguage = isWebGPU ? ShaderLanguageWGSL : ShaderLanguageGLSL;
+            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             const options = {
                 attributes: ["position", "uv"],
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
                 samplers: ["shadowTexture"],
                 shaderLanguage,
                 extraInitializationsAsync: async () => {
-                    if (shaderLanguage === ShaderLanguageWGSL) {
+                    if (shaderLanguage === ShaderLanguage.WGSL) {
                         await Promise.all([import("./ShadersWGSL/envShadowGround.vertex"), import("./ShadersWGSL/envShadowGround.fragment")]);
                     } else {
                         await Promise.all([import("./Shaders/envShadowGround.vertex"), import("./Shaders/envShadowGround.fragment")]);
@@ -1737,22 +1726,17 @@ export class Viewer implements IDisposable {
     }
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
-        const imports = await Promise.all([
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const [{ CreateDisc }, { ShadowOnlyMaterial }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
             import("materials/shadowOnly/shadowOnlyMaterial"),
             import("core/Materials/Textures/renderTargetTexture"),
+            import("core/Lights/Shadows/shadowGenerator"),
             import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
         ]);
 
         // cancel if the model is unloaded before the shadows are created
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal);
-
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const CreateDisc = imports[0].CreateDisc;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const ShadowOnlyMaterial = imports[1].ShadowOnlyMaterial;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const RenderTargetTexture = imports[2].RenderTargetTexture;
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
@@ -1760,7 +1744,7 @@ export class Viewer implements IDisposable {
             return;
         }
 
-        const radius = Vector3.FromArray(worldBounds!.size).length();
+        const radius = Vector3.FromArray(worldBounds.size).length();
         const x = Math.cos(this._reflectionsRotation);
         const z = Math.sin(this._reflectionsRotation);
 
