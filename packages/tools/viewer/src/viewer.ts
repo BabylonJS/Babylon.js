@@ -1824,6 +1824,8 @@ export class Viewer implements IDisposable {
 
         if (this._shadowsMapGround) {
             this._shadowsMapGround.position.y = worldBounds.extents.min[1];
+            const groundSize = this._shadowGroundScalingFactor * radius;
+            this._shadowsMapGround.scaling.set(groundSize, groundSize, groundSize);
         }
 
         this._envShadowsGround?.setEnabled(false);
