@@ -22,10 +22,15 @@ export class Attractor {
     public position = Vector3.Zero();
 
     /** @internal */
-    public _processParticle(particle: Particle, system: ThinParticleSystem) {
+    public _processParticle(particle: Particle, system: ThinParticleSystem, maxAttractorForce: number) {
         this.position.subtractToRef(particle.position, toAttractor);
         const distanceSquared = toAttractor.lengthSquared() + 0.0001; // Avoid division by zero
         toAttractor.normalize().scaleToRef(this.strength / distanceSquared, force);
+
+        if (force.length() > maxAttractorForce) {
+            force.normalize().scaleToRef(maxAttractorForce, force);
+        }
+
         force.scaleToRef(system._tempScaledUpdateSpeed, scaledForce);
 
         particle.direction.addInPlace(scaledForce); // Update particle velocity

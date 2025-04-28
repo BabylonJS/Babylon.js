@@ -95,6 +95,11 @@ export class ParticleSystem extends ThinParticleSystem {
     private _attractorUpdate: Nullable<_IExecutionQueueItem> = null;
 
     /**
+     * The maximum force that can be applied to a particle by an attractor
+     */
+    public maxAttractorForce = 5.0;
+
+    /**
      * The list of attractors used to change the direction of the particles in the system.
      * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
      */
@@ -114,7 +119,7 @@ export class ParticleSystem extends ThinParticleSystem {
             this._attractorUpdate = {
                 process: (particle: Particle) => {
                     for (const attractor of this._attractors) {
-                        attractor._processParticle(particle, this);
+                        attractor._processParticle(particle, this, this.maxAttractorForce);
                     }
                 },
                 previousItem: null,
