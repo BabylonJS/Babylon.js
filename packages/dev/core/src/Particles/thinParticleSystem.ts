@@ -34,6 +34,54 @@ import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import {
+    _ProcessAngularSpeed,
+    _ProcessAngularSpeedGradients,
+    _ProcessColor,
+    _ProcessColorGradients,
+    _ProcessDirection,
+    _ProcessDragGradients,
+    _ProcessGravity,
+    _ProcessLimitVelocityGradients,
+    _ProcessPosition,
+    _ProcessRemapGradients,
+    _ProcessSizeGradients,
+    _ProcessVelocityGradients,
+} from "./thinParticleSystem.function";
+
+/** @internal */
+interface IProcessingQueueItem {
+    process: (particle: Particle, ratio: number, system: ThinParticleSystem) => void;
+    previousItem: Nullable<IProcessingQueueItem>;
+    nextItem: Nullable<IProcessingQueueItem>;
+}
+
+function ConnectBefore(newOne: IProcessingQueueItem, activeOne: IProcessingQueueItem) {
+    newOne.previousItem = activeOne.previousItem;
+    newOne.nextItem = activeOne;
+    if (activeOne.previousItem) {
+        activeOne.previousItem.nextItem = newOne;
+    }
+    activeOne.previousItem = newOne;
+}
+
+function ConnectAfter(newOne: IProcessingQueueItem, activeOne: IProcessingQueueItem) {
+    newOne.previousItem = activeOne;
+    newOne.nextItem = activeOne.nextItem;
+    if (activeOne.nextItem) {
+        activeOne.nextItem.previousItem = newOne;
+    }
+    activeOne.nextItem = newOne;
+}
+
+function RemoveFromQueue(item: IProcessingQueueItem) {
+    if (item.previousItem) {
+        item.previousItem.nextItem = item.nextItem;
+    }
+    if (item.nextItem) {
+        item.nextItem.previousItem = item.previousItem;
+    }
+}
 
 /**
  * This represents a thin particle system in Babylon.
@@ -56,7 +104,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public updateFunction: (particles: Particle[]) => void;
 
-    private _emitterWorldMatrix: Matrix;
+    /** @internal */
+    public _emitterWorldMatrix: Matrix;
     private _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
 
     /**
@@ -94,6 +143,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._onDisposeObserver = this.onDisposeObservable.add(callback);
     }
 
+    /** @internal */
+    public _noiseTextureSize: Nullable<ISize> = null;
+    /** @internal */
+    public _noiseTextureData: Nullable<Uint8Array> = null;
     private _particles = new Array<Particle>();
     private _epsilon: number;
     private _capacity: number;
@@ -109,10 +162,13 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
     /** @internal */
     public _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
-    private _scaledColorStep = new Color4(0, 0, 0, 0);
+    /** @internal */
+    public _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
-    private _scaledDirection = Vector3.Zero();
-    private _scaledGravity = Vector3.Zero();
+    /** @internal */
+    public _scaledDirection = Vector3.Zero();
+    /** @internal */
+    public _scaledGravity = Vector3.Zero();
     private _currentRenderId = -1;
     private _alive: boolean;
     private _useInstancing = false;
@@ -121,7 +177,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _started = false;
     private _stopped = false;
     private _actualFrame = 0;
-    private _scaledUpdateSpeed: number;
+    /** @internal */
+    public _scaledUpdateSpeed: number;
     private _vertexBufferSize: number;
 
     /** @internal */
@@ -145,6 +202,25 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _rampGradientsTexture: Nullable<RawTexture>;
     private _useRampGradients = false;
 
+    private _updateQueueStart: Nullable<IProcessingQueueItem> = null;
+    private _colorProcessing: IProcessingQueueItem;
+    private _angularSpeedGradientProcessing: IProcessingQueueItem;
+    private _angularSpeedProcessing: IProcessingQueueItem;
+    private _velocityGradientProcessing: IProcessingQueueItem;
+    private _directionProcessing: IProcessingQueueItem;
+    private _limitVelocityGradientProcessing: IProcessingQueueItem;
+    private _positionProcessing: IProcessingQueueItem;
+    private _dragGradientProcessing: IProcessingQueueItem;
+    private _noiseProcessing: IProcessingQueueItem;
+    private _gravityProcessing: IProcessingQueueItem;
+    private _sizeGradientProcessing: IProcessingQueueItem;
+    private _remapGradientProcessing: IProcessingQueueItem;
+
+    /** @internal */
+    public _directionScale: number;
+    /** @internal */
+    public _tempScaledUpdateSpeed: number;
+
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
 
@@ -166,6 +242,17 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._useRampGradients = value;
 
         this._resetEffect();
+
+        if (value) {
+            this._remapGradientProcessing = {
+                process: _ProcessRemapGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+            ConnectAfter(this._remapGradientProcessing, this._gravityProcessing);
+        } else {
+            RemoveFromQueue(this._remapGradientProcessing);
+        }
     }
 
     /**
@@ -278,6 +365,27 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         return this._indexBuffer;
     }
 
+    public override set noiseTexture(value: Nullable<ProceduralTexture>) {
+        if (this.noiseTexture === value) {
+            return;
+        }
+
+        super.noiseTexture = value;
+
+        if (!value) {
+            RemoveFromQueue(this._noiseProcessing);
+            return;
+        }
+
+        this._noiseProcessing = {
+            process: _ProcessNoise,
+            previousItem: null,
+            nextItem: null,
+        };
+
+        ConnectAfter(this._noiseProcessing, this._positionProcessing);
+    }
+
     /**
      * Instantiates a particle system.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -334,17 +442,52 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         // Default emitter type
         this.particleEmitterType = new BoxParticleEmitter();
-        let noiseTextureData: Nullable<Uint8Array> = null;
+
+        // Processing queue
+        this._colorProcessing = {
+            process: _ProcessColor,
+            previousItem: null,
+            nextItem: null,
+        };
+
+        this._angularSpeedProcessing = {
+            process: _ProcessAngularSpeed,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._angularSpeedProcessing, this._colorProcessing);
+
+        this._directionProcessing = {
+            process: _ProcessDirection,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._directionProcessing, this._angularSpeedProcessing);
+
+        this._positionProcessing = {
+            process: _ProcessPosition,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._positionProcessing, this._directionProcessing);
+
+        this._gravityProcessing = {
+            process: _ProcessGravity,
+            previousItem: null,
+            nextItem: null,
+        };
+
+        ConnectAfter(this._gravityProcessing, this._positionProcessing);
+
+        this._updateQueueStart = this._colorProcessing;
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
-            let noiseTextureSize: Nullable<ISize> = null;
-
             if (this.noiseTexture) {
                 // We need to get texture data back to CPU
-                noiseTextureSize = this.noiseTexture.getSize();
+                this._noiseTextureSize = this.noiseTexture.getSize();
                 this.noiseTexture.getContent()?.then((data) => {
-                    noiseTextureData = data as Uint8Array;
+                    this._noiseTextureData = data as Uint8Array;
                 });
             }
 
@@ -353,185 +496,29 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             for (let index = 0; index < particles.length; index++) {
                 const particle = particles[index];
 
-                let scaledUpdateSpeed = this._scaledUpdateSpeed;
+                this._tempScaledUpdateSpeed = this._scaledUpdateSpeed;
                 const previousAge = particle.age;
-                particle.age += scaledUpdateSpeed;
+                particle.age += this._tempScaledUpdateSpeed;
 
                 // Evaluate step to death
                 if (particle.age > particle.lifeTime) {
                     const diff = particle.age - previousAge;
                     const oldDiff = particle.lifeTime - previousAge;
 
-                    scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
+                    this._tempScaledUpdateSpeed = (oldDiff * this._tempScaledUpdateSpeed) / diff;
 
                     particle.age = particle.lifeTime;
                 }
 
                 const ratio = particle.age / particle.lifeTime;
+                this._directionScale = this._tempScaledUpdateSpeed;
 
-                // Color
-                if (this._colorGradients && this._colorGradients.length > 0) {
-                    GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
-                        if (currentGradient !== particle._currentColorGradient) {
-                            particle._currentColor1.copyFrom(particle._currentColor2);
-                            (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
-                            particle._currentColorGradient = <ColorGradient>currentGradient;
-                        }
-                        Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
-                    });
-                } else {
-                    particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
-                    particle.color.addInPlace(this._scaledColorStep);
+                // Processing queue
+                let currentQueueItem = this._updateQueueStart;
 
-                    if (particle.color.a < 0) {
-                        particle.color.a = 0;
-                    }
-                }
-
-                // Angular speed
-                if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {
-                    GradientHelper.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
-                        if (currentGradient !== particle._currentAngularSpeedGradient) {
-                            particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
-                            particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentAngularSpeedGradient = <FactorGradient>currentGradient;
-                        }
-                        particle.angularSpeed = Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
-                    });
-                }
-                particle.angle += particle.angularSpeed * scaledUpdateSpeed;
-
-                // Direction
-                let directionScale = scaledUpdateSpeed;
-
-                /// Velocity
-                if (this._velocityGradients && this._velocityGradients.length > 0) {
-                    GradientHelper.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
-                        if (currentGradient !== particle._currentVelocityGradient) {
-                            particle._currentVelocity1 = particle._currentVelocity2;
-                            particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentVelocityGradient = <FactorGradient>currentGradient;
-                        }
-                        directionScale *= Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
-                    });
-                }
-
-                particle.direction.scaleToRef(directionScale, this._scaledDirection);
-
-                /// Limit velocity
-                if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
-                    GradientHelper.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
-                        if (currentGradient !== particle._currentLimitVelocityGradient) {
-                            particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
-                            particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentLimitVelocityGradient = <FactorGradient>currentGradient;
-                        }
-
-                        const limitVelocity = Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
-                        const currentVelocity = particle.direction.length();
-
-                        if (currentVelocity > limitVelocity) {
-                            particle.direction.scaleInPlace(this.limitVelocityDamping);
-                        }
-                    });
-                }
-
-                /// Drag
-                if (this._dragGradients && this._dragGradients.length > 0) {
-                    GradientHelper.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
-                        if (currentGradient !== particle._currentDragGradient) {
-                            particle._currentDrag1 = particle._currentDrag2;
-                            particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentDragGradient = <FactorGradient>currentGradient;
-                        }
-
-                        const drag = Lerp(particle._currentDrag1, particle._currentDrag2, scale);
-
-                        this._scaledDirection.scaleInPlace(1.0 - drag);
-                    });
-                }
-
-                if (this.isLocal && particle._localPosition) {
-                    particle._localPosition!.addInPlace(this._scaledDirection);
-                    Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
-                } else {
-                    particle.position.addInPlace(this._scaledDirection);
-                }
-
-                // Noise
-                if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1) {
-                    const fetchedColorR = this._fetchR(
-                        particle._randomNoiseCoordinates1.x,
-                        particle._randomNoiseCoordinates1.y,
-                        noiseTextureSize.width,
-                        noiseTextureSize.height,
-                        noiseTextureData
-                    );
-                    const fetchedColorG = this._fetchR(
-                        particle._randomNoiseCoordinates1.z,
-                        particle._randomNoiseCoordinates2.x,
-                        noiseTextureSize.width,
-                        noiseTextureSize.height,
-                        noiseTextureData
-                    );
-                    const fetchedColorB = this._fetchR(
-                        particle._randomNoiseCoordinates2.y,
-                        particle._randomNoiseCoordinates2.z,
-                        noiseTextureSize.width,
-                        noiseTextureSize.height,
-                        noiseTextureData
-                    );
-
-                    const force = TmpVectors.Vector3[0];
-                    const scaledForce = TmpVectors.Vector3[1];
-
-                    force.copyFromFloats(
-                        (2 * fetchedColorR - 1) * this.noiseStrength.x,
-                        (2 * fetchedColorG - 1) * this.noiseStrength.y,
-                        (2 * fetchedColorB - 1) * this.noiseStrength.z
-                    );
-
-                    force.scaleToRef(scaledUpdateSpeed, scaledForce);
-                    particle.direction.addInPlace(scaledForce);
-                }
-
-                // Gravity
-                this.gravity.scaleToRef(scaledUpdateSpeed, this._scaledGravity);
-                particle.direction.addInPlace(this._scaledGravity);
-
-                // Size
-                if (this._sizeGradients && this._sizeGradients.length > 0) {
-                    GradientHelper.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
-                        if (currentGradient !== particle._currentSizeGradient) {
-                            particle._currentSize1 = particle._currentSize2;
-                            particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentSizeGradient = <FactorGradient>currentGradient;
-                        }
-                        particle.size = Lerp(particle._currentSize1, particle._currentSize2, scale);
-                    });
-                }
-
-                // Remap data
-                if (this._useRampGradients) {
-                    if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
-                        GradientHelper.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
-                            const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                            const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
-
-                            particle.remapData.x = min;
-                            particle.remapData.y = max - min;
-                        });
-                    }
-
-                    if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
-                        GradientHelper.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
-                            const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                            const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
-
-                            particle.remapData.z = min;
-                            particle.remapData.w = max - min;
-                        });
-                    }
+                while (currentQueueItem) {
+                    currentQueueItem.process(particle, ratio, this);
+                    currentQueueItem = currentQueueItem.nextItem;
                 }
 
                 if (this._isAnimationSheetEnabled) {
@@ -650,6 +637,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._sizeGradients = [];
         }
 
+        if (this._sizeGradients.length === 0) {
+            this._sizeGradientProcessing = {
+                process: _ProcessSizeGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+
+            ConnectBefore(this._sizeGradientProcessing, this._gravityProcessing);
+        }
+
         this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
 
         return this;
@@ -662,6 +659,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public removeSizeGradient(gradient: number): IParticleSystem {
         this._removeFactorGradient(this._sizeGradients, gradient);
+
+        if (this._sizeGradients?.length === 0) {
+            RemoveFromQueue(this._sizeGradientProcessing);
+        }
 
         return this;
     }
@@ -734,6 +735,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._angularSpeedGradients = [];
         }
 
+        if (this._angularSpeedGradients.length === 0) {
+            this._angularSpeedGradientProcessing = {
+                process: _ProcessAngularSpeedGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+
+            ConnectBefore(this._angularSpeedGradientProcessing, this._angularSpeedProcessing);
+        }
+
         this._addFactorGradient(this._angularSpeedGradients, gradient, factor, factor2);
 
         return this;
@@ -746,6 +757,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public removeAngularSpeedGradient(gradient: number): IParticleSystem {
         this._removeFactorGradient(this._angularSpeedGradients, gradient);
+
+        if (this._angularSpeedGradients?.length === 0) {
+            RemoveFromQueue(this._angularSpeedGradientProcessing);
+        }
 
         return this;
     }
@@ -762,6 +777,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._velocityGradients = [];
         }
 
+        if (this._velocityGradients.length === 0) {
+            this._velocityGradientProcessing = {
+                process: _ProcessVelocityGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+
+            ConnectBefore(this._velocityGradientProcessing, this._directionProcessing);
+        }
+
         this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
 
         return this;
@@ -774,6 +799,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public removeVelocityGradient(gradient: number): IParticleSystem {
         this._removeFactorGradient(this._velocityGradients, gradient);
+
+        if (this._velocityGradients?.length === 0) {
+            RemoveFromQueue(this._velocityGradientProcessing);
+        }
 
         return this;
     }
@@ -790,6 +819,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._limitVelocityGradients = [];
         }
 
+        if (this._limitVelocityGradients.length === 0) {
+            this._limitVelocityGradientProcessing = {
+                process: _ProcessLimitVelocityGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+
+            ConnectAfter(this._limitVelocityGradientProcessing, this._directionProcessing);
+        }
+
         this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
 
         return this;
@@ -802,6 +841,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public removeLimitVelocityGradient(gradient: number): IParticleSystem {
         this._removeFactorGradient(this._limitVelocityGradients, gradient);
+
+        if (this._limitVelocityGradients?.length === 0) {
+            RemoveFromQueue(this._limitVelocityGradientProcessing);
+        }
 
         return this;
     }
@@ -818,6 +861,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._dragGradients = [];
         }
 
+        if (this._dragGradients.length === 0) {
+            this._dragGradientProcessing = {
+                process: _ProcessDragGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+
+            ConnectBefore(this._dragGradientProcessing, this._positionProcessing);
+        }
+
         this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
 
         return this;
@@ -830,6 +883,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public removeDragGradient(gradient: number): IParticleSystem {
         this._removeFactorGradient(this._dragGradients, gradient);
+
+        if (this._dragGradients?.length === 0) {
+            RemoveFromQueue(this._dragGradientProcessing);
+        }
 
         return this;
     }
@@ -995,6 +1052,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._colorGradients = [];
         }
 
+        if (this._colorGradients.length === 0) {
+            this._colorProcessing.process = _ProcessColorGradients;
+        }
+
         const colorGradient = new ColorGradient(gradient, color1, color2);
         this._colorGradients.push(colorGradient);
 
@@ -1030,6 +1091,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             index++;
         }
 
+        if (this._colorGradients.length === 0) {
+            this._colorProcessing.process = _ProcessColor;
+        }
+
         return this;
     }
 
@@ -1048,7 +1113,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._drawWrappers = [];
     }
 
-    private _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
+    /** @internal */
+    public _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
 
@@ -2216,4 +2282,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         this.reset();
     }
+}
+function _ProcessNoise(particle: Particle, ratio: number, system: ThinParticleSystem): void {
+    throw new Error("Function not implemented.");
 }

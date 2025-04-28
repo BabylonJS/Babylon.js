@@ -391,18 +391,26 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public gravity = Vector3.Zero();
 
-    protected _colorGradients: Nullable<Array<ColorGradient>> = null;
-    protected _sizeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _colorGradients: Nullable<Array<ColorGradient>> = null;
+    /** @internal */
+    public _sizeGradients: Nullable<Array<FactorGradient>> = null;
     protected _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
-    protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
-    protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
-    protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
-    protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _velocityGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _dragGradients: Nullable<Array<FactorGradient>> = null;
     protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
     protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
     protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
-    protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
-    protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
 
     protected _hasTargetStopDurationDependantGradient() {
         return (
