@@ -44,10 +44,12 @@ import {
     _CreateIsLocalData,
     _CreateLifeGradientsData,
     _CreateLifetimeData,
+    _CreateLimitVelocityGradients,
     _CreatePositionData,
     _CreateSizeData,
     _CreateSizeGradientsData,
     _CreateStartSizeGradientsData,
+    _CreateVelocityGradients,
     _ProcessAngularSpeed,
     _ProcessAngularSpeedGradients,
     _ProcessColor,
@@ -275,6 +277,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _sizeCreation: IExecutionQueueItem;
     private _startSizeCreation: Nullable<IExecutionQueueItem> = null;
     private _angleCreation: IExecutionQueueItem;
+    private _velocityCreation: IExecutionQueueItem;
+    private _limitVelocityCreation: IExecutionQueueItem;
     private _createQueueStart: Nullable<IExecutionQueueItem> = null;
 
     /** @internal */
@@ -959,12 +963,18 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (this._velocityGradients.length === 0) {
+            this._velocityCreation = {
+                process: _CreateVelocityGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+            ConnectAfter(this._velocityCreation, this._angleCreation);
+
             this._velocityGradientProcessing = {
                 process: _ProcessVelocityGradients,
                 previousItem: null,
                 nextItem: null,
             };
-
             ConnectBefore(this._velocityGradientProcessing, this._directionProcessing);
         }
 
@@ -982,6 +992,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._velocityGradients, gradient);
 
         if (this._velocityGradients?.length === 0) {
+            RemoveFromQueue(this._velocityCreation);
             RemoveFromQueue(this._velocityGradientProcessing);
         }
 
@@ -1001,12 +1012,18 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (this._limitVelocityGradients.length === 0) {
+            this._limitVelocityCreation = {
+                process: _CreateLimitVelocityGradients,
+                previousItem: null,
+                nextItem: null,
+            };
+            ConnectAfter(this._limitVelocityCreation, this._angleCreation);
+
             this._limitVelocityGradientProcessing = {
                 process: _ProcessLimitVelocityGradients,
                 previousItem: null,
                 nextItem: null,
             };
-
             ConnectAfter(this._limitVelocityGradientProcessing, this._directionProcessing);
         }
 
@@ -1024,6 +1041,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._limitVelocityGradients, gradient);
 
         if (this._limitVelocityGradients?.length === 0) {
+            RemoveFromQueue(this._limitVelocityCreation);
             RemoveFromQueue(this._limitVelocityGradientProcessing);
         }
 
@@ -1703,30 +1721,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             while (currentQueueItem) {
                 currentQueueItem.process(particle, this);
                 currentQueueItem = currentQueueItem.nextItem;
-            }
-
-            // Velocity
-            if (this._velocityGradients && this._velocityGradients.length > 0) {
-                particle._currentVelocityGradient = this._velocityGradients[0];
-                particle._currentVelocity1 = particle._currentVelocityGradient.getFactor();
-
-                if (this._velocityGradients.length > 1) {
-                    particle._currentVelocity2 = this._velocityGradients[1].getFactor();
-                } else {
-                    particle._currentVelocity2 = particle._currentVelocity1;
-                }
-            }
-
-            // Limit velocity
-            if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
-                particle._currentLimitVelocityGradient = this._limitVelocityGradients[0];
-                particle._currentLimitVelocity1 = particle._currentLimitVelocityGradient.getFactor();
-
-                if (this._limitVelocityGradients.length > 1) {
-                    particle._currentLimitVelocity2 = this._limitVelocityGradients[1].getFactor();
-                } else {
-                    particle._currentLimitVelocity2 = particle._currentLimitVelocity1;
-                }
             }
 
             // Drag

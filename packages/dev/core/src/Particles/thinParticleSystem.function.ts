@@ -63,6 +63,30 @@ export function _CreateCustomDirectionData(particle: Particle, system: ThinParti
 }
 
 /** @internal */
+export function _CreateVelocityGradients(particle: Particle, system: ThinParticleSystem) {
+    particle._currentVelocityGradient = system._velocityGradients![0];
+    particle._currentVelocity1 = particle._currentVelocityGradient.getFactor();
+
+    if (system._velocityGradients!.length > 1) {
+        particle._currentVelocity2 = system._velocityGradients![1].getFactor();
+    } else {
+        particle._currentVelocity2 = particle._currentVelocity1;
+    }
+}
+
+/** @internal */
+export function _CreateLimitVelocityGradients(particle: Particle, system: ThinParticleSystem) {
+    particle._currentLimitVelocityGradient = system._limitVelocityGradients![0];
+    particle._currentLimitVelocity1 = particle._currentLimitVelocityGradient.getFactor();
+
+    if (system._limitVelocityGradients!.length > 1) {
+        particle._currentLimitVelocity2 = system._limitVelocityGradients![1].getFactor();
+    } else {
+        particle._currentLimitVelocity2 = particle._currentLimitVelocity1;
+    }
+}
+
+/** @internal */
 export function _ProcessVelocityGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._velocityGradients!, (currentGradient, nextGradient, scale) => {
         if (currentGradient !== particle._currentVelocityGradient) {
