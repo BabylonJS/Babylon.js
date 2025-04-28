@@ -307,11 +307,13 @@ export function _CreateLifeGradientsData(particle: Particle, system: ThinParticl
         const gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
         particle.lifeTime = Lerp(lifeTime1, lifeTime2, gradient);
     });
+    system._emitPower = RandomRange(system.minEmitPower, system.maxEmitPower);
 }
 
 /** @internal */
 export function _CreateLifetimeData(particle: Particle, system: ThinParticleSystem) {
     particle.lifeTime = RandomRange(system.minLifeTime, system.maxLifeTime);
+    system._emitPower = RandomRange(system.minEmitPower, system.maxEmitPower);
 }
 
 /** Emit power */

@@ -458,6 +458,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         return this._indexBuffer;
     }
 
+    public override get noiseTexture() {
+        return this._noiseTexture;
+    }
+
     public override set noiseTexture(value: Nullable<ProceduralTexture>) {
         if (this.noiseTexture === value) {
             return;
@@ -760,6 +764,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             RemoveFromQueue(this._startSizeCreation);
             this._startSizeCreation = null;
         }
+    }
+
+    public override get targetStopDuration(): number {
+        return this._targetStopDuration;
     }
 
     public override set targetStopDuration(value: number) {
@@ -1712,8 +1720,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             particle = this._createParticle();
 
             this._particles.push(particle);
-
-            this._emitPower = RandomRange(this.minEmitPower, this.maxEmitPower);
 
             // Creation queue
             let currentQueueItem = this._createQueueStart;
