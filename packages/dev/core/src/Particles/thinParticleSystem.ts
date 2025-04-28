@@ -30,15 +30,24 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
-import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
+import { Lerp, RandomRange } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import {
+    _CreateAngleData,
+    _CreateAngleGradientsData,
+    _CreateCustomDirectionData,
     _CreateCustomPositionData,
+    _CreateDirectionData,
+    _CreateEmitPowerData,
+    _CreateIsLocalData,
     _CreateLifeGradientsData,
     _CreateLifetimeData,
     _CreatePositionData,
+    _CreateSizeData,
+    _CreateSizeGradientsData,
+    _CreateStartSizeGradientsData,
     _ProcessAngularSpeed,
     _ProcessAngularSpeedGradients,
     _ProcessColor,
@@ -111,19 +120,38 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     /** @internal */
     public _emitterWorldMatrix: Matrix;
-    private _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
+    /** @internal */
+    public _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
+
+    private _startDirectionFunction: Nullable<(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void> = null;
 
     /**
      * This function can be defined to specify initial direction for every new particle.
      * It by default use the emitterType defined function
      */
-    public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
+    public get startDirectionFunction(): Nullable<(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void> {
+        return this._startDirectionFunction;
+    }
+
+    public set startDirectionFunction(value: Nullable<(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void>) {
+        if (this._startDirectionFunction === value) {
+            return;
+        }
+        this._startDirectionFunction = value;
+
+        if (value) {
+            this._directionProcessing.process = _CreateCustomDirectionData;
+        } else {
+            this._directionProcessing.process = _CreateDirectionData;
+        }
+    }
+
+    private _startPositionFunction: Nullable<(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void> = null;
+
     /**
      * This function can be defined to specify initial position for every new particle.
      * It by default use the emitterType defined function
      */
-    private _startPositionFunction: Nullable<(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void> = null;
-
     public get startPositionFunction(): Nullable<(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void> {
         return this._startPositionFunction;
     }
@@ -241,6 +269,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     private _lifeTimeCreation: IExecutionQueueItem;
     private _positionCreation: IExecutionQueueItem;
+    private _isLocalCreation: IExecutionQueueItem;
+    private _directionCreation: IExecutionQueueItem;
+    private _emitPowerCreation: IExecutionQueueItem;
+    private _sizeCreation: IExecutionQueueItem;
+    private _startSizeCreation: Nullable<IExecutionQueueItem> = null;
+    private _angleCreation: IExecutionQueueItem;
     private _createQueueStart: Nullable<IExecutionQueueItem> = null;
 
     /** @internal */
@@ -286,10 +320,34 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
     }
 
+    private _isLocal = false;
+
     /**
      * Specifies if the particles are updated in emitter local space or world space
      */
-    public isLocal = false;
+    public get isLocal() {
+        return this._isLocal;
+    }
+
+    public set isLocal(value: boolean) {
+        if (this._isLocal === value) {
+            return;
+        }
+
+        this._isLocal = value;
+
+        if (value) {
+            this._isLocalCreation = {
+                process: _CreateIsLocalData,
+                previousItem: null,
+                nextItem: null,
+            };
+
+            ConnectAfter(this._isLocalCreation, this._positionCreation);
+        } else {
+            RemoveFromQueue(this._isLocalCreation);
+        }
+    }
 
     /** Indicates that the particle system is CPU based */
     public readonly isGPU = false;
@@ -486,8 +544,35 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             previousItem: null,
             nextItem: null,
         };
-
         ConnectAfter(this._positionCreation, this._lifeTimeCreation);
+
+        this._directionCreation = {
+            process: _CreateDirectionData,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._directionCreation, this._positionCreation);
+
+        this._emitPowerCreation = {
+            process: _CreateEmitPowerData,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._emitPowerCreation, this._directionCreation);
+
+        this._sizeCreation = {
+            process: _CreateSizeData,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._sizeCreation, this._emitPowerCreation);
+
+        this._angleCreation = {
+            process: _CreateAngleData,
+            previousItem: null,
+            nextItem: null,
+        };
+        ConnectAfter(this._angleCreation, this._sizeCreation);
 
         this._createQueueStart = this._lifeTimeCreation;
 
@@ -654,6 +739,25 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._lifeTimeCreation.process = _CreateLifetimeData;
     }
 
+    private _syncStartSizeCreation() {
+        if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
+            if (!this._startSizeCreation) {
+                this._startSizeCreation = {
+                    process: _CreateStartSizeGradientsData,
+                    previousItem: null,
+                    nextItem: null,
+                };
+                ConnectAfter(this._startSizeCreation, this._sizeCreation);
+            }
+            return;
+        }
+
+        if (this._startSizeCreation) {
+            RemoveFromQueue(this._startSizeCreation);
+            this._startSizeCreation = null;
+        }
+    }
+
     public override set targetStopDuration(value: number) {
         if (this.targetStopDuration === value) {
             return;
@@ -662,6 +766,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._targetStopDuration = value;
 
         this._syncLifeTimeCreation();
+        this._syncStartSizeCreation();
     }
 
     /**
@@ -709,12 +814,13 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (this._sizeGradients.length === 0) {
+            this._sizeCreation.process = _CreateSizeGradientsData;
+
             this._sizeGradientProcessing = {
                 process: _ProcessSizeGradients,
                 previousItem: null,
                 nextItem: null,
             };
-
             ConnectBefore(this._sizeGradientProcessing, this._gravityProcessing);
         }
 
@@ -733,6 +839,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         if (this._sizeGradients?.length === 0) {
             RemoveFromQueue(this._sizeGradientProcessing);
+            this._sizeCreation.process = _CreateSizeData;
         }
 
         return this;
@@ -807,6 +914,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (this._angularSpeedGradients.length === 0) {
+            this._angleCreation.process = _CreateAngleGradientsData;
+
             this._angularSpeedGradientProcessing = {
                 process: _ProcessAngularSpeedGradients,
                 previousItem: null,
@@ -830,6 +939,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._angularSpeedGradients, gradient);
 
         if (this._angularSpeedGradients?.length === 0) {
+            this._angleCreation.process = _CreateAngleData;
             RemoveFromQueue(this._angularSpeedGradientProcessing);
         }
 
@@ -1002,6 +1112,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         this._addFactorGradient(this._startSizeGradients, gradient, factor, factor2);
+
+        this._syncStartSizeCreation();
+
         return this;
     }
 
@@ -1012,6 +1125,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public removeStartSizeGradient(gradient: number): IParticleSystem {
         this._removeFactorGradient(this._startSizeGradients, gradient);
+
+        this._syncStartSizeCreation();
 
         return this;
     }
@@ -1568,21 +1683,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         //Do nothing
     }
 
-    private _update(newParticles: number): void {
-        // Update current
-        this._alive = this._particles.length > 0;
-
-        if ((<AbstractMesh>this.emitter).position) {
-            const emitterMesh = <AbstractMesh>this.emitter;
-            this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
-        } else {
-            const emitterPosition = <Vector3>this.emitter;
-            this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
-        }
-
-        this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);
-        this.updateFunction(this._particles);
-
+    private _createNewOnes(newParticles: number) {
         // Add new ones
         let particle: Particle;
         for (let index = 0; index < newParticles; index++) {
@@ -1594,89 +1695,15 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             this._particles.push(particle);
 
+            this._emitPower = RandomRange(this.minEmitPower, this.maxEmitPower);
+
             // Creation queue
             let currentQueueItem = this._createQueueStart;
-            this._emitPower = RandomRange(this.minEmitPower, this.maxEmitPower);
 
             while (currentQueueItem) {
                 currentQueueItem.process(particle, this);
                 currentQueueItem = currentQueueItem.nextItem;
             }
-
-            if (this.isLocal) {
-                if (!particle._localPosition) {
-                    particle._localPosition = particle.position.clone();
-                } else {
-                    particle._localPosition.copyFrom(particle.position);
-                }
-                Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
-            }
-
-            if (this.startDirectionFunction) {
-                this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
-            } else {
-                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal, this._emitterInverseWorldMatrix);
-            }
-
-            if (this._emitPower === 0) {
-                if (!particle._initialDirection) {
-                    particle._initialDirection = particle.direction.clone();
-                } else {
-                    particle._initialDirection.copyFrom(particle.direction);
-                }
-            } else {
-                particle._initialDirection = null;
-            }
-
-            particle.direction.scaleInPlace(this._emitPower);
-
-            // Size
-            if (!this._sizeGradients || this._sizeGradients.length === 0) {
-                particle.size = RandomRange(this.minSize, this.maxSize);
-            } else {
-                particle._currentSizeGradient = this._sizeGradients[0];
-                particle._currentSize1 = particle._currentSizeGradient.getFactor();
-                particle.size = particle._currentSize1;
-
-                if (this._sizeGradients.length > 1) {
-                    particle._currentSize2 = this._sizeGradients[1].getFactor();
-                } else {
-                    particle._currentSize2 = particle._currentSize1;
-                }
-            }
-            // Size and scale
-            particle.scale.copyFromFloats(RandomRange(this.minScaleX, this.maxScaleX), RandomRange(this.minScaleY, this.maxScaleY));
-
-            // Adjust scale by start size
-            if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
-                const ratio = this._actualFrame / this.targetStopDuration;
-                GradientHelper.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
-                    if (currentGradient !== this._currentStartSizeGradient) {
-                        this._currentStartSize1 = this._currentStartSize2;
-                        this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
-                        this._currentStartSizeGradient = <FactorGradient>currentGradient;
-                    }
-
-                    const value = Lerp(this._currentStartSize1, this._currentStartSize2, scale);
-                    particle.scale.scaleInPlace(value);
-                });
-            }
-
-            // Angle
-            if (!this._angularSpeedGradients || this._angularSpeedGradients.length === 0) {
-                particle.angularSpeed = RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
-            } else {
-                particle._currentAngularSpeedGradient = this._angularSpeedGradients[0];
-                particle.angularSpeed = particle._currentAngularSpeedGradient.getFactor();
-                particle._currentAngularSpeed1 = particle.angularSpeed;
-
-                if (this._angularSpeedGradients.length > 1) {
-                    particle._currentAngularSpeed2 = this._angularSpeedGradients[1].getFactor();
-                } else {
-                    particle._currentAngularSpeed2 = particle._currentAngularSpeed1;
-                }
-            }
-            particle.angle = RandomRange(this.minInitialRotation, this.maxInitialRotation);
 
             // Velocity
             if (this._velocityGradients && this._velocityGradients.length > 0) {
@@ -1763,6 +1790,24 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             // Update the position of the attached sub-emitters to match their attached particle
             particle._inheritParticleInfoToSubEmitters();
         }
+    }
+
+    private _update(newParticles: number): void {
+        // Update current
+        this._alive = this._particles.length > 0;
+
+        if ((<AbstractMesh>this.emitter).position) {
+            const emitterMesh = <AbstractMesh>this.emitter;
+            this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
+        } else {
+            const emitterPosition = <Vector3>this.emitter;
+            this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+        }
+
+        this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);
+        this.updateFunction(this._particles);
+
+        this._createNewOnes(newParticles);
     }
 
     /**

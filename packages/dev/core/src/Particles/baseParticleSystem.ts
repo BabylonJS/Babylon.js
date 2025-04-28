@@ -417,7 +417,8 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /** @internal */
     public _dragGradients: Nullable<Array<FactorGradient>> = null;
     protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
-    protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _startSizeGradients: Nullable<Array<FactorGradient>> = null;
     protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
     /** @internal */
     public _colorRemapGradients: Nullable<Array<FactorGradient>> = null;

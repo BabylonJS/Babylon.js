@@ -53,6 +53,16 @@ export function _ProcessAngularSpeed(particle: Particle, system: ThinParticleSys
 /** Velocity & direction */
 
 /** @internal */
+export function _CreateDirectionData(particle: Particle, system: ThinParticleSystem) {
+    system.particleEmitterType.startDirectionFunction(system._emitterWorldMatrix, particle.direction, particle, system.isLocal, system._emitterInverseWorldMatrix);
+}
+
+/** @internal */
+export function _CreateCustomDirectionData(particle: Particle, system: ThinParticleSystem) {
+    system.startDirectionFunction!(system._emitterWorldMatrix, particle.direction, particle, system.isLocal);
+}
+
+/** @internal */
 export function _ProcessVelocityGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._velocityGradients!, (currentGradient, nextGradient, scale) => {
         if (currentGradient !== particle._currentVelocityGradient) {
@@ -94,8 +104,19 @@ export function _CreatePositionData(particle: Particle, system: ThinParticleSyst
     system.particleEmitterType.startPositionFunction(system._emitterWorldMatrix, particle.position, particle, system.isLocal);
 }
 
+/** @internal */
 export function _CreateCustomPositionData(particle: Particle, system: ThinParticleSystem) {
     system.startPositionFunction!(system._emitterWorldMatrix, particle.position, particle, system.isLocal);
+}
+
+/** @internal */
+export function _CreateIsLocalData(particle: Particle, system: ThinParticleSystem) {
+    if (!particle._localPosition) {
+        particle._localPosition = particle.position.clone();
+    } else {
+        particle._localPosition.copyFrom(particle.position);
+    }
+    Vector3.TransformCoordinatesToRef(particle._localPosition!, system._emitterWorldMatrix, particle.position);
 }
 
 /** @internal */
@@ -176,6 +197,43 @@ export function _ProcessGravity(particle: Particle, system: ThinParticleSystem) 
 /** Size */
 
 /** @internal */
+export function _CreateSizeData(particle: Particle, system: ThinParticleSystem) {
+    particle.size = RandomRange(system.minSize, system.maxSize);
+    particle.scale.copyFromFloats(RandomRange(system.minScaleX, system.maxScaleX), RandomRange(system.minScaleY, system.maxScaleY));
+}
+
+/** @internal */
+export function _CreateSizeGradientsData(particle: Particle, system: ThinParticleSystem) {
+    particle.size = RandomRange(system.minSize, system.maxSize);
+    particle._currentSizeGradient = system._sizeGradients![0];
+    particle._currentSize1 = particle._currentSizeGradient.getFactor();
+    particle.size = particle._currentSize1;
+
+    if (system._sizeGradients!.length > 1) {
+        particle._currentSize2 = system._sizeGradients![1].getFactor();
+    } else {
+        particle._currentSize2 = particle._currentSize1;
+    }
+
+    particle.scale.copyFromFloats(RandomRange(system.minScaleX, system.maxScaleX), RandomRange(system.minScaleY, system.maxScaleY));
+}
+
+/** @internal */
+export function _CreateStartSizeGradientsData(particle: Particle, system: ThinParticleSystem) {
+    const ratio = system._actualFrame / system.targetStopDuration;
+    GradientHelper.GetCurrentGradient(ratio, system._startSizeGradients!, (currentGradient, nextGradient, scale) => {
+        if (currentGradient !== system._currentStartSizeGradient) {
+            system._currentStartSize1 = system._currentStartSize2;
+            system._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
+            system._currentStartSizeGradient = <FactorGradient>currentGradient;
+        }
+
+        const value = Lerp(system._currentStartSize1, system._currentStartSize2, scale);
+        particle.scale.scaleInPlace(value);
+    });
+}
+
+/** @internal */
 export function _ProcessSizeGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._sizeGradients!, (currentGradient, nextGradient, scale) => {
         if (currentGradient !== particle._currentSizeGradient) {
@@ -230,4 +288,43 @@ export function _CreateLifeGradientsData(particle: Particle, system: ThinParticl
 /** @internal */
 export function _CreateLifetimeData(particle: Particle, system: ThinParticleSystem) {
     particle.lifeTime = RandomRange(system.minLifeTime, system.maxLifeTime);
+}
+
+/** Emit power */
+
+/** @internal */
+export function _CreateEmitPowerData(particle: Particle, system: ThinParticleSystem) {
+    if (system._emitPower === 0) {
+        if (!particle._initialDirection) {
+            particle._initialDirection = particle.direction.clone();
+        } else {
+            particle._initialDirection.copyFrom(particle.direction);
+        }
+        particle.direction.set(0, 0, 0);
+    } else {
+        particle._initialDirection = null;
+        particle.direction.scaleInPlace(system._emitPower);
+    }
+}
+
+/** Angle */
+
+/** @internal */
+export function _CreateAngleData(particle: Particle, system: ThinParticleSystem) {
+    particle.angularSpeed = RandomRange(system.minAngularSpeed, system.maxAngularSpeed);
+    particle.angle = RandomRange(system.minInitialRotation, system.maxInitialRotation);
+}
+
+/** @internal */
+export function _CreateAngleGradientsData(particle: Particle, system: ThinParticleSystem) {
+    particle._currentAngularSpeedGradient = system._angularSpeedGradients![0];
+    particle.angularSpeed = particle._currentAngularSpeedGradient.getFactor();
+    particle._currentAngularSpeed1 = particle.angularSpeed;
+
+    if (system._angularSpeedGradients!.length > 1) {
+        particle._currentAngularSpeed2 = system._angularSpeedGradients![1].getFactor();
+    } else {
+        particle._currentAngularSpeed2 = particle._currentAngularSpeed1;
+    }
+    particle.angle = RandomRange(system.minInitialRotation, system.maxInitialRotation);
 }
