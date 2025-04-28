@@ -3,7 +3,7 @@ import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import { BVHLoader } from "./bvhLoader";
-import { BVHLoadingOptions } from "./bvhLoadingOptions";
+import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 import { BVHFileLoaderMetadata } from "./bvhFileLoader.metadata";
 
 declare module "core/Loading/sceneLoader" {
@@ -23,22 +23,18 @@ declare module "core/Loading/sceneLoader" {
  */
 export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /**
-     * Defines the name of the plugin.
+     * Name of the loader ("bvh")
      */
-    public name = "bvh";
+    public readonly name = BVHFileLoaderMetadata.name;
+
+    /** @internal */
+    public readonly extensions = BVHFileLoaderMetadata.extensions;
 
     private _loadingOptions: BVHLoadingOptions;
 
     /**
-     * Defines the extensions the bvh loader is able to load.
-     * force data to come in as an ArrayBuffer
-     */
-    public extensions: ISceneLoaderPluginExtensions = {
-        ".bvh": { isBinary: false },
-    };
-
-    /**
      * Creates loader for bvh motion files
+     * @param loadingOptions - Options for the bvh loader
      */
     constructor(loadingOptions?: Partial<Readonly<BVHLoadingOptions>>) {
         this._loadingOptions = { ...BVHFileLoader._DefaultLoadingOptions, ...(loadingOptions ?? {}) };
@@ -71,10 +67,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     /**
      * Imports  from the loaded gaussian splatting data and adds them to the scene
-     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+     * @param _meshesNames a string or array of strings of the mesh names that should be loaded from the file
      * @param scene the scene the meshes should be added to
      * @param data the bvh data to load
-     * @param rootUrl root url to load from
+     * @param _rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
     public importMeshAsync(_meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<ISceneLoaderAsyncResult> {
@@ -82,7 +78,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            const skeleton = BVHLoader.readBvh(data, scene, this._loadingOptions);
+            const skeleton = BVHLoader.ReadBvh(data, scene, this._loadingOptions);
             return Promise.resolve({
                 meshes: [],
                 particleSystems: [],
@@ -102,7 +98,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Imports all objects from the loaded bvh data and adds them to the scene
      * @param scene the scene the objects should be added to
      * @param data the bvh data to load
-     * @param rootUrl root url to load from
+     * @param _rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
     public loadAsync(scene: Scene, data: any, _rootUrl: string): Promise<void> {
@@ -110,7 +106,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            BVHLoader.readBvh(data, scene);
+            BVHLoader.ReadBvh(data, scene);
             return Promise.resolve();
         } catch (e) {
             return Promise.reject(e);
@@ -121,7 +117,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Load into an asset container.
      * @param scene The scene to load into
      * @param data The data to import
-     * @param rootUrl The root url for scene and resources
+     * @param _rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
     public loadAssetContainerAsync(scene: Scene, data: string, _rootUrl: string): Promise<AssetContainer> {
@@ -130,7 +126,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
         const assetContainer = new AssetContainer(scene);
         try {
-            const skeleton = BVHLoader.readBvh(data, scene, this._loadingOptions);
+            const skeleton = BVHLoader.ReadBvh(data, scene, this._loadingOptions);
             assetContainer.skeletons.push(skeleton);
             return Promise.resolve(assetContainer);
         } catch (e) {

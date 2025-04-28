@@ -1,20 +1,19 @@
-import { IAnimationKey } from "core/Animations";
+import type { IAnimationKey } from "core/Animations";
 import { Animation } from "core/Animations/animation";
 import { Bone, Skeleton } from "core/Bones";
 import { Axis } from "core/Maths/math.axis";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { BVHLoadingOptions } from "./bvhLoadingOptions";
+import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 
 /**
  * Original code from: https://github.com/herzig/BVHImporter/
- * 
+ *
  * Ivo Herzig, 2016
  * MIT License
  */
 export class BVHLoader {
-
     static readonly X_POSITION = "Xposition";
     static readonly Y_POSITION = "Yposition";
     static readonly Z_POSITION = "Zposition";
@@ -22,14 +21,20 @@ export class BVHLoader {
     static readonly Y_ROTATION = "Yrotation";
     static readonly Z_ROTATION = "Zrotation";
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private static readonly HIERARCHY_NODE = "HIERARCHY";
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private static readonly MOTION_NODE = "MOTION";
 
     /**
      * Reads a BVH file, returns a skeleton
+     * @param text - The BVH file content
+     * @param scene - The scene to add the skeleton to
+     * @param loadingOptions - The loading options
+     * @returns The skeleton
      */
-    public static readBvh(text: string, scene: Scene, loadingOptions?: BVHLoadingOptions): Skeleton {
-        let lines = text.split("\n");
+    public static ReadBvh(text: string, scene: Scene, loadingOptions?: BVHLoadingOptions): Skeleton {
+        const lines = text.split("\n");
 
         let context = new LoaderContext();
         context.animationName = loadingOptions?.animationName ?? "Animation";
@@ -37,15 +42,13 @@ export class BVHLoader {
         context.realSkeleton = new Skeleton(loadingOptions?.skeletonName ?? "skeleton", loadingOptions?.skeletonId ?? "skeleton_id", scene);
 
         // read model structure
-        if (lines.shift()?.trim().toUpperCase() != this.HIERARCHY_NODE)
-            throw "HIERARCHY expected";
+        if (lines.shift()?.trim().toUpperCase() != this.HIERARCHY_NODE) throw "HIERARCHY expected";
 
         // @ts-ignore
         let root = BVHLoader.readNode(lines, lines.shift()?.trim(), null, context);
 
         // read motion data
-        if (lines.shift()?.trim().toUpperCase() != this.MOTION_NODE)
-            throw "MOTION expected";
+        if (lines.shift()?.trim().toUpperCase() != this.MOTION_NODE) throw "MOTION expected";
 
         // @ts-ignore
         let tokens = lines.shift()?.trim().split(/[\s]+/);
@@ -53,8 +56,7 @@ export class BVHLoader {
         // number of frames
         // @ts-ignore
         let numFrames = parseInt(tokens[1]);
-        if (isNaN(numFrames))
-            throw "Failed to read number of frames.";
+        if (isNaN(numFrames)) throw "Failed to read number of frames.";
         context.numFrames = numFrames;
 
         // frame time
@@ -62,8 +64,7 @@ export class BVHLoader {
         tokens = lines.shift()?.trim().split(/[\s]+/);
         // @ts-ignore
         let frameTime = parseFloat(tokens[2]);
-        if (isNaN(frameTime))
-            throw "Failed to read frame time.";
+        if (isNaN(frameTime)) throw "Failed to read frame time.";
 
         context.frameRate = frameTime;
 
@@ -95,7 +96,8 @@ export class BVHLoader {
         const animation = this.createAnimations(node, context);
         if (animation) {
             // Apply rotation correction to the root bone's animation keys
-            if (!parent) { // Check if it's the root node
+            if (!parent) {
+                // Check if it's the root node
                 const correctionMatrix = Matrix.RotationAxis(Axis.X, Math.PI / 2); // -90 degrees on X-axis
                 const correctedKeys = animation.getKeys().map((key: IAnimationKey) => {
                     const originalMatrix = key.value as Matrix;
@@ -130,14 +132,10 @@ export class BVHLoader {
         let keyFrames: IAnimationKey[] = [];
 
         // Create position animation if there are position channels
-        const hasPosition = node.channels.some(c =>
-            c === BVHLoader.X_POSITION || c === BVHLoader.Y_POSITION || c === BVHLoader.Z_POSITION
-        );
+        const hasPosition = node.channels.some((c) => c === BVHLoader.X_POSITION || c === BVHLoader.Y_POSITION || c === BVHLoader.Z_POSITION);
 
         // Create rotation animation if there are rotation channels
-        const hasRotation = node.channels.some(c =>
-            c === BVHLoader.X_ROTATION || c === BVHLoader.Y_ROTATION || c === BVHLoader.Z_ROTATION
-        );
+        const hasRotation = node.channels.some((c) => c === BVHLoader.X_ROTATION || c === BVHLoader.Y_ROTATION || c === BVHLoader.Z_ROTATION);
 
         for (let i = 0; i < node.frames.length; i++) {
             const frame = node.frames[i];
@@ -169,13 +167,7 @@ export class BVHLoader {
         }
 
         let fps = 60 / context.frameRate;
-        let animation = new Animation(
-            node.name + "_anim",
-            "_matrix",
-            fps,
-            Animation.ANIMATIONTYPE_MATRIX,
-            Animation.ANIMATIONLOOPMODE_CYCLE
-        );
+        let animation = new Animation(node.name + "_anim", "_matrix", fps, Animation.ANIMATIONTYPE_MATRIX, Animation.ANIMATIONLOOPMODE_CYCLE);
         animation.setKeys(keyFrames);
 
         return animation;
@@ -208,22 +200,18 @@ export class BVHLoader {
         }
 
         // opening bracket
-        if (lines.shift()?.trim() != "{")
-            throw "Expected opening { after type & name";
+        if (lines.shift()?.trim() != "{") throw "Expected opening { after type & name";
 
-        // parse OFFSET 
+        // parse OFFSET
         // @ts-ignore
         tokens = lines.shift()?.trim().split(/\s+/);
 
-        if (tokens[0].toUpperCase() != "OFFSET")
-            throw "Expected OFFSET, but got: " + tokens[0];
-        if (tokens.length != 4)
-            throw "OFFSET: Invalid number of values";
+        if (tokens[0].toUpperCase() != "OFFSET") throw "Expected OFFSET, but got: " + tokens[0];
+        if (tokens.length != 4) throw "OFFSET: Invalid number of values";
 
         let offset = new Vector3(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
 
-        if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z))
-            throw "OFFSET: Invalid values";
+        if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) throw "OFFSET: Invalid values";
 
         node.offset = offset;
 
@@ -232,8 +220,7 @@ export class BVHLoader {
             // @ts-ignore
             tokens = lines.shift()?.trim().split(/\s+/);
 
-            if (tokens[0].toUpperCase() != "CHANNELS")
-                throw "Expected CHANNELS definition";
+            if (tokens[0].toUpperCase() != "CHANNELS") throw "Expected CHANNELS definition";
 
             let numChannels = parseInt(tokens[1]);
             // Skip CHANNELS and the number of channels
@@ -267,7 +254,8 @@ export class BVHLoader {
          Note: Position data (specifically Z) is flipped to convert coordinate systems.
     */
     protected static readFrameData(data: string[], frameTime: number, bone: BVHNode) {
-        if (bone.type === "ENDSITE") // end sites have no motion data
+        if (bone.type === "ENDSITE")
+            // end sites have no motion data
             return;
 
         // add keyframe
@@ -278,7 +266,9 @@ export class BVHLoader {
 
         bone.frames.push(keyframe);
 
-        let pitch = 0, yaw = 0, roll = 0;
+        let pitch = 0,
+            yaw = 0,
+            roll = 0;
 
         // parse values for each channel in node
         for (let i = 0; i < bone.channels.length; ++i) {
@@ -298,13 +288,13 @@ export class BVHLoader {
                     keyframe.position.z = -parseFloat(value.trim()); // Flip Z position
                     break;
                 case this.X_ROTATION:
-                    pitch = parseFloat(value.trim()) * Math.PI / 180;
+                    pitch = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
                 case this.Y_ROTATION:
-                    yaw = parseFloat(value.trim()) * Math.PI / 180;
+                    yaw = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
                 case this.Z_ROTATION:
-                    roll = parseFloat(value.trim()) * Math.PI / 180;
+                    roll = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
                 default:
                     throw "invalid channel type";
