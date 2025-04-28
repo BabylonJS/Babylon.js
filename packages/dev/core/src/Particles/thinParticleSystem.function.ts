@@ -228,7 +228,6 @@ export function _CreateSizeData(particle: Particle, system: ThinParticleSystem) 
 
 /** @internal */
 export function _CreateSizeGradientsData(particle: Particle, system: ThinParticleSystem) {
-    particle.size = RandomRange(system.minSize, system.maxSize);
     particle._currentSizeGradient = system._sizeGradients![0];
     particle._currentSize1 = particle._currentSizeGradient.getFactor();
     particle.size = particle._currentSize1;
