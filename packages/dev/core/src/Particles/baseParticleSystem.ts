@@ -301,8 +301,19 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
+    protected _animationSheetEnabled = false;
     /** @internal */
-    public _isAnimationSheetEnabled: boolean;
+    public get _isAnimationSheetEnabled() {
+        return this._animationSheetEnabled;
+    }
+
+    public set _isAnimationSheetEnabled(value: boolean) {
+        if (this._animationSheetEnabled === value) {
+            return;
+        }
+
+        this._animationSheetEnabled = value;
+    }
 
     /**
      * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called

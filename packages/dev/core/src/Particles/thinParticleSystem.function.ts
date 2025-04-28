@@ -4,9 +4,32 @@ import { GradientHelper } from "core/Misc/gradients";
 import type { Particle } from "./particle";
 import type { ThinParticleSystem } from "./thinParticleSystem";
 import { Clamp, Lerp, RandomRange } from "core/Maths/math.scalar.functions";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { TmpVectors, Vector3, Vector4 } from "core/Maths/math.vector";
 
 /** Color */
+
+/** @internal */
+export function _CreateColorData(particle: Particle, system: ThinParticleSystem) {
+    const step = RandomRange(0, 1.0);
+
+    Color4.LerpToRef(system.color1, system.color2, step, particle.color);
+
+    system.colorDead.subtractToRef(particle.color, system._colorDiff);
+    system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
+}
+
+/** @internal */
+export function _CreateColorGradientsData(particle: Particle, system: ThinParticleSystem) {
+    particle._currentColorGradient = system._colorGradients![0];
+    particle._currentColorGradient.getColorToRef(particle.color);
+    particle._currentColor1.copyFrom(particle.color);
+
+    if (system._colorGradients!.length > 1) {
+        system._colorGradients![1].getColorToRef(particle._currentColor2);
+    } else {
+        particle._currentColor2.copyFrom(particle.color);
+    }
+}
 
 /** @internal */
 export function _ProcessColorGradients(particle: Particle, system: ThinParticleSystem) {
@@ -156,6 +179,18 @@ export function _ProcessPosition(particle: Particle, system: ThinParticleSystem)
 /** Drag */
 
 /** @internal */
+export function _CreateDragData(particle: Particle, system: ThinParticleSystem) {
+    particle._currentDragGradient = system._dragGradients![0];
+    particle._currentDrag1 = particle._currentDragGradient.getFactor();
+
+    if (system._dragGradients!.length > 1) {
+        particle._currentDrag2 = system._dragGradients![1].getFactor();
+    } else {
+        particle._currentDrag2 = particle._currentDrag1;
+    }
+}
+
+/** @internal */
 export function _ProcessDragGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._dragGradients!, (currentGradient, nextGradient, scale) => {
         if (currentGradient !== particle._currentDragGradient) {
@@ -171,6 +206,17 @@ export function _ProcessDragGradients(particle: Particle, system: ThinParticleSy
 }
 
 /** Noise */
+
+/** @internal */
+export function _CreateNoiseData(particle: Particle, system: ThinParticleSystem) {
+    if (particle._randomNoiseCoordinates1) {
+        particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
+        particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+    } else {
+        particle._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+        particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+    }
+}
 
 /** @internal */
 export function _ProcessNoise(particle: Particle, system: ThinParticleSystem) {
@@ -268,6 +314,13 @@ export function _ProcessSizeGradients(particle: Particle, system: ThinParticleSy
     });
 }
 
+/** Ramp */
+
+/** @internal */
+export function _CreateRampData(particle: Particle, system: ThinParticleSystem) {
+    particle.remapData = new Vector4(0, 1, 0, 1);
+}
+
 /** Remap */
 
 /** @internal */
@@ -330,6 +383,9 @@ export function _CreateEmitPowerData(particle: Particle, system: ThinParticleSys
         particle._initialDirection = null;
         particle.direction.scaleInPlace(system._emitPower);
     }
+
+    // Inherited Velocity
+    particle.direction.addInPlace(system._inheritedVelocityOffset);
 }
 
 /** Angle */
@@ -352,4 +408,13 @@ export function _CreateAngleGradientsData(particle: Particle, system: ThinPartic
         particle._currentAngularSpeed2 = particle._currentAngularSpeed1;
     }
     particle.angle = RandomRange(system.minInitialRotation, system.maxInitialRotation);
+}
+
+/** Sheet */
+
+/** @internal */
+export function _CreateSheetData(particle: Particle, system: ThinParticleSystem) {
+    particle._initialStartSpriteCellID = system.startSpriteCellID;
+    particle._initialEndSpriteCellID = system.endSpriteCellID;
+    particle._initialSpriteCellLoop = system.spriteCellLoop;
 }
