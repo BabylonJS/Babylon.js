@@ -1871,6 +1871,7 @@ export class Viewer implements IDisposable {
         this._envShadowsGround = null;
 
         clearTimeout(this._envShadowsRenderTimer!);
+        this.onShadowsConfigurationChanged.clear();
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
