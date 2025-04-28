@@ -1539,7 +1539,8 @@ export class Viewer implements IDisposable {
                 if (this._shadowQuality === "none") {
                     this._disposeShadows();
                 } else {
-                    this.loadEnvironment("auto", { lighting: true });
+                    // make sure there is an env light before creating shadows
+                    this.environmentLighting = "auto";
                     if (this._shadowQuality === "normal") {
                         this._updateClassicShadow(abortController.signal);
                     } else if (this._shadowQuality === "high") {
