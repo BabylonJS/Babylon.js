@@ -1788,7 +1788,7 @@ export class Viewer implements IDisposable {
                 shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
             }
 
-            const shadowMaterial = new ShadowOnlyMaterial("mat", this._scene);
+            const shadowMaterial = new ShadowOnlyMaterial("shadowGroundMaterial", this._scene);
             const groundSize = this._shadowGroundScalingFactor * radius;
 
             this._classicShadowGround = CreateDisc("classic_shadow_ground", { radius: groundSize, tessellation: 64 }, this._scene);
