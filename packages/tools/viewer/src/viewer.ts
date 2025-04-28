@@ -2401,7 +2401,8 @@ export class Viewer implements IDisposable {
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
-        // 4. At least one model should render (playing animations).
+        // 4. The environment shadows are still converging.
+        // 5. At least one model should render (playing animations).
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
