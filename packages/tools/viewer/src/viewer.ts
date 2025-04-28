@@ -1707,7 +1707,7 @@ export class Viewer implements IDisposable {
             if (!this._envShadowGround) {
                 this._envShadowGround = CreateDisc("env_shadow_ground", { radius: groundSize, tessellation: 64 }, this._scene);
                 this._envShadowGround.rotation.x = Math.PI / 2;
-                this._envShadowGround.position.y = 0;
+                this._envShadowGround.position.y = worldBounds.extents.min[1];
             }
 
             this._envShadowGround.material = this._groundShadowMaterial;
@@ -1793,7 +1793,7 @@ export class Viewer implements IDisposable {
             this._classicShadowGround = CreateDisc("classic_shadow_ground", { radius: groundSize, tessellation: 64 }, this._scene);
             this._classicShadowGround.rotation.x = Math.PI / 2;
             this._classicShadowGround.receiveShadows = true;
-            this._classicShadowGround.position.y = 0;
+            this._classicShadowGround.position.y = worldBounds.extents.min[1];
             this._classicShadowGround.material = shadowMaterial;
             this._shadowLight.includedOnlyMeshes = [this._classicShadowGround];
         }
