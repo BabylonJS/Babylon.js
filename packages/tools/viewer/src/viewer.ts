@@ -1860,14 +1860,13 @@ export class Viewer implements IDisposable {
         this._shadowMapLight = null;
 
         this._resizeShadowObserver?.remove();
-        this._envShadowsGroundMaterial?.dispose();
         this._envShadowsRenderPipeline?.dispose();
         this._envShadowsRenderPipeline = null;
 
         this._scene.removeMesh(this._shadowsMapGround!);
         this._scene.removeMesh(this._envShadowsGround!);
-        this._shadowsMapGround?.dispose();
-        this._envShadowsGround?.dispose();
+        this._shadowsMapGround?.dispose(true, true);
+        this._envShadowsGround?.dispose(true, true);
         this._shadowsMapGround = null;
         this._envShadowsGround = null;
 
