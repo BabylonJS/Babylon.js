@@ -1484,40 +1484,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             }
         }
     }
-
-    private async _updateEnv(options: EnvironmentOptions): Promise<void> {
-        if (this._viewerDetails) {
-            try {
-                const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
-
-                if (options.lighting && options.skybox && this.environmentLighting === this.environmentSkybox) {
-                    updates.push([this.environmentLighting, { lighting: true, skybox: true }]);
-                } else {
-                    if (options.lighting) {
-                        updates.push([this.environmentLighting, { lighting: true }]);
-                    }
-                    if (options.skybox) {
-                        updates.push([this.environmentSkybox, { skybox: true }]);
-                    }
-                }
-
-                const promises = updates.map(async ([url, options]) => {
-                    if (url) {
-                        await this._viewerDetails?.viewer.loadEnvironment(url, options);
-                    } else {
-                        await this._viewerDetails?.viewer.resetEnvironment(options);
-                    }
-                });
-
-                await Promise.all(promises);
-            } catch (error) {
-                // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
-                if (!(error instanceof AbortError)) {
-                    Logger.Error(error);
-                }
-            }
-        }
-    }
 }
 
 /**
