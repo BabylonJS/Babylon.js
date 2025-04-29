@@ -6,6 +6,7 @@ import type { FunctionComponent } from "react";
 import type { Service, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { Button, FlatTree, FlatTreeItem, makeStyles, Text, tokens, TreeItemLayout } from "@fluentui/react-components";
+import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { BoxRegular, BranchRegular, CameraRegular, CubeTreeRegular, EyeRegular, ImageRegular, LightbulbRegular, PaintBrushRegular, SquareRegular } from "@fluentui/react-icons";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
@@ -50,13 +51,16 @@ type TreeItemData = "Nodes" | "Materials" | "Textures" | Node | Material | BaseT
 
 const useStyles = makeStyles({
     rootDiv: {
-        // ...shorthands.borderWidth("5px"),
-        // ...shorthands.borderColor("red"),
-        flex: "1 1 100%",
+        flex: 1,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
     },
     tree: {
         margin: tokens.spacingHorizontalXS,
         rowGap: 0,
+        overflow: "hidden",
+        flex: 1,
     },
 });
 
@@ -130,110 +134,113 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
             return (
                 <div className={classes.rootDiv}>
                     <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
-                        {visibleItems.map((item) => {
-                            if (item === "Nodes") {
-                                return (
-                                    <FlatTreeItem
-                                        key="Nodes"
-                                        value="Nodes"
-                                        itemType={scene.rootNodes.length > 0 ? "branch" : "leaf"}
-                                        aria-level={1}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                    >
-                                        <TreeItemLayout>
-                                            <Text weight="bold">Nodes</Text>
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            } else if (item === "Materials") {
-                                return (
-                                    <FlatTreeItem
-                                        key="Materials"
-                                        value="Materials"
-                                        itemType={scene.materials.length > 0 ? "branch" : "leaf"}
-                                        aria-level={1}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                    >
-                                        <TreeItemLayout>
-                                            <Text weight="bold">Materials</Text>
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            } else if (item === "Textures") {
-                                return (
-                                    <FlatTreeItem
-                                        key="Textures"
-                                        value="Textures"
-                                        itemType={scene.textures.length > 0 ? "branch" : "leaf"}
-                                        aria-level={1}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                    >
-                                        <TreeItemLayout>
-                                            <Text weight="bold">Textures</Text>
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            } else if (item instanceof Material) {
-                                return (
-                                    <FlatTreeItem
-                                        key={item.uniqueId}
-                                        value={item.uniqueId}
-                                        itemType="leaf"
-                                        parentValue="Materials"
-                                        aria-level={2}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                    >
-                                        <TreeItemLayout iconBefore={<PaintBrushRegular />}>
-                                            <Text>{item.name}</Text>
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            } else if (item instanceof BaseTexture) {
-                                return (
-                                    <FlatTreeItem
-                                        key={item.uniqueId}
-                                        value={item.uniqueId}
-                                        itemType="leaf"
-                                        parentValue="Textures"
-                                        aria-level={2}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                    >
-                                        <TreeItemLayout iconBefore={<ImageRegular />}>
-                                            <Text>{item.displayName || item.name || `Unnamed Texture (${item.uniqueId})`}</Text>
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            } else {
-                                return (
-                                    <FlatTreeItem
-                                        key={item.uniqueId}
-                                        value={item.uniqueId}
-                                        itemType={item.getChildren().length > 0 ? "branch" : "leaf"}
-                                        parentValue={item.parent ? item.parent.uniqueId : "Nodes"}
-                                        aria-level={getNodeDepth(item) + 2}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                    >
-                                        <TreeItemLayout
-                                            iconBefore={getNodeIcon(item)}
-                                            actions={
-                                                <>
-                                                    <Button icon={<SquareRegular />} appearance="subtle" />
-                                                    <Button icon={<EyeRegular />} appearance="subtle" />
-                                                </>
-                                            }
+                        <VirtualizerScrollView numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
+                            {(index: number) => {
+                                const item = visibleItems[index];
+                                if (item === "Nodes") {
+                                    return (
+                                        <FlatTreeItem
+                                            key="Nodes"
+                                            value="Nodes"
+                                            itemType={scene.rootNodes.length > 0 ? "branch" : "leaf"}
+                                            aria-level={1}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
                                         >
-                                            <Text>{item.name}</Text>
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            }
-                        })}
+                                            <TreeItemLayout>
+                                                <Text weight="bold">Nodes</Text>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                } else if (item === "Materials") {
+                                    return (
+                                        <FlatTreeItem
+                                            key="Materials"
+                                            value="Materials"
+                                            itemType={scene.materials.length > 0 ? "branch" : "leaf"}
+                                            aria-level={1}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
+                                        >
+                                            <TreeItemLayout>
+                                                <Text weight="bold">Materials</Text>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                } else if (item === "Textures") {
+                                    return (
+                                        <FlatTreeItem
+                                            key="Textures"
+                                            value="Textures"
+                                            itemType={scene.textures.length > 0 ? "branch" : "leaf"}
+                                            aria-level={1}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
+                                        >
+                                            <TreeItemLayout>
+                                                <Text weight="bold">Textures</Text>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                } else if (item instanceof Material) {
+                                    return (
+                                        <FlatTreeItem
+                                            key={item.uniqueId}
+                                            value={item.uniqueId}
+                                            itemType="leaf"
+                                            parentValue="Materials"
+                                            aria-level={2}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
+                                        >
+                                            <TreeItemLayout iconBefore={<PaintBrushRegular />}>
+                                                <Text>{item.name}</Text>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                } else if (item instanceof BaseTexture) {
+                                    return (
+                                        <FlatTreeItem
+                                            key={item.uniqueId}
+                                            value={item.uniqueId}
+                                            itemType="leaf"
+                                            parentValue="Textures"
+                                            aria-level={2}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
+                                        >
+                                            <TreeItemLayout iconBefore={<ImageRegular />}>
+                                                <Text>{item.displayName || item.name || `Unnamed Texture (${item.uniqueId})`}</Text>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                } else {
+                                    return (
+                                        <FlatTreeItem
+                                            key={item.uniqueId}
+                                            value={item.uniqueId}
+                                            itemType={item.getChildren().length > 0 ? "branch" : "leaf"}
+                                            parentValue={item.parent ? item.parent.uniqueId : "Nodes"}
+                                            aria-level={getNodeDepth(item) + 2}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
+                                        >
+                                            <TreeItemLayout
+                                                iconBefore={getNodeIcon(item)}
+                                                actions={
+                                                    <>
+                                                        <Button icon={<SquareRegular />} appearance="subtle" />
+                                                        <Button icon={<EyeRegular />} appearance="subtle" />
+                                                    </>
+                                                }
+                                            >
+                                                <Text>{item.name}</Text>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                }
+                            }}
+                        </VirtualizerScrollView>
                     </FlatTree>
                 </div>
             );

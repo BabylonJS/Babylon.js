@@ -126,7 +126,7 @@ export function MakeShellServiceDefinition({
                 },
                 paneContent: {
                     display: "flex",
-                    flex: "0 0 100%",
+                    flexGrow: 1,
                     flexDirection: "column",
                     paddingTop: tokens.spacingVerticalS,
                     overflow: "hidden",
