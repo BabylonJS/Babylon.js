@@ -68,7 +68,7 @@ export function MakeShellServiceDefinition({
                     display: "flex",
                     flex: "1",
                     height: "32px",
-                    overflowY: "hidden",
+                    overflow: "hidden",
                     padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
                 },
                 barLeft: {
