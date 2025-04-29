@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable } from "core/index";
+
 /**
  * Performs a topological sort on a graph.
  * @param graph The set of nodes that make up the graph.
@@ -18,7 +21,7 @@ export function SortGraph<TNode>(graph: Iterable<TNode>, getAdjacentNodes: (node
  */
 export function TraverseGraph<TNode>(
     graph: Iterable<TNode>,
-    getAdjacentNodes: (node: TNode) => Iterable<TNode>,
+    getAdjacentNodes: (node: TNode) => Nullable<Iterable<TNode>>,
     onBeforeTraverse?: (node: TNode) => void,
     onAfterTraverse?: (node: TNode) => void
 ) {
@@ -56,7 +59,7 @@ export class GraphUtils<TDefaultNode = unknown> {
      */
     public traverse<TNode extends TDefaultNode>(
         graph: Iterable<TNode>,
-        getAdjacentNodes: (node: TNode) => Iterable<TNode>,
+        getAdjacentNodes: (node: TNode) => Nullable<Iterable<TNode>>,
         onBeforeTraverse?: (node: TNode) => void,
         onAfterTraverse?: (node: TNode) => void
     ) {
@@ -79,7 +82,7 @@ export class GraphUtils<TDefaultNode = unknown> {
 
     private _traverseCore<TNode extends TDefaultNode>(
         node: TNode,
-        getAdjacentNodes: (node: TNode) => Iterable<TNode>,
+        getAdjacentNodes: (node: TNode) => Nullable<Iterable<TNode>>,
         onBeforeTraverse?: (node: TNode) => void,
         onAfterTraverse?: (node: TNode) => void
     ) {
@@ -91,8 +94,11 @@ export class GraphUtils<TDefaultNode = unknown> {
             this._traversalState.set(node, false);
             onBeforeTraverse?.(node);
 
-            for (const adjacentNode of getAdjacentNodes(node)) {
-                this._traverseCore(adjacentNode, getAdjacentNodes, onBeforeTraverse, onAfterTraverse);
+            const adjacentNodes = getAdjacentNodes(node);
+            if (adjacentNodes) {
+                for (const adjacentNode of adjacentNodes) {
+                    this._traverseCore(adjacentNode, getAdjacentNodes, onBeforeTraverse, onAfterTraverse);
+                }
             }
 
             this._traversalState.set(node, true);
