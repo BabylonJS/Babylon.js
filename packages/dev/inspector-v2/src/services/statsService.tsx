@@ -12,6 +12,7 @@ export const StatsServiceDefinition: ServiceDefinition<[], [ShellService]> = {
             key: "Stats",
             title: "Stats",
             icon: DataBarHorizontalRegular,
+            suppressTeachingMoment: true,
             content: () => {
                 return <></>;
             },

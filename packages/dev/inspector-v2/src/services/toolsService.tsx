@@ -12,6 +12,7 @@ export const ToolsServiceDefinition: ServiceDefinition<[], [ShellService]> = {
             key: "Tools",
             title: "Tools",
             icon: WrenchRegular,
+            suppressTeachingMoment: true,
             content: () => {
                 return <></>;
             },

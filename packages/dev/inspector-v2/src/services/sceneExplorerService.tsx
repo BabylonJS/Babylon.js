@@ -212,6 +212,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
             key: "Scene Explorer",
             title: "Scene Explorer",
             icon: CubeTreeRegular,
+            suppressTeachingMoment: true,
             content: () => {
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 return <>{scene && <SceneExplorer scene={scene} />}</>;

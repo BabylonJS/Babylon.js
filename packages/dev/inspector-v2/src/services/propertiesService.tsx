@@ -12,6 +12,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[], [ShellService]> 
             key: "Properties",
             title: "Properties",
             icon: DocumentTextRegular,
+            suppressTeachingMoment: true,
             content: () => {
                 return <></>;
             },

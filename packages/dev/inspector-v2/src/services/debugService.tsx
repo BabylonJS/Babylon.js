@@ -12,6 +12,7 @@ export const DebugServiceDefinition: ServiceDefinition<[], [ShellService]> = {
             key: "Debug",
             title: "Debug",
             icon: BugRegular,
+            suppressTeachingMoment: true,
             content: () => {
                 return <></>;
             },

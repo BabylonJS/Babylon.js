@@ -12,6 +12,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[], [ShellService]> = 
             key: "Settings",
             title: "Settings",
             icon: SettingsRegular,
+            suppressTeachingMoment: true,
             content: () => {
                 return <></>;
             },
