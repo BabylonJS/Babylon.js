@@ -278,7 +278,7 @@ export class ParticleSystem extends ThinParticleSystem {
             for (const subEmitter of subEmitters) {
                 if (subEmitter.type === SubEmitterType.ATTACHED) {
                     const newEmitter = subEmitter.clone();
-                    (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
+                    particle._attachedSubEmitters.push(newEmitter);
                     newEmitter.particleSystem.start();
                 }
             }

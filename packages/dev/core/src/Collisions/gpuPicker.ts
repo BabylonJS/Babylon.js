@@ -175,7 +175,7 @@ export class GPUPicker {
             return;
         }
 
-        const effect = material.getEffect()!;
+        const effect = material.getEffect();
 
         if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
             effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);

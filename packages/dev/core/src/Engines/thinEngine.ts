@@ -3737,7 +3737,7 @@ export class ThinEngine extends AbstractEngine {
      */
     public bindSamplers(effect: Effect): void {
         const webGLPipelineContext = effect.getPipelineContext() as WebGLPipelineContext;
-        this._setProgram(webGLPipelineContext.program!);
+        this._setProgram(webGLPipelineContext.program);
         const samplers = effect.getSamplers();
         for (let index = 0; index < samplers.length; index++) {
             const uniform = effect.getUniform(samplers[index]);

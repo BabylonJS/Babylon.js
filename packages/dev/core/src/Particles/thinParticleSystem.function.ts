@@ -163,7 +163,7 @@ export function _CreateIsLocalData(particle: Particle, system: ThinParticleSyste
     } else {
         particle._localPosition.copyFrom(particle.position);
     }
-    Vector3.TransformCoordinatesToRef(particle._localPosition!, system._emitterWorldMatrix, particle.position);
+    Vector3.TransformCoordinatesToRef(particle._localPosition, system._emitterWorldMatrix, particle.position);
 }
 
 /** @internal */

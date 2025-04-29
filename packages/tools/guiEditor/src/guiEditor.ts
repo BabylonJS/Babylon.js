@@ -64,7 +64,7 @@ export class GUIEditor {
         globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.registerEventListeners();
 
-        const onReady = async () => {
+        const onReadyAsync = async () => {
             // create the middle workbench canvas
             if (!globalState.guiTexture) {
                 globalState.workbench.createGUICanvas(embed);
@@ -80,7 +80,7 @@ export class GUIEditor {
 
         const graphEditor = React.createElement(WorkbenchEditor, {
             globalState,
-            onReady,
+            onReady: onReadyAsync,
         });
 
         const root = createRoot(hostElement);

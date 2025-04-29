@@ -4,7 +4,7 @@ import { ParticleSystem } from "core/Particles";
 /**
  * Used by both particleSystem and alphaBlendModes
  */
-export const commonBlendModes = [
+export const CommonBlendModes = [
     { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
     { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
     { label: "Pre-multiplied Porter Duff", value: Constants.ALPHA_PREMULTIPLIED_PORTERDUFF },
@@ -23,22 +23,22 @@ export const commonBlendModes = [
  * The below ParticleSystem consts were defined before new Engine alpha blend modes were added, so we have to reference
  * the ParticleSystem.FOO consts explicitly (as the underlying const values are different - they get mapped to engine consts within baseParticleSystem.ts)
  */
-export const blendModeOptions = [
+export const BlendModeOptions = [
     { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
     { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
     { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
     { label: "One One", value: ParticleSystem.BLENDMODE_ONEONE },
     { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
     { label: "Subtract", value: ParticleSystem.BLENDMODE_SUBTRACT },
-].concat(commonBlendModes);
+].concat(CommonBlendModes);
 
 /**
  * Used to populated the alphaMode dropdown in our various tools (Node Editor, Inspector, etc.)
  */
-export const alphaModeOptions = [
+export const AlphaModeOptions = [
     { label: "Combine", value: Constants.ALPHA_COMBINE },
     { label: "One One", value: Constants.ALPHA_ONEONE },
     { label: "Add", value: Constants.ALPHA_ADD },
     { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
     { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-].concat(commonBlendModes);
+].concat(CommonBlendModes);

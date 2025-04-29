@@ -42,7 +42,7 @@ import { ParticleHelper } from "core/Particles/particleHelper";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
-import { blendModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -52,7 +52,7 @@ interface IParticleSystemPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-const particleEmitterTypeOptions = [
+const ParticleEmitterTypeOptions = [
     { label: "Box", value: 0 },
     { label: "Cone", value: 1 },
     { label: "Cylinder", value: 2 },
@@ -367,7 +367,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     )}
                     <OptionsLine
                         label="Blend mode"
-                        options={blendModeOptions}
+                        options={BlendModeOptions}
                         target={system}
                         propertyName="blendMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -490,7 +490,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     )}
                     <OptionsLine
                         label="Type"
-                        options={particleEmitterTypeOptions}
+                        options={ParticleEmitterTypeOptions}
                         target={system}
                         propertyName="particleEmitterType"
                         noDirectUpdate={true}

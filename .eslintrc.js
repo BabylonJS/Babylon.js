@@ -101,6 +101,7 @@ const abbreviations = [
     "MSC",
     "QR",
     "BGR",
+    "SFE",
 ];
 
 // Join them into a single regex string
@@ -188,6 +189,7 @@ const rules = {
                 "@typescript-eslint/no-misused-promises": "off",
                 "@typescript-eslint/promise-function-async": "off",
                 "@typescript-eslint/no-deprecated": "off",
+                "@typescript-eslint/no-unnecessary-type-assertion": "off",
                 // till here
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
