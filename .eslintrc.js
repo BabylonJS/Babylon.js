@@ -1,4 +1,4 @@
-// want to add a new allowed abbreviation? Feer not! Just add it to the regex below.
+// want to add a new allowed abbreviation? Fear not! Just add it to the regex below.
 // The regex is used to allow abbreviations in strict camelCase and PascalCase.
 const abbreviations = [
     "[XYZ][A-Z][a-z]",

@@ -26,12 +26,12 @@ const StartCaptureOnEnter = (scene: Scene) => {
         document.addEventListener("touchstart", OnPointerMove);
         LocalScene = LocalScene ?? scene;
         Logger.Log("PointerEventsCaptureBehavior: Starting observation of pointer move events.");
-        LocalScene.onDisposeObservable.add(SoStopCaptureOnEnter);
+        LocalScene.onDisposeObservable.add(DoStopCaptureOnEnter);
     }
     CaptureOnEnterCount++;
 };
 
-const SoStopCaptureOnEnter = () => {
+const DoStopCaptureOnEnter = () => {
     document.removeEventListener("pointermove", OnPointerMove);
     document.removeEventListener("touchstart", OnPointerMove);
     LocalScene = null;
@@ -52,7 +52,7 @@ const StopCaptureOnEnter = () => {
 
     CaptureOnEnterCount--;
     if (CaptureOnEnterCount <= 0) {
-        SoStopCaptureOnEnter();
+        DoStopCaptureOnEnter();
     }
 };
 
