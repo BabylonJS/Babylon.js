@@ -162,16 +162,10 @@ export class _IblShadowsSpatialBlurPass {
         this._setBindings();
 
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            let counter = 0;
-            this._scene.onBeforeRenderObservable.add(() => {
-                counter = 0;
-            });
-            this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-                if (++counter == 2) {
-                    if (this.enabled && this._outputTexture.isReady()) {
-                        if (this._setBindings()) {
-                            this._outputTexture.render();
-                        }
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(() => {
+                if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+                    if (this._setBindings()) {
+                        this._outputTexture.render();
                     }
                 }
             });

@@ -324,19 +324,12 @@ export class _IblShadowsVoxelTracingPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setBindings(this._scene.activeCamera!);
 
-        // Don't start rendering until the first vozelization is done. Trigger these from the render pipeline.
-        // disable them during re-voxelization? For rapid re-voxelization, that might not be great.
+        // Don't start rendering until the first vozelization is done.
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            let counter = 0;
-            this._scene.onBeforeRenderObservable.add(() => {
-                counter = 0;
-            });
-            this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-                if (++counter == 2) {
-                    if (this.enabled && this._outputTexture.isReady()) {
-                        if (this._setBindings(this._scene.activeCamera!)) {
-                            this._outputTexture.render();
-                        }
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(() => {
+                if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+                    if (this._setBindings(this._scene.activeCamera!)) {
+                        this._outputTexture.render();
                     }
                 }
             });

@@ -208,18 +208,10 @@ export class _IblShadowsAccumulationPass {
         this._setOutputTextureBindings();
 
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            let counter = 0;
-            this._scene.onBeforeRenderObservable.add(() => {
-                counter = 0;
-            });
-            // onAfterRenderTargetsRenderObservable is called twice during a frame and we only want to render
-            // on the second call, after the scene has been rendered to the GBuffer.
-            this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-                if (++counter == 2) {
-                    if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
-                        if (this._setOutputTextureBindings()) {
-                            this._outputTexture.render();
-                        }
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(() => {
+                if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+                    if (this._setOutputTextureBindings()) {
+                        this._outputTexture.render();
                     }
                 }
             });
