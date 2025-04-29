@@ -8,6 +8,7 @@ const scaledForce: Vector3 = Vector3.Zero();
 
 /**
  * Class representing an attractor in a particle system.
+ * #DEZ79M#25
  */
 export class Attractor {
     /**
@@ -22,14 +23,10 @@ export class Attractor {
     public position = Vector3.Zero();
 
     /** @internal */
-    public _processParticle(particle: Particle, system: ThinParticleSystem, maxAttractorForce: number) {
+    public _processParticle(particle: Particle, system: ThinParticleSystem) {
         this.position.subtractToRef(particle.position, toAttractor);
-        const distanceSquared = toAttractor.lengthSquared() + 0.0001; // Avoid division by zero
+        const distanceSquared = toAttractor.lengthSquared() + 1; // Avoid going under 1.0
         toAttractor.normalize().scaleToRef(this.strength / distanceSquared, force);
-
-        if (force.length() > maxAttractorForce) {
-            force.normalize().scaleToRef(maxAttractorForce, force);
-        }
 
         force.scaleToRef(system._tempScaledUpdateSpeed, scaledForce);
 
