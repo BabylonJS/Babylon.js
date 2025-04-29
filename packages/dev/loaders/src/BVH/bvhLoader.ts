@@ -223,7 +223,7 @@ export class BVHParser {
         
          returns: a BVH node including children
         */
-    protected static _ReadNode(lines: string[], firstLine: string, parent: Nullable<BVHNode>, context: LoaderContext): BVHNode {
+    private static _ReadNode(lines: string[], firstLine: string, parent: Nullable<BVHNode>, context: LoaderContext): BVHNode {
         const node = new BVHNode();
         node.parent = parent;
         context.list.push(node);
@@ -295,7 +295,7 @@ export class BVHParser {
 
          Note: Position data (specifically Z) is flipped to convert coordinate systems.
     */
-    protected static _ReadFrameData(data: string[], frameTime: number, bone: BVHNode) {
+    private static _ReadFrameData(data: string[], frameTime: number, bone: BVHNode) {
         if (bone.type === "ENDSITE")
             // end sites have no motion data
             return;
