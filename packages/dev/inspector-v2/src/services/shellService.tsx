@@ -69,8 +69,7 @@ export function MakeShellServiceDefinition({
                     flex: "1",
                     height: "32px",
                     overflowY: "hidden",
-                    // alignItems: 'center',
-                    ...shorthands.padding(tokens.spacingVerticalSNudge, tokens.spacingHorizontalSNudge),
+                    padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
                 },
                 barLeft: {
                     marginRight: "auto",
@@ -89,15 +88,11 @@ export function MakeShellServiceDefinition({
                 },
                 barItem: {
                     display: "flex",
-                    // "& > *": {
-                    //   ...shorthands.margin(tokens.spacingVerticalSNudge, 0),
-                    // },
                 },
                 paneTabListDiv: {
                     flex: "0 0 auto",
                     display: "flex",
                     columnGap: tokens.spacingHorizontalSNudge,
-                    // ...shorthands.padding(tokens.spacingVerticalSNudge, tokens.spacingHorizontalSNudge),
                 },
                 paneTabListDivLeft: {
                     flexDirection: "row-reverse",
@@ -106,7 +101,7 @@ export function MakeShellServiceDefinition({
                     flexDirection: "row",
                 },
                 paneCollapseButton: {
-                    ...shorthands.margin(0, tokens.spacingHorizontalSNudge),
+                    margin: `0 ${tokens.spacingHorizontalSNudge}`,
                 },
                 pane: {
                     backgroundColor: tokens.colorNeutralBackground2,
@@ -125,7 +120,6 @@ export function MakeShellServiceDefinition({
                     flexDirection: "column",
                     overflowX: "hidden",
                     overflowY: "hidden",
-                    // maxWidth: '40vw',
                 },
                 paneContainerTransitions: {
                     ...shorthands.transition("width", "0.3s", "0s", "ease-in-out"),
@@ -135,9 +129,7 @@ export function MakeShellServiceDefinition({
                     flex: "0 0 100%",
                     flexDirection: "column",
                     paddingTop: tokens.spacingVerticalS,
-                    // paddingBottom: tokens.spacingVerticalS,
                     overflow: "hidden",
-                    // maxWidth: '40vw',
                 },
                 paneHeader: {
                     marginLeft: tokens.spacingHorizontalM,
@@ -150,10 +142,6 @@ export function MakeShellServiceDefinition({
                     paddingTop: tokens.spacingVerticalXS,
                     paddingBottom: tokens.spacingVerticalXS,
                     alignSelf: "center",
-                },
-                dividerContainer: {
-                    display: "flex",
-                    flexDirection: "row",
                 },
                 resizer: {
                     width: "8px",
@@ -358,7 +346,6 @@ export function MakeShellServiceDefinition({
                     return (
                         <>
                             {paneComponents.length > 0 && (
-                                // <div className={`${classes.paneTabListDiv} ${alignment === "left" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}>
                                 <div
                                     className={`${classes.paneTabListDiv} ${alignment === "left" || toolBarMode === "compact" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}
                                 >
