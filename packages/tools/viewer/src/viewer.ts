@@ -1540,11 +1540,11 @@ export class Viewer implements IDisposable {
                 } else if (this._shadowQuality === "high") {
                     const isWebGPU = this._scene.getEngine().isWebGPU;
                     // there is some issue with meshes with indices, so disable environment shadows for now
-                    const hasAnyAnimation = this._loadedModelsBacking.some(
+                    const hasAnyAnimationOrIndices = this._loadedModelsBacking.some(
                         (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
                     );
 
-                    if (!(isWebGPU && hasAnyAnimation)) {
+                    if (!(isWebGPU && hasAnyAnimationOrIndices)) {
                         await this._updateEnvShadow(abortController.signal);
                     } else {
                         this._log("Environment shadows are not supported in WebGPU with animated meshes.");
@@ -2157,7 +2157,6 @@ export class Viewer implements IDisposable {
 
         if (flags.length === 0 || flags.includes("shadow")) {
             this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
-            this._updateShadows();
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
