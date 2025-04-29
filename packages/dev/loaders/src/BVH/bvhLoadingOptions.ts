@@ -8,9 +8,9 @@ export type BVHLoadingOptions = {
     animationName: string;
 
     /**
-     * Defines the loop behavior of the animation to load.
+     * Defines the loop mode of the animation to load.
      */
-    loopBehavior: number;
+    loopMode: number;
 
     /**
      * Defines the name of the skeleton to load.

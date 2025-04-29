@@ -1,6 +1,7 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
+import { Animation } from "core/Animations/animation";
 import type { Scene } from "core/scene";
 import { BVHParser } from "./bvhLoader";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
@@ -43,7 +44,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private static get _DefaultLoadingOptions(): BVHLoadingOptions {
         return {
             animationName: "Animation",
-            loopBehavior: 1,
+            loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
             skeletonName: "skeleton",
             skeletonId: "skeleton_id",
         };

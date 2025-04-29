@@ -35,16 +35,13 @@ export class BVHParser {
     public static ReadBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOptions): Skeleton {
         const lines = text.split("\n");
 
-        const animationName = loadingOptions.animationName ?? "Animation";
-        const loopBehavior = loadingOptions.loopBehavior ?? 1;
-        const skeletonName = loadingOptions.skeletonName ?? "skeleton";
-        const skeletonId = loadingOptions.skeletonId ?? "skeleton_id";
+        const { animationName, loopMode, skeletonName, skeletonId } = loadingOptions;
 
         const skeleton = new Skeleton(skeletonName, skeletonId, scene);
 
         const context = new LoaderContext(skeleton);
         context.animationName = animationName;
-        context.loopBehavior = loopBehavior;
+        context.loopMode = loopMode;
 
         // read model structure
         const firstLine = lines.shift();
@@ -210,7 +207,7 @@ export class BVHParser {
         }
 
         const fps = 60 / context.frameRate;
-        const animation = new Animation(node.name + "_anim", "_matrix", fps, Animation.ANIMATIONTYPE_MATRIX, Animation.ANIMATIONLOOPMODE_CYCLE);
+        const animation = new Animation(node.name + "_anim", "_matrix", fps, Animation.ANIMATIONTYPE_MATRIX, context.loopMode);
         animation.setKeys(keyFrames);
 
         return animation;
@@ -362,7 +359,7 @@ export class BVHParser {
 
 class LoaderContext {
     animationName: string = "";
-    loopBehavior: number = 0;
+    loopMode: number = Animation.ANIMATIONLOOPMODE_CYCLE;
     list: BVHNode[] = [];
     root: BVHNode = new BVHNode();
     numFrames: number = 0;
