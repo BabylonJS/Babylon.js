@@ -34,6 +34,10 @@ aggShadow = aggShadow / numLights;
             #endif
         #endif
         finalIrradiance *= (vec3(1.0) - baseSpecularEnergy);
+        #if defined(SS_REFRACTION)
+            // Decrease transmission in the same way as the irradiance
+            subSurfaceOut.finalRefraction *= (vec3(1.0) - baseSpecularEnergy);
+        #endif
     #endif
 
     #if defined(CLEARCOAT)

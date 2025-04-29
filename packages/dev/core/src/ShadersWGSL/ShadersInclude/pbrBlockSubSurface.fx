@@ -466,7 +466,7 @@ struct subSurfaceOutParams
         #endif
 
         // Decrease Albedo Contribution
-        outParams.surfaceAlbedo = surfaceAlbedo * (1. - refractionIntensity);
+        outParams.surfaceAlbedo = surfaceAlbedo;
 
         #ifdef REFLECTION
             // Decrease irradiance Contribution
