@@ -1,48 +1,124 @@
 {
-    "fromTag": "8.3.1",
+    "fromTag": "8.4.0",
     "changelog": {
-        "8.3.1": [
+        "8.4.1": [
             {
-                "pr": "16508",
-                "title": "Remove legacy copyTexture and bump the native protocol version",
-                "description": "It's quite hard to make new BN compatible with old BJS, so after some discussion with @bghgary we decided to remove the old contract and bump the protocol version.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16507",
-                "title": "glTF Exporter: Export compressed textures as PNG",
-                "description": "The follow up to https://github.com/BabylonJS/Babylon.js/pull/14312/. Partially addresses https://github.com/BabylonJS/Babylon.js/issues/12257 -- while we can't recompress the image back to KTX2, we can at least export it as PNG, which is better than nothing.",
-                "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
-                },
-                "files": [
-                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16504",
-                "title": "Playground: Prevents crashes when running multiple PG's in succession",
-                "description": "Quickly clicking the “Play” button may cause PG to crash, as a new execution may be created before the previous one is fully processed by `_compileAndRunAsync`.\r\n\r\nWithout the PR, the crash can be reproduced with [this PG](https://playground.babylonjs.com/?webgpu#VW8IG3#160), by quickly clicking the “Play” button several times in a row.",
+                "pr": "16535",
+                "title": "ShadowDepthWrapper: Fix original effect not ready",
+                "description": "See https://forum.babylonjs.com/t/shadowdepthwrapper-fails-with-fx-files-works-with-equivalent-shader-strings/58080",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
                 ],
                 "tags": [
                     "bug",
-                    "Playground"
+                    "materials",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "16533",
+                "title": "Delay canvas creation after WorkbenchEditor has been mounted",
+                "description": "Proposed solution for: https://forum.babylonjs.com/t/gui-babylonjs-com-is-not-working-on-safari-not-sure-if-other-browsers-effected/58089.",
+                "author": {
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/guiEditor.ts",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16529",
+                "title": "SH fix for compressed .PLY",
+                "description": "followup https://forum.babylonjs.com/t/gaussian-splatting-seems-to-not-work-since-version-8/57903/4\r\nwaiting for feedback from @SonnyC56\r\nFixed CompressedPLY orientation and SH parsing\r\nFixed WGSL opacity with SH\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16532",
+                "title": "Fix bad webp visual test",
+                "description": "The PG for this test uses the `onProgress` callback as the success callback which is obviously not that great.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/webp.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16528",
+                "title": "Fix gpu picking instances when instances are disposed",
+                "description": "From: https://forum.babylonjs.com/t/removing-thin-instances-vs-gpupicker/57989/5\r\n\r\nDisposing an instance fouls up the gpu picking result. This is due to changes in the order of instances in `mesh.instances` . Fixed correct mapping of color id of instances to pickable instances by checking against `_pickableMeshes` instead.",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16526",
+                "title": "Add optional defer to observer removal",
+                "description": "Adds an optional defer parameter to the observer removal as we commented in https://forum.babylonjs.com/t/remove-function-in-observer-remove-other-observers/58030",
+                "author": {
+                    "name": "benjapamies",
+                    "url": "https://github.com/benjapamies"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16525",
+                "title": "ConvertToRightHandedRotation: Fix comparison",
+                "description": "Without this, we fail the zero rotation (and/or identity quaternion) cases :)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16523",
+                "title": "WebGPU: Fix highlight layer in fast snapshot rendering mode",
+                "description": "See https://forum.babylonjs.com/t/highlight-breaks-when-using-webgpu-with-snapshot-rendering/58023",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
                 ]
             }
         ],
@@ -383,6 +459,51 @@
                     "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "8.3.1": [
+            {
+                "pr": "16508",
+                "title": "Remove legacy copyTexture and bump the native protocol version",
+                "description": "It's quite hard to make new BN compatible with old BJS, so after some discussion with @bghgary we decided to remove the old contract and bump the protocol version.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16507",
+                "title": "glTF Exporter: Export compressed textures as PNG",
+                "description": "The follow up to https://github.com/BabylonJS/Babylon.js/pull/14312/. Partially addresses https://github.com/BabylonJS/Babylon.js/issues/12257 -- while we can't recompress the image back to KTX2, we can at least export it as PNG, which is better than nothing.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16504",
+                "title": "Playground: Prevents crashes when running multiple PG's in succession",
+                "description": "Quickly clicking the “Play” button may cause PG to crash, as a new execution may be created before the previous one is fully processed by `_compileAndRunAsync`.\r\n\r\nWithout the PR, the crash can be reproduced with [this PG](https://playground.babylonjs.com/?webgpu#VW8IG3#160), by quickly clicking the “Play” button several times in a row.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "Playground"
+                ]
             }
         ],
         "8.3.0": [

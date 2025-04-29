@@ -391,17 +391,30 @@ export class GPUPicker {
 
         this._pickingInProgress = true;
 
-        let minX = xy[0].x,
-            maxX = xy[0].x,
-            minY = xy[0].y,
-            maxY = xy[0].y;
+        const processedXY = new Array(xy.length);
 
-        for (let i = 1; i < xy.length; i++) {
-            const { x, y } = xy[i];
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        // Process screen coordinates adjust to dpr
+        for (let i = 0; i < xy.length; i++) {
+            const item = xy[i];
+            const { x, y } = item;
+
+            const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y);
+
+            processedXY[i] = {
+                ...item,
+                x: adjustedX,
+                y: adjustedY,
+            };
+
+            minX = Math.min(minX, adjustedX);
+            maxX = Math.max(maxX, adjustedX);
+            minY = Math.min(minY, adjustedY);
+            maxY = Math.max(maxY, adjustedY);
         }
 
         const { rttSizeW, rttSizeH } = this._prepareForPicking(minX, minY);
@@ -411,7 +424,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        return this._executeMultiPicking(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
+        return this._executeMultiPicking(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _prepareForPicking(x: number, y: number) {
