@@ -161,7 +161,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     #elif DEBUGMODE == 82 && defined(MS_BRDF_ENERGY_CONSERVATION)
         color =  vec3f(energyConservationFactor);
     #elif DEBUGMODE == 83 && defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-        color = specularEnvironmentReflectance;
+        color = baseSpecularEnvironmentReflectance;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 84 && defined(CLEARCOAT) && defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         color = clearcoatOut.clearCoatEnvironmentReflectance;

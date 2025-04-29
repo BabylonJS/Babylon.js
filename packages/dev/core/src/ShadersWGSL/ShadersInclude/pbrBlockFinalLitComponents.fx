@@ -83,8 +83,7 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Radiance ________________________________________
 #ifdef REFLECTION
     var finalRadiance: vec3f = reflectionOut.environmentRadiance.rgb;
-    
-    finalRadiance *= subSurfaceOut.specularEnvironmentReflectance;
+    finalRadiance *= cumulativeSpecularEnvironmentReflectance;;
 
     var finalRadianceScaled: vec3f = finalRadiance * uniforms.vLightingIntensity.z;
 
