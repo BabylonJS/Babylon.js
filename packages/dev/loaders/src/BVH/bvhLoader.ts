@@ -149,7 +149,7 @@ export class BVHLoader {
             return null;
         }
 
-        let keyFrames: IAnimationKey[] = [];
+        const keyFrames: IAnimationKey[] = [];
 
         // Create position animation if there are position channels
         const hasPosition = node.channels.some((c) => c === BVHLoader.X_POSITION || c === BVHLoader.Y_POSITION || c === BVHLoader.Z_POSITION);
@@ -186,8 +186,8 @@ export class BVHLoader {
             return null;
         }
 
-        let fps = 60 / context.frameRate;
-        let animation = new Animation(node.name + "_anim", "_matrix", fps, Animation.ANIMATIONTYPE_MATRIX, Animation.ANIMATIONLOOPMODE_CYCLE);
+        const fps = 60 / context.frameRate;
+        const animation = new Animation(node.name + "_anim", "_matrix", fps, Animation.ANIMATIONTYPE_MATRIX, Animation.ANIMATIONLOOPMODE_CYCLE);
         animation.setKeys(keyFrames);
 
         return animation;
@@ -203,8 +203,9 @@ export class BVHLoader {
         
          returns: a BVH node including children
         */
-    protected static readNode(lines: string[], firstLine: string, parent: BVHNode, context: LoaderContext): BVHNode {
-        let node = new BVHNode();
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected static _readNode(lines: string[], firstLine: string, parent: BVHNode, context: LoaderContext): BVHNode {
+        const node = new BVHNode();
         node.parent = parent;
         context.list.push(node);
 
@@ -229,7 +230,7 @@ export class BVHLoader {
         if (tokens[0].toUpperCase() != "OFFSET") throw new Error("Expected OFFSET, but got: " + tokens[0]);
         if (tokens.length != 4) throw new Error("OFFSET: Invalid number of values");
 
-        let offset = new Vector3(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
+        const offset = new Vector3(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
 
         if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) throw new Error("OFFSET: Invalid values");
 
@@ -242,23 +243,25 @@ export class BVHLoader {
 
             if (tokens[0].toUpperCase() != "CHANNELS") throw new Error("Expected CHANNELS definition");
 
-            let numChannels = parseInt(tokens[1]);
+            const numChannels = parseInt(tokens[1]);
             // Skip CHANNELS and the number of channels
             node.channels = tokens.splice(2, numChannels);
             node.children = [];
         }
 
         // read children
-        while (true) {
-            let line = lines.shift()?.trim();
+        while (lines.length > 0) {
+            const line = lines.shift()?.trim();
 
-            if (line == "}") {
+            if (line === "}") {
                 // Finish reading the node
                 return node;
             } else if (line) {
-                node.children.push(BVHLoader.readNode(lines, line, node, context));
+                node.children.push(BVHLoader._readNode(lines, line, node, context));
             }
         }
+
+        throw new Error("Unexpected end of file: missing closing brace");
     }
 
     /*
@@ -273,7 +276,8 @@ export class BVHLoader {
 
          Note: Position data (specifically Z) is flipped to convert coordinate systems.
     */
-    protected static readFrameData(data: string[], frameTime: number, bone: BVHNode) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected static _readFrameData(data: string[], frameTime: number, bone: BVHNode) {
         if (bone.type === "ENDSITE")
             // end sites have no motion data
             return;
@@ -292,7 +296,7 @@ export class BVHLoader {
 
         // parse values for each channel in node
         for (let i = 0; i < bone.channels.length; ++i) {
-            let value = data.shift();
+            const value = data.shift();
             if (!value) {
                 continue;
             }
@@ -330,7 +334,7 @@ export class BVHLoader {
 
         // parse child nodes
         for (let i = 0; i < bone.children.length; ++i) {
-            BVHLoader.readFrameData(data, frameTime, bone.children[i]);
+            BVHLoader._readFrameData(data, frameTime, bone.children[i]);
         }
     }
 }
