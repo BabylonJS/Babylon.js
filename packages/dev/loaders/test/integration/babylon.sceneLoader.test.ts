@@ -1,6 +1,6 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
-import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64 } from "./testData";
+import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw } from "./testData";
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
@@ -844,6 +844,77 @@ describe("Babylon Scene Loader", function () {
 
             expect(assertionData["positions"]).toEqual([-1, 1, 1, -1, 2, 1, -2, 1, 1, -1, 1, 2]);
             expect(assertionData["meshesLength"]).toBe(1);
+        });
+    });
+
+    describe("#BVH", () => {
+        it("should load a basic BVH file", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.ImportMeshAsync(null, "", "data:" + content, scene).then(() => {
+                    const skeleton = scene.skeletons[0];
+                    return {
+                        numSkeletons: scene.skeletons.length,
+                        numBones: skeleton.bones.length,
+                        rootBoneName: skeleton.bones[0].name,
+                        childBoneName: skeleton.bones[1].name,
+                        numAnimationRanges: skeleton.bones[0].animations[0].getKeys().length,
+                        animationName: skeleton.bones[0].animations[0].name,
+                        animationTargetProperty: skeleton.bones[0].animations[0].targetProperty,
+                        animationFrameRate: skeleton.bones[0].animations[0].framePerSecond,
+                    };
+                });
+            }, bvhBasicRaw);
+
+            expect(assertionData.numSkeletons).toBe(1);
+            expect(assertionData.numBones).toBe(2);
+            expect(assertionData.rootBoneName).toBe("Hips");
+            expect(assertionData.childBoneName).toBe("Chest");
+            expect(assertionData.numAnimationRanges).toBe(2);
+            expect(assertionData.animationName).toBe("Hips_anim");
+            expect(assertionData.animationTargetProperty).toBe("_matrix");
+            expect(assertionData.animationFrameRate).toBe(30);
+        });
+
+        it("should handle BVH file with custom loading options", async () => {
+            interface BVHLoadingOptions {
+                skeletonId: string;
+                skeletonName: string;
+                animationName: string;
+                loopMode: number;
+            }
+
+            const loadingOptions: BVHLoadingOptions = {
+                skeletonId: "test_skeleton",
+                skeletonName: "test_skeleton_name",
+                animationName: "test_animation",
+                loopMode: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
+            };
+
+            const assertionData = await page.evaluate(
+                (content: string, options: any) => {
+                    const scene = window.scene!;
+                    return BABYLON.SceneLoader.ImportMeshAsync(null, "", "data:" + content, scene, undefined, undefined, options).then(() => {
+                        const skeleton = scene.skeletons[0];
+                        const animation = skeleton.bones[0].animations[0];
+                        return {
+                            skeletonId: skeleton.id,
+                            skeletonName: skeleton.name,
+                            animationName: animation.name,
+                            loopMode: animation.loopMode,
+                            numFrames: animation.getKeys().length,
+                        };
+                    });
+                },
+                bvhSimpleRaw,
+                loadingOptions
+            );
+
+            expect(assertionData.skeletonId).toBe("test_skeleton");
+            expect(assertionData.skeletonName).toBe("test_skeleton_name");
+            expect(assertionData.animationName).toBe("test_animation");
+            expect(assertionData.loopMode).toBe(BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
+            expect(assertionData.numFrames).toBe(2);
         });
     });
 
