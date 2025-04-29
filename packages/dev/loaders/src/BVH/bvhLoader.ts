@@ -1,6 +1,7 @@
 import type { IAnimationKey } from "core/Animations";
 import { Animation } from "core/Animations/animation";
-import { Bone, Skeleton } from "core/Bones";
+import { Bone } from "core/Bones/bone";
+import { Skeleton } from "core/Bones/skeleton";
 import { Axis } from "core/Maths/math.axis";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
