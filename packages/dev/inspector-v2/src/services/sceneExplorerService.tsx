@@ -33,20 +33,6 @@ function getNodeDepth(node: Node): number {
     return depth;
 }
 
-function getNodeIcon(node: Node): JSX.Element {
-    if (node instanceof AbstractMesh) {
-        return <BoxRegular />;
-    } else if (node instanceof TransformNode) {
-        return <BranchRegular />;
-    } else if (node instanceof Camera) {
-        return <CameraRegular />;
-    } else if (node instanceof Light) {
-        return <LightbulbRegular />;
-    }
-
-    return <></>;
-}
-
 type TreeItemData = "Nodes" | "Materials" | "Textures" | Node | Material | BaseTexture;
 
 const useStyles = makeStyles({
@@ -215,6 +201,27 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                         </FlatTreeItem>
                                     );
                                 } else {
+                                    const icon =
+                                        item instanceof AbstractMesh ? (
+                                            <BoxRegular />
+                                        ) : item instanceof TransformNode ? (
+                                            <BranchRegular />
+                                        ) : item instanceof Camera ? (
+                                            <CameraRegular />
+                                        ) : item instanceof Light ? (
+                                            <LightbulbRegular />
+                                        ) : (
+                                            <></>
+                                        );
+
+                                    const actions =
+                                        item instanceof AbstractMesh ? (
+                                            <>
+                                                <Button icon={<SquareRegular />} appearance="subtle" />
+                                                <Button icon={<EyeRegular />} appearance="subtle" />
+                                            </>
+                                        ) : undefined;
+
                                     return (
                                         <FlatTreeItem
                                             key={item.uniqueId}
@@ -225,15 +232,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-setsize={1}
                                             aria-posinset={1}
                                         >
-                                            <TreeItemLayout
-                                                iconBefore={getNodeIcon(item)}
-                                                actions={
-                                                    <>
-                                                        <Button icon={<SquareRegular />} appearance="subtle" />
-                                                        <Button icon={<EyeRegular />} appearance="subtle" />
-                                                    </>
-                                                }
-                                            >
+                                            <TreeItemLayout iconBefore={icon} actions={actions}>
                                                 <Text>{item.name}</Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
