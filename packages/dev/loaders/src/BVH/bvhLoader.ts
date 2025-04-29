@@ -36,19 +36,19 @@ export class BVHLoader {
     public static ReadBvh(text: string, scene: Scene, loadingOptions?: BVHLoadingOptions): Skeleton {
         const lines = text.split("\n");
 
-        let context = new LoaderContext();
+        const context = new LoaderContext();
         context.animationName = loadingOptions?.animationName ?? "Animation";
         context.loopBehavior = loadingOptions?.loopBehavior ?? 1;
         context.realSkeleton = new Skeleton(loadingOptions?.skeletonName ?? "skeleton", loadingOptions?.skeletonId ?? "skeleton_id", scene);
 
         // read model structure
-        if (lines.shift()?.trim().toUpperCase() != this.HIERARCHY_NODE) throw "HIERARCHY expected";
+        if (lines.shift()?.trim().toUpperCase() != this.HIERARCHY_NODE) throw new Error("HIERARCHY expected");
 
         // @ts-ignore
         let root = BVHLoader.readNode(lines, lines.shift()?.trim(), null, context);
 
         // read motion data
-        if (lines.shift()?.trim().toUpperCase() != this.MOTION_NODE) throw "MOTION expected";
+        if (lines.shift()?.trim().toUpperCase() != this.MOTION_NODE) throw new Error("MOTION expected");
 
         // @ts-ignore
         let tokens = lines.shift()?.trim().split(/[\s]+/);
@@ -56,7 +56,7 @@ export class BVHLoader {
         // number of frames
         // @ts-ignore
         let numFrames = parseInt(tokens[1]);
-        if (isNaN(numFrames)) throw "Failed to read number of frames.";
+        if (isNaN(numFrames)) throw new Error("Failed to read number of frames.");
         context.numFrames = numFrames;
 
         // frame time
@@ -64,7 +64,7 @@ export class BVHLoader {
         tokens = lines.shift()?.trim().split(/[\s]+/);
         // @ts-ignore
         let frameTime = parseFloat(tokens[2]);
-        if (isNaN(frameTime)) throw "Failed to read frame time.";
+        if (isNaN(frameTime)) throw new Error("Failed to read frame time.");
 
         context.frameRate = frameTime;
 
@@ -200,18 +200,18 @@ export class BVHLoader {
         }
 
         // opening bracket
-        if (lines.shift()?.trim() != "{") throw "Expected opening { after type & name";
+        if (lines.shift()?.trim() != "{") throw new Error("Expected opening { after type & name");
 
         // parse OFFSET
         // @ts-ignore
         tokens = lines.shift()?.trim().split(/\s+/);
 
-        if (tokens[0].toUpperCase() != "OFFSET") throw "Expected OFFSET, but got: " + tokens[0];
-        if (tokens.length != 4) throw "OFFSET: Invalid number of values";
+        if (tokens[0].toUpperCase() != "OFFSET") throw new Error("Expected OFFSET, but got: " + tokens[0]);
+        if (tokens.length != 4) throw new Error("OFFSET: Invalid number of values");
 
         let offset = new Vector3(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
 
-        if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) throw "OFFSET: Invalid values";
+        if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) throw new Error("OFFSET: Invalid values");
 
         node.offset = offset;
 
@@ -220,7 +220,7 @@ export class BVHLoader {
             // @ts-ignore
             tokens = lines.shift()?.trim().split(/\s+/);
 
-            if (tokens[0].toUpperCase() != "CHANNELS") throw "Expected CHANNELS definition";
+            if (tokens[0].toUpperCase() != "CHANNELS") throw new Error("Expected CHANNELS definition");
 
             let numChannels = parseInt(tokens[1]);
             // Skip CHANNELS and the number of channels
@@ -297,8 +297,7 @@ export class BVHLoader {
                     roll = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
                 default:
-                    throw "invalid channel type";
-                    break;
+                    throw new Error("invalid channel type");
             }
         }
 

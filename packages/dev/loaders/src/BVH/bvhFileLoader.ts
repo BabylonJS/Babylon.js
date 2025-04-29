@@ -1,4 +1,4 @@
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderPluginExtensions, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
@@ -49,12 +49,9 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         };
     }
 
-    /**
-     * Instantiates a bvh file loader plugin.
-     * @returns the created plugin
-     */
-    createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
-        return new BVHFileLoader();
+    /** @internal */
+    public createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
+        return new BVHFileLoader(options[BVHFileLoaderMetadata.name]);
     }
 
     /**
