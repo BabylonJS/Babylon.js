@@ -4,8 +4,8 @@ import type { Service, ServiceDefinition } from "../modularity/serviceDefinition
 import type { TreeItemValue, TreeOpenChangeEvent, TreeOpenChangeData } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 
-import { FlatTree, FlatTreeItem, TreeItemLayout, makeStyles, Text, tokens } from "@fluentui/react-components";
-import { ImageRegular, PaintBrushRegular, BoxRegular, BranchRegular, CameraRegular, LightbulbRegular } from "@fluentui/react-icons";
+import { FlatTree, FlatTreeItem, TreeItemLayout, makeStyles, Text, tokens, Button } from "@fluentui/react-components";
+import { CubeTreeRegular, ImageRegular, PaintBrushRegular, BoxRegular, BranchRegular, CameraRegular, LightbulbRegular, EyeRegular, SquareRegular } from "@fluentui/react-icons";
 import { SceneContext } from "./sceneContext";
 import { ShellService } from "./shellService";
 import { useObservableState } from "../hooks/observableHooks";
@@ -64,6 +64,14 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
         // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
         const SceneExplorer: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
             const classes = useStyles();
+
+            // TODO: Probably replace all this state with:
+            // 1. A reducer that manages the open items and visible items (nodes, materials, etc.)
+            // 2. An effect that calls the reducer to update the visible items when the scene changes
+            // 3. A callback that calls the reducer and in turn is called from onOpenChange
+            // Presumably we also need to call the reducer when the filter text changes, so we probably just want to always rebuild.
+            // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
+            // Then just reverse the array of nodes before returning it.
 
             const rootNodes = useObservableState(
                 () => scene.rootNodes,
@@ -134,7 +142,15 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                 aria-setsize={1}
                                 aria-posinset={1}
                             >
-                                <TreeItemLayout iconBefore={getNodeIcon(node)}>
+                                <TreeItemLayout
+                                    iconBefore={getNodeIcon(node)}
+                                    actions={
+                                        <>
+                                            <Button icon={<SquareRegular />} appearance="subtle" />
+                                            <Button icon={<EyeRegular />} appearance="subtle" />
+                                        </>
+                                    }
+                                >
                                     <Text>{node.name}</Text>
                                 </TreeItemLayout>
                             </FlatTreeItem>
@@ -195,7 +211,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
         const registration = shellService.addToLeftPane({
             key: "Scene Explorer",
             title: "Scene Explorer",
-            icon: ImageRegular,
+            icon: CubeTreeRegular,
             content: () => {
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 return <>{scene && <SceneExplorer scene={scene} />}</>;

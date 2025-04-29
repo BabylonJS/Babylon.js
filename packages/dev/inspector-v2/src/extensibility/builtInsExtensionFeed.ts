@@ -1,9 +1,9 @@
 import type { ExtensionMetadata, ExtensionMetadataQuery, ExtensionFeed, ExtensionModule } from "./extensionFeed";
 
 const exploderExtensionMetadata = {
-    name: "Exploder",
-    author: "Ryan Tremblay",
-    description: "Explode a model",
+    name: "Asset Creation",
+    author: "Babylon",
+    description: "Adds new features to enable creating Babylon assets such as node materials, flow graphs, and more.",
     keywords: ["exploder", "sandbox"],
     version: "0.0.1",
     license: "MIT",

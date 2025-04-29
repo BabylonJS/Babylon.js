@@ -1,10 +1,10 @@
 //import type { Nullable } from "core/index";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { Slider, makeStyles, shorthands, tokens } from "@fluentui/react-components";
+import { Slider, makeStyles, shorthands, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Button } from "@fluentui/react-components";
 import { ShellService } from "./shellService";
 
-import { ArrowExpandRegular } from "@fluentui/react-icons";
+import { FormNewRegular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import { Mesh } from "core/Meshes/mesh";
 import { MeshExploder } from "core/Misc/meshExploder";
@@ -19,6 +19,11 @@ const useStyles = makeStyles({
     slider: {
         ...shorthands.margin(tokens.spacingVerticalM, tokens.spacingHorizontalM),
     },
+    section: {
+        display: "flex",
+        flexDirection: "column",
+        rowGap: tokens.spacingVerticalM,
+    },
 });
 
 const explodeMax = 3;
@@ -30,9 +35,9 @@ export const serviceDefinition: ServiceDefinition<[], [ShellService, SceneContex
     consumes: [ShellService, SceneContext],
     factory: (shellService, sceneContext) => {
         const registration = shellService.addToLeftPane({
-            key: "Exploder",
-            title: "Exploder",
-            icon: ArrowExpandRegular,
+            key: "Create",
+            title: "Create",
+            icon: FormNewRegular,
             content: () => {
                 const classes = useStyles();
 
@@ -55,15 +60,42 @@ export const serviceDefinition: ServiceDefinition<[], [ShellService, SceneContex
                 }, [explode, exploder]);
 
                 return (
-                    <div className={classes.container}>
-                        <Slider
-                            className={classes.slider}
-                            value={explode * explodeMultiplier}
-                            max={100}
-                            disabled={!scene}
-                            onChange={(event, data) => setExplode(data.value / explodeMultiplier)}
-                        />
-                    </div>
+                    <>
+                        {false && (
+                            <div className={classes.container}>
+                                <Slider
+                                    className={classes.slider}
+                                    value={explode * explodeMultiplier}
+                                    max={100}
+                                    disabled={!scene}
+                                    onChange={(event, data) => setExplode(data.value / explodeMultiplier)}
+                                />
+                            </div>
+                        )}
+                        <Accordion collapsible multiple defaultOpenItems={["Materials", "Interactivity"]}>
+                            <AccordionItem key="Materials" value="Materials">
+                                <AccordionHeader expandIconPosition="end">
+                                    <Text size={500}>Materials</Text>
+                                </AccordionHeader>
+                                <AccordionPanel>
+                                    <div className={classes.section}>
+                                        <Button>PBR Material</Button>
+                                        <Button>Node Material</Button>
+                                    </div>
+                                </AccordionPanel>
+                            </AccordionItem>
+                            <AccordionItem key="Interactivity" value="Interactivity">
+                                <AccordionHeader expandIconPosition="end">
+                                    <Text size={500}>Interactivity</Text>
+                                </AccordionHeader>
+                                <AccordionPanel>
+                                    <div className={classes.section}>
+                                        <Button>Flow Graph</Button>
+                                    </div>
+                                </AccordionPanel>
+                            </AccordionItem>
+                        </Accordion>
+                    </>
                 );
             },
         });
