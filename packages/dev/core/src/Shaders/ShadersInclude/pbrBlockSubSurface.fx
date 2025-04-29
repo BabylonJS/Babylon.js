@@ -461,9 +461,6 @@ struct subSurfaceOutParams
             outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
         #endif
 
-        // In theory T = 1 - R.
-        refractionTransmittance *= 1.0 - max(outParams.specularEnvironmentReflectance.r, max(outParams.specularEnvironmentReflectance.g, outParams.specularEnvironmentReflectance.b));
-
         #if DEBUGMODE > 0
             outParams.refractionTransmittance = refractionTransmittance;
         #endif
