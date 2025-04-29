@@ -67,8 +67,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param _meshesNames a string or array of strings of the mesh names that should be loaded from the file
      * @param scene the scene the meshes should be added to
      * @param data the bvh data to load
-     * @param _rootUrl root url to load from
-     * @returns a promise containing the loaded meshes, particles, skeletons and animations
+     * @returns a promise containing the loaded skeletons and animations
      */
     public importMeshAsync(_meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown): Promise<ISceneLoaderAsyncResult> {
         if (typeof data !== "string") {
@@ -95,10 +94,9 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Imports all objects from the loaded bvh data and adds them to the scene
      * @param scene the scene the objects should be added to
      * @param data the bvh data to load
-     * @param _rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: unknown, _rootUrl: string): Promise<void> {
+    public loadAsync(scene: Scene, data: unknown): Promise<void> {
         if (typeof data !== "string") {
             return Promise.reject("BVH loader expects string data.");
         }
@@ -114,10 +112,9 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Load into an asset container.
      * @param scene The scene to load into
      * @param data The data to import
-     * @param _rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    public loadAssetContainerAsync(scene: Scene, data: unknown, _rootUrl: string): Promise<AssetContainer> {
+    public loadAssetContainerAsync(scene: Scene, data: unknown): Promise<AssetContainer> {
         if (typeof data !== "string") {
             return Promise.reject("BVH loader expects string data.");
         }
