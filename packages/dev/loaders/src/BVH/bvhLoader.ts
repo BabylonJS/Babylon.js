@@ -15,12 +15,12 @@ import type { BVHLoadingOptions } from "./bvhLoadingOptions";
  * MIT License
  */
 export class BVHParser {
-    static readonly X_POSITION = "Xposition";
-    static readonly Y_POSITION = "Yposition";
-    static readonly Z_POSITION = "Zposition";
-    static readonly X_ROTATION = "Xrotation";
-    static readonly Y_ROTATION = "Yrotation";
-    static readonly Z_ROTATION = "Zrotation";
+    private static readonly _XPosition = "Xposition";
+    private static readonly _YPosition = "Yposition";
+    private static readonly _ZPosition = "Zposition";
+    private static readonly _XRotation = "Xrotation";
+    private static readonly _YRotation = "Yrotation";
+    private static readonly _ZRotation = "Zrotation";
 
     private static readonly _HierarchyNode = "HIERARCHY";
     private static readonly _MotionNode = "MOTION";
@@ -175,10 +175,10 @@ export class BVHParser {
         const keyFrames: IAnimationKey[] = [];
 
         // Create position animation if there are position channels
-        const hasPosition = node.channels.some((c) => c === BVHParser.X_POSITION || c === BVHParser.Y_POSITION || c === BVHParser.Z_POSITION);
+        const hasPosition = node.channels.some((c) => c === BVHParser._XPosition || c === BVHParser._YPosition || c === BVHParser._ZPosition);
 
         // Create rotation animation if there are rotation channels
-        const hasRotation = node.channels.some((c) => c === BVHParser.X_ROTATION || c === BVHParser.Y_ROTATION || c === BVHParser.Z_ROTATION);
+        const hasRotation = node.channels.some((c) => c === BVHParser._XRotation || c === BVHParser._YRotation || c === BVHParser._ZRotation);
 
         for (let i = 0; i < node.frames.length; i++) {
             const frame = node.frames[i];
@@ -323,22 +323,22 @@ export class BVHParser {
             }
 
             switch (bone.channels[i]) {
-                case this.X_POSITION:
+                case this._XPosition:
                     keyframe.position.x = parseFloat(value.trim());
                     break;
-                case this.Y_POSITION:
+                case this._YPosition:
                     keyframe.position.y = parseFloat(value.trim());
                     break;
-                case this.Z_POSITION:
+                case this._ZPosition:
                     keyframe.position.z = -parseFloat(value.trim()); // Flip Z position
                     break;
-                case this.X_ROTATION:
+                case this._XRotation:
                     pitch = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
-                case this.Y_ROTATION:
+                case this._YRotation:
                     yaw = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
-                case this.Z_ROTATION:
+                case this._ZRotation:
                     roll = (parseFloat(value.trim()) * Math.PI) / 180;
                     break;
                 default:
