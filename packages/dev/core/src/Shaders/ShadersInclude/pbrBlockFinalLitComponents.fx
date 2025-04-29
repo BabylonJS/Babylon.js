@@ -6,13 +6,14 @@ aggShadow = aggShadow / numLights;
 // _____________________________ IBL BRDF + Energy Cons ________________________________
 #if defined(ENVIRONMENTBRDF)
     #ifdef MS_BRDF_ENERGY_CONSERVATION
-        vec3 energyConservationFactor = getEnergyConservationFactor(clearcoatOut.specularEnvironmentR0, environmentBrdf);
+        vec3 baseSpecularEnergyConservationFactor = getEnergyConservationFactor(vec3(reflectanceF0), environmentBrdf);
+        vec3 coloredEnergyConservationFactor = getEnergyConservationFactor(clearcoatOut.specularEnvironmentR0, environmentBrdf);
     #endif
 #endif
 
 #if !defined(METALLICWORKFLOW) && !defined(REFLECTION)
     #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        surfaceAlbedo.rgb = (1. - reflectanceF0) * surfaceAlbedo.rgb;
     #endif
 #endif
 
@@ -26,14 +27,13 @@ aggShadow = aggShadow / numLights;
 
     #if defined(METALLICWORKFLOW) || defined(SPECULAR_GLOSSINESS_ENERGY_CONSERVATION)
         // Account for energy loss due to specular reflectance
-        // glTF specifies that diffuse energy is reduced by max_value(fresnel(ior, specular_color))
-        vec3 specEnergy = vec3(max(subSurfaceOut.specularEnvironmentReflectance.r, max(subSurfaceOut.specularEnvironmentReflectance.g, subSurfaceOut.specularEnvironmentReflectance.b)));
+        vec3 baseSpecularEnergy = vec3(baseSpecularEnvironmentReflectance);
         #if defined(ENVIRONMENTBRDF)
             #ifdef MS_BRDF_ENERGY_CONSERVATION
-            specEnergy *= energyConservationFactor;
+                baseSpecularEnergy *= baseSpecularEnergyConservationFactor;
             #endif
         #endif
-        surfaceAlbedo *= (1.0 - specEnergy);
+        finalIrradiance *= (vec3(1.0) - baseSpecularEnergy);
     #endif
 
     #if defined(CLEARCOAT)
@@ -72,7 +72,7 @@ aggShadow = aggShadow / numLights;
     vec3 finalSpecularScaled = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-        finalSpecularScaled *= energyConservationFactor;
+        finalSpecularScaled *= coloredEnergyConservationFactor;
     #endif
 
     #if defined(SHEEN) && defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)
@@ -83,12 +83,12 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Radiance ________________________________________
 #ifdef REFLECTION
     vec3 finalRadiance = reflectionOut.environmentRadiance.rgb;
-    finalRadiance *= subSurfaceOut.specularEnvironmentReflectance;
+    finalRadiance *= cumulativeSpecularEnvironmentReflectance;
     
     vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-        finalRadianceScaled *= energyConservationFactor;
+        finalRadianceScaled *= coloredEnergyConservationFactor;
     #endif
 
     #if defined(SHEEN) && defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)

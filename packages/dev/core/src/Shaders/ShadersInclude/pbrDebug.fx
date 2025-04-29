@@ -160,7 +160,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
     #elif DEBUGMODE == 82 && defined(MS_BRDF_ENERGY_CONSERVATION)
         gl_FragColor.rgb = vec3(energyConservationFactor);
     #elif DEBUGMODE == 83 && defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-        gl_FragColor.rgb = specularEnvironmentReflectance;
+        gl_FragColor.rgb = baseSpecularEnvironmentReflectance;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 84 && defined(CLEARCOAT) && defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         gl_FragColor.rgb = clearcoatOut.clearCoatEnvironmentReflectance;

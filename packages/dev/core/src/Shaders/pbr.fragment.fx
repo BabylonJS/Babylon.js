@@ -360,7 +360,7 @@ void main(void) {
             , sheenMapData
             , vSheenInfos.y
         #endif
-            , reflectance
+            , reflectanceF0
         #ifdef SHEEN_LINKWITHALBEDO
             , baseColor
             , surfaceAlbedo
@@ -545,7 +545,7 @@ void main(void) {
             , vThicknessParam
             , vTintColor
             , normalW
-            , specularEnvironmentReflectance
+            , baseSpecularEnvironmentReflectance
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             , thicknessMap
         #endif
@@ -631,7 +631,7 @@ void main(void) {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

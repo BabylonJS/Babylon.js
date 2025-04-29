@@ -1,6 +1,15 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
+#ifndef UNLIT
+    #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+        finalDiffuse *= (1.0 - baseSpecularEnvironmentReflectance * baseSpecularEnergyConservationFactor) * surfaceAlbedo;
+    #else
+        finalDiffuse *= (1.0 - baseSpecularEnvironmentReflectance) * surfaceAlbedo;
+    #endif
+#else
 finalDiffuse *= surfaceAlbedo;
+#endif
+
 #if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
     finalDiffuse += diffuseTransmissionBase;
 #endif
