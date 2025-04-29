@@ -12,7 +12,7 @@ import directionalRight from "./svgs/directionalRight.svg";
 import directionalLeft from "./svgs/directionalLeft.svg";
 import background from "./svgs/icon-ibl.svg";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { blendModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -122,7 +122,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                     <div id="preview-config-bar" className="extended">
                         <OptionsLine
                             label="Blend mode"
-                            options={blendModeOptions}
+                            options={BlendModeOptions}
                             target={this.props.globalState}
                             propertyName="particleSystemBlendMode"
                             noDirectUpdate={true}

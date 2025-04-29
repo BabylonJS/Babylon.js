@@ -39,7 +39,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { SetToDefaultGaussianSplatting, SetToDefaultSFE } from "core/Materials/Node/nodeMaterialDefault";
-import { alphaModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -628,7 +628,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                         <OptionsLine
                             label="Alpha mode"
-                            options={alphaModeOptions}
+                            options={AlphaModeOptions}
                             target={this.props.globalState.nodeMaterial}
                             propertyName="alphaMode"
                             onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
