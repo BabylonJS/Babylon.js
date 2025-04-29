@@ -14,7 +14,7 @@ import type { BVHLoadingOptions } from "./bvhLoadingOptions";
  * Ivo Herzig, 2016
  * MIT License
  */
-export class BVHLoader {
+export class BVHParser {
     static readonly X_POSITION = "Xposition";
     static readonly Y_POSITION = "Yposition";
     static readonly Z_POSITION = "Zposition";
@@ -22,10 +22,8 @@ export class BVHLoader {
     static readonly Y_ROTATION = "Yrotation";
     static readonly Z_ROTATION = "Zrotation";
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static readonly HIERARCHY_NODE = "HIERARCHY";
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static readonly MOTION_NODE = "MOTION";
+    private static readonly _HierarchyNode = "HIERARCHY";
+    private static readonly _MotionNode = "MOTION";
 
     /**
      * Reads a BVH file, returns a skeleton
@@ -34,59 +32,86 @@ export class BVHLoader {
      * @param loadingOptions - The loading options
      * @returns The skeleton
      */
-    public static ReadBvh(text: string, scene: Scene, loadingOptions?: BVHLoadingOptions): Skeleton {
+    public static ReadBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOptions): Skeleton {
         const lines = text.split("\n");
 
-        const context = new LoaderContext();
-        context.animationName = loadingOptions?.animationName ?? "Animation";
-        context.loopBehavior = loadingOptions?.loopBehavior ?? 1;
-        context.realSkeleton = new Skeleton(loadingOptions?.skeletonName ?? "skeleton", loadingOptions?.skeletonId ?? "skeleton_id", scene);
+        const animationName = loadingOptions.animationName ?? "Animation";
+        const loopBehavior = loadingOptions.loopBehavior ?? 1;
+        const skeletonName = loadingOptions.skeletonName ?? "skeleton";
+        const skeletonId = loadingOptions.skeletonId ?? "skeleton_id";
+
+        const skeleton = new Skeleton(skeletonName, skeletonId, scene);
+
+        const context = new LoaderContext(skeleton);
+        context.animationName = animationName;
+        context.loopBehavior = loopBehavior;
 
         // read model structure
-        if (lines.shift()?.trim().toUpperCase() != this.HIERARCHY_NODE) throw new Error("HIERARCHY expected");
+        const firstLine = lines.shift();
+        if (!firstLine || firstLine.trim().toUpperCase() !== this._HierarchyNode) {
+            throw new Error("HIERARCHY expected");
+        }
 
-        // @ts-ignore
-        const root = BVHLoader.readNode(lines, lines.shift()?.trim(), null, context);
+        const nodeLine = lines.shift();
+        if (!nodeLine) {
+            throw new Error("Unexpected end of file after HIERARCHY");
+        }
+        const root = BVHParser._ReadNode(lines, nodeLine.trim(), null, context);
 
         // read motion data
-        if (lines.shift()?.trim().toUpperCase() != this.MOTION_NODE) throw new Error("MOTION expected");
+        const motionLine = lines.shift();
+        if (!motionLine || motionLine.trim().toUpperCase() !== this._MotionNode) {
+            throw new Error("MOTION expected");
+        }
 
-        // @ts-ignore
-        let tokens = lines.shift()?.trim().split(/[\s]+/);
+        const framesLine = lines.shift();
+        if (!framesLine) {
+            throw new Error("Unexpected end of file before frame count");
+        }
+        const framesTokens = framesLine.trim().split(/[\s]+/);
+        if (framesTokens.length < 2) {
+            throw new Error("Invalid frame count line");
+        }
 
         // number of frames
-        // @ts-ignore
-        const numFrames = parseInt(tokens[1]);
-        if (isNaN(numFrames)) throw new Error("Failed to read number of frames.");
+        const numFrames = parseInt(framesTokens[1]);
+        if (isNaN(numFrames)) {
+            throw new Error("Failed to read number of frames.");
+        }
         context.numFrames = numFrames;
 
         // frame time
-        // @ts-ignore
-        tokens = lines.shift()?.trim().split(/[\s]+/);
-        // @ts-ignore
-        const frameTime = parseFloat(tokens[2]);
-        if (isNaN(frameTime)) throw new Error("Failed to read frame time.");
+        const frameTimeLine = lines.shift();
+        if (!frameTimeLine) {
+            throw new Error("Unexpected end of file before frame time");
+        }
+        const frameTimeTokens = frameTimeLine.trim().split(/[\s]+/);
+        if (frameTimeTokens.length < 3) {
+            throw new Error("Invalid frame time line");
+        }
+        const frameTime = parseFloat(frameTimeTokens[2]);
+        if (isNaN(frameTime)) {
+            throw new Error("Failed to read frame time.");
+        }
 
         context.frameRate = frameTime;
 
         // read frame data line by line
         for (let i = 0; i < numFrames; ++i) {
-            // @ts-ignore
-            tokens = lines.shift()?.trim().split(/[\s]+/);
-            if (!tokens) {
+            const frameLine = lines.shift();
+            if (!frameLine) {
                 continue;
             }
-
-            // @ts-ignore
-            BVHLoader.readFrameData(tokens, i * frameTime, root);
+            const tokens = frameLine.trim().split(/[\s]+/);
+            BVHParser._ReadFrameData(tokens, i * frameTime, root);
         }
 
         context.root = root;
 
-        this._convertNode(context.root, null, context);
+        this._ConvertNode(context.root, null, context);
 
-        context.realSkeleton.returnToRest();
-        return context.realSkeleton;
+        context.skeleton.returnToRest();
+        return context.skeleton;
     }
 
     /**
@@ -95,13 +120,12 @@ export class BVHLoader {
      * @param parent - The parent bone
      * @param context - The loader context
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static _convertNode(node: BVHNode, parent: Nullable<Bone>, context: LoaderContext) {
-        const matrix = this._boneOffset(node);
-        const bone = new Bone(node.name, context.realSkeleton, parent, matrix);
+    private static _ConvertNode(node: BVHNode, parent: Nullable<Bone>, context: LoaderContext) {
+        const matrix = this._BoneOffset(node);
+        const bone = new Bone(node.name, context.skeleton, parent, matrix);
 
         // Create animation for this bone
-        const animation = this._createAnimations(node, context);
+        const animation = this._CreateAnimations(node, context);
         if (animation) {
             // Apply rotation correction to the root bone's animation keys
             if (!parent) {
@@ -119,7 +143,7 @@ export class BVHLoader {
         }
 
         for (const child of node.children) {
-            this._convertNode(child, bone, context);
+            this._ConvertNode(child, bone, context);
         }
     }
 
@@ -128,8 +152,7 @@ export class BVHLoader {
      * @param node - The BVH node to convert
      * @returns The converted matrix
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static _boneOffset(node: BVHNode): Matrix {
+    private static _BoneOffset(node: BVHNode): Matrix {
         // Convert BVH Y-up, right-handed offset to Babylon's Y-up, left-handed system.
         const x = node.offset.x;
         const y = node.offset.y;
@@ -144,8 +167,7 @@ export class BVHLoader {
      * @param context - The loader context
      * @returns The created animations
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static _createAnimations(node: BVHNode, context: LoaderContext): Animation | null {
+    private static _CreateAnimations(node: BVHNode, context: LoaderContext): Animation | null {
         if (node.frames.length === 0) {
             return null;
         }
@@ -153,10 +175,10 @@ export class BVHLoader {
         const keyFrames: IAnimationKey[] = [];
 
         // Create position animation if there are position channels
-        const hasPosition = node.channels.some((c) => c === BVHLoader.X_POSITION || c === BVHLoader.Y_POSITION || c === BVHLoader.Z_POSITION);
+        const hasPosition = node.channels.some((c) => c === BVHParser.X_POSITION || c === BVHParser.Y_POSITION || c === BVHParser.Z_POSITION);
 
         // Create rotation animation if there are rotation channels
-        const hasRotation = node.channels.some((c) => c === BVHLoader.X_ROTATION || c === BVHLoader.Y_ROTATION || c === BVHLoader.Z_ROTATION);
+        const hasRotation = node.channels.some((c) => c === BVHParser.X_ROTATION || c === BVHParser.Y_ROTATION || c === BVHParser.Z_ROTATION);
 
         for (let i = 0; i < node.frames.length; i++) {
             const frame = node.frames[i];
@@ -204,8 +226,7 @@ export class BVHLoader {
         
          returns: a BVH node including children
         */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static _readNode(lines: string[], firstLine: string, parent: BVHNode, context: LoaderContext): BVHNode {
+    protected static _ReadNode(lines: string[], firstLine: string, parent: Nullable<BVHNode>, context: LoaderContext): BVHNode {
         const node = new BVHNode();
         node.parent = parent;
         context.list.push(node);
@@ -258,7 +279,7 @@ export class BVHLoader {
                 // Finish reading the node
                 return node;
             } else if (line) {
-                node.children.push(BVHLoader._readNode(lines, line, node, context));
+                node.children.push(BVHParser._ReadNode(lines, line, node, context));
             }
         }
 
@@ -277,8 +298,7 @@ export class BVHLoader {
 
          Note: Position data (specifically Z) is flipped to convert coordinate systems.
     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static _readFrameData(data: string[], frameTime: number, bone: BVHNode) {
+    protected static _ReadFrameData(data: string[], frameTime: number, bone: BVHNode) {
         if (bone.type === "ENDSITE")
             // end sites have no motion data
             return;
@@ -335,7 +355,7 @@ export class BVHLoader {
 
         // parse child nodes
         for (let i = 0; i < bone.children.length; ++i) {
-            BVHLoader._readFrameData(data, frameTime, bone.children[i]);
+            BVHParser._ReadFrameData(data, frameTime, bone.children[i]);
         }
     }
 }
@@ -347,10 +367,10 @@ class LoaderContext {
     root: BVHNode = new BVHNode();
     numFrames: number = 0;
     frameRate: number = 0;
-    realSkeleton: Skeleton;
+    skeleton: Skeleton;
 
-    constructor() {
-        this.realSkeleton = null as any; // Will be initialized in readBvh
+    constructor(skeleton: Skeleton) {
+        this.skeleton = skeleton;
     }
 }
 

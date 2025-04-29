@@ -2,7 +2,7 @@ import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAs
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
-import { BVHLoader } from "./bvhLoader";
+import { BVHParser } from "./bvhLoader";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 import { BVHFileLoaderMetadata } from "./bvhFileLoader.metadata";
 
@@ -30,7 +30,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /** @internal */
     public readonly extensions = BVHFileLoaderMetadata.extensions;
 
-    private _loadingOptions: BVHLoadingOptions;
+    private readonly _loadingOptions: BVHLoadingOptions;
 
     /**
      * Creates loader for bvh motion files
@@ -70,12 +70,12 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param _rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(_meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<ISceneLoaderAsyncResult> {
+    public importMeshAsync(_meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown): Promise<ISceneLoaderAsyncResult> {
         if (typeof data !== "string") {
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            const skeleton = BVHLoader.ReadBvh(data, scene, this._loadingOptions);
+            const skeleton = BVHParser.ReadBvh(data, scene, this._loadingOptions);
             return Promise.resolve({
                 meshes: [],
                 particleSystems: [],
@@ -98,12 +98,12 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param _rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: any, _rootUrl: string): Promise<void> {
+    public loadAsync(scene: Scene, data: unknown, _rootUrl: string): Promise<void> {
         if (typeof data !== "string") {
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            BVHLoader.ReadBvh(data, scene);
+            BVHParser.ReadBvh(data, scene, this._loadingOptions);
             return Promise.resolve();
         } catch (e) {
             return Promise.reject(e);
@@ -117,13 +117,13 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param _rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    public loadAssetContainerAsync(scene: Scene, data: string, _rootUrl: string): Promise<AssetContainer> {
+    public loadAssetContainerAsync(scene: Scene, data: unknown, _rootUrl: string): Promise<AssetContainer> {
         if (typeof data !== "string") {
             return Promise.reject("BVH loader expects string data.");
         }
         const assetContainer = new AssetContainer(scene);
         try {
-            const skeleton = BVHLoader.ReadBvh(data, scene, this._loadingOptions);
+            const skeleton = BVHParser.ReadBvh(data, scene, this._loadingOptions);
             assetContainer.skeletons.push(skeleton);
             return Promise.resolve(assetContainer);
         } catch (e) {
