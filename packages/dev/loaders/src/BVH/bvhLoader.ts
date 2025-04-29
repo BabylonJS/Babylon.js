@@ -45,7 +45,7 @@ export class BVHLoader {
         if (lines.shift()?.trim().toUpperCase() != this.HIERARCHY_NODE) throw new Error("HIERARCHY expected");
 
         // @ts-ignore
-        let root = BVHLoader.readNode(lines, lines.shift()?.trim(), null, context);
+        const root = BVHLoader.readNode(lines, lines.shift()?.trim(), null, context);
 
         // read motion data
         if (lines.shift()?.trim().toUpperCase() != this.MOTION_NODE) throw new Error("MOTION expected");
@@ -55,7 +55,7 @@ export class BVHLoader {
 
         // number of frames
         // @ts-ignore
-        let numFrames = parseInt(tokens[1]);
+        const numFrames = parseInt(tokens[1]);
         if (isNaN(numFrames)) throw new Error("Failed to read number of frames.");
         context.numFrames = numFrames;
 
@@ -63,7 +63,7 @@ export class BVHLoader {
         // @ts-ignore
         tokens = lines.shift()?.trim().split(/[\s]+/);
         // @ts-ignore
-        let frameTime = parseFloat(tokens[2]);
+        const frameTime = parseFloat(tokens[2]);
         if (isNaN(frameTime)) throw new Error("Failed to read frame time.");
 
         context.frameRate = frameTime;
@@ -88,12 +88,19 @@ export class BVHLoader {
         return context.realSkeleton;
     }
 
+    /**
+     * Converts a BVH node to a Babylon bone
+     * @param node - The BVH node to convert
+     * @param parent - The parent bone
+     * @param context - The loader context
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private static _convertNode(node: BVHNode, parent: Nullable<Bone>, context: LoaderContext) {
-        const matrix = this.boneOffset(node);
+        const matrix = this._boneOffset(node);
         const bone = new Bone(node.name, context.realSkeleton, parent, matrix);
 
         // Create animation for this bone
-        const animation = this.createAnimations(node, context);
+        const animation = this._createAnimations(node, context);
         if (animation) {
             // Apply rotation correction to the root bone's animation keys
             if (!parent) {
@@ -110,12 +117,18 @@ export class BVHLoader {
             bone.animations.push(animation);
         }
 
-        for (let child of node.children) {
+        for (const child of node.children) {
             this._convertNode(child, bone, context);
         }
     }
 
-    private static boneOffset(node: BVHNode): Matrix {
+    /**
+     * Converts the BVH node's offset to a Babylon matrix
+     * @param node - The BVH node to convert
+     * @returns The converted matrix
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private static _boneOffset(node: BVHNode): Matrix {
         // Convert BVH Y-up, right-handed offset to Babylon's Y-up, left-handed system.
         const x = node.offset.x;
         const y = node.offset.y;
@@ -124,7 +137,14 @@ export class BVHLoader {
         return Matrix.Translation(x, y, z);
     }
 
-    private static createAnimations(node: BVHNode, context: LoaderContext): Animation | null {
+    /**
+     * Creates animations for the BVH node
+     * @param node - The BVH node to create animations for
+     * @param context - The loader context
+     * @returns The created animations
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private static _createAnimations(node: BVHNode, context: LoaderContext): Animation | null {
         if (node.frames.length === 0) {
             return null;
         }

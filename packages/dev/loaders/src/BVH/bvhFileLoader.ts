@@ -1,11 +1,4 @@
-import type {
-    ISceneLoaderPluginAsync,
-    ISceneLoaderPluginFactory,
-    ISceneLoaderPlugin,
-    ISceneLoaderAsyncResult,
-    ISceneLoaderPluginExtensions,
-    SceneLoaderPluginOptions,
-} from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
