@@ -12,6 +12,8 @@ import { ProceduralTexture } from "core/Materials/Textures/Procedurals/procedura
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 import { Logger } from "../../Misc/logger";
+import type { EventState } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -323,16 +325,10 @@ export class _IblShadowsVoxelTracingPass {
         this._outputTexture.defines = defines;
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setBindings(this._scene.activeCamera!);
-
+        this._renderWhenGBufferReady = this._render.bind(this);
         // Don't start rendering until the first vozelization is done.
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(() => {
-                if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
-                    if (this._setBindings(this._scene.activeCamera!)) {
-                        this._outputTexture.render();
-                    }
-                }
-            });
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
         });
     }
 
@@ -404,6 +400,16 @@ export class _IblShadowsVoxelTracingPass {
         return true;
     }
 
+    private _render() {
+        if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+            if (this._setBindings(this._scene.activeCamera!)) {
+                this._outputTexture.render();
+            }
+        }
+    }
+
+    private _renderWhenGBufferReady: Nullable<(eventData: number, eventState: EventState) => void> = null;
+
     /**
      * Called by render pipeline when canvas resized.
      * @param scaleFactor The factor by which to scale the canvas size.
@@ -438,6 +444,10 @@ export class _IblShadowsVoxelTracingPass {
      * Disposes the associated resources
      */
     public dispose() {
+        if (this._scene.geometryBufferRenderer && this._renderWhenGBufferReady) {
+            const gBuffer = this._scene.geometryBufferRenderer.getGBuffer();
+            gBuffer.onAfterRenderObservable.removeCallback(this._renderWhenGBufferReady);
+        }
         this._outputTexture.dispose();
         if (this._debugPassPP) {
             this._debugPassPP.dispose();

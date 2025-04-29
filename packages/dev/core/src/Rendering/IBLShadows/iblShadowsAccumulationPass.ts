@@ -10,6 +10,8 @@ import { ProceduralTexture } from "core/Materials/Textures/Procedurals/procedura
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Observable } from "../../Misc/observable";
+import type { EventState } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -207,14 +209,10 @@ export class _IblShadowsAccumulationPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setOutputTextureBindings();
 
+        this._renderWhenGBufferReady = this._render.bind(this);
+        // Don't start rendering until the first vozelization is done.
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(() => {
-                if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
-                    if (this._setOutputTextureBindings()) {
-                        this._outputTexture.render();
-                    }
-                }
-            });
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
         });
 
         // Create the accumulation texture for the previous frame.
@@ -313,6 +311,16 @@ export class _IblShadowsAccumulationPass {
         this._oldAccumulationCopy.setTexture("textureSampler", this._outputTexture);
     }
 
+    private _render() {
+        if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+            if (this._setOutputTextureBindings()) {
+                this._outputTexture.render();
+            }
+        }
+    }
+
+    private _renderWhenGBufferReady: Nullable<(eventData: number, eventState: EventState) => void> = null;
+
     /**
      * Called by render pipeline when canvas resized.
      * @param scaleFactor The factor by which to scale the canvas size.
@@ -357,6 +365,10 @@ export class _IblShadowsAccumulationPass {
      * Disposes the associated resources
      */
     public dispose() {
+        if (this._scene.geometryBufferRenderer && this._renderWhenGBufferReady) {
+            const gBuffer = this._scene.geometryBufferRenderer.getGBuffer();
+            gBuffer.onAfterRenderObservable.removeCallback(this._renderWhenGBufferReady);
+        }
         this._disposeTextures();
         if (this._debugPassPP) {
             this._debugPassPP.dispose();

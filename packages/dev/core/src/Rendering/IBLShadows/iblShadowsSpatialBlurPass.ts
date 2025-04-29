@@ -9,6 +9,8 @@ import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import type { EventState } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -161,14 +163,10 @@ export class _IblShadowsSpatialBlurPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setBindings();
 
+        this._renderWhenGBufferReady = this._render.bind(this);
+        // Don't start rendering until the first vozelization is done.
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(() => {
-                if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
-                    if (this._setBindings()) {
-                        this._outputTexture.render();
-                    }
-                }
-            });
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
         });
     }
 
@@ -187,6 +185,16 @@ export class _IblShadowsSpatialBlurPass {
         this._outputTexture.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
         return true;
     }
+
+    private _render() {
+        if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+            if (this._setBindings()) {
+                this._outputTexture.render();
+            }
+        }
+    }
+
+    private _renderWhenGBufferReady: Nullable<(eventData: number, eventState: EventState) => void> = null;
 
     /**
      * Called by render pipeline when canvas resized.
@@ -216,6 +224,10 @@ export class _IblShadowsSpatialBlurPass {
      * Disposes the associated resources
      */
     public dispose() {
+        if (this._scene.geometryBufferRenderer && this._renderWhenGBufferReady) {
+            const gBuffer = this._scene.geometryBufferRenderer.getGBuffer();
+            gBuffer.onAfterRenderObservable.removeCallback(this._renderWhenGBufferReady);
+        }
         this._outputTexture.dispose();
         if (this._debugPassPP) {
             this._debugPassPP.dispose();
