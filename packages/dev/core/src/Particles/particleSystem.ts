@@ -203,7 +203,7 @@ export class ParticleSystem extends ThinParticleSystem {
     private _prepareSubEmitterInternalArray() {
         this._subEmitters = new Array<Array<SubEmitter>>();
         if (this.subEmitters) {
-            this.subEmitters.forEach((subEmitter) => {
+            for (const subEmitter of this.subEmitters) {
                 if (subEmitter instanceof ParticleSystem) {
                     this._subEmitters.push([new SubEmitter(subEmitter)]);
                 } else if (subEmitter instanceof SubEmitter) {
@@ -211,7 +211,7 @@ export class ParticleSystem extends ThinParticleSystem {
                 } else if (subEmitter instanceof Array) {
                     this._subEmitters.push(subEmitter);
                 }
-            });
+            }
         }
     }
 
@@ -219,9 +219,9 @@ export class ParticleSystem extends ThinParticleSystem {
         if (!this.activeSubSystems) {
             return;
         }
-        this.activeSubSystems.forEach((subSystem) => {
+        for (const subSystem of this.activeSubSystems) {
             subSystem.stop(true);
-        });
+        }
         this.activeSubSystems = [] as ParticleSystem[];
     }
 
@@ -244,7 +244,7 @@ export class ParticleSystem extends ThinParticleSystem {
         }
         const templateIndex = Math.floor(Math.random() * this._subEmitters.length);
 
-        this._subEmitters[templateIndex].forEach((subEmitter) => {
+        for (const subEmitter of this._subEmitters[templateIndex]) {
             if (subEmitter.type === SubEmitterType.END) {
                 const subSystem = subEmitter.clone();
                 particle._inheritParticleInfoToSubEmitter(subSystem);
@@ -252,7 +252,7 @@ export class ParticleSystem extends ThinParticleSystem {
                 this.activeSubSystems.push(subSystem.particleSystem);
                 subSystem.particleSystem.start();
             }
-        });
+        }
     };
 
     public override _preStart() {
@@ -275,13 +275,13 @@ export class ParticleSystem extends ThinParticleSystem {
         if (this._subEmitters && this._subEmitters.length > 0) {
             const subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
             particle._attachedSubEmitters = [];
-            subEmitters.forEach((subEmitter) => {
+            for (const subEmitter of subEmitters) {
                 if (subEmitter.type === SubEmitterType.ATTACHED) {
                     const newEmitter = subEmitter.clone();
                     (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
                     newEmitter.particleSystem.start();
                 }
-            });
+            }
         }
     }
 
@@ -294,13 +294,15 @@ export class ParticleSystem extends ThinParticleSystem {
         }
 
         if (disposeAttachedSubEmitters) {
-            this.particles?.forEach((particle) => {
-                if (particle._attachedSubEmitters) {
-                    for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
-                        particle._attachedSubEmitters[i].dispose();
+            if (this.particles) {
+                for (const particle of this.particles) {
+                    if (particle._attachedSubEmitters) {
+                        for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
+                            particle._attachedSubEmitters[i].dispose();
+                        }
                     }
                 }
-            });
+            }
         }
 
         if (disposeEndSubEmitters) {

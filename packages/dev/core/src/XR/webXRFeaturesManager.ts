@@ -205,23 +205,25 @@ export class WebXRFeaturesManager implements IDisposable {
     constructor(private _xrSessionManager: WebXRSessionManager) {
         // when session starts / initialized - attach
         this._xrSessionManager.onXRSessionInit.add(() => {
-            this.getEnabledFeatures().forEach((featureName) => {
+            const features = this.getEnabledFeatures();
+            for (const featureName of features) {
                 const feature = this._features[featureName];
                 if (feature.enabled && !feature.featureImplementation.attached && !feature.featureImplementation.disableAutoAttach) {
                     this.attachFeature(featureName);
                 }
-            });
+            }
         });
 
         // when session ends - detach
         this._xrSessionManager.onXRSessionEnded.add(() => {
-            this.getEnabledFeatures().forEach((featureName) => {
+            const features = this.getEnabledFeatures();
+            for (const featureName of features) {
                 const feature = this._features[featureName];
                 if (feature.enabled && feature.featureImplementation.attached) {
                     // detach, but don't disable!
                     this.detachFeature(featureName);
                 }
-            });
+            }
         });
     }
 
@@ -353,9 +355,10 @@ export class WebXRFeaturesManager implements IDisposable {
      * dispose this features manager
      */
     public dispose(): void {
-        this.getEnabledFeatures().forEach((feature) => {
-            this.disableFeature(feature);
-        });
+        const features = this.getEnabledFeatures();
+        for (const featureName of features) {
+            this.disableFeature(featureName);
+        }
     }
 
     /**

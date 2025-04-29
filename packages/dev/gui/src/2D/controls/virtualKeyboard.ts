@@ -277,9 +277,9 @@ export class VirtualKeyboard extends StackPanel {
                 }
             }
         } else {
-            this._connectedInputTexts.forEach((connectedInputText: ConnectedInputText) => {
+            for (const connectedInputText of this._connectedInputTexts) {
                 this._removeConnectedInputObservables(connectedInputText);
-            });
+            }
             this._connectedInputTexts.length = 0;
         }
 

@@ -109,9 +109,10 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             } else {
                 this._lightMesh = LightGizmo._CreatePointLightMesh(this.gizmoLayer.utilityLayerScene);
             }
-            this._lightMesh.getChildMeshes(false).forEach((m) => {
+            const children = this._lightMesh.getChildMeshes(false);
+            for (const m of children) {
                 m.material = this._material;
-            });
+            }
             this._lightMesh.parent = this._rootMesh;
 
             // Add lighting to the light gizmo

@@ -28,6 +28,12 @@ export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfigu
      * The type of the variable.
      */
     type?: FlowGraphTypes;
+
+    /**
+     * If true, the block will not allow integer and float arithmetic.
+     * This is the behavior in glTF interactivity.
+     */
+    preventIntegerFloatArithmetic?: boolean;
 }
 
 /**
@@ -59,7 +65,11 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMa
             // this is a simple add, and should be also supported between Quat and Vector4. Therefore -
             return (a as Quaternion).add(b as Quaternion);
         } else {
-            return (a as number) + (b as number);
+            // at this point at least one of the variables is a number.
+            if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
+                throw new Error("Cannot add different types of numbers.");
+            }
+            return getNumericValue(a as number) + getNumericValue(b as number);
         }
     }
 }
@@ -93,7 +103,11 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGr
             // this is a simple subtract, and should be also supported between Quat and Vector4. Therefore -
             return (a as Quaternion).subtract(b as Quaternion);
         } else {
-            return (a as number) - (b as number);
+            // at this point at least one of the variables is a number.
+            if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
+                throw new Error("Cannot add different types of numbers.");
+            }
+            return getNumericValue(a as number) - getNumericValue(b as number);
         }
     }
 }
@@ -149,7 +163,11 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
                 return b.multiply(a);
             }
         } else {
-            return (a as number) * (b as number);
+            // at this point at least one of the variables is a number.
+            if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
+                throw new Error("Cannot add different types of numbers.");
+            }
+            return getNumericValue(a as number) * getNumericValue(b as number);
         }
     }
 }
@@ -208,7 +226,11 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
                 return a.divide(b);
             }
         } else {
-            return (a as number) / (b as number);
+            // at this point at least one of the variables is a number.
+            if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
+                throw new Error("Cannot add different types of numbers.");
+            }
+            return getNumericValue(a as number) / getNumericValue(b as number);
         }
     }
 }
@@ -520,7 +542,7 @@ function ComponentWiseBinaryOperation(a: FlowGraphMathOperationType, b: FlowGrap
             a = a as FlowGraphMatrix3D;
             return new FlowGraphMatrix3D(a.m.map((v, i) => op(v, (b as FlowGraphMatrix3D).m[i])));
         default:
-            return op(a as number, b as number);
+            return op(getNumericValue(a as number), getNumericValue(b as number));
     }
 }
 
@@ -610,7 +632,7 @@ function ComponentWiseTernaryOperation(
         case FlowGraphTypes.Matrix3D:
             return new FlowGraphMatrix3D((a as FlowGraphMatrix3D).m.map((v, i) => op(v, (b as FlowGraphMatrix3D).m[i], (c as FlowGraphMatrix3D).m[i])));
         default:
-            return op(a as number, b as number, c as number);
+            return op(getNumericValue(a as number), getNumericValue(b as number), getNumericValue(c as number));
     }
 }
 
@@ -685,6 +707,9 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicEq(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
+        if (typeof a !== typeof b) {
+            return false;
+        }
         if (_AreSameVectorClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             return (a as Vector3).equals(b as Vector3);
         } else {
@@ -769,7 +794,7 @@ export class FlowGraphIsNanBlock extends FlowGraphUnaryOperationBlock<FlowGraphN
     }
 
     private _polymorphicIsNan(a: FlowGraphNumber) {
-        if (isNumeric(a)) {
+        if (isNumeric(a, true)) {
             return isNaN(getNumericValue(a));
         } else {
             throw new Error(`Cannot get NaN of ${a}`);

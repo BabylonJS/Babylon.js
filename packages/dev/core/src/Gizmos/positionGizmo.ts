@@ -132,13 +132,14 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     public override set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
             } else {
                 gizmo.attachedMesh = null;
             }
-        });
+        }
     }
 
     public override get attachedNode() {
@@ -147,13 +148,14 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     public override set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
             } else {
                 gizmo.attachedNode = null;
             }
-        });
+        }
     }
 
     /**
@@ -179,9 +181,10 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     }
 
     public override set additionalTransformNode(transformNode: TransformNode | undefined) {
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             gizmo.additionalTransformNode = transformNode;
-        });
+        }
     }
 
     /**
@@ -204,7 +207,8 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         this.additionalTransformNode = options?.additionalTransformNode;
 
         // Relay drag events
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             gizmo.dragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
             });
@@ -214,7 +218,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
             gizmo.dragBehavior.onDragEndObservable.add(() => {
                 this.onDragEndObservable.notifyObservers({});
             });
-        });
+        }
 
         this.attachedMesh = null;
 
@@ -232,7 +236,8 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public set planarGizmoEnabled(value: boolean) {
         this._planarGizmoEnabled = value;
-        [this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.isEnabled = value;
                 if (value) {
@@ -243,7 +248,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
                     }
                 }
             }
-        }, this);
+        }
     }
     public get planarGizmoEnabled(): boolean {
         return this._planarGizmoEnabled;
@@ -259,11 +264,12 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
 
     public override set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.customRotationQuaternion = customRotationQuaternion;
             }
-        });
+        }
     }
 
     /**
@@ -272,11 +278,12 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public override set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         this._updateGizmoRotationToMatchAttachedMesh = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.updateGizmoRotationToMatchAttachedMesh = value;
             }
-        });
+        }
     }
     public override get updateGizmoRotationToMatchAttachedMesh() {
         return this._updateGizmoRotationToMatchAttachedMesh;
@@ -284,11 +291,12 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
 
     public override set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
         this._updateGizmoPositionToMatchAttachedMesh = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.updateGizmoPositionToMatchAttachedMesh = value;
             }
-        });
+        }
     }
     public override get updateGizmoPositionToMatchAttachedMesh() {
         return this._updateGizmoPositionToMatchAttachedMesh;
@@ -296,9 +304,10 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
 
     public override set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             gizmo.anchorPoint = value;
-        });
+        }
     }
     public override get anchorPoint() {
         return this._anchorPoint;
@@ -310,9 +319,10 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
     public override set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             gizmo.coordinatesMode = coordinatesMode;
-        });
+        }
     }
 
     public override set updateScale(value: boolean) {
@@ -330,11 +340,12 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public set snapDistance(value: number) {
         this._snapDistance = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.snapDistance = value;
             }
-        });
+        }
     }
     public get snapDistance() {
         return this._snapDistance;
@@ -345,11 +356,12 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public override set scaleRatio(value: number) {
         this._scaleRatio = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.scaleRatio = value;
             }
-        });
+        }
     }
     public override get scaleRatio() {
         return this._scaleRatio;
@@ -379,14 +391,15 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * Disposes of the gizmo
      */
     public override dispose() {
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.dispose();
             }
-        });
-        this._observables.forEach((obs) => {
+        }
+        for (const obs of this._observables) {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
-        });
+        }
         this.onDragStartObservable.clear();
         this.onDragObservable.clear();
         this.onDragEndObservable.clear();

@@ -1256,7 +1256,9 @@ export class Control implements IAnimatable, IFocusableControl {
                 }
             }
             if ((control as Container).children !== undefined) {
-                (control as Container).children.forEach(recursivelyFirePointerOut);
+                for (const child of (control as Container).children) {
+                    recursivelyFirePointerOut(child);
+                }
             }
         };
         recursivelyFirePointerOut(this);
@@ -2564,7 +2566,10 @@ export class Control implements IAnimatable, IFocusableControl {
         this._fontOffset = Control._GetFontOffset(this._font, this._host?.getScene()?.getEngine());
 
         //children need to be refreshed
-        this.getDescendants().forEach((child) => child._markAllAsDirty());
+        const descendants = this.getDescendants();
+        for (const child of descendants) {
+            child._markAllAsDirty();
+        }
     }
 
     /**

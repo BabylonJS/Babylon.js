@@ -53,32 +53,33 @@ export class CustomBlock extends NodeMaterialBlock {
         let functionName = this._options.functionName;
 
         // Replace the TYPE_XXX placeholders (if any)
-        this._inputs.forEach((input) => {
+        for (const input of this._inputs) {
             const rexp = new RegExp("\\{TYPE_" + input.name + "\\}", "gm");
             const type = state._getGLType(input.type);
             code = code.replace(rexp, type);
             functionName = functionName.replace(rexp, type);
-        });
-        this._outputs.forEach((output) => {
+        }
+        for (const output of this._outputs) {
             const rexp = new RegExp("\\{TYPE_" + output.name + "\\}", "gm");
             const type = state._getGLType(output.type);
             code = code.replace(rexp, type);
             functionName = functionName.replace(rexp, type);
-        });
+        }
 
         state._emitFunction(functionName, code, "");
 
         // Declare the output variables
-        this._outputs.forEach((output) => {
+        for (const output of this._outputs) {
             state.compilationString += state._declareOutput(output) + ";\n";
-        });
+        }
 
         // Generate the function call
         state.compilationString += functionName + "(";
 
         let hasInput = false;
-        this._inputs.forEach((input, index) => {
-            if (index > 0) {
+        for (let i = 0; i < this._inputs.length; i++) {
+            const input = this._inputs[i];
+            if (i > 0) {
                 state.compilationString += ", ";
             }
             if (this._inputSamplers && this._inputSamplers.indexOf(input.name) !== -1) {
@@ -87,14 +88,15 @@ export class CustomBlock extends NodeMaterialBlock {
                 state.compilationString += input.associatedVariableName;
             }
             hasInput = true;
-        });
+        }
 
-        this._outputs.forEach((output, index) => {
-            if (index > 0 || hasInput) {
+        for (let i = 0; i < this._outputs.length; i++) {
+            const output = this._outputs[i];
+            if (i > 0 || hasInput) {
                 state.compilationString += ", ";
             }
             state.compilationString += output.associatedVariableName;
-        });
+        }
 
         state.compilationString += ");\n";
 
@@ -129,50 +131,59 @@ export class CustomBlock extends NodeMaterialBlock {
         this.name = this.name || options.name;
         this.target = (<any>NodeMaterialBlockTargets)[options.target];
 
-        options.inParameters?.forEach((input: any, index: number) => {
-            const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];
-            if (input.type === "sampler2D" || input.type === "samplerCube") {
-                this._inputSamplers = this._inputSamplers || [];
-                this._inputSamplers.push(input.name);
-                this.registerInput(
-                    input.name,
-                    NodeMaterialBlockConnectionPointTypes.Object,
-                    true,
-                    NodeMaterialBlockTargets.VertexAndFragment,
-                    new NodeMaterialConnectionPointCustomObject(input.name, this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
-                );
-            } else {
-                this.registerInput(input.name, type);
+        if (options.inParameters) {
+            for (let i = 0; i < options.inParameters.length; i++) {
+                const input = options.inParameters[i];
+                const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];
+                if (input.type === "sampler2D" || input.type === "samplerCube") {
+                    this._inputSamplers = this._inputSamplers || [];
+                    this._inputSamplers.push(input.name);
+                    this.registerInput(
+                        input.name,
+                        NodeMaterialBlockConnectionPointTypes.Object,
+                        true,
+                        NodeMaterialBlockTargets.VertexAndFragment,
+                        new NodeMaterialConnectionPointCustomObject(input.name, this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+                    );
+                } else {
+                    this.registerInput(input.name, type);
+                }
+
+                Object.defineProperty(this, input.name, {
+                    get: function () {
+                        return this._inputs[i];
+                    },
+                    enumerable: true,
+                    configurable: true,
+                });
             }
+        }
 
-            Object.defineProperty(this, input.name, {
-                get: function () {
-                    return this._inputs[index];
-                },
-                enumerable: true,
-                configurable: true,
-            });
-        });
+        if (options.outParameters) {
+            for (let i = 0; i < options.outParameters.length; i++) {
+                const output = options.outParameters[i];
 
-        options.outParameters?.forEach((output: any, index: number) => {
-            this.registerOutput(output.name, (<any>NodeMaterialBlockConnectionPointTypes)[output.type]);
+                this.registerOutput(output.name, (<any>NodeMaterialBlockConnectionPointTypes)[output.type]);
 
-            Object.defineProperty(this, output.name, {
-                get: function () {
-                    return this._outputs[index];
-                },
-                enumerable: true,
-                configurable: true,
-            });
+                Object.defineProperty(this, output.name, {
+                    get: function () {
+                        return this._outputs[i];
+                    },
+                    enumerable: true,
+                    configurable: true,
+                });
 
-            if (output.type === "BasedOnInput") {
-                this._outputs[index]._typeConnectionSource = this._findInputByName(output.typeFromInput)![0];
+                if (output.type === "BasedOnInput") {
+                    this._outputs[i]._typeConnectionSource = this._findInputByName(output.typeFromInput)![0];
+                }
             }
-        });
+        }
 
-        options.inLinkedConnectionTypes?.forEach((connection: any) => {
-            this._linkConnectionTypes(this._findInputByName(connection.input1)![1], this._findInputByName(connection.input2)![1]);
-        });
+        if (options.inLinkedConnectionTypes) {
+            for (const connection of options.inLinkedConnectionTypes) {
+                this._linkConnectionTypes(this._findInputByName(connection.input1)![1], this._findInputByName(connection.input2)![1]);
+            }
+        }
     }
 
     private _findInputByName(name: string): Nullable<[NodeMaterialConnectionPoint, number]> {

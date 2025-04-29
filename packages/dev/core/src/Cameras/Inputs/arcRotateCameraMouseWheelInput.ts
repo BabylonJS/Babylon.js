@@ -102,8 +102,20 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                     // this will stop multiple scroll events zooming in from adding too much inertia
                     if (delta > 0) {
                         let estimatedTargetRadius = this.camera.radius;
-                        const targetInertia = this.camera.inertialRadiusOffset + delta;
-                        estimatedTargetRadius -= targetInertia;
+                        let targetInertia = this.camera.inertialRadiusOffset + delta;
+                        for (let i = 0; i < 20; i++) {
+                            // 20 iterations should be enough to converge
+                            if (estimatedTargetRadius <= targetInertia) {
+                                // We do not want a negative radius, so we break out of the loop
+                                break;
+                            }
+                            if (Math.abs(targetInertia * this.camera.inertia) < 0.001) {
+                                // We do not want to go below a certain threshold, so we break out of the loop
+                                break;
+                            }
+                            estimatedTargetRadius -= targetInertia;
+                            targetInertia *= this.camera.inertia;
+                        }
                         estimatedTargetRadius = Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
                         delta = this._computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                     }

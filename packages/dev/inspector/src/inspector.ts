@@ -528,16 +528,16 @@ export class Inspector {
         }
 
         // Gizmo disposal
-        this._GlobalState.lightGizmos.forEach((g) => {
+        for (const g of this._GlobalState.lightGizmos) {
             if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
             }
-        });
-        this._GlobalState.cameraGizmos.forEach((g) => {
+        }
+        for (const g of this._GlobalState.cameraGizmos) {
             if (g.camera) {
                 this._GlobalState.enableCameraGizmo(g.camera, false);
             }
-        });
+        }
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
             this._Scene.reservedDataStore.gizmoManager.dispose();
             this._Scene.reservedDataStore.gizmoManager = null;

@@ -221,9 +221,9 @@ export class Particle {
     /** @internal */
     public _inheritParticleInfoToSubEmitters() {
         if (this._attachedSubEmitters && this._attachedSubEmitters.length > 0) {
-            this._attachedSubEmitters.forEach((subEmitter) => {
+            for (const subEmitter of this._attachedSubEmitters) {
                 this._inheritParticleInfoToSubEmitter(subEmitter);
-            });
+            }
         }
     }
 

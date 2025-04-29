@@ -202,7 +202,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Gets the mesh internal Geometry object
      */
-    public get geometry(): Nullable<Geometry> {
+    public override get geometry(): Nullable<Geometry> {
         return this._sourceMesh._geometry;
     }
 

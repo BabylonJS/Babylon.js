@@ -32,11 +32,11 @@ class PolygonPoints {
 
     add(originalPoints: Array<Vector2>): Array<IndexedVector2> {
         const result: IndexedVector2[] = [];
-        originalPoints.forEach((point) => {
+        for (const point of originalPoints) {
             const newPoint = new IndexedVector2(point, this.elements.length);
             result.push(newPoint);
             this.elements.push(newPoint);
-        });
+        }
 
         return result;
     }
@@ -45,7 +45,7 @@ class PolygonPoints {
         const lmin = new Vector2(this.elements[0].x, this.elements[0].y);
         const lmax = new Vector2(this.elements[0].x, this.elements[0].y);
 
-        this.elements.forEach((point) => {
+        for (const point of this.elements) {
             // x
             if (point.x < lmin.x) {
                 lmin.x = point.x;
@@ -59,7 +59,7 @@ class PolygonPoints {
             } else if (point.y > lmax.y) {
                 lmax.y = point.y;
             }
-        });
+        }
 
         return {
             min: lmin,
@@ -244,11 +244,11 @@ export class PolygonMeshBuilder {
         const uvs: number[] = [];
 
         const bounds = this._points.computeBounds();
-        this._points.elements.forEach((p) => {
+        for (const p of this._points.elements) {
             normals.push(0, 1.0, 0);
             positions.push(p.x, 0, p.y);
             uvs.push((p.x - bounds.min.x) / bounds.width, (p.y - bounds.min.y) / bounds.height);
-        });
+        }
 
         const indices: number[] = [];
 
@@ -261,12 +261,12 @@ export class PolygonMeshBuilder {
         if (depth > 0) {
             const positionscount = positions.length / 3; //get the current pointcount
 
-            this._points.elements.forEach((p) => {
+            for (const p of this._points.elements) {
                 //add the elements at the depth
                 normals.push(0, -1.0, 0);
                 positions.push(p.x, -depth, p.y);
                 uvs.push(1 - (p.x - bounds.min.x) / bounds.width, 1 - (p.y - bounds.min.y) / bounds.height);
-            });
+            }
 
             const totalCount = indices.length;
             for (let i = 0; i < totalCount; i += 3) {
@@ -282,9 +282,9 @@ export class PolygonMeshBuilder {
             //Add the sides
             this._addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false, smoothingThreshold);
 
-            this._holes.forEach((hole) => {
+            for (const hole of this._holes) {
                 this._addSide(positions, normals, uvs, indices, bounds, hole, depth, true, smoothingThreshold);
-            });
+            }
         }
 
         result.indices = indices;

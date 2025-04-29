@@ -26,7 +26,8 @@ import { VertexBuffer } from "core/Buffers/buffer";
 import type { Node } from "core/node";
 import { TransformNode } from "core/Meshes/transformNode";
 import type { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
@@ -85,14 +86,14 @@ class ExporterState {
 
     private _remappedBufferView = new Map<Buffer, Map<VertexBuffer, IBufferView>>();
 
-    private _meshMorphTargetMap = new Map<Mesh, IMorphTargetData[]>();
+    private _meshMorphTargetMap = new Map<AbstractMesh, IMorphTargetData[]>();
 
     private _vertexMapColorAlpha = new Map<VertexBuffer, boolean>();
 
     private _exportedNodes = new Set<Node>();
 
     // Babylon mesh -> glTF mesh index
-    private _meshMap = new Map<Mesh, number>();
+    private _meshMap = new Map<AbstractMesh, number>();
 
     public constructor(convertToRightHanded: boolean, wasAddedByNoopNode: boolean) {
         this.convertToRightHanded = convertToRightHanded;
@@ -193,15 +194,15 @@ class ExporterState {
         return this._vertexMapColorAlpha.set(vertexBuffer, hasAlpha);
     }
 
-    public getMesh(mesh: Mesh): number | undefined {
+    public getMesh(mesh: AbstractMesh): number | undefined {
         return this._meshMap.get(mesh);
     }
 
-    public setMesh(mesh: Mesh, meshIndex: number): void {
+    public setMesh(mesh: AbstractMesh, meshIndex: number): void {
         this._meshMap.set(mesh, meshIndex);
     }
 
-    public bindMorphDataToMesh(mesh: Mesh, morphData: IMorphTargetData) {
+    public bindMorphDataToMesh(mesh: AbstractMesh, morphData: IMorphTargetData) {
         const morphTargets = this._meshMorphTargetMap.get(mesh) || [];
         this._meshMorphTargetMap.set(mesh, morphTargets);
         if (morphTargets.indexOf(morphData) === -1) {
@@ -209,7 +210,7 @@ class ExporterState {
         }
     }
 
-    public getMorphTargetsFromMesh(mesh: Mesh): IMorphTargetData[] | undefined {
+    public getMorphTargetsFromMesh(mesh: AbstractMesh): IMorphTargetData[] | undefined {
         return this._meshMorphTargetMap.get(mesh);
     }
 }
@@ -900,11 +901,11 @@ export class GLTFExporter {
     private _collectBuffers(
         babylonNode: Node,
         bufferToVertexBuffersMap: Map<Buffer, VertexBuffer[]>,
-        vertexBufferToMeshesMap: Map<VertexBuffer, Mesh[]>,
-        morphTargetsToMeshesMap: Map<MorphTarget, Mesh[]>,
+        vertexBufferToMeshesMap: Map<VertexBuffer, AbstractMesh[]>,
+        morphTargetsToMeshesMap: Map<MorphTarget, AbstractMesh[]>,
         state: ExporterState
     ): void {
-        if (this._shouldExportNode(babylonNode) && babylonNode instanceof Mesh && babylonNode.geometry) {
+        if (this._shouldExportNode(babylonNode) && babylonNode instanceof AbstractMesh && babylonNode.geometry) {
             const vertexBuffers = babylonNode.geometry.getVertexBuffers();
             if (vertexBuffers) {
                 for (const kind in vertexBuffers) {
@@ -950,11 +951,11 @@ export class GLTFExporter {
 
     private _exportBuffers(babylonRootNodes: Node[], state: ExporterState): void {
         const bufferToVertexBuffersMap = new Map<Buffer, VertexBuffer[]>();
-        const vertexBufferToMeshesMap = new Map<VertexBuffer, Mesh[]>();
-        const morphTagetsMeshesMap = new Map<MorphTarget, Mesh[]>();
+        const vertexBufferToMeshesMap = new Map<VertexBuffer, AbstractMesh[]>();
+        const morphTargetsMeshesMap = new Map<MorphTarget, AbstractMesh[]>();
 
         for (const babylonNode of babylonRootNodes) {
-            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTagetsMeshesMap, state);
+            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTargetsMeshesMap, state);
         }
 
         const buffers = Array.from(bufferToVertexBuffersMap.keys());
@@ -1103,10 +1104,10 @@ export class GLTFExporter {
         }
 
         // Build morph targets buffers
-        const morphTargets = Array.from(morphTagetsMeshesMap.keys());
+        const morphTargets = Array.from(morphTargetsMeshesMap.keys());
 
         for (const morphTarget of morphTargets) {
-            const meshes = morphTagetsMeshesMap.get(morphTarget);
+            const meshes = morphTargetsMeshesMap.get(morphTarget);
 
             if (!meshes) {
                 continue;
@@ -1229,8 +1230,8 @@ export class GLTFExporter {
         if (babylonNode instanceof TransformNode) {
             this._setNodeTransformation(node, babylonNode, state.convertToRightHanded);
 
-            if (babylonNode instanceof Mesh || babylonNode instanceof InstancedMesh) {
-                const babylonMesh = babylonNode instanceof Mesh ? babylonNode : babylonNode.sourceMesh;
+            if (babylonNode instanceof AbstractMesh) {
+                const babylonMesh = babylonNode instanceof InstancedMesh ? babylonNode.sourceMesh : (babylonNode as Mesh);
                 if (babylonMesh.subMeshes && babylonMesh.subMeshes.length > 0) {
                     node.mesh = await this._exportMeshAsync(babylonMesh, state);
                 }

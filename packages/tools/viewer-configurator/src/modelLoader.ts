@@ -44,9 +44,7 @@ async function PickFileAsync(): Promise<Nullable<Iterable<File>>> {
 
 export async function LoadModel(viewerElement: ViewerElement, source: string | File | Iterable<File> | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal) {
     try {
-        const defaultOptions: any = {
-            animationAutoPlay: viewerElement.animationAutoPlay,
-        };
+        const defaultOptions: LoadModelOptions = {};
 
         if (typeof source === "object" && !ArrayBuffer.isView(source) && Symbol.iterator in source) {
             const registeredSceneLoaderPlugins = GetRegisteredSceneLoaderPluginMetadata();

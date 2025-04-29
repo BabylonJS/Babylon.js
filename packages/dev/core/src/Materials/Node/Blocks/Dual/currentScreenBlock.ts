@@ -1,6 +1,7 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { SfeModeDefine } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -165,10 +166,6 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             }
         }
 
-        this._mainUVName = "vMain" + uvInput.associatedVariableName;
-
-        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2);
-
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
 
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
@@ -257,6 +254,13 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             state.sharedData.blocksWithDefines.push(this);
         }
 
+        // SFE: We rely on the default postprocess.vertex shader to supply our varying, which is named vUV.
+        this._mainUVName = state.isSFEMode ? "vUV" : "vMain" + this.uv.associatedVariableName;
+
+        // SFE: Wrap the varying in a define, as it won't be needed there.
+        const define = state.isSFEMode ? SfeModeDefine : undefined;
+        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, define, true);
+
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
             state._emit2DSampler(this._samplerName);
@@ -269,7 +273,9 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             return;
         }
 
-        state._emit2DSampler(this._samplerName);
+        // SFE: Append `// main` to denote this as the main input texture to composite.
+        const annotation = state.isSFEMode ? "// main" : undefined;
+        state._emit2DSampler(this._samplerName, undefined, undefined, annotation);
 
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
         this._gammaDefineName = state._getFreeDefineName("ISGAMMA");

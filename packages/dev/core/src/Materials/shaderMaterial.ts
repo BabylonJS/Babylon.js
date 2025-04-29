@@ -1292,12 +1292,14 @@ export class ShaderMaterial extends PushMaterial {
         // Options
         this._options = { ...this._options };
 
-        (Object.keys(this._options) as Array<keyof IShaderMaterialOptions>).forEach((propName) => {
+        const keys = Object.keys(this._options) as Array<keyof IShaderMaterialOptions>;
+
+        for (const propName of keys) {
             const propValue = this._options[propName];
             if (Array.isArray(propValue)) {
                 (<string[]>this._options[propName]) = propValue.slice(0);
             }
-        });
+        }
 
         // Stencil
         this.stencil.copyTo(result.stencil);

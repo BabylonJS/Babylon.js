@@ -1015,7 +1015,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
-            ${isWebGPU ? "let" : `vec4${state.fSuffix}`} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName}, 1.0);
+            ${isWebGPU ? "let" : `vec4${state.fSuffix}`} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName || "1.5"}, 1.0);
             reflectivityOut = reflectivityBlock(
                 vReflectivityColor
             #ifdef METALLICWORKFLOW
@@ -1341,7 +1341,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
-                { search: /uniforms.vReflectivityColor/g, replace: "vReflectivityColor" },
+                { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
             ],
         });
 
@@ -1378,12 +1378,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() },
                     { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vPositionW`, "g"), replace: worldPosVarName + ".xyz" },
+                    { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
                 ],
             });
         } else {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
-                substitutionVars: `${isWebGPU ? "fragmentInputs." : ""}vPositionW,${worldPosVarName}.xyz`,
+                substitutionVars: `${isWebGPU ? "fragmentInputs." : ""}vPositionW,${worldPosVarName}.xyz,uniforms.vReflectivityColor,vReflectivityColor`,
             });
         }
 
@@ -1438,6 +1439,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         replaceStrings = [
             { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vNormalW`, "g"), replace: this._vNormalWName },
             { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vPositionW`, "g"), replace: worldPosVarName },
+            { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
             {
                 search: /albedoTexture\.rgb;/g,
                 replace: `vec3${state.fSuffix}(1.);\n${colorOutput}.rgb = toGammaSpace(${colorOutput}.rgb);\n`,

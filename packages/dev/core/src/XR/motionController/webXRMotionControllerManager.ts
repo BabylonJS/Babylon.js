@@ -197,11 +197,11 @@ export class WebXRMotionControllerManager {
      * Clear the controller's cache (usually happens at the end of a session)
      */
     public static ClearControllerCache() {
-        ControllerCache.forEach((cacheItem) => {
-            cacheItem.meshes.forEach((mesh) => {
+        for (const cacheItem of ControllerCache) {
+            for (const mesh of cacheItem.meshes) {
                 mesh.dispose(false, true);
-            });
-        });
+            }
+        }
         ControllerCache.length = 0;
     }
 

@@ -114,11 +114,12 @@ export class GizmoManager implements IDisposable {
     public get isDragging() {
         let dragging = false;
 
-        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+        const gizmos = [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo && gizmo.isDragging) {
                 dragging = true;
             }
-        });
+        }
 
         return dragging;
     }
@@ -128,11 +129,12 @@ export class GizmoManager implements IDisposable {
      */
     public set scaleRatio(value: number) {
         this._scaleRatio = value;
-        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo].forEach((gizmo) => {
+        const gizmos = [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.scaleRatio = value;
             }
-        });
+        }
     }
     public get scaleRatio() {
         return this._scaleRatio;
@@ -145,11 +147,12 @@ export class GizmoManager implements IDisposable {
      */
     public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
         this._coordinatesMode = coordinatesMode;
-        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo].forEach((gizmo) => {
+        const gizmos = [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo];
+        for (const gizmo of gizmos) {
             if (gizmo) {
                 gizmo.coordinatesMode = coordinatesMode;
             }
-        });
+        }
     }
 
     public get coordinatesMode(): GizmoCoordinatesMode {
@@ -225,12 +228,12 @@ export class GizmoManager implements IDisposable {
                         } else {
                             // Attach to the parent node that is an attachableMesh
                             let found = false;
-                            this.attachableMeshes.forEach((mesh) => {
+                            for (const mesh of this.attachableMeshes) {
                                 if (node && (node == mesh || node.isDescendantOf(mesh))) {
                                     node = mesh;
                                     found = true;
                                 }
-                            });
+                            }
                             if (!found) {
                                 node = null;
                             }
@@ -437,18 +440,19 @@ export class GizmoManager implements IDisposable {
      * Force release the drag action by code
      */
     public releaseDrag() {
-        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+        const gizmos = [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo];
+        for (const gizmo of gizmos) {
             gizmo?.releaseDrag();
-        });
+        }
     }
 
     /**
      * Disposes of the gizmo manager
      */
     public dispose() {
-        this._pointerObservers.forEach((observer) => {
+        for (const observer of this._pointerObservers) {
             this._scene.onPointerObservable.remove(observer);
-        });
+        }
         for (const key in this.gizmos) {
             const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
             if (gizmo) {

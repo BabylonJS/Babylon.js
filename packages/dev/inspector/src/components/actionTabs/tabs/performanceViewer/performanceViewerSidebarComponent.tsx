@@ -79,9 +79,12 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
 
     const onCheckAllChange = (category: string) => (selected: boolean) => {
         const categoryIds = metadataCategoryId?.get(category);
-        categoryIds?.forEach((id) => {
+        if (!categoryIds) {
+            return;
+        }
+        for (const id of categoryIds) {
             collector.updateMetadata(id, "hidden", !selected);
-        });
+        }
     };
 
     const onColorChange = (id: string) => (color: string) => {

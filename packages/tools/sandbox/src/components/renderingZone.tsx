@@ -372,7 +372,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.onSceneLoaded(fileName);
 
                 scene.whenReadyAsync().then(() => {
+                    const camera = scene.activeCamera! as ArcRotateCamera;
                     this._engine.runRenderLoop(() => {
+                        // Adapt the camera sensibility based on the distance to the object
+                        camera.panningSensibility = 5000 / camera.radius;
                         scene.render();
                     });
                 });

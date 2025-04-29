@@ -2156,15 +2156,15 @@ export class ShadowGenerator implements IShadowGenerator {
 
         for (let meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
             const meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
-            meshes.forEach(function (mesh) {
+            for (const mesh of meshes) {
                 if (!shadowMap) {
-                    return;
+                    continue;
                 }
                 if (!shadowMap.renderList) {
                     shadowMap.renderList = [];
                 }
                 shadowMap.renderList.push(mesh);
-            });
+            }
         }
 
         if (parsedShadowGenerator.id !== undefined) {

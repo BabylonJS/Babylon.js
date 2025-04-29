@@ -117,11 +117,12 @@ export class PostProcessRenderEffect {
                 this._indicesForCamera[cameraName] = [];
             }
 
-            this._postProcesses[cameraKey].forEach((postProcess: PostProcess) => {
+            const pps = this._postProcesses[cameraKey];
+            for (const postProcess of pps) {
                 const index = camera.attachPostProcess(postProcess);
 
                 this._indicesForCamera[cameraName].push(index);
-            });
+            }
 
             if (!this._cameras[cameraName]) {
                 this._cameras[cameraName] = camera;
@@ -159,9 +160,9 @@ export class PostProcessRenderEffect {
             const postProcesses = this._postProcesses[this._singleInstance ? 0 : cameraName];
 
             if (postProcesses) {
-                postProcesses.forEach((postProcess: PostProcess) => {
+                for (const postProcess of postProcesses) {
                     camera.detachPostProcess(postProcess);
-                });
+                }
             }
 
             if (this._cameras[cameraName]) {
@@ -238,9 +239,10 @@ export class PostProcessRenderEffect {
         for (let i = 0; i < cams.length; i++) {
             const camera = cams[i];
             const cameraName = camera.name;
-            this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
+            const pps = this._postProcesses[this._singleInstance ? 0 : cameraName];
+            for (const postProcess of pps) {
                 camera.detachPostProcess(postProcess);
-            });
+            }
         }
     }
 

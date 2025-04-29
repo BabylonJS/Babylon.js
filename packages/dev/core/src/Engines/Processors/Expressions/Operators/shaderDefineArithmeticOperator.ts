@@ -11,15 +11,10 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
     }
 
     public override isTrue(preprocessors: { [key: string]: string }) {
-        let value = preprocessors[this.define];
-
-        if (value === undefined) {
-            value = this.define;
-        }
-
         let condition = false;
-        const left = parseInt(value);
-        const right = parseInt(this.testValue);
+
+        const left = parseInt(preprocessors[this.define] != undefined ? preprocessors[this.define] : this.define);
+        const right = parseInt(preprocessors[this.testValue] != undefined ? preprocessors[this.testValue] : this.testValue);
 
         switch (this.operand) {
             case ">":

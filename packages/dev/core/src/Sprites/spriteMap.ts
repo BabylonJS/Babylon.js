@@ -624,9 +624,9 @@ export class SpriteMap implements ISpriteMap {
         this._output.dispose();
         this._material.dispose();
         this._animationMap.dispose();
-        this._tileMaps.forEach((tm) => {
+        for (const tm of this._tileMaps) {
             tm.dispose();
-        });
+        }
         this._frameMap.dispose();
     }
 }

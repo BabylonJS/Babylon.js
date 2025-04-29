@@ -314,11 +314,12 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+        const mats = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
+        for (const matl of mats) {
             if (matl) {
                 matl.dispose();
             }
-        });
+        }
         super.dispose();
     }
 }

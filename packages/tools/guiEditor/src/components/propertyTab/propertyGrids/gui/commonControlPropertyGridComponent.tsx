@@ -278,9 +278,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     private _markChildrenAsDirty() {
         for (const control of this.props.controls) {
             if (control instanceof Container) {
-                control._children.forEach((child) => {
+                for (const child of (control as Container)._children) {
                     child._markAsDirty();
-                });
+                }
             }
         }
     }

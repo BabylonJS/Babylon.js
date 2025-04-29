@@ -14,7 +14,6 @@ import type {
     IMeshDataCache,
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
-    Mesh,
     Nullable,
     Observer,
     PickingInfo,
@@ -36,7 +35,8 @@ import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { computeMaxExtents } from "core/Meshes/meshUtils";
+import { Mesh } from "core/Meshes/mesh";
+import { computeMaxExtents, RemoveUnreferencedVerticesData } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
@@ -1343,6 +1343,7 @@ export class Viewer implements IDisposable {
 
         try {
             const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
+            RemoveUnreferencedVerticesData(assetContainer.meshes.filter((mesh) => mesh instanceof Mesh));
             assetContainer.animationGroups.forEach((group) => {
                 group.start(true, this.animationSpeed);
                 group.pause();

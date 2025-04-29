@@ -102,8 +102,12 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         }
         this._glBinding = undefined;
         if (!this.options.doNotDisposeOnDetach) {
-            this._cachedInternalTextures.forEach((t) => t.dispose());
-            this.texturesData.forEach((t) => t.dispose());
+            for (const t of this._cachedInternalTextures) {
+                t.dispose();
+            }
+            for (const t of this.texturesData) {
+                t.dispose();
+            }
             this._cachedInternalTextures.length = 0;
             this.texturesData.length = 0;
             this.cameraIntrinsics.length = 0;
@@ -199,9 +203,10 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
             return;
         }
         let updated = true;
-        pose.views.forEach((view, index) => {
+        for (let index = 0; index < pose.views.length; index++) {
+            const view = pose.views[index];
             updated = updated && this._updateInternalTextures(view, index);
-        });
+        }
         if (updated) {
             this.onTexturesUpdatedObservable.notifyObservers(this.texturesData);
         }

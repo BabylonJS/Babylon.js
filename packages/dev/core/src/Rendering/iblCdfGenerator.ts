@@ -350,7 +350,7 @@ export class IblCdfGenerator {
         });
         const promises: Array<Promise<void>> = [];
         const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
-        renderTargets.forEach((target) => {
+        for (const target of renderTargets) {
             promises.push(
                 new Promise((resolve) => {
                     if (target.isReady()) {
@@ -362,11 +362,11 @@ export class IblCdfGenerator {
                     }
                 })
             );
-        });
+        }
         return Promise.all(promises).then(() => {
-            renderTargets.forEach((target) => {
+            for (const target of renderTargets) {
                 target.render();
-            });
+            }
         });
     }
 

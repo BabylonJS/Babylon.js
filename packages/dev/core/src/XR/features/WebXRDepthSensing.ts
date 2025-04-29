@@ -447,9 +447,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         IsPluginEnabled = !this.options.disableDepthSensingOnMaterials;
         if (IsPluginEnabled) {
-            ManagedMaterialPlugins.forEach((plugin) => {
+            for (const plugin of ManagedMaterialPlugins) {
                 plugin.isEnabled = true;
-            });
+            }
             this._onCameraObserver = this._xrSessionManager.scene.onBeforeCameraRenderObservable.add((camera) => {
                 if (!IsPluginEnabled) {
                     return;
@@ -481,9 +481,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         DepthTexture = null;
         this._cachedWebGLTexture = null;
         this._cachedDepthBuffer = null;
-        ManagedMaterialPlugins.forEach((plugin) => {
+        for (const plugin of ManagedMaterialPlugins) {
             plugin.isEnabled = false;
-        });
+        }
         if (this._onCameraObserver) {
             this._xrSessionManager.scene.onBeforeCameraRenderObservable.remove(this._onCameraObserver);
         }
@@ -500,9 +500,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         if (this._onCameraObserver) {
             this._xrSessionManager.scene.onBeforeCameraRenderObservable.remove(this._onCameraObserver);
         }
-        ManagedMaterialPlugins.forEach((plugin) => {
+        for (const plugin of ManagedMaterialPlugins) {
             plugin.dispose();
-        });
+        }
         ManagedMaterialPlugins.length = 0;
     }
 

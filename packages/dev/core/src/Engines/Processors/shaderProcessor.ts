@@ -189,16 +189,16 @@ function BuildExpression(line: string, start: number): ShaderCodeTestNode {
     return node;
 }
 
-function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode) {
+function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }) {
     let line = cursor.currentLine;
-    while (MoveCursor(cursor, ifNode)) {
+    while (MoveCursor(cursor, ifNode, preProcessorsFromCode)) {
         line = cursor.currentLine;
         const first5 = line.substring(0, 5).toLowerCase();
 
         if (first5 === "#else") {
             const elseNode = new ShaderCodeNode();
             rootNode.children.push(elseNode);
-            MoveCursor(cursor, elseNode);
+            MoveCursor(cursor, elseNode, preProcessorsFromCode);
             return;
         } else if (first5 === "#elif") {
             const elifNode = BuildExpression(line, 5);
@@ -209,7 +209,7 @@ function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeCondit
     }
 }
 
-function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
+function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }): boolean {
     while (cursor.canRead) {
         cursor.lineIndex++;
         const line = cursor.currentLine;
@@ -227,7 +227,7 @@ function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean
 
                         const ifNode = BuildExpression(line, 6);
                         newRootNode.children.push(ifNode);
-                        MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                     case "#else":
@@ -241,7 +241,7 @@ function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean
 
                         const ifNode = BuildExpression(line, 7);
                         newRootNode.children.push(ifNode);
-                        MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                     case "#if": {
@@ -250,7 +250,7 @@ function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean
                         rootNode.children.push(newRootNode);
 
                         newRootNode.children.push(ifNode);
-                        MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                 }
@@ -275,7 +275,12 @@ function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean
     return false;
 }
 
-function EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: _IProcessingOptions): string {
+function EvaluatePreProcessors(
+    sourceCode: string,
+    preprocessors: { [key: string]: string },
+    options: _IProcessingOptions,
+    preProcessorsFromCode: { [key: string]: string }
+): string {
     const rootNode = new ShaderCodeNode();
     const cursor = new ShaderCodeCursor();
 
@@ -283,10 +288,10 @@ function EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string
     cursor.lines = sourceCode.split("\n");
 
     // Decompose (We keep it in 2 steps so it is easier to maintain and perf hit is insignificant)
-    MoveCursor(cursor, rootNode);
+    MoveCursor(cursor, rootNode, preProcessorsFromCode);
 
     // Recompose
-    return rootNode.process(preprocessors, options);
+    return rootNode.process(preprocessors, options, preProcessorsFromCode);
 }
 
 function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
@@ -334,7 +339,9 @@ function ProcessShaderConversion(sourceCode: string, options: _IProcessingOption
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    const preProcessorsFromCode: { [key: string]: string } = {};
+
+    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options, preProcessorsFromCode);
 
     // Post processing
     if (options.processor.postProcessor) {
@@ -347,7 +354,9 @@ function ProcessShaderConversion(sourceCode: string, options: _IProcessingOption
                 ? {
                       drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
                   }
-                : {}
+                : {},
+            preprocessors,
+            preProcessorsFromCode
         );
     }
 
@@ -371,7 +380,9 @@ function ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, en
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    const preProcessorsFromCode: { [key: string]: string } = {};
+
+    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options, preProcessorsFromCode);
 
     // Post processing
     if (options.processor?.postProcessor) {
@@ -384,7 +395,9 @@ function ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, en
                 ? {
                       drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
                   }
-                : {}
+                : {},
+            preprocessors,
+            preProcessorsFromCode
         );
     }
 

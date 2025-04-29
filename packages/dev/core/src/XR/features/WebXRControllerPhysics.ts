@@ -187,12 +187,13 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      */
     public _enablePhysicsDebug() {
         this._debugMode = true;
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
             const controllerData = this._controllers[controllerId];
             if (controllerData.impostorMesh) {
                 controllerData.impostorMesh.isVisible = true;
             }
-        });
+        }
     }
 
     /**
@@ -218,7 +219,9 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             return true;
         }
 
-        this._options.xrInput.controllers.forEach(this._attachController);
+        for (const controller of this._options.xrInput.controllers) {
+            this._attachController(controller);
+        }
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
@@ -256,9 +259,10 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
             this._detachController(controllerId);
-        });
+        }
 
         if (this._headsetMesh) {
             this._headsetMesh.dispose();
@@ -327,7 +331,8 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                 this._headsetImpostor.setAngularVelocity(this._tmpVector);
             }
         }
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
             const controllerData = this._controllers[controllerId];
             const controllerMesh = controllerData.xrController.grip || controllerData.xrController.pointer;
             const comparedPosition = controllerData.oldPos || controllerData.impostorMesh!.position;
@@ -372,7 +377,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             if (this._debugMode) {
                 Logger.Log([this._tmpVector, this._tmpQuaternion, "angular"]);
             }
-        });
+        }
     }
 
     private _detachController(xrControllerUniqueId: string) {

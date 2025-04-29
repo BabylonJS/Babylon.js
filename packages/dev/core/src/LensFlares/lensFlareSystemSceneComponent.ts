@@ -149,9 +149,9 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
         if (!container.lensFlareSystems) {
             return;
         }
-        container.lensFlareSystems.forEach((o) => {
+        for (const o of container.lensFlareSystems) {
             this.scene.addLensFlareSystem(o);
-        });
+        }
     }
 
     /**
@@ -163,12 +163,12 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
         if (!container.lensFlareSystems) {
             return;
         }
-        container.lensFlareSystems.forEach((o) => {
+        for (const o of container.lensFlareSystems) {
             this.scene.removeLensFlareSystem(o);
             if (dispose) {
                 o.dispose();
             }
-        });
+        }
     }
 
     /**

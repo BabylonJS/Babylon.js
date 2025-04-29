@@ -92,9 +92,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
-        this._existingLayers.forEach((layer) => {
+        for (const layer of this._existingLayers) {
             layer.dispose();
-        });
+        }
         this._existingLayers.length = 0;
         this._projectionLayerInitialized = false;
         return true;

@@ -209,6 +209,10 @@ export class ShadowDepthWrapper {
 
         const [origEffect, origRenderPassId] = origEffectAndRenderPassId;
 
+        if (!origEffect.isReady()) {
+            return null;
+        }
+
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
@@ -240,6 +244,10 @@ export class ShadowDepthWrapper {
         // the depth effect is either out of date or has not been created yet
         let vertexCode = origEffect.vertexSourceCodeBeforeMigration,
             fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
+
+        if (!vertexCode && !fragmentCode) {
+            return null;
+        }
 
         if (!this.doNotInjectCode) {
             // Declare the shadow map includes

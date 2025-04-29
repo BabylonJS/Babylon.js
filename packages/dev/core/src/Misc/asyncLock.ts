@@ -61,16 +61,15 @@ export class AsyncLock {
         const deferred = new Deferred<T>();
         let acquiredLocks = 0;
 
-        locks.forEach((lock) => {
-            // eslint-disable-next-line @typescript-eslint/promise-function-async
-            lock.lockAsync(() => {
+        for (const lock of locks) {
+            lock.lockAsync(async () => {
                 acquiredLocks++;
                 if (acquiredLocks === locks.length) {
-                    deferred.resolve(func());
+                    deferred.resolve(await func());
                 }
                 return deferred.promise;
             }, signal).catch((e) => deferred.reject(e));
-        });
+        }
 
         return deferred.promise;
     }

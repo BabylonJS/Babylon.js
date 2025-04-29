@@ -56,7 +56,8 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
         this.value = this.registerDataOutput("value", RichTypeAny);
 
         // iterate the set not using for of
-        (this.config.cases || []).forEach((caseValue) => {
+        const array = this.config.cases || [];
+        for (let caseValue of array) {
             // if treat as integers, make sure not to set it again if it exists
             caseValue = getNumericValue(caseValue);
             if (this.config.treatCasesAsIntegers) {
@@ -66,7 +67,7 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
                 }
             }
             this._inputCases.set(caseValue, this.registerDataInput(`in_${caseValue}`, RichTypeAny));
-        });
+        }
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {

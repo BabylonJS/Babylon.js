@@ -225,9 +225,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const frameData = source.editorData.frames[0];
 
             // create new graph nodes for only blocks from frame (last blocks added)
-            this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeMaterialBlock) => {
+            const blocks = this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length);
+
+            for (const block of blocks) {
                 this.appendBlock(block);
-            });
+            }
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
         });
@@ -317,19 +319,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     loadGraph() {
         const material = this.props.globalState.nodeMaterial;
-        material._vertexOutputNodes.forEach((n: any) => {
+        for (const n of material._vertexOutputNodes) {
             this.appendBlock(n, true);
-        });
-        material._fragmentOutputNodes.forEach((n: any) => {
+        }
+        for (const n of material._fragmentOutputNodes) {
             this.appendBlock(n, true);
-        });
+        }
 
-        material.attachedBlocks.forEach((n: any) => {
+        for (const n of material.attachedBlocks) {
             this.appendBlock(n, true);
-        });
+        }
 
         // Links
-        material.attachedBlocks.forEach((n: any) => {
+        for (const n of material.attachedBlocks) {
             if (n.inputs.length) {
                 const nodeData = this._graphCanvas.findNodeFromData(n);
                 for (const input of nodeData.content.inputs) {
@@ -338,7 +340,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
                 }
             }
-        });
+        }
     }
 
     showWaitScreen() {

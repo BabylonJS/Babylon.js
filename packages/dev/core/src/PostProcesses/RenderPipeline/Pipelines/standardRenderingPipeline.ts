@@ -1182,7 +1182,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         // Create callbacks and add effects
         let lastLuminance: Nullable<PostProcess> = this.luminancePostProcess;
 
-        this.luminanceDownSamplePostProcesses.forEach((pp, index) => {
+        for (let index = 0; index < this.luminanceDownSamplePostProcesses.length; index++) {
+            const pp = this.luminanceDownSamplePostProcesses[index];
             const downSampleOffsets = new Array<number>(18);
 
             pp.onApply = (effect: Effect) => {
@@ -1230,7 +1231,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                     true
                 )
             );
-        });
+        }
     }
 
     // Create HDR post-process

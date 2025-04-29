@@ -120,7 +120,10 @@ export class WebXRInputSource {
                                 if (this._options.renderingGroupId) {
                                     // anything other than 0?
                                     this.motionController.rootMesh.renderingGroupId = this._options.renderingGroupId;
-                                    this.motionController.rootMesh.getChildMeshes(false).forEach((mesh) => (mesh.renderingGroupId = this._options.renderingGroupId!));
+                                    const childMeshes = this.motionController.rootMesh.getChildMeshes(false);
+                                    for (const mesh of childMeshes) {
+                                        mesh.renderingGroupId = this._options.renderingGroupId!;
+                                    }
                                 }
                                 this.onMeshLoadedObservable.notifyObservers(this.motionController.rootMesh);
                                 this.motionController.rootMesh.parent = this.grip || this.pointer;

@@ -7,7 +7,7 @@ import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
-import { TextureTools } from "core/Misc/textureTools";
+import { GetTextureDataAsync, TextureTools } from "core/Misc/textureTools";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -60,6 +60,35 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
             return ".webp";
         case ImageMimeType.AVIF:
             return ".avif";
+    }
+}
+
+function IsCompressedTextureFormat(format: number): boolean {
+    switch (format) {
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -857,12 +886,20 @@ export class GLTFMaterialExporter {
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
     }
 
+    /**
+     * Get the RGBA pixel data from a texture
+     * @param babylonTexture
+     * @returns an array buffer promise containing the pixel data
+     */
     private _getPixelsFromTextureAsync(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
-        const pixels =
-            babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE
-                ? (babylonTexture.readPixels() as Promise<Uint8Array>)
-                : (babylonTexture.readPixels() as Promise<Float32Array>);
-        return pixels;
+        // If the internal texture format is compressed, we cannot read the pixels directly.
+        if (IsCompressedTextureFormat(babylonTexture.textureFormat)) {
+            return GetTextureDataAsync(babylonTexture, babylonTexture._texture!.width, babylonTexture._texture!.height);
+        }
+
+        return babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE
+            ? (babylonTexture.readPixels() as Promise<Uint8Array>)
+            : (babylonTexture.readPixels() as Promise<Float32Array>);
     }
 
     public async exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
@@ -899,7 +936,8 @@ export class GLTFMaterialExporter {
                         mimeType = textureMimeType as ImageMimeType;
                         break;
                     default:
-                        Tools.Warn(`Unsupported media type: ${textureMimeType}`);
+                        Tools.Warn(`Unsupported media type: ${textureMimeType}. Exporting texture as PNG.`);
+                        // Will later fallback to default mime type, image/png, from Canvas API
                         break;
                 }
             }

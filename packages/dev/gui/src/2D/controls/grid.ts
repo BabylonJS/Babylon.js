@@ -575,9 +575,9 @@ export class Grid extends Container {
             const childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
             serializationObject.rows.push(childSerializationObject);
         }
-        this.children.forEach((child) => {
+        for (const child of this.children) {
             serializationObject.tags.push(child._tag);
-        });
+        }
     }
 
     /**
@@ -586,9 +586,9 @@ export class Grid extends Container {
     public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         const children: Control[] = [];
-        this.children.forEach((child) => {
+        for (const child of this.children) {
             children.push(child);
-        });
+        }
         this.removeRowDefinition(0);
         this.removeColumnDefinition(0);
         for (let i = 0; i < serializedObject.columnCount; ++i) {

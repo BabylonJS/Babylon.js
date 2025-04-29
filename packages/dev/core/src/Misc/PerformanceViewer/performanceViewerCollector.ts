@@ -269,7 +269,7 @@ export class PerformanceViewerCollector {
         this.datasets.data.push(numPoints);
 
         // add the values inside the slice.
-        this.datasets.ids.forEach((id: string) => {
+        for (const id of this.datasets.ids) {
             const strategy = this._strategies.get(id);
 
             if (!strategy) {
@@ -277,7 +277,7 @@ export class PerformanceViewerCollector {
             }
 
             this.datasets.data.push(strategy.getData());
-        });
+        }
 
         if (this.datasetObservable.hasObservers()) {
             const slice: number[] = [timestamp, numPoints];
@@ -301,7 +301,7 @@ export class PerformanceViewerCollector {
         const slice: number[] = [timestamp, numPoints];
 
         // add the values inside the slice.
-        this.datasets.ids.forEach((id: string) => {
+        for (const id of this.datasets.ids) {
             const strategy = this._strategies.get(id);
 
             if (!strategy) {
@@ -311,7 +311,7 @@ export class PerformanceViewerCollector {
             if (this.datasetObservable.hasObservers()) {
                 slice.push(strategy.getData());
             }
-        });
+        }
 
         if (this.datasetObservable.hasObservers()) {
             this.datasetObservable.notifyObservers(slice);

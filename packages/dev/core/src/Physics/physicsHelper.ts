@@ -132,9 +132,9 @@ export class PhysicsHelper {
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-            impostors.forEach((impostor: PhysicsImpostor) => {
+            for (const impostor of impostors) {
                 if (!event.getImpostorHitData(impostor, origin, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyImpulse(hitData.force, hitData.contactPoint);
@@ -145,7 +145,7 @@ export class PhysicsHelper {
                         hitData: this._copyPhysicsHitData(hitData),
                     });
                 }
-            });
+            }
 
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
         } else {
@@ -203,9 +203,9 @@ export class PhysicsHelper {
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-            impostors.forEach((impostor: PhysicsImpostor) => {
+            for (const impostor of impostors) {
                 if (!event.getImpostorHitData(impostor, origin, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
@@ -216,7 +216,7 @@ export class PhysicsHelper {
                         hitData: this._copyPhysicsHitData(hitData),
                     });
                 }
-            });
+            }
 
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
         } else {
@@ -779,16 +779,18 @@ class PhysicsUpdraftEvent {
     private _tick() {
         const hitData = PhysicsUpdraftEvent._HitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
-            (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
+            const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
+            for (const impostor of impostors) {
                 if (!this._getImpostorHitData(impostor, hitData)) {
                     return;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
-            });
+            }
         } else {
             // V2
-            (<PhysicsEngineV2>this._physicsEngine).getBodies().forEach((body: PhysicsBody) => {
+            const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
+            for (const body of bodies) {
                 body.iterateOverAllInstances((body, instanceIndex) => {
                     if (!this._getBodyHitData(body, hitData, instanceIndex)) {
                         return;
@@ -796,7 +798,7 @@ class PhysicsUpdraftEvent {
 
                     body.applyForce(hitData.force, hitData.contactPoint, hitData.instanceIndex);
                 });
-            });
+            }
         }
     }
 
@@ -992,15 +994,17 @@ class PhysicsVortexEvent {
     private _tick() {
         const hitData = PhysicsVortexEvent._HitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
-            (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
+            const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
+            for (const impostor of impostors) {
                 if (!this._getImpostorHitData(impostor, hitData)) {
                     return;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
-            });
+            }
         } else {
-            (<PhysicsEngineV2>this._physicsEngine).getBodies().forEach((body: PhysicsBody) => {
+            const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
+            for (const body of bodies) {
                 body.iterateOverAllInstances((body: PhysicsBody, instanceIndex?: number) => {
                     if (!this._getBodyHitData(body, hitData, instanceIndex)) {
                         return;
@@ -1008,7 +1012,7 @@ class PhysicsVortexEvent {
 
                     body.applyForce(hitData.force, hitData.contactPoint, hitData.instanceIndex);
                 });
-            });
+            }
         }
     }
 

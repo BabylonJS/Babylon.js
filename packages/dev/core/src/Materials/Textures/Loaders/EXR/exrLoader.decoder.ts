@@ -158,26 +158,44 @@ export async function CreateDecoderAsync(header: IEXRHeader, dataView: DataView,
     } = {};
     for (const channel of header.channels) {
         switch (channel.name) {
-            case "Y":
             case "R":
             case "G":
             case "B":
             case "A":
                 channels[channel.name] = true;
                 decoder.type = channel.pixelType;
+                break;
+            case "Y":
+                channels[channel.name] = true;
+                decoder.type = channel.pixelType;
+                // Note: 'Y' is deprecated in OpenGL 3.0+; prefer 'R' for single-channel EXRs.
+                break;
+            default:
+                // Skip unsupported channels
+                break;
         }
     }
 
     // RGB images will be converted to RGBA format, preventing software emulation in select devices.
     let fillAlpha = false;
 
-    if (channels.R && channels.G && channels.B) {
-        fillAlpha = !channels.A;
+    if (channels.R && channels.G && channels.B && channels.A) {
         decoder.outputChannels = 4;
         decoder.decodeChannels = { R: 0, G: 1, B: 2, A: 3 };
+    } else if (channels.R && channels.G && channels.B) {
+        fillAlpha = true;
+        decoder.outputChannels = 4;
+        decoder.decodeChannels = { R: 0, G: 1, B: 2, A: 3 };
+    } else if (channels.R && channels.G) {
+        decoder.outputChannels = 2;
+        decoder.decodeChannels = { R: 0, G: 1 };
+    } else if (channels.R) {
+        decoder.outputChannels = 1;
+        decoder.decodeChannels = { R: 0 };
     } else if (channels.Y) {
         decoder.outputChannels = 1;
         decoder.decodeChannels = { Y: 0 };
+        // Note: Supporting 'Y' channel for legacy compatibility; prefer 'R' in new EXRs.
     } else {
         throw new Error("EXRLoader.parse: file contains unsupported data channels.");
     }

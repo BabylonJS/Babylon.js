@@ -106,11 +106,11 @@ export class ConnectionPointPortData implements IPortData {
     public get endpoints() {
         const endpoints: IPortData[] = [];
 
-        this.data.endpoints.forEach((endpoint) => {
+        for (const endpoint of this.data.endpoints) {
             const endpointOwnerBlock = endpoint.ownerBlock;
             const endpointNode = this._nodeContainer.nodes.find((n) => n.content.data === endpointOwnerBlock);
             endpoints.push(endpointNode!.getPortDataForPortDataContent(endpoint)!);
-        });
+        }
 
         return endpoints;
     }

@@ -25,6 +25,7 @@ import type { Observer } from "core/Misc/observable";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
+    onReady?: () => Promise<void>;
 }
 
 interface IGraphEditorState {
@@ -51,6 +52,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
         document.addEventListener("keydown", this.addToolControls);
         document.addEventListener("keyup", this.removePressToolControls);
+        this.props.onReady?.();
     }
 
     override componentWillUnmount() {

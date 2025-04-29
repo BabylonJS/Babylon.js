@@ -34,11 +34,11 @@ import { RegisterClass } from "../Misc/typeStore";
  */
 export class BaseParticleSystem implements IClipPlanesHolder {
     /**
-     * Source color is added to the destination color without alpha affecting the result
+     * Source color is added to the destination color without alpha affecting the result. Great for additive glow effects (fire, magic, lasers)
      */
     public static BLENDMODE_ONEONE = 0;
     /**
-     * Blend current color and particle color using particle’s alpha
+     * Blend current color and particle color using particle’s alpha. Same as Constants.ALPHA_COMBINE, the go-to for transparency. 100% alpha means source, 0% alpha means background. Glass, UI fade, smoke
      */
     public static BLENDMODE_STANDARD = 1;
     /**
@@ -49,11 +49,15 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * Multiply current color with particle color
      */
     public static BLENDMODE_MULTIPLY = 3;
-
     /**
      * Multiply current color with particle color then add current color and particle color multiplied by particle’s alpha
      */
     public static BLENDMODE_MULTIPLYADD = 4;
+    /**
+     * Subtracts source (particle) from destination (current color), leading to darker results
+     * - NOTE: Init as -1 so we can properly map all modes to Engine Const's (otherwise ALPHA_SUBTRACT will conflict with BLENDMODE_MULTIPLY since both use 3)
+     */
+    public static BLENDMODE_SUBTRACT = -1;
 
     /**
      * List of animations used by the particle system.
@@ -105,10 +109,21 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public updateSpeed = 0.01;
 
+    protected _targetStopDuration = 0;
     /**
      * The amount of time the particle system is running (depends of the overall update speed).
      */
-    public targetStopDuration = 0;
+    public get targetStopDuration() {
+        return this._targetStopDuration;
+    }
+
+    public set targetStopDuration(value: number) {
+        if (this._targetStopDuration === value) {
+            return;
+        }
+
+        this._targetStopDuration = value;
+    }
 
     /**
      * Specifies whether the particle system will be disposed once it reaches the end of the animation.
@@ -209,7 +224,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     _wasDispatched = false;
 
     protected _rootUrl = "";
-    private _noiseTexture: Nullable<ProceduralTexture>;
+    protected _noiseTexture: Nullable<ProceduralTexture>;
 
     /**
      * Gets or sets a texture used to add random noise to particle positions
@@ -236,7 +251,9 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     public onAnimationEnd: Nullable<() => void> = null;
 
     /**
-     * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+     * Blend mode use to render the particle
+     * For original blend modes which are exposed from ParticleSystem (OneOne, Standard, Add, Multiply, MultiplyAdd, and Subtract), use ParticleSystem.BLENDMODE_FOO
+     * For all other blend modes, use Engine Constants.ALPHA_FOO blend modes
      */
     public blendMode = BaseParticleSystem.BLENDMODE_ONEONE;
 
@@ -284,8 +301,19 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
+    protected _animationSheetEnabled = false;
     /** @internal */
-    public _isAnimationSheetEnabled: boolean;
+    public get _isAnimationSheetEnabled() {
+        return this._animationSheetEnabled;
+    }
+
+    public set _isAnimationSheetEnabled(value: boolean) {
+        if (this._animationSheetEnabled === value) {
+            return;
+        }
+
+        this._animationSheetEnabled = value;
+    }
 
     /**
      * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
@@ -385,18 +413,28 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public gravity = Vector3.Zero();
 
-    protected _colorGradients: Nullable<Array<ColorGradient>> = null;
-    protected _sizeGradients: Nullable<Array<FactorGradient>> = null;
-    protected _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
-    protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
-    protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
-    protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
-    protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _colorGradients: Nullable<Array<ColorGradient>> = null;
+    /** @internal */
+    public _sizeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _velocityGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _dragGradients: Nullable<Array<FactorGradient>> = null;
     protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
-    protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _startSizeGradients: Nullable<Array<FactorGradient>> = null;
     protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
-    protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
-    protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
 
     protected _hasTargetStopDurationDependantGradient() {
         return (
@@ -404,6 +442,34 @@ export class BaseParticleSystem implements IClipPlanesHolder {
             (this._emitRateGradients && this._emitRateGradients.length > 0) ||
             (this._lifeTimeGradients && this._lifeTimeGradients.length > 0)
         );
+    }
+
+    protected _setEngineBasedOnBlendMode(blendMode: number): void {
+        switch (blendMode) {
+            case BaseParticleSystem.BLENDMODE_MULTIPLYADD:
+                // Don't want to update engine since there is no equivalent engine alpha mode, instead it gets handled within particleSystem
+                return;
+            case BaseParticleSystem.BLENDMODE_ADD:
+                blendMode = Constants.ALPHA_ADD;
+                break;
+            case BaseParticleSystem.BLENDMODE_ONEONE:
+                blendMode = Constants.ALPHA_ONEONE;
+                break;
+            case BaseParticleSystem.BLENDMODE_STANDARD:
+                blendMode = Constants.ALPHA_COMBINE;
+                break;
+            case BaseParticleSystem.BLENDMODE_MULTIPLY:
+                blendMode = Constants.ALPHA_MULTIPLY;
+                break;
+            case BaseParticleSystem.BLENDMODE_SUBTRACT:
+                blendMode = Constants.ALPHA_SUBTRACT;
+                break;
+            default:
+                // For all other blend modes that were added after the initial particleSystem implementation,
+                // the ParticleSystem.BLENDMODE_FOO are already mapped to the underlying Constants.ALPHA_FOO
+                break;
+        }
+        this._engine.setAlphaMode(blendMode);
     }
 
     /**

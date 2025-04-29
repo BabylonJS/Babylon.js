@@ -1141,13 +1141,17 @@ export class ArcRotateCamera extends TargetCamera {
                     CheckNaN(this._goalTarget.y, this._target.y),
                     CheckNaN(this._goalTarget.z, this._target.z)
                 );
-                this.setTarget(Vector3.Lerp(this.target, goalTarget, t), undefined, undefined, true);
+                Vector3.LerpToRef(this.target, goalTarget, t, this._target);
 
                 // Terminate the target interpolation if we the target is close relative to the radius.
                 // This is when visually (regardless of scale) the target appears close to its final goal position.
                 if ((Vector3.Distance(this.target, goalTarget) * 10) / goalRadius < Epsilon) {
                     this._goalTarget.set(NaN, NaN, NaN);
-                    this.setTarget(goalTarget.clone(), undefined, undefined, true);
+                    this.target.copyFrom(goalTarget);
+                    // Call setTarget to trigger side effects like onMeshTargetChangedObservable.
+                    // NOTE: We pass in true for allowSamePosition because we already checked that the goal target is different from the current target,
+                    // but since we are updating the existing target Vector3 instance, it will otherwise look like the value has not changed.
+                    this.setTarget(this.target, false, true, true);
                 } else {
                     isInterpolating = true;
                 }

@@ -139,9 +139,9 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (!container.effectLayers) {
             return;
         }
-        container.effectLayers.forEach((o) => {
+        for (const o of container.effectLayers) {
             this.scene.addEffectLayer(o);
-        });
+        }
     }
 
     /**
@@ -153,12 +153,12 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (!container.effectLayers) {
             return;
         }
-        container.effectLayers.forEach((o) => {
+        for (const o of container.effectLayers) {
             this.scene.removeEffectLayer(o);
             if (dispose) {
                 o.dispose();
             }
-        });
+        }
     }
 
     /**

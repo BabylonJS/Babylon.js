@@ -207,6 +207,23 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
     mat3 T = invy * transpose(mat3(modelView)) * J;
     mat3 cov2d = transpose(T) * Vrk * T;
 
+#if COMPENSATION
+    float c00 = cov2d[0][0];
+    float c11 = cov2d[1][1];
+    float c01 = cov2d[0][1];
+    float detOrig = c00 * c11 - c01 * c01;
+#endif
+
+	cov2d[0][0] += kernelSize;
+	cov2d[1][1] += kernelSize;
+
+#if COMPENSATION
+    vec3 c2d = vec3(cov2d[0][0], c01, cov2d[1][1]);
+    float detBlur = c2d.x * c2d.z - c2d.y * c2d.y;
+    float compensation = sqrt(max(0., detOrig / detBlur));
+    vColor.w *= compensation;
+#endif
+
     float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
     float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
     float epsilon = 0.0001;

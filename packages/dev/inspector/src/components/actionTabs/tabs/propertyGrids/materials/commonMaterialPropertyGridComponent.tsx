@@ -20,6 +20,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { alphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -27,6 +28,54 @@ interface ICommonMaterialPropertyGridComponentProps {
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
+
+const orientationOptions = [
+    { label: "<None>", value: Number.MAX_SAFE_INTEGER },
+    { label: "Clockwise", value: Material.ClockWiseSideOrientation },
+    { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
+];
+
+const transparencyModeOptions = [
+    { label: "<Not Defined>", value: Null_Value },
+    { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
+    { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
+    { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
+    { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
+];
+
+const depthfunctionOptions = [
+    { label: "<Engine Default>", value: 0 },
+    { label: "Never", value: Engine.NEVER },
+    { label: "Always", value: Engine.ALWAYS },
+    { label: "Equal", value: Engine.EQUAL },
+    { label: "Less", value: Engine.LESS },
+    { label: "Less or equal", value: Engine.LEQUAL },
+    { label: "Greater", value: Engine.GREATER },
+    { label: "Greater or equal", value: Engine.GEQUAL },
+    { label: "Not equal", value: Engine.NOTEQUAL },
+];
+
+const stencilFunctionOptions = [
+    { label: "Never", value: Constants.NEVER },
+    { label: "Always", value: Constants.ALWAYS },
+    { label: "Equal", value: Constants.EQUAL },
+    { label: "Less", value: Constants.LESS },
+    { label: "Less or equal", value: Constants.LEQUAL },
+    { label: "Greater", value: Constants.GREATER },
+    { label: "Greater or equal", value: Constants.GEQUAL },
+    { label: "Not equal", value: Constants.NOTEQUAL },
+];
+
+const stencilOperationOptions = [
+    { label: "Keep", value: Constants.KEEP },
+    { label: "Zero", value: Constants.ZERO },
+    { label: "Replace", value: Constants.REPLACE },
+    { label: "Incr", value: Constants.INCR },
+    { label: "Decr", value: Constants.DECR },
+    { label: "Invert", value: Constants.INVERT },
+    { label: "Incr wrap", value: Constants.INCR_WRAP },
+    { label: "Decr wrap", value: Constants.DECR_WRAP },
+];
 
 export class CommonMaterialPropertyGridComponent extends React.Component<ICommonMaterialPropertyGridComponentProps> {
     constructor(props: ICommonMaterialPropertyGridComponentProps) {
@@ -37,64 +86,6 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         const material = this.props.material;
 
         material.depthFunction = material.depthFunction ?? 0;
-
-        const orientationOptions = [
-            { label: "<None>", value: Number.MAX_SAFE_INTEGER },
-            { label: "Clockwise", value: Material.ClockWiseSideOrientation },
-            { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
-        ];
-
-        const transparencyModeOptions = [
-            { label: "<Not Defined>", value: Null_Value },
-            { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
-            { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
-            { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
-            { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
-        ];
-
-        const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
-        ];
-
-        const depthfunctionOptions = [
-            { label: "<Engine Default>", value: 0 },
-            { label: "Never", value: Engine.NEVER },
-            { label: "Always", value: Engine.ALWAYS },
-            { label: "Equal", value: Engine.EQUAL },
-            { label: "Less", value: Engine.LESS },
-            { label: "Less or equal", value: Engine.LEQUAL },
-            { label: "Greater", value: Engine.GREATER },
-            { label: "Greater or equal", value: Engine.GEQUAL },
-            { label: "Not equal", value: Engine.NOTEQUAL },
-        ];
-
-        const stencilFunctionOptions = [
-            { label: "Never", value: Constants.NEVER },
-            { label: "Always", value: Constants.ALWAYS },
-            { label: "Equal", value: Constants.EQUAL },
-            { label: "Less", value: Constants.LESS },
-            { label: "Less or equal", value: Constants.LEQUAL },
-            { label: "Greater", value: Constants.GREATER },
-            { label: "Greater or equal", value: Constants.GEQUAL },
-            { label: "Not equal", value: Constants.NOTEQUAL },
-        ];
-
-        const stencilOperationOptions = [
-            { label: "Keep", value: Constants.KEEP },
-            { label: "Zero", value: Constants.ZERO },
-            { label: "Replace", value: Constants.REPLACE },
-            { label: "Incr", value: Constants.INCR },
-            { label: "Decr", value: Constants.DECR },
-            { label: "Invert", value: Constants.INVERT },
-            { label: "Incr wrap", value: Constants.INCR_WRAP },
-            { label: "Decr wrap", value: Constants.DECR_WRAP },
-        ];
 
         return (
             <div>

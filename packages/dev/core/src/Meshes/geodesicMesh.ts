@@ -765,7 +765,7 @@ export class GeodesicData extends PolyhedronData {
         this.adjacentFaces = [];
         for (let m = 0; m < map.length; m++) {
             goldbergPolyhedronData.face[m] = this.setOrder(m, map[m].concat([]));
-            map[m].forEach((el: number) => {
+            for (const el of map[m]) {
                 cx = 0;
                 cy = 0;
                 cz = 0;
@@ -777,7 +777,7 @@ export class GeodesicData extends PolyhedronData {
                     cz += vertex[2];
                 }
                 goldbergPolyhedronData.vertex[el] = [cx / 3, cy / 3, cz / 3];
-            });
+            }
         }
         return goldbergPolyhedronData;
     }

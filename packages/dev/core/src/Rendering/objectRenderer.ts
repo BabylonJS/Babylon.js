@@ -71,9 +71,9 @@ export class ObjectRenderer {
     private _renderListHasChanged = (_functionName: string, previousLength: number) => {
         const newLength = this._renderList ? this._renderList.length : 0;
         if ((previousLength === 0 && newLength > 0) || newLength === 0) {
-            this._scene.meshes.forEach((mesh) => {
+            for (const mesh of this._scene.meshes) {
                 mesh._markSubMeshesAsLightDirty();
-            });
+            }
         }
     };
 

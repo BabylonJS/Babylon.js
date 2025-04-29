@@ -15,7 +15,7 @@ export class ShaderCodeNode {
         return true;
     }
 
-    process(preprocessors: { [key: string]: string }, options: _IProcessingOptions): string {
+    process(preprocessors: { [key: string]: string }, options: _IProcessingOptions, preProcessorsFromCode: { [key: string]: string }): string {
         let result = "";
         if (this.line) {
             let value: string = this.line;
@@ -80,12 +80,13 @@ export class ShaderCodeNode {
             result += value + "\n";
         }
 
-        this.children.forEach((child) => {
-            result += child.process(preprocessors, options);
-        });
+        for (const child of this.children) {
+            result += child.process(preprocessors, options, preProcessorsFromCode);
+        }
 
         if (this.additionalDefineKey) {
             preprocessors[this.additionalDefineKey] = this.additionalDefineValue || "true";
+            preProcessorsFromCode[this.additionalDefineKey] = preprocessors[this.additionalDefineKey];
         }
 
         return result;

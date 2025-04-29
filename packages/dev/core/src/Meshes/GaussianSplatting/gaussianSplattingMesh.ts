@@ -717,6 +717,7 @@ export class GaussianSplattingMesh extends Mesh {
         const enum ElementMode {
             Vertex = 0,
             Chunk = 1,
+            SH = 2,
         }
         let chunkMode = ElementMode.Chunk;
         const vertexProperties: PlyProperty[] = [];
@@ -743,6 +744,9 @@ export class GaussianSplattingMesh extends Mesh {
                 } else if (chunkMode == ElementMode.Vertex) {
                     vertexProperties.push({ value, type, offset: rowVertexOffset });
                     rowVertexOffset += offsets[typeName];
+                } else if (chunkMode == ElementMode.SH) {
+                    // SH doesn't count for vertex row size but its properties are used to retrieve SH
+                    vertexProperties.push({ value, type, offset: rowVertexOffset });
                 }
 
                 if (!offsets[typeName]) {
@@ -754,6 +758,8 @@ export class GaussianSplattingMesh extends Mesh {
                     chunkMode = ElementMode.Chunk;
                 } else if (type == "vertex") {
                     chunkMode = ElementMode.Vertex;
+                } else if (type == "sh") {
+                    chunkMode = ElementMode.SH;
                 }
             }
         }
@@ -925,16 +931,17 @@ export class GaussianSplattingMesh extends Mesh {
                         Unpack111011(value, temp3);
                         position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
                         position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
-                        position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
+                        position[2] = -Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
                     }
                     break;
                 case PLYValue.PACKED_ROTATION:
                     {
                         UnpackRot(value, q);
-                        r0 = q.w;
-                        r1 = q.z;
-                        r2 = q.y;
-                        r3 = q.x;
+
+                        r0 = q.x;
+                        r1 = q.y;
+                        r2 = -q.z;
+                        r3 = -q.w;
                     }
                     break;
                 case PLYValue.PACKED_SCALE:
@@ -1004,16 +1011,26 @@ export class GaussianSplattingMesh extends Mesh {
                     r1 = value;
                     break;
                 case PLYValue.ROT_2:
-                    r2 = value;
+                    r2 = -value;
                     break;
                 case PLYValue.ROT_3:
-                    r3 = value;
+                    r3 = -value;
                     break;
             }
             if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
-                const clampedValue = Scalar.Clamp(value * 127.5 + 127.5, 0, 255);
                 const shIndex = property.value - PLYValue.SH_0;
-                plySH[shIndex] = clampedValue;
+                if (property.type == PLYType.UCHAR && header.chunkCount) {
+                    // compressed ply. dataView points to beginning of vertex
+                    // could be improved with a direct copy instead of a per SH index computation + copy
+                    const compressedValue = dataView.getUint8(
+                        header.rowChunkLength * header.chunkCount + header.vertexCount * header.rowVertexLength + index * header.shCoefficientCount + shIndex
+                    );
+                    // compressed .ply SH import : https://github.com/playcanvas/engine/blob/fda3f0368b45d7381f0b5a1722bd2056128eaebe/src/scene/gsplat/gsplat-compressed-data.js#L88C81-L88C98
+                    plySH[shIndex] = (compressedValue * (8 / 255) - 4) * 127.5 + 127.5;
+                } else {
+                    const clampedValue = Scalar.Clamp(value * 127.5 + 127.5, 0, 255);
+                    plySH[shIndex] = clampedValue;
+                }
             }
         }
 
@@ -1176,9 +1193,9 @@ export class GaussianSplattingMesh extends Mesh {
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
         if (this._shTextures) {
-            this._shTextures.forEach((shTexture) => {
+            for (const shTexture of this._shTextures) {
                 shTexture.dispose();
-            });
+            }
         }
 
         this._covariancesATexture = null;
@@ -1200,9 +1217,9 @@ export class GaussianSplattingMesh extends Mesh {
         this._colorsTexture = source.colorsTexture?.clone()!;
         if (source._shTextures) {
             this._shTextures = [];
-            this._shTextures.forEach((shTexture) => {
+            for (const shTexture of this._shTextures) {
                 this._shTextures?.push(shTexture.clone()!);
-            });
+            }
         }
     }
 
@@ -1383,13 +1400,13 @@ export class GaussianSplattingMesh extends Mesh {
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             if (sh) {
                 this._shTextures = [];
-                sh.forEach((shData) => {
+                for (const shData of sh) {
                     const buffer = new Uint32Array(shData.buffer);
                     const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
-                });
+                }
             }
             this._instanciateWorker();
         }
