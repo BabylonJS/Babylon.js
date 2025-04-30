@@ -1,13 +1,9 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
-#ifndef UNLIT
-    #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-        finalDiffuse *= (1.0 - baseSpecularEnvironmentReflectance * baseSpecularEnergyConservationFactor) * surfaceAlbedo;
-    #else
-        finalDiffuse *= (1.0 - baseSpecularEnvironmentReflectance) * surfaceAlbedo;
-    #endif
+#ifdef METALLICWORKFLOW
+    finalDiffuse *= mix(surfaceAlbedo, vec3f(0.0), reflectivityOut.metallic);
 #else
-finalDiffuse *= surfaceAlbedo;
+    finalDiffuse *= surfaceAlbedo;
 #endif
 
 #if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
