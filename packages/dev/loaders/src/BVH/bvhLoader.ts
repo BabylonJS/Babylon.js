@@ -56,7 +56,7 @@ function createBVHNode(): IBVHNode {
         channels: [],
         children: [],
         frames: [],
-        parent: null
+        parent: null,
     };
 }
 
@@ -64,7 +64,7 @@ function createBVHKeyFrame(): IBVHKeyFrame {
     return {
         time: 0,
         position: new Vector3(),
-        rotation: new Quaternion()
+        rotation: new Quaternion(),
     };
 }
 
