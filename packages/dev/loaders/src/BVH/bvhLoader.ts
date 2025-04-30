@@ -7,13 +7,8 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
+import { Tools } from "core/Misc/tools";
 
-/**
- * Original code from: https://github.com/herzig/BVHImporter/
- *
- * Ivo Herzig, 2016
- * MIT License
- */
 export class BVHParser {
     private static readonly _XPosition = "Xposition";
     private static readonly _YPosition = "Yposition";
@@ -35,12 +30,11 @@ export class BVHParser {
     public static ReadBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOptions): Skeleton {
         const lines = text.split("\n");
 
-        const { animationName, loopMode, skeletonName, skeletonId } = loadingOptions;
+        const { loopMode } = loadingOptions;
 
-        const skeleton = new Skeleton(skeletonName, skeletonId, scene);
+        const skeleton = new Skeleton("", "", scene);
 
         const context = new LoaderContext(skeleton);
-        context.animationName = animationName;
         context.loopMode = loopMode;
 
         // read model structure
@@ -150,7 +144,6 @@ export class BVHParser {
      * @returns The converted matrix
      */
     private static _BoneOffset(node: BVHNode): Matrix {
-        // Convert BVH Y-up, right-handed offset to Babylon's Y-up, left-handed system.
         const x = node.offset.x;
         const y = node.offset.y;
         // Flip Z axis to convert handedness.
@@ -213,7 +206,7 @@ export class BVHParser {
         return animation;
     }
 
-    /*
+    /**
          Recursively parses the HIERARCHY section of the BVH file
             
          - lines: all lines of the file. lines are consumed as we go along.
@@ -283,7 +276,7 @@ export class BVHParser {
         throw new Error("Unexpected end of file: missing closing brace");
     }
 
-    /*
+    /**
          Recursively reads data from a single frame into the bone hierarchy.
          The bone hierarchy has to be structured in the same order as the BVH file.
          keyframe data is stored in bone.frames.
@@ -296,9 +289,10 @@ export class BVHParser {
          Note: Position data (specifically Z) is flipped to convert coordinate systems.
     */
     private static _ReadFrameData(data: string[], frameTime: number, bone: BVHNode) {
-        if (bone.type === "ENDSITE")
+        if (bone.type === "ENDSITE") {
             // end sites have no motion data
             return;
+        }
 
         // add keyframe
         const keyframe = new BVHKeyFrame();
@@ -327,23 +321,23 @@ export class BVHParser {
                     keyframe.position.y = parseFloat(value.trim());
                     break;
                 case this._ZPosition:
-                    keyframe.position.z = -parseFloat(value.trim()); // Flip Z position
+                    keyframe.position.z = -parseFloat(value.trim()); // Flip Z axis to convert handedness.
                     break;
                 case this._XRotation:
-                    pitch = (parseFloat(value.trim()) * Math.PI) / 180;
+                    pitch = Tools.ToRadians(+value);
                     break;
                 case this._YRotation:
-                    yaw = (parseFloat(value.trim()) * Math.PI) / 180;
+                    yaw = Tools.ToRadians(+value);
                     break;
                 case this._ZRotation:
-                    roll = (parseFloat(value.trim()) * Math.PI) / 180;
+                    roll = Tools.ToRadians(+value);
                     break;
                 default:
                     throw new Error("invalid channel type");
             }
         }
 
-        if (yaw != 0 || pitch != 0 || roll != 0) {
+        if (yaw !== 0 || pitch !== 0 || roll !== 0) {
             // Create rotation matrix in proper order
             const rotationMatrix = Matrix.Identity();
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotationMatrix);
@@ -358,7 +352,6 @@ export class BVHParser {
 }
 
 class LoaderContext {
-    animationName: string = "";
     loopMode: number = Animation.ANIMATIONLOOPMODE_CYCLE;
     list: BVHNode[] = [];
     root: BVHNode = new BVHNode();

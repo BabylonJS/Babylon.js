@@ -43,10 +43,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     private static get _DefaultLoadingOptions(): BVHLoadingOptions {
         return {
-            animationName: "Animation",
             loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
-            skeletonName: "skeleton",
-            skeletonId: "skeleton_id",
         };
     }
 
