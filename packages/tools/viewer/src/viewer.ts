@@ -1539,7 +1539,9 @@ export class Viewer implements IDisposable {
                 this._disposeShadows();
             } else {
                 // make sure there is an env light before creating shadows
-                this.loadEnvironment("auto", { lighting: true });
+                if (!this._reflectionTexture) {
+                    this.loadEnvironment("auto", { lighting: true, skybox: false });
+                }
 
                 if (this._shadowQuality === "normal") {
                     this._updateShadowMap(abortController.signal);
@@ -1616,7 +1618,7 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
@@ -1767,7 +1769,7 @@ export class Viewer implements IDisposable {
         ]);
 
         // cancel if the model is unloaded before the shadows are created
-        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
@@ -1938,7 +1940,7 @@ export class Viewer implements IDisposable {
             }
         }
 
-        if (options?.lighting && options.skybox) {
+        if (options?.lighting && options?.skybox) {
             this._environmentLightingMode = "url";
             this._environmentSkyboxMode = "url";
         } else if (options?.lighting) {
@@ -1976,48 +1978,6 @@ export class Viewer implements IDisposable {
         await Promise.all(promises);
     }
 
-    // public get environmentSkybox() {
-    //     if (this._environmentSkyboxMode === "url" && this._skyboxTexture) {
-    //         return this._skyboxTexture.url;
-    //     }
-    //     return this._environmentSkyboxMode ?? "auto";
-    // }
-
-    // public set environmentSkybox(skybox: string) {
-    //     if ((this._environmentSkyboxMode === skybox && "auto" === skybox) || skybox === this._skyboxTexture?.url) {
-    //         return;
-    //     }
-
-    //     if (skybox === "none" || skybox === "auto") {
-    //         this._environmentSkyboxMode = skybox;
-    //     } else {
-    //         this._environmentSkyboxMode = "url";
-    //     }
-
-    //     this.loadEnvironment(skybox, { skybox: skybox !== "none" });
-    // }
-
-    // public get environmentLighting() {
-    //     if (this._environmentLightingMode === "url" && this._reflectionTexture) {
-    //         return this._reflectionTexture.url;
-    //     }
-    //     return this._environmentLightingMode ?? "auto";
-    // }
-
-    // public set environmentLighting(lighting: string) {
-    //     if ((this._environmentLightingMode === lighting && "auto" === lighting) || lighting === this._reflectionTexture?.url) {
-    //         return;
-    //     }
-
-    //     if (lighting === "none" || lighting === "auto") {
-    //         this._environmentLightingMode = lighting;
-    //     } else {
-    //         this._environmentLightingMode = "url";
-    //     }
-
-    //     this.loadEnvironment(lighting, { skybox: lighting !== "none" });
-    // }
-
     private _setEnvironmentLighting(cubeTexture: CubeTexture | HDRCubeTexture): void {
         this._reflectionTexture = cubeTexture;
         this._scene.environmentTexture = this._reflectionTexture;
@@ -2044,32 +2004,30 @@ export class Viewer implements IDisposable {
             urlPromise = (async () => (await import("./defaultEnvironment")).default)();
         }
 
-        options = options ?? defaultLoadEnvironmentOptions;
-
         const locks: AsyncLock[] = [];
-        if (options.lighting) {
+        if (options?.lighting) {
             this._loadEnvironmentAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
             locks.push(this._loadEnvironmentLock);
         }
-        if (options.skybox) {
+        if (options?.skybox) {
             this._loadSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
             locks.push(this._loadSkyboxLock);
         }
 
-        const environmentAbortController = (this._loadEnvironmentAbortController = options.lighting ? new AbortController() : null);
-        const skyboxAbortController = (this._loadSkyboxAbortController = options.skybox ? new AbortController() : null);
+        const environmentAbortController = (this._loadEnvironmentAbortController = options?.lighting ? new AbortController() : null);
+        const skyboxAbortController = (this._loadSkyboxAbortController = options?.skybox ? new AbortController() : null);
 
         await AsyncLock.LockAsync(async () => {
             throwIfAborted(abortSignal, environmentAbortController?.signal, skyboxAbortController?.signal);
             this._snapshotHelper.disableSnapshotRendering();
 
             const dispose = () => {
-                if (options.lighting) {
+                if (options?.lighting) {
                     this._reflectionTexture?.dispose();
                     this._reflectionTexture = null;
                     this._scene.environmentTexture = null;
                 }
-                if (options.skybox || url === "none") {
+                if (options?.skybox || url === "none") {
                     this._skybox?.dispose(undefined, true);
                     this._skyboxTexture = null;
                     this._skybox = null;
@@ -2080,7 +2038,7 @@ export class Viewer implements IDisposable {
             // First dispose the current environment and/or skybox.
             dispose();
 
-            if ((!options.lighting && !options.skybox) || url === "none") {
+            if ((!options?.lighting && !options?.skybox) || url === "none") {
                 return;
             }
 
@@ -2095,7 +2053,6 @@ export class Viewer implements IDisposable {
                         }
                         this._setEnvironmentLighting(cubeTexture);
                     }
-
                     if (options.skybox) {
                         if (this._environmentLightingMode === "auto" && !this._reflectionTexture) {
                             this._setEnvironmentLighting(cubeTexture.clone());
@@ -2121,6 +2078,7 @@ export class Viewer implements IDisposable {
                 }
 
                 this._updateLight();
+                this._updateShadows();
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
                 dispose();
