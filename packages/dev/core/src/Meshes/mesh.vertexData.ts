@@ -195,7 +195,7 @@ export class VertexData implements IVertexDataLike {
      */
     public static readonly DEFAULTSIDE = 0;
 
-    private static _UniqueIDGenerator = 0;
+    private static _UniqueIdGenerator = 0;
 
     /**
      * An array of the x, y, z position of each vertex  [...., x, y, z, .....]
@@ -296,8 +296,8 @@ export class VertexData implements IVertexDataLike {
      * Creates a new VertexData
      */
     public constructor() {
-        this.uniqueId = VertexData._UniqueIDGenerator;
-        VertexData._UniqueIDGenerator++;
+        this.uniqueId = VertexData._UniqueIdGenerator;
+        VertexData._UniqueIdGenerator++;
     }
 
     /**
@@ -671,6 +671,7 @@ export class VertexData implements IVertexDataLike {
      * Generates an array of vertex data where each vertex data only has one material info
      * @returns An array of VertexData
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public splitBasedOnMaterialID() {
         if (!this.materialInfos || this.materialInfos.length < 2) {
             return [this];

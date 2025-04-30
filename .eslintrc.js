@@ -68,8 +68,6 @@ const abbreviations = [
     "DOM",
     "WASM",
     "BRDF",
-    "ID",
-    "GUID",
     "wheel[XYZ]",
     "PLY",
     "STL",

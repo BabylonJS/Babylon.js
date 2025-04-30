@@ -5109,6 +5109,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      * @deprecated Please use MeshBuilder instead Please use setMaterialById instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public setMaterialByID(id: string): Mesh {
         return this.setMaterialById(id);
     }

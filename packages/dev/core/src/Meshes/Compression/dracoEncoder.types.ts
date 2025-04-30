@@ -72,7 +72,7 @@ export interface IDracoEncodedMeshData {
     /**
      * A map of Babylon vertex attributes to their Draco unique ids in the encoded data.
      */
-    attributeIDs: Record<string, number>;
+    attributeIds: Record<string, number>;
 }
 
 interface IEncodeDoneMessage {

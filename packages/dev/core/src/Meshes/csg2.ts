@@ -87,7 +87,7 @@ interface IManifoldMesh {
     vertProperties: Float32Array;
     triVerts: Uint32Array;
     runIndex: Uint32Array;
-    runOriginalID: Uint32Array;
+    runOriginalId: Uint32Array;
     numRun: number;
 }
 
@@ -240,13 +240,13 @@ export class CSG2 implements IDisposable {
         }
 
         // Submeshes
-        let id = manifoldMesh.runOriginalID[0];
+        let id = manifoldMesh.runOriginalId[0];
         let start = manifoldMesh.runIndex[0];
         let materialIndex = 0;
         const materials: Material[] = [];
         scene = output.getScene();
         for (let run = 0; run < manifoldMesh.numRun; ++run) {
-            const nextID = manifoldMesh.runOriginalID[run + 1];
+            const nextID = manifoldMesh.runOriginalId[run + 1];
             if (nextID !== id) {
                 const end = manifoldMesh.runIndex[run + 1];
                 new SubMesh(materialIndex, 0, vertexCount, start, end - start, output);
@@ -292,7 +292,7 @@ export class CSG2 implements IDisposable {
         structure: IManifoldVertexComponent[],
         numProp: number,
         runIndex?: Uint32Array,
-        runOriginalID?: Uint32Array
+        runOriginalId?: Uint32Array
     ) {
         const vertProperties = new Float32Array(vertexCount * structure.reduce((acc, cur) => acc + cur.stride, 0));
 
@@ -308,7 +308,7 @@ export class CSG2 implements IDisposable {
             }
         }
 
-        const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
+        const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalId });
         manifoldMesh.merge();
 
         let returnValue: CSG2;

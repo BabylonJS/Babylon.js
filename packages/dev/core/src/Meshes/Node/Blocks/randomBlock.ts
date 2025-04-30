@@ -16,8 +16,10 @@ export enum RandomBlockLocks {
     /** None */
     None,
     /** LoopID */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     LoopID,
     /** InstanceID */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     InstanceID,
     /** Once */
     Once,

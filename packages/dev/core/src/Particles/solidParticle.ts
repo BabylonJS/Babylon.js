@@ -309,9 +309,11 @@ export class ModelShape {
      * Get or set the shapeId
      * @deprecated Please use shapeId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get shapeID(): number {
         return this.shapeId;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set shapeID(shapeID: number) {
         this.shapeId = shapeID;
     }

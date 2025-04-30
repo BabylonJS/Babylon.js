@@ -14,7 +14,7 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import stretchFillIcon from "shared-ui-components/imgs/stretchFillIcon.svg";
 import imageLinkIcon from "shared-ui-components/imgs/imageLinkIcon.svg";
 import cropIcon from "shared-ui-components/imgs/cropIcon.svg";
-import cellIDIcon from "shared-ui-components/imgs/cellIDIcon.svg";
+import cellIdIcon from "shared-ui-components/imgs/cellIDIcon.svg";
 import autoResizeIcon from "shared-ui-components/imgs/autoResizeIcon.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import animationSheetIcon from "shared-ui-components/imgs/animationSheetIcon.svg";
@@ -271,7 +271,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         <div className="ge-divider double">
                             <FloatLineComponent
                                 iconLabel={"Cell Id"}
-                                icon={cellIDIcon}
+                                icon={cellIdIcon}
                                 lockObject={this.props.lockObject}
                                 label=""
                                 isInteger={true}

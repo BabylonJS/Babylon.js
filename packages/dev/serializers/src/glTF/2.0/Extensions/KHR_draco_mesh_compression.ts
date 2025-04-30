@@ -128,7 +128,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
 
                 const dracoInfo: IKHRDracoMeshCompression = {
                     bufferView: -1, // bufferView will be set to a real index later, when we write the binary and decide bufferView ordering
-                    attributes: encodedData.attributeIDs,
+                    attributes: encodedData.attributeIds,
                 };
                 const bufferView = bufferManager.createBufferView(encodedData.data);
                 bufferManager.setBufferView(dracoInfo, bufferView);

@@ -108,7 +108,7 @@ export function EncodeMesh(
             encodedData[i] = encodedNativeBuffer.GetValue(i);
         }
 
-        return { data: encodedData, attributeIDs: attributeIDs };
+        return { data: encodedData, attributeIds: attributeIDs };
     } finally {
         if (mesh) {
             encoderModule.destroy(mesh);

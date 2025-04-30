@@ -189,10 +189,12 @@ export interface IParticleSystem {
     /**
      * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     startSpriteCellID: number;
     /**
      * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     endSpriteCellID: number;
     /**
      * If using a spritesheet (isAnimationSheetEnabled), defines whether the sprite animation is looping

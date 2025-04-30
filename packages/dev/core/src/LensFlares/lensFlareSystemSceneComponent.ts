@@ -54,6 +54,7 @@ declare module "../scene" {
          * @returns the lens flare system or null if not found
          * @deprecated Please use getLensFlareSystemById instead
          */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         getLensFlareSystemByID(id: string): Nullable<LensFlareSystem>;
 
         /**

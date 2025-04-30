@@ -86,6 +86,7 @@ export class InstancesBlock extends NodeMaterialBlock {
     /**
      * Gets the instanceID component
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get instanceID(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }

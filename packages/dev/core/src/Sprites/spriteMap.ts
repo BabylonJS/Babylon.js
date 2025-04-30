@@ -363,6 +363,7 @@ export class SpriteMap implements ISpriteMap {
      * Returns tileID location
      * @returns Vector2 the cell position ID
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public getTileID(): Vector2 {
         const p = this.getMousePosition();
         p.multiplyInPlace(this.options.stageSize || Vector2.Zero());

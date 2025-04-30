@@ -414,7 +414,7 @@ export function _CreateAngleGradientsData(particle: Particle, system: ThinPartic
 
 /** @internal */
 export function _CreateSheetData(particle: Particle, system: ThinParticleSystem) {
-    particle._initialStartSpriteCellID = system.startSpriteCellID;
-    particle._initialEndSpriteCellID = system.endSpriteCellID;
+    particle._initialStartSpriteCellId = system.startSpriteCellID;
+    particle._initialEndSpriteCellId = system.endSpriteCellID;
     particle._initialSpriteCellLoop = system.spriteCellLoop;
 }
