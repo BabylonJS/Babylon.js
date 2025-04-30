@@ -1,6 +1,8 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
 import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw } from "./testData";
+import { ImportMeshAsync } from "core/Loading/sceneLoader";
+import { BVHLoadingOptions } from "loaders/BVH/bvhLoadingOptions";
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
@@ -851,7 +853,7 @@ describe("Babylon Scene Loader", function () {
         it("should load a basic BVH file", async () => {
             const assertionData = await page.evaluate((content) => {
                 const scene = window.scene!;
-                return BABYLON.SceneLoader.ImportMeshAsync(null, "", "data:" + content, scene).then(() => {
+                return ImportMeshAsync("data:" + content, scene).then(() => {
                     const skeleton = scene.skeletons[0];
                     return {
                         numSkeletons: scene.skeletons.length,
@@ -877,24 +879,14 @@ describe("Babylon Scene Loader", function () {
         });
 
         it("should handle BVH file with custom loading options", async () => {
-            interface BVHLoadingOptions {
-                skeletonId: string;
-                skeletonName: string;
-                animationName: string;
-                loopMode: number;
-            }
-
             const loadingOptions: BVHLoadingOptions = {
-                skeletonId: "test_skeleton",
-                skeletonName: "test_skeleton_name",
-                animationName: "test_animation",
                 loopMode: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
             };
 
             const assertionData = await page.evaluate(
                 (content: string, options: any) => {
                     const scene = window.scene!;
-                    return BABYLON.SceneLoader.ImportMeshAsync(null, "", "data:" + content, scene, undefined, undefined, options).then(() => {
+                    return ImportMeshAsync("data:" + content, scene, options).then(() => {
                         const skeleton = scene.skeletons[0];
                         const animation = skeleton.bones[0].animations[0];
                         return {
