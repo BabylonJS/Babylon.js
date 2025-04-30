@@ -211,6 +211,8 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
 
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
+
         this._ping.dispose();
         this._pong.dispose();
 

@@ -11,6 +11,9 @@ import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
+import { Logger } from "../../Misc/logger";
+import type { EventState } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -322,18 +325,10 @@ export class _IblShadowsVoxelTracingPass {
         this._outputTexture.defines = defines;
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setBindings(this._scene.activeCamera!);
-
-        let counter = 0;
-        this._scene.onBeforeRenderObservable.add(() => {
-            counter = 0;
-        });
-        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-            if (++counter == 2) {
-                if (this.enabled && this._outputTexture.isReady()) {
-                    this._setBindings(this._scene.activeCamera!);
-                    this._outputTexture.render();
-                }
-            }
+        this._renderWhenGBufferReady = this._render.bind(this);
+        // Don't start rendering until the first vozelization is done.
+        this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
+            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
         });
     }
 
@@ -351,7 +346,7 @@ export class _IblShadowsVoxelTracingPass {
         return defines;
     }
 
-    private _setBindings(camera: Camera) {
+    private _setBindings(camera: Camera): boolean {
         this._outputTexture.defines = this._createDefines();
         this._outputTexture.setMatrix("viewMtx", camera.getViewMatrix());
         this._outputTexture.setMatrix("projMtx", camera.getProjectionMatrix());
@@ -384,22 +379,36 @@ export class _IblShadowsVoxelTracingPass {
         this._outputTexture.setTexture("voxelGridSampler", voxelGrid);
         this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline._getNoiseTexture());
         const cdfGenerator = this._scene.iblCdfGenerator;
-        if (cdfGenerator) {
-            this._outputTexture.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
+        if (!cdfGenerator) {
+            Logger.Warn("IBLShadowsVoxelTracingPass: Can't bind for render because iblCdfGenerator is not enabled.");
+            return false;
         }
+        this._outputTexture.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
         if (this._coloredShadows && this._scene.environmentTexture) {
             this._outputTexture.setTexture("iblSampler", this._scene.environmentTexture);
         }
 
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
-            return;
+            Logger.Warn("IBLShadowsVoxelTracingPass: Can't bind for render because GeometryBufferRenderer is not enabled.");
+            return false;
         }
         const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
         this._outputTexture.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         const wnormalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
         this._outputTexture.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
+        return true;
     }
+
+    private _render() {
+        if (this.enabled && this._outputTexture.isReady() && this._outputTexture.getEffect()?.isReady()) {
+            if (this._setBindings(this._scene.activeCamera!)) {
+                this._outputTexture.render();
+            }
+        }
+    }
+
+    private _renderWhenGBufferReady: Nullable<(eventData: number, eventState: EventState) => void> = null;
 
     /**
      * Called by render pipeline when canvas resized.
@@ -410,6 +419,10 @@ export class _IblShadowsVoxelTracingPass {
             width: Math.max(1.0, Math.floor(this._engine.getRenderWidth() * scaleFactor)),
             height: Math.max(1.0, Math.floor(this._engine.getRenderHeight() * scaleFactor)),
         };
+        // Don't resize if the size is the same as the current size.
+        if (this._outputTexture.getSize().width === newSize.width && this._outputTexture.getSize().height === newSize.height) {
+            return;
+        }
         this._outputTexture.resize(newSize, false);
     }
 
@@ -431,6 +444,10 @@ export class _IblShadowsVoxelTracingPass {
      * Disposes the associated resources
      */
     public dispose() {
+        if (this._scene.geometryBufferRenderer && this._renderWhenGBufferReady) {
+            const gBuffer = this._scene.geometryBufferRenderer.getGBuffer();
+            gBuffer.onAfterRenderObservable.removeCallback(this._renderWhenGBufferReady);
+        }
         this._outputTexture.dispose();
         if (this._debugPassPP) {
             this._debugPassPP.dispose();

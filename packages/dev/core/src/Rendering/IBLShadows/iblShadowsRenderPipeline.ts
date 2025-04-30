@@ -1182,6 +1182,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._dummyTexture3d.dispose();
         this.onNewIblReadyObservable.clear();
         this.onShadowTextureReadyObservable.clear();
+        this.onVoxelizationCompleteObservable.clear();
         super.dispose();
     }
 }
