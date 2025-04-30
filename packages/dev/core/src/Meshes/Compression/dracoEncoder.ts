@@ -244,9 +244,9 @@ export class DracoEncoder extends DracoCodec {
 
                     // Build the transfer list. No need to copy, as the data was copied in previous steps.
                     const transferList = [];
-                    attributes.forEach((attribute) => {
+                    for (const attribute of attributes) {
                         transferList.push(attribute.data.buffer);
-                    });
+                    }
                     if (indices) {
                         transferList.push(indices.buffer);
                     }

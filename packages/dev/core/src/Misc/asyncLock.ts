@@ -57,17 +57,15 @@ export class AsyncLock {
         const deferred = new Deferred<T>();
         let acquiredLocks = 0;
 
-        locks.forEach((lock) =>
-            lock
-                .lockAsync(async () => {
-                    acquiredLocks++;
-                    if (acquiredLocks === locks.length) {
-                        deferred.resolve(await func());
-                    }
-                    return deferred.promise;
-                }, signal)
-                .catch((e) => deferred.reject(e))
-        );
+        for (const lock of locks) {
+            lock.lockAsync(async () => {
+                acquiredLocks++;
+                if (acquiredLocks === locks.length) {
+                    deferred.resolve(await func());
+                }
+                return deferred.promise;
+            }, signal).catch((e) => deferred.reject(e));
+        }
 
         return deferred.promise;
     }

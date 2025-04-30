@@ -2270,7 +2270,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         // Lights
         const lights = scene.lights;
 
-        lights.forEach((light: Light) => {
+        for (const light of lights) {
             let meshIndex = light.includedOnlyMeshes.indexOf(this);
 
             if (meshIndex !== -1) {
@@ -2300,7 +2300,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
                     }
                 }
             }
-        });
+        }
 
         // SubMeshes
         if (this.getClassName() !== "InstancedMesh" || this.getClassName() !== "InstancedLinesMesh") {

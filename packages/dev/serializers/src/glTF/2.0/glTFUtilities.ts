@@ -12,11 +12,8 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
-// Matrix that converts handedness on the X-axis.
+// Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
-
-// 180 degrees rotation in Y.
-const rotation180Y = new Quaternion(0, 1, 0, 0);
 
 // Default values for comparison.
 const epsilon = 1e-6;
@@ -194,9 +191,53 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     return value;
 }
 
+/**
+ * Converts, in-place, a left-handed quaternion to a right-handed quaternion via a change of basis.
+ * @param value the unit quaternion to convert
+ * @returns the converted quaternion
+ */
 export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
-    value.x *= -1;
-    value.y *= -1;
+    /**
+     * This is the simplified version of the following equation:
+     *    q' = to_quaternion(M * to_matrix(q) * M^-1)
+     * where M is the conversion matrix `convertHandednessMatrix`,
+     * q is the input quaternion, and q' is the converted quaternion.
+     * Reference: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+     */
+    if (value.x * value.x + value.y * value.y > 0.5) {
+        const absX = Math.abs(value.x);
+        const absY = Math.abs(value.y);
+        if (absX > absY) {
+            const sign = Math.sign(value.x);
+            value.x = absX;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w *= sign;
+        } else {
+            const sign = Math.sign(value.y);
+            value.x *= -sign;
+            value.y = absY;
+            value.z *= sign;
+            value.w *= -sign;
+        }
+    } else {
+        const absZ = Math.abs(value.z);
+        const absW = Math.abs(value.w);
+        if (absZ > absW) {
+            const sign = Math.sign(value.z);
+            value.x *= -sign;
+            value.y *= sign;
+            value.z = absZ;
+            value.w *= -sign;
+        } else {
+            const sign = Math.sign(value.w);
+            value.x *= sign;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w = absW;
+        }
+    }
+
     return value;
 }
 
@@ -221,18 +262,18 @@ export function ConvertToRightHandedNode(value: INode) {
 }
 
 /**
- * Rotation by 180 as glTF has a different convention than Babylon.
+ * Pre-multiplies a 180-degree Y rotation to the quaternion, in order to match glTF's flipped forward direction for cameras.
  * @param rotation Target camera rotation.
- * @returns Ref to camera rotation.
  */
-export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
-    return rotation.multiplyInPlace(rotation180Y);
+export function ConvertCameraRotationToGLTF(rotation: Quaternion): void {
+    // Simplified from: rotation * (0, 1, 0, 0).
+    rotation.copyFromFloats(-rotation.z, rotation.w, rotation.x, -rotation.y);
 }
 
-export function RotateNode180Y(node: INode) {
-    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    rotation180Y.multiplyToRef(rotation, rotation);
-    node.rotation = rotation.asArray();
+export function RotateNode180Y(node: INode): void {
+    Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    ConvertCameraRotationToGLTF(TmpVectors.Quaternion[1]);
+    node.rotation = TmpVectors.Quaternion[1].asArray();
 }
 
 /**

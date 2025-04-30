@@ -135,7 +135,7 @@ export class SimplificationQueue {
     public runSimplification(task: ISimplificationTask) {
         if (task.parallelProcessing) {
             //parallel simplifier
-            task.settings.forEach((setting) => {
+            for (const setting of task.settings) {
                 const simplifier = this._getSimplifier(task);
                 simplifier.simplify(setting, (newMesh) => {
                     if (setting.distance !== undefined) {
@@ -149,7 +149,7 @@ export class SimplificationQueue {
                     }
                     this.executeNext();
                 });
-            });
+            }
         } else {
             //single simplifier.
             const simplifier = this._getSimplifier(task);
@@ -434,12 +434,12 @@ export class QuadraticErrorSimplification implements ISimplifier {
                             }
 
                             const uniqueArray: DecimationTriangle[] = [];
-                            delTr.forEach((deletedT) => {
+                            for (const deletedT of delTr) {
                                 if (uniqueArray.indexOf(deletedT) === -1) {
                                     deletedT.deletePending = true;
                                     uniqueArray.push(deletedT);
                                 }
-                            });
+                            }
 
                             if (uniqueArray.length % 2 !== 0) {
                                 continue;
@@ -615,7 +615,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
             const vertex = this._vertices[i];
             vertex.id = vertexCount;
             if (vertex.triangleCount) {
-                vertex.originalOffsets.forEach((originalOffset) => {
+                for (const originalOffset of vertex.originalOffsets) {
                     newPositionData.push(vertex.position.x);
                     newPositionData.push(vertex.position.y);
                     newPositionData.push(vertex.position.z);
@@ -636,7 +636,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
                         newColorsData.push(colorsData[originalOffset * 4 + 3]);
                     }
                     ++vertexCount;
-                });
+                }
             }
         }
 
@@ -650,14 +650,14 @@ export class QuadraticErrorSimplification implements ISimplifier {
         const originalIndices = <IndicesArray>this._mesh.getIndices();
         for (i = 0; i < newTriangles.length; ++i) {
             t = newTriangles[i]; //now get the new referencing point for each vertex
-            [0, 1, 2].forEach((idx) => {
+            for (let idx = 0; idx < 3; ++idx) {
                 const id = originalIndices[t.originalOffset + idx];
                 let offset = t._vertices[idx].originalOffsets.indexOf(id);
                 if (offset < 0) {
                     offset = 0;
                 }
                 newIndicesArray.push(t._vertices[idx].id + offset + startingVertex);
-            });
+            }
         }
 
         //overwriting the old vertex buffers and indices.
@@ -678,7 +678,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
         const originalSubmesh = this._mesh.subMeshes[submeshIndex];
         if (submeshIndex > 0) {
             this._reconstructedMesh.subMeshes = [];
-            submeshesArray.forEach((submesh) => {
+            for (const submesh of submeshesArray) {
                 SubMesh.AddToMesh(
                     submesh.materialIndex,
                     submesh.verticesStart,
@@ -687,7 +687,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
                     submesh.indexCount,
                     submesh.getMesh()
                 );
-            });
+            }
             SubMesh.AddToMesh(
                 originalSubmesh.materialIndex,
                 startingVertex,

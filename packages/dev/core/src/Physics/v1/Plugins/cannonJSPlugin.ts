@@ -87,13 +87,13 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
     private _removeMarkedPhysicsBodiesFromWorld(): void {
         if (this._physicsBodiesToRemoveAfterStep.length > 0) {
-            this._physicsBodiesToRemoveAfterStep.forEach((physicsBody) => {
+            for (const physicsBody of this._physicsBodiesToRemoveAfterStep) {
                 if (typeof this.world.removeBody === "function") {
                     this.world.removeBody(physicsBody);
                 } else {
                     this.world.remove(physicsBody);
                 }
-            });
+            }
             this._physicsBodiesToRemoveAfterStep.length = 0;
         }
     }
@@ -168,10 +168,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //try to keep the body moving in the right direction by taking old properties.
             //Should be tested!
             if (oldBody) {
-                ["force", "torque", "velocity", "angularVelocity"].forEach(function (param) {
+                const props = ["force", "torque", "velocity", "angularVelocity"];
+                for (const param of props) {
                     const vec = oldBody[param];
                     impostor.physicsBody[param].set(vec.x, vec.y, vec.z);
-                });
+                }
             }
             this._processChildMeshes(impostor);
         }
@@ -217,11 +218,17 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
                 }
-                mesh.getChildMeshes(true)
-                    .filter((m) => !!m.physicsImpostor)
-                    .forEach(processMesh);
+                const meshes = mesh.getChildMeshes(true).filter((m) => !!m.physicsImpostor);
+
+                for (const mesh of meshes) {
+                    processMesh(mesh);
+                }
             };
-            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh);
+            const meshes = meshChildren.filter((m) => !!m.physicsImpostor);
+
+            for (const mesh of meshes) {
+                processMesh(mesh);
+            }
         }
     }
 

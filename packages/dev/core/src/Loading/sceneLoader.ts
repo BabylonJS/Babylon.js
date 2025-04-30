@@ -790,13 +790,14 @@ export function RegisterSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoa
         };
     } else {
         const extensions = plugin.extensions;
-        Object.keys(extensions).forEach((extension) => {
+        const keys = Object.keys(extensions);
+        for (const extension of keys) {
             registeredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: extensions[extension].isBinary,
                 mimeType: extensions[extension].mimeType,
             };
-        });
+        }
     }
 }
 
@@ -1434,32 +1435,34 @@ async function importAnimationsImplAsync(
             animatable.reset();
         }
         scene.stopAllAnimations();
-        scene.animationGroups.slice().forEach((animationGroup) => {
+        const animationGroups = scene.animationGroups.slice();
+        for (const animationGroup of animationGroups) {
             animationGroup.dispose();
-        });
+        }
         const nodes = scene.getNodes();
-        nodes.forEach((node) => {
+        for (const node of nodes) {
             if (node.animations) {
                 node.animations = [];
             }
-        });
+        }
     } else {
         switch (animationGroupLoadingMode) {
             case SceneLoaderAnimationGroupLoadingMode.Clean:
-                scene.animationGroups.slice().forEach((animationGroup) => {
+                const animationGroups = scene.animationGroups.slice();
+                for (const animationGroup of animationGroups) {
                     animationGroup.dispose();
-                });
+                }
                 break;
             case SceneLoaderAnimationGroupLoadingMode.Stop:
-                scene.animationGroups.forEach((animationGroup) => {
+                for (const animationGroup of scene.animationGroups) {
                     animationGroup.stop();
-                });
+                }
                 break;
             case SceneLoaderAnimationGroupLoadingMode.Sync:
-                scene.animationGroups.forEach((animationGroup) => {
+                for (const animationGroup of scene.animationGroups) {
                     animationGroup.reset();
                     animationGroup.restart();
-                });
+                }
                 break;
             case SceneLoaderAnimationGroupLoadingMode.NoSync:
                 // nothing to do

@@ -283,15 +283,15 @@ export const LoadImage = (
     const handlersList: { target: any; name: string; handler: any }[] = [];
 
     const loadHandlersList = () => {
-        handlersList.forEach((handler) => {
+        for (const handler of handlersList) {
             handler.target.addEventListener(handler.name, handler.handler);
-        });
+        }
     };
 
     const unloadHandlersList = () => {
-        handlersList.forEach((handler) => {
+        for (const handler of handlersList) {
             handler.target.removeEventListener(handler.name, handler.handler);
-        });
+        }
         handlersList.length = 0;
     };
 

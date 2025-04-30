@@ -258,7 +258,8 @@ export class PhysicsViewer {
             return;
         }
 
-        parentingMesh.getDescendants(true).forEach((parentConstraintMesh) => {
+        const descendants = parentingMesh.getDescendants(true);
+        for (const parentConstraintMesh of descendants) {
             // Get the parent transform
             const parentCoordSystemNode = parentConstraintMesh.getDescendants(true)[0] as TransformNode;
             const childCoordSystemNode = parentConstraintMesh.getDescendants(true)[1] as TransformNode;
@@ -291,7 +292,7 @@ export class PhysicsViewer {
                 Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
                 childTransformNode.rotationQuaternion!
             );
-        });
+        }
     }
 
     /**
@@ -590,10 +591,10 @@ export class PhysicsViewer {
                     continue;
                 }
 
-                meshes.forEach((mesh) => {
+                for (const mesh of meshes) {
                     utilityLayerScene.removeMesh(mesh);
                     mesh.dispose();
-                });
+                }
 
                 this._constraints.splice(i, 1);
                 this._constraintMeshes.splice(i, 1);
@@ -751,7 +752,7 @@ export class PhysicsViewer {
                     const childMeshes = targetMesh.getChildMeshes().filter((c) => {
                         return c.physicsImpostor ? 1 : 0;
                     });
-                    childMeshes.forEach((m) => {
+                    for (const m of childMeshes) {
                         if (m.physicsImpostor && m.getClassName() === "Mesh") {
                             const boundingInfo = m.getBoundingInfo();
                             const min = boundingInfo.boundingBox.minimum;
@@ -780,7 +781,7 @@ export class PhysicsViewer {
                                 mesh.parent = m;
                             }
                         }
-                    });
+                    }
                 } else {
                     Logger.Warn("No target mesh parameter provided for NoImpostor. Skipping.");
                 }

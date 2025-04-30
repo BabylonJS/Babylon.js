@@ -158,9 +158,9 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      */
     public override dispose(): void {
         super.dispose();
-        this._trackedImages.forEach((trackedImage) => {
+        for (const trackedImage of this._trackedImages) {
             trackedImage.originalBitmap.close();
-        });
+        }
         this._trackedImages.length = 0;
         this.onTrackableImageFoundObservable.clear();
         this.onUntrackableImageFoundObservable.clear();

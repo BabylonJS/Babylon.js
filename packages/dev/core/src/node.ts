@@ -595,9 +595,9 @@ export class Node implements IBehaviorAware<Node> {
         this._nodeDataStorage._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
         if (this._children) {
-            this._children.forEach((c) => {
+            for (const c of this._children) {
                 c._syncParentEnabledState(); // Force children to update accordingly
-            });
+            }
         }
     }
 

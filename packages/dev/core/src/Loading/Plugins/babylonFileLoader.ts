@@ -290,12 +290,12 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
                     // Textures
                     const textures = mat.getActiveTextures();
-                    textures.forEach((t) => {
+                    for (const t of textures) {
                         if (container.textures.indexOf(t) == -1) {
                             container.textures.push(t);
                             t._parentContainer = container;
                         }
-                    });
+                    }
                 }
             }
         }
@@ -313,12 +313,12 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
                 // Textures
                 const textures = mmat.getActiveTextures();
-                textures.forEach((t) => {
+                for (const t of textures) {
                     if (container.textures.indexOf(t) == -1) {
                         container.textures.push(t);
                         t._parentContainer = container;
                     }
-                });
+                }
             }
         }
 
@@ -358,12 +358,12 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 }
             }
 
-            addedGeometry.forEach((g) => {
+            for (const g of addedGeometry) {
                 if (g) {
                     container.geometries.push(g);
                     g._parentContainer = container;
                 }
-            });
+            }
         }
 
         // Transform nodes
@@ -485,35 +485,35 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         }
 
         // link multimats with materials
-        scene.multiMaterials.forEach((multimat) => {
-            multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
+        for (const multimat of scene.multiMaterials) {
+            for (const subMaterial of multimat._waitingSubMaterialsUniqueIds) {
                 multimat.subMaterials.push(findMaterial(subMaterial, scene));
-            });
+            }
             multimat._waitingSubMaterialsUniqueIds = [];
-        });
+        }
 
         // link meshes with materials
-        scene.meshes.forEach((mesh) => {
+        for (const mesh of scene.meshes) {
             if (mesh._waitingMaterialId !== null) {
                 mesh.material = findMaterial(mesh._waitingMaterialId, scene);
                 mesh._waitingMaterialId = null;
             }
-        });
+        }
 
         // link meshes with morph target managers
-        scene.meshes.forEach((mesh) => {
+        for (const mesh of scene.meshes) {
             if (mesh._waitingMorphTargetManagerId !== null) {
                 mesh.morphTargetManager = tempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
                 mesh._waitingMorphTargetManagerId = null;
             }
-        });
+        }
 
         // link skeleton transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
             const skeleton = scene.skeletons[index];
             if (skeleton._hasWaitingData) {
                 if (skeleton.bones != null) {
-                    skeleton.bones.forEach((bone) => {
+                    for (const bone of skeleton.bones) {
                         if (bone._waitingTransformNodeId) {
                             const linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId) as TransformNode;
                             if (linkTransformNode) {
@@ -521,7 +521,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                             }
                             bone._waitingTransformNodeId = null;
                         }
-                    });
+                    }
                 }
 
                 skeleton._hasWaitingData = null;
@@ -569,9 +569,9 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         }
 
-        scene.geometries.forEach((g) => {
+        for (const g of scene.geometries) {
             g._loadedUniqueId = "";
-        });
+        }
 
         Parse(parsedData, scene, container, rootUrl);
 
@@ -681,22 +681,28 @@ SceneLoader.RegisterPlugin({
                             if (parsedData.geometries !== undefined && parsedData.geometries !== null) {
                                 //find the correct geometry and add it to the scene
                                 let found: boolean = false;
-                                ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
-                                    if (found === true || !parsedData.geometries[geometryType] || !Array.isArray(parsedData.geometries[geometryType])) {
-                                        return;
-                                    } else {
-                                        parsedData.geometries[geometryType].forEach((parsedGeometryData: any) => {
-                                            if (parsedGeometryData.id === parsedMesh.geometryId) {
-                                                switch (geometryType) {
-                                                    case "vertexData":
-                                                        Geometry.Parse(parsedGeometryData, scene, rootUrl);
-                                                        break;
-                                                }
-                                                found = true;
-                                            }
-                                        });
+                                const geoms = ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"];
+                                for (const geometryType of geoms) {
+                                    if (!parsedData.geometries[geometryType] || !Array.isArray(parsedData.geometries[geometryType])) {
+                                        continue;
                                     }
-                                });
+                                    const geom = parsedData.geometries[geometryType];
+                                    for (const parsedGeometryData of geom) {
+                                        if (parsedGeometryData.id === parsedMesh.geometryId) {
+                                            switch (geometryType) {
+                                                case "vertexData":
+                                                    Geometry.Parse(parsedGeometryData, scene, rootUrl);
+                                                    break;
+                                            }
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (found) {
+                                        break;
+                                    }
+                                }
                                 if (found === false) {
                                     Logger.Warn("Geometry not found for mesh " + parsedMesh.id);
                                 }
@@ -726,14 +732,14 @@ SceneLoader.RegisterPlugin({
                                     ) {
                                         if (parsedMultiMaterial.materialsUniqueIds) {
                                             // if the materials inside the multimat are stored by unique id
-                                            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: string) =>
-                                                loadSubMaterial(subMatId, (parsedMaterial) => parsedMaterial.uniqueId === subMatId)
-                                            );
+                                            for (const subMatId of parsedMultiMaterial.materialsUniqueIds) {
+                                                loadSubMaterial(subMatId, (parsedMaterial) => parsedMaterial.uniqueId === subMatId);
+                                            }
                                         } else {
                                             // if the mats are stored by id instead
-                                            parsedMultiMaterial.materials.forEach((subMatId: string) =>
-                                                loadSubMaterial(subMatId, (parsedMaterial) => parsedMaterial.id === subMatId)
-                                            );
+                                            for (const subMatId of parsedMultiMaterial.materials) {
+                                                loadSubMaterial(subMatId, (parsedMaterial) => parsedMaterial.id === subMatId);
+                                            }
                                         }
                                         materialArray.push(parsedMultiMaterial.uniqueId || parsedMultiMaterial.id);
                                         const mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
@@ -812,28 +818,28 @@ SceneLoader.RegisterPlugin({
                 }
 
                 // link multimats with materials
-                scene.multiMaterials.forEach((multimat) => {
-                    multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
+                for (const multimat of scene.multiMaterials) {
+                    for (const subMaterial of multimat._waitingSubMaterialsUniqueIds) {
                         multimat.subMaterials.push(findMaterial(subMaterial, scene));
-                    });
+                    }
                     multimat._waitingSubMaterialsUniqueIds = [];
-                });
+                }
 
                 // link meshes with materials
-                scene.meshes.forEach((mesh) => {
+                for (const mesh of scene.meshes) {
                     if (mesh._waitingMaterialId !== null) {
                         mesh.material = findMaterial(mesh._waitingMaterialId, scene);
                         mesh._waitingMaterialId = null;
                     }
-                });
+                }
 
                 // link meshes with morph target managers
-                scene.meshes.forEach((mesh) => {
+                for (const mesh of scene.meshes) {
                     if (mesh._waitingMorphTargetManagerId !== null) {
                         mesh.morphTargetManager = tempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
                         mesh._waitingMorphTargetManagerId = null;
                     }
-                });
+                }
 
                 // Connecting parents and lods
                 for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
@@ -886,7 +892,7 @@ SceneLoader.RegisterPlugin({
                     const skeleton = scene.skeletons[index];
                     if (skeleton._hasWaitingData) {
                         if (skeleton.bones != null) {
-                            skeleton.bones.forEach((bone) => {
+                            for (const bone of skeleton.bones) {
                                 if (bone._waitingTransformNodeId) {
                                     const linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId) as TransformNode;
                                     if (linkTransformNode) {
@@ -894,7 +900,7 @@ SceneLoader.RegisterPlugin({
                                     }
                                     bone._waitingTransformNodeId = null;
                                 }
-                            });
+                            }
                         }
 
                         skeleton._hasWaitingData = null;
@@ -926,9 +932,9 @@ SceneLoader.RegisterPlugin({
                 }
             }
 
-            scene.geometries.forEach((g) => {
+            for (const g of scene.geometries) {
                 g._loadedUniqueId = "";
-            });
+            }
 
             return true;
         } catch (err) {

@@ -231,15 +231,15 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         if (this._transientXrHitTestSource) {
             const hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
 
-            hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
+            for (const resultsPerInputSource of hitTestResultsPerInputSource) {
                 this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
-            });
+            }
         }
     }
 
     private _processWebXRHitTestResult(hitTestResults: readonly XRHitTestResult[], inputSource?: XRInputSource) {
         const results: IWebXRHitResult[] = [];
-        hitTestResults.forEach((hitTestResult) => {
+        for (const hitTestResult of hitTestResults) {
             const pose = hitTestResult.getPose(this._xrSessionManager.referenceSpace);
             if (!pose) {
                 return;
@@ -265,7 +265,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
                 xrHitResult: hitTestResult,
             };
             results.push(result);
-        });
+        }
 
         this.onHitTestResultObservable.notifyObservers(results);
     }

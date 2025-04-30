@@ -65,14 +65,14 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
 
     private _closestFace(targetDirection: Vector3) {
         // Go over each face and calculate the angle between the face's normal and targetDirection
-        this._faceVectors.forEach((v) => {
+        for (const v of this._faceVectors) {
             if (!this._target.rotationQuaternion) {
                 this._target.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._target.rotation.y, this._target.rotation.x, this._target.rotation.z);
             }
             this._target.rotationQuaternion.toRotationMatrix(this._tmpMatrix);
             Vector3.TransformCoordinatesToRef(v.direction, this._tmpMatrix, v.rotatedDirection);
             v.diff = Vector3.GetAngleBetweenVectors(v.rotatedDirection, targetDirection, Vector3.Cross(v.rotatedDirection, targetDirection));
-        });
+        }
         // Return the face information of the one with the normal closest to target direction
         return this._faceVectors.reduce((min, p) => {
             if (min.ignore) {
@@ -122,7 +122,7 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
             // Get camera up direction
             Vector3.TransformCoordinatesToRef(Vector3.Up(), this._tmpMatrix, this._tmpVector);
             // Ignore faces to not select a parallel face for the up vector of the UI
-            this._faceVectors.forEach((v) => {
+            for (const v of this._faceVectors) {
                 if (facing.direction.x && v.direction.x) {
                     v.ignore = true;
                 }
@@ -132,12 +132,12 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
                 if (facing.direction.z && v.direction.z) {
                     v.ignore = true;
                 }
-            });
+            }
             const facingUp = this._closestFace(this._tmpVector);
             // Unignore faces
-            this._faceVectors.forEach((v) => {
+            for (const v of this._faceVectors) {
                 v.ignore = false;
-            });
+            }
 
             // Position the app bar on that face
             this._ui.position.copyFrom(target.position);

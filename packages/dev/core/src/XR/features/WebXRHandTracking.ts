@@ -407,19 +407,21 @@ export class WebXRHand implements IDisposable {
 
         // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
         handMesh.alwaysSelectAsActiveMesh = true;
-        handMesh.getChildMeshes().forEach((mesh) => {
+        const children = handMesh.getChildMeshes();
+        for (const mesh of children) {
             mesh.alwaysSelectAsActiveMesh = true;
-        });
+        }
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
             const handMeshSkeleton = this._handMesh.skeleton;
-            handJointReferenceArray.forEach((jointName, jointIdx) => {
+            for (let jointIdx = 0; jointIdx < handJointReferenceArray.length; jointIdx++) {
+                const jointName = handJointReferenceArray[jointIdx];
                 const jointBoneIdx = handMeshSkeleton.getBoneIndexByName(rigMapping ? rigMapping[jointName] : jointName);
                 if (jointBoneIdx !== -1) {
                     handMeshSkeleton.bones[jointBoneIdx].linkTransformNode(this._jointTransforms[jointIdx]);
                 }
-            });
+            }
         }
 
         this.onHandMeshSetObservable.notifyObservers(this);
@@ -462,7 +464,7 @@ export class WebXRHand implements IDisposable {
             return;
         }
 
-        handJointReferenceArray.forEach((_jointName, jointIdx) => {
+        for (let jointIdx = 0; jointIdx < handJointReferenceArray.length; jointIdx++) {
             const jointTransform = this._jointTransforms[jointIdx];
             Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
@@ -488,7 +490,7 @@ export class WebXRHand implements IDisposable {
                     jointTransform.rotationQuaternion!.w *= -1;
                 }
             }
-        });
+        }
 
         if (this._handMesh) {
             this._handMesh.isVisible = true;
@@ -508,7 +510,9 @@ export class WebXRHand implements IDisposable {
                 this._handMesh.isVisible = false;
             }
         }
-        this._jointTransforms.forEach((transform) => transform.dispose());
+        for (const transform of this._jointTransforms) {
+            transform.dispose();
+        }
         this._jointTransforms.length = 0;
         this.onHandMeshSetObservable.clear();
     }
@@ -638,7 +642,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             handNodes.fingerColor.value = handColors.fingerColor;
             handNodes.tipFresnel.value = handColors.tipFresnel;
             const isMultiview = (xrSessionManager._getBaseLayerWrapper() as WebXRCompositionLayerWrapper)?.isMultiview;
-            ["left", "right"].forEach((handedness) => {
+            const hd = ["left", "right"];
+            for (const handedness of hd) {
                 const handGLB = handedness == "left" ? WebXRHandTracking._LeftHandGLB : WebXRHandTracking._RightHandGLB;
                 if (!handGLB) {
                     // this should never happen!
@@ -658,7 +663,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 if (!handsDefined && !scene.useRightHandedSystem) {
                     handGLB.meshes[1].rotate(Axis.Y, Math.PI);
                 }
-            });
+            }
 
             handShader.dispose();
             resolve({ left: riggedMeshes.left, right: riggedMeshes.right });
@@ -792,16 +797,19 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 options.handMeshes = options.handMeshes || {};
                 const leftRigMapping = {};
                 const rightRigMapping = {};
-                [
+                const rigMappingTuples = [
                     [anyJointMeshOptions.rigMapping.left, leftRigMapping],
                     [anyJointMeshOptions.rigMapping.right, rightRigMapping],
-                ].forEach((rigMappingTuple) => {
+                ];
+
+                for (const rigMappingTuple of rigMappingTuples) {
                     const legacyRigMapping = rigMappingTuple[0] as string[];
                     const rigMapping = rigMappingTuple[1] as XRHandMeshRigMapping;
-                    legacyRigMapping.forEach((modelJointName, index) => {
+                    for (let index = 0; index < legacyRigMapping.length; index++) {
+                        const modelJointName = legacyRigMapping[index];
                         rigMapping[handJointReferenceArray[index]] = modelJointName;
-                    });
-                });
+                    }
+                }
                 options.handMeshes.customRigMappings = {
                     left: leftRigMapping as XRHandMeshRigMapping,
                     right: rightRigMapping as XRHandMeshRigMapping,
@@ -852,7 +860,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             });
         }
 
-        this.options.xrInput.controllers.forEach(this._attachHand);
+        for (const controller of this.options.xrInput.controllers) {
+            this._attachHand(controller);
+        }
+
         this._addNewAttachObserver(this.options.xrInput.onControllerAddedObservable, this._attachHand);
         this._addNewAttachObserver(this.options.xrInput.onControllerRemovedObservable, this._detachHand);
 
@@ -914,11 +925,19 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId, this.options.handMeshes?.disposeOnSessionEnd));
+        const keys = Object.keys(this._attachedHands);
+        for (const uniqueId of keys) {
+            this._detachHandById(uniqueId, this.options.handMeshes?.disposeOnSessionEnd);
+        }
+
         if (this.options.handMeshes?.disposeOnSessionEnd) {
             if (this._handResources.jointMeshes) {
-                this._handResources.jointMeshes.left.forEach((trackedMesh) => trackedMesh.dispose());
-                this._handResources.jointMeshes.right.forEach((trackedMesh) => trackedMesh.dispose());
+                for (const trackedMesh of this._handResources.jointMeshes.left) {
+                    trackedMesh.dispose();
+                }
+                for (const trackedMesh of this._handResources.jointMeshes.right) {
+                    trackedMesh.dispose();
+                }
                 this._handResources.jointMeshes = null;
             }
             if (this._handResources.handMeshes) {
@@ -926,8 +945,17 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 this._handResources.handMeshes.right.dispose();
                 this._handResources.handMeshes = null;
             }
-            WebXRHandTracking._RightHandGLB?.meshes.forEach((mesh) => mesh.dispose());
-            WebXRHandTracking._LeftHandGLB?.meshes.forEach((mesh) => mesh.dispose());
+
+            if (WebXRHandTracking._RightHandGLB) {
+                for (const mesh of WebXRHandTracking._RightHandGLB.meshes) {
+                    mesh.dispose();
+                }
+            }
+            if (WebXRHandTracking._LeftHandGLB) {
+                for (const mesh of WebXRHandTracking._LeftHandGLB.meshes) {
+                    mesh.dispose();
+                }
+            }
             WebXRHandTracking._RightHandGLB = null;
             WebXRHandTracking._LeftHandGLB = null;
             this._originalMesh?.dispose();
@@ -955,15 +983,28 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             this._handResources.handMeshes.left.dispose();
             this._handResources.handMeshes.right.dispose();
             // remove the cached meshes
-            WebXRHandTracking._RightHandGLB?.meshes.forEach((mesh) => mesh.dispose());
-            WebXRHandTracking._LeftHandGLB?.meshes.forEach((mesh) => mesh.dispose());
+
+            if (WebXRHandTracking._RightHandGLB) {
+                for (const mesh of WebXRHandTracking._RightHandGLB.meshes) {
+                    mesh.dispose();
+                }
+            }
+            if (WebXRHandTracking._LeftHandGLB) {
+                for (const mesh of WebXRHandTracking._LeftHandGLB.meshes) {
+                    mesh.dispose();
+                }
+            }
             WebXRHandTracking._RightHandGLB = null;
             WebXRHandTracking._LeftHandGLB = null;
         }
 
         if (this._handResources.jointMeshes) {
-            this._handResources.jointMeshes.left.forEach((trackedMesh) => trackedMesh.dispose());
-            this._handResources.jointMeshes.right.forEach((trackedMesh) => trackedMesh.dispose());
+            for (const trackedMesh of this._handResources.jointMeshes.left) {
+                trackedMesh.dispose();
+            }
+            for (const trackedMesh of this._handResources.jointMeshes.right) {
+                trackedMesh.dispose();
+            }
         }
     }
 }

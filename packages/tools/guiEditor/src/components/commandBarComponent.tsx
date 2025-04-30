@@ -222,13 +222,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             isActive={false}
                             copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
-                                this.props.globalState.selectedControls.forEach((guiNode) => {
+                                for (const guiNode of this.props.globalState.selectedControls) {
                                     if (guiNode != this.props.globalState.guiTexture.getChildren()[0]) {
                                         this.props.globalState.guiTexture.removeControl(guiNode);
                                         this.props.globalState.liveGuiTexture?.removeControl(guiNode);
                                         guiNode.dispose();
                                     }
-                                });
+                                }
                                 this.props.globalState.setSelection([]);
                             }}
                         />

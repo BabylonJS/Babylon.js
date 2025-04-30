@@ -19,7 +19,7 @@ export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visi
 
     if (visitedNodes) {
         // refresh first the nodes so that the right types are assigned to the auto-detect ports
-        links.forEach((link) => {
+        for (const link of links) {
             const nodeA = link.nodeA,
                 nodeB = link.nodeB;
 
@@ -32,7 +32,7 @@ export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visi
                 visitedNodes.add(nodeB);
                 RefreshNode(nodeB, visitedNodes, visitedLinks);
             }
-        });
+        }
     }
 
     // Invisible endpoints (for teleport nodes)
@@ -54,12 +54,12 @@ export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visi
     }
 
     // then refresh the links to display the right color between ports
-    links.forEach((link) => {
+    for (const link of links) {
         if (!visitedLinks.has(link)) {
             visitedLinks.add(link);
             link.update();
         }
-    });
+    }
 };
 
 let idGenerator = 0;

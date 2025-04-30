@@ -385,7 +385,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // Safety reset
         this._currentTeleportationControllerId = "";
 
-        this._options.xrInput.controllers.forEach(this._attachController);
+        for (const controller of this._options.xrInput.controllers) {
+            this._attachController(controller);
+        }
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
@@ -400,9 +402,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+
+        for (const controllerId of keys) {
             this._detachController(controllerId);
-        });
+        }
 
         this._setTargetMeshVisibility(false);
         this._currentTeleportationControllerId = "";
@@ -984,13 +988,13 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         let closestDistance = Number.MAX_VALUE;
         if (this._snapToPositions.length) {
             const radiusSquared = radius * radius;
-            this._snapToPositions.forEach((position) => {
+            for (const position of this._snapToPositions) {
                 const dist = Vector3.DistanceSquared(position, realPosition);
                 if (dist <= radiusSquared && dist < closestDistance) {
                     closestDistance = dist;
                     closestPoint = position;
                 }
-            });
+            }
         }
         return closestPoint;
     }
@@ -1020,9 +1024,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             return;
         }
         this._options.teleportationTargetMesh.isVisible = visible;
-        this._options.teleportationTargetMesh.getChildren(undefined, false).forEach((m) => {
+        const children = this._options.teleportationTargetMesh.getChildren(undefined, false);
+        for (const m of children) {
             (<any>m).isVisible = visible;
-        });
+        }
 
         if (!visible) {
             if (this._quadraticBezierCurve) {

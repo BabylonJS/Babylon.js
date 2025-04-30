@@ -72,6 +72,7 @@ const FormatMimeTypes: { [key: string]: string } = {
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _invalidFormats = new Set<string>();
+    private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
     private _mainOut: _WebAudioMainOut;
     private _pauseCalled = false;
@@ -113,7 +114,13 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._volume = options.volume ?? 1;
-        this._audioContext = options.audioContext ?? new AudioContext();
+
+        if (options.audioContext) {
+            this._isUsingOfflineAudioContext = options.audioContext instanceof OfflineAudioContext;
+            this._audioContext = options.audioContext;
+        } else {
+            this._audioContext = new AudioContext();
+        }
 
         if (!options.disableDefaultUI) {
             this._unmuteUI = new _WebAudioUnmuteUI(this, options.defaultUIParentElement);
@@ -160,7 +167,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get state(): AudioEngineV2State {
-        return this._audioContext.state;
+        // Always return "running" for OfflineAudioContext so sound `play` calls work while the context is suspended.
+        return this._isUsingOfflineAudioContext ? "running" : this._audioContext.state;
     }
 
     /** @internal */
@@ -245,7 +253,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._listener?.dispose();
         this._listener = null;
 
-        if (this._audioContext.state !== "closed") {
+        // Note that OfflineAudioContext does not have a `close` method.
+        if (this._audioContext.state !== "closed" && !this._isUsingOfflineAudioContext) {
             this._audioContext.close();
         }
 

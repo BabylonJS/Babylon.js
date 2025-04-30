@@ -177,7 +177,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._initGreasedLine();
 
         let indiceOffset = 0;
-        let directionPlanes: Vector3[];
+        let directionPlanes: Vector3[] | undefined = undefined;
         for (let i = 0, c = 0; i < this._pathsOptions.length; i++) {
             const { options: pathOptions, pathCount } = this._pathsOptions[i];
             const subPoints = points.slice(c, c + pathCount);
@@ -192,7 +192,9 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                     }
                     directionPlanes = GreasedLineRibbonMesh._GetDirectionPlanesFromDirectionsOption(subPoints.length, pathOptions.ribbonOptions!.directions);
                 }
-                subPoints.forEach((p, idx) => {
+                for (let idx = 0; idx < subPoints.length; idx++) {
+                    const p = subPoints[idx];
+
                     const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(
                         p,
                         pathOptions.ribbonOptions!,
@@ -200,7 +202,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                         directionPlanes ? directionPlanes[idx] : directionPlanes
                     );
                     indiceOffset = this._preprocess(pathArray, indiceOffset, pathOptions);
-                });
+                }
             }
         }
 

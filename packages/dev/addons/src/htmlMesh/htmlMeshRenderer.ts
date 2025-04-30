@@ -288,12 +288,12 @@ export class HtmlMeshRenderer {
         }
 
         const domElements = [this._inSceneElements!.domElement, this._overlayElements!.domElement, this._inSceneElements!.cameraElement, this._overlayElements!.cameraElement];
-        domElements.forEach((dom) => {
+        for (const dom of domElements) {
             if (dom) {
                 dom.style.width = `${width}px`;
                 dom.style.height = `${height}px`;
             }
-        });
+        }
     }
 
     // prettier-ignore
@@ -519,20 +519,21 @@ export class HtmlMeshRenderer {
         const fov = projectionMatrix.m[5] * this._heightHalf;
 
         if (this._cache.cameraData.fov !== fov) {
+            const source = [this._overlayElements?.domElement, this._inSceneElements?.domElement];
             if (camera.mode == Camera.PERSPECTIVE_CAMERA) {
-                [this._overlayElements?.domElement, this._inSceneElements?.domElement].forEach((el) => {
+                for (const el of source) {
                     if (el) {
                         el.style.webkitPerspective = fov + "px";
                         el.style.perspective = fov + "px";
                     }
-                });
+                }
             } else {
-                [this._overlayElements?.domElement, this._inSceneElements?.domElement].forEach((el) => {
+                for (const el of source) {
                     if (el) {
                         el.style.webkitPerspective = "";
                         el.style.perspective = "";
                     }
-                });
+                }
             }
             this._cache.cameraData.fov = fov;
         }
@@ -566,19 +567,20 @@ export class HtmlMeshRenderer {
         const style = cameraCSSMatrix;
 
         if (this._cache.cameraData.style !== style) {
-            [this._inSceneElements?.cameraElement, this._overlayElements?.cameraElement].forEach((el) => {
+            const source = [this._inSceneElements?.cameraElement, this._overlayElements?.cameraElement];
+            for (const el of source) {
                 if (el) {
                     el.style.webkitTransform = style;
                     el.style.transform = style;
                 }
-            });
+            }
             this._cache.cameraData.style = style;
         }
 
         // _Render objects if necessary
-        meshesNeedingUpdate.forEach((mesh) => {
+        for (const mesh of meshesNeedingUpdate) {
             this._renderHtmlMesh(mesh as HtmlMesh, useRightHandedSystem);
-        });
+        }
     }
 
     protected _updateBaseScaleFactor(htmlMesh: HtmlMesh) {
@@ -621,7 +623,8 @@ export class HtmlMeshRenderer {
             this._previousCanvasDocumentPosition.top = canvasDocumentTop;
             this._previousCanvasDocumentPosition.left = canvasDocumentLeft;
 
-            [this._inSceneElements?.container, this._overlayElements?.container].forEach((container) => {
+            const source = [this._inSceneElements?.container, this._overlayElements?.container];
+            for (const container of source) {
                 if (!container) {
                     return;
                 }
@@ -642,7 +645,7 @@ export class HtmlMeshRenderer {
                 container.style.left = `${
                     canvasDocumentLeft - parentDocumentLeft - ancestorMarginsAndPadding.marginLeft + ancestorMarginsAndPadding.paddingLeft + bodyMarginLeft
                 }px`;
-            });
+            }
         }
     }
 

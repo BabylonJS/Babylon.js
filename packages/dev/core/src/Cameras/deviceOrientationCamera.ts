@@ -110,14 +110,15 @@ export class DeviceOrientationCamera extends FreeCamera {
         }
 
         this._initialQuaternion.copyFrom(this._quaternionCache || this.rotationQuaternion);
+        const list = ["x", "y", "z"];
 
-        ["x", "y", "z"].forEach((axisName) => {
+        for (const axisName of list) {
             if (!(<any>axis)[axisName]) {
                 (<any>this._initialQuaternion)[axisName] = 0;
             } else {
                 (<any>this._initialQuaternion)[axisName] *= -1;
             }
-        });
+        }
         this._initialQuaternion.normalize();
         //force rotation update
         this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);

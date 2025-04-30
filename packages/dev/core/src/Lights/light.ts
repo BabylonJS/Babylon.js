@@ -667,16 +667,16 @@ export abstract class Light extends Node implements ISortableLight {
         // Inclusion / exclusions
         if (this.excludedMeshes.length > 0) {
             serializationObject.excludedMeshesIds = [];
-            this.excludedMeshes.forEach((mesh: AbstractMesh) => {
+            for (const mesh of this.excludedMeshes) {
                 serializationObject.excludedMeshesIds.push(mesh.id);
-            });
+            }
         }
 
         if (this.includedOnlyMeshes.length > 0) {
             serializationObject.includedOnlyMeshesIds = [];
-            this.includedOnlyMeshes.forEach((mesh: AbstractMesh) => {
+            for (const mesh of this.includedOnlyMeshes) {
                 serializationObject.includedOnlyMeshesIds.push(mesh.id);
-            });
+            }
         }
 
         // Animations

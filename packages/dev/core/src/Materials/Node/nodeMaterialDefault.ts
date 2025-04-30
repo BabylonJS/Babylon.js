@@ -8,6 +8,11 @@ import { SplatReaderBlock } from "./Blocks/GaussianSplatting/splatReaderBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
 import type { NodeMaterial } from "./nodeMaterial";
+import { MultiplyBlock } from "./Blocks/multiplyBlock";
+import { Texture } from "../Textures/texture";
+import { Tools } from "core/Misc/tools";
+import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
+import { Color4 } from "core/Maths/math.color";
 
 /**
  * Clear the material and set it to a default state for gaussian splatting
@@ -67,4 +72,36 @@ export function SetToDefaultGaussianSplatting(nodeMaterial: NodeMaterial): void 
     nodeMaterial.addOutputNode(fragmentOutput);
 
     nodeMaterial._mode = NodeMaterialModes.GaussianSplatting;
+}
+
+/**
+ * Clear the material and set it to a default state for Smart Filter effects
+ * @param nodeMaterial node material to use
+ */
+export function SetToDefaultSFE(nodeMaterial: NodeMaterial): void {
+    nodeMaterial.clear();
+
+    nodeMaterial.editorData = null;
+
+    const uv = new InputBlock("uv");
+    uv.setAsAttribute("postprocess_uv");
+
+    const currentScreen = new CurrentScreenBlock("Main Input Texture");
+    uv.connectTo(currentScreen);
+    const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/nme/currentScreenPostProcess.png");
+    currentScreen.texture = new Texture(textureUrl, nodeMaterial.getScene());
+
+    const color = new InputBlock("Color4");
+    color.value = new Color4(1, 0, 0, 1);
+
+    const multiply = new MultiplyBlock("Multiply");
+    color.connectTo(multiply);
+    currentScreen.connectTo(multiply);
+
+    const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+    multiply.connectTo(fragmentOutput);
+
+    nodeMaterial.addOutputNode(fragmentOutput);
+
+    nodeMaterial._mode = NodeMaterialModes.SFE;
 }

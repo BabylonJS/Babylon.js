@@ -16,15 +16,16 @@ export function OptimizeIndices(indices: IndicesArray) {
 
     // Step 2: Build a graph connecting faces sharing a vertex
     const vertexToFaceMap = new Map<number, number[]>();
-    faces.forEach((face, faceIndex) => {
-        face.forEach((vertex) => {
+    for (let faceIndex = 0; faceIndex < faces.length; faceIndex++) {
+        const face = faces[faceIndex];
+        for (const vertex of face) {
             let face = vertexToFaceMap.get(vertex);
             if (!face) {
                 vertexToFaceMap.set(vertex, (face = []));
             }
             face.push(faceIndex);
-        });
-    });
+        }
+    }
 
     // Step 3: Traverse faces using DFS to ensure connected faces are close
     const visited = new BitArray(faceCount);
@@ -44,19 +45,19 @@ export function OptimizeIndices(indices: IndicesArray) {
             sortedFaces.push(faces[currentFaceIndex]);
 
             // Push unvisited neighbors (faces sharing a vertex) onto the stack
-            faces[currentFaceIndex].forEach((vertex) => {
+            for (const vertex of faces[currentFaceIndex]) {
                 const neighbors = vertexToFaceMap.get(vertex);
 
                 if (!neighbors) {
                     return;
                 }
 
-                neighbors.forEach((neighborFaceIndex) => {
+                for (const neighborFaceIndex of neighbors) {
                     if (!visited.get(neighborFaceIndex)) {
                         stack.push(neighborFaceIndex);
                     }
-                });
-            });
+                }
+            }
         }
     };
 
@@ -69,9 +70,9 @@ export function OptimizeIndices(indices: IndicesArray) {
 
     // Step 4: Flatten the sorted faces back into an array
     let index = 0;
-    sortedFaces.forEach((face) => {
+    for (const face of sortedFaces) {
         indices[index++] = face[0];
         indices[index++] = face[1];
         indices[index++] = face[2];
-    });
+    }
 }

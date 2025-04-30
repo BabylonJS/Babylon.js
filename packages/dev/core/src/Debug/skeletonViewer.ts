@@ -296,9 +296,9 @@ export class SkeletonViewer {
         const ctx = tempGrad.getContext();
         const grad = ctx.createLinearGradient(0, 0, size, 0);
 
-        colorMap.forEach((stop) => {
+        for (const stop of colorMap) {
             grad.addColorStop(stop.location, stop.color.toHexString());
-        });
+        }
 
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, size, 1);
@@ -774,7 +774,7 @@ export class SkeletonViewer {
                 boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
                 if (bone.children.length > 0) {
-                    bone.children.forEach((bc) => {
+                    for (const bc of bone.children) {
                         const childAbsoluteBindPoseTransform: Matrix = new Matrix();
                         bc.getLocalMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                         const childPoint = new Vector3();
@@ -788,7 +788,7 @@ export class SkeletonViewer {
                         }
 
                         spurs.push(this._createSpur(anchorPoint, bone, childPoint, bc, displayOptions, utilityLayerScene));
-                    });
+                    }
                 } else {
                     const boundingSphere = this._getBoundingSphereForBone(bone.getIndex());
                     if (boundingSphere) {
