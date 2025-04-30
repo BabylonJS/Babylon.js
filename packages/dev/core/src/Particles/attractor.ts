@@ -33,6 +33,10 @@ export class Attractor {
         particle.direction.addInPlace(scaledForce); // Update particle velocity
     }
 
+    /**
+     * Serializes the attractor to a JSON object.
+     * @returns The serialized JSON object.
+     */
     public serialize(): any {
         return {
             position: this.position.asArray(),
