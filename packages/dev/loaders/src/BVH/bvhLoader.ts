@@ -21,8 +21,8 @@ const _MotionNode = "MOTION";
 
 class LoaderContext {
     loopMode: number = Animation.ANIMATIONLOOPMODE_CYCLE;
-    list: BVHNode[] = [];
-    root: BVHNode = new BVHNode();
+    list: IBVHNode[] = [];
+    root: IBVHNode = createBVHNode();
     numFrames: number = 0;
     frameRate: number = 0;
     skeleton: Skeleton;
@@ -32,20 +32,40 @@ class LoaderContext {
     }
 }
 
-class BVHNode {
-    public name: string = "";
-    public type: string = "";
-    public offset: Vector3 = new Vector3();
-    public channels: string[] = [];
-    public children: BVHNode[] = [];
-    public frames: BVHKeyFrame[] = [];
-    public parent: Nullable<BVHNode> = null;
+interface IBVHNode {
+    name: string;
+    type: string;
+    offset: Vector3;
+    channels: string[];
+    children: IBVHNode[];
+    frames: IBVHKeyFrame[];
+    parent: Nullable<IBVHNode>;
 }
 
-class BVHKeyFrame {
-    public time: number = 0;
-    public position: Vector3 = new Vector3();
-    public rotation: Quaternion = new Quaternion();
+interface IBVHKeyFrame {
+    time: number;
+    position: Vector3;
+    rotation: Quaternion;
+}
+
+function createBVHNode(): IBVHNode {
+    return {
+        name: "",
+        type: "",
+        offset: new Vector3(),
+        channels: [],
+        children: [],
+        frames: [],
+        parent: null
+    };
+}
+
+function createBVHKeyFrame(): IBVHKeyFrame {
+    return {
+        time: 0,
+        position: new Vector3(),
+        rotation: new Quaternion()
+    };
 }
 
 /**
@@ -53,7 +73,7 @@ class BVHKeyFrame {
  * @param node - The BVH node to convert
  * @returns The converted matrix
  */
-function _boneOffset(node: BVHNode): Matrix {
+function _boneOffset(node: IBVHNode): Matrix {
     const x = node.offset.x;
     const y = node.offset.y;
     // Flip Z axis to convert handedness.
@@ -67,7 +87,7 @@ function _boneOffset(node: BVHNode): Matrix {
  * @param context - The loader context
  * @returns The created animations
  */
-function _createAnimations(node: BVHNode, context: LoaderContext): Animation | null {
+function _createAnimations(node: IBVHNode, context: LoaderContext): Animation | null {
     if (node.frames.length === 0) {
         return null;
     }
@@ -122,7 +142,7 @@ function _createAnimations(node: BVHNode, context: LoaderContext): Animation | n
  * @param parent - The parent bone
  * @param context - The loader context
  */
-function _convertNode(node: BVHNode, parent: Nullable<Bone>, context: LoaderContext) {
+function _convertNode(node: IBVHNode, parent: Nullable<Bone>, context: LoaderContext) {
     const matrix = _boneOffset(node);
     const bone = new Bone(node.name, context.skeleton, parent, matrix);
 
@@ -157,14 +177,14 @@ function _convertNode(node: BVHNode, parent: Nullable<Bone>, context: LoaderCont
  * @param frameTime - playback time for this keyframe
  * @param bone - the bone to read frame data from
  */
-function _readFrameData(data: string[], frameTime: number, bone: BVHNode) {
+function _readFrameData(data: string[], frameTime: number, bone: IBVHNode) {
     if (bone.type === "ENDSITE") {
         // end sites have no motion data
         return;
     }
 
     // add keyframe
-    const keyframe = new BVHKeyFrame();
+    const keyframe = createBVHKeyFrame();
     keyframe.time = frameTime;
     keyframe.position = new Vector3();
     keyframe.rotation = new Quaternion();
@@ -227,8 +247,8 @@ function _readFrameData(data: string[], frameTime: number, bone: BVHNode) {
  * @param context - the loader context containing the list of nodes and other data
  * @returns a BVH node including children
  */
-function _readNode(lines: string[], firstLine: string, parent: Nullable<BVHNode>, context: LoaderContext): BVHNode {
-    const node = new BVHNode();
+function _readNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode>, context: LoaderContext): IBVHNode {
+    const node = createBVHNode();
     node.parent = parent;
     context.list.push(node);
 
