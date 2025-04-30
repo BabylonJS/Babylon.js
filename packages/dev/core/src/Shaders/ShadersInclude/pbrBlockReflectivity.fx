@@ -3,7 +3,6 @@ struct reflectivityOutParams
     float microSurface;
     float roughness;
     float diffuseRoughness;
-    vec3 surfaceReflectivityColor;
     vec3 colorReflectanceF0;
     float reflectanceF0;
     vec3 reflectanceF90;
@@ -16,7 +15,6 @@ struct reflectivityOutParams
 #endif
 #if DEBUGMODE > 0
     #ifdef METALLICWORKFLOW
-        vec2 metallicRoughness;
         #ifdef REFLECTIVITY
             vec4 surfaceMetallicColorMap;
         #endif
@@ -102,10 +100,6 @@ reflectivityOutParams reflectivityBlock(
             metallicRoughness.g *= microSurfaceTexel.r;
         #endif
 
-        #if DEBUGMODE > 0
-            outParams.metallicRoughness = metallicRoughness;
-        #endif
-
         #define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
 
         // Compute microsurface from roughness.
@@ -127,18 +121,19 @@ reflectivityOutParams reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
+            float specularWeight = metallicReflectanceFactors.a;
+            float dielectricF0 = reflectivityColor.a * specularWeight;
+            surfaceReflectivityColor = metallicReflectanceFactors.rgb;
+            
             #if DEBUGMODE > 0
-                outParams.metallicF0 = vec3(reflectivityColor.a) * metallicReflectanceFactors.rgb;
+                outParams.metallicF0 = vec3(dielectricF0) * surfaceReflectivityColor;
             #endif
 
             // Compute the converted diffuse.
             outParams.surfaceAlbedo = baseColor.rgb;
-
-            // Compute the converted reflectivity.
-            surfaceReflectivityColor = metallicReflectanceFactors.rgb;
-
+            
             // Final F0 for dielectrics = F0 * specular_color * specular_weight
-            vec3 dielectricColorF0 = vec3(reflectivityColor.a * metallicReflectanceFactors.rgb * metallicReflectanceFactors.a);
+            vec3 dielectricColorF0 = vec3(dielectricF0 * surfaceReflectivityColor);
             vec3 metallicColorF0 = baseColor.rgb;
 
             // The coloured reflectance is the colour that is multiplied by the specular component but does NOT
@@ -148,8 +143,8 @@ reflectivityOutParams reflectivityBlock(
             // Reflectance is the non-coloured reflectance used for blending between the diffuse and specular components.
             // It represents the total percentage of light that is reflected at normal incidence.
             // In glTF's material model, this is the F0 value calculated from the IOR and then multiplied by the maximum component of the specular colour.
-            outParams.reflectanceF0 = mix(reflectivityColor.a * metallicReflectanceFactors.a, 1.0, outParams.metallic);
-            outParams.reflectanceF90 = vec3(mix(metallicReflectanceFactors.a, 1.0, outParams.metallic));
+            outParams.reflectanceF0 = mix(dielectricF0, 1.0, outParams.metallic);
+            outParams.reflectanceF90 = vec3(mix(specularWeight, 1.0, outParams.metallic));
         #endif
     #else
         #ifdef REFLECTIVITY
@@ -199,7 +194,6 @@ reflectivityOutParams reflectivityBlock(
     outParams.microSurface = microSurface;
     outParams.roughness = roughness;
     outParams.diffuseRoughness = diffuseRoughness;
-    outParams.surfaceReflectivityColor = surfaceReflectivityColor;
 
     return outParams;
 }

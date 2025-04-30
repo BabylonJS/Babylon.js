@@ -121,7 +121,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = clearcoatOut.specularEnvironmentR0;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 62 && defined(METALLICWORKFLOW)
-        gl_FragColor.rgb = vec3(reflectivityOut.metallicRoughness.r);
+        gl_FragColor.rgb = vec3(reflectivityOut.metallic);
     #elif DEBUGMODE == 71 && defined(METALLICWORKFLOW)
         gl_FragColor.rgb = reflectivityOut.metallicF0;
     #elif DEBUGMODE == 63

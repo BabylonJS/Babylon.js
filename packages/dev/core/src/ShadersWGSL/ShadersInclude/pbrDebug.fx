@@ -122,7 +122,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
         color = clearcoatOut.specularEnvironmentR0;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 62 && defined(METALLICWORKFLOW)
-        color =  vec3f(reflectivityOut.metallicRoughness.r);
+        color =  vec3f(reflectivityOut.metallic);
     #elif DEBUGMODE == 71 && defined(METALLICWORKFLOW)
         color = reflectivityOut.metallicF0;
     #elif DEBUGMODE == 63
