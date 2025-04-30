@@ -48,6 +48,11 @@ export class PBRMaterial extends PBRBaseMaterial {
     public static override DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
+     * Defines the default diffuse model used by the material.
+     */
+    public static override DEFAULT_DIFFUSE_MODEL = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+
+    /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
      * This impacts both the direct diffuse and specular highlights.
      */
@@ -304,7 +309,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize("baseDiffuseModel")
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public baseDiffuseModel: number = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+    public baseDiffuseModel: number = PBRMaterial.DEFAULT_DIFFUSE_MODEL;
 
     /**
      * AKA Specular Color in other nomenclature.

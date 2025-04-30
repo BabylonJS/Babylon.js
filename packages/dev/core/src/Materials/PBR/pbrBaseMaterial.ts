@@ -360,6 +360,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 0;
 
     /**
+     * Defines the default diffuse model used by the material.
+     */
+    public static DEFAULT_DIFFUSE_MODEL = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+
+    /**
      * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
      */
     public static readonly LIGHTFALLOFF_PHYSICAL = 0;
@@ -820,7 +825,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    private _baseDiffuseModel: number = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+    private _baseDiffuseModel: number = PBRBaseMaterial.DEFAULT_DIFFUSE_MODEL;
 
     /**
      * Can this material render to several textures at once
