@@ -118,10 +118,10 @@
     },
 
     {
-        "label": "Import a Mesh",
+        "label": "Import a Mesh Async",
         "key": "Import Mesh",
         "documentation": "https://doc.babylonjs.com/toolsAndResources/thePlayground/externalPGAssets",
-        "insertText": "BABYLON.SceneLoader.ImportMesh(\"${1:meshName}\", \"${2:url/to/parent/directory}\", \"${3:fileName.fileExtension}\", scene, function(newMeshes){\n\n});"
+        "insertText": "BABYLON.ImportMeshAsync(\"${1:url/to/parent/directory}/${2:fileName.fileExtension}\", scene, { meshNames: \"${3:}\" }).then((result)=> {\n\n});"
     },
     {
         "label": "Export scene to GLB",
@@ -140,19 +140,19 @@
         "label": "Import animated character : Dude",
         "key": "Dude",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/animation/animatedCharacter",
-        "insertText": "BABYLON.SceneLoader.ImportMesh(\"\", \"scenes/Dude/\", \"dude.babylon\", scene, function (newMeshes, particleSystems, skeletons) {\n    var hero = newMeshes[0];\n    hero.scaling.scaleInPlace(0.03);\n    scene.beginAnimation(skeletons[0], 0, 100, true, 1.0);\n    hero.position.x = 2;\n});"
+        "insertText": "BABYLON.ImportMeshAsync(\"scenes/Dude/dude.babylon\", scene).then(({meshes, particleSystems, skeletons}) => {\n    var hero = meshes[0];\n    hero.scaling.scaleInPlace(0.03);\n    scene.beginAnimation(skeletons[0], 0, 100, true, 1.0);\n    hero.position.x = 2;\n});"
     },
     {
         "label": "Import animated character : Dummy",
         "key": "Dummy",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/animation/animatedCharacter",
-        "insertText": "BABYLON.SceneLoader.ImportMesh(\"\", \"./scenes/\", \"dummy3.babylon\", scene, function (newMeshes, particleSystems, skeletons) {\n    var hero = newMeshes[0];\n    var skeleton = skeletons[0];\n    var walkRange = skeleton.getAnimationRange(\"YBot_Walk\");\n    scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);\n    hero.position.x = 2;\n});"
+        "insertText": "BABYLON.ImportMeshAsync(\"./scenes/dummy3.babylon\", scene).then(({meshes, particleSystems, skeletons}) => {\n    var hero = meshes[0];\n    var skeleton = skeletons[0];\n    var walkRange = skeleton.getAnimationRange(\"YBot_Walk\");\n    scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);\n    hero.position.x = 2;\n});"
     },
     {
         "label": "Import animated character : Samba Girl",
         "key": "Samba Girl",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/animation/animatedCharacter",
-        "insertText": "BABYLON.SceneLoader.ImportMesh(\"\", \"https://assets.babylonjs.com/meshes/\", \"HVGirl.glb\", scene, function (newMeshes, particleSystems, skeletons) {\n    var hero = newMeshes[0];\n    hero.scaling.scaleInPlace(0.08);\n    const sambaAnim = scene.getAnimationGroupByName(\"Samba\");\n    sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);\n    hero.position.x = 2;\n});"
+        "insertText": "BABYLON.ImportMeshAsync(\"https://assets.babylonjs.com/meshes/HVGirl.glb\", scene).then( ({meshes, particleSystems, skeletons}) => {\n    var hero = meshes[0];\n    hero.scaling.scaleInPlace(0.08);\n    const sambaAnim = scene.getAnimationGroupByName(\"Samba\");\n    sambaAnim.start(true, 1.0, sambaAnim.from, sambaAnim.to, false);\n    hero.position.x = 2;\n});"
     },
 
     {
