@@ -321,7 +321,7 @@ export class CSG2 implements IDisposable {
         return returnValue;
     }
 
-    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
+    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalId?: Uint32Array) {
         // Create the MeshGL for I/O with Manifold library.
         const triVerts = new Uint32Array(data.indices!.length);
 
@@ -380,7 +380,7 @@ export class CSG2 implements IDisposable {
             structure.push({ stride: 4, kind: VertexBuffer.ColorKind, data: sourceColors });
         }
 
-        return this._ProcessData(data.positions!.length / 3, triVerts, structure, numProp, runIndex, runOriginalID);
+        return this._ProcessData(data.positions!.length / 3, triVerts, structure, numProp, runIndex, runOriginalId);
     }
 
     /**
@@ -432,7 +432,7 @@ export class CSG2 implements IDisposable {
         const indices = Array.from(starts.keys());
         indices.sort((a, b) => starts[a] - starts[b]);
         const runIndex = new Uint32Array(indices.map((i) => starts[i]));
-        const runOriginalID = new Uint32Array(indices.map((i) => originalIDs[i]));
+        const runOriginalId = new Uint32Array(indices.map((i) => originalIDs[i]));
 
         // Process
         const data = {
@@ -447,7 +447,7 @@ export class CSG2 implements IDisposable {
             uvs5: mesh.getVerticesData(VertexBuffer.UV5Kind),
             uvs6: mesh.getVerticesData(VertexBuffer.UV6Kind),
         };
-        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalID);
+        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalId);
     }
 }
 
