@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowParams, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -187,24 +187,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { rotation: this.environmentRotation ?? details.viewer.environmentConfig.rotation }),
             (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
-        ),
-        this._createPropertyBinding(
-            "environmentSkybox",
-            (details) => details.viewer.onEnvironmentChanged,
-            (details) => (details.viewer.environmentSkybox = this.environmentSkybox ?? details.viewer.environmentSkybox),
-            (details) => (this.environmentSkybox = details.viewer.environmentSkybox)
-        ),
-        this._createPropertyBinding(
-            "environmentLighting",
-            (details) => details.viewer.onEnvironmentChanged,
-            (details) => (details.viewer.environmentLighting = this.environmentLighting ?? details.viewer.environmentLighting),
-            (details) => (this.environmentLighting = details.viewer.environmentLighting)
-        ),
-        this._createPropertyBinding(
-            "shadowQuality",
-            (details) => details.viewer.onShadowsConfigurationChanged,
-            (details) => (details.viewer.shadowConfig = { quality: this.shadowQuality ?? details.viewer.shadowConfig.quality }),
-            (details) => (this.shadowQuality = details.viewer.shadowConfig.quality)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -1003,6 +985,17 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             if (changedProperties.has("source")) {
                 this._updateModel();
             }
+
+            if (changedProperties.has("environmentLighting") || changedProperties.has("environmentSkybox")) {
+                this._updateEnv({
+                    lighting: changedProperties.has("environmentLighting"),
+                    skybox: changedProperties.has("environmentSkybox"),
+                });
+            }
+
+            if (changedProperties.has("shadowQuality")) {
+                this._updateShadows(this.shadowQuality);
+            }
         }
     }
 
@@ -1516,6 +1509,22 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 if (!(error instanceof AbortError)) {
                     Logger.Error(error);
                 }
+            }
+        }
+    }
+
+    private async _updateShadows(quality: Nullable<ShadowQuality>): Promise<void> {
+        if (!quality) {
+            return;
+        }
+
+        try {
+            const options = { quality };
+            this._viewerDetails?.viewer.updateShadows(options);
+        } catch (error) {
+            // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
+            if (!(error instanceof AbortError)) {
+                Logger.Error(error);
             }
         }
     }
