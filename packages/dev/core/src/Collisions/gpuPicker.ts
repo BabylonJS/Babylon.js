@@ -176,14 +176,14 @@ export class GPUPicker {
 
         const effect = material.getEffect()!;
 
-        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
+        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances && this._idColors[mesh.uniqueId] !== undefined) {
             effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
         }
 
         this._meshRenderingCount++;
     }
 
-    private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
+    private _generateColorData(instanceCount: number, id: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
         const colorData = new Float32Array(4 * (instanceCount + 1));
 
         GPUPicker._SetColorData(colorData, 0, r, g, b);
@@ -318,14 +318,13 @@ export class GPUPicker {
                 id++;
 
                 if (mesh.hasInstances) {
-                    const numInstances = (mesh as Mesh).instances.filter((instance) => this._pickableMeshes.indexOf(instance) !== -1).length;
-                    const allInstancesForPick = this._pickableMeshes.filter((m) => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
-                    const colorData = this._generateColorData(numInstances, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
-                        const instance = allInstancesForPick[i];
+                    const instancesForPick = this._pickableMeshes.filter((m) => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
+                    const colorData = this._generateColorData(instancesForPick.length, id, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
+                        const instance = instancesForPick[i];
                         this._idMap[id] = this._pickableMeshes.indexOf(instance);
                     });
 
-                    id += numInstances;
+                    id += instancesForPick.length;
                     const engine = mesh.getEngine();
 
                     const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
