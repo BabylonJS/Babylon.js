@@ -525,7 +525,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._capacity = capacity;
 
         this._epsilon = epsilon;
-        this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
         if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
@@ -647,6 +646,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         _ConnectAfter(this._gravityProcessing, this._positionProcessing);
 
         this._updateQueueStart = this._colorProcessing;
+
+        this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
