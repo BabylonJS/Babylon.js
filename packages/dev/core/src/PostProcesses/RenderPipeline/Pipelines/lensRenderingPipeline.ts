@@ -453,6 +453,8 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     public override dispose(disableDepthRender: boolean = false): void {
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
+
         (<any>this._chromaticAberrationPostProcess) = null;
         (<any>this._highlightsPostProcess) = null;
         (<any>this._depthOfFieldPostProcess) = null;

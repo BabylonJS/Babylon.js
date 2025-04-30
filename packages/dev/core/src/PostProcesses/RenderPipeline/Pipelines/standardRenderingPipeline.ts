@@ -1636,6 +1636,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
 
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
+
         super.dispose();
     }
 
