@@ -14,7 +14,7 @@ import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Material } from "core/Materials/material";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useObservableState } from "../hooks/observableHooks";
 import { TraverseGraph } from "../misc/graphUtils";
 import { SceneContext } from "./sceneContext";
@@ -72,9 +72,48 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
 
             // TODO: Handle nodes being dynamically added/removed from the scene
             // const [visibleItems, setVisibleItems] = useState(["Nodes", "Materials", "Textures"]);
-            const [hasPendingSceneMutation, setHasPendingSceneMutation] = useState(false);
+            const [sceneVersion, setSceneVersion] = useState(0);
 
             const [itemsFilter, setItemsFilter] = useState("");
+
+            useEffect(() => {
+                setSceneVersion((version) => version + 1);
+            }, [scene]);
+
+            useEffect(() => {
+                const onSceneItemAdded = () => {
+                    setSceneVersion((version) => version + 1);
+                };
+
+                const onSceneItemRemoved = (item: { uniqueId: number }) => {
+                    setSceneVersion((version) => version + 1);
+                    if (openItems.delete(item.uniqueId)) {
+                        setOpenItems(new Set(openItems));
+                    }
+                };
+
+                const observers = [
+                    scene.onNewMeshAddedObservable.add(onSceneItemAdded),
+                    scene.onNewTransformNodeAddedObservable.add(onSceneItemAdded),
+                    scene.onNewCameraAddedObservable.add(onSceneItemAdded),
+                    scene.onNewLightAddedObservable.add(onSceneItemAdded),
+                    scene.onNewMaterialAddedObservable.add(onSceneItemAdded),
+                    scene.onNewTextureAddedObservable.add(onSceneItemAdded),
+
+                    scene.onMeshRemovedObservable.add(onSceneItemRemoved),
+                    scene.onTransformNodeRemovedObservable.add(onSceneItemRemoved),
+                    scene.onCameraRemovedObservable.add(onSceneItemRemoved),
+                    scene.onLightRemovedObservable.add(onSceneItemRemoved),
+                    scene.onMaterialRemovedObservable.add(onSceneItemRemoved),
+                    scene.onTextureRemovedObservable.add(onSceneItemRemoved),
+                ] as const;
+
+                return () => {
+                    for (const observer of observers) {
+                        observer.remove();
+                    }
+                };
+            }, [scene, openItems]);
 
             const visibleItems = useMemo(() => {
                 const visibleItems: TreeItemData[] = [];
@@ -106,7 +145,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                 }
 
                 return visibleItems;
-            }, [scene, openItems, hasPendingSceneMutation, itemsFilter]);
+            }, [scene, sceneVersion, openItems, itemsFilter]);
 
             const onOpenChange = useCallback(
                 (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
