@@ -1399,7 +1399,7 @@ export class VertexData implements IVertexDataLike {
 
         if (this.matricesIndices) {
             serializationObject.matricesIndices = Array.from(this.matricesIndices);
-            serializationObject.matricesIndices._isExpanded = true;
+            serializationObject.matricesIndicesExpanded = true;
         }
 
         if (this.matricesWeights) {
@@ -1408,7 +1408,7 @@ export class VertexData implements IVertexDataLike {
 
         if (this.matricesIndicesExtra) {
             serializationObject.matricesIndicesExtra = Array.from(this.matricesIndicesExtra);
-            serializationObject.matricesIndicesExtra._isExpanded = true;
+            serializationObject.matricesIndicesExtraExpanded = true;
         }
 
         if (this.matricesWeightsExtra) {
