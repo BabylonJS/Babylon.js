@@ -8,7 +8,7 @@ const scaledForce: Vector3 = Vector3.Zero();
 
 /**
  * Class representing an attractor in a particle system.
- * #DEZ79M#35
+ * #DEZ79M#40
  */
 export class Attractor {
     /**
