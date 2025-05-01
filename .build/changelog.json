@@ -1,6 +1,23 @@
 {
-    "fromTag": "8.4.1",
+    "fromTag": "8.4.2",
     "changelog": {
+        "8.5.0": [
+            {
+                "pr": "16546",
+                "title": "Update freezeWorldMatrix documentation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "8.4.2": [
             {
                 "pr": "16545",
