@@ -11,12 +11,6 @@ aggShadow = aggShadow / numLights;
     #endif
 #endif
 
-#if !defined(METALLICWORKFLOW) && !defined(REFLECTION)
-    #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
-        surfaceAlbedo.rgb = (1. - reflectanceF0) * surfaceAlbedo.rgb;
-    #endif
-#endif
-
 #if defined(SHEEN) && defined(SHEEN_ALBEDOSCALING) && defined(ENVIRONMENTBRDF)
     surfaceAlbedo.rgb = sheenOut.sheenAlbedoScaling * surfaceAlbedo.rgb;
 #endif
@@ -33,6 +27,7 @@ aggShadow = aggShadow / numLights;
                 baseSpecularEnergy *= baseSpecularEnergyConservationFactor;
             #endif
         #endif
+
         finalIrradiance *= (vec3(1.0) - baseSpecularEnergy);
         #if defined(SS_REFRACTION)
             // Decrease transmission in the same way as the irradiance
