@@ -29,7 +29,7 @@ import { SubSurfaceBlock } from "./subSurfaceBlock";
 import type { RefractionBlock } from "./refractionBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
-import { Color3, TmpColors } from "../../../../Maths/math.color";
+import { Color3 } from "../../../../Maths/math.color";
 import { Logger } from "core/Misc/logger";
 import {
     BindLight,
