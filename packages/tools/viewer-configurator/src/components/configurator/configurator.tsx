@@ -951,7 +951,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const isEnvironmentLightingUrlValid = useMemo(() => {
-        return !lightingUrlConfig.configuredState || URL.canParse(lightingUrlConfig.configuredState) || lightingUrlConfig.configuredState === "auto";
+        return !lightingUrlConfig.configuredState || lightingUrlConfig.configuredState === "auto" || URL.canParse(lightingUrlConfig.configuredState);
     }, [lightingUrlConfig.configuredState]);
 
     const onEnvironmentLightingUrlChange = useCallback(
@@ -962,7 +962,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
 
     const isEnvironmentSkyboxUrlValid = useMemo(() => {
-        return !skyboxUrlConfig.configuredState || URL.canParse(skyboxUrlConfig.configuredState);
+        return !skyboxUrlConfig.configuredState || skyboxUrlConfig.configuredState === "auto" || URL.canParse(skyboxUrlConfig.configuredState);
     }, [skyboxUrlConfig.configuredState]);
 
     const onEnvironmentSkyboxUrlChange = useCallback(
