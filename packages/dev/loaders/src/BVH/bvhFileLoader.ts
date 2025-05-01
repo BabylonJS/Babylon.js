@@ -3,9 +3,9 @@ import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import { Animation } from "core/Animations/animation";
 import type { Scene } from "core/scene";
-import { BVHParser } from "./bvhLoader";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 import { BVHFileLoaderMetadata } from "./bvhFileLoader.metadata";
+import { readBvh } from "./bvhLoader";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -72,7 +72,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            const skeleton = BVHParser.ReadBvh(data, scene, this._loadingOptions);
+            const skeleton = readBvh(data, scene, this._loadingOptions);
             return Promise.resolve({
                 meshes: [],
                 particleSystems: [],
@@ -98,12 +98,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         if (typeof data !== "string") {
             return Promise.reject("BVH loader expects string data.");
         }
-        try {
-            BVHParser.ReadBvh(data, scene, this._loadingOptions);
-            return Promise.resolve();
-        } catch (e) {
-            return Promise.reject(e);
-        }
+
+        return this.importMeshAsync(null, scene, data).then(() => {
+            // return void
+        });
     }
 
     /**
@@ -118,7 +116,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
         const assetContainer = new AssetContainer(scene);
         try {
-            const skeleton = BVHParser.ReadBvh(data, scene, this._loadingOptions);
+            const skeleton = readBvh(data, scene, this._loadingOptions);
             assetContainer.skeletons.push(skeleton);
             return Promise.resolve(assetContainer);
         } catch (e) {
