@@ -1520,7 +1520,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
         try {
             const options = { quality };
-            this._viewerDetails?.viewer.updateShadows(options);
+            await this._viewerDetails?.viewer.updateShadows(options);
         } catch (error) {
             // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
             if (!(error instanceof AbortError)) {
