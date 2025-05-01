@@ -49,13 +49,15 @@ export class FlowMap {
         const r = this.data[index];
         const g = this.data[index + 1];
         const b = this.data[index + 2];
+        const a = this.data[index + 3];
 
         const fx = (r / 255.0) * 2.0 - 1.0;
         const fy = (g / 255.0) * 2.0 - 1.0;
         const fz = (b / 255.0) * 2.0 - 1.0;
+        const localStrength = a / 255.0;
 
         flowVector.set(fx, fy, fz);
-        flowVector.scaleToRef(system._tempScaledUpdateSpeed * strength, scaledFlowVector);
+        flowVector.scaleToRef(system._tempScaledUpdateSpeed * strength * localStrength, scaledFlowVector);
 
         particle.direction.addInPlace(scaledFlowVector); // Update particle velocity
     }
