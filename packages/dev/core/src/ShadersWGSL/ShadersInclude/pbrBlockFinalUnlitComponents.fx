@@ -1,7 +1,7 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
-#ifdef METALLICWORKFLOW
-    finalDiffuse *= mix(surfaceAlbedo, vec3f(0.0), reflectivityOut.metallic);
+#if !defined(UNLIT)
+    finalDiffuse *= (1. - reflectanceF0) * surfaceAlbedo.rgb;
 #else
     finalDiffuse *= surfaceAlbedo;
 #endif
