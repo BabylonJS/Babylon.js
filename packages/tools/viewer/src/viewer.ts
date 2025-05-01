@@ -135,6 +135,7 @@ type ShadowState = {
         generator: ShadowGenerator;
         ground: Mesh;
         light: DirectionalLight;
+        shouldRender: boolean;
     };
     high?: {
         pipeline: IblShadowsRenderPipeline;
@@ -1636,7 +1637,8 @@ export class Viewer implements IDisposable {
 
         this._snapshotHelper.disableSnapshotRendering();
 
-        if (!this._shadowState.high) {
+        let high = this._shadowState.high;
+        if (!high) {
             const pipeline = new IblShadowsRenderPipeline(
                 "ibl shadows",
                 this._scene,
@@ -1653,10 +1655,10 @@ export class Viewer implements IDisposable {
             pipeline.toggleShadow(false);
 
             // Useful for debugging, but not needed in production
-            // this._shadowState.pipeline.allowDebugPasses = false;
-            // this._shadowState.pipeline.gbufferDebugEnabled = false;
-            // this._shadowState.pipeline.voxelDebugEnabled = false;
-            // this._shadowState.pipeline.accumulationPassDebugEnabled = false;
+            // pipeline.allowDebugPasses = false;
+            // pipeline.gbufferDebugEnabled = false;
+            // pipeline.voxelDebugEnabled = false;
+            // pipeline.accumulationPassDebugEnabled = false;
 
             const isWebGPU = this._scene.getEngine().isWebGPU;
             const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
@@ -1698,7 +1700,7 @@ export class Viewer implements IDisposable {
             ground.position.y = worldBounds.extents.min[1];
             ground.material = groundMaterial;
 
-            this._shadowState.high = {
+            high = {
                 pipeline: pipeline,
                 groundMaterial: groundMaterial,
                 resizeObserver: resizeObserver,
@@ -1711,15 +1713,13 @@ export class Viewer implements IDisposable {
             const meshes = model.assetContainer.meshes;
             for (const mesh of meshes) {
                 if (mesh instanceof Mesh) {
-                    this._shadowState.high.pipeline.addShadowCastingMesh(mesh);
+                    high.pipeline.addShadowCastingMesh(mesh);
                     if (mesh.material) {
-                        this._shadowState.high.pipeline.addShadowReceivingMaterial(mesh.material);
+                        high.pipeline.addShadowReceivingMaterial(mesh.material);
                     }
                 }
             }
         }
-
-        const high = this._shadowState.high;
 
         high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
             updateMaterial();
@@ -1739,6 +1739,8 @@ export class Viewer implements IDisposable {
         high.pipeline.toggleShadow(true);
         high.ground.setEnabled(true);
         this._startIblShadowsRenderTime();
+
+        this._shadowState.high = high;
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -1767,13 +1769,14 @@ export class Viewer implements IDisposable {
         const x = Math.cos(this._reflectionsRotation);
         const z = Math.sin(this._reflectionsRotation);
 
-        this._snapshotHelper.disableSnapshotRendering();
-
         if (this._shadowQuality !== "normal") {
             return;
         }
 
-        if (!this._shadowState.normal) {
+        this._snapshotHelper.disableSnapshotRendering();
+
+        let normal = this._shadowState.normal;
+        if (!normal) {
             const light = new DirectionalLight("shadowMapLight", new Vector3(-x, -1, -z), this._scene);
             light.intensity = 100.0;
             const generator = new ShadowGenerator(2048, light);
@@ -1807,14 +1810,17 @@ export class Viewer implements IDisposable {
             ground.material = shadowMaterial;
             light.includedOnlyMeshes = [ground];
 
-            this._shadowState.normal = {
+            const newNormal: ShadowState["normal"] = (normal = {
                 light: light,
                 generator: generator,
                 ground: ground,
-            };
-        }
+                shouldRender: true,
+            });
 
-        const normal = this._shadowState.normal;
+            generator.onAfterShadowMapRenderObservable.addOnce(() => {
+                newNormal.shouldRender = false;
+            });
+        }
 
         normal.light.position.set(x * radius, radius, z * radius);
         // manually set the extends to take into account animated meshes
@@ -1842,6 +1848,8 @@ export class Viewer implements IDisposable {
         this._shadowState.high?.ground.setEnabled(false);
         this._shadowState.high?.pipeline.toggleShadow(false);
         normal.ground.setEnabled(true);
+
+        this._shadowState.normal = normal;
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -2409,12 +2417,14 @@ export class Viewer implements IDisposable {
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
-        // 4. The environment shadows are still converging.
-        // 5. At least one model should render (playing animations).
+        // 4. The classic shadows are not yet in a ready state.
+        // 5. The environment shadows are not yet in a ready state.
+        // 6. At least one model should render (playing animations).
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
             !this._snapshotHelper.isReady ||
+            this._shadowState.normal?.shouldRender ||
             this._shadowState.high?.shouldRender ||
             this._loadedModelsBacking.some((model) => model._shouldRender())
         );
