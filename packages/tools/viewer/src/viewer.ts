@@ -1763,6 +1763,10 @@ export class Viewer implements IDisposable {
             import("core/Materials/Textures/renderTargetTexture"),
             import("core/Lights/Shadows/shadowGenerator"),
             import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
+            // TODO: Why are these explicit imports needed, even though they are imported directly in shadowOnlyMaterial?
+            // Without these explicit imports, the shaders do not end up in the esm dist and we get a runtime error.
+            import("materials/shadowOnly/shadowOnly.vertex"),
+            import("materials/shadowOnly/shadowOnly.fragment"),
         ]);
 
         // cancel if the model is unloaded before the shadows are created
