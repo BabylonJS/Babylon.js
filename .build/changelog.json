@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.4.2",
+    "fromTag": "8.5.0",
     "changelog": {
         "8.5.0": [
             {
@@ -15,6 +15,282 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "8.6.0": [
+            {
+                "pr": "16559",
+                "title": "Force minor build",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16558",
+                "title": "Get WebAudio working on iOS when ringer switch is turned off",
+                "description": "WebAudio on iOS is disabled when the device's ringer switch is turned off. This is confusing for users because non-WebAudio audio plays when the ringer switch is off, which sets the expectation that WebAudio should work with the ringer off as well.\r\n\r\nThis change fixes the issue by creating a silent HTMLAudioElement and playing it when the audio engine receives a user gesture. This has the side effect of enabling WebAudio on iOS, even when the ring switch is off.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts"
+                ],
+                "tags": [
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16455",
+                "title": "Naming conventions - linting",
+                "description": "If you have any questions, contact me! \r\n\r\nDraft to give everyone time to review and present me with questions.\r\n\r\nNOTE - lint currently fails due to javascript out of heap memory. The last few commits are just attempts to get the CI to play nicely. Once I have the solution I will clean the config file and the command running eslint",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintignore",
+                    ".eslintrc.js",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/addons/src/htmlMesh/fitStrategy.ts",
+                    "packages/dev/addons/src/htmlMesh/htmlMesh.ts",
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/addons/src/htmlMesh/pointerEventsCapture.ts",
+                    "packages/dev/addons/src/htmlMesh/pointerEventsCaptureBehavior.ts",
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/dev/buildTools/src/devWatcher.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/buildTools/src/prepareSnapshot.ts",
+                    "packages/dev/buildTools/src/updateEngineVersion.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Actions/action.ts",
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
+                    "packages/dev/core/src/Audio/analyser.ts",
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/abstractAudioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/audioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/stereoWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/volumeWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioAnalyzerSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBaseSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/webAudioBusAndSoundSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainBus.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts",
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts",
+                    "packages/dev/core/src/Behaviors/behavior.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Buffers/buffer.align.ts",
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraKeyboardInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraVirtualJoystickInput.ts",
+                    "packages/dev/core/src/Cameras/RigModes/stereoscopicAnaglyphRigMode.ts",
+                    "packages/dev/core/src/Cameras/RigModes/stereoscopicRigMode.ts",
+                    "packages/dev/core/src/Cameras/RigModes/vrRigMode.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrCameraMetrics.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/cameraInputsManager.ts",
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/followCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Collisions/collider.ts",
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Compat/compatibilityOptions.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16557",
+                "title": "Fix an issue where playground cannot run when exception is thrown",
+                "description": "Only affected async scenes. adding to #16504 ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16548",
+                "title": "Fix call order",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/attractor.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16540",
+                "title": "Add preliminary bvh loader",
+                "description": "Hello Babylon.js devs.\r\n\r\nI would like to add a preliminary bvh loader to the project.\r\n\r\nI haven't tested it thoroughly yet, but I hope to be able to test easily once the playgrounds are updated.\r\n\r\nPlease share your thoughts and/or suggestions",
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/loaders/src/BVH/bvhFileLoader.metadata.ts",
+                    "packages/dev/loaders/src/BVH/bvhFileLoader.ts",
+                    "packages/dev/loaders/src/BVH/bvhLoader.ts",
+                    "packages/dev/loaders/src/BVH/bvhLoadingOptions.ts",
+                    "packages/dev/loaders/src/BVH/index.ts",
+                    "packages/dev/loaders/src/dynamic.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/loaders/test/integration/testData.ts",
+                    "packages/public/@babylonjs/loaders/bvh/license.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16550",
+                "title": "Particle Flow map",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Particles/flowMap.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/index.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/webgl2ParticleSystem.ts",
+                    "packages/dev/core/src/Shaders/gpuUpdateParticles.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gpuUpdateParticles.compute.fx"
+                ],
+                "tags": [
+                    "particles",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16556",
+                "title": "Fix nme loading delay when nodes are delay loaded",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/serializationTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16551",
+                "title": "Fix bug with sandbox reload when url parameters are provided",
+                "description": "Fix #16549\r\n\r\nThe main issue is that React props are being reset by the component update code and things go awry. I moved all the props to global state so that we can modify it when it actually should be modified.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/sandbox/src/globalState.ts",
+                    "packages/tools/sandbox/src/sandbox.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16554",
+                "title": "Fix MeshparticleEmitter bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/EmitterTypes/meshParticleEmitter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "16552",
+                "title": "WebGPU material plugins: Fix arrays declaration",
+                "description": "See https://forum.babylonjs.com/t/updatefloatarray-vs-webgpu/58202",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialPluginManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "WebGPU"
                 ]
             }
         ],
