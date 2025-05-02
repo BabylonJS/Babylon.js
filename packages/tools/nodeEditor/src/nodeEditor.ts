@@ -59,7 +59,6 @@ export class NodeEditor {
         }
 
         const globalState = new GlobalState();
-        globalState.nodeMaterial = options.nodeMaterial;
         globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
@@ -73,6 +72,7 @@ export class NodeEditor {
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState,
         });
+        globalState.nodeMaterial = options.nodeMaterial;
 
         const root = createRoot(hostElement);
         root.render(graphEditor);
