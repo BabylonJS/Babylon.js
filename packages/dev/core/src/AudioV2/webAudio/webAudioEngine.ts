@@ -74,6 +74,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _invalidFormats = new Set<string>();
     private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
+    private readonly _listenerAutoUpdate: boolean = true;
+    private readonly _listenerMinUpdateTime: number = 0;
     private _mainOut: _WebAudioMainOut;
     private _pauseCalled = false;
     private _resumeOnInteraction = true;
@@ -81,8 +83,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
     private _resumePromise: Nullable<Promise<void>> = null;
-    private readonly _listenerAutoUpdate: boolean = true;
-    private readonly _listenerMinUpdateTime: number = 0;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
