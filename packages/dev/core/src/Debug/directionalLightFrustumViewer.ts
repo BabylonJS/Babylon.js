@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 import type { Nullable } from "core/types";
 import type { Camera } from "../Cameras/camera";
 import type { DirectionalLight } from "../Lights/directionalLight";

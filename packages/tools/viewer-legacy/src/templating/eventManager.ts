@@ -56,11 +56,11 @@ export class EventManager {
         const selector = data.selector;
 
         const callbackDefs = this._callbacksContainer[templateName] || [];
-        callbackDefs
-            .filter((callbackDef) => (!callbackDef.eventType || callbackDef.eventType === eventType) && (!callbackDef.selector || callbackDef.selector === selector))
-            .forEach((callbackDef) => {
+        for (const callbackDef of callbackDefs) {
+            if ((!callbackDef.eventType || callbackDef.eventType === eventType) && (!callbackDef.selector || callbackDef.selector === selector)) {
                 callbackDef.callback(data);
-            });
+            }
+        }
     }
 
     /**

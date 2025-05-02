@@ -132,6 +132,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                     };
                 });
             }
+            // eslint-disable-next-line github/array-foreach
             accessorContainer.info.interpolation?.forEach((info, index) => {
                 const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
                 // generate the keys based on interpolation info

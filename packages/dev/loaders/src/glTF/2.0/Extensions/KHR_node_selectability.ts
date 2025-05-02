@@ -99,9 +99,11 @@ AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_selectability/selectable",
         return true;
     },
     set: (value: boolean, node: INode) => {
-        node._primitiveBabylonMeshes?.forEach((mesh) => {
-            mesh.isPickable = value;
-        });
+        if (node._primitiveBabylonMeshes) {
+            for (const mesh of node._primitiveBabylonMeshes) {
+                mesh.isPickable = value;
+            }
+        }
     },
     getTarget: (node: INode) => node._babylonTransformNode,
     getPropertyName: [() => "isPickable"],
@@ -133,13 +135,18 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
     }
 
     public async onReady(): Promise<void> {
-        this._loader.gltf.nodes?.forEach((node) => {
-            if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {
-                node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
-                    mesh.isPickable = false;
-                });
+        if (this._loader.gltf.nodes) {
+            for (const node of this._loader.gltf.nodes) {
+                if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {
+                    const childMeshes = node._babylonTransformNode?.getChildMeshes();
+                    if (childMeshes) {
+                        for (const mesh of childMeshes) {
+                            mesh.isPickable = false;
+                        }
+                    }
+                }
             }
-        });
+        }
     }
 
     public dispose() {

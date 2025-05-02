@@ -201,7 +201,9 @@ const HotSpotEntry: FunctionComponent<{
             const cleanupActions: (() => void)[] = [() => setIsPicking(false), () => (viewerElement.style.cursor = originalCursor), () => (pickingOperation.current = undefined)];
 
             const cleanup = () => {
-                cleanupActions.forEach((action) => action());
+                for (const action of cleanupActions) {
+                    action();
+                }
             };
             pickingOperation.current = {
                 dispose: () => {

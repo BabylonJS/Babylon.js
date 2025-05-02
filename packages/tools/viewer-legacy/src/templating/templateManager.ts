@@ -146,10 +146,10 @@ export class TemplateManager {
             const buildTree = (parentObject: any, name: string) => {
                 this._templates[name].isInHtmlTree = true;
                 const childNodes = this._templates[name].getChildElements().filter((n) => !!this._templates[n]);
-                childNodes.forEach((element) => {
+                for (const element of childNodes) {
                     parentObject[element] = {};
                     buildTree(parentObject[element], element);
-                });
+                }
             };
             if (this._templates["main"]) {
                 buildTree(templateStructure, "main");
@@ -193,9 +193,9 @@ export class TemplateManager {
      */
     public dispose() {
         // dispose all templates
-        Object.keys(this._templates).forEach((template) => {
+        for (const template of Object.keys(this._templates)) {
             this._templates[template].dispose();
-        });
+        }
         this._templates = {};
         this.eventManager.dispose();
 
@@ -551,14 +551,14 @@ export class Template {
             //noop
         }
 
-        this._loadRequests.forEach((request) => {
+        for (const request of this._loadRequests) {
             request.abort();
-        });
+        }
 
         if (this._registeredEvents) {
-            this._registeredEvents.forEach((evt) => {
+            for (const evt of this._registeredEvents) {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
-            });
+            }
         }
     }
 
@@ -603,9 +603,9 @@ export class Template {
         this._registeredEvents = this._registeredEvents || [];
         if (this._registeredEvents.length) {
             // first remove the registered events
-            this._registeredEvents.forEach((evt) => {
+            for (const evt of this._registeredEvents) {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
-            });
+            }
         }
         if (this._configuration.events) {
             for (const eventName in this._configuration.events) {
@@ -633,29 +633,27 @@ export class Template {
                         const selectorsArray: Array<string> = Object.keys((this._configuration.events[eventName] as object) || {});
                         // strict null check is working incorrectly, must override:
                         const event = this._configuration.events[eventName] || {};
-                        selectorsArray
-                            .filter((selector) => typeof event !== "boolean" && event[selector])
-                            .forEach((selector) => {
-                                let htmlElement = <HTMLElement>this.parent.querySelector(selector);
-                                if (!htmlElement) {
-                                    // backcompat, fallback to id
-                                    if (selector && selector.indexOf("#") !== 0) {
-                                        selector = "#" + selector;
-                                    }
-                                    try {
-                                        htmlElement = <HTMLElement>this.parent.querySelector(selector);
-                                    } catch (e) {}
+                        for (let selector of selectorsArray.filter((selector) => typeof event !== "boolean" && event[selector])) {
+                            let htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                            if (!htmlElement) {
+                                // backcompat, fallback to id
+                                if (selector && selector.indexOf("#") !== 0) {
+                                    selector = "#" + selector;
                                 }
-                                if (htmlElement) {
-                                    const binding = functionToFire.bind(this, selector);
-                                    htmlElement.addEventListener(eventName, binding, false);
-                                    this._registeredEvents.push({
-                                        htmlElement: htmlElement,
-                                        eventName: eventName,
-                                        function: binding,
-                                    });
-                                }
-                            });
+                                try {
+                                    htmlElement = <HTMLElement>this.parent.querySelector(selector);
+                                } catch (e) {}
+                            }
+                            if (htmlElement) {
+                                const binding = functionToFire.bind(this, selector);
+                                htmlElement.addEventListener(eventName, binding, false);
+                                this._registeredEvents.push({
+                                    htmlElement: htmlElement,
+                                    eventName: eventName,
+                                    function: binding,
+                                });
+                            }
+                        }
                     }
                 }
             }

@@ -52,6 +52,7 @@ export function extendClassWithConfig(object: any, config: any) {
     if (!config || typeof config !== "object") {
         return;
     }
+    // eslint-disable-next-line github/array-foreach
     Object.keys(config).forEach(function (key) {
         if (key in object && typeof object[key] !== "function") {
             // if (typeof object[key] === 'function') return;

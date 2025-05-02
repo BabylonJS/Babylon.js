@@ -281,11 +281,11 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             // account for rotation: if other control is rotated 90 degrees
             // relative to primary control, we should modify top instead of left
             const rotationModifier = (modulo(this.props.control.rotation - node.rotation, Math.PI * 2) / Math.PI) * 2;
-            edges.forEach((edge, index) => {
+            for (const [index, edge] of edges.entries()) {
                 const modifiedIndex = Math.round(index + rotationModifier) % 4;
                 const flipSign = index < 2 === modifiedIndex < 2 ? 1 : -1;
                 nb[edges[modifiedIndex]] += (newBounds[edge] - this._localBounds[edge]) * flipSign;
-            });
+            }
             nb.left = Math.min(initialBounds.right - 1, nb.left);
             nb.top = Math.min(initialBounds.bottom - 1, nb.top);
             nb.right = Math.max(initialBounds.left + 1, nb.right);

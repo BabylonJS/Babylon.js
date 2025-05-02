@@ -17,12 +17,12 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
                 //gltf, obj, stl
                 const extension = model.configuration.loader || filename.split(".").pop() || "";
                 let printable = false;
-                // not using .some sue to IE11
-                ["gltf", "glb", "obj", "stl"].forEach((ext) => {
+                // not using .some due to IE11
+                for (const ext of ["gltf", "glb", "obj", "stl"]) {
                     if (extension.indexOf(ext) !== -1) {
                         printable = true;
                     }
-                });
+                }
                 if (printable) {
                     this._currentModelUrl = baseUrl + filename;
                 }

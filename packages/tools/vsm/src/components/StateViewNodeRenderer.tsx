@@ -56,6 +56,7 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
                 ];
             });
             return () => {
+                // eslint-disable-next-line github/array-foreach
                 stateEnterObservers.forEach(([state, observer]) => {
                     state.onStateEnteredObservable.remove(observer);
                 });

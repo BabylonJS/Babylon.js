@@ -29,7 +29,9 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
             });
 
             return () => {
-                removers.forEach((remove) => remove());
+                for (const remove of removers) {
+                    remove();
+                }
             };
         }
 
@@ -62,7 +64,9 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<O
         });
 
         return () => {
-            observers.forEach((observer) => observer?.remove());
+            for (const observer of observers) {
+                observer?.remove();
+            }
         };
     }, [...observables]);
 

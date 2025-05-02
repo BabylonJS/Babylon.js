@@ -325,12 +325,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     automaticRewire(inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[], firstOnly = false) {
         let oneConnectionFound = false;
         if (outputs.length && inputs.length) {
-            inputs.forEach((input) => {
+            for (const input of inputs) {
                 if (oneConnectionFound) {
-                    return;
+                    break;
                 }
                 if (!input) {
-                    return;
+                    continue;
                 }
                 const output = outputs[0];
                 if (output && input.canConnectTo(output)) {
@@ -340,10 +340,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     outputs.shift();
                     if (firstOnly) {
                         oneConnectionFound = true;
-                        return;
+                        break;
                     }
                 }
-            });
+            }
         }
     }
 
@@ -426,9 +426,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     }
                     frame.isCollapsed = false;
                 } else {
-                    frame.nodes.forEach((node) => {
+                    for (const node of frame.nodes) {
                         node.enclosingFrameId = -1;
-                    });
+                    }
                 }
                 frame.dispose();
             }
@@ -829,25 +829,25 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         graph.graph().rankdir = "LR";
 
         // Build dagre graph
-        this._nodes.forEach((node) => {
+        for (const node of this._nodes) {
             if (this._frames.some((f) => f.nodes.indexOf(node) !== -1)) {
-                return;
+                continue;
             }
 
             graph.setNode(node.id.toString(), { id: node.id, type: "node", width: node.width, height: node.height });
-        });
+        }
 
-        this._frames.forEach((frame) => {
+        for (const frame of this._frames) {
             graph.setNode(frame.id.toString(), { id: frame.id, type: "frame", width: frame.element.clientWidth, height: frame.element.clientHeight });
-        });
+        }
 
-        this._nodes.forEach((node) => {
-            node.content.outputs.forEach((output) => {
+        for (const node of this._nodes) {
+            for (const output of node.content.outputs) {
                 if (!output.hasEndpoints) {
-                    return;
+                    continue;
                 }
 
-                output.endpoints!.forEach((endpoint) => {
+                for (const endpoint of output.endpoints!) {
                     const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
                     const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.content.data === endpoint.ownerData));
 
@@ -855,15 +855,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerData.uniqueId;
 
                     graph.setEdge(sourceId.toString(), targetId.toString());
-                });
-            });
-        });
+                }
+            }
+        }
 
         // Distribute
         dagre.layout(graph);
 
         // Update graph
         const dagreNodes = graph.nodes().map((node) => graph.node(node));
+        // eslint-disable-next-line github/array-foreach
         dagreNodes.forEach((dagreNode: any) => {
             if (!dagreNode) {
                 return;
@@ -1031,9 +1032,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     // Delete connection
                     const links = node.getLinksForPortData(portElement.portData);
 
-                    links.forEach((link) => {
+                    for (const link of links) {
                         link.dispose(false);
-                    });
+                    }
 
                     // Pick the first one as target port
                     const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
@@ -1180,9 +1181,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Get negative offset
         let minX = 0;
         let minY = 0;
-        this._nodes.forEach((node) => {
+        for (const node of this._nodes) {
             if (this._frames.some((f) => f.nodes.indexOf(node) !== -1)) {
-                return;
+                continue;
             }
 
             if (node.x < minX) {
@@ -1191,29 +1192,29 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (node.y < minY) {
                 minY = node.y;
             }
-        });
+        }
 
-        this._frames.forEach((frame) => {
+        for (const frame of this._frames) {
             if (frame.x < minX) {
                 minX = frame.x;
             }
             if (frame.y < minY) {
                 minY = frame.y;
             }
-        });
+        }
 
         // Restore to 0
-        this._frames.forEach((frame) => {
+        for (const frame of this._frames) {
             frame.x += -minX;
             frame.y += -minY;
             frame.cleanAccumulation();
-        });
+        }
 
-        this._nodes.forEach((node) => {
+        for (const node of this._nodes) {
             node.x += -minX;
             node.y += -minY;
             node.cleanAccumulation();
-        });
+        }
 
         // Get correct zoom
         const xFactor = this._rootContainer.clientWidth / this._rootContainer.scrollWidth;
@@ -1273,7 +1274,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             const x = nodeA.x - 250;
             let y = nodeA.y;
 
-            emittedNodeData.inputs.forEach((portData: IPortData) => {
+            for (const portData of emittedNodeData.inputs) {
                 if (portData.connectedPort) {
                     const existingNodes = this.nodes.filter((n) => {
                         return n.content.data === portData.connectedPort?.ownerData;
@@ -1287,7 +1288,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         y += 80;
                     }
                 }
-            });
+            }
         }
 
         if (pointA.direction === PortDataDirection.Input) {
@@ -1336,14 +1337,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             linksToNotifyForDispose = links.slice();
 
-            links.forEach((link) => {
+            for (const link of links) {
                 link.dispose(false);
-            });
+            }
         }
 
         if (pointB.ownerData.inputsAreExclusive) {
             // Disconnect all inputs if node has exclusive inputs
-            pointB.ownerData.inputs.forEach((i: any) => {
+            for (const i of pointB.ownerData.inputs) {
                 const links = nodeB.getLinksForPortData(i);
 
                 if (!linksToNotifyForDispose) {
@@ -1352,18 +1353,20 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     linksToNotifyForDispose.push(...links.slice());
                 }
 
-                links.forEach((link) => {
+                for (const link of links) {
                     link.dispose(false);
-                });
-            });
+                }
+            }
         }
 
         this.connectNodes(nodeA, pointA, nodeB, pointB);
 
-        linksToNotifyForDispose?.forEach((link) => {
-            link.onDisposedObservable.notifyObservers(link);
-            link.onDisposedObservable.clear();
-        });
+        if (linksToNotifyForDispose) {
+            for (const link of linksToNotifyForDispose) {
+                link.onDisposedObservable.notifyObservers(link);
+                link.onDisposedObservable.clear();
+            }
+        }
 
         if (!nodeB.content.isConnectedToOutput || nodeB.content.isConnectedToOutput()) {
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
@@ -1393,7 +1396,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         x -= GraphCanvasComponent.NodeWidth + 200;
 
-        newNode.content.inputs.forEach((portData) => {
+        for (const portData of newNode.content.inputs) {
             if (portData.connectedPort) {
                 const existingNodes = this.nodes.filter((n) => {
                     return n.content.data === portData.connectedPort?.ownerData;
@@ -1407,7 +1410,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     y += 80;
                 }
             }
-        });
+        }
 
         this.props.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
         this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);

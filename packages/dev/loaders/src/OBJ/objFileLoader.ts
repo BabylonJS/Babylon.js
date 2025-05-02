@@ -210,8 +210,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
         return this.importMeshAsync(null, scene, data, rootUrl)
             .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
-                result.meshes.forEach((mesh) => {
+                for (const mesh of result.meshes) {
+                    container.meshes.push(mesh);
+                }
+                for (const mesh of result.meshes) {
                     const material = mesh.material;
                     if (material) {
                         // Materials
@@ -220,14 +222,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
                             // Textures
                             const textures = material.getActiveTextures();
-                            textures.forEach((t) => {
+                            for (const t of textures) {
                                 if (container.textures.indexOf(t) == -1) {
                                     container.textures.push(t);
                                 }
-                            });
+                            }
                         }
                     }
-                });
+                }
                 this._assetContainer = null;
                 return container;
             })
@@ -336,7 +338,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             const isLine = (mesh: AbstractMesh) => Boolean(mesh._internalMetadata?.["_isLine"] ?? false);
 
             // Iterate over the mesh, determine if it is a line mesh, clone or modify the material to line rendering.
-            babylonMeshesArray.forEach((mesh) => {
+            for (const mesh of babylonMeshesArray) {
                 if (isLine(mesh)) {
                     let mat = mesh.material ?? new StandardMaterial(mesh.name + "_line", scene);
                     // If another mesh is using this material and it is not a line then we need to clone it.
@@ -350,7 +352,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                         mesh._internalMetadata["_isLine"] = undefined;
                     }
                 }
-            });
+            }
 
             return babylonMeshesArray;
         });

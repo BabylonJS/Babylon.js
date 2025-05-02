@@ -188,11 +188,11 @@ export function getMappingForDeclaration(declaration: IKHRInteractivity_Declarat
             }
             if (declaration.outputValueSockets) {
                 outputs.values = {};
-                Object.keys(declaration.outputValueSockets).forEach((key) => {
+                for (const key of Object.keys(declaration.outputValueSockets)) {
                     outputs.values![key] = {
                         name: key,
                     };
-                });
+                }
             }
             return {
                 blocks: [], // no blocks, just mapping
@@ -374,13 +374,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // try to infer the type or fallback to Integer
             // check the gltf block for the inputs, see if they have a type
             let type = -1;
-            Object.keys(_gltfBlock.values || {}).find((value) => {
+            for (const value of Object.keys(_gltfBlock.values || {})) {
                 if (_gltfBlock.values?.[value].type !== undefined) {
                     type = _gltfBlock.values[value].type;
-                    return true;
+                    break;
                 }
-                return false;
-            });
+            }
             if (type !== -1) {
                 serializedObjects[0].config.type = _parser.arrays.types[type].flowGraphType;
             }
@@ -906,6 +905,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
             serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows || []).length;
+            // eslint-disable-next-line github/array-foreach
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
             });
@@ -954,11 +954,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 throw new Error("Switch should have a single configuration object, the cases array");
             }
             const serializedObject = serializedObjects[0];
-            serializedObject.signalOutputs.forEach((output) => {
+            for (const output of serializedObject.signalOutputs) {
                 if (output.name !== "default") {
                     output.name = "out_" + output.name;
                 }
-            });
+            }
             return serializedObjects;
         },
     },
@@ -1017,6 +1017,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
             serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows).length;
+            // eslint-disable-next-line github/array-foreach
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
             });
@@ -1116,9 +1117,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(_gltfBlock, _declaration, _mapping, parser, serializedObjects) {
             // variable/get configuration
             const serializedGetVariable = serializedObjects[0];
-            serializedGetVariable.dataInputs.forEach((input) => {
+            for (const input of serializedGetVariable.dataInputs) {
                 input.name = parser.getVariableName(+input.name);
-            });
+            }
 
             return serializedObjects;
         },
@@ -1263,13 +1264,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
-            serializedObjects.forEach((serializedObject) => {
+            for (const serializedObject of serializedObjects) {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
                     serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
                 }
-            });
+            }
             return serializedObjects;
         },
     },
@@ -1314,13 +1315,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
-            serializedObjects.forEach((serializedObject) => {
+            for (const serializedObject of serializedObjects) {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
                     serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
                 }
-            });
+            }
             return serializedObjects;
         },
     },
@@ -1394,14 +1395,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
-            serializedObjects.forEach((serializedObject) => {
+            for (const serializedObject of serializedObjects) {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
                     serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
                 } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
                     serializedObject.config ||= {};
-                    Object.keys(gltfBlock.values || []).forEach((key) => {
+                    for (const key of Object.keys(gltfBlock.values || {})) {
                         const value = gltfBlock.values?.[key];
                         if (key === "value" && value) {
                             // get the type of the value
@@ -1410,9 +1411,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                                 serializedObject.config.animationType = parser.arrays.types[type].flowGraphType;
                             }
                         }
-                    });
+                    }
                 }
-            });
+            }
             return serializedObjects;
         },
     },
@@ -1559,11 +1560,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
-            serializedObject.dataInputs.forEach((input) => {
+            for (const input of serializedObject.dataInputs) {
                 if (input.name !== "default" && input.name !== "case") {
                     input.name = "in_" + input.name;
                 }
-            });
+            }
             return serializedObjects;
         },
     },

@@ -637,6 +637,7 @@ export class VirtualJoystick {
         }
 
         if (this.pressed) {
+            // eslint-disable-next-line github/array-foreach
             this._touches.forEach((key, touch) => {
                 if ((<PointerEvent>touch).pointerId === this._joystickPointerId) {
                     if (!this.alwaysVisible) {

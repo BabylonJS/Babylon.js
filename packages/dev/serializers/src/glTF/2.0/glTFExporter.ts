@@ -792,9 +792,10 @@ export class GLTFExporter {
                 // Put IBM data into TypedArraybuffer view
                 const byteLength = inverseBindMatrices.length * 64; // Always a 4 x 4 matrix of 32 bit float
                 const inverseBindMatricesData = new Float32Array(byteLength / 4);
-                inverseBindMatrices.forEach((mat: Matrix, index: number) => {
+                for (let index = 0; index < inverseBindMatrices.length; index++) {
+                    const mat = inverseBindMatrices[index];
                     inverseBindMatricesData.set(mat.m, index * 16);
-                });
+                }
                 // Create buffer view and accessor
                 const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData);
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length));
@@ -1181,11 +1182,11 @@ export class GLTFExporter {
             if (runtimeGLTFAnimation.channels.length && runtimeGLTFAnimation.samplers.length) {
                 this._animations.push(runtimeGLTFAnimation);
             }
-            idleGLTFAnimations.forEach((idleGLTFAnimation) => {
+            for (const idleGLTFAnimation of idleGLTFAnimations) {
                 if (idleGLTFAnimation.channels.length && idleGLTFAnimation.samplers.length) {
                     this._animations.push(idleGLTFAnimation);
                 }
-            });
+            }
         }
 
         // Begin processing child nodes once parent has been added to the node list

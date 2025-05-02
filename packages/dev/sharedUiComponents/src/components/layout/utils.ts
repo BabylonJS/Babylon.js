@@ -48,9 +48,9 @@ export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column
 
     // Redistribute this row's height to the remaining rows
     const percToAdd = parsePercentage(rowHeight) / columnLayout.rows.length;
-    columnLayout.rows.forEach((row: any) => {
+    for (const row of columnLayout.rows) {
         row.height = addPercentageStringToNumber(row.height, percToAdd) + "%";
-    });
+    }
 };
 
 /**

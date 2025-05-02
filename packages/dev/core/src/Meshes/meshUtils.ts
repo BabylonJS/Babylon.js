@@ -148,6 +148,7 @@ export function computeMaxExtents(
                 const perBoneCorners = new Map<number, Array<Vector3>>();
                 skinnedMeshCorners.set(mesh.uniqueId, perBoneCorners);
 
+                // eslint-disable-next-line github/array-foreach
                 perBoneExtents.forEach((extent, boneIndex) => {
                     const corners = getExtentCorners(extent);
 
@@ -184,6 +185,7 @@ export function computeMaxExtents(
 
                 const bones = skeleton.bones;
                 const perBoneCorners = skinnedMeshCorners.get(mesh.uniqueId)!;
+                // eslint-disable-next-line github/array-foreach
                 perBoneCorners.forEach((corners, boneIndex) => {
                     // Transform the per-bone corners into world space and update the max extent for each corner.
                     for (const corner of corners) {
@@ -238,6 +240,7 @@ export function RemoveUnreferencedVerticesData(meshes: readonly Mesh[]) {
             }
         }
 
+        // eslint-disable-next-line github/array-foreach
         unreferencedUVSets.forEach((unreferencedUVSet) => {
             if (mesh.isVerticesDataPresent(unreferencedUVSet)) {
                 mesh.removeVerticesData(unreferencedUVSet);

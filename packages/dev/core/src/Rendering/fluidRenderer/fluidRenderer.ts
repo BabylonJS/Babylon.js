@@ -140,6 +140,7 @@ export class FluidRendererSceneComponent implements ISceneComponent {
             }
         }
 
+        // eslint-disable-next-line github/array-foreach
         buffers.forEach((buffer) => {
             buffer._rebuild();
         });
@@ -493,6 +494,7 @@ export class FluidRenderer {
             particleSizes.set(renderingObject.targetRenderer, Math.max(curSize, renderingObject.object.particleSize));
         }
 
+        // eslint-disable-next-line github/array-foreach
         particleSizes.forEach((particleSize, targetRenderer) => {
             if (targetRenderer._depthRenderTarget) {
                 targetRenderer._depthRenderTarget.particleSize = particleSize;
@@ -572,6 +574,7 @@ export class FluidRenderer {
             this.targetRenderers[i].dispose();
         }
 
+        // eslint-disable-next-line github/array-foreach
         this._cameras.forEach((list) => {
             const copyDepthTextures = list[1];
             for (const key in copyDepthTextures) {

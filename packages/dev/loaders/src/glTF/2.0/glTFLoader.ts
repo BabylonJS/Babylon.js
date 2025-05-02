@@ -309,7 +309,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         this._completePromises.length = 0;
 
-        this._extensions.forEach((extension) => extension.dispose && extension.dispose());
+        for (const extension of this._extensions) {
+            if (extension.dispose) {
+                extension.dispose();
+            }
+        }
         this._extensions.length = 0;
 
         (this._gltf as Nullable<IGLTF>) = null; // TODO
@@ -570,6 +574,7 @@ export class GLTFLoader implements IGLTFLoader {
     private async _loadExtensionsAsync() {
         const extensionPromises: Promise<IGLTFLoaderExtension>[] = [];
 
+        // eslint-disable-next-line github/array-foreach
         registeredGLTFExtensions.forEach((registeredExtension, name) => {
             // Don't load explicitly disabled extensions.
             if (this.parent.extensionOptions[name]?.enabled === false) {
@@ -1248,6 +1253,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         loadAttribute("POSITION", VertexBuffer.PositionKind, (babylonVertexBuffer, data) => {
             const positions = new Float32Array(data.length);
+            // eslint-disable-next-line github/array-foreach
             babylonVertexBuffer.forEach(data.length, (value, index) => {
                 positions[index] = data[index] + value;
             });
@@ -1257,6 +1263,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         loadAttribute("NORMAL", VertexBuffer.NormalKind, (babylonVertexBuffer, data) => {
             const normals = new Float32Array(data.length);
+            // eslint-disable-next-line github/array-foreach
             babylonVertexBuffer.forEach(normals.length, (value, index) => {
                 normals[index] = data[index] + value;
             });
@@ -1267,6 +1274,7 @@ export class GLTFLoader implements IGLTFLoader {
         loadAttribute("TANGENT", VertexBuffer.TangentKind, (babylonVertexBuffer, data) => {
             const tangents = new Float32Array((data.length / 3) * 4);
             let dataIndex = 0;
+            // eslint-disable-next-line github/array-foreach
             babylonVertexBuffer.forEach((data.length / 3) * 4, (value, index) => {
                 // Tangent data for morph targets is stored as xyz delta.
                 // The vertexData.tangent is stored as xyzw.
@@ -1281,6 +1289,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         loadAttribute("TEXCOORD_0", VertexBuffer.UVKind, (babylonVertexBuffer, data) => {
             const uvs = new Float32Array(data.length);
+            // eslint-disable-next-line github/array-foreach
             babylonVertexBuffer.forEach(data.length, (value, index) => {
                 uvs[index] = data[index] + value;
             });
@@ -1290,6 +1299,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind, (babylonVertexBuffer, data) => {
             const uvs = new Float32Array(data.length);
+            // eslint-disable-next-line github/array-foreach
             babylonVertexBuffer.forEach(data.length, (value, index) => {
                 uvs[index] = data[index] + value;
             });
@@ -1302,6 +1312,7 @@ export class GLTFLoader implements IGLTFLoader {
             const componentSize = babylonVertexBuffer.getSize();
             if (componentSize === 3) {
                 colors = new Float32Array((data.length / 3) * 4);
+                // eslint-disable-next-line github/array-foreach
                 babylonVertexBuffer.forEach(data.length, (value, index) => {
                     const pixid = Math.floor(index / 3);
                     const channel = index % 3;
@@ -1312,6 +1323,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             } else if (componentSize === 4) {
                 colors = new Float32Array(data.length);
+                // eslint-disable-next-line github/array-foreach
                 babylonVertexBuffer.forEach(data.length, (value, index) => {
                     colors[index] = data[index] + value;
                 });

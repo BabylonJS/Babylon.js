@@ -26,6 +26,7 @@ namespace Levenshtein {
             const jsonObject: any = {};
 
             const characters = new Array<T>(this._characterToIdx.size);
+            // eslint-disable-next-line github/array-foreach
             this._characterToIdx.forEach((v, k) => {
                 characters[v] = k;
             });
@@ -732,6 +733,7 @@ export class TrajectoryClassifier {
         jsonObject.vector3Alphabet = this._vector3Alphabet.serialize();
         jsonObject.levenshteinAlphabet = this._levenshteinAlphabet.serialize();
         jsonObject.nameToDescribedTrajectory = [];
+        // eslint-disable-next-line github/array-foreach
         this._nameToDescribedTrajectory.forEach((described, name) => {
             jsonObject.nameToDescribedTrajectory.push(name);
             jsonObject.nameToDescribedTrajectory.push(described.serialize());
@@ -822,6 +824,7 @@ export class TrajectoryClassifier {
         const descriptor = TrajectoryDescriptor.CreateFromTrajectory(trajectory, this._vector3Alphabet, this._levenshteinAlphabet);
 
         const allowableMatches: string[] = [];
+        // eslint-disable-next-line github/array-foreach
         this._nameToDescribedTrajectory.forEach((trajectoryClass, classification) => {
             if (trajectoryClass.getMatchCost(descriptor) < this._maximumAllowableMatchCost) {
                 allowableMatches.push(classification);

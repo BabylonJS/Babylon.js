@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 /* eslint-disable no-console */
 import * as fs from "fs";
 import { globSync } from "glob";

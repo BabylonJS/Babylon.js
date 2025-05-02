@@ -236,6 +236,7 @@ export class Geometry implements IGetSetVerticesData {
             buffers.add(this._vertexBuffers[key].getWrapperBuffer());
         }
 
+        // eslint-disable-next-line github/array-foreach
         buffers.forEach((buffer) => {
             buffer._rebuild();
         });

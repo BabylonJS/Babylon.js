@@ -150,6 +150,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
 
         if (!this._options.doNotRemoveMeshesOnSessionEnded) {
+            // eslint-disable-next-line github/array-foreach
             this._detectedMeshes.forEach((mesh) => {
                 this.onMeshRemovedObservable.notifyObservers(mesh);
             });
@@ -178,11 +179,13 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             const detectedMeshes = frame.detectedMeshes || frame.worldInformation?.detectedMeshes;
             if (detectedMeshes) {
                 const toRemove = new Set<XRMesh>();
+                // eslint-disable-next-line github/array-foreach
                 this._detectedMeshes.forEach((vertexData, xrMesh) => {
                     if (!detectedMeshes.has(xrMesh)) {
                         toRemove.add(xrMesh);
                     }
                 });
+                // eslint-disable-next-line github/array-foreach
                 toRemove.forEach((xrMesh) => {
                     const vertexData = this._detectedMeshes.get(xrMesh);
                     if (vertexData) {
@@ -192,6 +195,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 });
 
                 // now check for new ones
+                // eslint-disable-next-line github/array-foreach
                 detectedMeshes.forEach((xrMesh) => {
                     if (!this._detectedMeshes.has(xrMesh)) {
                         const partialVertexData: Partial<IWebXRVertexData> = {

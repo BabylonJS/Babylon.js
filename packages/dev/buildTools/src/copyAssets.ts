@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable github/array-foreach */
 import { globSync } from "glob";
 import * as path from "path";
 import { copyFile, checkArgs } from "./utils.js";

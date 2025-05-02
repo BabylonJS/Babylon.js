@@ -343,6 +343,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
+            // eslint-disable-next-line github/array-foreach
             this._clearAttachmentsLayout.forEach((layout, clearType) => {
                 context.clearColorAttachments(clearColors[clearType], layout);
             });
@@ -445,6 +446,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
                 }
             }
 
+            // eslint-disable-next-line github/array-foreach
             clearAttachmentsLayout.forEach((layout, clearType) => {
                 layout.push(clearType === geometryDescription.clearType);
             });
@@ -454,6 +456,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
         this._clearAttachmentsLayout = new Map();
 
+        // eslint-disable-next-line github/array-foreach
         clearAttachmentsLayout.forEach((layout, clearType) => {
             this._clearAttachmentsLayout.set(clearType, this._engine.buildTextureLayout(layout));
         });

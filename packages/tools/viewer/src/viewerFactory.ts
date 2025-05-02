@@ -155,7 +155,11 @@ export async function CreateViewerForCanvas(
     disposeActions.push(() => engine.dispose());
 
     // Override the Viewer's dispose method to add in additional cleanup.
-    viewer.dispose = () => disposeActions.forEach((dispose) => dispose());
+    viewer.dispose = () => {
+        for (const dispose of disposeActions) {
+            dispose();
+        }
+    };
 
     return viewer;
 }

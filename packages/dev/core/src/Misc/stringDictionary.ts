@@ -13,6 +13,7 @@ export class StringDictionary<T> {
      */
     public copyFrom(source: StringDictionary<T>) {
         this.clear();
+        // eslint-disable-next-line github/array-foreach
         source.forEach((t, v) => this.add(t, v));
     }
 

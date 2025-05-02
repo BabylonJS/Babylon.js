@@ -321,6 +321,7 @@ export class PostProcess {
     public set samples(n: number) {
         this._samples = Math.min(n, this._engine.getCaps().maxMSAASamples);
 
+        // eslint-disable-next-line github/array-foreach
         this._textures.forEach((texture) => {
             texture.setSamples(this._samples);
         });
@@ -984,6 +985,7 @@ export class PostProcess {
                 this.resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
             }
 
+            // eslint-disable-next-line github/array-foreach
             this._textures.forEach((texture) => {
                 if (texture.samples !== this.samples) {
                     this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);

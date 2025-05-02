@@ -205,7 +205,9 @@ class TransmissionHelper {
     }
 
     private _parseScene(): void {
-        this._scene.meshes.forEach(this._addMesh.bind(this));
+        for (const mesh of this._scene.meshes) {
+            this._addMesh(mesh);
+        }
         // Listen for when a mesh is added to the scene and add it to our cache lists.
         this._scene.onNewMeshAddedObservable.add(this._addMesh.bind(this));
         // Listen for when a mesh is removed from to the scene and remove it from our cache lists.

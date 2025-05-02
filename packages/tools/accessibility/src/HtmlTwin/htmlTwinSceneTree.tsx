@@ -10,7 +10,9 @@ import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 function getSceneIds(scene: Scene) {
     const newSet = new Set<number>();
-    scene.rootNodes.forEach((node) => newSet.add(node.uniqueId));
+    for (const node of scene.rootNodes) {
+        newSet.add(node.uniqueId);
+    }
     return newSet;
 }
 

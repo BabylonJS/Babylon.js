@@ -70,9 +70,12 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
 
         const effectAvailableUniforms = this.engine.getUniforms(this, uniformsNames);
-        effectAvailableUniforms.forEach((uniform, index) => {
+
+        for (let index = 0; index < effectAvailableUniforms.length; index++) {
+            const uniform = effectAvailableUniforms[index];
+
             uniforms[uniformsNames[index]] = uniform;
-        });
+        }
         this._uniforms = uniforms;
 
         let index: number;
@@ -84,9 +87,9 @@ export class WebGLPipelineContext implements IPipelineContext {
             }
         }
 
-        samplerList.forEach((name, index) => {
-            samplers[name] = index;
-        });
+        for (index = 0; index < samplerList.length; index++) {
+            samplers[samplerList[index]] = index;
+        }
 
         for (const attr of engine.getAttributes(this, attributesNames)) {
             attributes.push(attr);

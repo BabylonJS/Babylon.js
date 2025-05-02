@@ -978,7 +978,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             this._tearDownViewer();
             this._setupViewer();
         } else {
-            this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer());
+            for (const binding of this._propertyBindings.filter((binding) => changedProperties.has(binding.property))) {
+                binding.updateViewer();
+            }
 
             if (changedProperties.has("source")) {
                 this._updateModel();
@@ -1412,7 +1414,9 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 this._updateModel();
                 this._updateEnv({ lighting: true, skybox: true });
 
-                this._propertyBindings.forEach((binding) => binding.onInitialized(details));
+                for (const binding of this._propertyBindings) {
+                    binding.onInitialized(details);
+                }
 
                 this._dispatchCustomEvent("viewerready", (type) => new Event(type));
             }

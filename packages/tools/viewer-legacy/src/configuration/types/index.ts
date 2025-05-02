@@ -1,3 +1,4 @@
+/* eslint-disable github/array-foreach */
 import { minimalConfiguration } from "./minimal";
 import { defaultConfiguration } from "./default";
 import { extendedConfiguration } from "./extended";
