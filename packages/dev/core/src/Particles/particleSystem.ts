@@ -113,6 +113,10 @@ export class ParticleSystem extends ThinParticleSystem {
 
         this._flowMap = value;
 
+        if (this._flowMapUpdate) {
+            _RemoveFromQueue(this._flowMapUpdate);
+            this._flowMapUpdate = null;
+        }
         if (value) {
             this._flowMapUpdate = {
                 process: (particle: Particle) => {
@@ -122,8 +126,6 @@ export class ParticleSystem extends ThinParticleSystem {
                 nextItem: null,
             };
             _ConnectAfter(this._flowMapUpdate, this._directionProcessing!);
-        } else {
-            _RemoveFromQueue(this._flowMapUpdate!);
         }
     }
 
