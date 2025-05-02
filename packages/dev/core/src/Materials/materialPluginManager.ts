@@ -319,7 +319,11 @@ export class MaterialPluginManager {
                                                 break;
                                         }
 
-                                        this._uboDeclaration += `uniform ${uniform.name}: ${type}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
+                                        if (arraySize > 0) {
+                                            this._uboDeclaration += `uniform ${uniform.name}: array<${type}, ${arraySize}>;\n`;
+                                        } else {
+                                            this._uboDeclaration += `uniform ${uniform.name}: ${type};\n`;
+                                        }
                                     } else {
                                         this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
                                     }
