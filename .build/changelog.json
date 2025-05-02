@@ -1,17 +1,18 @@
 {
-    "fromTag": "8.5.0",
+    "fromTag": "8.6.0",
     "changelog": {
-        "8.5.0": [
+        "8.6.1": [
             {
-                "pr": "16546",
-                "title": "Update freezeWorldMatrix documentation",
+                "pr": "16560",
+                "title": "Fix tests (for now)",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/transformNode.ts"
+                    ".build/config.json",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
                     "skip changelog"
@@ -291,6 +292,23 @@
                     "bug",
                     "materials",
                     "WebGPU"
+                ]
+            }
+        ],
+        "8.5.0": [
+            {
+                "pr": "16546",
+                "title": "Update freezeWorldMatrix documentation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
