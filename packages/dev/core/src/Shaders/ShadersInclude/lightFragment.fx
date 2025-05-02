@@ -103,14 +103,13 @@
                 #if AREALIGHT{X}
                     info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb);
                 #else
+                    fresnel = fresnelSchlickGGX(preInfo.VdotH, vec3(reflectanceF0), specularEnvironmentR90);
+                    coloredFresnel = fresnelSchlickGGX(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90);
+                    info.diffuse *= (1.0 - fresnel);
                     #ifdef ANISOTROPIC
                         info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb);
                     #else
-                        #ifdef METALLICWORKFLOW
-                            info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb, vReflectivityColor.b);
-                        #else
-                            info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb, 1.5);
-                        #endif
+                        info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, coloredFresnel, AARoughnessFactors.x, diffuse{X}.rgb);
                     #endif
                 #endif
             #endif

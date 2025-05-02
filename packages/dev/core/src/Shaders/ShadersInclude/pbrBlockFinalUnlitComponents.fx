@@ -1,10 +1,6 @@
 // _____________________________ Diffuse ________________________________________
 vec3 finalDiffuse = diffuseBase;
-#if !defined(UNLIT)
-    finalDiffuse *= (1. - reflectanceF0) * surfaceAlbedo.rgb;
-#else
-    finalDiffuse *= surfaceAlbedo;
-#endif
+finalDiffuse *= surfaceAlbedo;
 
 #if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
     finalDiffuse += diffuseTransmissionBase;

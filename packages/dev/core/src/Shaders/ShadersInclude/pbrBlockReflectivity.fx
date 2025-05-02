@@ -63,7 +63,7 @@ reflectivityOutParams reflectivityBlock(
 
     #ifdef METALLICWORKFLOW
         vec2 metallicRoughness = surfaceReflectivityColor.rg;
-
+        float ior = surfaceReflectivityColor.b;
         #ifdef REFLECTIVITY
             #if DEBUGMODE > 0
                 outParams.surfaceMetallicColorMap = surfaceMetallicOrReflectivityColorMap;
@@ -124,7 +124,7 @@ reflectivityOutParams reflectivityBlock(
             float specularWeight = metallicReflectanceFactors.a;
             float dielectricF0 = reflectivityColor.a * specularWeight;
             surfaceReflectivityColor = metallicReflectanceFactors.rgb;
-            
+
             #if DEBUGMODE > 0
                 outParams.metallicF0 = vec3(dielectricF0) * surfaceReflectivityColor;
             #endif
@@ -144,7 +144,11 @@ reflectivityOutParams reflectivityBlock(
             // It represents the total percentage of light that is reflected at normal incidence.
             // In glTF's material model, this is the F0 value calculated from the IOR and then multiplied by the maximum component of the specular colour.
             outParams.reflectanceF0 = mix(dielectricF0, 1.0, outParams.metallic);
-            outParams.reflectanceF90 = vec3(mix(specularWeight, 1.0, outParams.metallic));
+            // Scale the reflectanceF90 by the IOR for values less than 1.5.
+            // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
+            // and an IOR of 1.0 should result in no visible glancing specular.
+            float f90Scale = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
+            outParams.reflectanceF90 = vec3(mix(specularWeight * f90Scale, 1.0, outParams.metallic));
         #endif
     #else
         #ifdef REFLECTIVITY
