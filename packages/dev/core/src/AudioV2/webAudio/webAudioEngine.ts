@@ -83,6 +83,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
     private _resumePromise: Nullable<Promise<void>> = null;
+    private _silentHtmlAudio: Nullable<HTMLAudioElement> = null;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
@@ -261,6 +262,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
         document.removeEventListener("click", this._onUserGesture);
         this._audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
 
+        this._silentHtmlAudio?.remove();
+
         this._unmuteUI?.dispose();
         this._unmuteUI = null;
     }
@@ -371,6 +374,22 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _onUserGesture: () => void = async () => {
         if (this._resumeOnInteraction) {
             await this._audioContext.resume();
+        }
+
+        // On iOS the ringer switch must be turned on for WebAudio to play.
+        // This gets WebAudio to play with the ringer switch turned off by playing an HTMLAudioElement.
+        if (!this._silentHtmlAudio) {
+            this._silentHtmlAudio = document.createElement("audio");
+
+            const audio = this._silentHtmlAudio;
+            audio.controls = false;
+            audio.preload = "auto";
+            audio.loop = true;
+
+            // Wave data for 0.0001 seconds of silence.
+            audio.src = "data:audio/wav;base64,UklGRjAAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQwAAAAAAAEA/v8CAP//AQA=";
+
+            audio.play();
         }
 
         this.userGestureObservable.notifyObservers();
