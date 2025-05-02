@@ -1154,7 +1154,16 @@ export class Viewer implements IDisposable {
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
             this._updateLight();
-            this._updateShadows();
+            (async () => {
+                try {
+                    await this._updateShadows();
+                } catch (error) {
+                    // If _updateShadows was aborted (e.g. because a new update was requested before this one finished), we can just ignore the error.
+                    if (!(error instanceof AbortError)) {
+                        Logger.Error(error);
+                    }
+                }
+            })();
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
@@ -2076,7 +2085,16 @@ export class Viewer implements IDisposable {
                 await Promise.all(newTexturePromises);
 
                 this._updateLight();
-                this._updateShadows();
+                (async () => {
+                    try {
+                        await this._updateShadows();
+                    } catch (error) {
+                        // If _updateShadows was aborted (e.g. because a new update was requested before this one finished), we can just ignore the error.
+                        if (!(error instanceof AbortError)) {
+                            Logger.Error(error);
+                        }
+                    }
+                })();
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
                 this.onEnvironmentError.notifyObservers(e);
