@@ -74,7 +74,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
             // const [visibleItems, setVisibleItems] = useState(["Nodes", "Materials", "Textures"]);
             const [sceneVersion, setSceneVersion] = useState(0);
 
-            const [itemsFilter, setItemsFilter] = useState("");
+            const [itemsFilter /*, setItemsFilter*/] = useState("");
 
             useEffect(() => {
                 setSceneVersion((version) => version + 1);

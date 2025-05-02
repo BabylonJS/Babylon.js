@@ -16,7 +16,7 @@
 
             .button-container {
                 position: absolute;
-                top: 50px;
+                bottom: 50px;
                 right: 10px;
                 display: flex;
                 flex-direction: column;
@@ -135,12 +135,12 @@
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div class="button-container">
-            <button onclick="onOpenFile()">Open File</button>
+            <!-- <button onclick="onOpenFile()">Open File</button>
             <button onclick="onToggleDOM()">Toggle DOM</button>
             <button onclick="onToggleEngine()">Toggle Engine</button>
-            <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+            <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button> -->
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
-            <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
+            <!-- <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
             <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
             <button onClick="onSuspendRendering()">Suspend Rendering</button>
             <button onClick="onResumeRendering()">Resume Rendering</button>
@@ -161,7 +161,7 @@
             <div>
                 <span>Environment Visibility</span>
                 <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
-            </div>
+            </div> -->
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
         <script type="module">
@@ -308,22 +308,22 @@
                     console.log(viewerDetails != null);
                     console.log(viewerDetails?.scene != null);
                     Inspector.Show(viewerDetails.scene, {
-                        serviceDefinitions: [
-                            {
-                                friendlyName: "Custom Module",
-                                consumes: [ShellService],
-                                factory: (shellService) => {
-                                    shellService.addToLeftPane({
-                                        key: "Custom Module",
-                                        title: "Custom Module",
-                                        icon: EmojiRegular,
-                                        content: () => {
-                                            return "Some custom module...";
-                                        },
-                                    });
-                                },
-                            },
-                        ],
+                        // serviceDefinitions: [
+                        //     {
+                        //         friendlyName: "Custom Module",
+                        //         consumes: [ShellService],
+                        //         factory: (shellService) => {
+                        //             shellService.addToRightPane({
+                        //                 key: "Custom Module",
+                        //                 title: "Custom Module",
+                        //                 icon: EmojiRegular,
+                        //                 content: () => {
+                        //                     return "Some custom module...";
+                        //                 },
+                        //             });
+                        //         },
+                        //     },
+                        // ],
                     });
                 }
             };

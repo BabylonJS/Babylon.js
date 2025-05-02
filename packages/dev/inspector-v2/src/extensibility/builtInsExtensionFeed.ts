@@ -40,5 +40,6 @@ export class BuiltInsExtensionFeed implements ExtensionFeed {
         if (name === exploderExtensionMetadata.name && version === exploderExtensionMetadata.version) {
             return await import("../services/exploderService");
         }
+        return undefined;
     }
 }

@@ -153,7 +153,12 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     disposeActions.push(() => modularTool.dispose());
 
     currentInspectorToken = {
-        dispose: () => disposeActions.reverse().forEach((dispose) => dispose()),
+        dispose: () => {
+            disposeActions.reverse().forEach((dispose) => dispose());
+            if (options.handleResize) {
+                scene.getEngine().resize();
+            }
+        },
     };
 }
 
