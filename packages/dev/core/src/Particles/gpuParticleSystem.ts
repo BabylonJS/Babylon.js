@@ -52,6 +52,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
+import type { Texture } from "core/Materials/Textures/texture";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -309,6 +310,29 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return particleEmitter;
     }
 
+    /** Flow map */
+
+    /** @internal */
+    public _flowMap: Nullable<Texture> = null;
+
+    /**
+     * The strength of the flow map
+     */
+    public flowMapStrength = 1.0;
+
+    /** Gets or sets the current flow map */
+    public get flowMap(): Nullable<Texture> {
+        return this._flowMap;
+    }
+
+    public set flowMap(value: Nullable<Texture>) {
+        if (this._flowMap === value) {
+            return;
+        }
+
+        this._flowMap = value;
+    }
+
     /**
      * Is this system ready to be used/rendered
      * @returns true if the system is ready
@@ -317,6 +341,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (
             !this.emitter ||
             (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady()) ||
+            (this._flowMap && !this._flowMap.isReady()) ||
             !this.particleTexture ||
             !this.particleTexture.isReady() ||
             this._rebuildingAfterContextLost
@@ -1365,6 +1390,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define DRAGGRADIENTS";
         }
 
+        if (this._flowMap) {
+            defines += "\n#define FLOWMAP";
+        }
+
         if (this.isAnimationSheetEnabled) {
             defines += "\n#define ANIMATESHEET";
             if (this.spriteRandomStartCell) {
@@ -1780,6 +1809,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this.noiseTexture) {
             this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);
         }
+        if (this._flowMap) {
+            const scene = this.getScene()!;
+            this._updateBuffer.setFloat("flowMapStrength", this.flowMapStrength);
+            this._updateBuffer.setMatrix("flowMapProjection", scene.getTransformMatrix());
+        }
+
         if (!this.isLocal) {
             this._updateBuffer.setMatrix("emitterWM", emitterWM);
         }

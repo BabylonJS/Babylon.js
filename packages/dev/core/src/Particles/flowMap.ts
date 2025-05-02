@@ -9,6 +9,8 @@ const ScreenPos = new Vector3(0, 0, 0);
 /**
  * Class used to represent a particle flow map.
  * #5DM02T#7
+ * GPUParts: #5DM02T#12 (webgl2)
+ * GPUParts: #5DM02T#13 (webgpu)
  */
 export class FlowMap {
     /**
@@ -26,16 +28,12 @@ export class FlowMap {
     /** @internal */
     public _processParticle(particle: Particle, system: ThinParticleSystem, strength = 1) {
         const scene = system.getScene()!;
-        const camera = scene.activeCamera!;
-        const engine = scene.getEngine();
-        const renderWidth = engine.getRenderWidth();
-        const renderHeight = engine.getRenderHeight();
 
         // Convert world pos to screen pos
-        Vector3.ProjectToRef(particle.position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), camera.viewport.toGlobal(renderWidth, renderHeight), ScreenPos);
+        Vector3.TransformCoordinatesToRef(particle.position, scene.getTransformMatrix(), ScreenPos);
 
-        const u = ScreenPos.x / renderWidth;
-        const v = ScreenPos.y / renderHeight; // Flip Y
+        const u = ScreenPos.x * 0.5 + 0.5;
+        const v = 1.0 - (ScreenPos.y * 0.5 + 0.5);
 
         const x = Math.floor(u * this.width);
         const y = Math.floor(v * this.height);
