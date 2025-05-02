@@ -1,6 +1,205 @@
 {
-    "fromTag": "8.4.0",
+    "fromTag": "8.4.2",
     "changelog": {
+        "8.5.0": [
+            {
+                "pr": "16546",
+                "title": "Update freezeWorldMatrix documentation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "8.4.2": [
+            {
+                "pr": "16545",
+                "title": "Add attractor serialization support",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Particles/attractor.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "particles",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16527",
+                "title": "IBL Shadows - Init passes only after voxelization",
+                "description": "Okay, I've been investigating the issue where the shadow accumulation isn't working initially after loading the [IBL Shadow Demo playground](https://playground.babylonjs.com/#8R5SSE#618). On some loads, the shadows will appear noisy and not accumulate over multiple frames. Note that this issue never happens if you have Spector.js enabled, which is why I had such a hard time reproducing it originally.\r\nThe actual issue is that the uniform, `accumulationParameters` fails to be set with \r\n`WebGL: INVALID_OPERATION: uniform4f: location is not from the associated program`\r\n\r\nEven though this fails, the uniform value is still cached and Babylon doesn't set the uniform again until the value changes. That is why accumulation appears to be disabled until you move the camera (which causes the uniform to change and update).\r\nI have not been able to figure out _why_ the uniform set fails in the first place. It seems to be consistently the 3rd render that fails. Before that, the uniform is set successfully and, as far as I can tell, the shader program isn't updated after that point. And after the failure, the uniform can be set again.\r\n\r\nThe one thing that I was able to change to make the issue seem to go away was to put enough of a delay on the rendering of the accumulation pass. I've added logic to only start rendering the accumulation pass once the first voxelization is complete. This is fine since we can't render shadows until this is done anyway but I don't know why it should fix the problem.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16544",
+                "title": "Remove deprecated from templates in playground",
+                "description": "SceneLoader.ImportMesh was removed in favor of ImportMeshAsync",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/templates.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16543",
+                "title": "Rendering Pipelines: Fix dispose",
+                "description": "See https://forum.babylonjs.com/t/disposing-ssao2-rendering-pipeline/58145",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16542",
+                "title": "Texture: Fix texture format",
+                "description": "See https://forum.babylonjs.com/t/unable-to-create-rendertargettexture-with-textureformat-alpha/58164",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16541",
+                "title": "Particle attractors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/Queue/executionQueue.ts",
+                    "packages/dev/core/src/Particles/attractor.ts",
+                    "packages/dev/core/src/Particles/index.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/attractors.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "particles",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16534",
+                "title": "Stricter check in gpu picker callback",
+                "description": "The fix in #16528 now correctly throws `Uncaught TypeError: Cannot read properties of undefined (reading 'r')` when disposing last instance from a mesh (https://playground.babylonjs.com/?snapshot=refs/pull/16528/merge#0E9WBX). This is identical to the thin instance case in forum (https://forum.babylonjs.com/t/removing-thin-instances-vs-gpupicker/57989).\r\n\r\nThe correct sequence is for the user to update the picking list after dispose/matrix buffer. While this repo isn't the primary culprit, its still annoying when the error crashes user app during dev. This PR adds a stricter check to the callback and performs some minor cleanup missed in the previous fix.",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16538",
+                "title": "Particle update and create functions are now dynamic",
+                "description": "Initial testing show a 20% perf improvement on 400K particles\r\n\r\nTest: https://playground.babylonjs.com/#DEZ79M#1\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.function.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "particles",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16539",
+                "title": "Expanded support for EXR files",
+                "description": "I talked about the issue on the [forum](https://forum.babylonjs.com/t/updating-single-channel-exr-support/58121) and got the green light to go ahead and make the PR. I think the change is pretty straightforward. I tried to keep it targeted and maintain backward compatibility.\r\n\r\nHappy to make any changes or updates needed.",
+                "author": {
+                    "name": "Slater-Victoroff",
+                    "url": "https://github.com/Slater-Victoroff"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.decoder.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16537",
+                "title": "GPUPicker: Fix multiPickAsync return unexpected results in different hardwareScalingLevel",
+                "description": "see [https://forum.babylonjs.com/t/gpu-multi-picking-issues/58074/2](https://forum.babylonjs.com/t/gpu-multi-picking-issues/58074/2) and [https://forum.babylonjs.com/t/gpu-picker-multi-pick-adjust-to-dpr/58091](https://forum.babylonjs.com/t/gpu-picker-multi-pick-adjust-to-dpr/58091)\r\n\r\nIn `multiPickAsync`, when the length of the screen coordinate array passed in is greater than 1, it is not processed to adapt to the current DPR, resulting in unexpected results being returned.",
+                "author": {
+                    "name": "KallkaGo",
+                    "url": "https://github.com/KallkaGo"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16524",
+                "title": "Fixed issue in the .babylon serializer",
+                "description": "When serializing to .babylon file we are setting the _isExpanded property directly in the array object to flag if matrices indices are in compact or expanded form. However, JSON.stringify will remove those properties since it does not support properties in array objects. I'm moving those flags to the serializationObject itself to allows it to be properly exported. I'm also keeping the deserializer for it just in case someone has a file that somehow has that property in the array. \r\n\r\nReleated to Exporters PR: https://github.com/BabylonJS/Exporters/pull/1137",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "8.4.1": [
             {
                 "pr": "16535",

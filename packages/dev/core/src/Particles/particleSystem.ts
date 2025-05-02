@@ -32,7 +32,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
-import type { Attractor } from "./attractor";
+import { Attractor } from "./attractor";
 import type { _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
 
@@ -726,6 +726,16 @@ export class ParticleSystem extends ThinParticleSystem {
             }
         }
 
+        // Attractors
+        if (parsedParticleSystem.attractors) {
+            for (const attractor of parsedParticleSystem.attractors) {
+                const newAttractor = new Attractor();
+                newAttractor.position = Vector3.FromArray(attractor.position);
+                newAttractor.strength = attractor.strength;
+                particleSystem.addAttractor(newAttractor);
+            }
+        }
+
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
 
         if (parsedParticleSystem.textureMask) {
@@ -778,6 +788,14 @@ export class ParticleSystem extends ThinParticleSystem {
                 }
 
                 serializationObject.subEmitters.push(cell);
+            }
+        }
+
+        // Attractors
+        if (this._attractors && this._attractors.length) {
+            serializationObject.attractors = [];
+            for (const attractor of this._attractors) {
+                serializationObject.attractors.push(attractor.serialize());
             }
         }
 

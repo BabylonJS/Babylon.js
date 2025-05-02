@@ -450,7 +450,7 @@ export class Texture extends BaseTexture {
         this._creationFlags = creationFlags;
         this._useSRGBBuffer = useSRGBBuffer;
         this._forcedExtension = forcedExtension;
-        if (format) {
+        if (format !== undefined) {
             this._format = format;
         }
 

@@ -1889,14 +1889,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.4.1";
+        return "babylonjs@8.5.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.4.1";
+        return "8.5.0";
     }
 
     /**
