@@ -109,10 +109,21 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public updateSpeed = 0.01;
 
+    protected _targetStopDuration = 0;
     /**
      * The amount of time the particle system is running (depends of the overall update speed).
      */
-    public targetStopDuration = 0;
+    public get targetStopDuration() {
+        return this._targetStopDuration;
+    }
+
+    public set targetStopDuration(value: number) {
+        if (this._targetStopDuration === value) {
+            return;
+        }
+
+        this._targetStopDuration = value;
+    }
 
     /**
      * Specifies whether the particle system will be disposed once it reaches the end of the animation.
@@ -213,7 +224,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     _wasDispatched = false;
 
     protected _rootUrl = "";
-    private _noiseTexture: Nullable<ProceduralTexture>;
+    protected _noiseTexture: Nullable<ProceduralTexture>;
 
     /**
      * Gets or sets a texture used to add random noise to particle positions
@@ -290,8 +301,19 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
+    protected _animationSheetEnabled = false;
     /** @internal */
-    public _isAnimationSheetEnabled: boolean;
+    public get _isAnimationSheetEnabled() {
+        return this._animationSheetEnabled;
+    }
+
+    public set _isAnimationSheetEnabled(value: boolean) {
+        if (this._animationSheetEnabled === value) {
+            return;
+        }
+
+        this._animationSheetEnabled = value;
+    }
 
     /**
      * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
@@ -391,18 +413,28 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public gravity = Vector3.Zero();
 
-    protected _colorGradients: Nullable<Array<ColorGradient>> = null;
-    protected _sizeGradients: Nullable<Array<FactorGradient>> = null;
-    protected _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
-    protected _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
-    protected _velocityGradients: Nullable<Array<FactorGradient>> = null;
-    protected _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
-    protected _dragGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _colorGradients: Nullable<Array<ColorGradient>> = null;
+    /** @internal */
+    public _sizeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _lifeTimeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _angularSpeedGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _velocityGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _limitVelocityGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _dragGradients: Nullable<Array<FactorGradient>> = null;
     protected _emitRateGradients: Nullable<Array<FactorGradient>> = null;
-    protected _startSizeGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _startSizeGradients: Nullable<Array<FactorGradient>> = null;
     protected _rampGradients: Nullable<Array<Color3Gradient>> = null;
-    protected _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
-    protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _colorRemapGradients: Nullable<Array<FactorGradient>> = null;
+    /** @internal */
+    public _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
 
     protected _hasTargetStopDurationDependantGradient() {
         return (

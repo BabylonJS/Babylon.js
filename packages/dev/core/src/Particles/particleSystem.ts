@@ -32,6 +32,9 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
+import { Attractor } from "./attractor";
+import type { _IExecutionQueueItem } from "./Queue/executionQueue";
+import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
 
 /**
  * This represents a particle system in Babylon.
@@ -86,6 +89,53 @@ export class ParticleSystem extends ThinParticleSystem {
         const particleEmitter = CreatePointEmitter(direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
+    }
+
+    private _attractors: Attractor[] = [];
+    private _attractorUpdate: Nullable<_IExecutionQueueItem> = null;
+
+    /**
+     * The list of attractors used to change the direction of the particles in the system.
+     * Please note that this is a copy of the internal array. If you want to modify it, please use the addAttractor and removeAttractor methods.
+     */
+    public get attractors(): Attractor[] {
+        return this._attractors.slice(0);
+    }
+
+    /**
+     * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor The attractor to add to the particle system
+     */
+    public addAttractor(attractor: Attractor): void {
+        this._attractors.push(attractor);
+
+        if (this._attractors.length === 1) {
+            this._attractorUpdate = {
+                process: (particle: Particle) => {
+                    for (const attractor of this._attractors) {
+                        attractor._processParticle(particle, this);
+                    }
+                },
+                previousItem: null,
+                nextItem: null,
+            };
+            _ConnectAfter(this._attractorUpdate, this._directionProcessing!);
+        }
+    }
+
+    /**
+     * Removes an attractor from the particle system. Attractors are used to change the direction of the particles in the system.
+     * @param attractor The attractor to remove from the particle system
+     */
+    public removeAttractor(attractor: Attractor): void {
+        const index = this._attractors.indexOf(attractor);
+        if (index !== -1) {
+            this._attractors.splice(index, 1);
+        }
+
+        if (this._attractors.length === 0) {
+            _RemoveFromQueue(this._attractorUpdate!);
+        }
     }
 
     /**
@@ -676,6 +726,16 @@ export class ParticleSystem extends ThinParticleSystem {
             }
         }
 
+        // Attractors
+        if (parsedParticleSystem.attractors) {
+            for (const attractor of parsedParticleSystem.attractors) {
+                const newAttractor = new Attractor();
+                newAttractor.position = Vector3.FromArray(attractor.position);
+                newAttractor.strength = attractor.strength;
+                particleSystem.addAttractor(newAttractor);
+            }
+        }
+
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
 
         if (parsedParticleSystem.textureMask) {
@@ -728,6 +788,14 @@ export class ParticleSystem extends ThinParticleSystem {
                 }
 
                 serializationObject.subEmitters.push(cell);
+            }
+        }
+
+        // Attractors
+        if (this._attractors && this._attractors.length) {
+            serializationObject.attractors = [];
+            for (const attractor of this._attractors) {
+                serializationObject.attractors.push(attractor.serialize());
             }
         }
 

@@ -1,48 +1,323 @@
 {
-    "fromTag": "8.3.1",
+    "fromTag": "8.4.2",
     "changelog": {
-        "8.3.1": [
+        "8.5.0": [
             {
-                "pr": "16508",
-                "title": "Remove legacy copyTexture and bump the native protocol version",
-                "description": "It's quite hard to make new BN compatible with old BJS, so after some discussion with @bghgary we decided to remove the old contract and bump the protocol version.",
+                "pr": "16546",
+                "title": "Update freezeWorldMatrix documentation",
+                "description": null,
                 "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "8.4.2": [
+            {
+                "pr": "16545",
+                "title": "Add attractor serialization support",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Particles/attractor.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "particles",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16527",
+                "title": "IBL Shadows - Init passes only after voxelization",
+                "description": "Okay, I've been investigating the issue where the shadow accumulation isn't working initially after loading the [IBL Shadow Demo playground](https://playground.babylonjs.com/#8R5SSE#618). On some loads, the shadows will appear noisy and not accumulate over multiple frames. Note that this issue never happens if you have Spector.js enabled, which is why I had such a hard time reproducing it originally.\r\nThe actual issue is that the uniform, `accumulationParameters` fails to be set with \r\n`WebGL: INVALID_OPERATION: uniform4f: location is not from the associated program`\r\n\r\nEven though this fails, the uniform value is still cached and Babylon doesn't set the uniform again until the value changes. That is why accumulation appears to be disabled until you move the camera (which causes the uniform to change and update).\r\nI have not been able to figure out _why_ the uniform set fails in the first place. It seems to be consistently the 3rd render that fails. Before that, the uniform is set successfully and, as far as I can tell, the shader program isn't updated after that point. And after the failure, the uniform can be set again.\r\n\r\nThe one thing that I was able to change to make the issue seem to go away was to put enough of a delay on the rendering of the accumulation pass. I've added logic to only start rendering the accumulation pass once the first voxelization is complete. This is fine since we can't render shadows until this is done anyway but I don't know why it should fix the problem.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "16507",
-                "title": "glTF Exporter: Export compressed textures as PNG",
-                "description": "The follow up to https://github.com/BabylonJS/Babylon.js/pull/14312/. Partially addresses https://github.com/BabylonJS/Babylon.js/issues/12257 -- while we can't recompress the image back to KTX2, we can at least export it as PNG, which is better than nothing.",
+                "pr": "16544",
+                "title": "Remove deprecated from templates in playground",
+                "description": "SceneLoader.ImportMesh was removed in favor of ImportMeshAsync",
                 "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                    "packages/tools/playground/public/templates.json"
                 ],
                 "tags": []
             },
             {
-                "pr": "16504",
-                "title": "Playground: Prevents crashes when running multiple PG's in succession",
-                "description": "Quickly clicking the “Play” button may cause PG to crash, as a new execution may be created before the previous one is fully processed by `_compileAndRunAsync`.\r\n\r\nWithout the PR, the crash can be reproduced with [this PG](https://playground.babylonjs.com/?webgpu#VW8IG3#160), by quickly clicking the “Play” button several times in a row.",
+                "pr": "16543",
+                "title": "Rendering Pipelines: Fix dispose",
+                "description": "See https://forum.babylonjs.com/t/disposing-ssao2-rendering-pipeline/58145",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
                 ],
                 "tags": [
                     "bug",
-                    "Playground"
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16542",
+                "title": "Texture: Fix texture format",
+                "description": "See https://forum.babylonjs.com/t/unable-to-create-rendertargettexture-with-textureformat-alpha/58164",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16541",
+                "title": "Particle attractors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/Queue/executionQueue.ts",
+                    "packages/dev/core/src/Particles/attractor.ts",
+                    "packages/dev/core/src/Particles/index.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/attractors.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "particles",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16534",
+                "title": "Stricter check in gpu picker callback",
+                "description": "The fix in #16528 now correctly throws `Uncaught TypeError: Cannot read properties of undefined (reading 'r')` when disposing last instance from a mesh (https://playground.babylonjs.com/?snapshot=refs/pull/16528/merge#0E9WBX). This is identical to the thin instance case in forum (https://forum.babylonjs.com/t/removing-thin-instances-vs-gpupicker/57989).\r\n\r\nThe correct sequence is for the user to update the picking list after dispose/matrix buffer. While this repo isn't the primary culprit, its still annoying when the error crashes user app during dev. This PR adds a stricter check to the callback and performs some minor cleanup missed in the previous fix.",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16538",
+                "title": "Particle update and create functions are now dynamic",
+                "description": "Initial testing show a 20% perf improvement on 400K particles\r\n\r\nTest: https://playground.babylonjs.com/#DEZ79M#1\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.function.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "particles",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16539",
+                "title": "Expanded support for EXR files",
+                "description": "I talked about the issue on the [forum](https://forum.babylonjs.com/t/updating-single-channel-exr-support/58121) and got the green light to go ahead and make the PR. I think the change is pretty straightforward. I tried to keep it targeted and maintain backward compatibility.\r\n\r\nHappy to make any changes or updates needed.",
+                "author": {
+                    "name": "Slater-Victoroff",
+                    "url": "https://github.com/Slater-Victoroff"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.decoder.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16537",
+                "title": "GPUPicker: Fix multiPickAsync return unexpected results in different hardwareScalingLevel",
+                "description": "see [https://forum.babylonjs.com/t/gpu-multi-picking-issues/58074/2](https://forum.babylonjs.com/t/gpu-multi-picking-issues/58074/2) and [https://forum.babylonjs.com/t/gpu-picker-multi-pick-adjust-to-dpr/58091](https://forum.babylonjs.com/t/gpu-picker-multi-pick-adjust-to-dpr/58091)\r\n\r\nIn `multiPickAsync`, when the length of the screen coordinate array passed in is greater than 1, it is not processed to adapt to the current DPR, resulting in unexpected results being returned.",
+                "author": {
+                    "name": "KallkaGo",
+                    "url": "https://github.com/KallkaGo"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16524",
+                "title": "Fixed issue in the .babylon serializer",
+                "description": "When serializing to .babylon file we are setting the _isExpanded property directly in the array object to flag if matrices indices are in compact or expanded form. However, JSON.stringify will remove those properties since it does not support properties in array objects. I'm moving those flags to the serializationObject itself to allows it to be properly exported. I'm also keeping the deserializer for it just in case someone has a file that somehow has that property in the array. \r\n\r\nReleated to Exporters PR: https://github.com/BabylonJS/Exporters/pull/1137",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "8.4.1": [
+            {
+                "pr": "16535",
+                "title": "ShadowDepthWrapper: Fix original effect not ready",
+                "description": "See https://forum.babylonjs.com/t/shadowdepthwrapper-fails-with-fx-files-works-with-equivalent-shader-strings/58080",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "16533",
+                "title": "Delay canvas creation after WorkbenchEditor has been mounted",
+                "description": "Proposed solution for: https://forum.babylonjs.com/t/gui-babylonjs-com-is-not-working-on-safari-not-sure-if-other-browsers-effected/58089.",
+                "author": {
+                    "name": "simonedevit",
+                    "url": "https://github.com/simonedevit"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/guiEditor.ts",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16529",
+                "title": "SH fix for compressed .PLY",
+                "description": "followup https://forum.babylonjs.com/t/gaussian-splatting-seems-to-not-work-since-version-8/57903/4\r\nwaiting for feedback from @SonnyC56\r\nFixed CompressedPLY orientation and SH parsing\r\nFixed WGSL opacity with SH\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16532",
+                "title": "Fix bad webp visual test",
+                "description": "The PG for this test uses the `onProgress` callback as the success callback which is obviously not that great.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/webp.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16528",
+                "title": "Fix gpu picking instances when instances are disposed",
+                "description": "From: https://forum.babylonjs.com/t/removing-thin-instances-vs-gpupicker/57989/5\r\n\r\nDisposing an instance fouls up the gpu picking result. This is due to changes in the order of instances in `mesh.instances` . Fixed correct mapping of color id of instances to pickable instances by checking against `_pickableMeshes` instead.",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16526",
+                "title": "Add optional defer to observer removal",
+                "description": "Adds an optional defer parameter to the observer removal as we commented in https://forum.babylonjs.com/t/remove-function-in-observer-remove-other-observers/58030",
+                "author": {
+                    "name": "benjapamies",
+                    "url": "https://github.com/benjapamies"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16525",
+                "title": "ConvertToRightHandedRotation: Fix comparison",
+                "description": "Without this, we fail the zero rotation (and/or identity quaternion) cases :)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16523",
+                "title": "WebGPU: Fix highlight layer in fast snapshot rendering mode",
+                "description": "See https://forum.babylonjs.com/t/highlight-breaks-when-using-webgpu-with-snapshot-rendering/58023",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
                 ]
             }
         ],
@@ -383,6 +658,51 @@
                     "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "8.3.1": [
+            {
+                "pr": "16508",
+                "title": "Remove legacy copyTexture and bump the native protocol version",
+                "description": "It's quite hard to make new BN compatible with old BJS, so after some discussion with @bghgary we decided to remove the old contract and bump the protocol version.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16507",
+                "title": "glTF Exporter: Export compressed textures as PNG",
+                "description": "The follow up to https://github.com/BabylonJS/Babylon.js/pull/14312/. Partially addresses https://github.com/BabylonJS/Babylon.js/issues/12257 -- while we can't recompress the image back to KTX2, we can at least export it as PNG, which is better than nothing.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16504",
+                "title": "Playground: Prevents crashes when running multiple PG's in succession",
+                "description": "Quickly clicking the “Play” button may cause PG to crash, as a new execution may be created before the previous one is fully processed by `_compileAndRunAsync`.\r\n\r\nWithout the PR, the crash can be reproduced with [this PG](https://playground.babylonjs.com/?webgpu#VW8IG3#160), by quickly clicking the “Play” button several times in a row.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "Playground"
+                ]
             }
         ],
         "8.3.0": [
