@@ -251,8 +251,8 @@ export class StackPanel extends Container {
      * @param serializationObject defined the JSON serialized object
      * @param force force serialization even if isSerializable === false
      */
-    public override serialize(serializationObject: any, force: boolean) {
-        super.serialize(serializationObject, force);
+    public override serialize(serializationObject: any, force: boolean, allowCanvas: boolean) {
+        super.serialize(serializationObject, force, allowCanvas);
         if (!this.isSerializable && !force) {
             return;
         }
