@@ -632,7 +632,7 @@ class PhysicsGravitationalFieldEvent {
         } else {
             const radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._options);
             if (radialExplosionEvent) {
-                this._sphere = <Mesh>radialExplosionEvent.getData().sphere?.clone("radialExplosionEventSphereClone");
+                this._sphere = radialExplosionEvent.getData().sphere?.clone("radialExplosionEventSphereClone");
             }
         }
     }
@@ -1168,6 +1168,7 @@ export const enum PhysicsUpdraftMode {
  * Interface for a physics hit data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsHitData {
     /**
      * The force applied at the contact point
@@ -1191,6 +1192,7 @@ export interface PhysicsHitData {
  * Interface for radial explosion event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsRadialExplosionEventData {
     /**
      * A sphere used for the radial explosion event
@@ -1202,6 +1204,7 @@ export interface PhysicsRadialExplosionEventData {
  * Interface for gravitational field event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsGravitationalFieldEventData {
     /**
      * A sphere mesh used for the gravitational field event
@@ -1213,6 +1216,7 @@ export interface PhysicsGravitationalFieldEventData {
  * Interface for updraft event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsUpdraftEventData {
     /**
      * A cylinder used for the updraft event
@@ -1224,6 +1228,7 @@ export interface PhysicsUpdraftEventData {
  * Interface for vortex event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsVortexEventData {
     /**
      * A cylinder used for the vortex event
@@ -1235,6 +1240,7 @@ export interface PhysicsVortexEventData {
  * Interface for an affected physics impostor
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsAffectedImpostorWithData {
     /**
      * The impostor affected by the effect
@@ -1251,6 +1257,7 @@ export interface PhysicsAffectedImpostorWithData {
  * Interface for an affected physics body
  * @see
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsAffectedBodyWithData {
     /**
      * The impostor affected by the effect

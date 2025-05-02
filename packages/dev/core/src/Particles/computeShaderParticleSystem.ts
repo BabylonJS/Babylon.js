@@ -82,7 +82,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             bindingsMapping["flowMapTexture"] = { group: 1, binding: 13 };
         }
 
-        this._updateComputeShader = new ComputeShader("updateParticles", this._engine as WebGPUEngine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
+        this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
 
         this._simParamsComputeShader?.dispose();
         this._simParamsComputeShader = new UniformBuffer(this._engine, undefined, undefined, "ComputeShaderParticleSystemUBO");

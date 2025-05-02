@@ -22,7 +22,7 @@ const _MotionNode = "MOTION";
 class LoaderContext {
     loopMode: number = Animation.ANIMATIONLOOPMODE_CYCLE;
     list: IBVHNode[] = [];
-    root: IBVHNode = createBVHNode();
+    root: IBVHNode = CreateBVHNode();
     numFrames: number = 0;
     frameRate: number = 0;
     skeleton: Skeleton;
@@ -48,7 +48,7 @@ interface IBVHKeyFrame {
     rotation: Quaternion;
 }
 
-function createBVHNode(): IBVHNode {
+function CreateBVHNode(): IBVHNode {
     return {
         name: "",
         type: "",
@@ -60,7 +60,7 @@ function createBVHNode(): IBVHNode {
     };
 }
 
-function createBVHKeyFrame(): IBVHKeyFrame {
+function CreateBVHKeyFrame(): IBVHKeyFrame {
     return {
         time: 0,
         position: new Vector3(),
@@ -73,7 +73,7 @@ function createBVHKeyFrame(): IBVHKeyFrame {
  * @param node - The BVH node to convert
  * @returns The converted matrix
  */
-function _boneOffset(node: IBVHNode): Matrix {
+function BoneOffset(node: IBVHNode): Matrix {
     const x = node.offset.x;
     const y = node.offset.y;
     // Flip Z axis to convert handedness.
@@ -87,7 +87,7 @@ function _boneOffset(node: IBVHNode): Matrix {
  * @param context - The loader context
  * @returns The created animations
  */
-function _createAnimations(node: IBVHNode, context: LoaderContext): Animation | null {
+function CreateAnimations(node: IBVHNode, context: LoaderContext): Animation | null {
     if (node.frames.length === 0) {
         return null;
     }
@@ -142,12 +142,12 @@ function _createAnimations(node: IBVHNode, context: LoaderContext): Animation | 
  * @param parent - The parent bone
  * @param context - The loader context
  */
-function _convertNode(node: IBVHNode, parent: Nullable<Bone>, context: LoaderContext) {
-    const matrix = _boneOffset(node);
+function ConvertNode(node: IBVHNode, parent: Nullable<Bone>, context: LoaderContext) {
+    const matrix = BoneOffset(node);
     const bone = new Bone(node.name, context.skeleton, parent, matrix);
 
     // Create animation for this bone
-    const animation = _createAnimations(node, context);
+    const animation = CreateAnimations(node, context);
     if (animation) {
         // Apply rotation correction to the root bone's animation keys
         if (!parent) {
@@ -165,7 +165,7 @@ function _convertNode(node: IBVHNode, parent: Nullable<Bone>, context: LoaderCon
     }
 
     for (const child of node.children) {
-        _convertNode(child, bone, context);
+        ConvertNode(child, bone, context);
     }
 }
 
@@ -177,14 +177,14 @@ function _convertNode(node: IBVHNode, parent: Nullable<Bone>, context: LoaderCon
  * @param frameTime - playback time for this keyframe
  * @param bone - the bone to read frame data from
  */
-function _readFrameData(data: string[], frameTime: number, bone: IBVHNode) {
+function ReadFrameData(data: string[], frameTime: number, bone: IBVHNode) {
     if (bone.type === "ENDSITE") {
         // end sites have no motion data
         return;
     }
 
     // add keyframe
-    const keyframe = createBVHKeyFrame();
+    const keyframe = CreateBVHKeyFrame();
     keyframe.time = frameTime;
     keyframe.position = new Vector3();
     keyframe.rotation = new Quaternion();
@@ -235,7 +235,7 @@ function _readFrameData(data: string[], frameTime: number, bone: IBVHNode) {
 
     // parse child nodes
     for (let i = 0; i < bone.children.length; ++i) {
-        _readFrameData(data, frameTime, bone.children[i]);
+        ReadFrameData(data, frameTime, bone.children[i]);
     }
 }
 
@@ -247,13 +247,13 @@ function _readFrameData(data: string[], frameTime: number, bone: IBVHNode) {
  * @param context - the loader context containing the list of nodes and other data
  * @returns a BVH node including children
  */
-function _readNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode>, context: LoaderContext): IBVHNode {
-    const node = createBVHNode();
+function ReadNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode>, context: LoaderContext): IBVHNode {
+    const node = CreateBVHNode();
     node.parent = parent;
     context.list.push(node);
 
     // parse node type and name.
-    let tokens = firstLine.trim().split(/\s+/);
+    let tokens: string[] | undefined = firstLine.trim().split(/\s+/);
 
     if (tokens[0].toUpperCase() === "END" && tokens[1].toUpperCase() === "SITE") {
         node.type = "ENDSITE";
@@ -264,27 +264,43 @@ function _readNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode
     }
 
     // opening bracket
-    if (lines.shift()?.trim() != "{") throw new Error("Expected opening { after type & name");
+    if (lines.shift()?.trim() != "{") {
+        throw new Error("Expected opening { after type & name");
+    }
 
     // parse OFFSET
-    // @ts-ignore
-    tokens = lines.shift()?.trim().split(/\s+/);
+    const tokensSplit = lines.shift()?.trim().split(/\s+/);
+    if (!tokensSplit) {
+        throw new Error("Unexpected end of file: missing OFFSET");
+    }
+    tokens = tokensSplit;
+    // check for OFFSET
 
-    if (tokens[0].toUpperCase() != "OFFSET") throw new Error("Expected OFFSET, but got: " + tokens[0]);
-    if (tokens.length != 4) throw new Error("OFFSET: Invalid number of values");
+    if (tokens[0].toUpperCase() != "OFFSET") {
+        throw new Error("Expected OFFSET, but got: " + tokens[0]);
+    }
+    if (tokens.length != 4) {
+        throw new Error("OFFSET: Invalid number of values");
+    }
 
     const offset = new Vector3(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
 
-    if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) throw new Error("OFFSET: Invalid values");
+    if (isNaN(offset.x) || isNaN(offset.y) || isNaN(offset.z)) {
+        throw new Error("OFFSET: Invalid values");
+    }
 
     node.offset = offset;
 
     // parse CHANNELS definitions
     if (node.type != "ENDSITE") {
-        // @ts-ignore
         tokens = lines.shift()?.trim().split(/\s+/);
+        if (!tokens) {
+            throw new Error("Unexpected end of file: missing CHANNELS");
+        }
 
-        if (tokens[0].toUpperCase() != "CHANNELS") throw new Error("Expected CHANNELS definition");
+        if (tokens[0].toUpperCase() != "CHANNELS") {
+            throw new Error("Expected CHANNELS definition");
+        }
 
         const numChannels = parseInt(tokens[1]);
         // Skip CHANNELS and the number of channels
@@ -300,7 +316,7 @@ function _readNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode
             // Finish reading the node
             return node;
         } else if (line) {
-            node.children.push(_readNode(lines, line, node, context));
+            node.children.push(ReadNode(lines, line, node, context));
         }
     }
 
@@ -314,7 +330,7 @@ function _readNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode
  * @param loadingOptions - The loading options
  * @returns The skeleton
  */
-export function readBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOptions): Skeleton {
+export function ReadBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOptions): Skeleton {
     const lines = text.split("\n");
 
     const { loopMode } = loadingOptions;
@@ -334,7 +350,7 @@ export function readBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOp
     if (!nodeLine) {
         throw new Error("Unexpected end of file after HIERARCHY");
     }
-    const root = _readNode(lines, nodeLine.trim(), null, context);
+    const root = ReadNode(lines, nodeLine.trim(), null, context);
 
     // read motion data
     const motionLine = lines.shift();
@@ -381,12 +397,12 @@ export function readBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOp
             continue;
         }
         const tokens = frameLine.trim().split(/[\s]+/);
-        _readFrameData(tokens, i * frameTime, root);
+        ReadFrameData(tokens, i * frameTime, root);
     }
 
     context.root = root;
 
-    _convertNode(context.root, null, context);
+    ConvertNode(context.root, null, context);
 
     context.skeleton.returnToRest();
     return context.skeleton;

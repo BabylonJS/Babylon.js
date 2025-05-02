@@ -35,6 +35,7 @@ export const enum PhysicsMaterialCombineMode {
  * Physics material class
  * Helps setting friction and restitution that are used to compute responding forces in collision response
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsMaterial {
     /**
      * Sets the friction used by this material

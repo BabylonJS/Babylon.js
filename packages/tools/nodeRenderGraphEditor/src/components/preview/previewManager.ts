@@ -31,8 +31,8 @@ import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/N
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Texture } from "core/Materials/Textures/texture";
 
-const debugTextures = false;
-const logErrorTrace = true;
+const DebugTextures = false;
+const LogErrorTrace = true;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -94,7 +94,7 @@ export class PreviewManager {
                 enableAllFeatures: true,
                 setMaximumLimits: true,
             });
-            await (this._engine as WebGPUEngine).initAsync();
+            await this._engine.initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
             this._engine.getCaps().parallelShaderCompile = undefined;
@@ -122,7 +122,7 @@ export class PreviewManager {
         this._refreshPreviewMesh();
     }
 
-    private _initSceneAsync(scene: Scene): Promise<void> {
+    private async _initSceneAsync(scene: Scene): Promise<void> {
         (window as any).scenePreview = scene;
 
         this._scene = scene;
@@ -251,10 +251,10 @@ export class PreviewManager {
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
             rebuildGraphOnEngineResize: true,
             autoFillExternalInputs: false,
-            debugTextures,
+            debugTextures: DebugTextures,
         });
 
-        this._buildGraph();
+        this._buildGraphAsync();
 
         (window as any).nrgPreview = this._nodeRenderGraph;
     }
@@ -269,7 +269,7 @@ export class PreviewManager {
         return null;
     }
 
-    private async _buildGraph() {
+    private async _buildGraphAsync() {
         if (!this._scene) {
             // The initialization is not done yet
             return;
@@ -421,7 +421,7 @@ export class PreviewManager {
             await this._nodeRenderGraph.whenReadyAsync(16, 5000);
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
-            if (logErrorTrace) {
+            if (LogErrorTrace) {
                 (console as any).log(err);
             }
             this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));

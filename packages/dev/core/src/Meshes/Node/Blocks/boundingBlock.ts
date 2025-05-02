@@ -58,7 +58,7 @@ export class BoundingBlock extends NodeGeometryBlock {
                 return null;
             }
 
-            const boundingInfo = extractMinAndMax(geometry.positions!, 0, geometry.positions!.length / 3);
+            const boundingInfo = extractMinAndMax(geometry.positions, 0, geometry.positions!.length / 3);
             return boundingInfo.minimum;
         };
 
@@ -69,7 +69,7 @@ export class BoundingBlock extends NodeGeometryBlock {
                 return null;
             }
 
-            const boundingInfo = extractMinAndMax(geometry.positions!, 0, geometry.positions!.length / 3);
+            const boundingInfo = extractMinAndMax(geometry.positions, 0, geometry.positions!.length / 3);
             return boundingInfo.maximum;
         };
     }

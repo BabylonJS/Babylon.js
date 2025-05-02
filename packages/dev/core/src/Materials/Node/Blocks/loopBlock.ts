@@ -86,6 +86,7 @@ export class LoopBlock extends NodeMaterialBlock {
     /**
      * Gets the loop ID component
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get loopID(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }

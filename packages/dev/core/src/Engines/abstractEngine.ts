@@ -5,7 +5,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import type { ICanvas, IImage, IPath2D } from "./ICanvas";
-import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
@@ -21,7 +21,7 @@ import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import type { IFileRequest } from "../Misc/fileRequest";
 import type { Texture } from "../Materials/Textures/texture";
 import type { LoadFileError } from "../Misc/fileTools";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
@@ -49,7 +49,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
-import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
+import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
 
@@ -82,7 +82,7 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
             return requestAnimationFrame(func);
         }
     } else {
-        const { requestAnimationFrame } = requester || window;
+        const { requestAnimationFrame } = (requester || window) as { requestAnimationFrame: (callback: FrameRequestCallback) => number };
         if (typeof requestAnimationFrame === "function") {
             return requestAnimationFrame(func);
         }
@@ -94,6 +94,7 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
 }
 
 /** Interface defining initialization parameters for AbstractEngine class */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface AbstractEngineOptions {
     /**
      * Defines if the engine should no exceed a specified device ratio
@@ -164,6 +165,7 @@ export interface AbstractEngineOptions {
 /**
  * Information about the current host
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface HostInformation {
     /**
      * Defines if the current host is a mobile
@@ -383,7 +385,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _preparePipelineContext(
+    public abstract _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -620,7 +622,7 @@ export abstract class AbstractEngine {
 
     private _rebuildEffects(): void {
         for (const key in this._compiledEffects) {
-            const effect = <Effect>this._compiledEffects[key];
+            const effect = this._compiledEffects[key];
 
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
             effect._prepareEffect();
@@ -662,7 +664,7 @@ export abstract class AbstractEngine {
 
     protected _restoreEngineAfterContextLost(initEngine: () => void): void {
         // Adding a timeout to avoid race condition at browser level
-        setTimeout(async () => {
+        setTimeout(() => {
             this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
@@ -671,7 +673,7 @@ export abstract class AbstractEngine {
             const stencilTest = this._stencilState.stencilTest;
 
             // Rebuild context
-            await initEngine();
+            initEngine();
             this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;
@@ -1531,8 +1533,8 @@ export abstract class AbstractEngine {
         useSRGBBuffer?: boolean
     ): InternalTexture {
         url = url || "";
-        const fromData = url.substr(0, 5) === "data:";
-        const fromBlob = url.substr(0, 5) === "blob:";
+        const fromData = url.substring(0, 5) === "data:";
+        const fromBlob = url.substring(0, 5) === "blob:";
         const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
@@ -1643,7 +1645,7 @@ export abstract class AbstractEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            const callback = async (data: ArrayBufferView) => {
+            const callbackAsync = async (data: ArrayBufferView) => {
                 const loader = await loaderPromise;
                 loader.loadData(
                     data,
@@ -1675,7 +1677,9 @@ export abstract class AbstractEngine {
             if (!buffer) {
                 this._loadFile(
                     url,
-                    (data) => callback(new Uint8Array(data as ArrayBuffer)),
+                    (data) => {
+                        callbackAsync(new Uint8Array(data as ArrayBuffer));
+                    },
                     undefined,
                     scene ? scene.offlineProvider : undefined,
                     true,
@@ -1685,9 +1689,9 @@ export abstract class AbstractEngine {
                 );
             } else {
                 if (buffer instanceof ArrayBuffer) {
-                    callback(new Uint8Array(buffer));
+                    callbackAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
-                    callback(buffer);
+                    callbackAsync(buffer);
                 } else {
                     if (onError) {
                         onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
@@ -1744,7 +1748,7 @@ export abstract class AbstractEngine {
      * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public abstract createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext;
+    public abstract createPipelineContext(shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext;
 
     /**
      * Inline functions in shader code that are marked to be inlined
@@ -1803,7 +1807,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext>;
+    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<_IShaderProcessingContext>;
 
     /**
      * Gets host document
@@ -2389,11 +2393,11 @@ export abstract class AbstractEngine {
 
         // Function to check if running on mobile device
         this._checkForMobile = () => {
-            const currentUA = navigator.userAgent;
+            const currentUa = navigator.userAgent;
             this.hostInformation.isMobile =
-                currentUA.indexOf("Mobile") !== -1 ||
+                currentUa.indexOf("Mobile") !== -1 ||
                 // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
+                (currentUa.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
         };
 
         // Set initial isMobile value
@@ -2413,7 +2417,7 @@ export abstract class AbstractEngine {
     public _renderPassNames: string[] = ["main"];
 
     /** @internal */
-    public abstract _createHardwareTexture(): HardwareTextureWrapper;
+    public abstract _createHardwareTexture(): IHardwareTextureWrapper;
 
     /**
      * creates and returns a new video element
@@ -2493,6 +2497,7 @@ export abstract class AbstractEngine {
      * @param imageSource source to load the image from.
      * @param options An object that sets options for the image's extraction.
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         throw new Error("createImageBitmapFromSource is not implemented");
     }
@@ -2503,6 +2508,7 @@ export abstract class AbstractEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return createImageBitmap(image, options);
     }
@@ -2586,7 +2592,7 @@ export abstract class AbstractEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
-        const request = _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        const request = _LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add(() => {
             const index = this._activeRequests.indexOf(request);
@@ -2735,7 +2741,6 @@ export abstract class AbstractEngine {
      * Gets the audio engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      * @deprecated please use AudioEngineV2 instead
-     * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static audioEngine: Nullable<IAudioEngine>;

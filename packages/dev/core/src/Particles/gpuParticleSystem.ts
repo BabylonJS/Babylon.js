@@ -26,7 +26,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 import { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
@@ -478,7 +478,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
-        this._customWrappers[blendMode]!.effect = effect;
+        this._customWrappers[blendMode].effect = effect;
     }
 
     /** @internal */
@@ -979,12 +979,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             if (!GetClass("BABYLON.ComputeShaderParticleSystem")) {
                 throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem") as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem"))(this, this._engine);
         } else {
             if (!GetClass("BABYLON.WebGL2ParticleSystem")) {
                 throw new Error("The WebGL2ParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem") as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem"))(this, this._engine);
         }
 
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
@@ -1489,7 +1489,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
-        addClipPlaneUniforms(effectCreationOption);
+        AddClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("sheetInfos");
@@ -1514,7 +1514,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public fillDefines(defines: Array<string>, blendMode: number = 0, fillImageProcessing: boolean = true): void {
         if (this._scene) {
-            prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
@@ -1708,7 +1708,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const defines = effect.defines;
 
         if (this._scene) {
-            bindClipPlane(effect, this, this._scene);
+            BindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
                 BindFogParameters(this._scene, undefined, effect);
@@ -2136,7 +2136,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
             engine = scene.getEngine();
         }
 

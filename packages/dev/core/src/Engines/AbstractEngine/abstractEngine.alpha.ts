@@ -2,6 +2,7 @@ import { AbstractEngine } from "../abstractEngine";
 import { Constants } from "../constants";
 
 declare module "../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Sets the current alpha equation

@@ -9,13 +9,14 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */
         _outlineRenderer: OutlineRenderer;
@@ -40,6 +41,7 @@ Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {
 };
 
 declare module "../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /** @internal (Backing field) */
         _renderOutline: boolean;
@@ -251,7 +253,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Clip plane
-        bindClipPlane(effect, material, scene);
+        BindClipPlane(effect, material, scene);
 
         engine.setZOffset(-this.zOffset);
         engine.setZOffsetUnits(-this.zOffsetUnits);
@@ -310,7 +312,7 @@ export class OutlineRenderer implements ISceneComponent {
             defines.push("#define LOGARITHMICDEPTH");
         }
         // Clip planes
-        prepareStringDefinesForClipPlanes(material, scene, defines);
+        PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Bones
         const fallbacks = new EffectFallbacks();
@@ -396,7 +398,7 @@ export class OutlineRenderer implements ISceneComponent {
             ];
             const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
                 this.scene.getEngine().createEffect(

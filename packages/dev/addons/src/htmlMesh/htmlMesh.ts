@@ -189,7 +189,7 @@ export class HtmlMesh extends Mesh {
         this.scaling.setAll(1);
 
         if (element) {
-            this._element!.appendChild(this._fitStrategy.wrapElement(element));
+            this._element.appendChild(this._fitStrategy.wrapElement(element));
 
             this._updateScaleIfNecessary();
         }
@@ -223,7 +223,7 @@ export class HtmlMesh extends Mesh {
             return;
         }
 
-        this._fitStrategy.updateSize(this._element.firstElementChild! as HTMLElement, width, height);
+        this._fitStrategy.updateSize(this._element.firstElementChild as HTMLElement, width, height);
 
         this._updateScaleIfNecessary();
 
@@ -259,9 +259,9 @@ export class HtmlMesh extends Mesh {
 
         // If enabled, then revert the content element display
         // otherwise hide it
-        this._element!.style.display = enabled ? "" : "none";
+        this._element.style.display = enabled ? "" : "none";
         // Capture the content z index
-        this._setElementZIndex(this.position.z * -10000);
+        this._setElementzIndex(this.position.z * -10000);
         super.setEnabled(enabled);
     }
 
@@ -312,9 +312,9 @@ export class HtmlMesh extends Mesh {
         this.material.freeze();
     }
 
-    protected _setElementZIndex(zIndex: number) {
+    protected _setElementzIndex(zIndex: number) {
         if (this._element) {
-            this._element!.style.zIndex = `${zIndex}`;
+            this._element.style.zIndex = `${zIndex}`;
         }
     }
 

@@ -56,6 +56,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         TextureLineComponent.UpdatePreview(this._canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async UpdatePreview(
         previewCanvas: HTMLCanvasElement,
         texture: BaseTexture,
@@ -86,11 +87,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             passPostProcess = passCubePostProcess;
         }
 
-        if (!passPostProcess.getEffect() || !passPostProcess.getEffect()!.isReady()) {
+        if (!passPostProcess.getEffect() || !passPostProcess.getEffect().isReady()) {
             // Try again later
             passPostProcess.dispose();
 
-            setTimeout(() => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
+            setTimeout(async () => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
 
             return;
         }

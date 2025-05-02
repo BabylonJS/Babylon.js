@@ -267,7 +267,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const uv2Output = this.uv2Output;
         const colorOutput = this.colorOutput;
         const state = vertexShaderState;
-        const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
+        const repeatCount = defines.NUM_MORPH_INFLUENCERS;
 
         const manager = (<Mesh>mesh).morphTargetManager;
         const supportPositions = manager && manager.supportsPositions;

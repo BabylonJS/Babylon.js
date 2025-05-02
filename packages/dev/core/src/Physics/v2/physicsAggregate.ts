@@ -17,6 +17,7 @@ import { BoundingBox } from "../../Culling/boundingBox";
 /**
  * The interface for the physics aggregate parameters
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsAggregateParameters {
     /**
      * The mass of the physics aggregate

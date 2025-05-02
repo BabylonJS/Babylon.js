@@ -55,6 +55,7 @@ export interface IRotationGizmo extends IGizmo {
  * Options for each individual plane rotation gizmo contained within RotationGizmo
  * @since 5.0.0
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PlaneRotationGizmoOptions {
     /**
      * Color to use for the plane rotation gizmo
@@ -65,6 +66,7 @@ export interface PlaneRotationGizmoOptions {
 /**
  * Additional options for each rotation gizmo
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface RotationGizmoOptions {
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)

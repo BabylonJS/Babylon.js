@@ -291,7 +291,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
     private _setDefaultOutTangent(keyId: number) {
         for (const curve of this._curves) {
-            curve.storeDefaultOutTangent!(keyId);
+            curve.storeDefaultOutTangent(keyId);
         }
     }
 

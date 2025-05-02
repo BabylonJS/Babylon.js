@@ -2,9 +2,9 @@ import { Vector3 } from "core/Maths/math.vector";
 import type { Particle } from "./particle";
 import type { ThinParticleSystem } from "./thinParticleSystem";
 
-const toAttractor: Vector3 = Vector3.Zero();
-const force: Vector3 = Vector3.Zero();
-const scaledForce: Vector3 = Vector3.Zero();
+const ToAttractor: Vector3 = Vector3.Zero();
+const Force: Vector3 = Vector3.Zero();
+const ScaledForce: Vector3 = Vector3.Zero();
 
 /**
  * Class representing an attractor in a particle system.
@@ -24,13 +24,13 @@ export class Attractor {
 
     /** @internal */
     public _processParticle(particle: Particle, system: ThinParticleSystem) {
-        this.position.subtractToRef(particle.position, toAttractor);
-        const distanceSquared = toAttractor.lengthSquared() + 1; // Avoid going under 1.0
-        toAttractor.normalize().scaleToRef(this.strength / distanceSquared, force);
+        this.position.subtractToRef(particle.position, ToAttractor);
+        const distanceSquared = ToAttractor.lengthSquared() + 1; // Avoid going under 1.0
+        ToAttractor.normalize().scaleToRef(this.strength / distanceSquared, Force);
 
-        force.scaleToRef(system._tempScaledUpdateSpeed, scaledForce);
+        Force.scaleToRef(system._tempScaledUpdateSpeed, ScaledForce);
 
-        particle.direction.addInPlace(scaledForce); // Update particle velocity
+        particle.direction.addInPlace(ScaledForce); // Update particle velocity
     }
 
     /**

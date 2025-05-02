@@ -20,7 +20,7 @@ import { Tools } from "core/Misc/tools";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Constants } from "core/Engines/constants";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { alphaModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;
@@ -206,7 +206,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     />
                     <OptionsLine
                         label="Alpha mode"
-                        options={alphaModeOptions}
+                        options={AlphaModeOptions}
                         target={spriteManager}
                         propertyName="blendMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}

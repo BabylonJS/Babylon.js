@@ -13,9 +13,11 @@ type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
 
 export type DeviceSourceType = Distribute<DeviceType>;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
 declare module "../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface AbstractEngine {
         /** @internal */
         _deviceSourceManager?: InternalDeviceSourceManager;

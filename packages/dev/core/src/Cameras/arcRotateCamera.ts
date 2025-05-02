@@ -57,7 +57,7 @@ export function ComputeBeta(verticalOffset: number, radius: number): number {
 }
 
 // Returns the value if not NaN, otherwise returns the fallback value.
-function checkNaN(value: number, fallback: number): number {
+function CheckNaN(value: number, fallback: number): number {
     return isNaN(value) ? fallback : value;
 }
 
@@ -143,6 +143,7 @@ export class ArcRotateCamera extends TargetCamera {
         this.setPosition(newPosition);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected _upToYMatrix: Matrix;
     protected _yToUpMatrix: Matrix;
 
@@ -247,6 +248,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Use this setting in combination with `upperRadiusLimit` to set a global limit for the Cameras vertical position.
      */
     @serialize()
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public lowerTargetYLimit: number = -Infinity;
 
     /**
@@ -924,11 +926,11 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // If NaN is passed in for a goal value, keep the current goal value.
-        this._goalAlpha = checkNaN(alpha, this._goalAlpha);
-        this._goalBeta = checkNaN(beta, this._goalBeta);
-        this._goalRadius = checkNaN(radius, this._goalRadius);
-        this._goalTarget.set(checkNaN(target.x, this._goalTarget.x), checkNaN(target.y, this._goalTarget.y), checkNaN(target.z, this._goalTarget.z));
-        this._goalTargetScreenOffset.set(checkNaN(targetScreenOffset.x, this._goalTargetScreenOffset.x), checkNaN(targetScreenOffset.y, this._goalTargetScreenOffset.y));
+        this._goalAlpha = CheckNaN(alpha, this._goalAlpha);
+        this._goalBeta = CheckNaN(beta, this._goalBeta);
+        this._goalRadius = CheckNaN(radius, this._goalRadius);
+        this._goalTarget.set(CheckNaN(target.x, this._goalTarget.x), CheckNaN(target.y, this._goalTarget.y), CheckNaN(target.z, this._goalTarget.z));
+        this._goalTargetScreenOffset.set(CheckNaN(targetScreenOffset.x, this._goalTargetScreenOffset.x), CheckNaN(targetScreenOffset.y, this._goalTargetScreenOffset.y));
 
         this._goalAlpha = Clamp(this._goalAlpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
         this._goalBeta = Clamp(this._goalBeta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
@@ -993,7 +995,6 @@ export class ArcRotateCamera extends TargetCamera {
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public override attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
-        // eslint-disable-next-line prefer-rest-params
         const args = arguments;
 
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(args);
@@ -1131,14 +1132,14 @@ export class ArcRotateCamera extends TargetCamera {
             // NOTE: If the goal is NaN, it means we are not interpolating to a new value, so we can use the current value. Hence the calls to checkNaN.
 
             // Get the goal radius immediately as we'll need it for determining interpolation termination for the target.
-            const goalRadius = checkNaN(this._goalRadius, this.radius);
+            const goalRadius = CheckNaN(this._goalRadius, this.radius);
 
             // Interpolate the target if we haven't reached the goal yet.
             if (!isNaN(this._goalTarget.x) || !isNaN(this._goalTarget.y) || !isNaN(this._goalTarget.z)) {
                 const goalTarget = TmpVectors.Vector3[0].set(
-                    checkNaN(this._goalTarget.x, this._target.x),
-                    checkNaN(this._goalTarget.y, this._target.y),
-                    checkNaN(this._goalTarget.z, this._target.z)
+                    CheckNaN(this._goalTarget.x, this._target.x),
+                    CheckNaN(this._goalTarget.y, this._target.y),
+                    CheckNaN(this._goalTarget.z, this._target.z)
                 );
                 Vector3.LerpToRef(this.target, goalTarget, t, this._target);
 
@@ -1160,8 +1161,8 @@ export class ArcRotateCamera extends TargetCamera {
             if (!isNaN(this._goalAlpha) || !isNaN(this._goalBeta)) {
                 // Using quaternion for smoother interpolation (and no Euler angles modulo)
                 const goalRotation = Quaternion.RotationAlphaBetaGammaToRef(
-                    checkNaN(this._goalAlpha, this.alpha),
-                    checkNaN(this._goalBeta, this.beta),
+                    CheckNaN(this._goalAlpha, this.alpha),
+                    CheckNaN(this._goalBeta, this.beta),
                     0,
                     TmpVectors.Quaternion[0]
                 );
@@ -1200,8 +1201,8 @@ export class ArcRotateCamera extends TargetCamera {
             // Interpolate the target screen offset if we haven't reached the goal yet.
             if (!isNaN(this._goalTargetScreenOffset.x) || !isNaN(this._goalTargetScreenOffset.y)) {
                 const goalTargetScreenOffset = TmpVectors.Vector2[0].set(
-                    checkNaN(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
-                    checkNaN(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
+                    CheckNaN(this._goalTargetScreenOffset.x, this.targetScreenOffset.x),
+                    CheckNaN(this._goalTargetScreenOffset.y, this.targetScreenOffset.y)
                 );
                 Vector2.LerpToRef(this.targetScreenOffset, goalTargetScreenOffset, t, this.targetScreenOffset);
 

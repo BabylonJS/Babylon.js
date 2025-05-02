@@ -21,7 +21,7 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import "./fire.fragment";
 import "./fire.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -204,7 +204,7 @@ export class FireMaterial extends PushMaterial {
                 "time",
                 "speed",
             ];
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             const join = defines.toString();
             subMesh.setEffect(
@@ -280,7 +280,7 @@ export class FireMaterial extends PushMaterial {
             }
 
             // Clip plane
-            bindClipPlane(this._activeEffect, this, scene);
+            BindClipPlane(this._activeEffect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

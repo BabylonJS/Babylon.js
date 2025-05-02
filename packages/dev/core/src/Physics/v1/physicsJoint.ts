@@ -4,6 +4,7 @@ import type { IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
  * Interface for Physics-Joint data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsJointData {
     //Important for some engines, optional!
     /**
@@ -63,6 +64,7 @@ export class PhysicsJoint {
      * Gets the physics joint
      */
     public get physicsJoint(): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._physicsJoint;
     }
 
@@ -300,6 +302,7 @@ export interface IMotorEnabledJoint {
  * Joint data for a Distance-Joint
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface DistanceJointData extends PhysicsJointData {
     /**
      * Max distance the 2 joint objects can be apart
@@ -313,6 +316,7 @@ export interface DistanceJointData extends PhysicsJointData {
  * Joint data from a spring joint
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SpringJointData extends PhysicsJointData {
     /**
      * Length of the spring

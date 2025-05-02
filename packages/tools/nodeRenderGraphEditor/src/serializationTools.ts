@@ -38,13 +38,13 @@ export class SerializationTools {
     }
 
     public static Deserialize(serializationObject: any, globalState: GlobalState) {
-        globalState.nodeRenderGraph!.parseSerializedObject(serializationObject);
+        globalState.nodeRenderGraph.parseSerializedObject(serializationObject);
         globalState.onIsLoadingChanged.notifyObservers(false);
     }
 
     public static AddFrameToRenderGraph(serializationObject: any, globalState: GlobalState, currentRenderGraph: NodeRenderGraph) {
         this.UpdateLocations(currentRenderGraph, globalState);
-        globalState.nodeRenderGraph!.parseSerializedObject(serializationObject, true);
+        globalState.nodeRenderGraph.parseSerializedObject(serializationObject, true);
         globalState.onImportFrameObservable.notifyObservers(serializationObject);
         globalState.onIsLoadingChanged.notifyObservers(false);
     }

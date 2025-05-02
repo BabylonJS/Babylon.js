@@ -52,7 +52,7 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
  */
 export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOptions> = {}): Promise<AudioEngineV2> {
     const engine = new _WebAudioEngine(options);
-    await engine._init(options);
+    await engine._initAsync(options);
     return engine;
 }
 
@@ -128,14 +128,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public async _init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
+    public async _initAsync(options: Partial<IWebAudioEngineOptions>): Promise<void> {
         this._resumeOnInteraction = typeof options.resumeOnInteraction === "boolean" ? options.resumeOnInteraction : true;
         this._resumeOnPause = typeof options.resumeOnPause === "boolean" ? options.resumeOnPause : true;
         this._resumeOnPauseRetryInterval = options.resumeOnPauseRetryInterval ?? 1000;
 
-        document.addEventListener("click", this._onUserGesture);
+        document.addEventListener("click", this._onUserGestureAsync);
 
-        await this._initAudioContext();
+        await this._initAudioContextAsync();
 
         if (_HasSpatialAudioListenerOptions(options)) {
             this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate, this._listenerMinUpdateTime);
@@ -194,7 +194,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioBus");
 
         const bus = new module._WebAudioBus(name, this, options);
-        await bus._init(options);
+        await bus._initAsync(options);
 
         return bus;
     }
@@ -204,7 +204,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioMainBus");
 
         const bus = new module._WebAudioMainBus(name, this);
-        await bus._init(options);
+        await bus._initAsync(options);
 
         return bus;
     }
@@ -218,7 +218,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStaticSound");
 
         const sound = new module._WebAudioStaticSound(name, this, options);
-        await sound._init(source, options);
+        await sound._initAsync(source, options);
 
         return sound;
     }
@@ -231,7 +231,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStaticSound");
 
         const soundBuffer = new module._WebAudioStaticSoundBuffer(this);
-        await soundBuffer._init(source, options);
+        await soundBuffer._initAsync(source, options);
 
         return soundBuffer;
     }
@@ -241,7 +241,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStreamingSound");
 
         const sound = new module._WebAudioStreamingSound(name, this, options);
-        await sound._init(source, options);
+        await sound._initAsync(source, options);
 
         return sound;
     }
@@ -258,7 +258,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             this._audioContext.close();
         }
 
-        document.removeEventListener("click", this._onUserGesture);
+        document.removeEventListener("click", this._onUserGestureAsync);
         this._audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
 
         this._unmuteUI?.dispose();
@@ -340,7 +340,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
 
-    private _initAudioContext: () => Promise<void> = async () => {
+    private _initAudioContextAsync: () => Promise<void> = async () => {
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
         this._mainOut = new _WebAudioMainOut(this);
@@ -368,7 +368,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this.stateChangedObservable.notifyObservers(this.state);
     };
 
-    private _onUserGesture: () => void = async () => {
+    private _onUserGestureAsync: () => void = async () => {
         if (this._resumeOnInteraction) {
             await this._audioContext.resume();
         }

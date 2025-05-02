@@ -1,8 +1,7 @@
 import type { DeepImmutable } from "../types";
 import { BuildArray } from "../Misc/arrayTools";
 import type { Matrix } from "../Maths/math.vector";
-import { TmpVectors } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
@@ -10,9 +9,9 @@ import type { Plane } from "../Maths/math.plane";
 
 import type { Collider } from "../Collisions/collider";
 
-const _result0 = { min: 0, max: 0 };
-const _result1 = { min: 0, max: 0 };
-const computeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<BoundingBox>, result: { min: number; max: number }) => {
+const _Result0 = { min: 0, max: 0 };
+const _Result1 = { min: 0, max: 0 };
+const ComputeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<BoundingBox>, result: { min: number; max: number }) => {
     const p = Vector3.Dot(box.centerWorld, axis);
 
     const r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
@@ -24,10 +23,10 @@ const computeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<Boun
     result.max = p + r;
 };
 
-const axisOverlap = (axis: DeepImmutable<Vector3>, box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): boolean => {
-    computeBoxExtents(axis, box0, _result0);
-    computeBoxExtents(axis, box1, _result1);
-    return !(_result0.min > _result1.max || _result1.min > _result0.max);
+const AxisOverlap = (axis: DeepImmutable<Vector3>, box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): boolean => {
+    ComputeBoxExtents(axis, box0, _Result0);
+    ComputeBoxExtents(axis, box1, _Result1);
+    return !(_Result0.min > _Result1.max || _Result1.min > _Result0.max);
 };
 
 /**
@@ -291,49 +290,49 @@ export class BoundingInfo implements ICullable {
         const box0 = this.boundingBox;
         const box1 = boundingInfo.boundingBox;
 
-        if (!axisOverlap(box0.directions[0], box0, box1)) {
+        if (!AxisOverlap(box0.directions[0], box0, box1)) {
             return false;
         }
-        if (!axisOverlap(box0.directions[1], box0, box1)) {
+        if (!AxisOverlap(box0.directions[1], box0, box1)) {
             return false;
         }
-        if (!axisOverlap(box0.directions[2], box0, box1)) {
+        if (!AxisOverlap(box0.directions[2], box0, box1)) {
             return false;
         }
-        if (!axisOverlap(box1.directions[0], box0, box1)) {
+        if (!AxisOverlap(box1.directions[0], box0, box1)) {
             return false;
         }
-        if (!axisOverlap(box1.directions[1], box0, box1)) {
+        if (!AxisOverlap(box1.directions[1], box0, box1)) {
             return false;
         }
-        if (!axisOverlap(box1.directions[2], box0, box1)) {
+        if (!AxisOverlap(box1.directions[2], box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) {
             return false;
         }
-        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) {
+        if (!AxisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) {
             return false;
         }
 

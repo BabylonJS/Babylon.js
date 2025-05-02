@@ -8,6 +8,7 @@ import type { DepthTextureCreationOptions } from "../../Materials/Textures/textu
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * @internal

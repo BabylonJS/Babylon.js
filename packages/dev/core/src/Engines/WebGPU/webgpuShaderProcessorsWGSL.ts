@@ -2,7 +2,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { Nullable } from "../../types";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
@@ -87,7 +87,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return [name, uniformType, length];
     }
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
 
         this._attributesInputWGSL = [];
@@ -267,7 +267,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         code: string,
         _defines: string[],
         _isFragment: boolean,
-        _processingContext: Nullable<ShaderProcessingContext>,
+        _processingContext: Nullable<_IShaderProcessingContext>,
         _parameters: {
             [key: string]: number | string | boolean | undefined;
         },

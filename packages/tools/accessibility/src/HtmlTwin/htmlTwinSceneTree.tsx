@@ -8,13 +8,13 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
-function getSceneIds(scene: Scene) {
+function GetSceneIds(scene: Scene) {
     const newSet = new Set<number>();
     scene.rootNodes.forEach((node) => newSet.add(node.uniqueId));
     return newSet;
 }
 
-function getFullscreenGuiTextures(scene: Scene) {
+function GetFullscreenGuiTextures(scene: Scene) {
     const textures = [];
     for (const texture of scene.textures) {
         if (texture instanceof AdvancedDynamicTexture && texture._isFullscreen) {
@@ -33,7 +33,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
     const { scene, options } = props;
 
     const [, setMeshIds] = useState(new Set<number>());
-    const [sceneGuiTextures, setSceneGuiTextures] = useState<AdvancedDynamicTexture[]>(getFullscreenGuiTextures(scene));
+    const [sceneGuiTextures, setSceneGuiTextures] = useState<AdvancedDynamicTexture[]>(GetFullscreenGuiTextures(scene));
     const nextFrameObserver = useRef<Nullable<Observer<Scene>>>(null);
     const sceneContext = useContext(SceneContext);
 
@@ -55,7 +55,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
             if (!nextFrameObserver.current) {
                 nextFrameObserver.current = props.scene.onBeforeRenderObservable.addOnce(() => {
                     nextFrameObserver.current = null;
-                    setMeshIds(getSceneIds(props.scene));
+                    setMeshIds(GetSceneIds(props.scene));
                 });
             }
         });
@@ -73,7 +73,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
     useEffect(() => {
         if (sceneContext) {
             sceneContext.updateScene = () => {
-                setMeshIds(getSceneIds(props.scene));
+                setMeshIds(GetSceneIds(props.scene));
             };
         }
     }, [sceneContext]);

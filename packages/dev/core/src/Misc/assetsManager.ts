@@ -3,7 +3,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
-import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
+import { ImportAnimationsAsync, ImportMeshAsync, LoadAssetContainerAsync, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -300,10 +300,9 @@ export class ContainerAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public override runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        SceneLoader.LoadAssetContainer(
-            this.rootUrl,
-            this.sceneFilename,
-            scene,
+        LoadAssetContainerAsync(this.rootUrl + "/" + (this.sceneFilename as string).toString(), scene, {
+            pluginExtension: this.extension,
+        }).then(
             (container: AssetContainer) => {
                 this.loadedContainer = container;
                 this.loadedMeshes = container.meshes;
@@ -313,11 +312,9 @@ export class ContainerAssetTask extends AbstractAssetTask {
                 this.loadedAnimationGroups = container.animationGroups;
                 onSuccess();
             },
-            null,
-            (scene, message, exception) => {
-                onError(message, exception);
-            },
-            this.extension
+            (error) => {
+                onError(error.message, error);
+            }
         );
     }
 }
@@ -397,12 +394,11 @@ export class MeshAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public override runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        SceneLoader.ImportMesh(
-            this.meshesNames,
-            this.rootUrl,
-            this.sceneFilename,
-            scene,
-            (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[], transformNodes: TransformNode[]) => {
+        ImportMeshAsync(this.rootUrl + "/" + (this.sceneFilename as string), scene, {
+            meshNames: this.meshesNames,
+            pluginExtension: this.extension,
+        }).then(
+            ({ meshes, particleSystems, skeletons, animationGroups, transformNodes }) => {
                 this.loadedMeshes = meshes;
                 this.loadedTransformNodes = transformNodes;
                 this.loadedParticleSystems = particleSystems;
@@ -410,11 +406,9 @@ export class MeshAssetTask extends AbstractAssetTask {
                 this.loadedAnimationGroups = animationGroups;
                 onSuccess();
             },
-            null,
-            (scene, message, exception) => {
-                onError(message, exception);
-            },
-            this.extension
+            (error) => {
+                onError(error.message, error);
+            }
         );
     }
 }
@@ -486,25 +480,21 @@ export class AnimationAssetTask extends AbstractAssetTask {
         const startingIndexForNewAnimationGroups = scene.animationGroups.length;
         this.loadedAnimatables = [];
         this.loadedAnimationGroups = [];
-
-        SceneLoader.ImportAnimations(
-            this.rootUrl,
-            this.filename,
-            scene,
-            false,
-            SceneLoaderAnimationGroupLoadingMode.NoSync,
-            this.targetConverter,
+        ImportAnimationsAsync(this.rootUrl + "/" + (this.filename as string), scene, {
+            pluginExtension: this.extension,
+            targetConverter: this.targetConverter,
+            overwriteAnimations: false,
+            animationGroupLoadingMode: SceneLoaderAnimationGroupLoadingMode.NoSync,
+        }).then(
             () => {
                 this.loadedAnimatables = scene.animatables.slice(startingIndexForNewAnimatables);
                 this.loadedAnimationGroups = scene.animationGroups.slice(startingIndexForNewAnimationGroups);
 
                 onSuccess();
             },
-            null,
-            (scene, message, exception) => {
-                onError(message, exception);
-            },
-            this.extension
+            (exception) => {
+                onError(exception.message, exception);
+            }
         );
     }
 }
@@ -695,11 +685,11 @@ export class ImageAssetTask extends AbstractAssetTask {
 /**
  * Defines the interface used by texture loading tasks
  */
-export interface ITextureAssetTask<TEX extends BaseTexture> {
+export interface ITextureAssetTask<Tex extends BaseTexture> {
     /**
      * Gets the loaded texture
      */
-    texture: TEX;
+    texture: Tex;
 }
 
 /**
@@ -1371,7 +1361,7 @@ export class AssetsManager {
      * Start the loading process as an async operation
      * @returns a promise returning the list of failed tasks
      */
-    public loadAsync(): Promise<void> {
+    public async loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this._isLoading) {
                 resolve();

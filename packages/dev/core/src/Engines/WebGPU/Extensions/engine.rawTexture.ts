@@ -9,6 +9,7 @@ import type { Scene } from "../../../scene";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Update a raw texture
@@ -267,7 +268,7 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
         const needConversion = format === Constants.TEXTUREFORMAT_RGB;
 
         if (needConversion) {
-            bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, type);
+            bufferView = ConvertRGBtoRGBATextureData(bufferView, texture.width, texture.height, type);
         }
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
@@ -362,7 +363,7 @@ ThinWebGPUEngine.prototype.updateRawCubeTexture = function (
     for (let i = 0; i < bufferView.length; ++i) {
         let faceData = bufferView[faces[i]];
         if (needConversion) {
-            faceData = _convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
+            faceData = ConvertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
         }
         data.push(new Uint8Array(faceData.buffer, faceData.byteOffset, faceData.byteLength));
     }
@@ -422,7 +423,7 @@ ThinWebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
                 for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
                     let mipFaceData = mipData[level][faces[faceIndex]];
                     if (needConversion) {
-                        mipFaceData = _convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
+                        mipFaceData = ConvertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
                     }
                     allFaces.push(new Uint8Array(mipFaceData.buffer, mipFaceData.byteOffset, mipFaceData.byteLength));
                 }
@@ -516,7 +517,7 @@ ThinWebGPUEngine.prototype.updateRawTexture3D = function (
         const needConversion = format === Constants.TEXTUREFORMAT_RGB;
 
         if (needConversion) {
-            bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
+            bufferView = ConvertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
         }
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
@@ -592,7 +593,7 @@ ThinWebGPUEngine.prototype.updateRawTexture2DArray = function (
         const needConversion = format === Constants.TEXTUREFORMAT_RGB;
 
         if (needConversion) {
-            bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
+            bufferView = ConvertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
         }
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
@@ -609,8 +610,7 @@ ThinWebGPUEngine.prototype.updateRawTexture2DArray = function (
 /**
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
+function ConvertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
     let rgbaData: any;
     let val1 = 1;

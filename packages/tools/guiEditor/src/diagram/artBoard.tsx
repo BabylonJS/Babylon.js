@@ -21,7 +21,9 @@ export class ArtBoardComponent extends React.Component<IArtBoardProps, IArtBoard
 
     update() {
         const visibleRegion = this.props.globalState.workbench.visibleRegionContainer;
-        if (!visibleRegion) return;
+        if (!visibleRegion) {
+            return;
+        }
         const localBounds = CoordinateHelper.ComputeLocalBounds(visibleRegion);
         const topLeftRTT = CoordinateHelper.NodeToRTTSpace(visibleRegion, localBounds.left, localBounds.top, undefined);
         const topLeftCanvas = CoordinateHelper.RttToCanvasSpace(topLeftRTT.x, topLeftRTT.y);

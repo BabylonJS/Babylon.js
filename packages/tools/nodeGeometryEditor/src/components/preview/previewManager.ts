@@ -6,7 +6,6 @@ import { Scene } from "core/scene";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { SceneLoader } from "core/Loading/sceneLoader";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
@@ -27,6 +26,7 @@ import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { NormalMaterial } from "materials/normal/normalMaterial";
 import type { Mesh } from "core/Meshes/mesh";
+import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -284,7 +284,7 @@ export class PreviewManager {
     }
 
     private _refreshPreviewMesh(first: boolean) {
-        SceneLoader.ShowLoadingScreen = false;
+        SceneLoaderFlags.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
