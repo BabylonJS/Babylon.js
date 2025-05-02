@@ -525,7 +525,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._capacity = capacity;
 
         this._epsilon = epsilon;
-        this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
         if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
@@ -542,22 +541,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         this._initShaderSourceAsync();
-
-        // Setup the default processing configuration to the scene.
-        this._attachImageProcessingConfiguration(null);
-
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        this._customWrappers = { 0: new DrawWrapper(this._engine) };
-        this._customWrappers[0]!.effect = customEffect;
-
-        this._drawWrappers = [];
-        this._useInstancing = this._engine.getCaps().instancedArrays;
-
-        this._createIndexBuffer();
-        this._createVertexBuffers();
-
-        // Default emitter type
-        this.particleEmitterType = new BoxParticleEmitter();
 
         // Creation queue
         this._lifeTimeCreation = {
@@ -647,6 +630,24 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         _ConnectAfter(this._gravityProcessing, this._positionProcessing);
 
         this._updateQueueStart = this._colorProcessing;
+
+        this._isAnimationSheetEnabled = isAnimationSheetEnabled;
+
+        // Setup the default processing configuration to the scene.
+        this._attachImageProcessingConfiguration(null);
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        this._customWrappers = { 0: new DrawWrapper(this._engine) };
+        this._customWrappers[0]!.effect = customEffect;
+
+        this._drawWrappers = [];
+        this._useInstancing = this._engine.getCaps().instancedArrays;
+
+        this._createIndexBuffer();
+        this._createVertexBuffers();
+
+        // Default emitter type
+        this.particleEmitterType = new BoxParticleEmitter();
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
