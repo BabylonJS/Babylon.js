@@ -2236,6 +2236,11 @@
             "excludeFromAutomaticTesting": true
         },
         {
+            "title": "custom-handling-of-materials-for-render-target-pass",
+            "renderCount": 60,
+            "playgroundId": "#FIVL25#21"
+        },
+        {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
             "renderCount": 2,
             "playgroundId": "#F6PGMC#12"
