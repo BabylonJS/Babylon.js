@@ -1830,6 +1830,9 @@ export class Viewer implements IDisposable {
                 shouldRender: true,
             });
 
+            // Since the light is not applied to the meshes of the model (we only want shadows, not lighting),
+            // the ShadowGenerator's isReady will think everything is ready before it actually is. To account
+            // for this, explicitly wait for the first shadow map render to consider shadows in a ready state.
             generator.onAfterShadowMapRenderObservable.addOnce(() => {
                 newNormal.shouldRender = false;
             });
