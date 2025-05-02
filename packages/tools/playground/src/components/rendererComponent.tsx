@@ -407,6 +407,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         this.props.globalState.onRunExecutedObservable.notifyObservers();
                     });
                     this._preventReentrancy = false;
+                }, (err) => {
+                    console.error(err);
+                    this._preventReentrancy = false
                 });
             } else {
                 this._engine.scenes[0].executeWhenReady(() => {
