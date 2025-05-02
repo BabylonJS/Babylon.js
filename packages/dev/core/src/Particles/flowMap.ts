@@ -2,9 +2,9 @@ import { Matrix, Vector3 } from "core/Maths/math.vector";
 import type { Particle } from "./particle";
 import type { ThinParticleSystem } from "./thinParticleSystem";
 
-const flowVector = new Vector3(0, 0, 0);
-const scaledFlowVector = new Vector3(0, 0, 0);
-const screenPos = new Vector3(0, 0, 0);
+const FlowVector = new Vector3(0, 0, 0);
+const ScaledFlowVector = new Vector3(0, 0, 0);
+const ScreenPos = new Vector3(0, 0, 0);
 
 /**
  * Class used to represent a particle flow map.
@@ -32,10 +32,10 @@ export class FlowMap {
         const renderHeight = engine.getRenderHeight();
 
         // Convert world pos to screen pos
-        Vector3.ProjectToRef(particle.position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), camera.viewport.toGlobal(renderWidth, renderHeight), screenPos);
+        Vector3.ProjectToRef(particle.position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), camera.viewport.toGlobal(renderWidth, renderHeight), ScreenPos);
 
-        const u = screenPos.x / renderWidth;
-        const v = screenPos.y / renderHeight; // Flip Y
+        const u = ScreenPos.x / renderWidth;
+        const v = ScreenPos.y / renderHeight; // Flip Y
 
         const x = Math.floor(u * this.width);
         const y = Math.floor(v * this.height);
@@ -56,10 +56,10 @@ export class FlowMap {
         const fz = (b / 255.0) * 2.0 - 1.0;
         const localStrength = a / 255.0;
 
-        flowVector.set(fx, fy, fz);
-        flowVector.scaleToRef(system._tempScaledUpdateSpeed * strength * localStrength, scaledFlowVector);
+        FlowVector.set(fx, fy, fz);
+        FlowVector.scaleToRef(system._tempScaledUpdateSpeed * strength * localStrength, ScaledFlowVector);
 
-        particle.direction.addInPlace(scaledFlowVector); // Update particle velocity
+        particle.direction.addInPlace(ScaledFlowVector); // Update particle velocity
     }
 
     /**
