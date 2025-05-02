@@ -7,6 +7,7 @@
         "paths": {
             "core/*": ["dev/core/src/*"],
             "loaders/*": ["dev/loaders/src/*"],
+            "materials/*": ["dev/materials/src/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
             "viewer/*": ["tools/viewer/src/*"],
             "viewer": ["tools/viewer/src/index"]

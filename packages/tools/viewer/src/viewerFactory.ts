@@ -16,6 +16,8 @@ export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) =
 const defaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
+    enableAllFeatures: true,
+    setMaximumLimits: true,
 } as const satisfies CanvasViewerOptions;
 
 /**
@@ -65,19 +67,27 @@ export async function CreateViewerForCanvas(
     if (options) {
         options = new Proxy(options, {
             get(target, prop: keyof CanvasViewerOptions) {
-                switch (prop) {
-                    case "antialias":
-                        return target.antialias ?? defaultCanvasViewerOptions.antialias;
-                    case "adaptToDeviceRatio":
-                        return target.adaptToDeviceRatio ?? defaultCanvasViewerOptions.adaptToDeviceRatio;
-                    default:
-                        return target[prop];
+                // keyof CanvasViewerOptions only works for the first type or common keys.
+                // so we need to check if the prop is a WebGPUEngineOptions key.
+                const webGPUTarget = target as WebGPUEngineOptions;
+                const webGPUProp = prop as keyof WebGPUEngineOptions;
+                if (webGPUProp === "enableAllFeatures") {
+                    return webGPUTarget.enableAllFeatures ?? defaultCanvasViewerOptions.enableAllFeatures;
+                } else if (webGPUProp === "setMaximumLimits") {
+                    return webGPUTarget.setMaximumLimits ?? defaultCanvasViewerOptions.setMaximumLimits;
+                } else if (prop === "antialias") {
+                    return target.antialias ?? defaultCanvasViewerOptions.antialias;
+                } else if (prop === "adaptToDeviceRatio") {
+                    return target.adaptToDeviceRatio ?? defaultCanvasViewerOptions.adaptToDeviceRatio;
+                } else {
+                    return target[prop];
                 }
             },
         });
     } else {
         options = defaultCanvasViewerOptions;
     }
+
     const disposeActions: (() => void)[] = [];
 
     // Create an engine instance.

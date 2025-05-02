@@ -21,6 +21,7 @@ const commonConfig = {
             entries: [
                 { find: "core", replacement: `@${source}/core/dist` },
                 { find: "loaders", replacement: `@${source}/loaders/dist` },
+                { find: "materials", replacement: `@${source}/materials/dist` },
             ],
         }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),

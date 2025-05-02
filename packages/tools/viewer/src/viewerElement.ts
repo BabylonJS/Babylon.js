@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowParams, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -13,7 +13,7 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
-import { IsToneMapping, Viewer } from "./viewer";
+import { IsShadowQuality, IsToneMapping, Viewer } from "./viewer";
 import { CreateViewerForCanvas } from "./viewerFactory";
 
 // Icon SVG is pulled from https://iconcloud.design
@@ -80,6 +80,13 @@ function coerceCameraOrbitOrTarget(value: string | null): Nullable<[number, numb
 
 function coerceToneMapping(value: string | null): Nullable<ToneMapping> {
     if (!value || !IsToneMapping(value)) {
+        return null;
+    }
+    return value;
+}
+
+function coerceShadowQuality(value: string | null): Nullable<ShadowQuality> {
+    if (!value || !IsShadowQuality(value)) {
         return null;
     }
     return value;
@@ -180,12 +187,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onEnvironmentConfigurationChanged,
             (details) => (details.viewer.environmentConfig = { rotation: this.environmentRotation ?? details.viewer.environmentConfig.rotation }),
             (details) => (this.environmentRotation = details.viewer.environmentConfig.rotation)
-        ),
-        this._createPropertyBinding(
-            "environmentVisible",
-            (details) => details.viewer.onEnvironmentConfigurationChanged,
-            (details) => (details.viewer.environmentConfig = { visible: this.environmentVisible ?? details.viewer.environmentConfig.visible }),
-            (details) => (this.environmentVisible = details.viewer.environmentConfig.visible)
         ),
         this._createPropertyBinding(
             "toneMapping",
@@ -669,12 +670,13 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public environmentRotation: Nullable<number> = this._options.environmentConfig?.rotation ?? null;
 
     /**
-     * Wether or not the environment is visible.
+     * The type of shadows to use.
+     * "classic" for shadow maps, "environment" for environment shadows.
      */
     @property({
-        attribute: "environment-visible",
+        attribute: "shadow-quality",
     })
-    public environmentVisible: Nullable<boolean> = this._options.environmentConfig?.visible ?? null;
+    public shadowQuality: Nullable<ShadowQuality> = null;
 
     @state()
     private _loadingProgress: boolean | number = false;
@@ -989,6 +991,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     lighting: changedProperties.has("environmentLighting"),
                     skybox: changedProperties.has("environmentSkybox"),
                 });
+            }
+
+            if (changedProperties.has("shadowQuality")) {
+                this._updateShadows(this.shadowQuality);
             }
         }
     }
@@ -1318,7 +1324,11 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                 intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? viewerElement._options.environmentConfig?.intensity,
                                 blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
                                 rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
-                                visible: viewerElement.hasAttribute("environment-visible") || viewerElement._options.environmentConfig?.visible,
+                            };
+                        },
+                        get shadowConfig() {
+                            return {
+                                quality: coerceShadowQuality(viewerElement.getAttribute("shadow-quality")) ?? viewerElement._options.shadowConfig?.quality,
                             };
                         },
                         get cameraOrbit() {
@@ -1469,7 +1479,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         }
     }
 
-    private async _updateEnv(options: EnvironmentOptions) {
+    private async _updateEnv(options: EnvironmentOptions): Promise<void> {
         if (this._viewerDetails) {
             try {
                 const updates: [url: Nullable<string>, options: EnvironmentOptions][] = [];
@@ -1499,6 +1509,22 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 if (!(error instanceof AbortError)) {
                     Logger.Error(error);
                 }
+            }
+        }
+    }
+
+    private async _updateShadows(quality: Nullable<ShadowQuality>): Promise<void> {
+        if (!quality) {
+            return;
+        }
+
+        try {
+            const options = { quality };
+            this._viewerDetails?.viewer.updateShadows(options);
+        } catch (error) {
+            // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
+            if (!(error instanceof AbortError)) {
+                Logger.Error(error);
             }
         }
     }
