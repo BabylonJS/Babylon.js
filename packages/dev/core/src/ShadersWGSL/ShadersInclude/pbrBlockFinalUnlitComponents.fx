@@ -1,7 +1,9 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
-
+#ifdef SS_REFRACTION
+    finalDiffuse *= subSurfaceOut.refractionOpacity;
+#endif
 #if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
     finalDiffuse += diffuseTransmissionBase;
 #endif

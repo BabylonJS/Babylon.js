@@ -46,7 +46,7 @@ aggShadow = aggShadow / numLights;
     #endif
 
     #if defined(SS_REFRACTION)
-        finalIrradiance *= subSurfaceOut.refractionFactorForIrradiance;
+        finalIrradiance *= subSurfaceOut.refractionOpacity;
     #endif
 
     #if defined(SS_TRANSLUCENCY)

@@ -7,9 +7,7 @@ struct subSurfaceOutParams
     #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
         alpha: f32,
     #endif
-    #ifdef REFLECTION
-        refractionFactorForIrradiance: f32,
-    #endif
+    refractionOpacity: f32,
 #endif
 #ifdef SS_TRANSLUCENCY
     transmittance: vec3f,
@@ -465,14 +463,9 @@ struct subSurfaceOutParams
             environmentRefraction = vec4f(environmentRefraction.rgb * surfaceAlbedo.rgb, environmentRefraction.a);
         #endif
 
-        // Decrease Albedo Contribution
         outParams.surfaceAlbedo = surfaceAlbedo;
 
-        #ifdef REFLECTION
-            // Decrease irradiance Contribution
-            outParams.refractionFactorForIrradiance = (1. - refractionIntensity);
-            //environmentIrradiance *= (1. - refractionIntensity);
-        #endif
+        outParams.refractionOpacity = (1. - refractionIntensity);
 
         #ifdef UNUSED_MULTIPLEBOUNCES
             // Keeping track in case of back compat issue.
@@ -490,6 +483,9 @@ struct subSurfaceOutParams
         #endif
 
         outParams.finalRefraction = environmentRefraction.rgb * refractionTransmittance * vLightingIntensity.z;
+
+        // Decrease the trasmitted light based on the specular environment reflectance.
+        outParams.finalRefraction *= vec3f(1.0) - specularEnvironmentReflectance;
 
         #if DEBUGMODE > 0
             outParams.environmentRefraction = environmentRefraction;
