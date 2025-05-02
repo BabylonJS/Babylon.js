@@ -32,9 +32,10 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
-import type { Attractor } from "./attractor";
+import { Attractor } from "./attractor";
 import type { _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
+import type { FlowMap } from "./flowMap";
 
 /**
  * This represents a particle system in Babylon.
@@ -91,6 +92,44 @@ export class ParticleSystem extends ThinParticleSystem {
         return particleEmitter;
     }
 
+    /** Flow map */
+    private _flowMap: Nullable<FlowMap> = null;
+    private _flowMapUpdate: Nullable<_IExecutionQueueItem> = null;
+
+    /**
+     * The strength of the flow map
+     */
+    public flowMapStrength = 1.0;
+
+    /** Gets or sets the current flow map */
+    public get flowMap(): Nullable<FlowMap> {
+        return this._flowMap;
+    }
+
+    public set flowMap(value: Nullable<FlowMap>) {
+        if (this._flowMap === value) {
+            return;
+        }
+
+        this._flowMap = value;
+
+        if (this._flowMapUpdate) {
+            _RemoveFromQueue(this._flowMapUpdate);
+            this._flowMapUpdate = null;
+        }
+        if (value) {
+            this._flowMapUpdate = {
+                process: (particle: Particle) => {
+                    this._flowMap!._processParticle(particle, this, this.flowMapStrength);
+                },
+                previousItem: null,
+                nextItem: null,
+            };
+            _ConnectAfter(this._flowMapUpdate, this._directionProcessing!);
+        }
+    }
+
+    /** Attractors */
     private _attractors: Attractor[] = [];
     private _attractorUpdate: Nullable<_IExecutionQueueItem> = null;
 
@@ -221,6 +260,7 @@ export class ParticleSystem extends ThinParticleSystem {
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
+
     public override createDirectedConeEmitter(
         radius = 1,
         angle = Math.PI / 4,
@@ -288,6 +328,7 @@ export class ParticleSystem extends ThinParticleSystem {
         this._rootParticleSystem = null;
     }
 
+    /** @internal */
     public override _emitFromParticle: (particle: Particle) => void = (particle) => {
         if (!this._subEmitters || this._subEmitters.length === 0) {
             return;
@@ -305,6 +346,7 @@ export class ParticleSystem extends ThinParticleSystem {
         }
     };
 
+    /** @internal */
     public override _preStart() {
         // Convert the subEmitters field to the constant type field _subEmitters
         this._prepareSubEmitterInternalArray();
@@ -314,12 +356,14 @@ export class ParticleSystem extends ThinParticleSystem {
         }
     }
 
+    /** @internal */
     public override _postStop(stopSubEmitters: boolean) {
         if (stopSubEmitters) {
             this._stopSubEmitters();
         }
     }
 
+    /** @internal */
     public override _prepareParticle(particle: Particle): void {
         // Attach emitters
         if (this._subEmitters && this._subEmitters.length > 0) {
@@ -726,6 +770,16 @@ export class ParticleSystem extends ThinParticleSystem {
             }
         }
 
+        // Attractors
+        if (parsedParticleSystem.attractors) {
+            for (const attractor of parsedParticleSystem.attractors) {
+                const newAttractor = new Attractor();
+                newAttractor.position = Vector3.FromArray(attractor.position);
+                newAttractor.strength = attractor.strength;
+                particleSystem.addAttractor(newAttractor);
+            }
+        }
+
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
 
         if (parsedParticleSystem.textureMask) {
@@ -778,6 +832,14 @@ export class ParticleSystem extends ThinParticleSystem {
                 }
 
                 serializationObject.subEmitters.push(cell);
+            }
+        }
+
+        // Attractors
+        if (this._attractors && this._attractors.length) {
+            serializationObject.attractors = [];
+            for (const attractor of this._attractors) {
+                serializationObject.attractors.push(attractor.serialize());
             }
         }
 

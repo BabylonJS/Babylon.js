@@ -475,7 +475,9 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Prevents the World matrix to be computed any longer
+     * Prevents the World matrix to be computed any longer.
+     * Please note that the "moral" contract is that the world matrix is not going to be updated anymore. It is up to the developer to force updates.
+     * You trade flexibility for performance. If you want to update it, you have to unfreeze it first.
      * @param newWorldMatrix defines an optional matrix to use as world matrix
      * @param decompose defines whether to decompose the given newWorldMatrix or directly assign
      * @returns the TransformNode.

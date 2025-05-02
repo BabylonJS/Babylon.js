@@ -8,7 +8,7 @@ const ScaledForce: Vector3 = Vector3.Zero();
 
 /**
  * Class representing an attractor in a particle system.
- * #DEZ79M#31
+ * #DEZ79M#40
  */
 export class Attractor {
     /**
@@ -31,5 +31,16 @@ export class Attractor {
         Force.scaleToRef(system._tempScaledUpdateSpeed, ScaledForce);
 
         particle.direction.addInPlace(ScaledForce); // Update particle velocity
+    }
+
+    /**
+     * Serializes the attractor to a JSON object.
+     * @returns The serialized JSON object.
+     */
+    public serialize(): any {
+        return {
+            position: this.position.asArray(),
+            strength: this.strength,
+        };
     }
 }

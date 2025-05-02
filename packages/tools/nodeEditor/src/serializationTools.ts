@@ -8,6 +8,10 @@ import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame
 
 export class SerializationTools {
     public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+        if (!globalState.onGetNodeFromBlock) {
+            return;
+        }
+
         material.editorData = {
             locations: [],
         };

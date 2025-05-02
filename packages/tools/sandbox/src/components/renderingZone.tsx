@@ -6,7 +6,6 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import type { Vector3 } from "core/Maths/math.vector";
 import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
@@ -48,10 +47,6 @@ function IsTextureAsset(extension: string): boolean {
 
 interface IRenderingZoneProps {
     globalState: GlobalState;
-    assetUrl?: string;
-    autoRotate?: boolean;
-    cameraPosition?: Vector3;
-    toneMapping?: number;
     expanded: boolean;
     onEngineCreated?: (engine: AbstractEngine) => void;
 }
@@ -177,8 +172,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         window.addEventListener("keydown", (event) => {
             // Press R to reload
             if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
-                if (this.props.assetUrl) {
-                    this.loadAssetFromUrl(this.props.assetUrl);
+                if (this.props.globalState.assetUrl) {
+                    this.loadAssetFromUrl(this.props.globalState.assetUrl);
                 } else {
                     filesInput.reload();
                 }
@@ -215,7 +210,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
             }
 
-            if (this.props.autoRotate) {
+            if (this.props.globalState.autoRotate) {
                 camera.useAutoRotationBehavior = true;
             }
 
@@ -225,9 +220,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             camera.wheelDeltaPercentage = 0.01;
             camera.pinchDeltaPercentage = 0.01;
 
-            if (this.props.cameraPosition) {
+            if (this.props.globalState.cameraPosition) {
                 camera.lowerRadiusLimit = null;
-                camera.setPosition(this.props.cameraPosition);
+                camera.setPosition(this.props.globalState.cameraPosition);
                 camera.lowerRadiusLimit = camera.radius;
             }
         }
@@ -289,9 +284,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     onSceneLoaded(filename: string) {
         this._scene.skipFrustumClipping = true;
 
-        if (this.props.toneMapping !== undefined) {
+        if (this.props.globalState.toneMapping !== undefined) {
             this._scene.imageProcessingConfiguration.toneMappingEnabled = true;
-            this._scene.imageProcessingConfiguration.toneMappingType = this.props.toneMapping;
+            this._scene.imageProcessingConfiguration.toneMappingType = this.props.globalState.toneMapping;
         } else if (this.props.globalState.commerceMode) {
             this._scene.imageProcessingConfiguration.toneMappingEnabled = true;
             this._scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
@@ -386,8 +381,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     loadAsset() {
-        if (this.props.assetUrl) {
-            this.loadAssetFromUrl(this.props.assetUrl);
+        if (this.props.globalState.assetUrl) {
+            this.loadAssetFromUrl(this.props.globalState.assetUrl);
             return;
         }
     }
