@@ -5,10 +5,10 @@ import { Animation } from "core/Animations/animation";
 import type { Scene } from "core/scene";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 import { BVHFileLoaderMetadata } from "./bvhFileLoader.metadata";
-import { readBvh } from "./bvhLoader";
+import { ReadBvh } from "./bvhLoader";
 
 declare module "core/Loading/sceneLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface SceneLoaderPluginOptions {
         /**
          * Defines options for the bvh loader.
@@ -72,7 +72,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            const skeleton = readBvh(data, scene, this._loadingOptions);
+            const skeleton = ReadBvh(data, scene, this._loadingOptions);
             return Promise.resolve({
                 meshes: [],
                 particleSystems: [],
@@ -116,7 +116,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
         const assetContainer = new AssetContainer(scene);
         try {
-            const skeleton = readBvh(data, scene, this._loadingOptions);
+            const skeleton = ReadBvh(data, scene, this._loadingOptions);
             assetContainer.skeletons.push(skeleton);
             return Promise.resolve(assetContainer);
         } catch (e) {

@@ -100,6 +100,7 @@ const abbreviations = [
     "QR",
     "BGR",
     "SFE",
+    "BVH",
 ];
 
 // Join them into a single regex string
