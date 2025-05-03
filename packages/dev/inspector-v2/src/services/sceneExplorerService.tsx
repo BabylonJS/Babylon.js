@@ -205,7 +205,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[SceneExplorerSer
                         className={classes.tree}
                         openItems={openItems}
                         onOpenChange={onOpenChange}
-                        selectionMode="single"
+                        // selectionMode="single"
                         // onCheckedChange={onCheckedChange}
                         aria-label="Scene Explorer Tree"
                     >
