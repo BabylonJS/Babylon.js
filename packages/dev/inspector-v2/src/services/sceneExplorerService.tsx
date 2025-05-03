@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Node, Scene } from "core/index";
+import type { Node, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
@@ -14,15 +14,17 @@ import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Material } from "core/Materials/material";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
+import { Observable } from "core/Misc/observable";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useObservableState } from "../hooks/observableHooks";
 import { TraverseGraph } from "../misc/graphUtils";
 import { SceneContext } from "./sceneContext";
 import { ShellService } from "./shellService";
 
-export const SceneExplorer = Symbol("SceneExplorer");
-export interface SceneExplorer extends Service<typeof SceneExplorer> {
-    // TODO: Expose extensibility points
+export const SceneExplorerService = Symbol("SceneExplorer");
+export interface SceneExplorerService extends Service<typeof SceneExplorerService> {
+    readonly selectedEntity: Nullable<Node | Material | BaseTexture>;
+    readonly onSelectedEntityChanged: Observable<void>;
 }
 
 function getNodeDepth(node: Node): number {
@@ -50,12 +52,25 @@ const useStyles = makeStyles({
     },
 });
 
-export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext, ShellService]> = {
+// const treeItemLayoutCommonProps = {
+//     selector: { style: { display: "none" } },
+// } as const satisfies TreeItemLayoutProps;
+
+export const SceneExplorerServiceDefinition: ServiceDefinition<[SceneExplorerService], [SceneContext, ShellService]> = {
     friendlyName: "Scene Explorer",
     tags: ["diagnostics"],
+    produces: [SceneExplorerService],
     consumes: [SceneContext, ShellService],
-    // produces: [SceneExplorer],
     factory: (sceneContext, shellService) => {
+        let selectedEntityState: Nullable<Node | Material | BaseTexture> = null;
+        const selectedEntityObservable = new Observable<void>();
+        const setSelectedItem = (item: Nullable<Node | Material | BaseTexture>) => {
+            if (item !== selectedEntityState) {
+                selectedEntityState = item;
+                selectedEntityObservable.notifyObservers();
+            }
+        };
+
         // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
         const SceneExplorer: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
             const classes = useStyles();
@@ -67,6 +82,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
             // Presumably we also need to call the reducer when the filter text changes, so we probably just want to always rebuild.
             // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
             // Then just reverse the array of nodes before returning it.
+
+            const selectedItem = useObservableState(() => selectedEntityState, selectedEntityObservable);
 
             const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
 
@@ -87,8 +104,13 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
 
                 const onSceneItemRemoved = (item: { uniqueId: number }) => {
                     setSceneVersion((version) => version + 1);
+
                     if (openItems.delete(item.uniqueId)) {
                         setOpenItems(new Set(openItems));
+                    }
+
+                    if (item === selectedItem) {
+                        setSelectedItem(null);
                     }
                 };
 
@@ -151,14 +173,42 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                 (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
                     if (data.type !== "Click" && data.type !== "Enter") {
                         setOpenItems(data.openItems);
+                    } else {
+                        // if (typeof data.value === "number") {
+                        //         const node = scene.getTransformNodeByUniqueId(data.value);
+                        //         if (node) {
+                        //             selectedEntityState = node;
+                        //             selectedEntityObservable.notifyObservers();
+                        //             return;
+                        //         }
+                        //         const mesh = scene.getMeshByUniqueId(data.value);
+                        //         if (mesh) {
+                        //             selectedEntityState = mesh;
+                        //             selectedEntityObservable.notifyObservers();
+                        //             return;
+                        //         }
+                        //         selectedEntityState = null;
+                        //         selectedEntityObservable.notifyObservers();
+                        // }
                     }
                 },
                 [setOpenItems]
             );
 
+            // const onCheckedChange = useCallback((event: TreeCheckedChangeEvent, data: TreeCheckedChangeData) => {
+            //     // console.log(`${data.value} ${data.checked ? "checked" : "unchecked"}`);
+            // }, []);
+
             return (
                 <div className={classes.rootDiv}>
-                    <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
+                    <FlatTree
+                        className={classes.tree}
+                        openItems={openItems}
+                        onOpenChange={onOpenChange}
+                        selectionMode="single"
+                        // onCheckedChange={onCheckedChange}
+                        aria-label="Scene Explorer Tree"
+                    >
                         <VirtualizerScrollView numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
                             {(index: number) => {
                                 const item = visibleItems[index];
@@ -172,7 +222,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-setsize={1}
                                             aria-posinset={1}
                                         >
-                                            <TreeItemLayout>
+                                            <TreeItemLayout /*{...treeItemLayoutCommonProps}*/>
                                                 <Text weight="bold">Nodes</Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
@@ -187,7 +237,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-setsize={1}
                                             aria-posinset={1}
                                         >
-                                            <TreeItemLayout>
+                                            <TreeItemLayout /*{...treeItemLayoutCommonProps}*/>
                                                 <Text weight="bold">Materials</Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
@@ -202,12 +252,16 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-setsize={1}
                                             aria-posinset={1}
                                         >
-                                            <TreeItemLayout>
+                                            <TreeItemLayout /*{...treeItemLayoutCommonProps}*/>
                                                 <Text weight="bold">Textures</Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
                                     );
                                 } else if (item instanceof Material) {
+                                    const onItemClick = () => {
+                                        setSelectedItem(item);
+                                    };
+
                                     return (
                                         <FlatTreeItem
                                             key={item.uniqueId}
@@ -217,13 +271,24 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-level={2}
                                             aria-setsize={1}
                                             aria-posinset={1}
+                                            onClick={onItemClick}
                                         >
-                                            <TreeItemLayout iconBefore={<PaintBrushRegular />}>
-                                                <Text>{item.name}</Text>
+                                            <TreeItemLayout
+                                                style={item === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                                                /*{...treeItemLayoutCommonProps}*/
+                                                iconBefore={<PaintBrushRegular />}
+                                            >
+                                                <Text wrap={false} truncate>
+                                                    {item.name}
+                                                </Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
                                     );
                                 } else if (item instanceof BaseTexture) {
+                                    const onItemClick = () => {
+                                        setSelectedItem(item);
+                                    };
+
                                     return (
                                         <FlatTreeItem
                                             key={item.uniqueId}
@@ -233,9 +298,16 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-level={2}
                                             aria-setsize={1}
                                             aria-posinset={1}
+                                            onClick={onItemClick}
                                         >
-                                            <TreeItemLayout iconBefore={<ImageRegular />}>
-                                                <Text>{item.displayName || item.name || `Unnamed Texture (${item.uniqueId})`}</Text>
+                                            <TreeItemLayout
+                                                style={item === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                                                /*{...treeItemLayoutCommonProps}*/
+                                                iconBefore={<ImageRegular />}
+                                            >
+                                                <Text wrap={false} truncate>
+                                                    {(item.displayName || item.name || `Unnamed Texture (${item.uniqueId})`).substring(0, 100)}
+                                                </Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
                                     );
@@ -261,6 +333,10 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             </>
                                         ) : undefined;
 
+                                    const onItemClick = () => {
+                                        setSelectedItem(item);
+                                    };
+
                                     return (
                                         <FlatTreeItem
                                             key={item.uniqueId}
@@ -270,9 +346,17 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
                                             aria-level={getNodeDepth(item) + 2}
                                             aria-setsize={1}
                                             aria-posinset={1}
+                                            onClick={onItemClick}
                                         >
-                                            <TreeItemLayout iconBefore={icon} actions={actions}>
-                                                <Text>{item.name}</Text>
+                                            <TreeItemLayout
+                                                style={item === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                                                /*{...treeItemLayoutCommonProps}*/
+                                                iconBefore={icon}
+                                                actions={actions}
+                                            >
+                                                <Text wrap={false} truncate>
+                                                    {item.name}
+                                                </Text>
                                             </TreeItemLayout>
                                         </FlatTreeItem>
                                     );
@@ -296,6 +380,10 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[], [SceneContext
         });
 
         return {
+            get selectedEntity() {
+                return selectedEntityState;
+            },
+            onSelectedEntityChanged: selectedEntityObservable,
             dispose: () => registration.dispose(),
         };
     },
