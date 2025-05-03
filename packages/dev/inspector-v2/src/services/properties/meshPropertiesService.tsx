@@ -20,6 +20,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         rowGap: tokens.spacingVerticalM,
+        overflow: "hidden",
     },
 });
 
