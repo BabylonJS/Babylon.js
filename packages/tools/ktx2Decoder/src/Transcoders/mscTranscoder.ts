@@ -1,11 +1,14 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import { Transcoder } from "../transcoder";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let MSC_TRANSCODER: any;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
 
 /**
@@ -42,14 +45,14 @@ export class MSCTranscoder extends Transcoder {
     private _mscBasisTranscoderPromise: Promise<void>;
     private _mscBasisModule: any;
 
-    private _getMSCBasisTranscoder(): Promise<void> {
+    private async _getMSCBasisTranscoder(): Promise<void> {
         if (this._mscBasisTranscoderPromise) {
             return this._mscBasisTranscoderPromise;
         }
 
         this._mscBasisTranscoderPromise = (
             MSCTranscoder.WasmBinary ? Promise.resolve(MSCTranscoder.WasmBinary) : WASMMemoryManager.LoadWASM(Transcoder.GetWasmUrl(MSCTranscoder.WasmModuleURL))
-        ).then((wasmBinary) => {
+        ).then(async (wasmBinary) => {
             if (MSCTranscoder.JSModule && typeof MSC_TRANSCODER === "undefined") {
                 // this must be set on the global scope for the MSC transcoder to work. Mainly due to back-compat with the old way of loading the MSC transcoder.
                 (globalThis as any).MSC_TRANSCODER = MSCTranscoder.JSModule;
@@ -105,7 +108,8 @@ export class MSCTranscoder extends Transcoder {
         return true;
     }
 
-    public override transcode(
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public override async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,

@@ -163,7 +163,7 @@ export function _CreateIsLocalData(particle: Particle, system: ThinParticleSyste
     } else {
         particle._localPosition.copyFrom(particle.position);
     }
-    Vector3.TransformCoordinatesToRef(particle._localPosition!, system._emitterWorldMatrix, particle.position);
+    Vector3.TransformCoordinatesToRef(particle._localPosition, system._emitterWorldMatrix, particle.position);
 }
 
 /** @internal */
@@ -414,7 +414,7 @@ export function _CreateAngleGradientsData(particle: Particle, system: ThinPartic
 
 /** @internal */
 export function _CreateSheetData(particle: Particle, system: ThinParticleSystem) {
-    particle._initialStartSpriteCellID = system.startSpriteCellID;
-    particle._initialEndSpriteCellID = system.endSpriteCellID;
+    particle._initialStartSpriteCellId = system.startSpriteCellID;
+    particle._initialEndSpriteCellId = system.endSpriteCellID;
     particle._initialSpriteCellLoop = system.spriteCellLoop;
 }

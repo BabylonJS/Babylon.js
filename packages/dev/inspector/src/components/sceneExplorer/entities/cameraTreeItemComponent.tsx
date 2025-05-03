@@ -86,7 +86,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
 
     override render() {
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faVideo} /> : <FontAwesomeIcon icon={faVideo} className="isNotActive" />;
-        const scene = this.props.camera.getScene()!;
+        const scene = this.props.camera.getScene();
         const isGizmoEnabled =
             this.state.isGizmoEnabled || (this.props.camera && this.props.camera.reservedDataStore && this.props.camera.reservedDataStore.cameraGizmo) ? (
                 <FontAwesomeIcon icon={faEye} />

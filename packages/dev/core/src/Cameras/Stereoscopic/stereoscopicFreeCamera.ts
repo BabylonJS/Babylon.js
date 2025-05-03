@@ -3,7 +3,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
+import { _SetStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
 
 Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
     return () => new StereoscopicFreeCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
@@ -39,5 +39,5 @@ export class StereoscopicFreeCamera extends FreeCamera {
         return "StereoscopicFreeCamera";
     }
 
-    protected override _setRigMode = () => setStereoscopicRigMode(this);
+    protected override _setRigMode = () => _SetStereoscopicRigMode(this);
 }

@@ -26,7 +26,7 @@ import { DrawWrapper } from "../../Materials/drawWrapper";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { Camera } from "../../Cameras/camera";
 
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     BindMorphTargetParameters,
@@ -1007,7 +1007,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // When preWarm is false, forces the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
         // shader variations in DEPTHPREPASS mode.
-        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean | undefined): boolean => {
+        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean): boolean => {
             if (!preWarm || !mesh.subMeshes) {
                 return true;
             }
@@ -1382,7 +1382,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
 
                 // Clip planes
-                bindClipPlane(effect, material, scene);
+                BindClipPlane(effect, material, scene);
             }
 
             if (!this._useUBO && !shadowDepthWrapper) {
@@ -1684,7 +1684,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 : 0;
 
             // ClipPlanes
-            prepareStringDefinesForClipPlanes(material, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
             // Instances
             if (useInstances) {
@@ -1742,7 +1742,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
-                addClipPlaneUniforms(uniforms);
+                AddClipPlaneUniforms(uniforms);
 
                 // Custom shader?
                 if (this.customShaderOptions) {

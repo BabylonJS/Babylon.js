@@ -112,7 +112,7 @@ export class PhysicsBody {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin = physicsPlugin;
         if (!transformNode.rotationQuaternion) {
             transformNode.rotationQuaternion = Quaternion.FromEulerAngles(transformNode.rotation.x, transformNode.rotation.y, transformNode.rotation.z);
         }
@@ -505,7 +505,7 @@ export class PhysicsBody {
      *
      * This method is useful for retrieving the geometry of the body from the physics plugin, which can be used for various physics calculations.
      */
-    public getGeometry(): {} {
+    public getGeometry(): object {
         return this._physicsPlugin.getBodyGeometry(this);
     }
 

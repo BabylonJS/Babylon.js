@@ -177,7 +177,7 @@ export class WebXREnterExitUI implements IDisposable {
     public async setHelperAsync(helper: WebXRExperienceHelper, renderTarget?: WebXRRenderTarget): Promise<void> {
         this._helper = helper;
         this._renderTarget = renderTarget;
-        const supportedPromises = this._buttons.map((btn) => {
+        const supportedPromises = this._buttons.map(async (btn) => {
             return helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
         });
         helper.onStateChangedObservable.add((state) => {
@@ -190,7 +190,7 @@ export class WebXREnterExitUI implements IDisposable {
             const supported = results[i];
             if (supported) {
                 this.overlay.appendChild(this._buttons[i].element);
-                this._buttons[i].element.onclick = this._enterXRWithButtonIndex.bind(this, i);
+                this._buttons[i].element.onclick = this._enterXRWithButtonIndexAsync.bind(this, i);
             } else {
                 Tools.Warn(`Session mode "${this._buttons[i].sessionMode}" not supported in browser`);
             }
@@ -210,7 +210,7 @@ export class WebXREnterExitUI implements IDisposable {
         return ui;
     }
 
-    private async _enterXRWithButtonIndex(idx: number = 0) {
+    private async _enterXRWithButtonIndexAsync(idx: number = 0) {
         if (this._helper.state == WebXRState.IN_XR) {
             await this._helper.exitXRAsync();
             this._updateButtons(null);
@@ -265,7 +265,7 @@ export class WebXREnterExitUI implements IDisposable {
         // } else
 
         if (this._helper) {
-            this._enterXRWithButtonIndex(0);
+            this._enterXRWithButtonIndexAsync(0);
         }
     };
 

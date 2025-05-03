@@ -681,9 +681,9 @@ export class SolidParticleSystem implements IDisposable {
         }
 
         for (i = 0; i < meshInd.length; i++) {
-            const current_ind = p + meshInd[i];
-            indices.push(current_ind);
-            if (current_ind > 65535) {
+            const currentInd = p + meshInd[i];
+            indices.push(currentInd);
+            if (currentInd > 65535) {
                 this._needs32Bits = true;
             }
         }

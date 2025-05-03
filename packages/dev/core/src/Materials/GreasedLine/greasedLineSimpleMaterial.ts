@@ -58,7 +58,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             `COLOR_MODE_ADD ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.`,
             `COLOR_MODE_MULTIPLY ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.`,
         ];
-        scene.useRightHandedSystem && defines.push("GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM");
+        if (scene.useRightHandedSystem) {
+            defines.push("GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM");
+        }
 
         const attributes = ["position", "grl_widths", "grl_offsets", "grl_colorPointers"];
 
@@ -477,7 +479,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             cameraFacing: this._cameraFacing,
         };
 
-        this._colors && (greasedLineMaterialOptions.colors = this._colors);
+        if (this._colors) {
+            greasedLineMaterialOptions.colors = this._colors;
+        }
 
         serializationObject.greasedLineMaterialOptions = greasedLineMaterialOptions;
 
@@ -495,20 +499,45 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
 
         this._colorsTexture?.dispose();
 
-        greasedLineMaterialOptions.color && (this.color = greasedLineMaterialOptions.color);
-        greasedLineMaterialOptions.colorDistributionType && (this.colorsDistributionType = greasedLineMaterialOptions.colorDistributionType);
-        greasedLineMaterialOptions.colorsSampling && (this.colorsSampling = greasedLineMaterialOptions.colorsSampling);
-        greasedLineMaterialOptions.colorMode && (this.colorMode = greasedLineMaterialOptions.colorMode);
-        greasedLineMaterialOptions.useColors && (this.useColors = greasedLineMaterialOptions.useColors);
-        greasedLineMaterialOptions.visibility && (this.visibility = greasedLineMaterialOptions.visibility);
-        greasedLineMaterialOptions.useDash && (this.useDash = greasedLineMaterialOptions.useDash);
-        greasedLineMaterialOptions.dashCount && (this.dashCount = greasedLineMaterialOptions.dashCount);
-        greasedLineMaterialOptions.dashRatio && (this.dashRatio = greasedLineMaterialOptions.dashRatio);
-        greasedLineMaterialOptions.dashOffset && (this.dashOffset = greasedLineMaterialOptions.dashOffset);
-        greasedLineMaterialOptions.width && (this.width = greasedLineMaterialOptions.width);
-        greasedLineMaterialOptions.sizeAttenuation && (this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation);
-        greasedLineMaterialOptions.resolution && (this.resolution = greasedLineMaterialOptions.resolution);
-
+        if (greasedLineMaterialOptions.color) {
+            this.color = greasedLineMaterialOptions.color;
+        }
+        if (greasedLineMaterialOptions.colorDistributionType) {
+            this.colorsDistributionType = greasedLineMaterialOptions.colorDistributionType;
+        }
+        if (greasedLineMaterialOptions.colorsSampling) {
+            this.colorsSampling = greasedLineMaterialOptions.colorsSampling;
+        }
+        if (greasedLineMaterialOptions.colorMode) {
+            this.colorMode = greasedLineMaterialOptions.colorMode;
+        }
+        if (greasedLineMaterialOptions.useColors) {
+            this.useColors = greasedLineMaterialOptions.useColors;
+        }
+        if (greasedLineMaterialOptions.visibility) {
+            this.visibility = greasedLineMaterialOptions.visibility;
+        }
+        if (greasedLineMaterialOptions.useDash) {
+            this.useDash = greasedLineMaterialOptions.useDash;
+        }
+        if (greasedLineMaterialOptions.dashCount) {
+            this.dashCount = greasedLineMaterialOptions.dashCount;
+        }
+        if (greasedLineMaterialOptions.dashRatio) {
+            this.dashRatio = greasedLineMaterialOptions.dashRatio;
+        }
+        if (greasedLineMaterialOptions.dashOffset) {
+            this.dashOffset = greasedLineMaterialOptions.dashOffset;
+        }
+        if (greasedLineMaterialOptions.width) {
+            this.width = greasedLineMaterialOptions.width;
+        }
+        if (greasedLineMaterialOptions.sizeAttenuation) {
+            this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation;
+        }
+        if (greasedLineMaterialOptions.resolution) {
+            this.resolution = greasedLineMaterialOptions.resolution;
+        }
         if (greasedLineMaterialOptions.colors) {
             this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, greasedLineMaterialOptions.colors, this.colorsSampling, this.getScene());
         } else {

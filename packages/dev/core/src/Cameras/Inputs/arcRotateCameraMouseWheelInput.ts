@@ -21,7 +21,7 @@ import { Tools } from "../../Misc/tools";
  * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
  * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
  */
-const ffMultiplier = 40;
+const FfMultiplier = 40;
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -88,7 +88,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
             const event = <IWheelEvent>p.event;
             let delta = 0;
-            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
+            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? FfMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
             const wheelDelta = -(event.deltaY * platformScale);
 

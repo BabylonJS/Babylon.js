@@ -10,6 +10,7 @@ import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { IAssetContainer } from "core/IAssetContainer";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * The list of reflection probes added to the scene

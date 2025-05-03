@@ -430,14 +430,14 @@ export class Ray {
         const c = Vector3.Dot(v, v); // always >= 0
         const d = Vector3.Dot(u, w);
         const e = Vector3.Dot(v, w);
-        const D = a * c - b * b; // always >= 0
+        const discriminant = a * c - b * b; // always >= 0
         let sN: number,
-            sD = D; // sc = sN / sD, default sD = D >= 0
+            sD = discriminant; // sc = sN / sD, default sD = D >= 0
         let tN: number,
-            tD = D; // tc = tN / tD, default tD = D >= 0
+            tD = discriminant; // tc = tN / tD, default tD = D >= 0
 
         // compute the line parameters of the two closest points
-        if (D < Ray._Smallnum) {
+        if (discriminant < Ray._Smallnum) {
             // the lines are almost parallel
             sN = 0.0; // force using point P0 on segment S1
             sD = 1.0; // to prevent possible division by 0.0 later

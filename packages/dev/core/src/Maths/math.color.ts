@@ -6,22 +6,22 @@ import type { IColor3Like, IColor4Like } from "./math.like";
 import { Clamp, ToHex, WithinEpsilon } from "./math.scalar.functions";
 import type { Tensor } from "./tensor";
 
-function colorChannelToLinearSpace(color: number): number {
+function ColorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
 }
 
-function colorChannelToLinearSpaceExact(color: number): number {
+function ColorChannelToLinearSpaceExact(color: number): number {
     if (color <= 0.04045) {
         return 0.0773993808 * color;
     }
     return Math.pow(0.947867299 * (color + 0.055), 2.4);
 }
 
-function colorChannelToGammaSpace(color: number): number {
+function ColorChannelToGammaSpace(color: number): number {
     return Math.pow(color, ToGammaSpace);
 }
 
-function colorChannelToGammaSpaceExact(color: number): number {
+function ColorChannelToGammaSpaceExact(color: number): number {
     if (color <= 0.0031308) {
         return 12.92 * color;
     }
@@ -683,13 +683,13 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     public toLinearSpaceToRef(convertedColor: IColor3Like, exact = false): this {
         if (exact) {
-            convertedColor.r = colorChannelToLinearSpaceExact(this.r);
-            convertedColor.g = colorChannelToLinearSpaceExact(this.g);
-            convertedColor.b = colorChannelToLinearSpaceExact(this.b);
+            convertedColor.r = ColorChannelToLinearSpaceExact(this.r);
+            convertedColor.g = ColorChannelToLinearSpaceExact(this.g);
+            convertedColor.b = ColorChannelToLinearSpaceExact(this.b);
         } else {
-            convertedColor.r = colorChannelToLinearSpace(this.r);
-            convertedColor.g = colorChannelToLinearSpace(this.g);
-            convertedColor.b = colorChannelToLinearSpace(this.b);
+            convertedColor.r = ColorChannelToLinearSpace(this.r);
+            convertedColor.g = ColorChannelToLinearSpace(this.g);
+            convertedColor.b = ColorChannelToLinearSpace(this.b);
         }
         return this;
     }
@@ -713,13 +713,13 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     public toGammaSpaceToRef(convertedColor: IColor3Like, exact = false): this {
         if (exact) {
-            convertedColor.r = colorChannelToGammaSpaceExact(this.r);
-            convertedColor.g = colorChannelToGammaSpaceExact(this.g);
-            convertedColor.b = colorChannelToGammaSpaceExact(this.b);
+            convertedColor.r = ColorChannelToGammaSpaceExact(this.r);
+            convertedColor.g = ColorChannelToGammaSpaceExact(this.g);
+            convertedColor.b = ColorChannelToGammaSpaceExact(this.b);
         } else {
-            convertedColor.r = colorChannelToGammaSpace(this.r);
-            convertedColor.g = colorChannelToGammaSpace(this.g);
-            convertedColor.b = colorChannelToGammaSpace(this.b);
+            convertedColor.r = ColorChannelToGammaSpace(this.r);
+            convertedColor.g = ColorChannelToGammaSpace(this.g);
+            convertedColor.b = ColorChannelToGammaSpace(this.b);
         }
         return this;
     }
@@ -1655,13 +1655,13 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      */
     public toLinearSpaceToRef(convertedColor: IColor4Like, exact = false): this {
         if (exact) {
-            convertedColor.r = colorChannelToLinearSpaceExact(this.r);
-            convertedColor.g = colorChannelToLinearSpaceExact(this.g);
-            convertedColor.b = colorChannelToLinearSpaceExact(this.b);
+            convertedColor.r = ColorChannelToLinearSpaceExact(this.r);
+            convertedColor.g = ColorChannelToLinearSpaceExact(this.g);
+            convertedColor.b = ColorChannelToLinearSpaceExact(this.b);
         } else {
-            convertedColor.r = colorChannelToLinearSpace(this.r);
-            convertedColor.g = colorChannelToLinearSpace(this.g);
-            convertedColor.b = colorChannelToLinearSpace(this.b);
+            convertedColor.r = ColorChannelToLinearSpace(this.r);
+            convertedColor.g = ColorChannelToLinearSpace(this.g);
+            convertedColor.b = ColorChannelToLinearSpace(this.b);
         }
         convertedColor.a = this.a;
         return this;
@@ -1686,13 +1686,13 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      */
     public toGammaSpaceToRef(convertedColor: IColor4Like, exact = false): this {
         if (exact) {
-            convertedColor.r = colorChannelToGammaSpaceExact(this.r);
-            convertedColor.g = colorChannelToGammaSpaceExact(this.g);
-            convertedColor.b = colorChannelToGammaSpaceExact(this.b);
+            convertedColor.r = ColorChannelToGammaSpaceExact(this.r);
+            convertedColor.g = ColorChannelToGammaSpaceExact(this.g);
+            convertedColor.b = ColorChannelToGammaSpaceExact(this.b);
         } else {
-            convertedColor.r = colorChannelToGammaSpace(this.r);
-            convertedColor.g = colorChannelToGammaSpace(this.g);
-            convertedColor.b = colorChannelToGammaSpace(this.b);
+            convertedColor.r = ColorChannelToGammaSpace(this.r);
+            convertedColor.g = ColorChannelToGammaSpace(this.g);
+            convertedColor.b = ColorChannelToGammaSpace(this.b);
         }
         convertedColor.a = this.a;
         return this;

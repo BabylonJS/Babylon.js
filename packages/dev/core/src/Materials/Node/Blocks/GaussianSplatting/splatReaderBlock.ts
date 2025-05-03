@@ -78,7 +78,7 @@ export class SplatReaderBlock extends NodeMaterialBlock {
             return;
         }
         const scene = mesh.getScene();
-        GaussianSplattingMaterial.BindEffect(mesh as Mesh, effect, scene);
+        GaussianSplattingMaterial.BindEffect(mesh, effect, scene);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

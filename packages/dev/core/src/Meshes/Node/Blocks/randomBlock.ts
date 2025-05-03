@@ -16,8 +16,10 @@ export enum RandomBlockLocks {
     /** None */
     None,
     /** LoopID */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     LoopID,
     /** InstanceID */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     InstanceID,
     /** Once */
     Once,
@@ -174,7 +176,7 @@ export class RandomBlock extends NodeGeometryBlock {
 
                 if (this._currentLockId !== lockId || this.lockMode === RandomBlockLocks.None) {
                     this._currentLockId = lockId;
-                    this.output._storedValue = func!(state);
+                    this.output._storedValue = func(state);
                 }
                 return this.output._storedValue;
             };

@@ -1037,7 +1037,7 @@ export class Geometry implements IGetSetVerticesData {
         const indices = this.getIndices();
         if (indices) {
             for (let index = 0; index < indices.length; index++) {
-                (<number[]>vertexData.indices).push(indices[index]);
+                vertexData.indices.push(indices[index]);
             }
         }
 
@@ -1050,7 +1050,7 @@ export class Geometry implements IGetSetVerticesData {
                 if (data instanceof Float32Array) {
                     vertexData.set(new Float32Array(<Float32Array>data), kind);
                 } else {
-                    vertexData.set((<number[]>data).slice(0), kind);
+                    vertexData.set(data.slice(0), kind);
                 }
 
                 if (!stopChecking) {

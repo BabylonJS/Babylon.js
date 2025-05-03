@@ -14,7 +14,7 @@ import type { EventState } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 
 /**
- * This should not be instanciated directly, as it is part of a scene component
+ * This should not be instantiated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsAccumulationPass {

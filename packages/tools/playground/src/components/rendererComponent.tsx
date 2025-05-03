@@ -399,15 +399,22 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._preventReentrancy = false;
                 return this._notifyError("You must at least create a camera.");
             } else if (globalObject.scene.then) {
-                globalObject.scene.then(() => {
-                    if (this._engine!.scenes[0] && displayInspector) {
-                        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+                globalObject.scene.then(
+                    () => {
+                        if (this._engine!.scenes[0] && displayInspector) {
+                            this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+                        }
+                        this._engine!.scenes[0].executeWhenReady(() => {
+                            this.props.globalState.onRunExecutedObservable.notifyObservers();
+                        });
+                        this._preventReentrancy = false;
+                    },
+                    (err: any) => {
+                        // eslint-disable-next-line no-console
+                        console.error(err);
+                        this._preventReentrancy = false;
                     }
-                    this._engine!.scenes[0].executeWhenReady(() => {
-                        this.props.globalState.onRunExecutedObservable.notifyObservers();
-                    });
-                    this._preventReentrancy = false;
-                });
+                );
             } else {
                 this._engine.scenes[0].executeWhenReady(() => {
                     this.props.globalState.onRunExecutedObservable.notifyObservers();

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { AssetContainer } from "core/assetContainer";
 import type { Bone } from "core/Bones/bone";
 import type { Skeleton } from "core/Bones/skeleton";
@@ -104,7 +105,7 @@ export enum EBlendingFunction {
 /** @internal */
 export interface IGLTFProperty {
     extensions?: { [key: string]: any };
-    extras?: Object;
+    extras?: object;
 }
 
 /** @internal */
@@ -173,7 +174,7 @@ export interface IGLTFTechniqueParameter {
 /** @internal */
 export interface IGLTFTechniqueCommonProfile {
     lightingModel: string;
-    texcoordBindings: Object;
+    texcoordBindings: object;
 
     parameters?: Array<any>;
 }
@@ -390,7 +391,7 @@ export interface IGLTFRuntime {
     animations: { [key: string]: IGLTFAnimation };
     skins: { [key: string]: IGLTFSkins };
 
-    currentScene?: Object;
+    currentScene?: object;
     scenes: { [key: string]: IGLTFScene }; // v1.1
 
     extensionsUsed: string[];

@@ -1,5 +1,29 @@
 # Changelog
 
+## 8.6.1
+
+## 8.6.0
+
+### Core
+
+- Get WebAudio working on iOS when ringer switch is turned off - by [docEdub](https://github.com/docEdub) ([#16558](https://github.com/BabylonJS/Babylon.js/pull/16558))
+- Naming conventions - linting - by [RaananW](https://github.com/RaananW) ([#16455](https://github.com/BabylonJS/Babylon.js/pull/16455))
+- Particle Flow map - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16550](https://github.com/BabylonJS/Babylon.js/pull/16550))
+- Fix MeshparticleEmitter bug - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16554](https://github.com/BabylonJS/Babylon.js/pull/16554))
+- WebGPU material plugins: Fix arrays declaration - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16552](https://github.com/BabylonJS/Babylon.js/pull/16552))
+
+### Loaders
+
+- Add preliminary bvh loader - by [yuripourre](https://github.com/yuripourre) ([#16540](https://github.com/BabylonJS/Babylon.js/pull/16540))
+
+### Node Editor
+
+- Fix nme loading delay when nodes are delay loaded - by [deltakosh](https://github.com/deltakosh) ([#16556](https://github.com/BabylonJS/Babylon.js/pull/16556))
+
+### Playground
+
+- Fix an issue where playground cannot run when exception is thrown - by [RaananW](https://github.com/RaananW) ([#16557](https://github.com/BabylonJS/Babylon.js/pull/16557))
+
 ## 8.5.0
 
 ### Core

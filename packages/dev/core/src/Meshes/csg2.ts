@@ -87,6 +87,7 @@ interface IManifoldMesh {
     vertProperties: Float32Array;
     triVerts: Uint32Array;
     runIndex: Uint32Array;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     runOriginalID: Uint32Array;
     numRun: number;
 }
@@ -308,6 +309,7 @@ export class CSG2 implements IDisposable {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
         manifoldMesh.merge();
 

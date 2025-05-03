@@ -1,16 +1,17 @@
 import { GetClassName } from "core/Misc/typeStore";
 
 // Check if BABYLON namespace exists
-let babylonNamespace = "";
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    if (typeof (<any>globalObject).BABYLON !== "undefined") {
-        babylonNamespace = "BABYLON.";
+let BabylonNamespace = "";
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    if (typeof (<any>GlobalObject).BABYLON !== "undefined") {
+        BabylonNamespace = "BABYLON.";
     }
 }
 
 // Inspired by previous copyToClipboard() function which was copying Color3
 // Copies strCommand to clipboard
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function copyCommandToClipboard(strCommand: string) {
     const element = document.createElement("div");
     element.textContent = strCommand;
@@ -29,10 +30,11 @@ export function copyCommandToClipboard(strCommand: string) {
 
 // Return the class name of the considered target
 // babylonNamespace is either "" (ES6) or "BABYLON."
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getClassNameWithNamespace(obj: any): { className: string; babylonNamespace: string } {
     let className = GetClassName(obj);
     if (className.includes("BABYLON.")) {
         className = className.split("BABYLON.")[1];
     }
-    return { className, babylonNamespace };
+    return { className, babylonNamespace: BabylonNamespace };
 }
