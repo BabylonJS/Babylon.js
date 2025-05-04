@@ -3,7 +3,6 @@ import type { Vector3 } from "../Maths/math";
 import type { Mesh } from "../Meshes/mesh";
 import type { Scene } from "../scene";
 import type { IVector3Like } from "../Maths/math.like";
-import type { TODO } from "./Plugins/recastJSPlugin";
 
 /**
  * Navigation plugin interface to add navigation constrained by a navigation mesh
@@ -205,11 +204,12 @@ export interface INavigationEnginePlugin extends INavigationEnginePlugin0 {
     /**
      *
      */
-    navMesh?: TODO; // NavMesh;
+    navMesh?: any;
+
     /**
      *
      */
-    navMeshQuery: TODO; // NavMeshQuery;
+    navMeshQuery: any;
     /**
      *
      */
