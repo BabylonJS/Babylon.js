@@ -2,11 +2,13 @@ import type { TransformNode } from "../Meshes/transformNode";
 import type { Vector3 } from "../Maths/math";
 import type { Mesh } from "../Meshes/mesh";
 import type { Scene } from "../scene";
+import type { IVector3Like } from "../Maths/math.like";
+import type { TODO } from "./Plugins/recastJSPlugin";
 
 /**
  * Navigation plugin interface to add navigation constrained by a navigation mesh
  */
-export interface INavigationEnginePlugin {
+export interface INavigationEnginePlugin0 {
     /**
      * plugin name
      */
@@ -17,7 +19,7 @@ export interface INavigationEnginePlugin {
      * @param meshes array of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      */
-    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters0): void;
 
     /**
      * Create a navigation mesh debug mesh
@@ -194,6 +196,105 @@ export interface INavigationEnginePlugin {
      * Release all resources
      */
     dispose(): void;
+}
+
+/**
+ *
+ */
+export interface INavigationEnginePlugin extends INavigationEnginePlugin0 {
+    /**
+     *
+     */
+    navMesh?: TODO; // NavMesh;
+    /**
+     *
+     */
+    navMeshQuery: TODO; // NavMeshQuery;
+    /**
+     *
+     */
+    setWorker: (worker: Worker) => void;
+    getClosestPoint(
+        position: IVector3Like,
+        options?: {
+            /**
+             *
+             */
+            halfExtents?: IVector3Like;
+        }
+    ): Vector3;
+    getClosestPointToRef(
+        position: IVector3Like,
+        result: Vector3,
+        options?: {
+            /**
+             *
+             */
+            halfExtents?: IVector3Like;
+        }
+    ): void;
+    getRandomPointAround(
+        position: IVector3Like,
+        maxRadius: number,
+        options?: {
+            /**
+             *
+             */
+            startRef?: number;
+            /**
+             *
+             */
+            halfExtents?: IVector3Like;
+        }
+    ): Vector3;
+    getRandomPointAroundToRef(
+        position: IVector3Like,
+        maxRadius: number,
+        result: Vector3,
+        options?: {
+            /**
+             *
+             */
+            startRef?: number;
+            /**
+             *
+             */
+            halfExtents?: IVector3Like;
+        }
+    ): void;
+
+    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters0, completion?: (navmeshData: Uint8Array) => void): void;
+    createNavMeshWorker(meshes: Array<Mesh>, parameters: INavMeshParameters0, completion: (data?: Uint8Array) => void): void;
+    computePathSmooth(
+        start: Vector3,
+        end: Vector3,
+        options?: {
+            /**
+             *
+             */
+            halfExtents?: IVector3Like;
+
+            /**
+             * @default 256
+             */
+            maxPathPolys?: number;
+
+            /**
+             * @default 2048
+             */
+            maxSmoothPathPoints?: number;
+
+            /**
+             * @default 0.5
+             */
+            stepSize?: number;
+
+            /**
+             * @default 0.01
+             */
+            slop?: number;
+        }
+    ): Vector3[];
 }
 
 /**
@@ -392,7 +493,7 @@ export interface IAgentParameters {
 /**
  * Configures the navigation mesh creation
  */
-export interface INavMeshParameters {
+export interface INavMeshParameters0 {
     /**
      * The xz-plane cell size to use for fields. [Limit: > 0] [Units: wu]
      */
@@ -471,6 +572,27 @@ export interface INavMeshParameters {
      * If no obstacles are needed, leave it undefined or 0.
      */
     tileSize?: number;
+
+    /**
+     * A hint to Recast for how many walkable surface layers might exist per tile
+     * allowing better memory and performance tuning during navmesh generation.
+     */
+    expectedLayersPerTile?: number;
+
+    /**
+     * The hard limit on how many stacked walkable surfaces (layers) a tile can have.
+     * If Recast finds more layers than maxLayers, tile generation may fail or lose data.
+     * Use a higher value (e.g. 4–8) for complex multi-level scenes; 1–2 is fine for flat terrain.
+     */
+    maxLayers?: number;
+
+    /**
+     * If set to true, intermediate objects used during the generation process will be retained.
+     * This is useful for debugging purposes or if you want to process the intermediate data in any other way.
+     * For example you can use it to trace countours, calculate heightfields, etc.
+     * Defaults to false.
+     */
+    keepIntermediates?: boolean;
 
     /**
      * The size of the non-navigable border around the heightfield.
