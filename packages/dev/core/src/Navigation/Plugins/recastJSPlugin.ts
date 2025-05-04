@@ -581,8 +581,6 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             throw new Error("There is no NavMesh generated.");
         }
 
-        debugger;
-        console.log(this.navMesh);
         const [positions, indices] = this.bjsRECAST.getNavMeshPositionsAndIndices(this.navMesh);
 
         const mesh = new Mesh("NavMeshDebug", scene);
@@ -718,7 +716,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 positions.push(new Vector3(p.x, p.y, p.z));
             }
         } else {
-            console.warn("Unable to convert navigation path point, because navPath generation has faileds.");
+            Logger.Warn("Unable to convert navigation path point, because navPath generation has failed.");
         }
 
         return positions;
@@ -1276,7 +1274,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 tileSize,
             });
             if (!success) {
-                console.error("Unable to generateTileCache.");
+                Logger.Error("Unable to generateTileCache.");
             } else {
                 this._tileCache = tileCache;
                 this.navMesh = navMesh;
@@ -1284,6 +1282,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         }
     }
 
+    /**
+     * Updates the tile cache
+     */
     public updateTileCache() {
         if (!this.navMesh || !this._tileCache) {
             return;
@@ -1293,15 +1294,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         while (!upToDate) {
             const result = this._tileCache.update(this.navMesh);
             if (!result.success) {
-                console.error("Unable to update tile cache.", result.status);
+                Logger.Error(["Unable to update tile cache.", result.status]);
                 return;
             }
             upToDate = result.upToDate;
         }
 
         this.navMeshQuery = new this.bjsRECAST.NavMeshQuery(this.navMesh);
-
-        console.log("Tile cache up to date:", upToDate ? "yes" : "no");
     }
 
     /**
