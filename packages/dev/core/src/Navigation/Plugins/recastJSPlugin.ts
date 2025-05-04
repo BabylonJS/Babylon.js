@@ -11,8 +11,6 @@ import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { IVector3Like } from "../../Maths/math.like";
 
-export type TODO = any;
-
 type TiledParams = INavMeshParameters0 & { tileSize: number; expectedLayersPerTile: number };
 
 type SoloNavMeshGeneratorConfig = any;
@@ -32,7 +30,7 @@ type QueryFilter = any;
 type TileCache = any;
 
 type Crowd = any;
-const Detour: TODO = {};
+const Detour: any = {};
 type NavMeshQuery = any;
 // // eslint-disable-next-line @typescript-eslint/naming-convention
 // type exportNavMesh = any;
@@ -60,85 +58,8 @@ declare let RecastGenerators: any;
 //   maxLayers: number;
 // }
 
-/**
- *
- */
-export interface NavMeshParameters {
-    /**
-     *
-     */
-    cs: number;
-    /**
-     *
-     */
-    ch: number;
-    /**
-     *
-     */
-    walkableSlopeAngle: number;
-    /**
-     *
-     */
-    walkableHeight: number;
-    /**
-     *
-     */
-    walkableClimb: number;
-    /**
-     *
-     */
-    walkableRadius: number;
-    /**
-     *
-     */
-    maxEdgeLen: number;
-    /**
-     *
-     */
-    maxSimplificationError: number;
-    /**
-     *
-     */
-    minRegionArea: number;
-    /**
-     *
-     */
-    mergeRegionArea: number;
-    /**
-     *
-     */
-    maxVertsPerPoly: number;
-    /**
-     *
-     */
-    detailSampleDist: number;
-    /**
-     *
-     */
-    detailSampleMaxError: number;
-    /**
-     *
-     */
-    tileSize: number;
-    /**
-     *
-     */
-    borderSize: number;
-    /**
-     *
-     */
-    expectedLayersPerTile: number;
-    /**
-     *
-     */
-    maxLayers: number;
-    /**
-     *
-     */
-    keepIntermediates?: boolean;
-}
-const _delta = new Vector3();
-const _moveTarget = new Vector3();
+const tmpDelta = new Vector3();
+const tmpMoveTarget = new Vector3();
 
 type ComputeSmoothPathErrorType = (typeof ComputePathError)[keyof typeof ComputePathError];
 
@@ -910,7 +831,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             // Find movement delta.
             const steerPos = steerTarget.steerPos;
 
-            const delta = _delta.copyFrom(steerPos).subtract(iterPos);
+            const delta = tmpDelta.copyFrom(steerPos).subtract(iterPos);
 
             let len = Math.sqrt(delta.dot(delta));
 
@@ -921,7 +842,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 len = stepSize / len;
             }
 
-            const moveTarget = _moveTarget.copyFrom(iterPos).addInPlace(delta.scale(len));
+            const moveTarget = tmpMoveTarget.copyFrom(iterPos).addInPlace(delta.scale(len));
 
             // Move
             const moveAlongSurface = this.navMeshQuery.moveAlongSurface(polys[0], iterPos, moveTarget, { filter, maxVisitedSize: 16 });
