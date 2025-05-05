@@ -12,7 +12,7 @@ import { Constants } from "core/Engines/constants";
 const NAME = "EXT_materials_diffuse_roughness";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_materials_diffuse_roughness extension.
