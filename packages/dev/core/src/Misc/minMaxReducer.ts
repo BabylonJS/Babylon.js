@@ -7,7 +7,7 @@ import { Observable } from "./observable";
 import type { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
