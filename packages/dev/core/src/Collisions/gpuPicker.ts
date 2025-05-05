@@ -353,7 +353,9 @@ export class GPUPicker {
             return null;
         }
 
-        const { x: adjustedX, y: adjustedY, rttSizeW, rttSizeH } = this._prepareForPicking(x, y);
+        const { rttSizeW, rttSizeH, devicePixelRatio } = this._getRenderInfo();
+
+        const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y, devicePixelRatio);
         if (adjustedX < 0 || adjustedY < 0 || adjustedX >= rttSizeW || adjustedY >= rttSizeH) {
             return null;
         }
@@ -399,12 +401,14 @@ export class GPUPicker {
         let minY = Infinity;
         let maxY = -Infinity;
 
+        const { rttSizeW, rttSizeH, devicePixelRatio } = this._getRenderInfo();
+
         // Process screen coordinates adjust to dpr
         for (let i = 0; i < xy.length; i++) {
             const item = xy[i];
             const { x, y } = item;
 
-            const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y);
+            const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y, devicePixelRatio);
 
             processedXY[i] = {
                 ...item,
@@ -418,7 +422,6 @@ export class GPUPicker {
             maxY = Math.max(maxY, adjustedY);
         }
 
-        const { rttSizeW, rttSizeH } = this._prepareForPicking(minX, minY);
         const w = Math.max(maxX - minX, 1);
         const h = Math.max(maxY - minY, 1);
         const partialCutH = rttSizeH - maxY - 1;
@@ -428,17 +431,21 @@ export class GPUPicker {
         return this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
-    private _prepareForPicking(x: number, y: number) {
-        const scene = this._cachedScene!;
-        const engine = scene.getEngine();
+    private _getRenderInfo() {
+        const engine = this._cachedScene!.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
         const devicePixelRatio = 1 / engine._hardwareScalingLevel;
 
-        const intX = (devicePixelRatio * x) >> 0;
-        const intY = (devicePixelRatio * y) >> 0;
+        return {
+            rttSizeW,
+            rttSizeH,
+            devicePixelRatio,
+        };
+    }
 
-        return { x: intX, y: intY, rttSizeW, rttSizeH };
+    private _prepareForPicking(x: number, y: number, devicePixelRatio: number) {
+        return { x: (devicePixelRatio * x) >> 0, y: (devicePixelRatio * y) >> 0 };
     }
 
     private _preparePickingBuffer(engine: AbstractEngine, rttSizeW: number, rttSizeH: number, x: number, y: number, w = 1, h = 1) {
