@@ -8,7 +8,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 import { Tools } from "core/Misc/tools";
-import { AssetContainer } from "core/assetContainer";
+import type { AssetContainer } from "core/assetContainer";
 
 const _XPosition = "Xposition";
 const _YPosition = "Yposition";
