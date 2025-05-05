@@ -7,7 +7,7 @@ import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
-import { Vector3, Vector4 } from "../../Maths/math.vector";
+import { Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -2296,15 +2296,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             }
                         } else {
                             // If we're using an irradiance map with a dominant direction assigned, set it.
-                            if (defines.USEIRRADIANCEMAP && reflectionTexture.irradianceTexture) {
-                                const irradianceTexture = reflectionTexture.irradianceTexture;
-                                if (irradianceTexture._dominantDirection) {
-                                    ubo.updateVector3("vReflectionDominantDirection", irradianceTexture._dominantDirection);
-                                } else {
-                                    ubo.updateVector3("vReflectionDominantDirection", Vector3.Up());
-                                }
-                            } else {
-                                ubo.updateVector3("vReflectionDominantDirection", Vector3.Up());
+                            if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION) {
+                                ubo.updateVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture!._dominantDirection!);
                             }
                         }
 
