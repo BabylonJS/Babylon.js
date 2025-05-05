@@ -1,22 +1,17 @@
 import type { ExtensionManager } from "../extensibility/extensionManager";
 
-import { useContext } from "react";
-import { AppContext } from "./appContext";
+import { createContext, useContext } from "react";
 
 export type ExtensionManagerContext = {
     readonly extensionManager: ExtensionManager;
 };
 
-declare module "./AppContext" {
-    interface AppContext {
-        extensionManagerContext?: ExtensionManagerContext;
-    }
-}
+export const ExtensionManagerContext = createContext<ExtensionManagerContext | undefined>(undefined);
 
 export function useExtensionManager() {
-    const extensionManagerContext = useContext(AppContext)?.extensionManagerContext;
+    const extensionManagerContext = useContext(ExtensionManagerContext);
     if (!extensionManagerContext) {
-        throw new Error("AppContext or ExtensionManagerContext is missing.");
+        throw new Error("ExtensionManagerContext is missing.");
     }
 
     return extensionManagerContext.extensionManager;

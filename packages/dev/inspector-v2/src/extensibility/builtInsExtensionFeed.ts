@@ -1,15 +1,15 @@
 import type { ExtensionMetadata, ExtensionMetadataQuery, ExtensionFeed, ExtensionModule } from "./extensionFeed";
 
-const exploderExtensionMetadata = {
+const creationToolsExtensionMetadata = {
     name: "Asset Creation",
     author: "Babylon",
     description: "Adds new features to enable creating Babylon assets such as node materials, flow graphs, and more.",
-    keywords: ["exploder", "sandbox"],
+    keywords: ["creation"],
     version: "0.0.1",
     license: "MIT",
 } as const;
 
-const extensions: readonly ExtensionMetadata[] = [exploderExtensionMetadata];
+const extensions: readonly ExtensionMetadata[] = [creationToolsExtensionMetadata];
 
 export class BuiltInsExtensionFeed implements ExtensionFeed {
     public readonly name = "Built-ins";
@@ -37,8 +37,8 @@ export class BuiltInsExtensionFeed implements ExtensionFeed {
     }
 
     public async getExtensionModuleAsync(name: string, version: string): Promise<ExtensionModule | undefined> {
-        if (name === exploderExtensionMetadata.name && version === exploderExtensionMetadata.version) {
-            return await import("../services/exploderService");
+        if (name === creationToolsExtensionMetadata.name && version === creationToolsExtensionMetadata.version) {
+            return await import("../services/creationToolsService");
         }
         return undefined;
     }

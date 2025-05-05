@@ -7,7 +7,7 @@ import { useCallback, useMemo } from "react";
 import { useObservableState } from "../hooks/observableHooks";
 import { InfoLabel, makeStyles, Switch, tokens } from "@fluentui/react-components";
 
-// probably common
+// TODO: probably common
 const useStyles = makeStyles({
     rootDiv: {
         display: "flex",

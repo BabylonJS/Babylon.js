@@ -1,6 +1,6 @@
 import type { AspectDefinition } from "../modularity/serviceCatalog";
 
-export const InspectorAspectIdentity = Symbol("Inspector");
+const InspectorAspectIdentity = Symbol("Inspector");
 
 export const InspectorAspect = {
     identity: InspectorAspectIdentity,

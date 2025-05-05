@@ -1,8 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
 import type { ComponentType, FunctionComponent } from "react";
-import type { AspectContext } from "./contexts/aspectContext";
-import type { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import type { Extension } from "./extensibility/extensionManager";
 import type { ExtensionFeed } from "./extensibility/extensionFeed";
 import type { AspectRegistry, ServiceRegistry, WeaklyTypedAspectDefinition, WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
@@ -14,7 +12,8 @@ import { Observable } from "core/Misc/observable";
 import { createRoot } from "react-dom/client";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { useTernaryDarkMode } from "usehooks-ts";
-import { AppContext } from "./contexts/appContext";
+import { AspectContext } from "./contexts/aspectContext";
+import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ObservableCollection } from "./misc/observableCollection";
 import { ServiceCatalog } from "./modularity/serviceCatalog";
@@ -25,9 +24,6 @@ import { MakeShellServiceDefinition } from "./services/shellService";
 import { aspectSelectorServiceDefinition } from "./services/aspectSelectorService";
 import { extensionListServiceDefinition } from "./services/extensionsListService";
 import { themeSelectorServiceDefinition } from "./services/themeSelectorService";
-
-// import { createDOMRenderer, RendererProvider } from "@griffel/react";
-// import { createShadowDOMRenderer } from "@griffel/shadow-dom";
 
 const aspectSettingsKey = "Settings/LastActiveAspect";
 
@@ -84,11 +80,6 @@ export type ModularToolOptions = {
 
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
     const { containerElement, defaultAspect, additionalAspects = [], serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
-    // const containerElement = options.containerElement;
-    // const containerElement = document.getElementById("viewerContainer")!;
-
-    // const documentOrShadowRoot = containerElement.getRootNode() as Document | ShadowRoot;
-    // const griffelRenderer = documentOrShadowRoot instanceof ShadowRoot ? createShadowDOMRenderer(documentOrShadowRoot) : createDOMRenderer(documentOrShadowRoot);
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
@@ -285,36 +276,36 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const ContentComponentType: ComponentType = mainView ?? (() => <Spinner className={classes.spinner} />);
 
         return (
-            <AppContext.Provider value={{ extensionManagerContext, aspectContext }}>
-                {/* <RendererProvider renderer={griffelRenderer}> */}
-                <FluentProvider className={classes.app} theme={isDarkMode ? darkTheme : lightTheme}>
-                    <>
-                        <Dialog open={!!requiredExtensions} modalType="alert">
-                            <DialogSurface>
-                                <DialogBody>
-                                    <DialogTitle>Required Extensions</DialogTitle>
-                                    <DialogContent>
-                                        Opening this URL requires the following extensions to be installed and enabled:
-                                        <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
-                                            Install & Enable
-                                        </Button>
-                                        <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
-                                            No Thanks
-                                        </Button>
-                                    </DialogActions>
-                                </DialogBody>
-                            </DialogSurface>
-                        </Dialog>
-                        <Suspense fallback={<Spinner className={classes.spinner} />}>
-                            <ContentComponentType />
-                        </Suspense>
-                    </>
-                </FluentProvider>
-                {/* </RendererProvider> */}
-            </AppContext.Provider>
+            <AspectContext.Provider value={aspectContext}>
+                <ExtensionManagerContext.Provider value={extensionManagerContext}>
+                    <FluentProvider className={classes.app} theme={isDarkMode ? darkTheme : lightTheme}>
+                        <>
+                            <Dialog open={!!requiredExtensions} modalType="alert">
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>Required Extensions</DialogTitle>
+                                        <DialogContent>
+                                            Opening this URL requires the following extensions to be installed and enabled:
+                                            <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
+                                                Install & Enable
+                                            </Button>
+                                            <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
+                                                No Thanks
+                                            </Button>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                            <Suspense fallback={<Spinner className={classes.spinner} />}>
+                                <ContentComponentType />
+                            </Suspense>
+                        </>
+                    </FluentProvider>
+                </ExtensionManagerContext.Provider>
+            </AspectContext.Provider>
         );
     };
 
