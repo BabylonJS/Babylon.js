@@ -129,21 +129,23 @@ reflectivityOutParams reflectivityBlock(
                 outParams.metallicF0 = vec3(dielectricF0) * surfaceReflectivityColor;
             #endif
 
-            // Compute the converted diffuse.
             outParams.surfaceAlbedo = baseColor.rgb;
             
-            // Final F0 for dielectrics = F0 * specular_color * specular_weight
+            // Compute the coloured F0 reflectance.
+            // The coloured reflectance is the percentage of light reflected by the specular lobe at normal incidence.
+            // In glTF and OpenPBR, it is not the same thing as the percentage of light blocked from penetrating
+            // down to the diffuse lobe. The non-coloured F0 will be used for this (see below).
             vec3 dielectricColorF0 = vec3(dielectricF0 * surfaceReflectivityColor);
             vec3 metallicColorF0 = baseColor.rgb;
-
-            // The coloured reflectance is the colour that is multiplied by the specular component but does NOT
-            // actually represent the percentage of light reflected. 
             outParams.colorReflectanceF0 = mix(dielectricColorF0, metallicColorF0, outParams.metallic);
 
-            // Reflectance is the non-coloured reflectance used for blending between the diffuse and specular components.
-            // It represents the total percentage of light that is reflected at normal incidence.
-            // In glTF's material model, this is the F0 value calculated from the IOR and then multiplied by the maximum component of the specular colour.
+            // Compute non-coloured reflectance.
+            // reflectanceF0 is the non-coloured reflectance used for blending between the diffuse and specular components.
+            // It represents the total percentage of light reflected by the specular lobe at normal incidence.
+            // In glTF's material model, the F0 value is multiplied by the maximum component of the specular colour.
+            dielectricF0 *= max(surfaceReflectivityColor.r, max(surfaceReflectivityColor.g, surfaceReflectivityColor.b));
             outParams.reflectanceF0 = mix(dielectricF0, 1.0, outParams.metallic);
+            
             // Scale the reflectanceF90 by the IOR for values less than 1.5.
             // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
             // and an IOR of 1.0 should result in no visible glancing specular.
