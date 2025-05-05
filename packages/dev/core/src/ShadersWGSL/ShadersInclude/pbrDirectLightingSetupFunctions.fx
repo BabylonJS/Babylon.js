@@ -16,7 +16,11 @@ struct preLightingInfo
     NdotLUnclamped: f32,
     NdotL: f32,
     VdotH: f32,
+    LdotV: f32,
+    
     roughness: f32,
+    diffuseRoughness: f32,
+    surfaceAlbedo: vec3f,
 
     #ifdef IRIDESCENCE
         iridescenceIntensity: f32
@@ -65,7 +69,7 @@ fn computeDirectionalPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> pr
 
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
-
+    result.LdotV = dot(result.L, V);
     return result;
 }
 

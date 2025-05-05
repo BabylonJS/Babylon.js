@@ -3,6 +3,7 @@ import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
+import { Constants } from "../../Engines/constants";
 import type { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { ColorCurves } from "../../Materials/colorCurves";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -45,6 +46,11 @@ export class PBRMaterial extends PBRBaseMaterial {
      * (point spot...).
      */
     public static override DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+
+    /**
+     * Defines the default diffuse model used by the material.
+     */
+    public static override DEFAULT_DIFFUSE_MODEL = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -93,11 +99,18 @@ export class PBRMaterial extends PBRBaseMaterial {
     public albedoTexture: Nullable<BaseTexture>;
 
     /**
-     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
+     * OpenPBR Base Weight texture (multiplier to the diffuse and metal lobes).
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public baseWeightTexture: Nullable<BaseTexture>;
+
+    /**
+     * OpenPBR Base Diffuse Roughness texture (roughness of the diffuse lobe).
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
@@ -283,6 +296,20 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serialize("baseWeight")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public baseWeight = 1;
+
+    /**
+     * OpenPBR Base Diffuse Roughness (roughness of the diffuse lobe).
+     */
+    @serialize("baseDiffuseRoughness")
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public baseDiffuseRoughness: Nullable<number>;
+
+    /**
+     * Defines the base diffuse roughness model of the material.
+     */
+    @serialize("baseDiffuseModel")
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public baseDiffuseModel: number = PBRMaterial.DEFAULT_DIFFUSE_MODEL;
 
     /**
      * AKA Specular Color in other nomenclature.

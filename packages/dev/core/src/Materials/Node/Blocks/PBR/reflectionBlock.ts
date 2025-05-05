@@ -438,6 +438,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler         // ** not handled **
                 ${isWebGPU ? `, irradianceSamplerSampler` : ""}
+                #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                , vReflectionDominantDirection
+                #endif
             #endif
             #ifndef LODBASEDMICROSFURACE
                 #ifdef ${this._define3DName}
@@ -459,6 +462,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${isWebGPU ? `, icdfSamplerSampler` : ""}
                 #endif
             #endif
+            , viewDirectionW
+            , diffuseRoughness
+            , surfaceAlbedo
             );
         #endif\n`;
 
