@@ -115,7 +115,7 @@ export class Grid extends Container {
      */
     public addRowDefinition(height: number, isPixel = false): Grid {
         this._rowDefinitions.push(new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
+        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(() => this._markAsDirty()));
         this._markAsDirty();
 
         return this;
@@ -129,7 +129,7 @@ export class Grid extends Container {
      */
     public addColumnDefinition(width: number, isPixel = false): Grid {
         this._columnDefinitions.push(new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
+        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(() => this._markAsDirty()));
         this._markAsDirty();
 
         return this;
@@ -554,9 +554,10 @@ export class Grid extends Container {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      * @param force force serialization even if isSerializable === false
+     * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize
      */
-    public override serialize(serializationObject: any, force: boolean) {
-        super.serialize(serializationObject, force);
+    public override serialize(serializationObject: any, force: boolean, allowCanvas: boolean) {
+        super.serialize(serializationObject, force, allowCanvas);
         if (!this.isSerializable && !force) {
             return;
         }
@@ -575,9 +576,9 @@ export class Grid extends Container {
             const childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
             serializationObject.rows.push(childSerializationObject);
         }
-        this.children.forEach((child) => {
+        for (const child of this.children) {
             serializationObject.tags.push(child._tag);
-        });
+        }
     }
 
     /**
@@ -586,9 +587,9 @@ export class Grid extends Container {
     public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         const children: Control[] = [];
-        this.children.forEach((child) => {
+        for (const child of this.children) {
             children.push(child);
-        });
+        }
         this.removeRowDefinition(0);
         this.removeColumnDefinition(0);
         for (let i = 0; i < serializedObject.columnCount; ++i) {

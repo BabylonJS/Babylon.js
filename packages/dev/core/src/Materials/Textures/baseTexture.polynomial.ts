@@ -4,6 +4,7 @@ import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "./baseTexture";
 
 declare module "./baseTexture" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface BaseTexture {
         /**
          * Get the polynomial representation of the texture data.

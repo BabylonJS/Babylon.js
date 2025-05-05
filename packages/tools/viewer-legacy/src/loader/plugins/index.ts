@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { TelemetryLoaderPlugin } from "./telemetryLoaderPlugin";
 import { ILoaderPlugin } from "./loaderPlugin";
 import { MSFTLodLoaderPlugin } from "./msftLodLoaderPlugin";

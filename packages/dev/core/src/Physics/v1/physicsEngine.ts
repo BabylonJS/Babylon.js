@@ -108,9 +108,9 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Release all resources
      */
     public dispose(): void {
-        this._impostors.forEach(function (impostor) {
+        for (const impostor of this._impostors) {
             impostor.dispose();
-        });
+        }
         this._physicsPlugin.dispose();
     }
 
@@ -191,11 +191,11 @@ export class PhysicsEngine implements IPhysicsEngine {
      */
     public _step(delta: number) {
         //check if any mesh has no body / requires an update
-        this._impostors.forEach((impostor) => {
+        for (const impostor of this._impostors) {
             if (impostor.isBodyInitRequired()) {
                 this._physicsPlugin.generatePhysicsBody(impostor);
             }
-        });
+        }
 
         if (delta > 0.1) {
             delta = 0.1;

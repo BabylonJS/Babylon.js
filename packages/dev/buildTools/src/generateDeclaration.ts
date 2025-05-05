@@ -22,7 +22,7 @@ export interface IGenerateDeclarationConfig {
     fileFilterRegex?: string;
 }
 
-function getModuleDeclaration(
+function GetModuleDeclaration(
     source: string,
     filename: string,
     config: IGenerateDeclarationConfig,
@@ -189,7 +189,7 @@ ${processedLines}
  * @param originalSourcefilePath
  * @returns an array of objects with alias, realClassName and package
  */
-function getClassesMap(source: string, originalDevPackageName: string, originalSourcefilePath: string) {
+function GetClassesMap(source: string, originalDevPackageName: string, originalSourcefilePath: string) {
     const regex = /import .*{([^}]*)} from ['"](.*)['"];/g;
     let matches = regex.exec(source);
     const mappingArray: {
@@ -213,7 +213,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
             }
             const realClassName = parts[0].trim();
             const alias = parts[1] ? parts[1].trim() : realClassName;
-            const firstSplit = matches[2]!.split("/")[0];
+            const firstSplit = matches[2].split("/")[0];
             const devPackageName = firstSplit[0] === "." ? originalDevPackageName : firstSplit;
             // if (alias !== realClassName) {
             //     console.log(
@@ -231,7 +231,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                     alias,
                     realClassName,
                     devPackageName,
-                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]).replace(/\\/g, "/") : matches[2],
                 });
             } else {
                 if (!devPackageName.startsWith("babylonjs")) {
@@ -240,7 +240,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                         alias,
                         externalName: devPackageName,
                         realClassName,
-                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]).replace(/\\/g, "/") : matches[2],
                     });
                 }
             }
@@ -294,7 +294,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
     return mappingArray;
 }
 
-function getPackageDeclaration(
+function GetPackageDeclaration(
     source: string,
     sourceFilePath: string,
     classesMappingArray: {
@@ -493,6 +493,7 @@ ${linesToDefaultNamespace.join("\n")}
 // `;
 // }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, looseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
@@ -504,14 +505,14 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
         }
         // The lines of the files now come as a Function inside declaration file.
         const data = fs.readFileSync(declarationFile, "utf8");
-        const classMap = getClassesMap(data, config.devPackageName, declarationFile);
-        moduleDeclaration += getModuleDeclaration(data, declarationFile, config, config.buildType, classMap);
+        const classMap = GetClassesMap(data, config.devPackageName, declarationFile);
+        moduleDeclaration += GetModuleDeclaration(data, declarationFile, config, config.buildType, classMap);
         if (declarationFile.indexOf("legacy.d.ts") !== -1) {
             return;
         }
         // const packageMapping = getPackageMappingByDevName(config.devPackageName);
         // const thisFileModuleName = getPublicPackageName(packageMapping.namespace, declarationFile);
-        declarations += getPackageDeclaration(data, declarationFile, classMap, config.devPackageName);
+        declarations += GetPackageDeclaration(data, declarationFile, classMap, config.devPackageName);
     });
     const looseDeclarationsString = looseDeclarations
         .map((declarationFile) => {
@@ -549,6 +550,7 @@ ${looseDeclarationsString}
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function generateDeclaration() {
     const configFilePath = checkArgs("--config") as string;
     if (!configFilePath) {

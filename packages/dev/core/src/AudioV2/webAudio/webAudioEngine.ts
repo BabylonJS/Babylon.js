@@ -6,7 +6,7 @@ import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
 import type { IMainAudioBusOptions, MainAudioBus } from "../abstractAudio/mainAudioBus";
 import type { IStaticSoundOptions, StaticSound } from "../abstractAudio/staticSound";
-import type { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
+import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/streamingSound";
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
@@ -52,7 +52,7 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
  */
 export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOptions> = {}): Promise<AudioEngineV2> {
     const engine = new _WebAudioEngine(options);
-    await engine._init(options);
+    await engine._initAsync(options);
     return engine;
 }
 
@@ -72,7 +72,10 @@ const FormatMimeTypes: { [key: string]: string } = {
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _invalidFormats = new Set<string>();
+    private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
+    private readonly _listenerAutoUpdate: boolean = true;
+    private readonly _listenerMinUpdateTime: number = 0;
     private _mainOut: _WebAudioMainOut;
     private _pauseCalled = false;
     private _resumeOnInteraction = true;
@@ -80,8 +83,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
     private _resumePromise: Nullable<Promise<void>> = null;
-    private readonly _listenerAutoUpdate: boolean = true;
-    private readonly _listenerMinUpdateTime: number = 0;
+    private _silentHtmlAudio: Nullable<HTMLAudioElement> = null;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
@@ -113,7 +115,13 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._volume = options.volume ?? 1;
-        this._audioContext = options.audioContext ?? new AudioContext();
+
+        if (options.audioContext) {
+            this._isUsingOfflineAudioContext = options.audioContext instanceof OfflineAudioContext;
+            this._audioContext = options.audioContext;
+        } else {
+            this._audioContext = new AudioContext();
+        }
 
         if (!options.disableDefaultUI) {
             this._unmuteUI = new _WebAudioUnmuteUI(this, options.defaultUIParentElement);
@@ -121,14 +129,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public async _init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
+    public async _initAsync(options: Partial<IWebAudioEngineOptions>): Promise<void> {
         this._resumeOnInteraction = typeof options.resumeOnInteraction === "boolean" ? options.resumeOnInteraction : true;
         this._resumeOnPause = typeof options.resumeOnPause === "boolean" ? options.resumeOnPause : true;
         this._resumeOnPauseRetryInterval = options.resumeOnPauseRetryInterval ?? 1000;
 
-        document.addEventListener("click", this._onUserGesture);
+        document.addEventListener("click", this._onUserGestureAsync);
 
-        await this._initAudioContext();
+        await this._initAudioContextAsync();
 
         if (_HasSpatialAudioListenerOptions(options)) {
             this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate, this._listenerMinUpdateTime);
@@ -160,7 +168,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public get state(): AudioEngineV2State {
-        return this._audioContext.state;
+        // Always return "running" for OfflineAudioContext so sound `play` calls work while the context is suspended.
+        return this._isUsingOfflineAudioContext ? "running" : this._audioContext.state;
     }
 
     /** @internal */
@@ -186,7 +195,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioBus");
 
         const bus = new module._WebAudioBus(name, this, options);
-        await bus._init(options);
+        await bus._initAsync(options);
 
         return bus;
     }
@@ -196,7 +205,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioMainBus");
 
         const bus = new module._WebAudioMainBus(name, this);
-        await bus._init(options);
+        await bus._initAsync(options);
 
         return bus;
     }
@@ -210,7 +219,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStaticSound");
 
         const sound = new module._WebAudioStaticSound(name, this, options);
-        await sound._init(source, options);
+        await sound._initAsync(source, options);
 
         return sound;
     }
@@ -218,12 +227,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public async createSoundBufferAsync(
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
-        options: Partial<IStaticSoundOptions> = {}
+        options: Partial<IStaticSoundBufferOptions> = {}
     ): Promise<StaticSoundBuffer> {
         const module = await import("./webAudioStaticSound");
 
         const soundBuffer = new module._WebAudioStaticSoundBuffer(this);
-        await soundBuffer._init(source, options);
+        await soundBuffer._initAsync(source, options);
 
         return soundBuffer;
     }
@@ -233,7 +242,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStreamingSound");
 
         const sound = new module._WebAudioStreamingSound(name, this, options);
-        await sound._init(source, options);
+        await sound._initAsync(source, options);
 
         return sound;
     }
@@ -245,12 +254,15 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this._listener?.dispose();
         this._listener = null;
 
-        if (this._audioContext.state !== "closed") {
+        // Note that OfflineAudioContext does not have a `close` method.
+        if (this._audioContext.state !== "closed" && !this._isUsingOfflineAudioContext) {
             this._audioContext.close();
         }
 
-        document.removeEventListener("click", this._onUserGesture);
+        document.removeEventListener("click", this._onUserGestureAsync);
         this._audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
+
+        this._silentHtmlAudio?.remove();
 
         this._unmuteUI?.dispose();
         this._unmuteUI = null;
@@ -288,14 +300,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public override async pause(): Promise<void> {
+    public override async pauseAsync(): Promise<void> {
         await this._audioContext.suspend();
 
         this._pauseCalled = true;
     }
 
     /** @internal */
-    public override async resume(): Promise<void> {
+    public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
         if (this._resumePromise) {
@@ -331,7 +343,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
 
-    private _initAudioContext: () => Promise<void> = async () => {
+    private _initAudioContextAsync: () => Promise<void> = async () => {
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
         this._mainOut = new _WebAudioMainOut(this);
@@ -351,7 +363,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
-                    this.resume();
+                    this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }
         }
@@ -359,9 +371,25 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this.stateChangedObservable.notifyObservers(this.state);
     };
 
-    private _onUserGesture: () => void = async () => {
+    private _onUserGestureAsync: () => void = async () => {
         if (this._resumeOnInteraction) {
             await this._audioContext.resume();
+        }
+
+        // On iOS the ringer switch must be turned on for WebAudio to play.
+        // This gets WebAudio to play with the ringer switch turned off by playing an HTMLAudioElement.
+        if (!this._silentHtmlAudio) {
+            this._silentHtmlAudio = document.createElement("audio");
+
+            const audio = this._silentHtmlAudio;
+            audio.controls = false;
+            audio.preload = "auto";
+            audio.loop = true;
+
+            // Wave data for 0.0001 seconds of silence.
+            audio.src = "data:audio/wav;base64,UklGRjAAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQwAAAAAAAEA/v8CAP//AQA=";
+
+            audio.play();
         }
 
         this.userGestureObservable.notifyObservers();

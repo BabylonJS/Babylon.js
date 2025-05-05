@@ -1,5 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import type { Root } from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
 import type { IInspectorOptions } from "core/Debug/debugLayer";
 import type { Nullable } from "core/types";
@@ -38,9 +39,12 @@ export class Inspector {
     private static _SceneExplorerHost: Nullable<HTMLElement>;
     private static _ActionTabsHost: Nullable<HTMLElement>;
     private static _EmbedHost: Nullable<HTMLElement>;
-    private static _NewCanvasContainer: Nullable<HTMLElement>;
     private static _PersistentPopupHost: Nullable<HTMLElement>;
-
+    private static _SceneExplorerRoot: Nullable<Root>;
+    private static _ActionTabsRoot: Nullable<Root>;
+    private static _EmbedHostRoot: Nullable<Root>;
+    private static _PersistentPopupRoot: Nullable<Root>;
+    private static _NewCanvasContainer: Nullable<HTMLElement>;
     private static _SceneExplorerWindow: Window;
     private static _ActionTabsWindow: Window;
     private static _EmbedHostWindow: Window;
@@ -77,7 +81,7 @@ export class Inspector {
         if (!options) {
             return;
         }
-        ReactDOM.unmountComponentAtNode(this._EmbedHost!);
+        this._EmbedHostRoot?.unmount();
 
         if (options.popup) {
             this._EmbedHostWindow.close();
@@ -101,7 +105,7 @@ export class Inspector {
             return;
         }
 
-        ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
+        this._SceneExplorerRoot?.unmount();
 
         this._RemoveElementFromDOM(this._SceneExplorerHost);
 
@@ -124,7 +128,7 @@ export class Inspector {
             return;
         }
 
-        ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
+        this._ActionTabsRoot?.unmount();
 
         this._RemoveElementFromDOM(this._ActionTabsHost);
 
@@ -164,7 +168,7 @@ export class Inspector {
 
         // Prepare the scene explorer host
         if (parentControlExplorer) {
-            this._SceneExplorerHost = parentControlExplorer.ownerDocument!.createElement("div");
+            this._SceneExplorerHost = parentControlExplorer.ownerDocument.createElement("div");
 
             this._SceneExplorerHost.id = "scene-explorer-host";
             this._SceneExplorerHost.style.width = options.explorerWidth || "auto";
@@ -182,7 +186,7 @@ export class Inspector {
 
         // Scene
         if (this._SceneExplorerHost) {
-            this._OpenedPane++;
+            this._SceneExplorerRoot = createRoot(this._SceneExplorerHost);
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
                 scene,
                 contextMenu: options.contextMenu,
@@ -198,7 +202,7 @@ export class Inspector {
                     this.PopupSceneExplorer();
                 },
                 onClose: () => {
-                    ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
+                    this._SceneExplorerRoot!.unmount();
                     Inspector._OpenedPane--;
 
                     this._RemoveElementFromDOM(this._SceneExplorerHost);
@@ -212,7 +216,10 @@ export class Inspector {
                     this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
                 },
             });
-            ReactDOM.render(sceneExplorerElement, this._SceneExplorerHost);
+            this._SceneExplorerRoot.render(sceneExplorerElement);
+            setTimeout(() => {
+                this._OpenedPane++;
+            });
         }
     }
 
@@ -224,7 +231,7 @@ export class Inspector {
 
         // Prepare the inspector host
         if (parentControlActions) {
-            const host = parentControlActions.ownerDocument!.createElement("div");
+            const host = parentControlActions.ownerDocument.createElement("div");
 
             host.id = "inspector-host";
             host.style.width = options.inspectorWidth || "auto";
@@ -239,7 +246,7 @@ export class Inspector {
         }
 
         if (this._ActionTabsHost) {
-            this._OpenedPane++;
+            this._ActionTabsRoot = createRoot(this._ActionTabsHost);
             const actionTabsElement = React.createElement(ActionTabsComponent, {
                 globalState: this._GlobalState,
                 scene: scene,
@@ -250,7 +257,7 @@ export class Inspector {
                     this.PopupInspector();
                 },
                 onClose: () => {
-                    ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
+                    this._ActionTabsRoot!.unmount();
                     Inspector._OpenedPane--;
                     this._Cleanup();
 
@@ -264,7 +271,10 @@ export class Inspector {
                 },
                 initialTab: options.initialTab,
             });
-            ReactDOM.render(actionTabsElement, this._ActionTabsHost);
+            this._ActionTabsRoot.render(actionTabsElement);
+            setTimeout(() => {
+                this._OpenedPane++;
+            });
         }
     }
 
@@ -275,7 +285,7 @@ export class Inspector {
         this._InspectorOptions = null;
         // Prepare the inspector host
         if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+            const host = parentControl.ownerDocument.createElement("div");
 
             host.id = "embed-host";
             host.style.width = options.embedHostWidth || "auto";
@@ -290,7 +300,7 @@ export class Inspector {
         }
 
         if (this._EmbedHost) {
-            this._OpenedPane++;
+            this._EmbedHostRoot = createRoot(this._EmbedHost);
             const embedHostElement = React.createElement(EmbedHostComponent, {
                 globalState: this._GlobalState,
                 scene: scene,
@@ -303,7 +313,7 @@ export class Inspector {
                     this.PopupEmbed();
                 },
                 onClose: () => {
-                    ReactDOM.unmountComponentAtNode(this._EmbedHost!);
+                    this._EmbedHostRoot!.unmount();
 
                     this._OpenedPane = 0;
                     this._Cleanup();
@@ -319,7 +329,10 @@ export class Inspector {
                 },
                 initialTab: options.initialTab,
             });
-            ReactDOM.render(embedHostElement, this._EmbedHost);
+            this._EmbedHostRoot.render(embedHostElement);
+            setTimeout(() => {
+                this._OpenedPane++;
+            });
         }
     }
 
@@ -476,7 +489,7 @@ export class Inspector {
         }
 
         // Create a container for previous elements
-        this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
+        this._NewCanvasContainer = parentControl.ownerDocument.createElement("div");
         this._NewCanvasContainer.style.display = parentControl.style.display;
         parentControl.style.display = "flex";
 
@@ -515,16 +528,16 @@ export class Inspector {
         }
 
         // Gizmo disposal
-        this._GlobalState.lightGizmos.forEach((g) => {
+        for (const g of this._GlobalState.lightGizmos) {
             if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
             }
-        });
-        this._GlobalState.cameraGizmos.forEach((g) => {
+        }
+        for (const g of this._GlobalState.cameraGizmos) {
             if (g.camera) {
                 this._GlobalState.enableCameraGizmo(g.camera, false);
             }
-        });
+        }
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
             this._Scene.reservedDataStore.gizmoManager.dispose();
             this._Scene.reservedDataStore.gizmoManager = null;
@@ -551,33 +564,36 @@ export class Inspector {
     }
 
     public static Hide() {
-        if (this._ActionTabsHost) {
-            ReactDOM.unmountComponentAtNode(this._ActionTabsHost);
+        if (this._ActionTabsHost && this._ActionTabsRoot) {
+            this._ActionTabsRoot.unmount();
 
             this._RemoveElementFromDOM(this._ActionTabsHost);
 
             this._ActionTabsHost = null;
+            this._ActionTabsRoot = null;
             this._GlobalState.onActionTabsClosedObservable.notifyObservers();
         }
 
-        if (this._SceneExplorerHost) {
-            ReactDOM.unmountComponentAtNode(this._SceneExplorerHost);
+        if (this._SceneExplorerHost && this._SceneExplorerRoot) {
+            this._SceneExplorerRoot.unmount();
 
             if (this._SceneExplorerHost.parentElement) {
                 this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
             }
 
             this._SceneExplorerHost = null;
+            this._SceneExplorerRoot = null;
             this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
 
-        if (this._EmbedHost) {
-            ReactDOM.unmountComponentAtNode(this._EmbedHost);
+        if (this._EmbedHost && this._EmbedHostRoot) {
+            this._EmbedHostRoot.unmount();
 
             if (this._EmbedHost.parentElement) {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
             }
             this._EmbedHost = null;
+            this._EmbedHostRoot = null;
             this._GlobalState.onActionTabsClosedObservable.notifyObservers();
             this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
@@ -601,8 +617,9 @@ export class Inspector {
         }
 
         this._PersistentPopupHost = hostElement.ownerDocument.createElement("div");
+        this._PersistentPopupRoot = createRoot(this._PersistentPopupHost);
         const popupElement = React.createElement(PopupComponent, config.props, config.children);
-        ReactDOM.render(popupElement, this._PersistentPopupHost);
+        this._PersistentPopupRoot.render(popupElement);
 
         if (config.closeWhenSceneExplorerCloses) {
             this._OnSceneExplorerClosedObserver = this._GlobalState.onSceneExplorerClosedObservable.add(() => this._ClosePersistentPopup());
@@ -613,10 +630,11 @@ export class Inspector {
     }
 
     public static _ClosePersistentPopup() {
-        if (this._PersistentPopupHost) {
-            ReactDOM.unmountComponentAtNode(this._PersistentPopupHost);
+        if (this._PersistentPopupHost && this._PersistentPopupRoot) {
+            this._PersistentPopupRoot.unmount();
             this._PersistentPopupHost.remove();
             this._PersistentPopupHost = null;
+            this._PersistentPopupRoot = null;
         }
         if (this._OnSceneExplorerClosedObserver) {
             this._GlobalState.onSceneExplorerClosedObservable.remove(this._OnSceneExplorerClosedObserver);

@@ -40,7 +40,6 @@ export class AudioEngine implements IAudioEngine {
 
     /**
      * Defines if Babylon should emit a warning if WebAudio is not supported.
-     * @ignoreNaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public WarnedWebAudioUnsupported: boolean = false;
@@ -181,7 +180,7 @@ export class AudioEngine implements IAudioEngine {
             "statechange",
             () => {
                 if (this.unlocked && this._audioContext?.state !== "running") {
-                    this._resumeAudioContext();
+                    this._resumeAudioContextAsync();
                 }
             },
             {
@@ -192,10 +191,11 @@ export class AudioEngine implements IAudioEngine {
         );
     }
 
-    private _resumeAudioContext(): Promise<void> {
+    private _resumeAudioContextAsync(): Promise<void> {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();
         }
+
         return Promise.resolve();
     }
 
@@ -231,7 +231,7 @@ export class AudioEngine implements IAudioEngine {
         }
         this._tryToRun = true;
 
-        this._resumeAudioContext()
+        this._resumeAudioContextAsync()
             .then(() => {
                 this._tryToRun = false;
                 if (this._muteButton) {
@@ -335,6 +335,10 @@ export class AudioEngine implements IAudioEngine {
 
         this.onAudioUnlockedObservable.clear();
         this.onAudioLockedObservable.clear();
+
+        // close is async.
+        this._audioContext?.close();
+        this._audioContext = null;
     }
 
     /**

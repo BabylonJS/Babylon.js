@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
 import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
@@ -62,7 +62,7 @@ export class NodeRenderGraphEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
         globalState.noAutoFillExternalInputs = options.hostScene !== undefined && options.hostScene !== null;
 
@@ -70,7 +70,8 @@ export class NodeRenderGraphEditor {
             globalState: globalState,
         });
 
-        ReactDOM.render(graphEditor, hostElement);
+        const root = createRoot(hostElement);
+        root.render(graphEditor);
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {

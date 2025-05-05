@@ -1,5 +1,5 @@
 /* eslint-disable import/no-internal-modules */
-import type { Scene, AbstractEngine, FrameGraphTask, Nullable } from "core/index";
+import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
@@ -7,7 +7,7 @@ import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 
 enum FrameGraphPassType {
@@ -33,6 +33,11 @@ export class FrameGraph {
     private readonly _renderContext: FrameGraphRenderContext;
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
+
+    /**
+     * Name of the frame graph
+     */
+    public name = "Frame Graph";
 
     /**
      * Gets or sets a boolean indicating that texture allocation should be optimized (that is, reuse existing textures when possible to limit GPU memory usage) (default: true)
@@ -66,16 +71,39 @@ export class FrameGraph {
     }
 
     /**
+     * Gets the node render graph linked to the frame graph (if any)
+     * @returns the linked node render graph or null if none
+     */
+    public getLinkedNodeRenderGraph(): Nullable<NodeRenderGraph> {
+        return this._linkedNodeRenderGraph;
+    }
+
+    /**
      * Constructs the frame graph
      * @param scene defines the scene the frame graph is associated with
      * @param debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector (default is false)
+     * @param _linkedNodeRenderGraph defines the linked node render graph (if any)
      */
-    constructor(scene: Scene, debugTextures = false) {
+    constructor(
+        scene: Scene,
+        debugTextures = false,
+        private readonly _linkedNodeRenderGraph: Nullable<NodeRenderGraph> = null
+    ) {
         this._scene = scene;
         this._engine = scene.getEngine();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext();
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
+
+        this._scene.frameGraphs.push(this);
+    }
+
+    /**
+     * Gets the class name of the frame graph
+     * @returns the class name
+     */
+    public getClassName() {
+        return "FrameGraph";
     }
 
     /**
@@ -199,10 +227,10 @@ export class FrameGraph {
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
         return new Promise((resolve) => {
-            this._whenReadyAsyncCancel = _retryWithInterval(
+            this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();
                     for (const task of this._tasks) {
@@ -286,5 +314,10 @@ export class FrameGraph {
         this.clear();
         this.textureManager._dispose();
         this._renderContext._dispose();
+
+        const index = this._scene.frameGraphs.indexOf(this);
+        if (index !== -1) {
+            this._scene.frameGraphs.splice(index, 1);
+        }
     }
 }

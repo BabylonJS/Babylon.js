@@ -60,19 +60,19 @@ export class ConnectionPointPortData implements IPortData {
             return null;
         }
         if (!this._connectedPort && this.data.connectedPoint) {
-            const otherBlock = this.data.connectedPoint!.ownerBlock;
+            const otherBlock = this.data.connectedPoint.ownerBlock;
             let otherNode = this._nodeContainer.nodes.find((n) => n.content.data === otherBlock);
 
             if (!otherNode) {
                 otherNode = this._nodeContainer.appendNode(TypeLedger.NodeDataBuilder(otherBlock, this._nodeContainer));
 
                 const globalState = (this._nodeContainer as GraphCanvasComponent).stateManager.data as GlobalState;
-                if (globalState.nodeRenderGraph!.attachedBlocks.indexOf(otherBlock) === -1) {
-                    globalState.nodeRenderGraph!.attachedBlocks.push(otherBlock);
+                if (globalState.nodeRenderGraph.attachedBlocks.indexOf(otherBlock) === -1) {
+                    globalState.nodeRenderGraph.attachedBlocks.push(otherBlock);
                 }
             }
 
-            this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);
+            this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint);
         }
 
         return this._connectedPort;
@@ -106,11 +106,11 @@ export class ConnectionPointPortData implements IPortData {
     public get endpoints() {
         const endpoints: IPortData[] = [];
 
-        this.data.endpoints.forEach((endpoint) => {
+        for (const endpoint of this.data.endpoints) {
             const endpointOwnerBlock = endpoint.ownerBlock;
             const endpointNode = this._nodeContainer.nodes.find((n) => n.content.data === endpointOwnerBlock);
             endpoints.push(endpointNode!.getPortDataForPortDataContent(endpoint)!);
-        });
+        }
 
         return endpoints;
     }

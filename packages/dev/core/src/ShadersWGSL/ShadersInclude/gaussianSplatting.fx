@@ -167,7 +167,8 @@ fn gaussianSplatting(
     viewMatrix: mat4x4<f32>, 
     projectionMatrix: mat4x4<f32>,
     focal: vec2f,
-    invViewport: vec2f
+    invViewport: vec2f,
+    kernelSize: f32
 ) -> vec4f {
     let modelView = viewMatrix * worldMatrix;
     let camspace = viewMatrix * vec4f(worldPos, 1.0);
@@ -200,8 +201,25 @@ fn gaussianSplatting(
         modelView[0].xyz,
         modelView[1].xyz,
         modelView[2].xyz)) * J;
-    let cov2d = transpose(T) * Vrk * T;
+    var cov2d = transpose(T) * Vrk * T;
 
+#if COMPENSATION
+    let c00: f32 = cov2d[0][0];
+    let c11: f32 = cov2d[1][1];
+    let c01: f32 = cov2d[0][1];
+    let detOrig: f32 = c00 * c11 - c01 * c01;
+#endif
+
+    cov2d[0][0] += kernelSize;
+	cov2d[1][1] += kernelSize;
+
+#if COMPENSATION
+    let c2d: vec3f = vec3f(cov2d[0][0], c01, cov2d[1][1]);
+    let detBlur: f32 = c2d.x * c2d.z - c2d.y * c2d.y;
+    let compensation: f32 = sqrt(max(0., detOrig / detBlur));
+    vertexOutputs.vColor.w *= compensation;
+#endif
+    
     let mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
     let radius = length(vec2<f32>((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
     let lambda1 = mid + radius;

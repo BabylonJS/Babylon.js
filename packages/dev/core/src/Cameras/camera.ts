@@ -102,6 +102,7 @@ export class Camera extends Node {
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly RIG_MODE_VR = Constants.RIG_MODE_VR;
     /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
@@ -1091,10 +1092,10 @@ export class Camera extends Node {
 
         if (checkRigCameras && this.rigCameras.length > 0) {
             let result = false;
-            this.rigCameras.forEach((cam) => {
+            for (const cam of this.rigCameras) {
                 cam._updateFrustumPlanes();
                 result = result || target.isInFrustum(cam._frustumPlanes);
-            });
+            }
             return result;
         } else {
             return target.isInFrustum(this._frustumPlanes);

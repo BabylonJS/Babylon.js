@@ -8,5 +8,9 @@
 #endif
 
 #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
-    normalW = select(-normalW, normalW, fragmentInputs.frontFacing);
+    #if defined(MIRRORED)
+        normalW = select(normalW, -normalW, fragmentInputs.frontFacing);
+    #else
+        normalW = select(-normalW, normalW, fragmentInputs.frontFacing);
+    #endif
 #endif

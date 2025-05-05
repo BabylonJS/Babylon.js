@@ -5,7 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 interface ITreeItemLabelComponentProps {
     label: string;
     onClick?: () => void;
-    icon: IconDefinition;
+    icon?: IconDefinition;
+    iconBase64?: string;
     color: string;
 }
 
@@ -26,7 +27,8 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
         return (
             <div className="title" title={this.props.label} onClick={() => this.onClick()}>
                 <div className="titleIcon">
-                    <FontAwesomeIcon icon={this.props.icon} color={this.props.color} />
+                    {this.props.iconBase64 && <img src={this.props.iconBase64} />}
+                    {this.props.icon && <FontAwesomeIcon icon={this.props.icon} color={this.props.color} />}
                 </div>
                 <div className="titleText">{this.props.label || "no name"}</div>
             </div>

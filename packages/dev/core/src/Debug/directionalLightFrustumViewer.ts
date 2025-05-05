@@ -129,9 +129,9 @@ export class DirectionalLightFrustumViewer {
      * Hides the frustum
      */
     public hide() {
-        this._lightHelperFrustumMeshes.forEach((mesh) => {
+        for (const mesh of this._lightHelperFrustumMeshes) {
             mesh.setEnabled(false);
-        });
+        }
         this._visible = false;
     }
 
@@ -246,10 +246,10 @@ export class DirectionalLightFrustumViewer {
      * Dispose of the class / remove the frustum view
      */
     public dispose() {
-        this._lightHelperFrustumMeshes.forEach((mesh) => {
+        for (const mesh of this._lightHelperFrustumMeshes) {
             mesh.material?.dispose();
             mesh.dispose();
-        });
+        }
         this._rootNode.dispose();
     }
 

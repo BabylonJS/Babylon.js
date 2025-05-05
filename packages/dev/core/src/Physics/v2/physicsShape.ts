@@ -12,6 +12,7 @@ import type { Scene } from "../../scene";
 /**
  * Options for creating a physics shape
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicShapeOptions {
     /**
      * The type of the shape. This can be one of the following: SPHERE, BOX, CAPSULE, CYLINDER, CONVEX_HULL, MESH, HEIGHTFIELD, CONTAINER

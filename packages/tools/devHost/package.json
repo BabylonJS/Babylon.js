@@ -27,7 +27,7 @@
         "html-webpack-plugin": "^5.5.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
-        "webpack": "^5.73.0",
+        "webpack": "^5.98.0",
         "webpack-bundle-analyzer": "^4.10.1",
         "webpack-cli": "^5.1.0",
         "webpack-dev-server": "^4.7.4",
@@ -35,4 +35,3 @@
     },
     "sideEffects": true
 }
-

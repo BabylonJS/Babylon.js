@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Observable } from "core/Misc/observable";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
@@ -5,29 +6,16 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * The data structure of a telemetry event.
  */
 export interface TelemetryData {
-    /**
-     *
-     */
     event: string;
-    /**
-     *
-     */
+
     session: string;
-    /**
-     *
-     */
+
     date: Date;
-    /**
-     *
-     */
+
     now: number;
-    /**
-     *
-     */
+
     viewerId?: string;
-    /**
-     *
-     */
+
     detail: any;
 }
 
@@ -35,9 +23,6 @@ export interface TelemetryData {
  * Receives Telemetry events and raises events to the API
  */
 export class TelemetryManager {
-    /**
-     *
-     */
     public onEventBroadcastedObservable: Observable<TelemetryData> = new Observable();
 
     private _currentSessionId: string;

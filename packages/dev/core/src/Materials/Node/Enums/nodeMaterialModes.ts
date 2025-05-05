@@ -12,4 +12,6 @@ export enum NodeMaterialModes {
     ProceduralTexture = 3,
     /** For gaussian splatting */
     GaussianSplatting = 4,
+    /** For SFE */
+    SFE = 5,
 }

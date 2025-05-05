@@ -12,7 +12,6 @@ import { DataBuffer } from "../Buffers/dataBuffer";
 import { Tools } from "../Misc/tools";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
-import type { EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
 import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
@@ -47,7 +46,7 @@ import type {
 import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
-import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import {
     getNativeAlphaMode,
     getNativeAttribType,
@@ -60,7 +59,7 @@ import {
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
 import { checkNonFloatVertexBuffers } from "../Buffers/buffer.nonFloatVertexBuffers";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingContext";
 import type { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
@@ -219,7 +218,7 @@ const remappedAttributesNames: string[] = [];
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 8;
+    private static readonly PROTOCOL_VERSION = 9;
 
     private readonly _engine: INativeEngine = new _native.Engine({
         version: Engine.Version,
@@ -406,6 +405,7 @@ export class NativeEngine extends Engine {
                               this,
                               function (acc: any, cur: any) {
                                   if (Array.isArray(cur)) {
+                                      // eslint-disable-next-line prefer-spread
                                       acc.push.apply(acc, flat.call(cur, depth - 1));
                                   } else {
                                       acc.push(cur);
@@ -595,7 +595,7 @@ export class NativeEngine extends Engine {
                     if (buffer && buffer.nativeVertexBuffer) {
                         this._engine.recordVertexBuffer(
                             vertexArray,
-                            buffer.nativeVertexBuffer!,
+                            buffer.nativeVertexBuffer,
                             location,
                             vertexBuffer.effectiveByteOffset,
                             vertexBuffer.effectiveByteStride,
@@ -689,7 +689,7 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
+        if (instancesCount) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
@@ -703,7 +703,6 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.finishEncodingCommand();
-        // }
     }
 
     /**
@@ -720,7 +719,7 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        if (instancesCount && _native.Engine.COMMAND_DRAWINSTANCED) {
+        if (instancesCount) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
@@ -734,11 +733,10 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.finishEncodingCommand();
-        // }
     }
 
-    public override createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        const isAsync = !!(this._caps.parallelShaderCompile && this._engine.createProgramAsync);
+    public override createPipelineContext(shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext {
+        const isAsync = !!this._caps.parallelShaderCompile;
         return new NativePipelineContext(this, isAsync, shaderProcessingContext as Nullable<NativeShaderProcessingContext>);
     }
 
@@ -751,9 +749,11 @@ export class NativeEngine extends Engine {
     }
 
     /**
+     * Function is not technically Async
      * @internal
      */
-    public override _preparePipelineContext(
+    // eslint-disable-next-line no-restricted-syntax
+    public override _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -778,7 +778,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public override _getShaderProcessingContext(_shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
+    public override _getShaderProcessingContext(_shaderLanguage: ShaderLanguage): Nullable<_IShaderProcessingContext> {
         return new NativeShaderProcessingContext();
     }
 
@@ -1635,9 +1635,15 @@ export class NativeEngine extends Engine {
         }
 
         if (!!texture && !!texture._hardwareTexture) {
-            const source = canvas.getCanvasTexture();
             const destination = texture._hardwareTexture.underlyingResource;
-            this._engine.copyTexture(destination, source);
+            const context = canvas.getContext();
+            // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
+            context.flush();
+            const source = canvas.getCanvasTexture();
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
             texture.isReady = true;
         }
     }
@@ -2011,7 +2017,7 @@ export class NativeEngine extends Engine {
     public _releaseFramebufferObjects(framebuffer: Nullable<NativeFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
@@ -2019,10 +2025,10 @@ export class NativeEngine extends Engine {
     /**
      * @internal Engine abstraction for loading and creating an image bitmap from a given source string.
      * @param imageSource source to load the image from.
-     * @param options An object that sets options for the image's extraction.
+     * @param _options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public override _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override _createImageBitmapFromSource(imageSource: string, _options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = this.createCanvasImage();
             image.onload = () => {
@@ -2138,7 +2144,7 @@ export class NativeEngine extends Engine {
 
                 UploadEnvSpherical(texture, info);
 
-                const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+                const specularInfo = info.specular;
                 if (!specularInfo) {
                     throw new Error(`Nothing else parsed so far`);
                 }
@@ -2226,7 +2232,7 @@ export class NativeEngine extends Engine {
     }
 
     /** @internal */
-    public override _createHardwareTexture(): HardwareTextureWrapper {
+    public override _createHardwareTexture(): IHardwareTextureWrapper {
         return new NativeHardwareTexture(this._createTexture() as NativeTexture, this._engine);
     }
 
@@ -2488,7 +2494,7 @@ export class NativeEngine extends Engine {
     // filter is a NativeFilter.XXXX value.
     private _setTextureSampling(texture: NativeTexture, filter: number) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURESAMPLING);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(filter);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -2496,7 +2502,7 @@ export class NativeEngine extends Engine {
     // addressModes are NativeAddressMode.XXXX values.
     private _setTextureWrapMode(texture: NativeTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREWRAPMODE);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeU);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeV);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeW);
@@ -2511,10 +2517,6 @@ export class NativeEngine extends Engine {
     }
 
     private _unsetNativeTexture(uniform: NativeUniform) {
-        if (!_native.Engine.COMMAND_UNSETTEXTURE) {
-            return;
-        }
-
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_UNSETTEXTURE);
         this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform);
         this._commandBufferEncoder.finishEncodingCommand();
@@ -2560,10 +2562,6 @@ export class NativeEngine extends Engine {
      * Unbind all textures
      */
     public override unbindAllTextures(): void {
-        if (!_native.Engine.COMMAND_DISCARDALLTEXTURES) {
-            return;
-        }
-
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DISCARDALLTEXTURES);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -2745,7 +2743,7 @@ export class NativeEngine extends Engine {
     }
 
     override endTimeQuery(token: _TimeToken): int {
-        this._engine.populateFrameStats?.(this._frameStats);
+        this._engine.populateFrameStats(this._frameStats);
         return this._frameStats.gpuTimeNs;
     }
 }

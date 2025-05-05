@@ -123,27 +123,27 @@ export class NoiseBlock extends NodeGeometryBlock {
     }
 
     private _perlinNoise(position: Vector3) {
-        const X = (position.x | 0) - (position.x < 0 ? 1 : 0);
-        const Y = (position.y | 0) - (position.y < 0 ? 1 : 0);
-        const Z = (position.z | 0) - (position.z < 0 ? 1 : 0);
+        const x = (position.x | 0) - (position.x < 0 ? 1 : 0);
+        const y = (position.y | 0) - (position.y < 0 ? 1 : 0);
+        const z = (position.z | 0) - (position.z < 0 ? 1 : 0);
 
-        const fx = position.x - X;
-        const fy = position.y - Y;
-        const fz = position.z - Z;
+        const fx = position.x - x;
+        const fy = position.y - y;
+        const fz = position.z - z;
 
         const u = this._fade(fx);
         const v = this._fade(fy);
         const w = this._fade(fz);
 
         return this._mix(
-            this._noiseGrad(this._hash(X, Y, Z), fx, fy, fz),
-            this._noiseGrad(this._hash(X + 1, Y, Z), fx - 1, fy, fz),
-            this._noiseGrad(this._hash(X, Y + 1, Z), fx, fy - 1, fz),
-            this._noiseGrad(this._hash(X + 1, Y + 1, Z), fx - 1, fy - 1, fz),
-            this._noiseGrad(this._hash(X, Y, Z + 1), fx, fy, fz - 1),
-            this._noiseGrad(this._hash(X + 1, Y, Z + 1), fx - 1, fy, fz - 1),
-            this._noiseGrad(this._hash(X, Y + 1, Z + 1), fx, fy - 1, fz - 1),
-            this._noiseGrad(this._hash(X + 1, Y + 1, Z + 1), fx - 1, fy - 1, fz - 1),
+            this._noiseGrad(this._hash(x, y, z), fx, fy, fz),
+            this._noiseGrad(this._hash(x + 1, y, z), fx - 1, fy, fz),
+            this._noiseGrad(this._hash(x, y + 1, z), fx, fy - 1, fz),
+            this._noiseGrad(this._hash(x + 1, y + 1, z), fx - 1, fy - 1, fz),
+            this._noiseGrad(this._hash(x, y, z + 1), fx, fy, fz - 1),
+            this._noiseGrad(this._hash(x + 1, y, z + 1), fx - 1, fy, fz - 1),
+            this._noiseGrad(this._hash(x, y + 1, z + 1), fx, fy - 1, fz - 1),
+            this._noiseGrad(this._hash(x + 1, y + 1, z + 1), fx - 1, fy - 1, fz - 1),
             u,
             v,
             w

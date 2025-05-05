@@ -13,7 +13,7 @@ import type { WebGPUDrawContext } from "./webgpuDrawContext";
 /**
  * Sampler hash codes are 19 bits long, so using a start value of 2^20 for buffer ids will ensure we can't have any collision with the sampler hash codes
  */
-const bufferIdStart = 1 << 20;
+const BufferIdStart = 1 << 20;
 
 /**
  * textureIdStart is added to texture ids to ensure we can't have any collision with the buffer ids / sampler hash codes.
@@ -21,7 +21,7 @@ const bufferIdStart = 1 << 20;
  * - 2^(35-20) = 2^15 = 32768 possible buffer ids
  * - 2^(53-35) = 2^18 = 524288 possible texture ids
  */
-const textureIdStart = 2 ** 35;
+const TextureIdStart = 2 ** 35;
 
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };
@@ -107,7 +107,7 @@ export class WebGPUCacheBindGroups {
             }
 
             for (const bufferName of webgpuPipelineContext.shaderProcessingContext.bufferNames) {
-                const uboId = (drawContext.buffers[bufferName]?.uniqueId ?? 0) + bufferIdStart;
+                const uboId = (drawContext.buffers[bufferName]?.uniqueId ?? 0) + BufferIdStart;
                 let nextNode = node.values[uboId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -127,7 +127,7 @@ export class WebGPUCacheBindGroups {
             }
 
             for (const textureName of webgpuPipelineContext.shaderProcessingContext.textureNames) {
-                const textureId = (materialContext.textures[textureName]?.texture?.uniqueId ?? 0) + textureIdStart;
+                const textureId = (materialContext.textures[textureName]?.texture?.uniqueId ?? 0) + TextureIdStart;
                 let nextNode = node.values[textureId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -198,8 +198,9 @@ export class WebGPUCacheBindGroups {
                     if (bindingInfo) {
                         if (this._engine.dbgSanityChecks && bindingInfo.texture === null) {
                             Logger.Error(
-                                `Trying to bind a null texture! entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) =>
-                                    key === "texture" ? "<no dump>" : value
+                                `Trying to bind a null texture! name="${name}", entry=${JSON.stringify(entry)}, bindingInfo=${JSON.stringify(
+                                    bindingInfo,
+                                    (key: string, value: any) => (key === "texture" ? "<no dump>" : value)
                                 )}, materialContext.uniqueId=${materialContext.uniqueId}`,
                                 50
                             );

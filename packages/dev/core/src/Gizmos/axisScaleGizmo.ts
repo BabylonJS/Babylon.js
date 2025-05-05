@@ -387,11 +387,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+        const mats = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
+        for (const matl of mats) {
             if (matl) {
                 matl.dispose();
             }
-        });
+        }
         super.dispose();
     }
 
@@ -403,12 +404,13 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     public override setCustomMesh(mesh: Mesh, useGizmoMaterial: boolean = false) {
         super.setCustomMesh(mesh);
         if (useGizmoMaterial) {
-            this._rootMesh.getChildMeshes().forEach((m) => {
+            const childMeshes = this._gizmoMesh.getChildMeshes();
+            for (const m of childMeshes) {
                 m.material = this._coloredMaterial;
                 if ((<LinesMesh>m).color) {
                     (<LinesMesh>m).color = this._coloredMaterial.diffuseColor;
                 }
-            });
+            }
             this._customMeshSet = false;
         }
     }

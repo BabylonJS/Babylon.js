@@ -134,7 +134,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
-    override componentWillMount() {
+    override componentDidMount() {
         this._checkFontsInLayout();
     }
 
@@ -263,7 +263,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _getCommonPropertyKeys(objects: {}[]) {
         objects = objects.filter((x) => !!x);
-        if (objects.length === 0) return [];
+        if (objects.length === 0) {
+            return [];
+        }
         if (objects.length === 1) {
             return Object.keys(objects[0]);
         }
@@ -275,10 +277,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _markChildrenAsDirty() {
         for (const control of this.props.controls) {
-            if (control instanceof Container)
-                (control as Container)._children.forEach((child) => {
+            if (control instanceof Container) {
+                for (const child of (control as Container)._children) {
                     child._markAsDirty();
-                });
+                }
+            }
         }
     }
 
@@ -360,8 +363,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 const initialValue = control[propertyName];
                 const initialUnit = (control as any)["_" + propertyName]._unit;
                 let newValue: number = (control as any)[`${propertyName}InPixels`] + amount;
-                if (minimum !== undefined && newValue < minimum) newValue = minimum;
-                if (maximum !== undefined && newValue > maximum) newValue = maximum;
+                if (minimum !== undefined && newValue < minimum) {
+                    newValue = minimum;
+                }
+                if (maximum !== undefined && newValue > maximum) {
+                    newValue = maximum;
+                }
                 (control as any)[`${propertyName}InPixels`] = newValue;
                 if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
                     CoordinateHelper.ConvertToPercentage(control, [propertyName]);
@@ -514,7 +521,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                         if (control.typeName === "Image") {
                                             (control as Image).autoScale = false;
                                         } else if (control instanceof Container) {
-                                            (control as Container).adaptWidthToChildren = false;
+                                            control.adaptWidthToChildren = false;
                                         } else if (control.typeName === "ColorPicker") {
                                             if (newValue === "0" || newValue === "-") {
                                                 newValue = "1";
@@ -538,7 +545,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                         if (control.typeName === "Image") {
                                             (control as Image).autoScale = false;
                                         } else if (control instanceof Container) {
-                                            (control as Container).adaptHeightToChildren = false;
+                                            control.adaptHeightToChildren = false;
                                         } else if (control.typeName === "ColorPicker") {
                                             if (newValue === "0" || newValue === "-") {
                                                 newValue = "1";

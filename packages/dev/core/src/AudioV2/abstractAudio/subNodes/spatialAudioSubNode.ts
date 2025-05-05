@@ -106,11 +106,6 @@ export function _GetSpatialAudioSubNode(subGraph: _AbstractAudioSubGraph): Nulla
 }
 
 /** @internal */
-export function _GetSpatialAudioProperty<K extends keyof typeof _SpatialAudioDefaults>(subGraph: _AbstractAudioSubGraph, property: K): (typeof _SpatialAudioDefaults)[K] {
-    return _GetSpatialAudioSubNode(subGraph)?.[property] ?? _SpatialAudioDefaults[property];
-}
-
-/** @internal */
 export function _SetSpatialAudioProperty<K extends keyof typeof _SpatialAudioDefaults>(subGraph: _AbstractAudioSubGraph, property: K, value: _SpatialAudioSubNode[K]): void {
     subGraph.callOnSubNode<_SpatialAudioSubNode>(AudioSubNode.SPATIAL, (node) => {
         node[property] = value;

@@ -16,7 +16,7 @@ import type { IAnimation } from "../glTFLoaderInterfaces";
 const NAME = "KHR_interactivity";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_interactivity extension.
@@ -64,6 +64,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         delete this._pathConverter;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public async onReady(): Promise<void> {
         if (!this._loader.babylonScene || !this._pathConverter) {
             return;
@@ -76,6 +77,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         }
 
         const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
         const graphs = interactivityDefinition.graphs.map((graph) => {
             const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader);
             return parser.serializeToFlowGraph();

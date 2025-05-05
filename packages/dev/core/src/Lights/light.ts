@@ -610,6 +610,7 @@ export abstract class Light extends Node implements ISortableLight {
      * Returns the light type ID (integer).
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public getTypeID(): number {
         return 0;
     }
@@ -667,16 +668,16 @@ export abstract class Light extends Node implements ISortableLight {
         // Inclusion / exclusions
         if (this.excludedMeshes.length > 0) {
             serializationObject.excludedMeshesIds = [];
-            this.excludedMeshes.forEach((mesh: AbstractMesh) => {
+            for (const mesh of this.excludedMeshes) {
                 serializationObject.excludedMeshesIds.push(mesh.id);
-            });
+            }
         }
 
         if (this.includedOnlyMeshes.length > 0) {
             serializationObject.includedOnlyMeshesIds = [];
-            this.includedOnlyMeshes.forEach((mesh: AbstractMesh) => {
+            for (const mesh of this.includedOnlyMeshes) {
                 serializationObject.includedOnlyMeshesIds.push(mesh.id);
-            });
+            }
         }
 
         // Animations

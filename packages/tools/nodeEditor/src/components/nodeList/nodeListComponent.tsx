@@ -146,6 +146,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ClearCoatBlock: "PBR ClearCoat block",
         RefractionBlock: "PBR Refraction block",
         SubSurfaceBlock: "PBR SubSurface block",
+        IridescenceBlock: "PBR Iridescence block",
         ScreenPositionBlock: "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
         CurrentScreenBlock: "The screen buffer used as input for the post process",
         ParticleUVBlock: "The particle uv texture coordinate",
@@ -155,6 +156,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ParticleRampGradientBlock: "The particle ramp gradient block",
         ParticleBlendMultiplyBlock: "The particle blend multiply block",
         ParticlePositionWorldBlock: "The world position of the particle",
+        ScreenUVBlock: "The screen quad's UV texture coordinates",
         GaussianSplattingBlock: "The gaussian splatting block",
         GaussianBlock: "The gaussian color computation block",
         SplatReaderBlock: "The gaussian splat reader block",
@@ -460,8 +462,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleTextureMaskBlock",
                 "ParticleUVBlock",
             ],
+            SFE: ["ScreenUVBlock"],
             GaussianSplatting: ["GaussianSplattingBlock", "SplatIndexBlock", "SplatReaderBlock", "GaussianBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "IridescenceBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -481,12 +484,24 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
         switch (this.props.globalState.mode) {
             case NodeMaterialModes.Material:
+                delete allBlocks["SFE"];
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["GaussianSplatting"];
                 break;
+            case NodeMaterialModes.SFE:
+                delete allBlocks["PostProcess"];
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
+                delete allBlocks["GaussianSplatting"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                break;
             case NodeMaterialModes.PostProcess:
+                delete allBlocks["SFE"];
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
@@ -496,6 +511,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.ProceduralTexture:
+                delete allBlocks["SFE"];
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
@@ -505,6 +521,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.Particle:
+                delete allBlocks["SFE"];
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
@@ -517,6 +534,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.GaussianSplatting:
+                delete allBlocks["SFE"];
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
@@ -532,7 +550,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Create node menu
         const blockMenu = [];
         for (const key in allBlocks) {
-            const blockList = (allBlocks as any)[key]
+            const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((block: any) => {

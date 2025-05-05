@@ -29,6 +29,7 @@ import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOpti
 import { EffectWrapper } from "../Materials/effectRenderer";
 
 declare module "../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Sets a texture to the context from a postprocess
@@ -66,6 +67,7 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 };
 
 declare module "../Materials/effect" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Effect {
         /**
          * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
@@ -1072,6 +1074,8 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
+        this._engine.setAlphaMode(this.alphaMode);
+
         // Bind the output texture of the preivous post process as the input to this post process.
         let source: RenderTargetWrapper;
         if (this._shareOutputWithPostProcess) {
@@ -1090,7 +1094,7 @@ export class PostProcess {
         this._effectWrapper.drawWrapper.effect!.setVector2("scale", this._scaleRatio);
         this.onApplyObservable.notifyObservers(this._effectWrapper.drawWrapper.effect!);
 
-        this._effectWrapper.bind();
+        this._effectWrapper.bind(true);
 
         return this._effectWrapper.drawWrapper.effect;
     }
@@ -1250,7 +1254,7 @@ export class PostProcess {
         }
 
         const camera = scene ? scene.getCameraById(parsedPostProcess.cameraId) : null;
-        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
+        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl) as Nullable<PostProcess>;
     }
 
     /**

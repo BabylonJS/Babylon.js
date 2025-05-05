@@ -41,6 +41,9 @@ export * from "./thinChromaticAberrationPostProcess";
 export * from "./thinCircleOfConfusionPostProcess";
 export * from "./thinDepthOfFieldEffect";
 export * from "./thinExtractHighlightsPostProcess";
+export * from "./thinFXAAPostProcess";
+export * from "./thinGrainPostProcess";
+export * from "./thinImageProcessingPostProcess";
 export * from "./thinPassPostProcess";
 
 // Postprocess

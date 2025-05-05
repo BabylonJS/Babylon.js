@@ -14,8 +14,8 @@ declare let global: any;
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLONGLOBAL = (<any>globalObject).BABYLON;
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    const BABYLONGLOBAL = globalObject.BABYLON;
     BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
 
     const keys = [];

@@ -4,20 +4,26 @@ import { globSync } from "glob";
 import * as path from "path";
 import { checkArgs } from "./utils.js";
 
-function processSource(sourceCode: string, forceMJS: boolean) {
+function ProcessSource(sourceCode: string, forceMJS: boolean) {
     const extension = forceMJS ? ".mjs" : ".js";
-    return sourceCode
-        .replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?)("|');/g, `$1${extension}$5;`)
-        .replace(/((import|export)\(["']((@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?))(["'])\)/g, `$1${extension}$6)`)
-        .replace(new RegExp(`(${extension}){2,}`, "g"), extension);
+    return (
+        sourceCode
+            // replace imports and exports with js extensions
+            .replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?)("|');/g, `$1${extension}$5;`)
+            .replace(/((import|export)\(["']((@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?))(["'])\)/g, `$1${extension}$6)`)
+            // also declare module imports
+            .replace(/declare module ["']((@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?)["']/g, `declare module "$1${extension}"`)
+            .replace(new RegExp(`(${extension}){2,}`, "g"), extension)
+    );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolean) {
     const isVerbose = checkArgs("--verbose", true);
     files.forEach((file: string) => {
         isVerbose && console.log(`Processing ${file}`);
         const sourceCode = fs.readFileSync(file, "utf-8");
-        const processed = processSource(sourceCode, forceMJS);
+        const processed = ProcessSource(sourceCode, forceMJS);
 
         const regex = /^import .* from "(\..*)";/g;
         let match;
@@ -38,11 +44,12 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const addJsExtensionsToCompiledFilesCommand = () => {
     let pathForFiles = checkArgs(["--path-of-sources", "-pos"], false, true);
     const forceMJS = !!checkArgs("--mjs", true);
     if (!pathForFiles) {
-        pathForFiles = "./**/*.js";
+        pathForFiles = "./**/*.{js,d.ts}";
         console.log("No path specified, using default: " + pathForFiles);
     }
     if (typeof pathForFiles === "string") {

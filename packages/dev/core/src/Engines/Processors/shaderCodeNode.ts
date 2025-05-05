@@ -1,7 +1,7 @@
-import type { ProcessingOptions } from "./shaderProcessingOptions";
+import type { _IProcessingOptions } from "./shaderProcessingOptions";
 
-const defaultAttributeKeywordName = "attribute";
-const defaultVaryingKeywordName = "varying";
+const DefaultAttributeKeywordName = "attribute";
+const DefaultVaryingKeywordName = "varying";
 
 /** @internal */
 export class ShaderCodeNode {
@@ -15,7 +15,7 @@ export class ShaderCodeNode {
         return true;
     }
 
-    process(preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
+    process(preprocessors: { [key: string]: string }, options: _IProcessingOptions, preProcessorsFromCode: { [key: string]: string }): string {
         let result = "";
         if (this.line) {
             let value: string = this.line;
@@ -26,13 +26,13 @@ export class ShaderCodeNode {
                     value = processor.lineProcessor(value, options.isFragment, options.processingContext);
                 }
 
-                const attributeKeyword = options.processor?.attributeKeywordName ?? defaultAttributeKeywordName;
+                const attributeKeyword = options.processor?.attributeKeywordName ?? DefaultAttributeKeywordName;
                 const varyingKeyword =
                     options.isFragment && options.processor?.varyingFragmentKeywordName
                         ? options.processor?.varyingFragmentKeywordName
                         : !options.isFragment && options.processor?.varyingVertexKeywordName
                           ? options.processor?.varyingVertexKeywordName
-                          : defaultVaryingKeywordName;
+                          : DefaultVaryingKeywordName;
 
                 if (!options.isFragment && processor.attributeProcessor && this.line.startsWith(attributeKeyword)) {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
@@ -80,12 +80,13 @@ export class ShaderCodeNode {
             result += value + "\n";
         }
 
-        this.children.forEach((child) => {
-            result += child.process(preprocessors, options);
-        });
+        for (const child of this.children) {
+            result += child.process(preprocessors, options, preProcessorsFromCode);
+        }
 
         if (this.additionalDefineKey) {
             preprocessors[this.additionalDefineKey] = this.additionalDefineValue || "true";
+            preProcessorsFromCode[this.additionalDefineKey] = preprocessors[this.additionalDefineKey];
         }
 
         return result;

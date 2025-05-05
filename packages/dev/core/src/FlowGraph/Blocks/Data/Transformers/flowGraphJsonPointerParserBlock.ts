@@ -146,12 +146,12 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                     });
                 }
                 const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
-                animationData.forEach((animation) => {
+                for (const animation of animationData) {
                     if (easingFunction) {
                         animation.babylonAnimation.setEasingFunction(easingFunction);
                     }
                     animations.push(animation.babylonAnimation);
-                });
+                }
             });
 
             return animations;

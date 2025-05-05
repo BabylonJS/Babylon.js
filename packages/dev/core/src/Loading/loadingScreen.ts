@@ -106,7 +106,6 @@ export class DefaultLoadingScreen implements ILoadingScreen {
 
         // Generating keyframes
         this._style = document.createElement("style");
-        this._style.type = "text/css";
         const keyFrames = `@-webkit-keyframes spin1 {\
                             0% { -webkit-transform: rotate(0deg);}
                             100% { -webkit-transform: rotate(360deg);}
@@ -193,11 +192,12 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         } else {
             canvases.push(this._renderingCanvas);
         }
-        canvases.forEach((canvas, index) => {
-            const clonedLoadingDiv = loadingDiv!.cloneNode(true) as HTMLDivElement;
-            clonedLoadingDiv.id += `-${index}`;
+        for (let i = 0; i < canvases.length; i++) {
+            const canvas = canvases[i];
+            const clonedLoadingDiv = loadingDiv.cloneNode(true) as HTMLDivElement;
+            clonedLoadingDiv.id += `-${i}`;
             this._loadingDivToRenderingCanvasMap.set(clonedLoadingDiv, [canvas, null]);
-        });
+        }
 
         this._resizeLoadingUI();
 

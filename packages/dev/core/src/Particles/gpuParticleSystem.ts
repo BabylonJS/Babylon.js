@@ -26,7 +26,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 import { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
@@ -52,6 +52,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
+import type { Texture } from "core/Materials/Textures/texture";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -309,6 +310,29 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return particleEmitter;
     }
 
+    /** Flow map */
+
+    /** @internal */
+    public _flowMap: Nullable<Texture> = null;
+
+    /**
+     * The strength of the flow map
+     */
+    public flowMapStrength = 1.0;
+
+    /** Gets or sets the current flow map */
+    public get flowMap(): Nullable<Texture> {
+        return this._flowMap;
+    }
+
+    public set flowMap(value: Nullable<Texture>) {
+        if (this._flowMap === value) {
+            return;
+        }
+
+        this._flowMap = value;
+    }
+
     /**
      * Is this system ready to be used/rendered
      * @returns true if the system is ready
@@ -317,6 +341,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (
             !this.emitter ||
             (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady()) ||
+            (this._flowMap && !this._flowMap.isReady()) ||
             !this.particleTexture ||
             !this.particleTexture.isReady() ||
             this._rebuildingAfterContextLost
@@ -453,7 +478,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
-        this._customWrappers[blendMode]!.effect = effect;
+        this._customWrappers[blendMode].effect = effect;
     }
 
     /** @internal */
@@ -954,12 +979,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             if (!GetClass("BABYLON.ComputeShaderParticleSystem")) {
                 throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem") as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem"))(this, this._engine);
         } else {
             if (!GetClass("BABYLON.WebGL2ParticleSystem")) {
                 throw new Error("The WebGL2ParticleSystem class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem") as any)(this, this._engine);
+            this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem"))(this, this._engine);
         }
 
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
@@ -1365,6 +1390,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define DRAGGRADIENTS";
         }
 
+        if (this._flowMap) {
+            defines += "\n#define FLOWMAP";
+        }
+
         if (this.isAnimationSheetEnabled) {
             defines += "\n#define ANIMATESHEET";
             if (this.spriteRandomStartCell) {
@@ -1460,7 +1489,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
-        addClipPlaneUniforms(effectCreationOption);
+        AddClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("sheetInfos");
@@ -1485,7 +1514,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public fillDefines(defines: Array<string>, blendMode: number = 0, fillImageProcessing: boolean = true): void {
         if (this._scene) {
-            prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
@@ -1679,7 +1708,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const defines = effect.defines;
 
         if (this._scene) {
-            bindClipPlane(effect, this, this._scene);
+            BindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
                 BindFogParameters(this._scene, undefined, effect);
@@ -1703,20 +1732,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         // Draw order
-        switch (blendMode) {
-            case ParticleSystem.BLENDMODE_ADD:
-                this._engine.setAlphaMode(Constants.ALPHA_ADD);
-                break;
-            case ParticleSystem.BLENDMODE_ONEONE:
-                this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
-                break;
-            case ParticleSystem.BLENDMODE_STANDARD:
-                this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
-                break;
-            case ParticleSystem.BLENDMODE_MULTIPLY:
-                this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
-                break;
-        }
+        this._setEngineBasedOnBlendMode(blendMode);
 
         // Bind source VAO
         this._platform.bindDrawBuffers(this._targetIndex, effect, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null);
@@ -1793,6 +1809,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this.noiseTexture) {
             this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);
         }
+        if (this._flowMap) {
+            const scene = this.getScene()!;
+            this._updateBuffer.setFloat("flowMapStrength", this.flowMapStrength);
+            this._updateBuffer.setMatrix("flowMapProjection", scene.getTransformMatrix());
+        }
+
         if (!this.isLocal) {
             this._updateBuffer.setMatrix("emitterWM", emitterWM);
         }
@@ -2114,7 +2136,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
             engine = scene.getEngine();
         }
 

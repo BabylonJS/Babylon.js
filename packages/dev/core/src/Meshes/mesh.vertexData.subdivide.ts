@@ -24,13 +24,13 @@ export interface ISubdivideOptions {
     weight?: number;
 }
 
-const _positionShift = Math.pow(10, 4);
+const PositionShift = Math.pow(10, 4);
 
 /**
  * Rounds a number (simulate integer rounding)
  * @internal
  */
-function round(x: number): number {
+function Round(x: number): number {
     return (x + (x > 0 ? 0.5 : -0.5)) << 0;
 }
 
@@ -38,8 +38,8 @@ function round(x: number): number {
  * Generates a hash string from a number
  * @internal
  */
-function hashFromNumber(num: number, shift = _positionShift): string {
-    let roundedNumber = round(num * shift);
+function HashFromNumber(num: number, shift = PositionShift): string {
+    let roundedNumber = Round(num * shift);
     if (roundedNumber === 0) {
         roundedNumber = 0; // prevent -0
     }
@@ -50,15 +50,15 @@ function hashFromNumber(num: number, shift = _positionShift): string {
  * Generates a hash string from a Vector3
  * @internal
  */
-function hashFromVector(v: Vector3, shift = _positionShift): string {
-    return `${hashFromNumber(v.x, shift)},${hashFromNumber(v.y, shift)},${hashFromNumber(v.z, shift)}`;
+function HashFromVector(v: Vector3, shift = PositionShift): string {
+    return `${HashFromNumber(v.x, shift)},${HashFromNumber(v.y, shift)},${HashFromNumber(v.z, shift)}`;
 }
 
 /**
  * Gathers attribute names from a VertexData object
  * @internal
  */
-function gatherAttributes(vertexData: VertexData): string[] {
+function GatherAttributes(vertexData: VertexData): string[] {
     const desired = ["positions", "normals", "uvs"];
     const available = Object.keys(vertexData).filter((k) => Array.isArray((vertexData as any)[k]));
     return Array.from(new Set([...desired, ...available]));
@@ -68,7 +68,7 @@ function gatherAttributes(vertexData: VertexData): string[] {
  * Sets triangle data into an attribute array
  * @internal
  */
-function setTriangle(arr: number[], index: number, itemSize: number, vec0: number[], vec1: number[], vec2: number[]): void {
+function SetTriangle(arr: number[], index: number, itemSize: number, vec0: number[], vec1: number[], vec2: number[]): void {
     for (let i = 0; i < itemSize; i++) {
         arr[index + i] = vec0[i];
         arr[index + itemSize + i] = vec1[i];
@@ -80,7 +80,7 @@ function setTriangle(arr: number[], index: number, itemSize: number, vec0: numbe
  * Converts indexed VertexData to a non-indexed form
  * @internal
  */
-function toNonIndexed(vertexData: VertexData): VertexData {
+function ToNonIndexed(vertexData: VertexData): VertexData {
     if (!vertexData.indices || vertexData.indices.length === 0) {
         return vertexData; // already non-indexed
     }
@@ -117,7 +117,7 @@ function toNonIndexed(vertexData: VertexData): VertexData {
 /** Helper to read a Vector3 from an attribute array
  * @internal
  */
-function readVector(destination: Vector3, attribute: FloatArray, index: number, itemSize: number) {
+function ReadVector(destination: Vector3, attribute: FloatArray, index: number, itemSize: number) {
     if (itemSize === 3) {
         destination.fromArray(attribute, index * 3);
         return;
@@ -126,7 +126,7 @@ function readVector(destination: Vector3, attribute: FloatArray, index: number, 
     destination.set(attribute[index * 2], attribute[index * 2 + 1], 0);
 }
 
-function processFlatAttribute(source: FloatArray, vertexCount: number, output: number[]) {
+function ProcessFlatAttribute(source: FloatArray, vertexCount: number, output: number[]) {
     const v0 = new Vector3();
     const v1 = new Vector3();
     const v2 = new Vector3();
@@ -158,8 +158,8 @@ function processFlatAttribute(source: FloatArray, vertexCount: number, output: n
  * Applies one iteration of flat subdivision (each triangle becomes 4).
  * @internal
  */
-function flat(vertexData: VertexData): VertexData {
-    const data = toNonIndexed(vertexData);
+function Flat(vertexData: VertexData): VertexData {
+    const data = ToNonIndexed(vertexData);
     const positions = data.positions!;
     const normals = data.normals;
     const uvs = data.uvs;
@@ -168,10 +168,10 @@ function flat(vertexData: VertexData): VertexData {
     const newPositions: number[] = [];
     const newNormals: number[] = [];
     const newUVs: number[] = [];
-    processFlatAttribute(positions, vertexCount, newPositions);
+    ProcessFlatAttribute(positions, vertexCount, newPositions);
 
     if (normals && normals.length) {
-        processFlatAttribute(normals, vertexCount, newNormals);
+        ProcessFlatAttribute(normals, vertexCount, newNormals);
     }
 
     if (uvs && uvs.length) {
@@ -215,12 +215,12 @@ function flat(vertexData: VertexData): VertexData {
  * This function uses the subdivideAttribute routine to adjust vertex data.
  * @internal
  */
-function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData {
+function Smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData {
     // Convert to non-indexed and apply flat subdivision first.
-    const sourceData = toNonIndexed(vertexData);
-    const flatData = flat(sourceData);
+    const sourceData = ToNonIndexed(vertexData);
+    const flatData = Flat(sourceData);
 
-    const attributeList = gatherAttributes(sourceData);
+    const attributeList = GatherAttributes(sourceData);
     const origPositions = sourceData.positions!;
     const flatPositions = flatData.positions!;
     const vertexCount = origPositions.length / 3;
@@ -263,12 +263,12 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
 
     // Process original positions
     for (let i = 0; i < vertexCount; i += 3) {
-        readVector(v0, origPositions, i, 3);
-        readVector(v1, origPositions, i + 1, 3);
-        readVector(v2, origPositions, i + 2, 3);
-        const h0 = hashFromVector(v0);
-        const h1 = hashFromVector(v1);
-        const h2 = hashFromVector(v2);
+        ReadVector(v0, origPositions, i, 3);
+        ReadVector(v1, origPositions, i + 1, 3);
+        ReadVector(v2, origPositions, i + 2, 3);
+        const h0 = HashFromVector(v0);
+        const h1 = HashFromVector(v1);
+        const h2 = HashFromVector(v2);
         addNeighbor(h0, h1, i + 1);
         addNeighbor(h0, h2, i + 2);
         addNeighbor(h1, h0, i);
@@ -284,23 +284,23 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
         v2.addToRef(v0, m20);
         m20.scaleInPlace(0.5);
 
-        addOpposite(hashFromVector(m01), i + 2);
-        addOpposite(hashFromVector(m12), i);
-        addOpposite(hashFromVector(m20), i + 1);
+        addOpposite(HashFromVector(m01), i + 2);
+        addOpposite(HashFromVector(m12), i);
+        addOpposite(HashFromVector(m20), i + 1);
 
         // Track edges for preserveEdges.
-        addEdgePoint(h0, hashFromVector(m01));
-        addEdgePoint(h0, hashFromVector(m20));
-        addEdgePoint(h1, hashFromVector(m01));
-        addEdgePoint(h1, hashFromVector(m12));
-        addEdgePoint(h2, hashFromVector(m12));
-        addEdgePoint(h2, hashFromVector(m20));
+        addEdgePoint(h0, HashFromVector(m01));
+        addEdgePoint(h0, HashFromVector(m20));
+        addEdgePoint(h1, HashFromVector(m01));
+        addEdgePoint(h1, HashFromVector(m12));
+        addEdgePoint(h2, HashFromVector(m12));
+        addEdgePoint(h2, HashFromVector(m20));
     }
 
     // Build map from flat positions to indices.
     for (let i = 0; i < flatPositions.length / 3; i++) {
-        readVector(temp, flatPositions, i, 3);
-        const h = hashFromVector(temp);
+        ReadVector(temp, flatPositions, i, 3);
+        const h = HashFromVector(temp);
         if (!hashToIndex[h]) {
             hashToIndex[h] = [];
         }
@@ -323,26 +323,26 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
             for (let v = 0; v < 3; v++) {
                 if (attributeName === "uvs" && !options.uvSmooth) {
                     // Simply copy UVs.
-                    readVector(_vertex[v], flattenedAttribute, i + v, 2);
+                    ReadVector(_vertex[v], flattenedAttribute, i + v, 2);
                 } else if (attributeName === "normals") {
-                    readVector(_position[v], flatPositions, i + v, 3);
-                    const positionHash = hashFromVector(_position[v]);
+                    ReadVector(_position[v], flatPositions, i + v, 3);
+                    const positionHash = HashFromVector(_position[v]);
                     const positionsArr = hashToIndex[positionHash] || [];
                     const k = positionsArr.length;
                     const beta = 0.75 / k;
                     const startWeight = 1.0 - beta * k;
-                    readVector(_vertex[v], flattenedAttribute, i + v, 3);
+                    ReadVector(_vertex[v], flattenedAttribute, i + v, 3);
                     _vertex[v].scaleInPlace(startWeight);
-                    positionsArr.forEach((positionIndex) => {
-                        readVector(_average, flattenedAttribute, positionIndex, 3);
+                    for (const positionIndex of positionsArr) {
+                        ReadVector(_average, flattenedAttribute, positionIndex, 3);
                         _average.scaleInPlace(beta);
                         _vertex[v].addInPlace(_average);
-                    });
+                    }
                 } else {
                     // 'positions', 'colors', etc.
-                    readVector(_vertex[v], flattenedAttribute, i + v, itemSize);
-                    readVector(_position[v], flatPositions, i + v, 3);
-                    const positionHash = hashFromVector(_position[v]);
+                    ReadVector(_vertex[v], flattenedAttribute, i + v, itemSize);
+                    ReadVector(_position[v], flatPositions, i + v, 3);
+                    const positionHash = HashFromVector(_position[v]);
                     const neighbors = existingNeighbors[positionHash];
                     const opposites = flatOpposites[positionHash];
                     if (neighbors) {
@@ -369,10 +369,10 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                         for (const neighborHash in neighbors) {
                             const neighborIndices = neighbors[neighborHash];
                             _average.set(0, 0, 0);
-                            neighborIndices.forEach((neighborIndex) => {
-                                readVector(_temp, existingAttribute, neighborIndex, itemSize);
+                            for (const neighborIndex of neighborIndices) {
+                                ReadVector(_temp, existingAttribute, neighborIndex, itemSize);
                                 _average.addInPlace(_temp);
-                            });
+                            }
                             _average.scaleInPlace(1 / neighborIndices.length);
                             _average.scaleInPlace(weight);
                             _vertex[v].addInPlace(_average);
@@ -382,16 +382,16 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
                         const beta = 0.125; // 1/8
                         const startWeight = 1.0 - beta * k;
                         _vertex[v].scaleInPlace(startWeight);
-                        opposites.forEach((oppositeIndex) => {
-                            readVector(_average, existingAttribute, oppositeIndex, itemSize);
+                        for (const oppositeIndex of opposites) {
+                            ReadVector(_average, existingAttribute, oppositeIndex, itemSize);
                             _average.scaleInPlace(beta);
                             _vertex[v].addInPlace(_average);
-                        });
+                        }
                     }
                 }
             }
             // Write out new triangle vertices.
-            setTriangle(floatArray, index, itemSize, _vertex[0].asArray(), _vertex[1].asArray(), _vertex[2].asArray());
+            SetTriangle(floatArray, index, itemSize, _vertex[0].asArray(), _vertex[1].asArray(), _vertex[2].asArray());
             index += itemSize * 3;
         }
         return floatArray;
@@ -399,18 +399,18 @@ function smooth(vertexData: VertexData, options: ISubdivideOptions): VertexData 
 
     // Build new attributes for the smoothed geometry.
     const smoothData = new VertexData();
-    attributeList.forEach((attributeName) => {
+    for (const attributeName of attributeList) {
         if (attributeName === "indices") {
-            return;
+            continue;
         }
         const existingAttribute = (sourceData as any)[attributeName] as number[];
         const flattenedAttribute = (flatData as any)[attributeName] as number[];
         if (!existingAttribute || !flattenedAttribute) {
-            return;
+            continue;
         }
         const newArray = subdivideAttribute(attributeName, existingAttribute, flattenedAttribute);
         (smoothData as any)[attributeName] = newArray;
-    });
+    }
 
     // Rebuild indices sequentially.
     const newPositions = smoothData.positions!;
@@ -447,9 +447,9 @@ export function Subdivide(vertexData: VertexData, level: number, options?: Parti
 
     for (let i = 0; i < level; i++) {
         if (options.flatOnly) {
-            modified = flat(modified);
+            modified = Flat(modified);
         } else {
-            modified = smooth(modified, options);
+            modified = Smooth(modified, options);
         }
     }
 

@@ -7,13 +7,14 @@ import type { RunOptions } from "memlab";
 import { BrowserInteractionResultReader, testInBrowser } from "memlab";
 import { TestPlanner } from "@memlab/e2e";
 
-const playgrounds: string[] = ["#2FDQT5#1508", "#T90MQ4#14", "#8EDB5N#2", "#YACNQS#2", "#SLV8LW#3"];
+const Playgrounds: string[] = ["#2FDQT5#1508", "#T90MQ4#14", "#8EDB5N#2", "#YACNQS#2", "#SLV8LW#3"];
 
 /**
  * Get the global configuration for the tests
  * @param overrideConfig override the default configuration
  * @returns the configuration
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: string } = {}) => {
     populateEnvironment();
     return {
@@ -25,7 +26,7 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
     };
 };
 
-function getConfigFromRunOptions(options: RunOptions): MemLabConfig {
+function GetConfigFromRunOptions(options: RunOptions): MemLabConfig {
     const config = MemLabConfig.resetConfigWithTransientDir();
     // if you have issues with WebGL not supported, run it in headful mode
     // config.puppeteerConfig.headless = false;
@@ -39,8 +40,9 @@ function getConfigFromRunOptions(options: RunOptions): MemLabConfig {
  * @param options the options to use
  * @returns the result reader
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<BrowserInteractionResultReader> {
-    const config = getConfigFromRunOptions(options);
+    const config = GetConfigFromRunOptions(options);
     config.externalCookiesFile = options.cookiesFile;
     config.scenario = options.scenario;
     const testPlanner = new TestPlanner();
@@ -51,10 +53,11 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
 
 (async function () {
     const conf = getGlobalConfig();
-    const scenarios = playgrounds.map((playground) => {
+    const scenarios = Playgrounds.map((playground) => {
         return async () => {
             const scenario: IScenario = {
                 url: () => conf.baseUrl + "/test.html" + playground,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 action: async (page) => {
                     await page.click("#start");
                     await page.evaluate(async () => {
@@ -77,6 +80,7 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
                         await (window as any).BABYLON.Engine.LastCreatedScene.whenReadyAsync();
                     });
                 },
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 back: async (page) => {
                     await page.click("#dispose");
                 },
@@ -114,6 +118,7 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
             }
         };
     });
+    // eslint-disable-next-line no-restricted-syntax
     const promiseExecution = async () => {
         for (const promise of scenarios) {
             try {

@@ -10,7 +10,7 @@ import type { WebXRCamera } from "./webXRCamera";
 import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Mesh } from "../Meshes/mesh";
 
-let idCount = 0;
+let IdCount = 0;
 
 /**
  * Configuration options for the WebXR controller creation
@@ -95,7 +95,7 @@ export class WebXRInputSource {
         public inputSource: XRInputSource,
         private _options: IWebXRControllerOptions = {}
     ) {
-        this._uniqueId = `controller-${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
+        this._uniqueId = `controller-${IdCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
 
         this.pointer = new Mesh(`${this._uniqueId}-pointer`, _scene);
         this.pointer.rotationQuaternion = new Quaternion();
@@ -120,7 +120,10 @@ export class WebXRInputSource {
                                 if (this._options.renderingGroupId) {
                                     // anything other than 0?
                                     this.motionController.rootMesh.renderingGroupId = this._options.renderingGroupId;
-                                    this.motionController.rootMesh.getChildMeshes(false).forEach((mesh) => (mesh.renderingGroupId = this._options.renderingGroupId!));
+                                    const childMeshes = this.motionController.rootMesh.getChildMeshes(false);
+                                    for (const mesh of childMeshes) {
+                                        mesh.renderingGroupId = this._options.renderingGroupId!;
+                                    }
                                 }
                                 this.onMeshLoadedObservable.notifyObservers(this.motionController.rootMesh);
                                 this.motionController.rootMesh.parent = this.grip || this.pointer;

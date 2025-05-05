@@ -2,7 +2,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { Nullable } from "../../types";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
@@ -64,21 +64,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public noPrecision = true;
     public pureMode = false;
 
-    public preProcessor(code: string, defines: string[], preProcessors: { [key: string]: string }, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
-        // Convert defines into const
-        for (const key in preProcessors) {
-            if (key === "__VERSION__") {
-                continue;
-            }
-            const value = preProcessors[key];
-            if (!isNaN(parseInt(value)) || !isNaN(parseFloat(value))) {
-                code = `const ${key} = ${value};\n` + code;
-            }
-        }
-
-        return code;
-    }
-
     protected _getArraySize(name: string, uniformType: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
 
@@ -102,7 +87,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return [name, uniformType, length];
     }
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
 
         this._attributesInputWGSL = [];
@@ -262,15 +247,89 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return texture;
     }
 
-    // We need to process defines which are directly in the files themselves
-    public postProcessor(code: string) {
-        const definePattern = /#define (.+?) (.+?)$/gm;
-
-        let match: RegExpExecArray | null;
-
-        while ((match = definePattern.exec(code)) !== null) {
-            code = code.replace(new RegExp(match[1], "g"), match[2]);
+    private _convertDefinesToConst(preProcessors: { [key: string]: string }) {
+        let code = "";
+        for (const key in preProcessors) {
+            const value = preProcessors[key];
+            if (key.startsWith("__")) {
+                continue;
+            }
+            if (!isNaN(parseInt(value)) || !isNaN(parseFloat(value))) {
+                code += `const ${key} = ${value};\n`;
+            } else if (key && value === "") {
+                code += `const ${key} = true;\n`;
+            }
         }
+        return code;
+    }
+
+    public postProcessor(
+        code: string,
+        _defines: string[],
+        _isFragment: boolean,
+        _processingContext: Nullable<_IShaderProcessingContext>,
+        _parameters: {
+            [key: string]: number | string | boolean | undefined;
+        },
+        preProcessors: { [key: string]: string },
+        preProcessorsFromCode: { [key: string]: string }
+    ) {
+        // Collect the preprocessor names (coming from a "#define NAME VALUE" declaration) directly defined in the shader code (preProcessorsFromCode) and not defined at the material level (preProcessors).
+        // This is because we will have to perform a replace on the code to replace the defines with their values.
+        //
+        // We don't have to do it for preprocessor names defined at the material level because replacing them by "const NAME = VALUE;" will take care of it (see _convertDefinesToConst()) and is faster than doing a search/replace for each of them.
+        //
+        // The reason why doing "const NAME = VALUE;" doesn't work for preprocessor names defined in the code is that VALUE can be any string and not only numbers or booleans.
+        // So, if we have this code:
+        //
+        //      #define vDiffuseUV vMainUV
+        //      textureSample(..., fragmentInputs.vDiffuseUV)
+        ///
+        // only a search/replace will work, 'const vDiffuseUV = "vMainUV";' will not work
+        //
+        // Note that the search/replace text processing will also apply to the "#define NAME VALUE" definition itself, so it will become "#define VALUE VALUE"
+        // It's not a problem, though, because all #define XXX will be commented out in the final code.
+        const defineList: string[] = [];
+
+        for (const key in preProcessorsFromCode) {
+            const value = preProcessorsFromCode[key];
+
+            // Excludes the defines that are booleans (note that there aren't "false" booleans: we simply don't add them in the preProcessorsFromCode object).
+            // That's because we need (at least some of) them to stay untouched, like #define DISABLE_UNIFORMTY_ANALYSIS or #define CUSTOM_VERTEX_BEGIN (else, they would be replaced with "#define true" after the search/replace processing)
+            if (value !== "true") {
+                defineList.push(key);
+            }
+        }
+
+        // We must sort the define names by length to avoid replacing a define with a longer name (ex: #define A 1 and #define AB 2, if we replace A with 1, we will have #define 1B 2)
+        // So, we start by longest names and we finish with the shortest ones.
+        defineList.sort((a, b) => (a.length - b.length > 0 ? -1 : a.length === b.length ? 0 : 1));
+
+        for (const name of defineList) {
+            // Let's retrieve the value of the define from the code
+            // Note that we can't use the value from preProcessorsFromCode[name] because this value could have been changed from a previous replace
+            // For example:
+            //      #define IOR 1.333
+            //      #define ETA 1.0/IOR
+            //
+            // After IOR replacement is performed, we will have:
+            //      #define 1.333 1.333
+            //      #define ETA 1.0/1.333
+            //
+            // but preProcessorsFromCode["ETA"] is still "1.0/IOR" and not "1.0/1.333", so we must retrieve the value for ETA from the current code
+            const i0 = code.indexOf("#define " + name);
+
+            let i1 = code.indexOf("\n", i0);
+            if (i1 === -1) {
+                i1 = code.length;
+            }
+
+            const value = code.substring(i0 + 8 + name.length + 1, i1);
+
+            code = code.replace(new RegExp(name, "g"), value);
+        }
+
+        code = this._convertDefinesToConst(preProcessors) + code;
 
         return code;
     }
@@ -300,7 +359,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         fragmentCode = leftOverUBO + fragmentCode;
 
         // Vertex code
-        vertexCode = vertexCode.replace(/#define (\w+)\s+(\d+\.?\d*)/g, "const $1 = $2;");
         vertexCode = vertexCode.replace(/#define /g, "//#define ");
         vertexCode = this._processStridedUniformArrays(vertexCode);
 
@@ -340,7 +398,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             InjectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
-        fragmentCode = fragmentCode.replace(/#define (\w+)\s+(\d+\.?\d*)/g, "const $1 = $2;");
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
         fragmentCode = this._processStridedUniformArrays(fragmentCode);
         if (!this.pureMode) {

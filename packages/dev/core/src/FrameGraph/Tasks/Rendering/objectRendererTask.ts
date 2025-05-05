@@ -72,6 +72,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public disableShadows = false;
 
     /**
+     * If image processing should be disabled (default is false).
+     * false means that the default image processing configuration will be applied (the one from the scene)
+     */
+    public disableImageProcessing = false;
+
+    /**
      * The output texture.
      * This texture will point to the same texture than the targetTexture property if it is set.
      * Note, however, that the handle itself will be different!
@@ -151,6 +157,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
+        this._renderer.disableImageProcessing = this.disableImageProcessing;
 
         const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.targetTexture);
 
@@ -193,6 +200,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+            this._renderer.disableImageProcessing = this.disableImageProcessing;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             context.render(this._renderer, this._textureWidth, this._textureHeight);

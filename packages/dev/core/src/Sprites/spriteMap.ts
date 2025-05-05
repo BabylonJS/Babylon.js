@@ -152,7 +152,7 @@ export class SpriteMap implements ISpriteMap {
 
     /** Sets the AnimationMap*/
     public set animationMap(v: RawTexture) {
-        const buffer = v!._texture!._bufferView;
+        const buffer = v._texture!._bufferView;
         const am = this._createTileAnimationBuffer(buffer);
         this._animationMap.dispose();
         this._animationMap = am;
@@ -231,7 +231,7 @@ export class SpriteMap implements ISpriteMap {
 
         this._frameMap = this._createFrameBuffer();
 
-        this._tileMaps = new Array();
+        this._tileMaps = [];
         for (let i = 0; i < options.layerCount; i++) {
             this._tileMaps.push(this._createTileBuffer(null, i));
         }
@@ -363,6 +363,7 @@ export class SpriteMap implements ISpriteMap {
      * Returns tileID location
      * @returns Vector2 the cell position ID
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public getTileID(): Vector2 {
         const p = this.getMousePosition();
         p.multiplyInPlace(this.options.stageSize || Vector2.Zero());
@@ -487,7 +488,7 @@ export class SpriteMap implements ISpriteMap {
      * @param tile The SpriteIndex of the new Tile
      */
     public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[], tile: number = 0): void {
-        const buffer = this._tileMaps[_layer]!._texture!._bufferView;
+        const buffer = this._tileMaps[_layer]._texture!._bufferView;
         if (buffer === null) {
             return;
         }
@@ -560,7 +561,7 @@ export class SpriteMap implements ISpriteMap {
      * @param speed is a global scalar of the time variable on the map.
      */
     public addAnimationToTile(cellID: number = 0, _frame: number = 0, toCell: number = 0, time: number = 0, speed: number = 1): void {
-        const buffer: any = this._animationMap!._texture!._bufferView;
+        const buffer: any = this._animationMap._texture!._bufferView;
         const id: number = cellID * 4 + this.spriteCount * 4 * _frame;
         if (!buffer) {
             return;
@@ -584,7 +585,7 @@ export class SpriteMap implements ISpriteMap {
                 maps += "\n\r";
             }
 
-            maps += this._tileMaps[i]!._texture!._bufferView!.toString();
+            maps += this._tileMaps[i]._texture!._bufferView!.toString();
         }
         const hiddenElement = document.createElement("a");
         hiddenElement.href = "data:octet/stream;charset=utf-8," + encodeURI(maps);
@@ -602,7 +603,7 @@ export class SpriteMap implements ISpriteMap {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", url);
 
-        const _lc = this.options!.layerCount || 0;
+        const _lc = this.options.layerCount || 0;
 
         xhr.onload = () => {
             const data = xhr.response.split("\n\r");
@@ -624,9 +625,9 @@ export class SpriteMap implements ISpriteMap {
         this._output.dispose();
         this._material.dispose();
         this._animationMap.dispose();
-        this._tileMaps.forEach((tm) => {
+        for (const tm of this._tileMaps) {
             tm.dispose();
-        });
+        }
         this._frameMap.dispose();
     }
 }

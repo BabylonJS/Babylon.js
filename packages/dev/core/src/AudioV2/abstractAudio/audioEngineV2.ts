@@ -206,21 +206,21 @@ export abstract class AudioEngineV2 {
      * Pauses the audio engine if it is running.
      * @returns A promise that resolves when the audio engine is paused.
      */
-    public abstract pause(): Promise<void>;
+    public abstract pauseAsync(): Promise<void>;
 
     /**
      * Resumes the audio engine if it is not running.
      * @returns A promise that resolves when the audio engine is running.
      */
-    public abstract resume(): Promise<void>;
+    public abstract resumeAsync(): Promise<void>;
 
     /**
      * Unlocks the audio engine if it is locked.
      * - Note that the returned promise may already be resolved if the audio engine is already unlocked.
      * @returns A promise that is resolved when the audio engine is unlocked.
      */
-    public unlock(): Promise<void> {
-        return this.resume();
+    public unlockAsync(): Promise<void> {
+        return this.resumeAsync();
     }
 
     protected _addMainBus(mainBus: MainAudioBus): void {

@@ -26,6 +26,7 @@ AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Sce
 });
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Removes the given effect layer from this scene.
@@ -138,9 +139,9 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (!container.effectLayers) {
             return;
         }
-        container.effectLayers.forEach((o) => {
+        for (const o of container.effectLayers) {
             this.scene.addEffectLayer(o);
-        });
+        }
     }
 
     /**
@@ -152,12 +153,12 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (!container.effectLayers) {
             return;
         }
-        container.effectLayers.forEach((o) => {
+        for (const o of container.effectLayers) {
             this.scene.removeEffectLayer(o);
             if (dispose) {
                 o.dispose();
             }
-        });
+        }
     }
 
     /**

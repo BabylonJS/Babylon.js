@@ -8,9 +8,7 @@ import type { PhysicsImpostor } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 
 declare module "../../Meshes/abstractMesh" {
-    /**
-     *
-     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /** @internal */
         _physicsImpostor: Nullable<PhysicsImpostor>;

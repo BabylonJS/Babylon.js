@@ -107,6 +107,8 @@ import type { Sound } from "core/Audio/sound";
 import { SoundPropertyGridComponent } from "./propertyGrids/sounds/soundPropertyGridComponent";
 import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
 import type { EffectLayer } from "core/Layers/effectLayer";
+import { FrameGraphPropertyGridComponent } from "./propertyGrids/frameGraphs/frameGraphPropertyGridComponent";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
 import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 import type { SkyMaterial } from "materials/sky/skyMaterial";
@@ -115,9 +117,6 @@ import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
 
-/**
- *
- */
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
     private _lockObject = new LockObject();
@@ -590,6 +589,18 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (
                     <LayerPropertyGridComponent
                         layer={layer}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("FrameGraph") !== -1) {
+                const frameGraph = entity as FrameGraph;
+                return (
+                    <FrameGraphPropertyGridComponent
+                        frameGraph={frameGraph}
                         globalState={this.props.globalState}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}

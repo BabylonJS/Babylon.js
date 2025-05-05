@@ -61,7 +61,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     }
 
     /** @internal */
-    public async _init(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
+    public async _initAsync(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
         const audioContext = this.engine._audioContext;
 
         if (!(audioContext instanceof AudioContext)) {
@@ -78,14 +78,14 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
             this.outBus = this.engine.defaultMainBus;
         }
 
-        await this._subGraph.init(options);
+        await this._subGraph.initAsync(options);
 
         if (_HasSpatialAudioOptions(options)) {
             this._initSpatialProperty();
         }
 
         if (this.preloadCount) {
-            await this.preloadInstances(this.preloadCount);
+            await this.preloadInstancesAsync(this.preloadCount);
         }
 
         if (options.autoplay) {

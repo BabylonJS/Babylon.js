@@ -82,16 +82,16 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
             switch (this.value.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(source, edge0, edge1);
+                    return func(source, edge0, edge1);
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    return new Vector2(func!(source.x, edge0, edge1), func!(source.y, edge0, edge1));
+                    return new Vector2(func(source.x, edge0, edge1), func(source.y, edge0, edge1));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    return new Vector3(func!(source.x, edge0, edge1), func!(source.y, edge0, edge1), func!(source.z, edge0, edge1));
+                    return new Vector3(func(source.x, edge0, edge1), func(source.y, edge0, edge1), func(source.z, edge0, edge1));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func!(source.x, edge0, edge1), func!(source.y, edge0, edge1), func!(source.z, edge0, edge1), func!(source.w, edge0, edge1));
+                    return new Vector4(func(source.x, edge0, edge1), func(source.y, edge0, edge1), func(source.z, edge0, edge1), func(source.w, edge0, edge1));
                 }
             }
 

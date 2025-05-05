@@ -47,7 +47,7 @@ class HTMLMapper implements IMapper {
                 //convert html-style to json-style
                 const camelKey = kebabToCamel(key);
                 if (idx === split.length - 1) {
-                    let val: any = attr!.nodeValue; // firefox warns nodeValue is deprecated, but I found no sign of it anywhere.
+                    let val: any = attr.nodeValue; // firefox warns nodeValue is deprecated, but I found no sign of it anywhere.
                     if (val === "true") {
                         val = true;
                     } else if (val === "false") {
@@ -190,4 +190,5 @@ export class MapperManager {
  * The mapperManager can be disposed directly with calling mapperManager.dispose()
  * or indirectly with using BabylonViewer.disposeAll()
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const mapperManager = new MapperManager();

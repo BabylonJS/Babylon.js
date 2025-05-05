@@ -17,6 +17,7 @@ attribute float splatIndex;
 uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
 uniform vec2 focal;
+uniform float kernelSize;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
@@ -54,7 +55,7 @@ void main () {
     mat3 normWorldRot = inverseMat3(worldRot);
 
     vec3 dir = normalize(normWorldRot * (worldPos.xyz - vEyePosition.xyz));
-    dir.y *= -1.; // Up is inverted. This corresponds to change in _makeSplat method
+    dir *= vec3(1.,1.,-1.); // convert to Babylon Space
     vColor.xyz = computeSH(splat, splat.color.xyz, dir);
 #endif
 

@@ -110,6 +110,7 @@ import { StorageReadBlock } from "core/Materials/Node/Blocks/storageReadBlock";
 import { StorageWriteBlock } from "core/Materials/Node/Blocks/storageWriteBlock";
 import { MatrixSplitterBlock } from "core/Materials/Node/Blocks/matrixSplitterBlock";
 import { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
+import { IridescenceBlock } from "core/Materials/Node/Blocks/PBR/iridescenceBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -589,6 +590,8 @@ export class BlockTools {
                 return new RefractionBlock("Refraction");
             case "SubSurfaceBlock":
                 return new SubSurfaceBlock("SubSurface");
+            case "IridescenceBlock":
+                return new IridescenceBlock("Iridescence");
             case "CurrentScreenBlock":
                 return new CurrentScreenBlock("CurrentScreen");
             case "ParticleUVBlock": {
@@ -612,6 +615,11 @@ export class BlockTools {
                 const pos = new InputBlock("PositionWorld");
                 pos.setAsAttribute("particle_positionw");
                 return pos;
+            }
+            case "ScreenUVBlock": {
+                const uv = new InputBlock("uv");
+                uv.setAsAttribute("postprocess_uv");
+                return uv;
             }
             case "ParticleRampGradientBlock":
                 return new ParticleRampGradientBlock("ParticleRampGradient");

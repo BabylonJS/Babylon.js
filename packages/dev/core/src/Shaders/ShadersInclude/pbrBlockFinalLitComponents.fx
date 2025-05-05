@@ -31,7 +31,9 @@ aggShadow = aggShadow / numLights;
         #endif
     #endif
 
-    finalIrradiance *= surfaceAlbedo.rgb;
+    #ifndef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
+        finalIrradiance *= surfaceAlbedo.rgb;
+    #endif
 
     #if defined(SS_REFRACTION)
         finalIrradiance *= subSurfaceOut.refractionFactorForIrradiance;
@@ -40,6 +42,10 @@ aggShadow = aggShadow / numLights;
     #if defined(SS_TRANSLUCENCY)
         finalIrradiance *= (1.0 - subSurfaceOut.translucencyIntensity);
         finalIrradiance += subSurfaceOut.refractionIrradiance;
+    #endif
+
+    #ifdef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
+        finalIrradiance *= surfaceAlbedo.rgb;
     #endif
 
     finalIrradiance *= vLightingIntensity.z;

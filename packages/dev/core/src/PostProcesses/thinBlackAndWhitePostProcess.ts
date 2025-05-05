@@ -49,8 +49,8 @@ export class ThinBlackAndWhitePostProcess extends EffectWrapper {
      */
     public degree = 1;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
         this._drawWrapper.effect!.setFloat("degree", this.degree);
     }
 }

@@ -13,7 +13,7 @@ import type { Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
 
 /** @internal */
-export interface CopySourceOptions {
+export interface ICopySourceOptions {
     /*
      * if a texture is used in more than one channel (e.g diffuse and opacity),
      * only clone it once and reuse it on the other channels. Default false
@@ -21,7 +21,7 @@ export interface CopySourceOptions {
     cloneTexturesOnlyOnce?: boolean;
 }
 
-const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: CopySourceOptions = {}): T {
+const CopySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: ICopySourceOptions = {}): T {
     const destination = creationFunction();
 
     // Tags
@@ -220,7 +220,7 @@ export class SerializationHelper {
             const propertyType = propertyDescriptor.type;
 
             if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
-                const dest = <any>destination;
+                const dest = destination;
                 switch (propertyType) {
                     case 0: // Value
                         dest[property] = sourceProperty;
@@ -300,8 +300,8 @@ export class SerializationHelper {
      * @param options defines the options to use
      * @returns the cloned object
      */
-    public static Clone<T>(creationFunction: () => T, source: T, options: CopySourceOptions = {}): T {
-        return _copySource(creationFunction, source, false, options);
+    public static Clone<T>(creationFunction: () => T, source: T, options: ICopySourceOptions = {}): T {
+        return CopySource(creationFunction, source, false, options);
     }
 
     /**
@@ -311,6 +311,6 @@ export class SerializationHelper {
      * @returns the new object
      */
     public static Instanciate<T>(creationFunction: () => T, source: T): T {
-        return _copySource(creationFunction, source, true);
+        return CopySource(creationFunction, source, true);
     }
 }

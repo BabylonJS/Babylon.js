@@ -101,6 +101,16 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.disableShadows = value;
     }
 
+    /** If image processing should be disabled */
+    @editableInPropertyPage("Disable image processing", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get renderInLinearSpace() {
+        return this._frameGraphTask.disableImageProcessing;
+    }
+
+    public set renderInLinearSpace(value: boolean) {
+        this._frameGraphTask.disableImageProcessing = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -190,11 +200,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         if (shadowGeneratorsConnectedPoint) {
             if (shadowGeneratorsConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
                 const container = shadowGeneratorsConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
-                container.inputs.forEach((input) => {
+                for (const input of container.inputs) {
                     if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsShadowGenerator(input.connectedPoint.value)) {
-                        this._frameGraphTask.shadowGenerators!.push(input.connectedPoint.value as FrameGraphShadowGeneratorTask);
+                        this._frameGraphTask.shadowGenerators.push(input.connectedPoint.value as FrameGraphShadowGeneratorTask);
                     }
-                });
+                }
             } else if (NodeRenderGraphConnectionPoint.IsShadowGenerator(shadowGeneratorsConnectedPoint.value)) {
                 this._frameGraphTask.shadowGenerators[0] = shadowGeneratorsConnectedPoint.value as FrameGraphShadowGeneratorTask;
             }
@@ -206,6 +216,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
+        codes.push(`${this._codeVariableName}.renderInLinearSpace = ${this.renderInLinearSpace};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -214,6 +225,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.disableShadows = this.disableShadows;
+        serializationObject.renderInLinearSpace = this.renderInLinearSpace;
         return serializationObject;
     }
 
@@ -222,5 +234,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
         this.disableShadows = serializationObject.disableShadows;
+        this.renderInLinearSpace = !!serializationObject.renderInLinearSpace;
     }
 }

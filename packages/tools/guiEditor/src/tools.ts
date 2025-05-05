@@ -29,9 +29,10 @@ export class Tools {
         for (const i of items) {
             // If the mesh is hidden, add it's children that are not hidden, this will handle the case of bounding box parenting for bounding box gizmo
             if (i.reservedDataStore && i.reservedDataStore.hidden && i.getChildMeshes) {
-                Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(i.getChildMeshes()).forEach((m) => {
+                const meshes = Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(i.getChildMeshes());
+                for (const m of meshes) {
                     result.push(m);
-                });
+                }
             } else if (!i.reservedDataStore || !i.reservedDataStore.hidden) {
                 result.push(i);
             }

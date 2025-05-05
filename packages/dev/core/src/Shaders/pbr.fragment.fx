@@ -413,6 +413,7 @@ void main(void) {
             #endif
             #ifdef CLEARCOAT
                 , NdotVUnclamped
+                , vClearCoatParams
                 #ifdef CLEARCOAT_TEXTURE
                     , clearCoatMapData
                 #endif

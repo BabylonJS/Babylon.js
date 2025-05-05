@@ -10,6 +10,7 @@ import { BuildArray } from "core/Misc/arrayTools";
 /**
  * Shape properties for the character controller
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface CharacterShapeOptions {
     /**
      * optional shape used for collision detection
@@ -36,6 +37,7 @@ export const enum CharacterSupportedState {
 /**
  * Surface information computed by checkSupport method
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface CharacterSurfaceInfo {
     /**
      * Indicates whether the surface is dynamic.
@@ -64,8 +66,7 @@ export interface CharacterSurfaceInfo {
     averageAngularSurfaceVelocity: Vector3;
 }
 
-/** @internal */
-interface Contact {
+interface IContact {
     /** @internal */
     position: Vector3;
     /** @internal */
@@ -80,8 +81,7 @@ interface Contact {
     allowedPenetration: number;
 }
 
-/** @internal */
-interface SurfaceConstraintInfo {
+interface ISurfaceConstraintInfo {
     /** @internal */
     planeNormal: Vector3;
     /** @internal */
@@ -102,15 +102,12 @@ interface SurfaceConstraintInfo {
     priority: number;
 }
 
-/** @internal */
 const enum SurfaceConstraintInteractionStatus {
     OK,
     FAILURE_3D,
     FAILURE_2D,
 }
-
-/** @internal */
-interface SurfaceConstraintInteraction {
+interface ISurfaceConstraintInteraction {
     /** @internal */
     touched: boolean;
     /** @internal */
@@ -132,7 +129,7 @@ class SimplexSolverOutput {
     /** @internal */
     public deltaTime: number;
     /** @internal */
-    public planeInteractions: SurfaceConstraintInteraction[];
+    public planeInteractions: ISurfaceConstraintInteraction[];
 }
 
 /** @internal */
@@ -140,9 +137,9 @@ class SimplexSolverActivePlanes {
     /** @internal */
     public index: number;
     /** @internal */
-    public constraint: SurfaceConstraintInfo;
+    public constraint: ISurfaceConstraintInfo;
     /** @internal */
-    public interaction: SurfaceConstraintInteraction;
+    public interaction: ISurfaceConstraintInteraction;
 
     /** @internal */
     public copyFrom(other: SimplexSolverActivePlanes) {
@@ -161,19 +158,18 @@ class SimplexSolverInfo {
     /** @internal */
     public currentTime: number = 0;
     /** @internal */
-    public inputConstraints: SurfaceConstraintInfo[];
+    public inputConstraints: ISurfaceConstraintInfo[];
     /** @internal */
-    public outputInteractions: SurfaceConstraintInteraction[];
+    public outputInteractions: ISurfaceConstraintInteraction[];
     /** @internal */
-    public getOutput(constraint: SurfaceConstraintInfo): SurfaceConstraintInteraction {
+    public getOutput(constraint: ISurfaceConstraintInfo): ISurfaceConstraintInteraction {
         return this.outputInteractions[this.inputConstraints.indexOf(constraint)]; //<todo.eoin This is O(1) in C++! Equivalent in TS?
     }
 }
 
 /** @internal */
-function contactFromCast(hp: HavokPlugin, cp: any /*ContactPoint*/, castPath: Vector3, hitFraction: number, keepDistance: number): Contact {
-    //@ts-ignore
-    const bodyMap = hp._bodies;
+function ContactFromCast(hp: HavokPlugin, cp: any /*ContactPoint*/, castPath: Vector3, hitFraction: number, keepDistance: number): IContact {
+    const bodyMap = (hp as any)._bodies;
 
     const normal = Vector3.FromArray(cp[4]);
     const dist = -hitFraction * castPath.dot(normal);
@@ -196,7 +192,7 @@ export class PhysicsCharacterController {
     private _velocity: Vector3;
     private _lastVelocity: Vector3;
     private _shape: PhysicsShape;
-    private _manifold: Contact[] = [];
+    private _manifold: IContact[] = [];
     private _lastDisplacement: Vector3;
     private _contactAngleSensitivity = 10.0;
     private _lastInvDeltaTime: number;
@@ -308,6 +304,14 @@ export class PhysicsCharacterController {
     }
 
     /**
+     * Teleport character to a new position
+     * @param position new position
+     */
+    public setPosition(position: Vector3) {
+        this._position.copyFrom(position);
+    }
+
+    /**
      * Character velocity
      * @returns Character velocity vector
      */
@@ -346,7 +350,7 @@ export class PhysicsCharacterController {
         arm.addToRef(body.body.getLinearVelocity(body.index), result);
     }
 
-    protected _compareContacts(contactA: Contact, contactB: Contact): number {
+    protected _compareContacts(contactA: IContact, contactB: IContact): number {
         const angSquared = (1.0 - contactA.normal.dot(contactB.normal)) * this._contactAngleSensitivity * this._contactAngleSensitivity;
         const planeDistSquared = (contactA.distance - contactB.distance) * (contactA.distance * contactB.distance);
 
@@ -362,7 +366,7 @@ export class PhysicsCharacterController {
         return fitness;
     }
 
-    protected _findContact(referenceContact: Contact, contactList: Contact[], threshold: number) {
+    protected _findContact(referenceContact: IContact, contactList: IContact[], threshold: number) {
         let bestIdx = -1;
         let bestFitness = threshold;
         for (let i = 0; i < contactList.length; i++) {
@@ -437,7 +441,7 @@ export class PhysicsCharacterController {
             for (let i = 0; i < numCastHits; i++) {
                 const [fraction, , hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(castCollector, i)[1];
                 if (closestHitBody == null) {
-                    const contact = contactFromCast(hk, hitWorld, castPath, fraction, this.keepDistance);
+                    const contact = ContactFromCast(hk, hitWorld, castPath, fraction, this.keepDistance);
                     closestHitBody = hitWorld[0][0];
                     const bestMatch = this._findContact(contact, this._manifold, 0.1);
                     if (bestMatch == -1) {
@@ -460,7 +464,9 @@ export class PhysicsCharacterController {
             let e2 = e1 - 1;
             for (; e2 >= 0; e2--) {
                 const fitness = this._compareContacts(this._manifold[e1], this._manifold[e2]);
-                if (fitness < 0.1) break;
+                if (fitness < 0.1) {
+                    break;
+                }
             }
             if (e2 >= 0) {
                 this._manifold.slice(e1, 1);
@@ -470,7 +476,7 @@ export class PhysicsCharacterController {
         return numHitBodies;
     }
 
-    protected _createSurfaceConstraint(contact: Contact, timeTravelled: number): SurfaceConstraintInfo {
+    protected _createSurfaceConstraint(contact: IContact, timeTravelled: number): ISurfaceConstraintInfo {
         const constraint = {
             //let distance = contact.distance - this.keepDistance;
             planeNormal: contact.normal.clone(),
@@ -516,7 +522,7 @@ export class PhysicsCharacterController {
         return constraint;
     }
 
-    protected _addMaxSlopePlane(maxSlopeCos: number, up: Vector3, index: number, constraints: SurfaceConstraintInfo[], allowedPenetration: number): boolean {
+    protected _addMaxSlopePlane(maxSlopeCos: number, up: Vector3, index: number, constraints: ISurfaceConstraintInfo[], allowedPenetration: number): boolean {
         const verticalComponent = constraints[index].planeNormal.dot(up);
         if (verticalComponent > 0.01 && verticalComponent < maxSlopeCos) {
             const newConstraint = {
@@ -547,7 +553,7 @@ export class PhysicsCharacterController {
         return false;
     }
 
-    protected _resolveConstraintPenetration(constraint: SurfaceConstraintInfo, penetrationRecoverySpeed: number) {
+    protected _resolveConstraintPenetration(constraint: ISurfaceConstraintInfo, penetrationRecoverySpeed: number) {
         // If penetrating we add extra velocity to push the character back out
         const eps = 1e-6;
         if (constraint.planeDistance < -eps) {
@@ -556,7 +562,7 @@ export class PhysicsCharacterController {
         }
     }
 
-    protected _createConstraintsFromManifold(dt: number, timeTravelled: number): SurfaceConstraintInfo[] {
+    protected _createConstraintsFromManifold(dt: number, timeTravelled: number): ISurfaceConstraintInfo[] {
         const constraints = [];
         for (let i = 0; i < this._manifold.length; i++) {
             const surfaceConstraint = this._createSurfaceConstraint(this._manifold[i], timeTravelled);
@@ -589,7 +595,7 @@ export class PhysicsCharacterController {
         }
     }
 
-    protected _simplexSolverSolve1d(info: SimplexSolverInfo, sci: SurfaceConstraintInfo, velocityIn: Vector3, velocityOut: Vector3) {
+    protected _simplexSolverSolve1d(info: SimplexSolverInfo, sci: ISurfaceConstraintInfo, velocityIn: Vector3, velocityOut: Vector3) {
         const eps = 1e-5;
         const groundVelocity = sci.velocity;
         const relativeVelocity = this._tmpVecs[22];
@@ -671,7 +677,7 @@ export class PhysicsCharacterController {
         velocityOut.addInPlace(groundVelocity);
     }
 
-    protected _simplexSolverSolveTest1d(sci: SurfaceConstraintInfo, velocityIn: Vector3): boolean {
+    protected _simplexSolverSolveTest1d(sci: ISurfaceConstraintInfo, velocityIn: Vector3): boolean {
         const eps = 1e-3;
         const relativeVelocity = this._tmpVecs[23];
         velocityIn.subtractToRef(sci.velocity, relativeVelocity);
@@ -681,8 +687,8 @@ export class PhysicsCharacterController {
     protected _simplexSolverSolve2d(
         info: SimplexSolverInfo,
         maxSurfaceVelocity: Vector3,
-        sci0: SurfaceConstraintInfo,
-        sci1: SurfaceConstraintInfo,
+        sci0: ISurfaceConstraintInfo,
+        sci1: ISurfaceConstraintInfo,
         velocityIn: Vector3,
         velocityOut: Vector3
     ) {
@@ -779,9 +785,9 @@ export class PhysicsCharacterController {
     protected _simplexSolverSolve3d(
         info: SimplexSolverInfo,
         maxSurfaceVelocity: Vector3,
-        sci0: SurfaceConstraintInfo,
-        sci1: SurfaceConstraintInfo,
-        sci2: SurfaceConstraintInfo,
+        sci0: ISurfaceConstraintInfo,
+        sci1: ISurfaceConstraintInfo,
+        sci2: ISurfaceConstraintInfo,
         allowResort: boolean,
         velocityIn: Vector3,
         velocityOut: Vector3
@@ -1004,7 +1010,7 @@ export class PhysicsCharacterController {
     }
 
     protected _simplexSolverSolve(
-        constraints: SurfaceConstraintInfo[],
+        constraints: ISurfaceConstraintInfo[],
         velocity: Vector3,
         deltaTime: number,
         minDeltaTime: number,
@@ -1042,9 +1048,15 @@ export class PhysicsCharacterController {
             let minCollisionTime = remainingTime;
             for (let i = 0; i < constraints.length; i++) {
                 //  Do not search existing active planes
-                if (info.numSupportPlanes >= 1 && info.supportPlanes[0].index == i) continue;
-                if (info.numSupportPlanes >= 2 && info.supportPlanes[1].index == i) continue;
-                if (info.numSupportPlanes >= 3 && info.supportPlanes[2].index == i) continue;
+                if (info.numSupportPlanes >= 1 && info.supportPlanes[0].index == i) {
+                    continue;
+                }
+                if (info.numSupportPlanes >= 2 && info.supportPlanes[1].index == i) {
+                    continue;
+                }
+                if (info.numSupportPlanes >= 3 && info.supportPlanes[2].index == i) {
+                    continue;
+                }
                 if (output.planeInteractions[i].status != SurfaceConstraintInteractionStatus.OK) {
                     continue;
                 }
@@ -1221,9 +1233,7 @@ export class PhysicsCharacterController {
         if (startCollector != null) {
             const query /*: ShapeProximityInput*/ = [
                 this._shape._pluginData,
-                //@ts-ignore
                 startNative,
-                //@ts-ignore
                 orientation,
                 this.keepDistance + this.keepContactTolerance, // max distance
                 false, // should hit triggers
@@ -1235,9 +1245,7 @@ export class PhysicsCharacterController {
         {
             const query /*: ShapeCastInput*/ = [
                 this._shape._pluginData,
-                //@ts-ignore
                 orientation,
-                //@ts-ignore
                 startNative,
                 [endPos.x, endPos.y, endPos.z],
                 false, // should hit triggers
@@ -1440,7 +1448,7 @@ export class PhysicsCharacterController {
                     for (let i = 0; i < numCastHits; i++) {
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         const [fraction, _hitLocal, hitWorld] = hknp.HP_QueryCollector_GetShapeCastResult(this._castCollector, i)[1];
-                        const newContact = contactFromCast(hk, hitWorld, newDisplacement, fraction, this.keepDistance);
+                        const newContact = ContactFromCast(hk, hitWorld, newDisplacement, fraction, this.keepDistance);
                         if (this._findContact(newContact, this._manifold, 0.1) == -1) {
                             //<todo fireContactAdded
                             newContactIndex = this._manifold.length;

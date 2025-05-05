@@ -251,6 +251,8 @@ export class NodeMaterialBlock {
     /** @internal */
     public _setInitialTarget(target: NodeMaterialBlockTargets): void {
         this._target = target;
+        // marked as read only
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         (this._originalTargetIsNeutral as boolean) = target === NodeMaterialBlockTargets.Neutral;
     }
 
@@ -653,6 +655,7 @@ export class NodeMaterialBlock {
             "uv6",
             "position2d",
             "particle_uv",
+            "postprocess_uv",
             "matricesIndices",
             "matricesWeights",
             "world0",
@@ -706,11 +709,11 @@ export class NodeMaterialBlock {
             }
 
             if (this.target !== NodeMaterialBlockTargets.Neutral) {
-                if ((input.target & this.target!) === 0) {
+                if ((input.target & this.target) === 0) {
                     continue;
                 }
 
-                if ((input.target & state.target!) === 0) {
+                if ((input.target & state.target) === 0) {
                     continue;
                 }
             }
@@ -963,7 +966,9 @@ export class NodeMaterialBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedInputs.length; i++) {
+                const port = serializedInputs[i];
+
                 if (port.displayName) {
                     this.inputs[i].displayName = port.displayName;
                 }
@@ -971,10 +976,11 @@ export class NodeMaterialBlock {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -982,7 +988,7 @@ export class NodeMaterialBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 

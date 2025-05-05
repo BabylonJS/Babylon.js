@@ -21,22 +21,22 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 // Static values to help the garbage collector
 
 // Quaternion
-export const _staticOffsetValueQuaternion: DeepImmutable<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
+export const _StaticOffsetValueQuaternion: DeepImmutable<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
 
 // Vector3
-export const _staticOffsetValueVector3: DeepImmutable<Vector3> = Object.freeze(Vector3.Zero());
+export const _StaticOffsetValueVector3: DeepImmutable<Vector3> = Object.freeze(Vector3.Zero());
 
 // Vector2
-export const _staticOffsetValueVector2: DeepImmutable<Vector2> = Object.freeze(Vector2.Zero());
+export const _StaticOffsetValueVector2: DeepImmutable<Vector2> = Object.freeze(Vector2.Zero());
 
 // Size
-export const _staticOffsetValueSize: DeepImmutable<Size> = Object.freeze(Size.Zero());
+export const _StaticOffsetValueSize: DeepImmutable<Size> = Object.freeze(Size.Zero());
 
 // Color3
-export const _staticOffsetValueColor3: DeepImmutable<Color3> = Object.freeze(Color3.Black());
+export const _StaticOffsetValueColor3: DeepImmutable<Color3> = Object.freeze(Color3.Black());
 
 // Color4
-export const _staticOffsetValueColor4: DeepImmutable<Color4> = Object.freeze(new Color4(0, 0, 0, 0));
+export const _StaticOffsetValueColor4: DeepImmutable<Color4> = Object.freeze(new Color4(0, 0, 0, 0));
 
 /**
  * Options to be used when creating an additive animation
@@ -87,7 +87,7 @@ export interface _IAnimationState {
     highLimitValue?: any;
 }
 
-const evaluateAnimationState: _IAnimationState = {
+const EvaluateAnimationState: _IAnimationState = {
     key: 0,
     repeatCount: 0,
     loopMode: 2 /*Animation.ANIMATIONLOOPMODE_CONSTANT*/,
@@ -154,6 +154,9 @@ export class Animation {
      * Stores the animation ranges for the animation
      */
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
+
+    /** @internal */
+    public _coreAnimation: Nullable<Animation> = null;
 
     /**
      * @internal Internal use
@@ -449,8 +452,8 @@ export class Animation {
 
         // Interpolate the reference value from the animation
         else {
-            evaluateAnimationState.key = 0;
-            const value = animation._interpolate(referenceFrame, evaluateAnimationState);
+            EvaluateAnimationState.key = 0;
+            const value = animation._interpolate(referenceFrame, EvaluateAnimationState);
             valueStore.referenceValue = value.clone ? value.clone() : value;
         }
 
@@ -948,9 +951,12 @@ export class Animation {
      * @returns the animation value
      */
     public evaluate(currentFrame: number) {
-        evaluateAnimationState.key = 0;
-        return this._interpolate(currentFrame, evaluateAnimationState);
+        EvaluateAnimationState.key = 0;
+        return this._interpolate(currentFrame, EvaluateAnimationState);
     }
+
+    /** @internal */
+    public _key: number;
 
     /**
      * @internal Internal use only
@@ -961,24 +967,32 @@ export class Animation {
         }
 
         const keys = this._keys;
-        const keysLength = keys.length;
+        let key: number;
 
-        let key = state.key;
+        if (!this._coreAnimation) {
+            const keysLength = keys.length;
 
-        while (key >= 0 && currentFrame < keys[key].frame) {
-            --key;
-        }
+            key = state.key;
 
-        while (key + 1 <= keysLength - 1 && currentFrame >= keys[key + 1].frame) {
-            ++key;
-        }
+            while (key >= 0 && currentFrame < keys[key].frame) {
+                --key;
+            }
 
-        state.key = key;
+            while (key + 1 <= keysLength - 1 && currentFrame >= keys[key + 1].frame) {
+                ++key;
+            }
 
-        if (key < 0) {
-            return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[0].value);
-        } else if (key + 1 > keysLength - 1) {
-            return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[keysLength - 1].value);
+            state.key = key;
+
+            if (key < 0) {
+                return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[0].value);
+            } else if (key + 1 > keysLength - 1) {
+                return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[keysLength - 1].value);
+            }
+
+            this._key = key;
+        } else {
+            key = this._coreAnimation._key;
         }
 
         const startKey = keys[key];
@@ -987,7 +1001,6 @@ export class Animation {
         if (searchClosestKeyOnly && (currentFrame === startKey.frame || currentFrame === endKey.frame)) {
             return undefined;
         }
-
         const startValue = this._getKeyValue(startKey.value);
         const endValue = this._getKeyValue(endKey.value);
         if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
@@ -1040,7 +1053,7 @@ export class Animation {
                         return quatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                     case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
-                        return quatValue.addInPlace((state.offsetValue || _staticOffsetValueQuaternion).scale(state.repeatCount));
+                        return quatValue.addInPlace((state.offsetValue || _StaticOffsetValueQuaternion).scale(state.repeatCount));
                 }
 
                 return quatValue;
@@ -1057,7 +1070,7 @@ export class Animation {
                         return vec3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                     case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
-                        return vec3Value.add((state.offsetValue || _staticOffsetValueVector3).scale(state.repeatCount));
+                        return vec3Value.add((state.offsetValue || _StaticOffsetValueVector3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1073,7 +1086,7 @@ export class Animation {
                         return vec2Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                     case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
-                        return vec2Value.add((state.offsetValue || _staticOffsetValueVector2).scale(state.repeatCount));
+                        return vec2Value.add((state.offsetValue || _StaticOffsetValueVector2).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1086,7 +1099,7 @@ export class Animation {
                         return this.sizeInterpolateFunction(startValue, endValue, gradient);
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                     case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
-                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add((state.offsetValue || _staticOffsetValueSize).scale(state.repeatCount));
+                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add((state.offsetValue || _StaticOffsetValueSize).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1102,7 +1115,7 @@ export class Animation {
                         return color3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                     case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
-                        return color3Value.add((state.offsetValue || _staticOffsetValueColor3).scale(state.repeatCount));
+                        return color3Value.add((state.offsetValue || _StaticOffsetValueColor3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1118,7 +1131,7 @@ export class Animation {
                         return color4Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                     case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
-                        return color4Value.add((state.offsetValue || _staticOffsetValueColor4).scale(state.repeatCount));
+                        return color4Value.add((state.offsetValue || _StaticOffsetValueColor4).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1213,12 +1226,12 @@ export class Animation {
      */
     public createKeyForFrame(frame: number) {
         // Find the key corresponding to frame
-        evaluateAnimationState.key = 0;
-        const value = this._interpolate(frame, evaluateAnimationState, true);
+        EvaluateAnimationState.key = 0;
+        const value = this._interpolate(frame, EvaluateAnimationState, true);
 
         if (!value) {
             // A key corresponding to this frame already exists
-            return this._keys[evaluateAnimationState.key].frame === frame ? evaluateAnimationState.key : evaluateAnimationState.key + 1;
+            return this._keys[EvaluateAnimationState.key].frame === frame ? EvaluateAnimationState.key : EvaluateAnimationState.key + 1;
         }
 
         // The frame is between two keys, so create a new key
@@ -1227,9 +1240,9 @@ export class Animation {
             value: value.clone ? value.clone() : value,
         };
 
-        this._keys.splice(evaluateAnimationState.key + 1, 0, newKey);
+        this._keys.splice(EvaluateAnimationState.key + 1, 0, newKey);
 
-        return evaluateAnimationState.key + 1;
+        return EvaluateAnimationState.key + 1;
     }
 
     /**
@@ -1545,7 +1558,7 @@ export class Animation {
      * @param url defines the url to load from
      * @returns a promise that will resolve to the new animation or an array of animations
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
+    public static async ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1588,7 +1601,7 @@ export class Animation {
      * @param snippetId defines the snippet to load
      * @returns a promise that will resolve to the new animation or a new array of animations
      */
-    public static ParseFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
+    public static async ParseFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {

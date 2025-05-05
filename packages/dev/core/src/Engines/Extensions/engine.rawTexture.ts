@@ -8,6 +8,7 @@ import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { IsExponentOfTwo } from "../../Misc/tools.functions";
 
 declare module "../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Update a raw texture
@@ -431,7 +432,7 @@ ThinEngine.prototype.updateRawCubeTexture = function (
             );
         } else {
             if (needConversion) {
-                faceData = _convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
+                faceData = ConvertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
             }
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, faceData);
         }
@@ -509,7 +510,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
                 for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
                     let mipFaceData = mipData[level][faceIndex];
                     if (needConversion) {
-                        mipFaceData = _convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
+                        mipFaceData = ConvertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
                     }
                     gl.texImage2D(faceIndex, level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
                 }
@@ -549,8 +550,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
 /**
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
+function ConvertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
     let rgbaData: any;
     let val1 = 1;
@@ -590,7 +590,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _makeCreateRawTextureFunction(is3D: boolean) {
+function MakeCreateRawTextureFunction(is3D: boolean) {
     return function (
         this: ThinEngine,
         data: Nullable<ArrayBufferView>,
@@ -652,16 +652,15 @@ function _makeCreateRawTextureFunction(is3D: boolean) {
     };
 }
 
-ThinEngine.prototype.createRawTexture2DArray = _makeCreateRawTextureFunction(false);
-ThinEngine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
+ThinEngine.prototype.createRawTexture2DArray = MakeCreateRawTextureFunction(false);
+ThinEngine.prototype.createRawTexture3D = MakeCreateRawTextureFunction(true);
 
 /**
  * Create a function for updateRawTexture3D/updateRawTexture2DArray
  * @param is3D true for TEXTURE_3D and false for TEXTURE_2D_ARRAY
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function _makeUpdateRawTextureFunction(is3D: boolean) {
+function MakeUpdateRawTextureFunction(is3D: boolean) {
     return function (
         this: ThinEngine,
         texture: InternalTexture,
@@ -705,5 +704,5 @@ function _makeUpdateRawTextureFunction(is3D: boolean) {
     };
 }
 
-ThinEngine.prototype.updateRawTexture2DArray = _makeUpdateRawTextureFunction(false);
-ThinEngine.prototype.updateRawTexture3D = _makeUpdateRawTextureFunction(true);
+ThinEngine.prototype.updateRawTexture2DArray = MakeUpdateRawTextureFunction(false);
+ThinEngine.prototype.updateRawTexture3D = MakeUpdateRawTextureFunction(true);

@@ -41,7 +41,9 @@ import { TargetedAnimationItemComponent } from "./entities/targetedAnimationTree
 import type { Sound } from "core/Audio/sound";
 import { SoundTreeItemComponent } from "./entities/soundTreeItemComponent";
 import { EffectLayerItemComponent } from "./entities/effectLayerPipelineTreeItemComponent";
+import { FrameGraphTreeItemComponent } from "./entities/frameGraphTreeItemComponent";
 import type { EffectLayer } from "core/Layers/effectLayer";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 interface ITreeItemSpecializedComponentProps {
     label: string;
@@ -183,6 +185,10 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("Sound") !== -1) {
                 return <SoundTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} sound={entity as Sound} onClick={() => this.onClick()} />;
+            }
+
+            if (className.indexOf("FrameGraph") !== -1) {
+                return <FrameGraphTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} frameGraph={entity as FrameGraph} onClick={() => this.onClick()} />;
             }
 
             if (entity._host) {

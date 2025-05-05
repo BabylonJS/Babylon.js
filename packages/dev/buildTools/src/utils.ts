@@ -5,12 +5,14 @@ import * as dotenv from "dotenv";
 import * as crypto from "crypto";
 import { globSync } from "glob";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function populateEnvironment() {
     dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") });
 }
 
 populateEnvironment();
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function checkDirectorySync(directory: string) {
     try {
         fs.statSync(directory);
@@ -19,6 +21,7 @@ export function checkDirectorySync(directory: string) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function removeDir(path: string) {
     if (fs.existsSync(path)) {
         const files = fs.readdirSync(path);
@@ -39,7 +42,7 @@ export function removeDir(path: string) {
     }
 }
 
-const filterDashes = (str: string) => {
+const FilterDashes = (str: string) => {
     let index = 0;
     while (str[index] === "-") {
         index++;
@@ -47,15 +50,17 @@ const filterDashes = (str: string) => {
     return str.substring(index);
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const externalArgs: string[] = [];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const checkArgs = (testArgument: string | string[], checkOnly: boolean = false, requiredIfSet = false): string | boolean => {
     const args = externalArgs.length ? externalArgs : process.argv.slice(2);
     const index = typeof testArgument === "string" ? args.indexOf(testArgument) : testArgument.map((arg) => args.indexOf(arg)).find((idx) => idx !== -1);
     const envValue =
         typeof testArgument === "string"
-            ? process.env[filterDashes(testArgument).toUpperCase().replace(/-/g, "_")]
-            : testArgument.map((arg) => process.env[filterDashes(arg).toUpperCase().replace(/-/g, "_")]).filter((str) => !!str)[0];
+            ? process.env[FilterDashes(testArgument).toUpperCase().replace(/-/g, "_")]
+            : testArgument.map((arg) => process.env[FilterDashes(arg).toUpperCase().replace(/-/g, "_")]).filter((str) => !!str)[0];
     if (index === -1 || index === undefined) {
         // is it defined in the .env file?
         if (envValue) {
@@ -76,6 +81,7 @@ export const checkArgs = (testArgument: string | string[], checkOnly: boolean = 
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function copyFile(from: string, to: string, silent?: boolean, checkHash?: boolean) {
     checkDirectorySync(path.dirname(to));
     if (checkHash) {
@@ -103,6 +109,7 @@ export function copyFile(from: string, to: string, silent?: boolean, checkHash?:
  * @param to directory to copy to
  * @param silent if true, will not log anything
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function copyFolder(from: string, to: string, silent?: boolean) {
     checkDirectorySync(to);
     // check if from is a folder
@@ -129,10 +136,13 @@ export function copyFolder(from: string, to: string, silent?: boolean) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const kebabize = (str: string) => str.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? "-" : "") + $.toLowerCase());
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const camelize = (s: string) => s.replace(/-./g, (x: string) => x[1].toUpperCase());
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const debounce = <T extends (...args: any[]) => any>(callback: T, waitFor: number) => {
     let timeout: NodeJS.Timeout | number;
     return (...args: Parameters<T>): ReturnType<T> => {
@@ -145,6 +155,7 @@ export const debounce = <T extends (...args: any[]) => any>(callback: T, waitFor
     };
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function findRootDirectory(): string {
     let localPackageJSON = { name: "" };
     let basePath: string = process.cwd();
@@ -164,11 +175,13 @@ export function findRootDirectory(): string {
     return path.resolve(currentRoot);
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getHashOfFile = (filePath: string) => {
     const content = fs.readFileSync(filePath, "utf8");
     return getHashOfContent(content);
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getHashOfContent = (content: string) => {
     const md5sum = crypto.createHash("md5");
     md5sum.update(content);

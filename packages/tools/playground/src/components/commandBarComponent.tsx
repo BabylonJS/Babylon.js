@@ -29,7 +29,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this._procedural = [];
         const url = "procedural.json?uncacher=" + Date.now();
         fetch(url)
-            .then((response) => response.json())
+            .then(async (response) => response.json())
             .then((data) => {
                 this._procedural = data;
                 this._load();

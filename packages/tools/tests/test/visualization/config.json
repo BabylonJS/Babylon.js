@@ -2,6 +2,16 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Attractors",
+            "playgroundId": "#DEZ79M#34",
+            "referenceImage": "attractors.png"
+        },
+        {
+            "title": "PBR in mirror",
+            "playgroundId": "#Q7DP2M",
+            "referenceImage": "pbr_mirror.png"
+        },
+        {
             "title": "OpenPBR Base Weight",
             "playgroundId": "#DT1XPP#4",
             "referenceImage": "openpbr_base_weight.png"
@@ -236,7 +246,7 @@
         },
         {
             "title": "EXT_texture_webp",
-            "playgroundId": "#LSAUH2#2",
+            "playgroundId": "#LSAUH2#6",
             "referenceImage": "webp.png"
         },
         {
@@ -938,6 +948,12 @@
             "errorRatio": 1.1
         },
         {
+            "title": "GLTF Serializer Shared Buffer Conversions",
+            "playgroundId": "#KX53VK#85",
+            "referenceImage": "glTFSerializerSharedBufferConversions.png",
+            "replace": "//options//, meshCount = 2;"
+        },
+        {
             "title": "GLTF Serializer Skinning and Animation",
             "playgroundId": "#DMZBX1#1",
             "referenceImage": "gltfSerializerSkinningAndAnimation.png"
@@ -1011,6 +1027,11 @@
             "playgroundId": "#O0M0J9#8",
             "replace": "//options//, roundtripCount = 2; useRightHandedSystem = true;",
             "referenceImage": "glTFSerializerCameraRightHand.png"
+        },
+        {
+            "title": "GLTF Serializer Rotation conversion, left-handed",
+            "playgroundId": "#UK7FLI#1",
+            "referenceImage": "glTFSerializerRotationConversionLH.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -1450,7 +1471,7 @@
         },
         {
             "title": "Glow layer and LODs",
-            "playgroundId": "#UNS6ZV#4",
+            "playgroundId": "#UNS6ZV#13",
             "referenceImage": "glowlayerandlods.png"
         },
         {
@@ -1494,8 +1515,9 @@
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
-            "playgroundId": "#8F5HYV#16",
+            "playgroundId": "#8F5HYV#72",
             "excludedEngines": ["webgl1"],
+            "errorRatio": 3.5,
             "referenceImage": "prepass-ssao-dof.png"
         },
         {
@@ -1938,9 +1960,8 @@
         },
         {
             "title": "Export GLTF Extension KHR_texture_transform",
-            "playgroundId": "#20OAV9#9228",
-            "referenceImage": "exportGltfKHRTextureTransform.png",
-            "renderCount": 15
+            "playgroundId": "#20OAV9#15148",
+            "referenceImage": "exportGltfKHRTextureTransform.png"
         },
         {
             "title": "GUI Input Text Area Inside ScrollViewer",
@@ -2217,12 +2238,12 @@
         {
             "title": "custom-handling-of-materials-for-render-target-pass",
             "renderCount": 60,
-            "playgroundId": "#FIVL25#21"
+            "playgroundId": "#FIVL25#22"
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
             "renderCount": 2,
-            "playgroundId": "#F6PGMC"
+            "playgroundId": "#F6PGMC#12"
         },
         {
             "title": "cascaded-shadow-maps-and-flying-saucers",
@@ -2260,11 +2281,6 @@
         {
             "title": "lens-flare",
             "playgroundId": "#KICG93#2"
-        },
-        {
-            "title": "update-sampler-info",
-            "renderCount": 5,
-            "playgroundId": "#7GKK8E#20"
         },
         {
             "title": "wgsl-in-shadermaterial",
@@ -2511,6 +2527,10 @@
             "playgroundId": "#RM56RY#16"
         },
         {
+            "title": "FrameGraph image processing",
+            "playgroundId": "#PV8OLY#21"
+        },
+        {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#7"
         },
@@ -2544,6 +2564,10 @@
             "playgroundId": "#5H0H89#129",
             "renderCount": 10,
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Specular Reflectance with IOR",
+            "playgroundId": "#KQYNYS#2"
         }
     ]
 }

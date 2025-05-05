@@ -153,9 +153,10 @@ export class FlowGraphBlock {
         serializationObject.config = {};
         if (this.config) {
             const config = this.config;
-            Object.keys(this.config).forEach((key) => {
+            const keys = Object.keys(config);
+            for (const key of keys) {
                 _valueSerializeFunction(key, config[key], serializationObject.config);
-            });
+            }
         }
         serializationObject.dataInputs = [];
         serializationObject.dataOutputs = [];

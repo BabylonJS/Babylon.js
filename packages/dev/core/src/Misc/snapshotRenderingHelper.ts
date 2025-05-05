@@ -21,6 +21,7 @@ import { Logger } from "core/Misc/logger";
 /**
  * Options for the snapshot rendering helper
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SnapshotRenderingHelpersOptions {
     /**
      * Maximum number of influences for morph target managers
@@ -96,7 +97,9 @@ export class SnapshotRenderingHelper {
             }
 
             // Animate skeletons
-            scene.skeletons.forEach((skeleton) => skeleton.prepare(true));
+            for (const skeleton of scene.skeletons) {
+                skeleton.prepare(true);
+            }
 
             for (const mesh of scene.meshes) {
                 if (mesh.infiniteDistance) {
