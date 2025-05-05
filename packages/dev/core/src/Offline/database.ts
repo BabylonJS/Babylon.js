@@ -289,7 +289,13 @@ export class Database implements IOfflineProvider {
             transaction.oncomplete = () => {
                 let blobTextureURL: string;
                 if (texture && typeof URL === "function") {
-                    blobTextureURL = URL.createObjectURL(texture.data);
+                    // check if data is an array buffer and create a Blob if it is
+                    let data = texture.data;
+                    if (texture.data instanceof ArrayBuffer) {
+                        const blob = new Blob([texture.data], { type: "image/png" });
+                        data = blob;
+                    }
+                    blobTextureURL = URL.createObjectURL(data);
                     image.onerror = () => {
                         Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
                         image.src = url;
@@ -540,7 +546,7 @@ export class Database implements IOfflineProvider {
     private _loadFile(url: string, callback: (data?: any) => void, notInDBCallback: () => void, progressCallBack?: (data: any) => void) {
         if (this._isSupported && this._db) {
             let targetStore: string;
-            if (url.indexOf(".babylon") !== -1) {
+            if (url.split("?")[0].endsWith(".babylon")) {
                 targetStore = "scenes";
             } else {
                 targetStore = "textures";
@@ -550,16 +556,28 @@ export class Database implements IOfflineProvider {
             const transaction = this._db.transaction([targetStore]);
 
             transaction.oncomplete = () => {
-                if (file) {
+                function loadArrayBuffer(arrayBuffer: ArrayBuffer) {
                     if (progressCallBack) {
-                        const numberToLoad = file.data?.byteLength || 0;
+                        const numberToLoad = arrayBuffer.byteLength || 0;
                         progressCallBack({
                             total: numberToLoad,
                             loaded: numberToLoad,
                             lengthComputable: true,
                         });
                     }
-                    callback(file.data);
+                    callback(arrayBuffer);
+                }
+                if (file) {
+                    // check if data is a Blob, and get the array Data from the blob if it is
+                    if (file.data instanceof Blob) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            loadArrayBuffer(ev.target?.result as ArrayBuffer);
+                        };
+                        reader.readAsArrayBuffer(file.data);
+                    } else {
+                        loadArrayBuffer(file.data);
+                    }
                 }
                 // file was not found in DB
                 else {
@@ -595,7 +613,7 @@ export class Database implements IOfflineProvider {
     ) {
         if (this._isSupported) {
             let targetStore: string;
-            if (url.indexOf(".babylon") !== -1) {
+            if (url.split("?")[0].endsWith(".babylon")) {
                 targetStore = "scenes";
             } else {
                 targetStore = "textures";
