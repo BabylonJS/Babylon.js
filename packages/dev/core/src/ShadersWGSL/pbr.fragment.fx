@@ -541,7 +541,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , uniforms.vThicknessParam
             , uniforms.vTintColor
             , normalW
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            , vec3f(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+        #else
             , baseSpecularEnvironmentReflectance
+        #endif
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             , thicknessMap
         #endif

@@ -15,23 +15,30 @@ aggShadow = aggShadow / numLights;
     surfaceAlbedo.rgb = sheenOut.sheenAlbedoScaling * surfaceAlbedo.rgb;
 #endif
 
+#ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+    // Remove F0 energy from albedo.
+    // For metallic workflow, this is already done in the reflectivity block.
+    #ifndef METALLICWORKFLOW
+        #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
+            surfaceAlbedo.rgb = (1. - reflectanceF0) * surfaceAlbedo.rgb;
+        #endif
+    #endif
+#endif
+
 // _____________________________ Irradiance ______________________________________
 #ifdef REFLECTION
     vec3 finalIrradiance = reflectionOut.environmentIrradiance;
 
-    #if defined(METALLICWORKFLOW) || defined(SPECULAR_GLOSSINESS_ENERGY_CONSERVATION)
-        // Account for energy loss due to specular reflectance
-        vec3 baseSpecularEnergy = vec3(baseSpecularEnvironmentReflectance);
-        #if defined(ENVIRONMENTBRDF)
-            #ifdef MS_BRDF_ENERGY_CONSERVATION
-                baseSpecularEnergy *= baseSpecularEnergyConservationFactor;
+    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+        #if defined(METALLICWORKFLOW) || defined(SPECULAR_GLOSSINESS_ENERGY_CONSERVATION)
+            // Account for energy loss due to specular reflectance
+            vec3 baseSpecularEnergy = vec3(baseSpecularEnvironmentReflectance);
+            #if defined(ENVIRONMENTBRDF)
+                #ifdef MS_BRDF_ENERGY_CONSERVATION
+                    baseSpecularEnergy *= baseSpecularEnergyConservationFactor;
+                #endif
             #endif
-        #endif
-
-        finalIrradiance *= (vec3(1.0) - baseSpecularEnergy);
-        #if defined(SS_REFRACTION)
-            // Decrease transmission in the same way as the irradiance
-            subSurfaceOut.finalRefraction *= (vec3(1.0) - baseSpecularEnergy);
+            finalIrradiance *= (vec3(1.0) - baseSpecularEnergy);
         #endif
     #endif
 

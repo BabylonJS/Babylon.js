@@ -1,6 +1,7 @@
 // _____________________________ Diffuse ________________________________________
 vec3 finalDiffuse = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
+
 #if defined(SS_REFRACTION) && !defined(UNLIT)
     finalDiffuse *= subSurfaceOut.refractionOpacity;
 #endif

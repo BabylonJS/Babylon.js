@@ -545,7 +545,11 @@ void main(void) {
             , vThicknessParam
             , vTintColor
             , normalW
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            , vec3(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+        #else
             , baseSpecularEnvironmentReflectance
+        #endif
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             , thicknessMap
         #endif

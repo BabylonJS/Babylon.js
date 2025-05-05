@@ -129,7 +129,11 @@ reflectivityOutParams reflectivityBlock(
                 outParams.metallicF0 = vec3(dielectricF0) * surfaceReflectivityColor;
             #endif
 
-            outParams.surfaceAlbedo = baseColor.rgb;
+            #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                outParams.surfaceAlbedo = baseColor.rgb * (1.0 - dielectricF0) * (1.0 - outParams.metallic);
+            #else
+                outParams.surfaceAlbedo = baseColor.rgb;
+            #endif
             
             // Compute the coloured F0 reflectance.
             // The coloured reflectance is the percentage of light reflected by the specular lobe at normal incidence.

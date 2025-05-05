@@ -439,9 +439,13 @@ struct subSurfaceOutParams
             environmentRefraction.rgb *= surfaceAlbedo.rgb;
         #endif
 
-        outParams.surfaceAlbedo = surfaceAlbedo;
-
-        outParams.refractionOpacity = (1. - refractionIntensity);
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            outParams.surfaceAlbedo = surfaceAlbedo * (1.-refractionIntensity);
+            outParams.refractionOpacity = 1.0;
+        #else
+            outParams.surfaceAlbedo = surfaceAlbedo;
+            outParams.refractionOpacity = (1. - refractionIntensity);
+        #endif
 
         #ifdef UNUSED_MULTIPLEBOUNCES
             // Keeping track in case of back compat issue.

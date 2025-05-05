@@ -105,7 +105,9 @@
                 #else
                     fresnel = fresnelSchlickGGX(preInfo.VdotH, vec3(reflectanceF0), specularEnvironmentR90);
                     coloredFresnel = fresnelSchlickGGX(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90);
-                    info.diffuse *= (1.0 - fresnel);
+                    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                        info.diffuse *= (1.0 - fresnel);
+                    #endif
                     #ifdef ANISOTROPIC
                         info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb);
                     #else

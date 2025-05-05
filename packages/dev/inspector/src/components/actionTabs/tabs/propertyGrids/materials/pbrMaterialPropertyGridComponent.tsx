@@ -1312,6 +1312,13 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <CheckBoxLineComponent
+                        label="Use legacy specular energy conservation"
+                        target={material.brdf}
+                        propertyName="useLegacySpecularEnergyConservation"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
