@@ -7,7 +7,7 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
-import { _isADescendantOf } from "core/FlowGraph/utils";
+import { _IsDescendantOf } from "core/FlowGraph/utils";
 
 /**
  * Configuration for the pointer out event block.
@@ -76,8 +76,8 @@ export class FlowGraphPointerOutEventBlock extends FlowGraphEventBlock {
         const mesh = this.targetMesh.getValue(context);
         this.meshOutOfPointer.setValue(payload.mesh, context);
         this.pointerId.setValue(payload.pointerId, context);
-        const skipEvent = payload.over && _isADescendantOf(payload.mesh, mesh);
-        if (!skipEvent && (payload.mesh === mesh || _isADescendantOf(payload.mesh, mesh))) {
+        const skipEvent = payload.over && _IsDescendantOf(payload.mesh, mesh);
+        if (!skipEvent && (payload.mesh === mesh || _IsDescendantOf(payload.mesh, mesh))) {
             this._execute(context);
             return !this.config?.stopPropagation;
         }

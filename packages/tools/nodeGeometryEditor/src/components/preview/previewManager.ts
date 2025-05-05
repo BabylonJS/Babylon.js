@@ -6,7 +6,6 @@ import { Scene } from "core/scene";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { SceneLoader } from "core/Loading/sceneLoader";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
@@ -27,6 +26,7 @@ import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { NormalMaterial } from "materials/normal/normalMaterial";
 import type { Mesh } from "core/Meshes/mesh";
+import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -284,7 +284,7 @@ export class PreviewManager {
     }
 
     private _refreshPreviewMesh(first: boolean) {
-        SceneLoader.ShowLoadingScreen = false;
+        SceneLoaderFlags.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
@@ -323,7 +323,9 @@ export class PreviewManager {
         switch (this._globalState.previewMode) {
             case PreviewMode.Normal:
                 this._mesh.material = useNM ? this._matNME : this._matStd;
-                this._matStd.subMaterials.forEach((m) => (m!.wireframe = false));
+                for (const m of this._matStd.subMaterials) {
+                    m!.wireframe = false;
+                }
                 break;
             case PreviewMode.MatCap:
                 this._mesh.material = this._matCap;
@@ -333,7 +335,9 @@ export class PreviewManager {
                 break;
             case PreviewMode.Wireframe:
                 this._mesh.material = useNM ? this._matNME : this._matStd;
-                this._matStd.subMaterials.forEach((m) => (m!.wireframe = true));
+                for (const m of this._matStd.subMaterials) {
+                    m!.wireframe = true;
+                }
                 break;
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
@@ -352,7 +356,9 @@ export class PreviewManager {
                 this._setMaterial();
                 this._mesh.useVertexColors = true;
                 this._mesh.onMeshReadyObservable.addOnce(() => {
-                    this._toDelete.forEach((m) => m.dispose());
+                    for (const m of this._toDelete) {
+                        m.dispose();
+                    }
                     this._toDelete.length = 0;
                 });
             }

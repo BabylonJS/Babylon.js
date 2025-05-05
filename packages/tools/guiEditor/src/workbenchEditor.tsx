@@ -25,6 +25,7 @@ import type { Observer } from "core/Misc/observable";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
+    onReady?: () => Promise<void>;
 }
 
 interface IGraphEditorState {
@@ -51,6 +52,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
         document.addEventListener("keydown", this.addToolControls);
         document.addEventListener("keyup", this.removePressToolControls);
+        this.props.onReady?.();
     }
 
     override componentWillUnmount() {
@@ -128,13 +130,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
-        if (evt.button !== 0) return;
+        if (evt.button !== 0) {
+            return;
+        }
         this._moveInProgress = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
 
     onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        if (evt.button !== 0) return;
+        if (evt.button !== 0) {
+            return;
+        }
         this._moveInProgress = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
@@ -144,7 +150,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             return;
         }
 
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
         const maxWidth = this.props.globalState.hostWindow.innerWidth;
 

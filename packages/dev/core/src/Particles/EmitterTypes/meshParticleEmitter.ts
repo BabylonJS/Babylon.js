@@ -103,7 +103,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
             return;
         }
 
-        const randomFaceIndex = (3 * Math.random() * (this._indices.length / 3)) | 0;
+        const randomFaceIndex = 3 * ((Math.random() * (this._indices.length / 3)) | 0);
         const bu = Math.random();
         const bv = Math.random() * (1.0 - bu);
         const bw = 1.0 - bu - bv;

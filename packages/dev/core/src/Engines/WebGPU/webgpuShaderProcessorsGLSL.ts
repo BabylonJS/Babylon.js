@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { Nullable } from "../../types";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
@@ -40,7 +40,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return [name, type, length];
     }
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
 
         this._missingVaryings.length = 0;
@@ -280,7 +280,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         code: string,
         defines: string[],
         isFragment: boolean,
-        _processingContext: Nullable<ShaderProcessingContext>,
+        _processingContext: Nullable<_IShaderProcessingContext>,
         _parameters?: { [key: string]: number | string | boolean | undefined }
     ): string {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;

@@ -7,7 +7,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
     test.describe(`${soundType} currentTime`, () => {
         test("The `currentTime` property should equal the current playback time while playing", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -21,7 +21,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal 0 when stopped", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -36,7 +36,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the paused time of the sound in seconds while paused", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -51,7 +51,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the current playback time when paused and played again", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -69,7 +69,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the sound's `startOffset` option", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { startOffset: 1 });
 
                 sound.play();
@@ -84,8 +84,8 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the most recently started instance's current time", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
-                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
+                const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { preloadCount: 2 });
 
                 sound.play();
                 await AudioV2Test.WaitAsync(1);
@@ -101,13 +101,11 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("Setting the `currentTime` property before playing should seek to the given time", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync(soundType);
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.currentTime = 1;
                 sound.play();
-
-                return await AudioV2Test.GetResultAsync();
             });
 
             expect(pulses[Channel.L]).toEqual([2, 3]);
@@ -115,14 +113,13 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("Setting the `currentTime` property while playing should seek to the given time", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync(soundType);
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
-                await AudioV2Test.WaitAsync(0.5);
-                sound.currentTime = 1.5;
-
-                return await AudioV2Test.GetResultAsync();
+                await AudioV2Test.WaitAsync(0.5, () => {
+                    sound.currentTime = 1.5;
+                });
             });
 
             expect(pulses[Channel.L]).toEqual([1, 3]);
@@ -130,16 +127,15 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("Setting the `currentTime` property while paused should seek to the given time", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync(soundType);
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
-                await AudioV2Test.WaitAsync(0.5);
-                sound.pause();
-                sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
-                sound.play();
-
-                return await AudioV2Test.GetResultAsync();
+                await AudioV2Test.WaitAsync(0.5, () => {
+                    sound.pause();
+                    sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
+                    sound.play();
+                });
             });
 
             expect(pulses[Channel.L]).toEqual([1, 3]);
@@ -147,16 +143,15 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("Setting the `currentTime` property while stopped should seek to the given time", async ({ page }) => {
             const pulses = await EvaluatePulseCountTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync();
+                await AudioV2Test.CreateAudioEngineAsync(soundType);
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
-                await AudioV2Test.WaitAsync(0.5);
-                sound.stop();
-                sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
-                sound.play();
-
-                return await AudioV2Test.GetResultAsync();
+                await AudioV2Test.WaitAsync(0.5, () => {
+                    sound.stop();
+                    sound.currentTime = soundType === "StaticSound" ? 2 : 1.5;
+                    sound.play();
+                });
             });
 
             expect(pulses[Channel.L]).toEqual([1, 3]);

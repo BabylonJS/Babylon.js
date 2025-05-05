@@ -17,8 +17,8 @@ interface ITextureButtonLineState {
 }
 
 export class TextureButtonLine extends React.Component<ITextureButtonLineProps, ITextureButtonLineState> {
-    private static _IDGenerator = 0;
-    private _id = TextureButtonLine._IDGenerator++;
+    private static _IdGenerator = 0;
+    private _id = TextureButtonLine._IdGenerator++;
     private _uploadInputRef: React.RefObject<HTMLInputElement>;
 
     constructor(props: ITextureButtonLineProps) {

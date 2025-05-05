@@ -31,8 +31,8 @@ import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/N
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Texture } from "core/Materials/Textures/texture";
 
-const debugTextures = false;
-const logErrorTrace = true;
+const DebugTextures = false;
+const LogErrorTrace = true;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -94,7 +94,7 @@ export class PreviewManager {
                 enableAllFeatures: true,
                 setMaximumLimits: true,
             });
-            await (this._engine as WebGPUEngine).initAsync();
+            await this._engine.initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
             this._engine.getCaps().parallelShaderCompile = undefined;
@@ -122,7 +122,7 @@ export class PreviewManager {
         this._refreshPreviewMesh();
     }
 
-    private _initSceneAsync(scene: Scene): Promise<void> {
+    private async _initSceneAsync(scene: Scene): Promise<void> {
         (window as any).scenePreview = scene;
 
         this._scene = scene;
@@ -179,7 +179,9 @@ export class PreviewManager {
         this._globalState.envType = PreviewType.Room;
         this._globalState.previewType = PreviewType.Box;
         this._globalState.listOfCustomPreviewFiles = [];
-        this._scene.meshes.forEach((m) => m.dispose());
+        for (const m of this._scene.meshes) {
+            m.dispose();
+        }
         this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
         this._refreshPreviewMesh(true);
     }
@@ -231,9 +233,9 @@ export class PreviewManager {
             dir1.position = findLightPosition(dir1.direction);
         }
 
-        this._scene.meshes.forEach((m) => {
+        for (const m of this._scene.meshes) {
             m.receiveShadows = true;
-        });
+        }
     }
 
     private _createNodeRenderGraph() {
@@ -249,10 +251,10 @@ export class PreviewManager {
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
             rebuildGraphOnEngineResize: true,
             autoFillExternalInputs: false,
-            debugTextures,
+            debugTextures: DebugTextures,
         });
 
-        this._buildGraph();
+        this._buildGraphAsync();
 
         (window as any).nrgPreview = this._nodeRenderGraph;
     }
@@ -267,7 +269,7 @@ export class PreviewManager {
         return null;
     }
 
-    private async _buildGraph() {
+    private async _buildGraphAsync() {
         if (!this._scene) {
             // The initialization is not done yet
             return;
@@ -385,7 +387,8 @@ export class PreviewManager {
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<NodeRenderGraphGUIBlock>((block) => block.getClassName() === "GUI.NodeRenderGraphGUIBlock");
         let guiIndex = 0;
-        guiBlocks.forEach((block, i) => {
+        for (let i = 0; i < guiBlocks.length; ++i) {
+            const block = guiBlocks[i];
             const gui = block.gui;
 
             if (!block.isAnAncestorOfType("NodeRenderGraphOutputBlock")) {
@@ -411,14 +414,14 @@ export class PreviewManager {
             }
 
             gui.addControl(button);
-        });
+        }
 
         try {
             this._nodeRenderGraph.build();
             await this._nodeRenderGraph.whenReadyAsync(16, 5000);
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
-            if (logErrorTrace) {
+            if (LogErrorTrace) {
                 (console as any).log(err);
             }
             this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));

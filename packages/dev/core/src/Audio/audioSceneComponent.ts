@@ -44,6 +44,7 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
 });
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * @internal
@@ -377,11 +378,11 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         if (!container.sounds) {
             return;
         }
-        container.sounds.forEach((sound) => {
+        for (const sound of container.sounds) {
             sound.play();
             sound.autoplay = true;
             this.scene.mainSoundTrack.addSound(sound);
-        });
+        }
     }
 
     /**
@@ -393,14 +394,14 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         if (!container.sounds) {
             return;
         }
-        container.sounds.forEach((sound) => {
+        for (const sound of container.sounds) {
             sound.stop();
             sound.autoplay = false;
             this.scene.mainSoundTrack.removeSound(sound);
             if (dispose) {
                 sound.dispose();
             }
-        });
+        }
     }
 
     /**

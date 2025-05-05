@@ -12,6 +12,7 @@ import { EngineStore } from "../../Engines/engineStore";
 import type { Collider } from "../../Collisions/collider";
 
 declare module "../../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * @internal
@@ -64,6 +65,7 @@ Object.defineProperty(Scene.prototype, "selectionOctree", {
 });
 
 declare module "../../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /**
          * @internal

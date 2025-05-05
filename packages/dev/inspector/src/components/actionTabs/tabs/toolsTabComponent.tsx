@@ -43,7 +43,7 @@ import { Light } from "core/Lights/light";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Logger } from "core/Misc/logger";
 
-const envExportImageTypes = [
+const EnvExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
     { label: "WebP", value: 1, imageType: "image/webp" },
 ];
@@ -316,7 +316,7 @@ export class ToolsTabComponent extends PaneComponent {
 
         const scene = this.props.scene;
         EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture, {
-            imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
+            imageType: EnvExportImageTypes[this._envOptions.imageTypeIndex].imageType,
             imageQuality: this._envOptions.imageQuality,
             disableIrradianceTexture: !this._envOptions.iblDiffuse,
         })
@@ -468,7 +468,7 @@ export class ToolsTabComponent extends PaneComponent {
                             )}
                             <OptionsLine
                                 label="Image type"
-                                options={envExportImageTypes}
+                                options={EnvExportImageTypes}
                                 target={this._envOptions}
                                 propertyName="imageTypeIndex"
                                 onSelect={() => {
@@ -517,7 +517,7 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     )}
                 </LineContainerComponent>
-                {GLTFFileLoader && <GLTFComponent lockObject={this._lockObject} scene={scene} globalState={this.props.globalState!} />}
+                {GLTFFileLoader && <GLTFComponent lockObject={this._lockObject} scene={scene} globalState={this.props.globalState} />}
                 <LineContainerComponent title="REFLECTOR" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />

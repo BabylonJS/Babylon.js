@@ -49,7 +49,9 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-        this.getComponentIds().forEach((id) => {
+        const ids = this.getComponentIds();
+
+        for (const id of ids) {
             const comp = id && this.getComponent(id);
             if (comp) {
                 comp.onButtonStateChangedObservable.add(
@@ -72,15 +74,15 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
                     true
                 );
             }
-        });
+        }
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
-        meshes.forEach((mesh) => {
+        for (const mesh of meshes) {
             mesh.isPickable = false;
-        });
+        }
         this._modelRootNode = meshes[1];
         this._modelRootNode.parent = this.rootMesh;
         if (!this.scene.useRightHandedSystem) {

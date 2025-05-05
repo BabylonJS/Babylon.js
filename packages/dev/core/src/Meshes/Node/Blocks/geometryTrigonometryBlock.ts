@@ -236,28 +236,28 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             case NodeGeometryBlockConnectionPointTypes.Float: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
-                    return func!(source);
+                    return func(source);
                 };
                 break;
             }
             case NodeGeometryBlockConnectionPointTypes.Vector2: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
-                    return new Vector2(func!(source.x), func!(source.y));
+                    return new Vector2(func(source.x), func(source.y));
                 };
                 break;
             }
             case NodeGeometryBlockConnectionPointTypes.Vector3: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
-                    return new Vector3(func!(source.x), func!(source.y), func!(source.z));
+                    return new Vector3(func(source.x), func(source.y), func(source.z));
                 };
                 break;
             }
             case NodeGeometryBlockConnectionPointTypes.Vector4: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
-                    return new Vector4(func!(source.x), func!(source.y), func!(source.z), func!(source.w));
+                    return new Vector4(func(source.x), func(source.y), func(source.z), func(source.w));
                 };
                 break;
             }

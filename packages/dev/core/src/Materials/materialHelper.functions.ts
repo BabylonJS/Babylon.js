@@ -17,12 +17,12 @@ import { LightConstants } from "../Lights/lightConstants";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
-import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 // Temps
-const _TempFogColor = Color3.Black();
-const _TmpMorphInfluencers = {
+const TempFogColor = Color3.Black();
+const TmpMorphInfluencers = {
     NUM_MORPH_INFLUENCERS: 0,
     NORMAL: false,
     TANGENT: false,
@@ -59,8 +59,8 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
         effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
         // Convert fog color to linear space if used in a linear space computed shader.
         if (linearSpace) {
-            scene.fogColor.toLinearSpaceToRef(_TempFogColor, scene.getEngine().useExactSrgbConversions);
-            effect.setColor3("vFogColor", _TempFogColor);
+            scene.fogColor.toLinearSpaceToRef(TempFogColor, scene.getEngine().useExactSrgbConversions);
+            effect.setColor3("vFogColor", TempFogColor);
         } else {
             effect.setColor3("vFogColor", scene.fogColor);
         }
@@ -100,19 +100,43 @@ export function PrepareDefinesAndAttributesForMorphTargets(
 
     defines.push("#define MORPHTARGETS");
 
-    if (morphTargetManager.hasPositions) defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
-    if (morphTargetManager.hasNormals) defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
-    if (morphTargetManager.hasTangents) defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
-    if (morphTargetManager.hasUVs) defines.push("#define MORPHTARGETTEXTURE_HASUVS");
-    if (morphTargetManager.hasUV2s) defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
-    if (morphTargetManager.hasColors) defines.push("#define MORPHTARGETTEXTURE_HASCOLORS");
+    if (morphTargetManager.hasPositions) {
+        defines.push("#define MORPHTARGETTEXTURE_HASPOSITIONS");
+    }
+    if (morphTargetManager.hasNormals) {
+        defines.push("#define MORPHTARGETTEXTURE_HASNORMALS");
+    }
+    if (morphTargetManager.hasTangents) {
+        defines.push("#define MORPHTARGETTEXTURE_HASTANGENTS");
+    }
+    if (morphTargetManager.hasUVs) {
+        defines.push("#define MORPHTARGETTEXTURE_HASUVS");
+    }
+    if (morphTargetManager.hasUV2s) {
+        defines.push("#define MORPHTARGETTEXTURE_HASUV2S");
+    }
+    if (morphTargetManager.hasColors) {
+        defines.push("#define MORPHTARGETTEXTURE_HASCOLORS");
+    }
 
-    if (morphTargetManager.supportsPositions && usePositionMorph) defines.push("#define MORPHTARGETS_POSITION");
-    if (morphTargetManager.supportsNormals && useNormalMorph) defines.push("#define MORPHTARGETS_NORMAL");
-    if (morphTargetManager.supportsTangents && useTangentMorph) defines.push("#define MORPHTARGETS_TANGENT");
-    if (morphTargetManager.supportsUVs && useUVMorph) defines.push("#define MORPHTARGETS_UV");
-    if (morphTargetManager.supportsUV2s && useUV2Morph) defines.push("#define MORPHTARGETS_UV2");
-    if (morphTargetManager.supportsColors && useColorMorph) defines.push("#define MORPHTARGETS_COLOR");
+    if (morphTargetManager.supportsPositions && usePositionMorph) {
+        defines.push("#define MORPHTARGETS_POSITION");
+    }
+    if (morphTargetManager.supportsNormals && useNormalMorph) {
+        defines.push("#define MORPHTARGETS_NORMAL");
+    }
+    if (morphTargetManager.supportsTangents && useTangentMorph) {
+        defines.push("#define MORPHTARGETS_TANGENT");
+    }
+    if (morphTargetManager.supportsUVs && useUVMorph) {
+        defines.push("#define MORPHTARGETS_UV");
+    }
+    if (morphTargetManager.supportsUV2s && useUV2Morph) {
+        defines.push("#define MORPHTARGETS_UV2");
+    }
+    if (morphTargetManager.supportsColors && useColorMorph) {
+        defines.push("#define MORPHTARGETS_COLOR");
+    }
 
     defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
@@ -120,14 +144,14 @@ export function PrepareDefinesAndAttributesForMorphTargets(
         defines.push("#define MORPHTARGETS_TEXTURE");
     }
 
-    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = numMorphInfluencers;
-    _TmpMorphInfluencers.NORMAL = useNormalMorph;
-    _TmpMorphInfluencers.TANGENT = useTangentMorph;
-    _TmpMorphInfluencers.UV = useUVMorph;
-    _TmpMorphInfluencers.UV2 = useUV2Morph;
-    _TmpMorphInfluencers.COLOR = useColorMorph;
+    TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = numMorphInfluencers;
+    TmpMorphInfluencers.NORMAL = useNormalMorph;
+    TmpMorphInfluencers.TANGENT = useTangentMorph;
+    TmpMorphInfluencers.UV = useUVMorph;
+    TmpMorphInfluencers.UV2 = useUV2Morph;
+    TmpMorphInfluencers.COLOR = useColorMorph;
 
-    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, usePositionMorph);
+    PrepareAttributesForMorphTargets(attribs, mesh, TmpMorphInfluencers, usePositionMorph);
     return numMorphInfluencers;
 }
 
@@ -138,13 +162,13 @@ export function PrepareDefinesAndAttributesForMorphTargets(
  * @param influencers The number of influencers
  */
 export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
-    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
-    _TmpMorphInfluencers.NORMAL = false;
-    _TmpMorphInfluencers.TANGENT = false;
-    _TmpMorphInfluencers.UV = false;
-    _TmpMorphInfluencers.UV2 = false;
-    _TmpMorphInfluencers.COLOR = false;
-    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers, true);
+    TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+    TmpMorphInfluencers.NORMAL = false;
+    TmpMorphInfluencers.TANGENT = false;
+    TmpMorphInfluencers.UV = false;
+    TmpMorphInfluencers.UV2 = false;
+    TmpMorphInfluencers.COLOR = false;
+    PrepareAttributesForMorphTargets(attribs, mesh, TmpMorphInfluencers, true);
 }
 
 /**
@@ -287,7 +311,7 @@ export function PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh
 }
 
 // Copies the bones transformation matrices into the target array and returns the target's reference
-function _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
+function CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
     target.set(source);
 
     return target;
@@ -324,7 +348,7 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
                         prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
                     }
                     effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
-                    _CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
+                    CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
                 }
             }
         }
@@ -708,7 +732,7 @@ export function PrepareDefinesForFrameBoundValues(
     let changed = PrepareDefinesForCamera(scene, defines);
 
     if (useClipPlane !== false) {
-        changed = prepareDefinesForClipPlanes(material, scene, defines);
+        changed = PrepareDefinesForClipPlanes(material, scene, defines);
     }
 
     if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
@@ -902,6 +926,7 @@ export function PrepareDefinesForMultiview(scene: Scene, defines: any) {
  * @param defines The defines to update
  * @param needAlphaBlending Determines if the material needs alpha blending
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
     const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
     const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;

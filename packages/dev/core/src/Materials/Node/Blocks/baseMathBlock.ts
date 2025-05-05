@@ -101,7 +101,9 @@ export class BaseMathBlock extends NodeMaterialBlock {
      */
     public override dispose(): void {
         super.dispose();
-        this._connectionObservers.forEach((observer) => observer.remove());
+        for (const observer of this._connectionObservers) {
+            observer.remove();
+        }
         this._connectionObservers.length = 0;
     }
 }

@@ -66,12 +66,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this._graphCanvas.createNodeFromObject(
             dataToAppend instanceof NodeMaterialBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend,
             (block: NodeMaterialBlock) => {
-                if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(block) === -1) {
-                    this.props.globalState.nodeMaterial!.attachedBlocks.push(block);
+                if (this.props.globalState.nodeMaterial.attachedBlocks.indexOf(block) === -1) {
+                    this.props.globalState.nodeMaterial.attachedBlocks.push(block);
                 }
 
                 if (block.isFinalMerger) {
-                    this.props.globalState.nodeMaterial!.addOutputNode(block);
+                    this.props.globalState.nodeMaterial.addOutputNode(block);
                 }
             },
             recursion
@@ -146,7 +146,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const globalState = this.props.globalState;
 
         if (globalState.hostDocument) {
-            globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
         globalState.stateManager.onUpdateRequiredObservable.clear();
@@ -225,9 +225,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const frameData = source.editorData.frames[0];
 
             // create new graph nodes for only blocks from frame (last blocks added)
-            this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeMaterialBlock) => {
+            const blocks = this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length);
+
+            for (const block of blocks) {
                 this.appendBlock(block);
-            });
+            }
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
         });
@@ -244,7 +246,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+        this.props.globalState.hostDocument.addEventListener("keydown", (evt) => {
             if (this._historyStack.processKeyEvent(evt)) {
                 return;
             }
@@ -252,7 +254,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this._graphCanvas.handleKeyDown(
                 evt,
                 (nodeData) => {
-                    this.props.globalState.nodeMaterial!.removeBlock(nodeData.data as NodeMaterialBlock);
+                    this.props.globalState.nodeMaterial.removeBlock(nodeData.data as NodeMaterialBlock);
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
@@ -266,7 +268,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     return this.appendBlock(clone, false);
                 },
-                this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
+                this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
             );
         });
 
@@ -317,19 +319,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     loadGraph() {
         const material = this.props.globalState.nodeMaterial;
-        material._vertexOutputNodes.forEach((n: any) => {
+        for (const n of material._vertexOutputNodes) {
             this.appendBlock(n, true);
-        });
-        material._fragmentOutputNodes.forEach((n: any) => {
+        }
+        for (const n of material._fragmentOutputNodes) {
             this.appendBlock(n, true);
-        });
+        }
 
-        material.attachedBlocks.forEach((n: any) => {
+        for (const n of material.attachedBlocks) {
             this.appendBlock(n, true);
-        });
+        }
 
         // Links
-        material.attachedBlocks.forEach((n: any) => {
+        for (const n of material.attachedBlocks) {
             if (n.inputs.length) {
                 const nodeData = this._graphCanvas.findNodeFromData(n);
                 for (const input of nodeData.content.inputs) {
@@ -338,7 +340,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
                 }
             }
-        });
+        }
     }
 
     showWaitScreen() {
@@ -470,7 +472,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        const data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        const data = event.dataTransfer.getData("babylonjs-material-node");
 
         const container = this._diagramContainerRef.current!;
         this.emitNewBlock(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
@@ -535,8 +537,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     this.createPreviewMeshControlHost(options, parentControl);
                     this.createPreviewHost(options, parentControl);
                     if (parentControl) {
-                        this.fixPopUpStyles(parentControl.ownerDocument!);
-                        this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
+                        this.fixPopUpStyles(parentControl.ownerDocument);
+                        this.initiatePreviewArea(parentControl.ownerDocument.getElementById("preview-canvas") as HTMLCanvasElement);
                     }
                 }
             },
@@ -546,7 +548,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
         // Prepare the preview control host
         if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+            const host = parentControl.ownerDocument.createElement("div");
 
             host.id = "PreviewMeshControl-host";
             host.style.width = options.embedHostWidth || "auto";
@@ -564,7 +566,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     createPreviewHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
         // Prepare the preview host
         if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+            const host = parentControl.ownerDocument.createElement("div");
 
             host.id = "PreviewAreaComponent-host";
             host.style.width = options.embedHostWidth || "auto";

@@ -5,6 +5,7 @@ import type { UMDPackageName } from "./packageMapping.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { copyFile, findRootDirectory } from "./utils.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const prepareSnapshot = () => {
     const baseDirectory = findRootDirectory();
     const snapshotDirectory = path.join(baseDirectory, ".snapshot");

@@ -292,7 +292,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as MaterialClearCoatDefines;
+        const defines = subMesh.materialDefines as unknown as MaterialClearCoatDefines;
 
         const isFrozen = this._material.isFrozen;
 

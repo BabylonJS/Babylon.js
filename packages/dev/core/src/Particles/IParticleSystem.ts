@@ -76,7 +76,7 @@ export interface IParticleSystem {
     particleTexture: Nullable<BaseTexture>;
 
     /**
-     * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
+     * Blend mode use to render the particle. It can be any of the ParticleSystem.BLENDMODE_* constants
      */
     blendMode: number;
 
@@ -189,10 +189,12 @@ export interface IParticleSystem {
     /**
      * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     startSpriteCellID: number;
     /**
      * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     endSpriteCellID: number;
     /**
      * If using a spritesheet (isAnimationSheetEnabled), defines whether the sprite animation is looping

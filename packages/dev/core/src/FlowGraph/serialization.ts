@@ -8,7 +8,7 @@ import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes
 import type { TransformNode } from "core/Meshes/transformNode";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
-function isMeshClassName(className: string) {
+function IsMeshClassName(className: string) {
     return (
         className === "Mesh" ||
         className === "AbstractMesh" ||
@@ -21,7 +21,7 @@ function isMeshClassName(className: string) {
     );
 }
 
-function isVectorClassName(className: string) {
+function IsVectorClassName(className: string) {
     return (
         className === FlowGraphTypes.Vector2 ||
         className === FlowGraphTypes.Vector3 ||
@@ -32,15 +32,15 @@ function isVectorClassName(className: string) {
     );
 }
 
-function isMatrixClassName(className: string) {
+function IsMatrixClassName(className: string) {
     return className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D;
 }
 
-function isAnimationGroupClassName(className: string) {
+function IsAnimationGroupClassName(className: string) {
     return className === "AnimationGroup";
 }
 
-function parseVector(className: string, value: Array<number>, flipHandedness = false) {
+function ParseVector(className: string, value: Array<number>, flipHandedness = false) {
     if (className === FlowGraphTypes.Vector2) {
         return Vector2.FromArray(value);
     } else if (className === FlowGraphTypes.Vector3) {
@@ -71,9 +71,10 @@ function parseVector(className: string, value: Array<number>, flipHandedness = f
  * @param value the value to store
  * @param serializationObject the object where the value will be stored
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
     const className = value?.getClassName?.() ?? "";
-    if (isVectorClassName(className) || isMatrixClassName(className)) {
+    if (IsVectorClassName(className) || IsMatrixClassName(className)) {
         serializationObject[key] = {
             value: value.asArray(),
             className,
@@ -109,19 +110,20 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * @param scene
  * @returns
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.type ?? intermediateValue?.className;
-    if (isMeshClassName(className)) {
+    if (IsMeshClassName(className)) {
         let nodes: TransformNode[] = scene.meshes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
         if (nodes.length === 0) {
             nodes = scene.transformNodes.filter((m) => (intermediateValue.id ? m.id === intermediateValue.id : m.name === intermediateValue.name));
         }
         finalValue = intermediateValue.uniqueId ? nodes.find((m) => m.uniqueId === intermediateValue.uniqueId) : nodes[0];
-    } else if (isVectorClassName(className)) {
-        finalValue = parseVector(className, intermediateValue.value);
-    } else if (isAnimationGroupClassName(className)) {
+    } else if (IsVectorClassName(className)) {
+        finalValue = ParseVector(className, intermediateValue.value);
+    } else if (IsAnimationGroupClassName(className)) {
         // do not use the scene.getAnimationGroupByName because it is possible that two AGs will have the same name
         const ags = scene.animationGroups.filter((ag) => ag.name === intermediateValue.name);
         // uniqueId changes on each load. this is used for the glTF loader, that uses serialization after the scene was loaded.
@@ -167,6 +169,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
  * @param className the name of the flow graph block class
  * @returns a boolean indicating if the class needs a path converter
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
     // that jest didn't like!

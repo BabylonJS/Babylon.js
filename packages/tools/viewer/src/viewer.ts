@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type {
     AbstractEngine,
     AbstractMesh,
@@ -13,7 +14,6 @@ import type {
     IMeshDataCache,
     ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
-    Mesh,
     Nullable,
     Observer,
     PickingInfo,
@@ -35,7 +35,8 @@ import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { computeMaxExtents } from "core/Meshes/meshUtils";
+import { Mesh } from "core/Meshes/mesh";
+import { computeMaxExtents, RemoveUnreferencedVerticesData } from "core/Meshes/meshUtils";
 import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
@@ -861,7 +862,7 @@ export class Viewer implements IDisposable {
             },
             suspendRendering: () => this._suspendRendering(),
             markSceneMutated: () => this._markSceneMutated(),
-            pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
+            pick: async (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
 
         this._reset(false, "source", "environment", "post-processing");
@@ -1342,6 +1343,7 @@ export class Viewer implements IDisposable {
 
         try {
             const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
+            RemoveUnreferencedVerticesData(assetContainer.meshes.filter((mesh) => mesh instanceof Mesh));
             assetContainer.animationGroups.forEach((group) => {
                 group.start(true, this.animationSpeed);
                 group.pause();
@@ -1891,7 +1893,7 @@ export class Viewer implements IDisposable {
             this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._scene.cameras.forEach(async (camera) => this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 

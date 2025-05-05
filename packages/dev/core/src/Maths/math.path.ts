@@ -105,7 +105,9 @@ export class Angle {
      */
     public static BetweenTwoVectors<Vec extends Vector2 | Vector3 | Vector4>(a: DeepImmutable<Vec>, b: DeepImmutable<Vec>): Angle {
         let product = a.lengthSquared() * b.lengthSquared();
-        if (product === 0) return new Angle(Math.PI / 2);
+        if (product === 0) {
+            return new Angle(Math.PI / 2);
+        }
         product = Math.sqrt(product);
         let cosVal = a.dot(b as any) / product;
         cosVal = Clamp(cosVal, -1, 1);
@@ -1103,10 +1105,10 @@ export class Curve3 {
         if (len4 < Math.pow(10, -8)) {
             return new Curve3(arc); // colinear points arc is empty
         }
-        const len1_sq = vec1.lengthSquared();
-        const len2_sq = vec2.lengthSquared();
-        const len3_sq = vec3.lengthSquared();
-        const len4_sq = zAxis.lengthSquared();
+        const len1Sq = vec1.lengthSquared();
+        const len2Sq = vec2.lengthSquared();
+        const len3Sq = vec3.lengthSquared();
+        const len4Sq = zAxis.lengthSquared();
         const len1 = vec1.length();
         const len2 = vec2.length();
         const len3 = vec3.length();
@@ -1114,9 +1116,9 @@ export class Curve3 {
         const dot1 = Vector3.Dot(vec1, vec3);
         const dot2 = Vector3.Dot(vec1, vec2);
         const dot3 = Vector3.Dot(vec2, vec3);
-        const a = (-0.5 * len2_sq * dot1) / len4_sq;
-        const b = (-0.5 * len3_sq * dot2) / len4_sq;
-        const c = (-0.5 * len1_sq * dot3) / len4_sq;
+        const a = (-0.5 * len2Sq * dot1) / len4Sq;
+        const b = (-0.5 * len3Sq * dot2) / len4Sq;
+        const c = (-0.5 * len1Sq * dot3) / len4Sq;
         const center = first.scale(a).add(second.scale(b)).add(third.scale(c));
         const radiusVec = first.subtract(center);
         const xAxis = radiusVec.normalize();

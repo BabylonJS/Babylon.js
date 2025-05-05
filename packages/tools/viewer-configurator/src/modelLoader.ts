@@ -7,7 +7,7 @@ import { Deferred } from "core/Misc/deferred";
 import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 
-async function pickFile(): Promise<Nullable<Iterable<File>>> {
+async function PickFileAsync(): Promise<Nullable<Iterable<File>>> {
     const input = document.createElement("input");
     input.type = "file";
     input.multiple = true;
@@ -44,9 +44,7 @@ async function pickFile(): Promise<Nullable<Iterable<File>>> {
 
 export async function LoadModel(viewerElement: ViewerElement, source: string | File | Iterable<File> | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal) {
     try {
-        const defaultOptions: LoadModelOptions = {
-            animationAutoPlay: viewerElement.animationAutoPlay,
-        };
+        const defaultOptions: LoadModelOptions = {};
 
         if (typeof source === "object" && !ArrayBuffer.isView(source) && Symbol.iterator in source) {
             const registeredSceneLoaderPlugins = GetRegisteredSceneLoaderPluginMetadata();
@@ -87,7 +85,7 @@ export async function LoadModel(viewerElement: ViewerElement, source: string | F
 }
 
 export async function PickModel(viewerElement: ViewerElement, options?: LoadModelOptions) {
-    const files = await pickFile();
+    const files = await PickFileAsync();
 
     if (files) {
         await LoadModel(viewerElement, files, options);

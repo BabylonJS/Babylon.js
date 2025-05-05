@@ -202,7 +202,7 @@ export class SolidParticle {
         target.rotation.copyFrom(this.rotation);
         if (this.rotationQuaternion) {
             if (target.rotationQuaternion) {
-                target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+                target.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
                 target.rotationQuaternion = this.rotationQuaternion.clone();
             }
@@ -210,7 +210,7 @@ export class SolidParticle {
         target.scaling.copyFrom(this.scaling);
         if (this.color) {
             if (target.color) {
-                target.color!.copyFrom(this.color!);
+                target.color.copyFrom(this.color);
             } else {
                 target.color = this.color.clone();
             }
@@ -309,9 +309,11 @@ export class ModelShape {
      * Get or set the shapeId
      * @deprecated Please use shapeId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get shapeID(): number {
         return this.shapeId;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set shapeID(shapeID: number) {
         this.shapeId = shapeID;
     }

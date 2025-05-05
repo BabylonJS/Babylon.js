@@ -298,7 +298,7 @@ export class Action implements IAction {
             return value.r + ", " + value.g + ", " + value.b + ", " + value.a;
         }
 
-        return value; // string
+        return value as string; // string
     };
 
     /**

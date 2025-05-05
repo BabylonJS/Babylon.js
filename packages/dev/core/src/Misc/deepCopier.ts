@@ -25,11 +25,12 @@ function GetAllPropertyNames(obj: any): string[] {
     const props: string[] = [];
 
     do {
-        Object.getOwnPropertyNames(obj).forEach(function (prop) {
+        const propNames = Object.getOwnPropertyNames(obj);
+        for (const prop of propNames) {
             if (props.indexOf(prop) === -1) {
                 props.push(prop);
             }
-        });
+        }
     } while ((obj = Object.getPrototypeOf(obj)));
 
     return props;

@@ -25,6 +25,7 @@ export const GraphLinesContainer: FC<PropsWithChildren<IGraphLinesContainerProps
             return item.parentContainerId === props.id;
         },
         collect: (monitor: DropTargetMonitor) => ({
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             start: monitor.getItem() as any,
             delta: monitor.getDifferenceFromInitialOffset() as any,
         }),

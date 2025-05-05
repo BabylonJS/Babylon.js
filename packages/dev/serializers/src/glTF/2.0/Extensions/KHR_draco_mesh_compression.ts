@@ -12,7 +12,7 @@ import type { Nullable } from "core/types";
 
 const NAME = "KHR_draco_mesh_compression";
 
-function getDracoAttributeName(glTFName: string): DracoAttributeName {
+function GetDracoAttributeName(glTFName: string): DracoAttributeName {
     if (glTFName === "POSITION") {
         return "POSITION";
     } else if (glTFName === "NORMAL") {
@@ -108,7 +108,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 true
             );
 
-            attributes.push({ kind: name, dracoName: getDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: data });
+            attributes.push({ kind: name, dracoName: GetDracoAttributeName(name), size: GetAccessorElementCount(accessor.type), data: data });
 
             primitiveBufferViews.push(bufferView);
             primitiveAccessors.push(accessor);
@@ -128,7 +128,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
 
                 const dracoInfo: IKHRDracoMeshCompression = {
                     bufferView: -1, // bufferView will be set to a real index later, when we write the binary and decide bufferView ordering
-                    attributes: encodedData.attributeIDs,
+                    attributes: encodedData.attributeIds,
                 };
                 const bufferView = bufferManager.createBufferView(encodedData.data);
                 bufferManager.setBufferView(dracoInfo, bufferView);

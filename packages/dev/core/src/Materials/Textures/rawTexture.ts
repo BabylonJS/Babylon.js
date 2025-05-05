@@ -327,6 +327,7 @@ export class RawTexture extends Texture {
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @returns the R texture
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static CreateRStorageTexture(
         data: Nullable<ArrayBufferView>,
         width: number,

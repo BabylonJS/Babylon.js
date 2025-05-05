@@ -34,7 +34,7 @@ export interface IVector3Like extends IVector2Like {
 /**
  * @internal
  */
-export interface Vector3LikeInternal {
+export interface IVector3LikeInternal {
     _x: number;
     _y: number;
     _z: number;

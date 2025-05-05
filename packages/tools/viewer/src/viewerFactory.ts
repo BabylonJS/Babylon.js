@@ -13,7 +13,7 @@ export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) =
         | ({ engine: "WebGPU" } & WebGPUEngineOptions)
     );
 
-const defaultCanvasViewerOptions = {
+const DefaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
 } as const satisfies CanvasViewerOptions;
@@ -67,16 +67,16 @@ export async function CreateViewerForCanvas(
             get(target, prop: keyof CanvasViewerOptions) {
                 switch (prop) {
                     case "antialias":
-                        return target.antialias ?? defaultCanvasViewerOptions.antialias;
+                        return target.antialias ?? DefaultCanvasViewerOptions.antialias;
                     case "adaptToDeviceRatio":
-                        return target.adaptToDeviceRatio ?? defaultCanvasViewerOptions.adaptToDeviceRatio;
+                        return target.adaptToDeviceRatio ?? DefaultCanvasViewerOptions.adaptToDeviceRatio;
                     default:
                         return target[prop];
                 }
             },
         });
     } else {
-        options = defaultCanvasViewerOptions;
+        options = DefaultCanvasViewerOptions;
     }
     const disposeActions: (() => void)[] = [];
 

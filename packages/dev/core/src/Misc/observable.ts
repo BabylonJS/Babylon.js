@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 
 declare const WeakRef: any;
 
-const isWeakRefSupported = typeof WeakRef !== "undefined";
+const IsWeakRefSupported = typeof WeakRef !== "undefined";
 
 /**
  * A class serves as a medium between the observable and its observers
@@ -83,7 +83,7 @@ export class Observer<T> {
      * It will be set by the observable that the observer belongs to.
      * @internal
      */
-    public _remove: Nullable<() => void> = null;
+    public _remove: Nullable<(defer?: boolean) => void> = null;
 
     /**
      * Creates a new observer
@@ -109,10 +109,11 @@ export class Observer<T> {
     /**
      * Remove the observer from its observable
      * This can be used instead of using the observable's remove function.
+     * @param defer if true, the removal will be deferred to avoid callback skipping (default: false)
      */
-    public remove() {
+    public remove(defer = false) {
         if (this._remove) {
-            this._remove();
+            this._remove(defer);
         }
     }
 }
@@ -199,17 +200,17 @@ export class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    public add(callback?: null | undefined, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): null;
+    public add(callback?: null, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): null;
     public add(callback: (eventData: T, eventState: EventState) => void, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): Observer<T>;
     public add(
-        callback?: ((eventData: T, eventState: EventState) => void) | null | undefined,
+        callback?: ((eventData: T, eventState: EventState) => void) | null,
         mask?: number,
         insertFirst?: boolean,
         scope?: any,
         unregisterOnFirstCall?: boolean
     ): Nullable<Observer<T>>;
     public add(
-        callback?: ((eventData: T, eventState: EventState) => void) | null | undefined,
+        callback?: ((eventData: T, eventState: EventState) => void) | null,
         mask: number = -1,
         insertFirst = false,
         scope: any = null,
@@ -240,11 +241,11 @@ export class Observable<T> {
         }
 
         // attach the remove function to the observer
-        const observableWeakRef = isWeakRefSupported ? new WeakRef(this) : { deref: () => this };
-        observer._remove = () => {
+        const observableWeakRef = IsWeakRefSupported ? new WeakRef(this) : { deref: () => this };
+        observer._remove = (defer = false) => {
             const observable = observableWeakRef.deref();
             if (observable) {
-                observable._remove(observer);
+                defer ? observable.remove(observer) : observable._remove(observer);
             }
         };
 
@@ -256,10 +257,10 @@ export class Observable<T> {
      * @param callback the callback that will be executed for that Observer
      * @returns the new observer created for the callback
      */
-    public addOnce(callback?: null | undefined): null;
+    public addOnce(callback?: null): null;
     public addOnce(callback: (eventData: T, eventState: EventState) => void): Observer<T>;
-    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null | undefined): Nullable<Observer<T>>;
-    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null | undefined): Nullable<Observer<T>> {
+    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null): Nullable<Observer<T>>;
+    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null): Nullable<Observer<T>> {
         return this.add(callback, undefined, undefined, undefined, true);
     }
 

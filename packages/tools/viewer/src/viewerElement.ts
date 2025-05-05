@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
@@ -911,6 +912,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._reset("reframe");
     }
 
+    /**
+     * Reloads the viewer. This is typically only needed when the viewer is in a faulted state (e.g. due to the context being lost).
+     */
+    public reload() {
+        this._tearDownViewer();
+        this._setupViewer();
+    }
+
     /** @internal */
     public override connectedCallback(): void {
         super.connectedCallback();
@@ -1130,7 +1139,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     protected _renderReloadButton(): TemplateResult {
         return html`${this._isFaulted
             ? html`
-                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this._setupViewer}">
+                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this.reload}">
                       <svg viewBox="0 0 24 24">
                           <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
                       </svg>

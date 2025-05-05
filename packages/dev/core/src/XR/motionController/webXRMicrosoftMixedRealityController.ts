@@ -117,7 +117,9 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         }
 
         // Button Meshes
-        this.getComponentIds().forEach((id, i) => {
+        const ids = this.getComponentIds();
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
             if (this.disableAnimation) {
                 return;
             }
@@ -155,16 +157,18 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                     Logger.Warn("Missing button submesh under mesh with name: " + buttonMeshName);
                 }
             }
-        });
+        }
 
         // Axis Meshes
-        this.getComponentIds().forEach((id) => {
+        for (const id of ids) {
             const comp = this.getComponent(id);
             if (!comp.isAxes()) {
                 return;
             }
 
-            ["x-axis", "y-axis"].forEach((axis) => {
+            const axisArray = ["x-axis", "y-axis"];
+
+            for (const axis of axisArray) {
                 if (!this.rootMesh) {
                     return;
                 }
@@ -195,8 +199,8 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                     // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
                     Logger.Warn("Missing axis submesh under mesh with name: " + axisMap.rootNodeName);
                 }
-            });
-        });
+            }
+        }
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {

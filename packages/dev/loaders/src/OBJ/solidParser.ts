@@ -82,7 +82,7 @@ export class SolidParser {
     private _wrappedNormalsForBabylon: Array<Vector3> = []; //Array with all value of normals to match with the indices
     private _tuplePosNorm: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }> = []; //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
     private _curPositionInIndices = 0;
-    private _hasMeshes: Boolean = false; //Meshes are defined in the file
+    private _hasMeshes: boolean = false; //Meshes are defined in the file
     private _unwrappedPositionsForBabylon: Array<number> = []; //Value of positionForBabylon w/o Vector3() [x,y,z]
     private _unwrappedColorsForBabylon: Array<number> = []; // Value of colorForBabylon w/o Color4() [r,g,b,a]
     private _unwrappedNormalsForBabylon: Array<number> = []; //Value of normalsForBabylon w/o Vector3()  [x,y,z]
@@ -556,10 +556,14 @@ export class SolidParser {
     }
 
     private static _GetZbrushMRGB(line: string, notParse: boolean) {
-        if (!line.startsWith("mrgb")) return null;
+        if (!line.startsWith("mrgb")) {
+            return null;
+        }
         line = line.replace("mrgb", "").trim();
         // if include vertex color , not load mrgb anymore
-        if (notParse) return [];
+        if (notParse) {
+            return [];
+        }
         const regex = /[a-z0-9]/g;
         const regArray = line.match(regex);
         if (!regArray || regArray.length % 8 !== 0) {
@@ -754,9 +758,9 @@ export class SolidParser {
                 // Define a mesh or an object
                 // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
             } else if ((result = SolidParser._GetZbrushMRGB(line, !this._loadingOptions.importVertexColors))) {
-                result.forEach((element) => {
+                for (const element of result) {
                     this._extColors.push(element);
-                });
+                }
             } else if ((result = SolidParser.LinePattern3.exec(line)) !== null) {
                 //Value of result
                 //["l 1/1/1 2/2/2"]

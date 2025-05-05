@@ -517,11 +517,12 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         if (this._rotationShaderMaterial) {
             this._rotationShaderMaterial.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+        const materials = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
+        for (const matl of materials) {
             if (matl) {
                 matl.dispose();
             }
-        });
+        }
         super.dispose();
     }
 }

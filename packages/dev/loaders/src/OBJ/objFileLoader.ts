@@ -15,7 +15,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
 declare module "core/Loading/sceneLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface SceneLoaderPluginOptions {
         /**
          * Defines options for the obj loader.
@@ -141,7 +141,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const pathOfFile = rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest | undefined, exception?: any) => {
+        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest, exception?: any) => {
             onFailure(pathOfFile, exception);
         });
     }
@@ -169,7 +169,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      */
     public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file
-        return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
+        return this._parseSolidAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
                 meshes: meshes,
                 particleSystems: [],
@@ -247,7 +247,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl defines the path to the folder
      * @returns the list of loaded meshes
      */
-    private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
+    private _parseSolidAsync(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
         let fileToLoad: string = ""; //The name of the mtlFile to load
         const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
         const materialToUse: string[] = [];

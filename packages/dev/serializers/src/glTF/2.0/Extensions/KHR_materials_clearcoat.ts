@@ -58,6 +58,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
         return [];
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             if (babylonMaterial instanceof PBRBaseMaterial) {

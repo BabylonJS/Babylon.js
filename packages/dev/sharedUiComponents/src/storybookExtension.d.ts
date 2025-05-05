@@ -1,6 +1,7 @@
 import "react";
 
 declare module "react" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface FunctionComponent {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         __docgenInfo?: {

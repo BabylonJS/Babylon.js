@@ -39,6 +39,8 @@ export class VertexAnimationBaker {
      * @param ranges Defines the ranges in the animation that will be baked.
      * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
      */
+    // async function, without Async suffix, to avoid breaking the API
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async bakeVertexData(ranges: AnimationRange[]): Promise<Float32Array> {
         if (!this._skeleton) {
             throw new Error("No skeleton provided.");
@@ -62,7 +64,7 @@ export class VertexAnimationBaker {
         // render all frames from our slices
         for (const range of ranges) {
             for (let frameIndex = range.from; frameIndex <= range.to; frameIndex++) {
-                await this._executeAnimationFrame(vertexData, frameIndex, textureIndex++);
+                await this._executeAnimationFrameAsync(vertexData, frameIndex, textureIndex++);
             }
         }
 
@@ -76,7 +78,7 @@ export class VertexAnimationBaker {
      * @param frameIndex Current frame in the skeleton animation to render.
      * @param textureIndex Current index of the texture data.
      */
-    private async _executeAnimationFrame(vertexData: Float32Array, frameIndex: number, textureIndex: number): Promise<void> {
+    private async _executeAnimationFrameAsync(vertexData: Float32Array, frameIndex: number, textureIndex: number): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             this._scene.beginAnimation(this._skeleton, frameIndex, frameIndex, false, 1.0, () => {
                 // generate matrices

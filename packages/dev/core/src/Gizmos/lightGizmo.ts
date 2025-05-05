@@ -109,9 +109,10 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             } else {
                 this._lightMesh = LightGizmo._CreatePointLightMesh(this.gizmoLayer.utilityLayerScene);
             }
-            this._lightMesh.getChildMeshes(false).forEach((m) => {
+            const children = this._lightMesh.getChildMeshes(false);
+            for (const m of children) {
                 m.material = this._material;
-            });
+            }
             this._lightMesh.parent = this._rootMesh;
 
             // Add lighting to the light gizmo
@@ -254,7 +255,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             return linePivot;
         }
         for (let i = 0; i < 4; i++) {
-            const l = linePivot.clone("lineParentClone")!;
+            const l = linePivot.clone("lineParentClone");
             l.rotation.z = Math.PI / 4;
             l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
 
@@ -374,11 +375,11 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         );
         line.parent = mesh;
 
-        let left = line.clone(root.name)!;
+        let left = line.clone(root.name);
         left.scaling.y = 0.5;
         left.position.x += 1.25;
 
-        let right = line.clone(root.name)!;
+        let right = line.clone(root.name);
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 

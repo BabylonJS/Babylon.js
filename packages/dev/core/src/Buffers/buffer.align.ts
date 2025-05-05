@@ -1,8 +1,9 @@
 import type { Nullable } from "core/types";
 import type { DataBuffer } from "./dataBuffer";
 import { Buffer, VertexBuffer } from "./buffer";
+import { GetTypeByteLength } from "./bufferUtils";
 
-const isLittleEndian = (() => {
+const IsLittleEndian = (() => {
     const array = new Uint8Array(4);
     const view = new Uint32Array(array.buffer);
 
@@ -10,6 +11,7 @@ const isLittleEndian = (() => {
 })();
 
 declare module "./buffer" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface VertexBuffer {
         /**
          * Gets the effective byte stride, that is the byte stride of the buffer that is actually sent to the GPU.
@@ -88,7 +90,7 @@ VertexBuffer.prototype._alignBuffer = function (): void {
         return;
     }
 
-    const typeByteLength = VertexBuffer.GetTypeByteLength(this.type);
+    const typeByteLength = GetTypeByteLength(this.type);
     const alignedByteStride = (this.byteStride + 3) & ~3;
     const alignedSize = alignedByteStride / typeByteLength;
     const totalVertices = this._maxVerticesCount;
@@ -138,19 +140,19 @@ VertexBuffer.prototype._alignBuffer = function (): void {
                     alignedData[i * alignedSize + j] = sourceData.getUint8(sourceOffset + j);
                     break;
                 case VertexBuffer.SHORT:
-                    alignedData[i * alignedSize + j] = sourceData.getInt16(sourceOffset + j * 2, isLittleEndian);
+                    alignedData[i * alignedSize + j] = sourceData.getInt16(sourceOffset + j * 2, IsLittleEndian);
                     break;
                 case VertexBuffer.UNSIGNED_SHORT:
-                    alignedData[i * alignedSize + j] = sourceData.getUint16(sourceOffset + j * 2, isLittleEndian);
+                    alignedData[i * alignedSize + j] = sourceData.getUint16(sourceOffset + j * 2, IsLittleEndian);
                     break;
                 case VertexBuffer.INT:
-                    alignedData[i * alignedSize + j] = sourceData.getInt32(sourceOffset + j * 4, isLittleEndian);
+                    alignedData[i * alignedSize + j] = sourceData.getInt32(sourceOffset + j * 4, IsLittleEndian);
                     break;
                 case VertexBuffer.UNSIGNED_INT:
-                    alignedData[i * alignedSize + j] = sourceData.getUint32(sourceOffset + j * 4, isLittleEndian);
+                    alignedData[i * alignedSize + j] = sourceData.getUint32(sourceOffset + j * 4, IsLittleEndian);
                     break;
                 case VertexBuffer.FLOAT:
-                    alignedData[i * alignedSize + j] = sourceData.getFloat32(sourceOffset + j * 4, isLittleEndian);
+                    alignedData[i * alignedSize + j] = sourceData.getFloat32(sourceOffset + j * 4, IsLittleEndian);
                     break;
             }
         }

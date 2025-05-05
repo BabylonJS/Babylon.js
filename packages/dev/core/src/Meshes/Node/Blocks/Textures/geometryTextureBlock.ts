@@ -135,14 +135,14 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     public extractFromTextureAsync(texture: Texture) {
         return new Promise<void>((resolve, reject) => {
             if (!texture.isReady()) {
-                texture.onLoadObservable.addOnce(() => {
+                texture.onLoadObservable.addOnce(async () => {
                     return this.extractFromTextureAsync(texture).then(resolve).catch(reject);
                 });
                 return;
             }
             const size = texture.getSize();
             TextureTools.GetTextureDataAsync(texture, size.width, size.height)
-                .then(async (data) => {
+                .then((data) => {
                     const floatArray = new Float32Array(data.length);
 
                     for (let i = 0; i < data.length; i++) {

@@ -20,10 +20,13 @@ import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
+    // From particle.vertex:
     particle_uv: "vUV",
     particle_color: "vColor",
     particle_texturemask: "textureMask",
     particle_positionw: "vPositionW",
+    // From postprocess.vertex:
+    postprocess_uv: "vUV",
 };
 
 const attributeInFragmentOnly: { [name: string]: boolean } = {
@@ -31,6 +34,7 @@ const attributeInFragmentOnly: { [name: string]: boolean } = {
     particle_color: true,
     particle_texturemask: true,
     particle_positionw: true,
+    postprocess_uv: true,
 };
 
 const attributeAsUniform: { [name: string]: boolean } = {
@@ -145,6 +149,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position2d":
                     case "particle_uv":
                     case "splatScale":
+                    case "postprocess_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":
@@ -261,6 +266,7 @@ export class InputBlock extends NodeMaterialBlock {
      * Please note that this value will be ignored if valueCallback is defined
      */
     public get value(): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._storedValue;
     }
 
@@ -432,12 +438,8 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    private _emitDefine(define: string): string {
-        if (define[0] === "!") {
-            return `#ifndef ${define.substring(1)}\n`;
-        }
-
-        return `#ifdef ${define}\n`;
+    private _emitDefine(define: string, notDefine = false): string {
+        return `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
     }
 
     public override initialize() {
@@ -511,7 +513,7 @@ export class InputBlock extends NodeMaterialBlock {
         return attributeInFragmentOnly[this.name];
     }
 
-    private _emit(state: NodeMaterialBuildState, define?: string) {
+    private _emit(state: NodeMaterialBuildState) {
         // Uniforms
         if (this.isUniform) {
             if (!this._associatedVariableName) {
@@ -531,19 +533,12 @@ export class InputBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.uniforms.push(this.associatedVariableName);
-            if (define) {
-                state._uniformDeclaration += this._emitDefine(define);
-            }
-            const shaderType = state._getShaderType(this.type);
+            // SFE: Mark the current value of the uniform as its default value.
+            const annotation = state.isSFEMode ? `// { "default": ${JSON.stringify(this.valueCallback?.() ?? this.value)} }` : undefined;
+            state._emitUniformFromString(this._associatedVariableName, this.type, undefined, undefined, annotation);
+
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                state._uniformDeclaration += `uniform ${this._associatedVariableName}: ${shaderType};\n`;
                 this._prefix = "uniforms.";
-            } else {
-                state._uniformDeclaration += `uniform ${shaderType} ${this.associatedVariableName};\n`;
-            }
-            if (define) {
-                state._uniformDeclaration += `#endif\n`;
             }
 
             // well known
@@ -574,15 +569,15 @@ export class InputBlock extends NodeMaterialBlock {
                 // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
                     if (attributeAsUniform[this.name]) {
-                        state._emitUniformFromString(this.declarationVariableName, this.type, define);
+                        state._emitUniformFromString(this.declarationVariableName, this.type);
                         if (state.shaderLanguage === ShaderLanguage.WGSL) {
                             this._prefix = `vertexInputs.`;
                         }
                     } else {
-                        state._emitVaryingFromString(this.declarationVariableName, this.type, define);
+                        state._emitVaryingFromString(this.declarationVariableName, this.type);
                     }
                 } else {
-                    this._emit(state._vertexState, define);
+                    this._emit(state._vertexState);
                 }
                 return;
             }
@@ -596,28 +591,25 @@ export class InputBlock extends NodeMaterialBlock {
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
                     if (!alreadyDeclared) {
-                        state._emitUniformFromString(this.declarationVariableName, this.type, define);
+                        state._emitUniformFromString(this.declarationVariableName, this.type);
                     }
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `uniforms.`;
                     }
                 } else {
                     if (!alreadyDeclared) {
-                        state._emitVaryingFromString(this.declarationVariableName, this.type, define);
+                        state._emitVaryingFromString(this.declarationVariableName, this.type);
                     }
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `fragmentInputs.`;
                     }
                 }
             } else {
-                if (define && !alreadyDeclared) {
-                    state._attributeDeclaration += this._emitDefine(define);
-                }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
                     if (!alreadyDeclared) {
                         const defineName = attributeDefine[this.name];
                         if (defineName) {
-                            state._attributeDeclaration += `#ifdef ${defineName}\n`;
+                            state._attributeDeclaration += this._emitDefine(defineName);
                             state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
                             state._attributeDeclaration += `#else\n`;
                             state._attributeDeclaration += `var<private> ${this.declarationVariableName}: ${state._getShaderType(this.type)} = ${state._getShaderType(this.type)}(0.);\n`;
@@ -631,7 +623,7 @@ export class InputBlock extends NodeMaterialBlock {
                     if (!alreadyDeclared) {
                         const defineName = attributeDefine[this.name];
                         if (defineName) {
-                            state._attributeDeclaration += `#ifdef ${defineName}\n`;
+                            state._attributeDeclaration += this._emitDefine(defineName);
                             state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
                             state._attributeDeclaration += `#else\n`;
                             state._attributeDeclaration += `${state._getShaderType(this.type)} ${this.declarationVariableName} = ${state._getShaderType(this.type)}(0.);\n`;
@@ -640,9 +632,6 @@ export class InputBlock extends NodeMaterialBlock {
                             state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
                         }
                     }
-                }
-                if (define && !alreadyDeclared) {
-                    state._attributeDeclaration += `#endif\n`;
                 }
             }
         }
@@ -825,7 +814,7 @@ export class InputBlock extends NodeMaterialBlock {
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Matrix:
-                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m}])`;
+                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m.join(", ")}])`;
                     break;
             }
 
