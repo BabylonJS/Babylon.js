@@ -49,11 +49,12 @@ uniform texSize: vec2f;
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
     let coord = vec2i(fragmentInputs.vUV * vec2(uniforms.texSize - 1));
+    let iTexSize = vec2i(uniforms.texSize);
 
-    let f1 = textureLoad(textureSampler, coord % uniforms.texSize, 0).rg;
-    let f2 = textureLoad(textureSampler, (coord + vec2i(1, 0)) % uniforms.texSize, 0).rg;
-    let f3 = textureLoad(textureSampler, (coord + vec2i(1, 1)) % uniforms.texSize, 0).rg;
-    let f4 = textureLoad(textureSampler, (coord + vec2i(0, 1)) % uniforms.texSize, 0).rg;
+    let f1 = textureLoad(textureSampler, coord % iTexSize, 0).rg;
+    let f2 = textureLoad(textureSampler, (coord + vec2i(1, 0)) % iTexSize, 0).rg;
+    let f3 = textureLoad(textureSampler, (coord + vec2i(1, 1)) % iTexSize, 0).rg;
+    let f4 = textureLoad(textureSampler, (coord + vec2i(0, 1)) % iTexSize, 0).rg;
 
     let minz = min(f1.x, f2.x);
     let maxz = max(f1.y, f2.y);
