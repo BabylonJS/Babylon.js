@@ -13,7 +13,7 @@ const NAME = "KHR_materials_pbrSpecularGlossiness";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
-    export interface GLTFLoaderExtensionOptions {
+    export interface IGLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_pbrSpecularGlossiness extension.
          */

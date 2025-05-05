@@ -17,7 +17,7 @@ const NAME = "EXT_lights_ies";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
-    export interface GLTFLoaderExtensionOptions {
+    export interface IGLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_lights_ies extension.
          */

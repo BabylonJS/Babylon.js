@@ -13,7 +13,7 @@ const NAME = "KHR_materials_diffuse_transmission";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
-    export interface GLTFLoaderExtensionOptions {
+    export interface IGLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_diffuse_transmission extension.
          */
