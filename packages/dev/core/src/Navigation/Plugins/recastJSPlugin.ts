@@ -104,7 +104,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      * plugin name
      */
-    public name: string = "RecastNavigationJSPlugin";
+    public name: string = "RecastJSPlugin";
 
     /**
      * the first navmesh created. We might extend this to support multiple navmeshes
@@ -113,7 +113,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      *
      */
-    public navMeshQuery!: NavMeshQuery; // TODO: !
+    public navMeshQuery!: NavMeshQuery;
 
     /**
      *
