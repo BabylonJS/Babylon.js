@@ -6,7 +6,6 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import type { Vector3 } from "core/Maths/math.vector";
 import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
@@ -26,11 +25,11 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
-function getFileExtension(str: string): string {
+function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
 }
 
-function isTextureAsset(extension: string): boolean {
+function IsTextureAsset(extension: string): boolean {
     switch (extension.toLowerCase()) {
         case "ktx":
         case "ktx2":
@@ -48,10 +47,6 @@ function isTextureAsset(extension: string): boolean {
 
 interface IRenderingZoneProps {
     globalState: GlobalState;
-    assetUrl?: string;
-    autoRotate?: boolean;
-    cameraPosition?: Vector3;
-    toneMapping?: number;
     expanded: boolean;
     onEngineCreated?: (engine: AbstractEngine) => void;
 }
@@ -69,6 +64,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         super(props);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async initEngine() {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
         const antialias = !this.props.globalState.commerceMode;
@@ -142,7 +138,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         return false;
                     }
                     default: {
-                        if (isTextureAsset(extension)) {
+                        if (IsTextureAsset(extension)) {
                             setSceneFileToLoad(file);
                         }
 
@@ -154,12 +150,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             return true;
         };
 
-        filesInput.loadAsync = (sceneFile, onProgress) => {
+        filesInput.loadAsync = async (sceneFile, onProgress) => {
             const filesToLoad = filesInput.filesToLoad;
             if (filesToLoad.length === 1) {
                 const fileName = (filesToLoad[0] as any).correctName as string;
-                const fileExtension = getFileExtension(fileName);
-                if (isTextureAsset(fileExtension)) {
+                const fileExtension = GetFileExtension(fileName);
+                if (IsTextureAsset(fileExtension)) {
                     return Promise.resolve(this.loadTextureAsset(`file:${fileName}`));
                 }
             }
@@ -176,8 +172,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         window.addEventListener("keydown", (event) => {
             // Press R to reload
             if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
-                if (this.props.assetUrl) {
-                    this.loadAssetFromUrl(this.props.assetUrl);
+                if (this.props.globalState.assetUrl) {
+                    this.loadAssetFromUrl(this.props.globalState.assetUrl);
                 } else {
                     filesInput.reload();
                 }
@@ -214,7 +210,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
             }
 
-            if (this.props.autoRotate) {
+            if (this.props.globalState.autoRotate) {
                 camera.useAutoRotationBehavior = true;
             }
 
@@ -224,9 +220,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             camera.wheelDeltaPercentage = 0.01;
             camera.pinchDeltaPercentage = 0.01;
 
-            if (this.props.cameraPosition) {
+            if (this.props.globalState.cameraPosition) {
                 camera.lowerRadiusLimit = null;
-                camera.setPosition(this.props.cameraPosition);
+                camera.setPosition(this.props.globalState.cameraPosition);
                 camera.lowerRadiusLimit = camera.radius;
             }
         }
@@ -288,9 +284,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     onSceneLoaded(filename: string) {
         this._scene.skipFrustumClipping = true;
 
-        if (this.props.toneMapping !== undefined) {
+        if (this.props.globalState.toneMapping !== undefined) {
             this._scene.imageProcessingConfiguration.toneMappingEnabled = true;
-            this._scene.imageProcessingConfiguration.toneMappingType = this.props.toneMapping;
+            this._scene.imageProcessingConfiguration.toneMappingType = this.props.globalState.toneMapping;
         } else if (this.props.globalState.commerceMode) {
             this._scene.imageProcessingConfiguration.toneMappingEnabled = true;
             this._scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
@@ -354,11 +350,11 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     loadAssetFromUrl(assetUrl: string) {
         const rootUrl = Tools.GetFolderPath(assetUrl);
         const fileName = Tools.GetFilename(assetUrl);
-        const fileExtension = getFileExtension(fileName);
+        const fileExtension = GetFileExtension(fileName);
 
         this._engine.clearInternalTexturesCache();
 
-        const promise = isTextureAsset(fileExtension) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
+        const promise = IsTextureAsset(fileExtension) ? Promise.resolve(this.loadTextureAsset(assetUrl)) : SceneLoader.LoadAsync(rootUrl, fileName, this._engine);
 
         promise
             .then((scene) => {
@@ -385,8 +381,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     loadAsset() {
-        if (this.props.assetUrl) {
-            this.loadAssetFromUrl(this.props.assetUrl);
+        if (this.props.globalState.assetUrl) {
+            this.loadAssetFromUrl(this.props.globalState.assetUrl);
             return;
         }
     }

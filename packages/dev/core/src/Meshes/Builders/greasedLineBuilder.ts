@@ -80,6 +80,7 @@ export const enum GreasedLineMeshWidthDistribution {
 /**
  * Material options for GreasedLineBuilder
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOptions {
     /**
      * If set to true a new material will be created and a new material plugin will be attached
@@ -97,6 +98,7 @@ export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOp
 /**
  * Line mesh options for GreasedLineBuilder
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
     /**
      * Distribution of the widths if the width table contains fewer entries than needed. Defaults to GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START
@@ -284,7 +286,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 export function GetPointsCount(allPoints: number[][]) {
     let pointCount = 0;
     for (const points of allPoints) {
-        pointCount += (<number[]>points).length / 3;
+        pointCount += points.length / 3;
     }
     return pointCount;
 }

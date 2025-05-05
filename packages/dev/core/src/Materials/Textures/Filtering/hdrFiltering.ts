@@ -208,6 +208,7 @@ export class HDRFiltering {
      * @param texture Texture to filter
      * @returns Promise called when prefiltering is done
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async prefilter(texture: BaseTexture): Promise<void> {
         if (!this._engine._features.allowTexturePrefiltering) {
             throw new Error("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");

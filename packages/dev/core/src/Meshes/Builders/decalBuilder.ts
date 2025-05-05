@@ -8,12 +8,12 @@ import type { AbstractMesh } from "../abstractMesh";
 import type { Camera } from "../../Cameras/camera";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
-const xpAxis = new Vector3(1, 0, 0);
-const xnAxis = new Vector3(-1, 0, 0);
-const ypAxis = new Vector3(0, 1, 0);
-const ynAxis = new Vector3(0, -1, 0);
-const zpAxis = new Vector3(0, 0, 1);
-const znAxis = new Vector3(0, 0, -1);
+const XpAxis = new Vector3(1, 0, 0);
+const XnAxis = new Vector3(-1, 0, 0);
+const YpAxis = new Vector3(0, 1, 0);
+const YnAxis = new Vector3(0, -1, 0);
+const ZpAxis = new Vector3(0, 0, 1);
+const ZnAxis = new Vector3(0, 0, -1);
 
 /** @internal */
 class DecalVertex {
@@ -186,7 +186,9 @@ export function CreateDecal(
 
                 for (let i = 0; i < 4 && index < 4; ++i) {
                     const ind = v1Indices[mat1Index + i];
-                    if (indexOf(v0Indices, ind, mat0Index, 4) !== -1) continue;
+                    if (indexOf(v0Indices, ind, mat0Index, 4) !== -1) {
+                        continue;
+                    }
 
                     indices[index] = ind;
                     weights[index] = Lerp(0, v1Weights[mat1Index + i], clipFactor);
@@ -393,25 +395,37 @@ export function CreateDecal(
             }
 
             // Clip
-            faceVertices = clip(faceVertices, xpAxis);
-            if (!faceVertices) continue;
-            faceVertices = clip(faceVertices, xnAxis);
-            if (!faceVertices) continue;
-            faceVertices = clip(faceVertices, ypAxis);
-            if (!faceVertices) continue;
-            faceVertices = clip(faceVertices, ynAxis);
-            if (!faceVertices) continue;
-            faceVertices = clip(faceVertices, zpAxis);
-            if (!faceVertices) continue;
-            faceVertices = clip(faceVertices, znAxis);
-            if (!faceVertices) continue;
+            faceVertices = clip(faceVertices, XpAxis);
+            if (!faceVertices) {
+                continue;
+            }
+            faceVertices = clip(faceVertices, XnAxis);
+            if (!faceVertices) {
+                continue;
+            }
+            faceVertices = clip(faceVertices, YpAxis);
+            if (!faceVertices) {
+                continue;
+            }
+            faceVertices = clip(faceVertices, YnAxis);
+            if (!faceVertices) {
+                continue;
+            }
+            faceVertices = clip(faceVertices, ZpAxis);
+            if (!faceVertices) {
+                continue;
+            }
+            faceVertices = clip(faceVertices, ZnAxis);
+            if (!faceVertices) {
+                continue;
+            }
 
             // Add UVs and get back to world
             for (let vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                 const vertex = faceVertices[vIndex];
 
                 //TODO check for Int32Array | Uint32Array | Uint16Array
-                (<number[]>vertexData.indices).push(currentVertexDataIndex);
+                vertexData.indices.push(currentVertexDataIndex);
                 if (useLocalComputation) {
                     if (vertex.localPositionOverride) {
                         vertexData.positions[currentVertexDataIndex * 3] = vertex.localPositionOverride[0];
@@ -477,9 +491,9 @@ export function CreateDecal(
                 }
 
                 if (!options.captureUVS) {
-                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
+                    vertexData.uvs.push(0.5 + vertex.position.x / size.x);
                     const v = 0.5 + vertex.position.y / size.y;
-                    (<number[]>vertexData.uvs).push(useOpenGLOrientationForUV ? 1 - v : v);
+                    vertexData.uvs.push(useOpenGLOrientationForUV ? 1 - v : v);
                 } else {
                     vertex.uv.toArray(vertexData.uvs, currentVertexDataIndex * 2);
                 }
@@ -489,14 +503,30 @@ export function CreateDecal(
     }
 
     // Avoid the "Setting vertex data kind 'XXX' with an empty array" warning when calling vertexData.applyToMesh
-    if (vertexData.indices.length === 0) vertexData.indices = null;
-    if (vertexData.positions.length === 0) vertexData.positions = null;
-    if (vertexData.normals.length === 0) vertexData.normals = null;
-    if (vertexData.uvs.length === 0) vertexData.uvs = null;
-    if (vertexData.matricesIndices?.length === 0) vertexData.matricesIndices = null;
-    if (vertexData.matricesWeights?.length === 0) vertexData.matricesWeights = null;
-    if (vertexData.matricesIndicesExtra?.length === 0) vertexData.matricesIndicesExtra = null;
-    if (vertexData.matricesWeightsExtra?.length === 0) vertexData.matricesWeightsExtra = null;
+    if (vertexData.indices.length === 0) {
+        vertexData.indices = null;
+    }
+    if (vertexData.positions.length === 0) {
+        vertexData.positions = null;
+    }
+    if (vertexData.normals.length === 0) {
+        vertexData.normals = null;
+    }
+    if (vertexData.uvs.length === 0) {
+        vertexData.uvs = null;
+    }
+    if (vertexData.matricesIndices?.length === 0) {
+        vertexData.matricesIndices = null;
+    }
+    if (vertexData.matricesWeights?.length === 0) {
+        vertexData.matricesWeights = null;
+    }
+    if (vertexData.matricesIndicesExtra?.length === 0) {
+        vertexData.matricesIndicesExtra = null;
+    }
+    if (vertexData.matricesWeightsExtra?.length === 0) {
+        vertexData.matricesWeightsExtra = null;
+    }
 
     // Return mesh
     const decal = new Mesh(name, sourceMesh.getScene());

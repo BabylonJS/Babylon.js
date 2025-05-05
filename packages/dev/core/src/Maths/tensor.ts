@@ -22,6 +22,7 @@ export type TensorLike<T> = T extends Tensor<TensorValue, infer I> ? I : never;
  * Describes a mathematical tensor.
  * @see https://wikipedia.org/wiki/Tensor
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Tensor<V extends TensorValue, I> {
     /**
      * An array of the size of each dimension.

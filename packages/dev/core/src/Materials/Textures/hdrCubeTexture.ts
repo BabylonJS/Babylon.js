@@ -300,7 +300,7 @@ export class HDRCubeTexture extends BaseTexture {
                     radiancePromise = hdrFiltering.prefilter(this);
                 }
                 Promise.all([irradiancePromise, radiancePromise]).then((results) => {
-                    const irradianceTexture = results[0] as Nullable<BaseTexture>;
+                    const irradianceTexture = results[0];
                     if (this._prefilterIrradianceOnLoad && irradianceTexture) {
                         this.irradianceTexture = irradianceTexture;
                         const scene = this.getScene();

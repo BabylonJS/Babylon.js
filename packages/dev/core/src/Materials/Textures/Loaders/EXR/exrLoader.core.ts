@@ -89,15 +89,16 @@ enum LineOrders {
 /**
  * Interface used to define the cursor position in the data
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface DataCursor {
     /** Curosr position */
     value: number;
 }
 
-const _tables = _GenerateTables();
+const Tables = GenerateTables();
 
 // Fast Half Float Conversions, http://www.fox-toolkit.org/ftp/fasthalffloatconversion.pdf
-function _GenerateTables() {
+function GenerateTables() {
     // float32 to float16 helpers
 
     const buffer = new ArrayBuffer(4);
@@ -355,10 +356,10 @@ function ToHalfFloat(value: number) {
 
     value = Clamp(value, -65504, 65504);
 
-    _tables.floatView[0] = value;
-    const f = _tables.uint32View[0];
+    Tables.floatView[0] = value;
+    const f = Tables.uint32View[0];
     const e = (f >> 23) & 0x1ff;
-    return _tables.baseTable[e] + ((f & 0x007fffff) >> _tables.shiftTable[e]);
+    return Tables.baseTable[e] + ((f & 0x007fffff) >> Tables.shiftTable[e]);
 }
 
 /**

@@ -32,7 +32,7 @@ const IMPORT_OBJECT = {
 export class ZSTDDecoder {
     public static WasmModuleURL = "https://cdn.babylonjs.com/zstddec.wasm";
 
-    init(): Promise<void> {
+    async init(): Promise<void> {
         if (init) {
             return init;
         }
@@ -41,13 +41,13 @@ export class ZSTDDecoder {
             // Web.
 
             init = fetch(Transcoder.GetWasmUrl(ZSTDDecoder.WasmModuleURL))
-                .then((response) => {
+                .then(async (response) => {
                     if (response.ok) {
                         return response.arrayBuffer();
                     }
                     throw new Error(`Could not fetch the wasm component for the Zstandard decompression lib: ${response.status} - ${response.statusText}`);
                 })
-                .then((arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
+                .then(async (arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
                 .then(this._init);
         } else {
             // Node.js.

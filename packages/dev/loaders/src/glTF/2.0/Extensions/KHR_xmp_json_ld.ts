@@ -6,7 +6,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_xmp_json_ld";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_xmp_json_ld extension.
@@ -60,13 +60,13 @@ export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
             return;
         }
 
-        const xmp_gltf = this._loader.gltf.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Gltf;
-        const xmp_node = this._loader.gltf.asset?.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Node;
-        if (xmp_gltf && xmp_node) {
-            const packet = +xmp_node.packet;
-            if (xmp_gltf.packets && packet < xmp_gltf.packets.length) {
+        const xmpGltf = this._loader.gltf.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Gltf;
+        const xmpNode = this._loader.gltf.asset?.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Node;
+        if (xmpGltf && xmpNode) {
+            const packet = +xmpNode.packet;
+            if (xmpGltf.packets && packet < xmpGltf.packets.length) {
                 this._loader.rootBabylonMesh.metadata = this._loader.rootBabylonMesh.metadata || {};
-                this._loader.rootBabylonMesh.metadata.xmp = xmp_gltf.packets[packet];
+                this._loader.rootBabylonMesh.metadata.xmp = xmpGltf.packets[packet];
             }
         }
     }

@@ -94,6 +94,7 @@ export class PointLight extends ShadowLight {
      * Returns the integer 0.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return Light.LIGHTTYPEID_POINTLIGHT;
     }

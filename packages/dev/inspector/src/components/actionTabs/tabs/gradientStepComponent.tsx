@@ -76,7 +76,9 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 <div
                     className="gradient-copy"
                     onClick={() => {
-                        if (this.props.onCopy) this.props.onCopy();
+                        if (this.props.onCopy) {
+                            this.props.onCopy();
+                        }
                     }}
                     title="Copy Step"
                 >

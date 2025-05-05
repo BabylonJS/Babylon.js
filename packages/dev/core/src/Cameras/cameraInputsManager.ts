@@ -14,11 +14,11 @@ export var CameraInputTypes = {};
  * This is the contract to implement in order to create a new input class.
  * Inputs are dealing with listening to user actions and moving the camera accordingly.
  */
-export interface ICameraInput<TCamera extends Camera> {
+export interface ICameraInput<Tcamera extends Camera> {
     /**
      * Defines the camera the input is attached to.
      */
-    camera: Nullable<TCamera>;
+    camera: Nullable<Tcamera>;
     /**
      * Gets the class name of the current input.
      * @returns the class name
@@ -48,15 +48,16 @@ export interface ICameraInput<TCamera extends Camera> {
 /**
  * Represents a map of input types to input instance or input index to input instance.
  */
-export interface CameraInputsMap<TCamera extends Camera> {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface CameraInputsMap<Tcamera extends Camera> {
     /**
      * Accessor to the input by input type.
      */
-    [name: string]: ICameraInput<TCamera>;
+    [name: string]: ICameraInput<Tcamera>;
     /**
      * Accessor to the input by input index.
      */
-    [idx: number]: ICameraInput<TCamera>;
+    [idx: number]: ICameraInput<Tcamera>;
 }
 
 /**
@@ -64,11 +65,11 @@ export interface CameraInputsMap<TCamera extends Camera> {
  * It helps dealing with all the different kind of input attached to a camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
-export class CameraInputsManager<TCamera extends Camera> {
+export class CameraInputsManager<Tcamera extends Camera> {
     /**
      * Defines the list of inputs attached to the camera.
      */
-    public attached: CameraInputsMap<TCamera>;
+    public attached: CameraInputsMap<Tcamera>;
 
     /**
      * Defines the dom element the camera is collecting inputs from.
@@ -84,7 +85,7 @@ export class CameraInputsManager<TCamera extends Camera> {
     /**
      * Defined the camera the input manager belongs to.
      */
-    public camera: TCamera;
+    public camera: Tcamera;
 
     /**
      * Update the current camera state depending on the inputs that have been used this frame.
@@ -96,7 +97,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * Instantiate a new Camera Input Manager.
      * @param camera Defines the camera the input manager belongs to
      */
-    constructor(camera: TCamera) {
+    constructor(camera: Tcamera) {
         this.attached = {};
         this.camera = camera;
         this.checkInputs = () => {};
@@ -107,7 +108,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      * @param input Camera input method
      */
-    public add(input: ICameraInput<TCamera>): void {
+    public add(input: ICameraInput<Tcamera>): void {
         const type = input.getSimpleName();
         if (this.attached[type]) {
             Logger.Warn("camera input of type " + type + " already exists on camera");
@@ -134,7 +135,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * example: camera.inputs.remove(camera.inputs.attached.mouse);
      * @param inputToRemove camera input method
      */
-    public remove(inputToRemove: ICameraInput<TCamera>): void {
+    public remove(inputToRemove: ICameraInput<Tcamera>): void {
         for (const cam in this.attached) {
             const input = this.attached[cam];
             if (input === inputToRemove) {
@@ -177,7 +178,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * Attach the input controls to the currently attached dom element to listen the events from.
      * @param input Defines the input to attach
      */
-    public attachInput(input: ICameraInput<TCamera>): void {
+    public attachInput(input: ICameraInput<Tcamera>): void {
         if (this.attachedToElement) {
             input.attachControl(this.noPreventDefault);
         }
@@ -281,7 +282,7 @@ export class CameraInputsManager<TCamera extends Camera> {
                         parsedinput,
                         null
                     );
-                    this.add(input as any);
+                    this.add(input);
                 }
             }
         } else {
@@ -297,7 +298,7 @@ export class CameraInputsManager<TCamera extends Camera> {
                         null
                     );
                     this.remove(this.attached[n]);
-                    this.add(input as any);
+                    this.add(input);
                 }
             }
         }

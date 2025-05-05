@@ -255,7 +255,7 @@ export class GizmoManager implements IDisposable {
                 }
             }
         });
-        return pointerObserver!;
+        return pointerObserver;
     }
 
     /**

@@ -9,7 +9,7 @@ import { Observable } from "./observable";
 
 /**
  * Defines the root class used to create scene optimization to use with SceneOptimizer
- * @description More details at https://doc.babylonjs.com/features/featuresDeepDive/scene/sceneOptimizer
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/sceneOptimizer
  */
 export class SceneOptimization {
     /**
@@ -368,7 +368,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
             return false;
         }
 
-        const mesh = <Mesh>abstractMesh;
+        const mesh = abstractMesh;
 
         if (mesh.isDisposed()) {
             return false;
@@ -836,6 +836,8 @@ export class SceneOptimizer implements IDisposable {
      * @param onFailure defines a callback to call on failure
      * @returns the new SceneOptimizer object
      */
+    // This function i s not technically Async
+    // eslint-disable-next-line no-restricted-syntax
     public static OptimizeAsync(scene: Scene, options?: SceneOptimizerOptions, onSuccess?: () => void, onFailure?: () => void): SceneOptimizer {
         const optimizer = new SceneOptimizer(scene, options || SceneOptimizerOptions.ModerateDegradationAllowed(), false);
 

@@ -442,7 +442,7 @@ export class _GLTFAnimation {
                     } else if (target instanceof MorphTarget || (target.length === 1 && target[0] instanceof MorphTarget)) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            const babylonMorphTarget = target instanceof MorphTarget ? (target as MorphTarget) : (target[0] as MorphTarget);
+                            const babylonMorphTarget = target instanceof MorphTarget ? target : (target[0] as MorphTarget);
                             if (babylonMorphTarget) {
                                 const babylonMorphTargetManager = babylonScene.morphTargetManagers.find((morphTargetManager) => {
                                     for (let j = 0; j < morphTargetManager.numTargets; ++j) {

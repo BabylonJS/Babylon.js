@@ -32,6 +32,7 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
 
     public dispose() {}
 
+    // eslint-disable-next-line no-restricted-syntax
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             let unlitMaterial = false;

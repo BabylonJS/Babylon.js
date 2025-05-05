@@ -7,7 +7,6 @@ import type { Matrix } from "../Maths/math.vector";
 import { Vector3, TmpVectors } from "../Maths/math.vector";
 import type { IDisposable, Scene } from "../scene";
 import type { Observer } from "../Misc/observable";
-import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Camera } from "../Cameras/camera";
@@ -20,6 +19,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */
         _edgeRenderLineShader: Nullable<ShaderMaterial>;
@@ -27,6 +27,7 @@ declare module "../scene" {
 }
 
 declare module "../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /**
          * Gets the edgesRenderer associated with the mesh
@@ -57,6 +58,7 @@ Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
 });
 
 declare module "../Meshes/linesMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface LinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -76,6 +78,7 @@ LinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVertic
 };
 
 declare module "../Meshes/linesMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface InstancedLinesMesh {
         /**
          * Enables the edge rendering mode on the mesh.
@@ -1006,7 +1009,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         // VBOs
-        engine.bindBuffers(useBuffersWithInstances ? this._buffersForInstances : this._buffers, this._ib, <Effect>this._lineShader.getEffect());
+        engine.bindBuffers(useBuffersWithInstances ? this._buffersForInstances : this._buffers, this._ib, this._lineShader.getEffect());
 
         scene.resetCachedMaterial();
         this._lineShader.setColor4("color", this._source.edgesColor);

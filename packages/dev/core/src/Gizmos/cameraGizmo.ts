@@ -110,7 +110,11 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
             this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene, linesColor);
             this._cameraLinesMesh.parent = this._rootMesh;
 
-            if (this.gizmoLayer.utilityLayerScene.activeCamera && this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ * 1.5) {
+            if (
+                this.gizmoLayer.utilityLayerScene.activeCamera &&
+                this.gizmoLayer.utilityLayerScene.activeCamera != camera &&
+                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ * 1.5
+            ) {
                 this.gizmoLayer.utilityLayerScene.activeCamera.maxZ = camera.maxZ * 1.5;
             }
 

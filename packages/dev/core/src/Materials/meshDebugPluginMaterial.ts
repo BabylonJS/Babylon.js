@@ -752,7 +752,9 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public static PrepareMeshForTrianglesAndVerticesMode(mesh: Mesh, returnRollback: boolean = false): () => void {
         let rollback = () => {};
 
-        if (mesh.getTotalIndices() == 0) return rollback;
+        if (mesh.getTotalIndices() == 0) {
+            return rollback;
+        }
 
         if (returnRollback) {
             const kinds = mesh.getVerticesDataKinds();

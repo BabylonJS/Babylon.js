@@ -252,8 +252,8 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
-            gizmoMeshes: arrow.getChildMeshes() as Mesh[],
-            colliderMeshes: collider.getChildMeshes() as Mesh[],
+            gizmoMeshes: arrow.getChildMeshes(),
+            colliderMeshes: collider.getChildMeshes(),
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,

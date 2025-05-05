@@ -30,6 +30,7 @@ export class GUIEditor {
      * @param options defines the options to use to configure the gui editor
      * @param embed defines whether editor is being opened from the Playground
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async Show(options: IGUIEditorOptions, embed?: boolean) {
         let hostElement = options.hostElement;
 
@@ -60,18 +61,12 @@ export class GUIEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.customLoad = options.customLoad;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.registerEventListeners();
 
-        const graphEditor = React.createElement(WorkbenchEditor, {
-            globalState,
-        });
-
-        const root = createRoot(hostElement);
-        root.render(graphEditor);
-        // create the middle workbench canvas
-        if (!globalState.guiTexture) {
-            setTimeout(async () => {
+        const onReadyAsync = async () => {
+            // create the middle workbench canvas
+            if (!globalState.guiTexture) {
                 globalState.workbench.createGUICanvas(embed);
                 if (options.currentSnippetToken) {
                     try {
@@ -80,8 +75,16 @@ export class GUIEditor {
                         //swallow and continue
                     }
                 }
-            });
-        }
+            }
+        };
+
+        const graphEditor = React.createElement(WorkbenchEditor, {
+            globalState,
+            onReady: onReadyAsync,
+        });
+
+        const root = createRoot(hostElement);
+        root.render(graphEditor);
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add(() => {

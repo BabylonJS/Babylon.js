@@ -4,7 +4,6 @@ import { DataStorage } from "core/Misc/dataStorage";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { ParticleSystem } from "core/Particles/particleSystem";
 
 import doubleSided from "./svgs/doubleSided.svg";
 import depthPass from "./svgs/depthPass.svg";
@@ -13,6 +12,7 @@ import directionalRight from "./svgs/directionalRight.svg";
 import directionalLeft from "./svgs/directionalLeft.svg";
 import background from "./svgs/icon-ibl.svg";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -75,6 +75,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async processPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
         if (!e.ctrlKey || !this.props.globalState.pickingTexture) {
             this._consoleRef.current?.classList.add("hidden");
@@ -104,14 +105,6 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
     }
 
     override render() {
-        const blendModeOptions = [
-            { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
-            { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
-            { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
-            { label: "OneOne", value: ParticleSystem.BLENDMODE_ONEONE },
-            { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
-        ];
-
         return (
             <>
                 <div id="preview">
@@ -120,7 +113,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         onPointerOut={this._onPointerOutCanvas}
                         id="preview-canvas"
                         onKeyUp={(evt) => this.onKeyUp(evt)}
-                        onPointerMove={(evt) => this.processPointerMove(evt)}
+                        onPointerMove={async (evt) => this.processPointerMove(evt)}
                     />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                     <div id="preview-color-picker" className="hidden" ref={this._consoleRef} />
@@ -129,7 +122,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                     <div id="preview-config-bar" className="extended">
                         <OptionsLine
                             label="Blend mode"
-                            options={blendModeOptions}
+                            options={BlendModeOptions}
                             target={this.props.globalState}
                             propertyName="particleSystemBlendMode"
                             noDirectUpdate={true}

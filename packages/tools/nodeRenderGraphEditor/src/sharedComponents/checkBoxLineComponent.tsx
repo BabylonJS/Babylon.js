@@ -40,7 +40,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (nextProps.extractValue) {
             currentState = nextProps.extractValue(nextProps.target);
         } else if (nextProps.isSelected) {
-            currentState = nextProps.isSelected!();
+            currentState = nextProps.isSelected();
         } else {
             currentState = nextProps.target[nextProps.propertyName!] == true;
         }

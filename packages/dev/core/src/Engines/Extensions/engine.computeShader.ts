@@ -28,6 +28,7 @@ export type ComputeCompilationMessageType = "error" | "warning" | "info";
 /**
  * Messages generated during compilation
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface ComputeCompilationMessages {
     /**
      * Number of errors generated during compilation
@@ -62,6 +63,7 @@ export const enum ComputeBindingType {
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a new compute effect

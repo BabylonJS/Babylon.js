@@ -175,6 +175,7 @@ class WalkingTracker {
     private _steppingLeft = false;
     private _t = -1;
     private _maxT = -1;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _maxTPosition = new Vector2();
     private _vitality = 0;
 
@@ -207,6 +208,7 @@ class WalkingTracker {
         this._vitality = 1;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _updateTAndVitality(x: number, y: number) {
         this._currentPosition.copyFromFloats(x, y);
 
