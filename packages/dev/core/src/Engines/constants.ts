@@ -470,6 +470,21 @@ export class Constants {
     public static readonly MATERIAL_CounterClockWiseSideOrientation = 1;
 
     /**
+     * Energy-conserving Oren Nayar diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR = 0;
+
+    /**
+     * Burley diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_BURLEY = 1;
+
+    /**
+     * Lambertian diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_LAMBERT = 2;
+
+    /**
      * Nothing
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
