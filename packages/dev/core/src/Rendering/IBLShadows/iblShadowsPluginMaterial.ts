@@ -6,7 +6,7 @@ import { Constants } from "core/Engines/constants";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import { expandToProperty, serialize } from "core/Misc/decorators";
+import { expandToProperty, serialize, serializeAsTexture } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -30,7 +30,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     /**
      * The texture containing the contribution from IBL shadows.
      */
-    @serialize()
+    @serializeAsTexture()
     public iblShadowsTexture: InternalTexture;
 
     /**

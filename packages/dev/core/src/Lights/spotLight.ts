@@ -278,6 +278,7 @@ export class SpotLight extends ShadowLight {
      * Returns the integer 2.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return Light.LIGHTTYPEID_SPOTLIGHT;
     }
@@ -351,12 +352,12 @@ export class SpotLight extends ShadowLight {
         const lightFar = this.projectionTextureLightFar;
         const lightNear = this.projectionTextureLightNear;
 
-        const P = lightFar / (lightFar - lightNear);
-        const Q = -P * lightNear;
-        const S = 1.0 / Math.tan(this._angle / 2.0);
-        const A = 1.0;
+        const p = lightFar / (lightFar - lightNear);
+        const q = -p * lightNear;
+        const s = 1.0 / Math.tan(this._angle / 2.0);
+        const a = 1.0;
 
-        Matrix.FromValuesToRef(S / A, 0.0, 0.0, 0.0, 0.0, S, 0.0, 0.0, 0.0, 0.0, P, 1.0, 0.0, 0.0, Q, 0.0, this._projectionTextureProjectionLightMatrix);
+        Matrix.FromValuesToRef(s / a, 0.0, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, 0.0, p, 1.0, 0.0, 0.0, q, 0.0, this._projectionTextureProjectionLightMatrix);
     }
 
     /**

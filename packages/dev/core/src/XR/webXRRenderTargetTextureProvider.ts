@@ -124,7 +124,9 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
     }
 
     public dispose() {
-        this._renderTargetTextures.forEach((rtt) => rtt.dispose());
+        for (const rtt of this._renderTargetTextures) {
+            rtt.dispose();
+        }
         this._renderTargetTextures.length = 0;
     }
 }

@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
@@ -13,6 +12,7 @@ import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyL
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Color4 } from "core/Maths/math.color";
 import { CreatePopup } from "shared-ui-components/popupHelper";
+import { createRoot } from "react-dom/client";
 
 /**
  * Interface used to specify creation options for the node editor
@@ -64,7 +64,7 @@ export class NodeEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
         if (options.backgroundColor) {
             globalState.backgroundColor = options.backgroundColor;
@@ -74,7 +74,8 @@ export class NodeEditor {
             globalState: globalState,
         });
 
-        ReactDOM.render(graphEditor, hostElement);
+        const root = createRoot(hostElement);
+        root.render(graphEditor);
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {

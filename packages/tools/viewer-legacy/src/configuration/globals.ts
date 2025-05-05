@@ -9,4 +9,5 @@ export class ViewerGlobals {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const viewerGlobals: ViewerGlobals = new ViewerGlobals();

@@ -16,6 +16,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 /**
  * Options to be used when creating a shadow depth material
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface IIOptionShadowDepthMaterial {
     /** Variables in the vertex shader code that need to have their names remapped.
      * The format is: ["var_name", "var_remapped_name", "var_name", "var_remapped_name", ...]
@@ -208,6 +209,10 @@ export class ShadowDepthWrapper {
 
         const [origEffect, origRenderPassId] = origEffectAndRenderPassId;
 
+        if (!origEffect.isReady()) {
+            return null;
+        }
+
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
@@ -239,6 +244,10 @@ export class ShadowDepthWrapper {
         // the depth effect is either out of date or has not been created yet
         let vertexCode = origEffect.vertexSourceCodeBeforeMigration,
             fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
+
+        if (!vertexCode && !fragmentCode) {
+            return null;
+        }
 
         if (!this.doNotInjectCode) {
             // Declare the shadow map includes

@@ -6,6 +6,13 @@ import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionP
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
+import { Process } from "core/Engines/Processors/shaderProcessor";
+import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
+
+/** @internal */
+export const SfeModeDefine = "USE_SFE_FRAMEWORK";
 
 /**
  * Class used to store node based material build state
@@ -97,6 +104,61 @@ export class NodeMaterialBuildState {
     }
 
     /**
+     * Gets whether the current compilation should inject SFE syntax or not
+     */
+    public get isSFEMode() {
+        return this.sharedData.nodeMaterial.mode === NodeMaterialModes.SFE;
+    }
+
+    /**
+     * Returns the processed, compiled shader code
+     * @returns the raw shader code used by the engine
+     */
+    public getProcessedShaderAsync(): Promise<string> {
+        if (!this._builtCompilationString) {
+            throw new Error("Shader not built yet.");
+        }
+
+        const engine = this.sharedData.nodeMaterial.getScene().getEngine();
+        const options: _IProcessingOptions = {
+            defines: [],
+            indexParameters: undefined,
+            isFragment: this.target === NodeMaterialBlockTargets.Fragment,
+            shouldUseHighPrecisionShader: engine._shouldUseHighPrecisionShader,
+            processor: engine._getShaderProcessor(this.shaderLanguage),
+            supportsUniformBuffers: engine.supportsUniformBuffers,
+            shadersRepository: EngineShaderStore.GetShadersRepository(this.shaderLanguage),
+            includesShadersStore: EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage),
+            version: (engine.version * 100).toString(),
+            platformName: engine.shaderPlatformName,
+            processingContext: null,
+            isNDCHalfZRange: engine.isNDCHalfZRange,
+            useReverseDepthBuffer: engine.useReverseDepthBuffer,
+        };
+
+        // Export WebGL2 shaders with WebGL1 syntax for max compatibility
+        if (!engine.isWebGPU && engine.version > 1.0) {
+            options.processor = new WebGLShaderProcessor();
+        }
+
+        // For SFE, use the SFE define to toggle the SFE syntax in the shader
+        if (this.isSFEMode) {
+            options.defines.push(SfeModeDefine);
+        }
+
+        return new Promise((resolve) => {
+            Process(
+                this._builtCompilationString,
+                options,
+                (migratedCode, _) => {
+                    resolve(migratedCode);
+                },
+                engine
+            );
+        });
+    }
+
+    /**
      * Finalize the compilation strings
      * @param state defines the current compilation state
      */
@@ -104,15 +166,25 @@ export class NodeMaterialBuildState {
         const emitComments = state.sharedData.emitComments;
         const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
+        let entryPointString = `\n${emitComments ? "//Entry point\n" : ""}`;
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
             if (isFragmentMode) {
-                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.sharedData.varyingInitializationsFragment}${this.compilationString}`;
+                entryPointString = `@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.sharedData.varyingInitializationsFragment}`;
             } else {
-                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n${this.compilationString}`;
+                entryPointString = `@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n`;
             }
+        } else if (this.isSFEMode) {
+            // SFE: Replace the entry with a helper function
+            entryPointString += `#ifdef ${SfeModeDefine}\n`;
+            entryPointString += `vec4 nmeMain(vec2 vUV) { // main\n`;
+            entryPointString += `#else\n`;
+            entryPointString += `void main(void) {\n`;
+            entryPointString += `#endif\n`;
         } else {
-            this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
+            entryPointString = `void main(void) {\n`;
         }
+
+        this.compilationString = entryPointString + this.compilationString;
 
         if (this._constantDeclaration) {
             this.compilationString = `\n${emitComments ? "//Constants\n" : ""}${this._constantDeclaration}\n${this.compilationString}`;
@@ -164,6 +236,10 @@ export class NodeMaterialBuildState {
                 const extension = this.extensions[extensionName];
                 this.compilationString = `\n${extension}\n${this.compilationString}`;
             }
+        }
+
+        if (this.isSFEMode) {
+            this.compilationString = `\n// { "smartFilterBlockType": "${this.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Test" }\n${this.compilationString}`;
         }
 
         this._builtCompilationString = this.compilationString;
@@ -219,7 +295,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, define = "", force = false) {
+    public _emit2DSampler(name: string, define = "", force = false, annotation?: string) {
         if (this.samplers.indexOf(name) < 0 || force) {
             if (define) {
                 this._samplerDeclaration += `#if ${define}\n`;
@@ -229,7 +305,7 @@ export class NodeMaterialBuildState {
                 this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
                 this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
             } else {
-                this._samplerDeclaration += `uniform sampler2D ${name};\n`;
+                this._samplerDeclaration += `uniform sampler2D ${name}; ${annotation ? annotation : ""}\n`;
             }
 
             if (define) {
@@ -551,7 +627,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
+    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false, annotation?: string) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
         }
@@ -564,6 +640,9 @@ export class NodeMaterialBuildState {
             } else {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
+        }
+        if (annotation) {
+            this._uniformDeclaration += `${annotation}\n`;
         }
         const shaderType = this._getShaderType(type);
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
@@ -612,7 +691,7 @@ export class NodeMaterialBuildState {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
             return `${isConst ? "const" : "var"} ${name}: ${this._getShaderType(type)}`;
         } else {
-            return `${this._getShaderType(type)} ${name}`;
+            return `${isConst ? "const " : ""}${this._getShaderType(type)} ${name}`;
         }
     }
 

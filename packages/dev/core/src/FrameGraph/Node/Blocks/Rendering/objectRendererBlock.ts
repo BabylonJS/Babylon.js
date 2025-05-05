@@ -32,11 +32,19 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
 
     public set doNotChangeAspectRatio(value: boolean) {
         const disabled = this._frameGraphTask.disabled;
+        const depthTest = this.depthTest;
+        const depthWrite = this.depthWrite;
+        const disableShadows = this.disableShadows;
+        const renderInLinearSpace = this.renderInLinearSpace;
 
         this._frameGraphTask.dispose();
         this._frameGraphTask = new FrameGraphObjectRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
         this._additionalConstructionParameters = [value];
 
+        this.depthTest = depthTest;
+        this.depthWrite = depthWrite;
+        this.disableShadows = disableShadows;
+        this.renderInLinearSpace = renderInLinearSpace;
         this._frameGraphTask.disabled = disabled;
     }
 
@@ -46,23 +54,6 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
      */
     public override getClassName() {
         return "NodeRenderGraphObjectRendererBlock";
-    }
-
-    protected override _dumpPropertiesCode() {
-        const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.doNotChangeAspectRatio = ${this.doNotChangeAspectRatio};`);
-        return super._dumpPropertiesCode() + codes.join("\n");
-    }
-
-    public override serialize(): any {
-        const serializationObject = super.serialize();
-        serializationObject.doNotChangeAspectRatio = this.doNotChangeAspectRatio;
-        return serializationObject;
-    }
-
-    public override _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-        this.doNotChangeAspectRatio = serializationObject.doNotChangeAspectRatio;
     }
 }
 

@@ -8,21 +8,35 @@ import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector"
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { InstancedMesh } from "core/Meshes/instancedMesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 
-// Matrix that converts handedness on the X-axis.
-const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
-
-// 180 degrees rotation in Y.
-const rotation180Y = new Quaternion(0, 1, 0, 0);
+// Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
+const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // Default values for comparison.
-const epsilon = 1e-6;
-const defaultTranslation = Vector3.Zero();
-const defaultScale = Vector3.One();
+const Epsilon = 1e-6;
+const DefaultTranslation = Vector3.Zero();
+const DefaultScale = Vector3.One();
+
+/**
+ * Get the information necessary for enumerating a vertex buffer.
+ * @param vertexBuffer the vertex buffer to enumerate
+ * @param meshes the meshes that use the vertex buffer
+ * @returns the information necessary to enumerate the vertex buffer
+ */
+export function GetVertexBufferInfo(vertexBuffer: VertexBuffer, meshes: AbstractMesh[]) {
+    const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+    const componentCount = vertexBuffer.getSize();
+    const totalVertices = meshes.reduce((max, current) => {
+        return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+    }, -Number.MAX_VALUE); // Get the max total vertices count, to ensure we capture the full range of vertex data used by the meshes.
+    const count = totalVertices * componentCount;
+    const kind = vertexBuffer.getKind();
+
+    return { byteOffset, byteStride, componentCount, type, count, normalized, totalVertices, kind };
+}
 
 export function GetAccessorElementCount(accessorType: AccessorType): number {
     switch (accessorType) {
@@ -177,9 +191,53 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     return value;
 }
 
+/**
+ * Converts, in-place, a left-handed quaternion to a right-handed quaternion via a change of basis.
+ * @param value the unit quaternion to convert
+ * @returns the converted quaternion
+ */
 export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
-    value.x *= -1;
-    value.y *= -1;
+    /**
+     * This is the simplified version of the following equation:
+     *    q' = to_quaternion(M * to_matrix(q) * M^-1)
+     * where M is the conversion matrix `convertHandednessMatrix`,
+     * q is the input quaternion, and q' is the converted quaternion.
+     * Reference: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+     */
+    if (value.x * value.x + value.y * value.y > 0.5) {
+        const absX = Math.abs(value.x);
+        const absY = Math.abs(value.y);
+        if (absX > absY) {
+            const sign = Math.sign(value.x);
+            value.x = absX;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w *= sign;
+        } else {
+            const sign = Math.sign(value.y);
+            value.x *= -sign;
+            value.y = absY;
+            value.z *= sign;
+            value.w *= -sign;
+        }
+    } else {
+        const absZ = Math.abs(value.z);
+        const absW = Math.abs(value.w);
+        if (absZ > absW) {
+            const sign = Math.sign(value.z);
+            value.x *= -sign;
+            value.y *= sign;
+            value.z = absZ;
+            value.w *= -sign;
+        } else {
+            const sign = Math.sign(value.w);
+            value.x *= sign;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w = absW;
+        }
+    }
+
     return value;
 }
 
@@ -190,7 +248,7 @@ export function ConvertToRightHandedNode(value: INode) {
     translation = ConvertToRightHandedPosition(translation);
     rotation = ConvertToRightHandedRotation(rotation);
 
-    if (translation.equalsWithEpsilon(defaultTranslation, epsilon)) {
+    if (translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete value.translation;
     } else {
         value.translation = translation.asArray();
@@ -204,18 +262,18 @@ export function ConvertToRightHandedNode(value: INode) {
 }
 
 /**
- * Rotation by 180 as glTF has a different convention than Babylon.
+ * Pre-multiplies a 180-degree Y rotation to the quaternion, in order to match glTF's flipped forward direction for cameras.
  * @param rotation Target camera rotation.
- * @returns Ref to camera rotation.
  */
-export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
-    return rotation.multiplyInPlace(rotation180Y);
+export function ConvertCameraRotationToGLTF(rotation: Quaternion): void {
+    // Simplified from: rotation * (0, 1, 0, 0).
+    rotation.copyFromFloats(-rotation.z, rotation.w, rotation.x, -rotation.y);
 }
 
-export function RotateNode180Y(node: INode) {
-    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    rotation180Y.multiplyToRef(rotation, rotation);
-    node.rotation = rotation.asArray();
+export function RotateNode180Y(node: INode): void {
+    Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    ConvertCameraRotationToGLTF(TmpVectors.Quaternion[1]);
+    node.rotation = TmpVectors.Quaternion[1].asArray();
 }
 
 /**
@@ -237,7 +295,7 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
     parentMatrix.multiplyToRef(matrix, matrix);
     matrix.decompose(parentScale, parentRotation, parentTranslation);
 
-    if (parentTranslation.equalsWithEpsilon(defaultTranslation, epsilon)) {
+    if (parentTranslation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete parentNode.translation;
     } else {
         parentNode.translation = parentTranslation.asArray();
@@ -249,7 +307,7 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
         parentNode.rotation = parentRotation.asArray();
     }
 
-    if (parentScale.equalsWithEpsilon(defaultScale, epsilon)) {
+    if (parentScale.equalsWithEpsilon(DefaultScale, Epsilon)) {
         delete parentNode.scale;
     } else {
         parentNode.scale = parentScale.asArray();
@@ -278,14 +336,14 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
             return false;
         }
     } else {
-        const matrix = node.getWorldMatrix().multiplyToRef(convertHandednessMatrix, TmpVectors.Matrix[0]);
+        const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
         if (!matrix.isIdentity()) {
             return false;
         }
     }
 
     // Geometry
-    if ((node instanceof Mesh && node.geometry) || (node instanceof InstancedMesh && node.sourceMesh.geometry)) {
+    if (node instanceof AbstractMesh && node.geometry) {
         return false;
     }
 
@@ -345,7 +403,7 @@ export function GetMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
  * @param defaultValues a partial object with default values
  * @returns object with default values omitted
  */
-export function OmitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
+export function OmitDefaultValues<T extends object>(object: T, defaultValues: Partial<T>): T {
     for (const [key, value] of Object.entries(object)) {
         const defaultValue = defaultValues[key as keyof T];
         if ((Array.isArray(value) && Array.isArray(defaultValue) && AreArraysEqual(value, defaultValue)) || value === defaultValue) {

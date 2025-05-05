@@ -11,6 +11,7 @@ import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedE
 
 import "./sceneExplorer.scss";
 import { Logger } from "core/Misc/logger";
+import type { PropsWithChildren } from "react";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;
@@ -43,7 +44,10 @@ interface ISceneExplorerComponentProps {
     onClose?: () => void;
 }
 
-export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }> {
+export class SceneExplorerComponent extends React.Component<
+    PropsWithChildren<ISceneExplorerComponentProps>,
+    { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }
+> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onParrentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
@@ -152,7 +156,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
     processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>) {
         // if typing inside a text box, don't process keys
-        if ((keyEvent.target as HTMLElement).localName === "input") return;
+        if ((keyEvent.target as HTMLElement).localName === "input") {
+            return;
+        }
 
         const scene = this.state.scene;
         let search = false;

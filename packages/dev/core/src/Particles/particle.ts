@@ -88,9 +88,9 @@ export class Particle {
     public _attachedSubEmitters: Nullable<Array<SubEmitter>> = null;
 
     /** @internal */
-    public _initialStartSpriteCellID: number;
+    public _initialStartSpriteCellId: number;
     /** @internal */
-    public _initialEndSpriteCellID: number;
+    public _initialEndSpriteCellId: number;
     /** @internal */
     public _initialSpriteCellLoop: boolean;
 
@@ -187,14 +187,14 @@ export class Particle {
             }
         }
 
-        const dist = this._initialEndSpriteCellID - this._initialStartSpriteCellID + 1;
+        const dist = this._initialEndSpriteCellId - this._initialStartSpriteCellId + 1;
         let ratio: number;
         if (this._initialSpriteCellLoop) {
             ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
         } else {
             ratio = Clamp((offsetAge * changeSpeed) / this.lifeTime);
         }
-        this.cellIndex = (this._initialStartSpriteCellID + ratio * dist) | 0;
+        this.cellIndex = (this._initialStartSpriteCellId + ratio * dist) | 0;
     }
 
     /**
@@ -221,9 +221,9 @@ export class Particle {
     /** @internal */
     public _inheritParticleInfoToSubEmitters() {
         if (this._attachedSubEmitters && this._attachedSubEmitters.length > 0) {
-            this._attachedSubEmitters.forEach((subEmitter) => {
+            for (const subEmitter of this._attachedSubEmitters) {
                 this._inheritParticleInfoToSubEmitter(subEmitter);
-            });
+            }
         }
     }
 
@@ -308,8 +308,8 @@ export class Particle {
             other._currentDrag2 = this._currentDrag2;
         }
         if (this.particleSystem.isAnimationSheetEnabled) {
-            other._initialStartSpriteCellID = this._initialStartSpriteCellID;
-            other._initialEndSpriteCellID = this._initialEndSpriteCellID;
+            other._initialStartSpriteCellId = this._initialStartSpriteCellId;
+            other._initialEndSpriteCellId = this._initialEndSpriteCellId;
             other._initialSpriteCellLoop = this._initialSpriteCellLoop;
         }
         if (this.particleSystem.useRampGradients) {

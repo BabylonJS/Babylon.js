@@ -25,6 +25,13 @@ export interface IStaticSoundOptionsBase {
      *
      */
     loopStart: number;
+}
+
+/**
+ * Options stored in a static sound.
+ * @internal
+ */
+export interface IStaticSoundStoredOptions extends IAbstractSoundStoredOptions, IStaticSoundOptionsBase {
     /**
      * The pitch of the sound, in cents. Defaults to `0`.
      * - Can be combined with {@link playbackRate}.
@@ -37,14 +44,6 @@ export interface IStaticSoundOptionsBase {
     playbackRate: number;
 }
 
-/** @internal */
-export interface IStaticSoundPlayOptionsBase {
-    /**
-     * The time to wait before playing the sound, in seconds. Defaults to `0`.
-     */
-    waitTime: number;
-}
-
 /**
  * Options for creating a static sound.
  */
@@ -53,7 +52,12 @@ export interface IStaticSoundOptions extends IAbstractSoundOptions, IStaticSound
 /**
  * Options for playing a static sound.
  */
-export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions, IStaticSoundOptionsBase, IStaticSoundPlayOptionsBase {}
+export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions, IStaticSoundOptionsBase {
+    /**
+     * The time to wait before playing the sound, in seconds. Defaults to `0`.
+     */
+    waitTime: number;
+}
 
 /**
  * Options for stopping a static sound.
@@ -64,12 +68,6 @@ export interface IStaticSoundStopOptions {
      */
     waitTime: number;
 }
-
-/**
- * Options stored in a static sound.
- * @internal
- */
-export interface IStaticSoundStoredOptions extends IAbstractSoundStoredOptions, IStaticSoundOptionsBase {}
 
 /**
  * Abstract class representing a static sound.
@@ -145,9 +143,9 @@ export abstract class StaticSound extends AbstractSound {
     public set pitch(value: number) {
         this._options.pitch = value;
 
-        const instance = this._getNewestInstance() as _StaticSoundInstance;
-        if (instance) {
-            instance.pitch = value;
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.pitch = value;
         }
     }
 
@@ -162,9 +160,9 @@ export abstract class StaticSound extends AbstractSound {
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
 
-        const instance = this._getNewestInstance() as _StaticSoundInstance;
-        if (instance) {
-            instance.playbackRate = value;
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.playbackRate = value;
         }
     }
 
@@ -185,8 +183,6 @@ export abstract class StaticSound extends AbstractSound {
         options.loop ??= this.loop;
         options.loopStart ??= this.loopStart;
         options.loopEnd ??= this.loopEnd;
-        options.pitch ??= this.pitch;
-        options.playbackRate ??= this.playbackRate;
         options.startOffset ??= this.startOffset;
         options.volume ??= 1;
         options.waitTime ??= 0;

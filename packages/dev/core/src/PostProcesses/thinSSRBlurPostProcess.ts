@@ -52,8 +52,8 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
 
     public blurStrength = 0.03;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         this._drawWrapper.effect!.setFloat2(
             "texelOffsetScale",

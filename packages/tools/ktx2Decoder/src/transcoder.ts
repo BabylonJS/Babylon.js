@@ -36,7 +36,7 @@ export class Transcoder {
 
     public setMemoryManager(memoryMgr: WASMMemoryManager): void {}
 
-    public transcode(
+    public async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,

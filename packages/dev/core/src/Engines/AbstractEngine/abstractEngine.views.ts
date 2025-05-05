@@ -29,6 +29,7 @@ export class EngineView {
 }
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         _inputElement: Nullable<HTMLElement>;
@@ -85,18 +86,18 @@ declare module "../../Engines/abstractEngine" {
     }
 }
 
-const _onBeforeViewRenderObservable = new Observable<EngineView>();
-const _onAfterViewRenderObservable = new Observable<EngineView>();
+const OnBeforeViewRenderObservable = new Observable<EngineView>();
+const OnAfterViewRenderObservable = new Observable<EngineView>();
 
 Object.defineProperty(AbstractEngine.prototype, "onBeforeViewRenderObservable", {
     get: function (this: AbstractEngine) {
-        return _onBeforeViewRenderObservable;
+        return OnBeforeViewRenderObservable;
     },
 });
 
 Object.defineProperty(AbstractEngine.prototype, "onAfterViewRenderObservable", {
     get: function (this: AbstractEngine) {
-        return _onAfterViewRenderObservable;
+        return OnAfterViewRenderObservable;
     },
 });
 
@@ -172,7 +173,7 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
     }
     const parent = this.getRenderingCanvas()!;
 
-    _onBeforeViewRenderObservable.notifyObservers(view);
+    OnBeforeViewRenderObservable.notifyObservers(view);
     const camera = view.camera;
     let previewCamera: Nullable<Camera> = null;
     let previewCameras: Nullable<Camera[]> = null;
@@ -227,7 +228,7 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
         scene.activeCameras = previewCameras;
         scene.activeCamera = previewCamera;
     }
-    _onAfterViewRenderObservable.notifyObservers(view);
+    OnAfterViewRenderObservable.notifyObservers(view);
     return true;
 };
 

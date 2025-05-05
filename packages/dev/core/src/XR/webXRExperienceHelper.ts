@@ -16,6 +16,7 @@ import { AbstractEngine } from "core/Engines/abstractEngine";
 /**
  * Options for setting up XR spectator camera.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface WebXRSpectatorModeOption {
     /**
      * Expected refresh rate (frames per sec) for a spectator camera.
@@ -84,7 +85,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param scene the scene to attach the experience helper to
      * @returns a promise for the experience helper
      */
-    public static CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
+    public static async CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
         const helper = new WebXRExperienceHelper(scene);
         return helper.sessionManager
             .initializeAsync()
@@ -191,9 +192,9 @@ export class WebXRExperienceHelper implements IDisposable {
                     this._setState(WebXRState.EXITING_XR);
                 }
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
-                this.camera.rigCameras.forEach((c) => {
+                for (const c of this.camera.rigCameras) {
                     c.outputRenderTarget = null;
-                });
+                }
 
                 // Restore scene settings
                 this._scene.autoClear = this._originalSceneAutoClear;
@@ -229,10 +230,10 @@ export class WebXRExperienceHelper implements IDisposable {
      * Exits XR mode and returns the scene to its original state
      * @returns promise that resolves after xr mode has exited
      */
-    public exitXRAsync() {
+    public async exitXRAsync() {
         // only exit if state is IN_XR
         if (this.state !== WebXRState.IN_XR) {
-            return Promise.resolve();
+            return;
         }
         this._setState(WebXRState.EXITING_XR);
         return this.sessionManager.exitXRAsync();

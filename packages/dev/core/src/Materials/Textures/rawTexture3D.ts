@@ -70,6 +70,6 @@ export class RawTexture3D extends Texture {
         if (!this._texture) {
             return;
         }
-        this._getEngine()!.updateRawTexture3D(this._texture, data, this._texture.format, this._texture!.invertY, null, this._texture.type);
+        this._getEngine()!.updateRawTexture3D(this._texture, data, this._texture.format, this._texture.invertY, null, this._texture.type);
     }
 }

@@ -155,8 +155,9 @@ export class AxesViewer {
     }
 
     private static _SetRenderingGroupId(node: TransformNode, id: number) {
-        node.getChildMeshes().forEach((mesh) => {
+        const meshes = node.getChildMeshes();
+        for (const mesh of meshes) {
             mesh.renderingGroupId = id;
-        });
+        }
     }
 }

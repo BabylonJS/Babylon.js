@@ -132,6 +132,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public static readonly CounterClockWiseSideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
     /**
+     * The dirty image processing flag value
+     */
+    public static readonly ImageProcessingDirtyFlag = Constants.MATERIAL_ImageProcessingDirtyFlag;
+
+    /**
      * The dirty texture flag value
      */
     public static readonly TextureDirtyFlag = Constants.MATERIAL_TextureDirtyFlag;
@@ -1591,7 +1596,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param options defines additional options for compiling the shaders
      * @returns a promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
+    public async forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
         return new Promise((resolve, reject) => {
             this.forceCompilation(
                 mesh,
@@ -1642,6 +1647,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
 
         Material._DirtyCallbackArray.length = 0;
+
+        if (flag & Material.ImageProcessingDirtyFlag) {
+            Material._DirtyCallbackArray.push(Material._ImageProcessingDirtyCallBack);
+        }
 
         if (flag & Material.TextureDirtyFlag) {
             Material._DirtyCallbackArray.push(Material._TextureDirtyCallBack);

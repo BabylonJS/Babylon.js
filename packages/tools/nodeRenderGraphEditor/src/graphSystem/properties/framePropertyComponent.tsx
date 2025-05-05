@@ -35,12 +35,12 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
 
     override render() {
         let configurableInputBlocks: NodeRenderGraphInputBlock[] = [];
-        this.props.frame.nodes.forEach((node) => {
+        for (const node of this.props.frame.nodes) {
             const block = node.content.data as NodeRenderGraphBlock;
             if (block.isInput && block.visibleOnFrame) {
                 configurableInputBlocks.push(block as NodeRenderGraphInputBlock);
             }
-        });
+        }
 
         configurableInputBlocks = configurableInputBlocks.sort((a, b) => {
             return a.name.localeCompare(b.name);
@@ -61,7 +61,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                             <ButtonLineComponent
                                 label="Collapse"
                                 onClick={() => {
-                                    this.props.frame!.isCollapsed = true;
+                                    this.props.frame.isCollapsed = true;
                                 }}
                             />
                         )}
@@ -69,14 +69,14 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                             <ButtonLineComponent
                                 label="Expand"
                                 onClick={() => {
-                                    this.props.frame!.isCollapsed = false;
+                                    this.props.frame.isCollapsed = false;
                                 }}
                             />
                         )}
                         <ButtonLineComponent
                             label="Export"
                             onClick={() => {
-                                this.props.frame!.export();
+                                this.props.frame.export();
                             }}
                         />
                     </LineContainerComponent>

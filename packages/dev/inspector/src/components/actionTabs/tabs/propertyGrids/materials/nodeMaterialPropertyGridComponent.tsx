@@ -182,7 +182,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             });
 
         const namedGroups: string[] = [];
-        configurableInputBlocks.forEach((block) => {
+        for (const block of configurableInputBlocks) {
             if (!block.groupInInspector) {
                 return;
             }
@@ -190,7 +190,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             if (namedGroups.indexOf(block.groupInInspector) === -1) {
                 namedGroups.push(block.groupInInspector);
             }
-        });
+        }
         namedGroups.sort();
 
         const gradiantNodeMaterialBlocks = this.props.material.attachedBlocks

@@ -30,7 +30,7 @@ export interface IEffectRendererOptions {
 }
 
 // Fullscreen quad buffers by default.
-const defaultOptions = {
+const DefaultOptions = {
     positions: [1, 1, -1, 1, -1, -1, 1, -1],
     indices: [0, 1, 2, 0, 2, 3],
 };
@@ -59,9 +59,9 @@ export class EffectRenderer {
      * @param engine the engine to use for rendering
      * @param options defines the options of the effect renderer
      */
-    constructor(engine: AbstractEngine, options: IEffectRendererOptions = defaultOptions) {
-        const positions = options.positions ?? defaultOptions.positions;
-        const indices = options.indices ?? defaultOptions.indices;
+    constructor(engine: AbstractEngine, options: IEffectRendererOptions = DefaultOptions) {
+        const positions = options.positions ?? DefaultOptions.positions;
+        const indices = options.indices ?? DefaultOptions.indices;
 
         this.engine = engine;
         this._vertexBuffers = {
@@ -216,6 +216,7 @@ export type EffectWrapperCustomShaderCodeProcessing = {
 /**
  * Options to create an EffectWrapper
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface EffectWrapperCreationOptions {
     /**
      * Engine to use to create the effect
@@ -601,10 +602,10 @@ export class EffectWrapper {
                     onError: onError ?? null,
                     indexParameters: indexParameters || this.options.indexParameters,
                     processCodeAfterIncludes: customShaderCodeProcessing?.processCodeAfterIncludes
-                        ? (shaderType: string, code: string) => customShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
+                        ? (shaderType: string, code: string) => customShaderCodeProcessing.processCodeAfterIncludes!(this.name, shaderType, code)
                         : null,
                     processFinalCode: customShaderCodeProcessing?.processFinalCode
-                        ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
+                        ? (shaderType: string, code: string) => customShaderCodeProcessing.processFinalCode!(this.name, shaderType, code)
                         : null,
                     shaderLanguage: this.options.shaderLanguage,
                     extraInitializationsAsync,
@@ -634,9 +635,10 @@ export class EffectWrapper {
 
     /**
      * Binds the data to the effect.
+     * @param noDefaultBindings if true, the default bindings (scale and alpha mode) will not be set.
      */
-    public bind() {
-        if (this.options.useAsPostProcess) {
+    public bind(noDefaultBindings = false) {
+        if (this.options.useAsPostProcess && !noDefaultBindings) {
             this.options.engine.setAlphaMode(this.alphaMode);
             this.drawWrapper.effect!.setFloat2("scale", 1, 1);
         }

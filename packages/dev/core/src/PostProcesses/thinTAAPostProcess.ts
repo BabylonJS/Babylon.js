@@ -165,8 +165,8 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._hs.next();
     }
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         if (this.disabled) {
             return;

@@ -11,6 +11,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { GLTFLoader } from "../../glTFLoader";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
     eventId: string;
     eventData?: {
@@ -20,6 +21,7 @@ export interface InteractivityEvent {
         value?: any;
     }[];
 }
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const gltfTypeToBabylonType: {
     [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
 } = {
@@ -154,6 +156,10 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
             }
         }
+        // in case of NaN, Infinity, we need to parse the string to the object itself
+        if (type.elementType === "number" && typeof value[0] === "string") {
+            value[0] = parseFloat(value[0]);
+        }
         return { type: type.flowGraphType, value: dataTransform ? dataTransform(value, this) : value };
     }
 
@@ -206,8 +212,9 @@ export class InteractivityGraphToFlowGraphParser {
                 throw new Error("Error parsing nodes");
             }
             if (mapping.flowGraphMapping.validation) {
-                if (!mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf)) {
-                    throw new Error(`Error validating interactivity node ${node}`);
+                const validationResult = mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf);
+                if (!validationResult.valid) {
+                    throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
             }
             const blocks: ISerializedFlowGraphBlock[] = [];
@@ -245,7 +252,8 @@ export class InteractivityGraphToFlowGraphParser {
     private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
         const configuration = block.config;
         if (node.configuration) {
-            Object.keys(node.configuration).forEach((key) => {
+            const keys = Object.keys(node.configuration);
+            for (const key of keys) {
                 const value = node.configuration?.[key];
                 // value is always an array, never a number or string
                 if (!value) {
@@ -274,7 +282,7 @@ export class InteractivityGraphToFlowGraphParser {
                         configuration[configKey].value = configMapping.dataTransformer([configuration[configKey].value], this)[0];
                     }
                 }
-            });
+            }
         }
     }
 
@@ -359,7 +367,7 @@ export class InteractivityGraphToFlowGraphParser {
                 const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", valueKey) : valueMapping.name) : valueKey;
                 // create a serialized socket
                 const socketIn = this._createNewSocketConnection(socketInName);
-                const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping!.toBlock)) || flowGraphBlocks.blocks[0];
+                const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
                 block.dataInputs.push(socketIn);
                 if ((value as IKHRInteractivity_Variable).value !== undefined) {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
@@ -390,7 +398,7 @@ export class InteractivityGraphToFlowGraphParser {
                         }
                     }
                     const socketOutName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", nodeOutSocketName) : valueMapping?.name) : nodeOutSocketName;
-                    const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping!.toBlock)) || nodeOut.blocks[0];
+                    const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping.toBlock)) || nodeOut.blocks[0];
                     let socketOut = outBlock.dataOutputs.find((s) => s.name === socketOutName);
                     // if the socket doesn't exist, create it
                     if (!socketOut) {

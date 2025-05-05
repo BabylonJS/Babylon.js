@@ -20,7 +20,7 @@ export interface IFlowGraphCoordinatorConfiguration {
 /**
  * Parameters used to parse a flow graph coordinator.
  */
-export interface FlowGraphCoordinatorParseOptions {
+export interface IFlowGraphCoordinatorParseOptions {
     /**
      * A function that will be called to parse the value of a property.
      * @param key the key of the property
@@ -75,7 +75,8 @@ export class FlowGraphCoordinator {
 
     private _disposeObserver: Observer<Scene>;
     private _onBeforeRenderObserver: Observer<Scene>;
-    private _executeOnNextFrame: { id: string; data?: any }[] = [];
+    private _executeOnNextFrame: { id: string; data?: any; uniqueId: number }[] = [];
+    private _eventUniqueId: number = 0;
 
     public constructor(
         /**
@@ -91,12 +92,18 @@ export class FlowGraphCoordinator {
         this._onBeforeRenderObserver = this.config.scene.onBeforeRenderObservable.add(() => {
             // Reset the event execution counter at the beginning of each frame.
             this._eventExecutionCounter.clear();
-            if (this._executeOnNextFrame.length) {
+            // duplicate the _executeOnNextFrame array to avoid modifying it while iterating over it
+            const executeOnNextFrame = this._executeOnNextFrame.slice(0);
+            if (executeOnNextFrame.length) {
                 // Execute the events that were triggered on the next frame.
-                this._executeOnNextFrame.forEach((event) => {
+                for (const event of executeOnNextFrame) {
                     this.notifyCustomEvent(event.id, event.data, false);
-                });
-                this._executeOnNextFrame.length = 0;
+                    // remove the event from the array
+                    const index = this._executeOnNextFrame.findIndex((e) => e.uniqueId === event.uniqueId);
+                    if (index !== -1) {
+                        this._executeOnNextFrame.splice(index, 1);
+                    }
+                }
             }
         });
 
@@ -131,14 +138,18 @@ export class FlowGraphCoordinator {
      * Starts all graphs
      */
     public start() {
-        this._flowGraphs.forEach((graph) => graph.start());
+        for (const graph of this._flowGraphs) {
+            graph.start();
+        }
     }
 
     /**
      * Disposes all graphs
      */
     public dispose() {
-        this._flowGraphs.forEach((graph) => graph.dispose());
+        for (const graph of this._flowGraphs) {
+            graph.dispose();
+        }
         this._flowGraphs.length = 0;
         this._disposeObserver?.remove();
         this._onBeforeRenderObserver?.remove();
@@ -158,11 +169,11 @@ export class FlowGraphCoordinator {
      */
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
-        this._flowGraphs.forEach((graph) => {
+        for (const graph of this._flowGraphs) {
             const serializedGraph = {};
             graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
-        });
+        }
         serializationObject.dispatchEventsSynchronously = this.dispatchEventsSynchronously;
     }
 
@@ -196,7 +207,7 @@ export class FlowGraphCoordinator {
      */
     public notifyCustomEvent(id: string, data: any, async: boolean = !this.dispatchEventsSynchronously) {
         if (async) {
-            this._executeOnNextFrame.push({ id, data });
+            this._executeOnNextFrame.push({ id, data, uniqueId: this._eventUniqueId++ });
             return;
         }
         // check if we are not exceeding the max number of events
@@ -204,7 +215,9 @@ export class FlowGraphCoordinator {
             const count = this._eventExecutionCounter.get(id)!;
             this._eventExecutionCounter.set(id, count + 1);
             if (count >= FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
-                count === FlowGraphCoordinator.MaxEventTypeExecutionPerFrame && Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
+                if (count === FlowGraphCoordinator.MaxEventTypeExecutionPerFrame) {
+                    Logger.Warn(`FlowGraphCoordinator: Too many executions of event "${id}".`);
+                }
                 return;
             }
         } else {

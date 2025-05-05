@@ -159,14 +159,14 @@ export class VirtualKeyboard extends StackPanel {
                     continue;
                 }
 
-                const button_tblock = button.children[0] as TextBlock;
+                const buttonTblock = button.children[0] as TextBlock;
 
-                if (button_tblock.text === "\u21E7") {
+                if (buttonTblock.text === "\u21E7") {
                     button.color = shiftState ? this.shiftButtonColor : this.defaultButtonColor;
                     button.thickness = shiftState > 1 ? this.selectedShiftThickness : 0;
                 }
 
-                button_tblock.text = shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase();
+                buttonTblock.text = shiftState > 0 ? buttonTblock.text.toUpperCase() : buttonTblock.text.toLowerCase();
             }
         }
     }
@@ -277,9 +277,9 @@ export class VirtualKeyboard extends StackPanel {
                 }
             }
         } else {
-            this._connectedInputTexts.forEach((connectedInputText: ConnectedInputText) => {
+            for (const connectedInputText of this._connectedInputTexts) {
                 this._removeConnectedInputObservables(connectedInputText);
-            });
+            }
             this._connectedInputTexts.length = 0;
         }
 

@@ -16,7 +16,7 @@ import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Scalar } from "core/Maths/math.scalar";
 
 declare module "core/Loading/sceneLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface SceneLoaderPluginOptions {
         /**
          * Defines options for the splat loader.
@@ -38,7 +38,7 @@ const enum Mode {
 /**
  * A parsed buffer and how to use it
  */
-interface ParsedPLY {
+interface IParsedPLY {
     data: ArrayBuffer;
     mode: Mode;
     faces?: number[];
@@ -102,7 +102,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        return this._parse(meshesNames, scene, data, rootUrl).then((meshes) => {
+        return this._parseAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
                 meshes: meshes,
                 particleSystems: [],
@@ -143,7 +143,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return true;
     }
 
-    private static _BuildMesh(scene: Scene, parsedPLY: ParsedPLY): Mesh {
+    private static _BuildMesh(scene: Scene, parsedPLY: IParsedPLY): Mesh {
         const mesh = new Mesh("PLYMesh", scene);
 
         const uBuffer = new Uint8Array(parsedPLY.data);
@@ -183,9 +183,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
-    private _parseSPZ(data: ArrayBuffer, scene: Scene): Promise<ParsedPLY> {
+    private _parseSPZAsync(data: ArrayBuffer, scene: Scene): Promise<IParsedPLY> {
         const ubuf = new Uint8Array(data);
-        const ubufu32 = new Uint32Array(data);
+        const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
         // debug infos
         const splatCount = ubufu32[2];
 
@@ -239,7 +239,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         }
 
         // colors
-        const SH_C0 = 0.282;
+        const shC0 = 0.282;
         for (let i = 0; i < splatCount; i++) {
             for (let component = 0; component < 3; component++) {
                 const byteValue = ubuf[byteOffset + splatCount + i * 3 + component];
@@ -248,7 +248,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 // be useful to represent base colors that are out of range if the higher spherical harmonics bands
                 // bring them back into range so we multiply by a smaller value.
                 const value = (byteValue - 127.5) / (0.15 * 255);
-                rgba[i * 32 + 24 + component] = Scalar.Clamp((0.5 + SH_C0 * value) * 255, 0, 255);
+                rgba[i * 32 + 24 + component] = Scalar.Clamp((0.5 + shC0 * value) * 255, 0, 255);
             }
 
             rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
@@ -326,7 +326,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         });
     }
 
-    private _parse(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
+    private _parseAsync(meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<Array<AbstractMesh>> {
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
         const readableStream = new ReadableStream({
@@ -344,7 +344,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             new Response(decompressedStream)
                 .arrayBuffer()
                 .then((buffer) => {
-                    this._parseSPZ(buffer, scene).then((parsedSPZ) => {
+                    this._parseSPZAsync(buffer, scene).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
@@ -364,7 +364,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
-                                    gaussianSplatting.updateData(parsedPLY.data);
+                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
                                 }
                                 break;
                             case Mode.PointCloud:
@@ -411,7 +411,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         return this.importMeshAsync(null, scene, data, rootUrl)
             .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
+                for (const mesh of result.meshes) {
+                    container.meshes.push(mesh);
+                }
                 // mesh material will be null before 1st rendered frame.
                 this._assetContainer = null;
                 return container;
@@ -443,7 +445,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param data the .ply data to load
      * @returns the loaded splat buffer
      */
-    private static _ConvertPLYToSplat(data: ArrayBuffer): Promise<ParsedPLY> {
+    private static _ConvertPLYToSplat(data: ArrayBuffer): Promise<IParsedPLY> {
         const ubuf = new Uint8Array(data);
         const header = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
         const headerEnd = "end_header\n";
@@ -489,6 +491,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const enum ElementMode {
             Vertex = 0,
             Chunk = 1,
+            SH = 2,
         }
 
         let chunkMode = ElementMode.Chunk;
@@ -505,8 +508,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 } else if (chunkMode == ElementMode.Vertex) {
                     vertexProperties.push({ name, type, offset: rowVertexOffset });
                     rowVertexOffset += offsets[type];
+                } else if (chunkMode == ElementMode.SH) {
+                    vertexProperties.push({ name, type, offset: rowVertexOffset });
                 }
-
                 if (!offsets[type]) {
                     Logger.Warn(`Unsupported property type: ${type}.`);
                 }
@@ -516,6 +520,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     chunkMode = ElementMode.Chunk;
                 } else if (type == "vertex") {
                     chunkMode = ElementMode.Vertex;
+                } else if (type == "sh") {
+                    chunkMode = ElementMode.SH;
                 }
             }
         }
@@ -523,7 +529,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const rowVertexLength = rowVertexOffset;
         const rowChunkLength = rowChunkOffset;
 
-        return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(data) as any).then((splatsData: any) => {
+        return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(data) as any).then(async (splatsData: any) => {
             const dataView = new DataView(data, headerEndIndex + headerEnd.length);
             let offset = rowChunkLength * chunkCount + rowVertexLength * vertexCount;
             // faces

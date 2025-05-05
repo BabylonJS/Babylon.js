@@ -236,6 +236,7 @@ export interface ITextMetrics {
 /**
  * Class used to abstract a matrix
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface DOMMatrix {
     /**
      * A Boolean flag whose value is true if the matrix was initialized as a 2D matrix. If false, the matrix is 3D.
@@ -363,6 +364,11 @@ export interface ICanvasRenderingContext {
      * Color or style to use inside shapes. Default #000 (black).
      */
     fillStyle: string | ICanvasGradient;
+
+    /**
+     * Provides filter effects such as blurring and grayscaling. It is similar to the CSS filter property and accepts the same values.
+     */
+    filter: string;
 
     /**
      * Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque).

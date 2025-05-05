@@ -1,18 +1,16 @@
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const __mergedStore = {};
+const MergedStore = {};
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const __decoratorInitialStore = {};
+const DecoratorInitialStore = {};
 
 /** @internal */
 export function GetDirectStore(target: any): any {
     const classKey = target.getClassName();
 
-    if (!(<any>__decoratorInitialStore)[classKey]) {
-        (<any>__decoratorInitialStore)[classKey] = {};
+    if (!(<any>DecoratorInitialStore)[classKey]) {
+        (<any>DecoratorInitialStore)[classKey] = {};
     }
 
-    return (<any>__decoratorInitialStore)[classKey];
+    return (<any>DecoratorInitialStore)[classKey];
 }
 
 /**
@@ -22,17 +20,17 @@ export function GetDirectStore(target: any): any {
 export function GetMergedStore(target: any): any {
     const classKey = target.getClassName();
 
-    if ((<any>__mergedStore)[classKey]) {
-        return (<any>__mergedStore)[classKey];
+    if ((<any>MergedStore)[classKey]) {
+        return (<any>MergedStore)[classKey];
     }
 
-    (<any>__mergedStore)[classKey] = {};
+    (<any>MergedStore)[classKey] = {};
 
-    const store = (<any>__mergedStore)[classKey];
+    const store = (<any>MergedStore)[classKey];
     let currentTarget = target;
     let currentKey = classKey;
     while (currentKey) {
-        const initialStore = (<any>__decoratorInitialStore)[currentKey];
+        const initialStore = (<any>DecoratorInitialStore)[currentKey];
         for (const property in initialStore) {
             store[property] = initialStore[property];
         }

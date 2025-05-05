@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /** @internal */
 // eslint-disable-next-line import/export
 export const enum PowerPreference {

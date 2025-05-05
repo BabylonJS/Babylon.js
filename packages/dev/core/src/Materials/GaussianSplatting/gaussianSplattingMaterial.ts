@@ -10,7 +10,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
 import { Camera } from "core/Cameras/camera";
 
 import "../../Shaders/gaussianSplatting.fragment";
@@ -42,6 +42,7 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public CLIPPLANE5 = false;
     public CLIPPLANE6 = false;
     public SH_DEGREE = 0;
+    public COMPENSATION = false;
 
     /**
      * Constructor of the defines.
@@ -67,6 +68,16 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         this.backFaceCulling = false;
     }
+
+    /**
+     * Point spread function (default 0.3)
+     */
+    public static KernelSize: number = 0.3;
+
+    /**
+     * Compensation
+     */
+    public static Compensation: boolean = false;
 
     /**
      * Gets a boolean indicating that current material needs to register RTT
@@ -135,6 +146,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
             defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
         }
 
+        // Compensation
+        defines["COMPENSATION"] = GaussianSplattingMaterial.Compensation;
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -145,7 +159,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal", "vEyePosition"];
+            const uniforms = [
+                "world",
+                "view",
+                "projection",
+                "vFogInfos",
+                "vFogColor",
+                "logarithmicDepthConstant",
+                "invViewport",
+                "dataTextureSize",
+                "focal",
+                "vEyePosition",
+                "kernelSize",
+            ];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
             const uniformBuffers = ["Scene", "Mesh"];
 
@@ -156,7 +182,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 defines: defines,
             });
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             const join = defines.toString();
             const effect = scene.getEngine().createEffect(
@@ -232,6 +258,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
+        effect.setFloat("kernelSize", GaussianSplattingMaterial.KernelSize);
+
+        // vEyePosition doesn't get automatially bound on MacOS with Chromium for no apparent reason.
+        // Binding it manually here instead. Remove next line when SH rendering is fine on that platform.
+        scene.bindEyePosition(effect);
 
         const gsMesh = mesh as GaussianSplattingMesh;
 
@@ -284,7 +315,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             GaussianSplattingMaterial.BindEffect(mesh, this._activeEffect, scene);
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
             this._needToBindSceneUbo = true;
         }

@@ -9,7 +9,7 @@ struct iridescenceOutParams
 #ifdef IRIDESCENCE
     fn iridescenceBlock(
         vIridescenceParams: vec4f
-        , viewAngle: f32
+        , viewAngle_: f32
         , specularEnvironmentR0: vec3f
         #ifdef IRIDESCENCE_TEXTURE
             , iridescenceMapData: vec2f
@@ -19,6 +19,7 @@ struct iridescenceOutParams
         #endif
         #ifdef CLEARCOAT
             , NdotVUnclamped: f32
+            , vClearCoatParams: vec2f
             #ifdef CLEARCOAT_TEXTURE
                 , clearCoatMapData: vec2f
             #endif
@@ -32,6 +33,8 @@ struct iridescenceOutParams
         var iridescenceThicknessMin: f32 = vIridescenceParams.z;
         var iridescenceThicknessMax: f32 = vIridescenceParams.w;
         var iridescenceThicknessWeight: f32 = 1.;
+
+        var viewAngle = viewAngle_;
 
         #ifdef IRIDESCENCE_TEXTURE
             iridescenceIntensity *= iridescenceMapData.x;

@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import { ILog2 } from "../../Maths/math.scalar.functions";
 import type { Nullable } from "../../types";
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -9,7 +9,7 @@ import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import type { WebGPUEngine } from "../webgpuEngine";
 
 /** @internal */
-export class WebGPUHardwareTexture implements HardwareTextureWrapper {
+export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
     /**
      * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
      * @internal
@@ -51,7 +51,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             this._webgpuMSAATexture = [];
         }
 
-        this._webgpuMSAATexture![index] = texture;
+        this._webgpuMSAATexture[index] = texture;
     }
 
     public releaseMSAATexture(index?: number): void {

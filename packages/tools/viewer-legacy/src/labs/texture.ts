@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
@@ -255,7 +256,7 @@ export class TextureUtils {
                 if (face instanceof HTMLElement || face instanceof ImageData) {
                     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, textureCube.internalFormat, textureCube.internalFormat, textureCube.type, <any>face);
                 } else {
-                    const textureData = <TextureData>face;
+                    const textureData = face;
                     gl.texImage2D(
                         gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
                         level,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
 import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
@@ -64,7 +64,7 @@ export class NodeGeometryEditor {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
         if (options.backgroundColor) {
             globalState.backgroundColor = options.backgroundColor;
@@ -74,7 +74,8 @@ export class NodeGeometryEditor {
             globalState: globalState,
         });
 
-        ReactDOM.render(graphEditor, hostElement);
+        const root = createRoot(hostElement);
+        root.render(graphEditor);
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {

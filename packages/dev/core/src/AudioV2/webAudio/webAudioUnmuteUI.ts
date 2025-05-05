@@ -30,7 +30,7 @@ export class _WebAudioUnmuteUI {
         this._button.id = "babylonUnmuteButton";
 
         this._button.addEventListener("click", () => {
-            this._engine.unlock();
+            this._engine.unlockAsync();
         });
 
         parent.appendChild(this._button);

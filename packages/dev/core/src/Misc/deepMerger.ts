@@ -4,11 +4,13 @@
  * @param objects The objects to merge (objects later in the list take precedence).
  * @returns The merged object.
  */
-export function deepMerge<T extends Object>(...objects: T[]): T {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function deepMerge<T extends object>(...objects: T[]): T {
     const isRecord = (obj: unknown): obj is Record<string, unknown> => !!obj && typeof obj === "object";
 
     return objects.reduce<Record<string, unknown>>((prev, obj) => {
-        Object.keys(obj).forEach((key) => {
+        const keys = Object.keys(obj);
+        for (const key of keys) {
             const pVal = prev[key];
             const oVal = (obj as Record<string, unknown>)[key];
 
@@ -19,7 +21,7 @@ export function deepMerge<T extends Object>(...objects: T[]): T {
             } else {
                 prev[key] = oVal;
             }
-        });
+        }
 
         return prev;
     }, {}) as T;

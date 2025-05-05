@@ -386,7 +386,7 @@ export class SubMesh implements ICullable {
             boundingInfo = this.getBoundingInfo();
         }
         if (boundingInfo) {
-            (<BoundingInfo>boundingInfo).update(world);
+            boundingInfo.update(world);
         }
         return this;
     }
@@ -764,7 +764,7 @@ export class SubMesh implements ICullable {
         let maxVertexIndex = -Number.MAX_VALUE;
 
         const whatWillRender = renderingMesh || mesh;
-        const indices = whatWillRender!.getIndices()!;
+        const indices = whatWillRender.getIndices()!;
 
         for (let index = startIndex; index < startIndex + indexCount; index++) {
             const vertexIndex = indices[index];

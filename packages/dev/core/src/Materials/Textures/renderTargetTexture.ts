@@ -25,6 +25,7 @@ import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 
 declare module "../effect" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Effect {
         /**
          * Sets a depth stencil texture from a render target on the engine to be used in the shader.
@@ -47,6 +48,7 @@ Effect.prototype.setDepthStencilTexture = function (channel: string, texture: Nu
 /**
  * Options for the RenderTargetTexture constructor
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface RenderTargetTextureOptions {
     /** True (default: false) if mipmaps need to be generated after render */
     generateMipMaps?: boolean;
@@ -230,6 +232,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
     public set cameraForLOD(value: Nullable<Camera>) {
         this._objectRenderer.cameraForLOD = value;
+    }
+
+    /**
+     * If true, the renderer will render all objects without any image processing applied.
+     * If false (default value), the renderer will use the current setting of the scene's image processing configuration.
+     */
+    public get disableImageProcessing() {
+        return this._objectRenderer.disableImageProcessing;
+    }
+
+    public set disableImageProcessing(value: boolean) {
+        this._objectRenderer.disableImageProcessing = value;
     }
 
     /**

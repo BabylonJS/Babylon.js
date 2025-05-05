@@ -75,6 +75,7 @@ import { BITMAP_SIZE, INT16_SIZE, USHORT_RANGE, type IEXRDecoder } from "./exrLo
 // // End of OpenEXR license -------------------------------------------------
 
 // FFlate access
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const fflate: any;
 
 /**

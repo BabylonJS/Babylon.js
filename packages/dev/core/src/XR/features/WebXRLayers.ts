@@ -3,7 +3,7 @@ import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
-import { WebXRProjectionLayerWrapper, defaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
+import { WebXRProjectionLayerWrapper, DefaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
 import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import type { ThinTexture } from "../../Materials/Textures/thinTexture";
 import type { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
@@ -11,7 +11,7 @@ import { Color4 } from "../../Maths/math.color";
 import type { LensFlareSystem } from "../../LensFlares/lensFlareSystem";
 import type { ThinEngine } from "../../Engines";
 
-const defaultXRWebGLLayerInit: XRWebGLLayerInit = {};
+const DefaultXRWebGLLayerInit: XRWebGLLayerInit = {};
 
 /**
  * Configuration options of the layers feature
@@ -80,7 +80,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers.length = 0;
 
-        const projectionLayerInit = { ...defaultXRProjectionLayerInit, ...this._options.projectionLayerInit };
+        const projectionLayerInit = { ...DefaultXRProjectionLayerInit, ...this._options.projectionLayerInit };
         this._isMultiviewEnabled = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
         this.createProjectionLayer(projectionLayerInit /*, projectionLayerMultiview*/);
         this._projectionLayerInitialized = true;
@@ -92,9 +92,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
-        this._existingLayers.forEach((layer) => {
+        for (const layer of this._existingLayers) {
             layer.dispose();
-        });
+        }
         this._existingLayers.length = 0;
         this._projectionLayerInitialized = false;
         return true;
@@ -105,7 +105,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param params an object providing configuration options for the new XRWebGLLayer
      * @returns the XRWebGLLayer
      */
-    public createXRWebGLLayer(params = defaultXRWebGLLayerInit): WebXRWebGLLayerWrapper {
+    public createXRWebGLLayer(params = DefaultXRWebGLLayerInit): WebXRWebGLLayerWrapper {
         const layer = new XRWebGLLayer(this._xrSessionManager.session, this._glContext, params);
         return new WebXRWebGLLayerWrapper(layer);
     }
@@ -138,7 +138,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param multiview whether the projection layer should render with multiview. Will be tru automatically if the extension initialized with multiview.
      * @returns the projection layer
      */
-    public createProjectionLayer(params = defaultXRProjectionLayerInit, multiview = this._isMultiviewEnabled): WebXRProjectionLayerWrapper {
+    public createProjectionLayer(params = DefaultXRProjectionLayerInit, multiview = this._isMultiviewEnabled): WebXRProjectionLayerWrapper {
         this._extendXRLayerInit(params, multiview);
         this._validateLayerInit(params, multiview);
 

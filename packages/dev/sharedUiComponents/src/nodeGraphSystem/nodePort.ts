@@ -14,7 +14,7 @@ import { BuildFloatUI } from "./tools";
 export class NodePort {
     protected _element: HTMLDivElement;
     protected _portContainer: HTMLElement;
-    protected _imgHost: HTMLDivElement;
+    protected _imgHost: HTMLImageElement;
     protected _pip: HTMLDivElement;
     protected _stateManager: StateManager;
     protected _portLabelElement: Element;
@@ -110,13 +110,6 @@ export class NodePort {
     public refresh() {
         if (this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip)) {
             this._element.style.background = "#000";
-            const svg = this._imgHost.querySelector("svg");
-
-            if (svg) {
-                svg.querySelectorAll("path, circle, rect, ellipse, polygon, polyline").forEach((el) => {
-                    (el as HTMLElement).style.fill = "#767676";
-                });
-            }
         }
 
         if (this._portUIcontainer) {
@@ -143,16 +136,17 @@ export class NodePort {
     ) {
         this._portUIcontainer = portUIcontainer;
         this._portContainer = portContainer;
-        this._element = portContainer.ownerDocument!.createElement("div");
+        this._element = portContainer.ownerDocument.createElement("div");
         this._element.classList.add(commonStyles.port);
         portContainer.appendChild(this._element);
         this._stateManager = stateManager;
 
-        this._imgHost = portContainer.ownerDocument!.createElement("div");
-        this._imgHost.classList.add("port-icon");
+        this._imgHost = portContainer.ownerDocument.createElement("img");
+        this._imgHost.classList.add(localStyles["port-icon"]);
+        this._imgHost.classList.add("port-icon"); // Used to flag it as a port icon
         this._element.appendChild(this._imgHost);
 
-        this._pip = portContainer.ownerDocument!.createElement("div");
+        this._pip = portContainer.ownerDocument.createElement("div");
         this._pip.classList.add(localStyles["pip"]);
         this._pip.style.display = "none";
         this._element.appendChild(this._pip);
@@ -200,14 +194,14 @@ export class NodePort {
     }
 
     public static CreatePortElement(portData: IPortData, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, stateManager: StateManager) {
-        const portContainer = root.ownerDocument!.createElement("div");
+        const portContainer = root.ownerDocument.createElement("div");
 
         portContainer.classList.add(commonStyles.portLine);
 
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(portData)) {
-            const portLabel = root.ownerDocument!.createElement("div");
+            const portLabel = root.ownerDocument.createElement("div");
             portLabel.classList.add(commonStyles["port-label"]);
             portLabel.innerHTML = portData.name;
             portContainer.appendChild(portLabel);
@@ -215,7 +209,7 @@ export class NodePort {
 
         let portUIcontainer: HTMLDivElement | undefined;
         if (portData.directValueDefinition) {
-            portUIcontainer = root.ownerDocument!.createElement("div");
+            portUIcontainer = root.ownerDocument.createElement("div");
             portUIcontainer.classList.add(localStyles.numberContainer);
             portContainer.appendChild(portUIcontainer);
             portUIcontainer.addEventListener("pointerdown", (evt) => evt.stopPropagation());
@@ -228,7 +222,7 @@ export class NodePort {
                 case PortDirectValueTypes.Int:
                     BuildFloatUI(
                         portUIcontainer,
-                        root.ownerDocument!,
+                        root.ownerDocument,
                         portData.name,
                         portData.directValueDefinition.valueType === PortDirectValueTypes.Int,
                         source,

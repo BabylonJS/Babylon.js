@@ -67,6 +67,16 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.clearColor = value;
     }
 
+    /** Gets or sets a boolean indicating whether the color should be converted to linear space. */
+    @editableInPropertyPage("Convert color to linear space", PropertyTypeForEdition.Boolean)
+    public get convertColorToLinearSpace(): boolean {
+        return !!this._frameGraphTask.convertColorToLinearSpace;
+    }
+
+    public set convertColorToLinearSpace(value: boolean) {
+        this._frameGraphTask.convertColorToLinearSpace = value;
+    }
+
     /** Gets or sets a boolean indicating whether the depth part of the texture should be cleared. */
     @editableInPropertyPage("Clear depth", PropertyTypeForEdition.Boolean, undefined, { embedded: true })
     public get clearDepth(): boolean {
@@ -137,6 +147,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.color = new BABYLON.Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
         codes.push(`${this._codeVariableName}.clearColor = ${this.clearColor};`);
+        codes.push(`${this._codeVariableName}.convertColorToLinearSpace = ${this.convertColorToLinearSpace};`);
         codes.push(`${this._codeVariableName}.clearDepth = ${this.clearDepth};`);
         codes.push(`${this._codeVariableName}.clearStencil = ${this.clearStencil};`);
         return super._dumpPropertiesCode() + codes.join("\n");
@@ -146,6 +157,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.color = this.color.asArray();
         serializationObject.clearColor = this.clearColor;
+        serializationObject.convertColorToLinearSpace = this.convertColorToLinearSpace;
         serializationObject.clearDepth = this.clearDepth;
         serializationObject.clearStencil = this.clearStencil;
         return serializationObject;
@@ -155,6 +167,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.color = Color4.FromArray(serializationObject.color);
         this.clearColor = serializationObject.clearColor;
+        this.convertColorToLinearSpace = !!serializationObject.convertColorToLinearSpace;
         this.clearDepth = serializationObject.clearDepth;
         this.clearStencil = serializationObject.clearStencil;
     }

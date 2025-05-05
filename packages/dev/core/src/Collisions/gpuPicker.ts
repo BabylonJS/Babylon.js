@@ -11,6 +11,8 @@ import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
+import type { InstancedMesh } from "core/Meshes/instancedMesh";
+import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -59,6 +61,7 @@ export class GPUPicker {
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
     private readonly _attributeName = "instanceMeshID";
+    private _warningIssued = false;
 
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -121,6 +124,7 @@ export class GPUPicker {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     private async _createColorMaterialAsync(scene: Scene) {
         if (this._defaultRenderMaterial) {
             this._defaultRenderMaterial.dispose();
@@ -162,16 +166,25 @@ export class GPUPicker {
         }
 
         const material = this._meshMaterialMap.get(mesh)!;
-        const effect = material.getEffect()!;
 
-        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
+        if (!material) {
+            if (!this._warningIssued) {
+                this._warningIssued = true;
+                Logger.Warn("GPUPicker issue: Mesh not found in the material map. This may happen when the root mesh of an instance is not in the picking list.");
+            }
+            return;
+        }
+
+        const effect = material.getEffect();
+
+        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances && this._idColors[mesh.uniqueId] !== undefined) {
             effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
         }
 
         this._meshRenderingCount++;
     }
 
-    private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
+    private _generateColorData(instanceCount: number, id: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
         const colorData = new Float32Array(4 * (instanceCount + 1));
 
         GPUPicker._SetColorData(colorData, 0, r, g, b);
@@ -306,13 +319,13 @@ export class GPUPicker {
                 id++;
 
                 if (mesh.hasInstances) {
-                    const instances = (mesh as Mesh).instances;
-                    const colorData = this._generateColorData(instances.length, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
-                        const instance = instances[i];
+                    const instancesForPick = this._pickableMeshes.filter((m) => m.isAnInstance && (m as InstancedMesh).sourceMesh === mesh);
+                    const colorData = this._generateColorData(instancesForPick.length, id, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
+                        const instance = instancesForPick[i];
                         this._idMap[id] = this._pickableMeshes.indexOf(instance);
                     });
 
-                    id += instances.length;
+                    id += instancesForPick.length;
                     const engine = mesh.getEngine();
 
                     const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
@@ -351,7 +364,7 @@ export class GPUPicker {
         const invertedY = rttSizeH - adjustedY - 1;
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
 
-        return this._executePicking(adjustedX, invertedY, disposeWhenDone);
+        return this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
     }
 
     /**
@@ -379,17 +392,30 @@ export class GPUPicker {
 
         this._pickingInProgress = true;
 
-        let minX = xy[0].x,
-            maxX = xy[0].x,
-            minY = xy[0].y,
-            maxY = xy[0].y;
+        const processedXY = new Array(xy.length);
 
-        for (let i = 1; i < xy.length; i++) {
-            const { x, y } = xy[i];
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        // Process screen coordinates adjust to dpr
+        for (let i = 0; i < xy.length; i++) {
+            const item = xy[i];
+            const { x, y } = item;
+
+            const { x: adjustedX, y: adjustedY } = this._prepareForPicking(x, y);
+
+            processedXY[i] = {
+                ...item,
+                x: adjustedX,
+                y: adjustedY,
+            };
+
+            minX = Math.min(minX, adjustedX);
+            maxX = Math.max(maxX, adjustedX);
+            minY = Math.min(minY, adjustedY);
+            maxY = Math.max(maxY, adjustedY);
         }
 
         const { rttSizeW, rttSizeH } = this._prepareForPicking(minX, minY);
@@ -399,7 +425,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        return this._executeMultiPicking(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
+        return this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _prepareForPicking(x: number, y: number) {
@@ -440,7 +466,7 @@ export class GPUPicker {
     }
 
     // pick one pixel
-    private _executePicking(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
+    private async _executePickingAsync(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
         return new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
                 this._pickingInProgress = false;
@@ -448,7 +474,7 @@ export class GPUPicker {
                 return;
             }
 
-            this._pickingTexture!.onAfterRender = async () => {
+            this._pickingTexture.onAfterRender = async () => {
                 this._disableScissor();
 
                 if (this._checkRenderStatus()) {
@@ -468,10 +494,10 @@ export class GPUPicker {
 
                         // Thin?
                         if (this._thinIdMap[colorId]) {
-                            pickedMesh = this._pickableMeshes![this._thinIdMap[colorId].meshId];
+                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
                             thinInstanceIndex = this._thinIdMap[colorId].thinId;
                         } else {
-                            pickedMesh = this._pickableMeshes![this._idMap[colorId]];
+                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
                         }
                     }
 
@@ -491,7 +517,7 @@ export class GPUPicker {
     }
 
     // pick multiple pixels
-    private _executeMultiPicking(
+    private async _executeMultiPickingAsync(
         xy: IVector2Like[],
         minX: number,
         maxY: number,
@@ -507,7 +533,7 @@ export class GPUPicker {
                 return;
             }
 
-            this._pickingTexture!.onAfterRender = async () => {
+            this._pickingTexture.onAfterRender = async () => {
                 this._disableScissor();
 
                 if (this._checkRenderStatus()) {
@@ -577,10 +603,10 @@ export class GPUPicker {
 
         if (colorId > 0) {
             if (this._thinIdMap[colorId]) {
-                pickedMesh = this._pickableMeshes![this._thinIdMap[colorId].meshId];
+                pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
                 thinInstanceIndex = this._thinIdMap[colorId].thinId;
             } else {
-                pickedMesh = this._pickableMeshes![this._idMap[colorId]];
+                pickedMesh = this._pickableMeshes[this._idMap[colorId]];
             }
         }
 
@@ -592,7 +618,7 @@ export class GPUPicker {
      */
     private _updateRenderList() {
         this._pickingTexture!.renderList = [];
-        for (const mesh of this._pickableMeshes!) {
+        for (const mesh of this._pickableMeshes) {
             this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh));
             this._pickingTexture!.renderList.push(mesh);
         }

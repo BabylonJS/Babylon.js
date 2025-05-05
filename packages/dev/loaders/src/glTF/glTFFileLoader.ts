@@ -113,7 +113,7 @@ export interface IGLTFLoaderData {
     /**
      * The object that represents the glTF JSON.
      */
-    json: Object;
+    json: object;
 
     /**
      * The BIN chunk of a binary glTF.
@@ -756,7 +756,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         name?: string
     ): Nullable<IFileRequest> {
         if (ArrayBuffer.isView(fileOrUrl)) {
-            this._loadBinary(scene, fileOrUrl as ArrayBufferView, rootUrl, onSuccess, onError, name);
+            this._loadBinary(scene, fileOrUrl, rootUrl, onSuccess, onError, name);
             return null;
         }
 
@@ -780,7 +780,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             this._loadFile(
                                 scene,
-                                fileOrUrl as File | string,
+                                fileOrUrl,
                                 (data) => {
                                     resolve(new Uint8Array(data as ArrayBuffer));
                                 },
@@ -810,7 +810,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
             return this._loadFile(
                 scene,
-                fileOrUrl as File | string,
+                fileOrUrl,
                 (data) => {
                     this._validate(scene, new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength), rootUrl, fileName);
                     this._unpackBinaryAsync(
@@ -973,7 +973,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * @internal
      */
-    public directLoad(scene: Scene, data: string): Promise<Object> {
+    public directLoad(scene: Scene, data: string): Promise<object> {
         if (
             data.startsWith("base64," + GLTFMagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
             data.startsWith(";base64," + GLTFMagicBase64Encoded) ||
@@ -1170,7 +1170,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         return createLoader(this);
     }
 
-    private _parseJson(json: string): Object {
+    private _parseJson(json: string): object {
         this._startPerformanceCounter("Parse JSON");
         this._log(`JSON length: ${json.length}`);
         const parsed = JSON.parse(json);

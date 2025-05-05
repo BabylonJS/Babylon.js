@@ -21,6 +21,7 @@ import { Light } from "../Lights/light";
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GizmoAxisCache {
     /** Mesh used to render the Gizmo */
     gizmoMeshes: Mesh[];
@@ -214,9 +215,10 @@ export class Gizmo implements IGizmo {
             // eslint-disable-next-line no-throw-literal
             throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
         }
-        this._rootMesh.getChildMeshes().forEach((c) => {
+        const children = this._rootMesh.getChildMeshes();
+        for (const c of children) {
             c.dispose();
-        });
+        }
         mesh.parent = this._rootMesh;
         this._customMeshSet = true;
     }
@@ -433,7 +435,7 @@ export class Gizmo implements IGizmo {
         if ((<Camera>this._attachedNode)._isCamera) {
             const camera = this._attachedNode as Camera;
             let worldMatrix;
-            let worldMatrixUC;
+            let worldMatrixUc;
             if (camera.parent) {
                 const parentInv = TmpVectors.Matrix[1];
                 camera.parent._worldMatrix.invertToRef(parentInv);
@@ -446,12 +448,12 @@ export class Gizmo implements IGizmo {
             if (camera.getScene().useRightHandedSystem) {
                 // avoid desync with RH matrix computation. Otherwise, rotation of PI around Y axis happens each frame resulting in axis flipped because worldMatrix is computed as inverse of viewMatrix.
                 this._rightHandtoLeftHandMatrix.multiplyToRef(worldMatrix, TmpVectors.Matrix[1]);
-                worldMatrixUC = TmpVectors.Matrix[1];
+                worldMatrixUc = TmpVectors.Matrix[1];
             } else {
-                worldMatrixUC = worldMatrix;
+                worldMatrixUc = worldMatrix;
             }
 
-            worldMatrixUC.decompose(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
+            worldMatrixUc.decompose(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
 
             const inheritsTargetCamera =
                 this._attachedNode.getClassName() === "FreeCamera" ||
@@ -588,12 +590,12 @@ export class Gizmo implements IGizmo {
      */
     protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial) {
         if (gizmoMeshes) {
-            gizmoMeshes.forEach((m: Mesh) => {
+            for (const m of gizmoMeshes) {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
                     (<LinesMesh>m).color = material.diffuseColor;
                 }
-            });
+            }
         }
     }
 
@@ -622,12 +624,12 @@ export class Gizmo implements IGizmo {
                         cache.active = false;
                         dragging = false;
                         activeDragButton = -1;
-                        cache.gizmoMeshes.forEach((m: Mesh) => {
+                        for (const m of cache.gizmoMeshes) {
                             m.material = cache.dragBehavior.enabled ? cache.material : cache.disableMaterial;
                             if ((m as LinesMesh).color) {
                                 (m as LinesMesh).color = cache.material.diffuseColor;
                             }
-                        });
+                        }
                     });
                 } else if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
                     // On Hover Logic
@@ -638,12 +640,12 @@ export class Gizmo implements IGizmo {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = cache.dragBehavior.enabled ? (isHovered || cache.active ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                            for (const m of cache.gizmoMeshes) {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
                                     (m as LinesMesh).color = material.diffuseColor;
                                 }
-                            });
+                            }
                         }
                     });
                 } else if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
@@ -657,19 +659,19 @@ export class Gizmo implements IGizmo {
                         gizmoAxisCache.forEach((cache) => {
                             const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = (isHovered || cache.active) && cache.dragBehavior.enabled ? cache.hoverMaterial : cache.disableMaterial;
-                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                            for (const m of cache.gizmoMeshes) {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {
                                     (m as LinesMesh).color = material.diffuseColor;
                                 }
-                            });
+                            }
                         });
                     }
                 }
             }
         });
 
-        return pointerObserver!;
+        return pointerObserver;
     }
 
     /**

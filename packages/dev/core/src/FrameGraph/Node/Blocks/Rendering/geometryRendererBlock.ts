@@ -86,11 +86,27 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
     public set doNotChangeAspectRatio(value: boolean) {
         const disabled = this._frameGraphTask.disabled;
+        const depthTest = this.depthTest;
+        const depthWrite = this.depthWrite;
+        const width = this.width;
+        const height = this.height;
+        const sizeInPercentage = this.sizeInPercentage;
+        const samples = this.samples;
+        const reverseCulling = this.reverseCulling;
+        const dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
 
         this._frameGraphTask.dispose();
         this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
         this._additionalConstructionParameters = [value];
 
+        this.depthTest = depthTest;
+        this.depthWrite = depthWrite;
+        this.width = width;
+        this.height = height;
+        this.sizeInPercentage = sizeInPercentage;
+        this.samples = samples;
+        this.reverseCulling = reverseCulling;
+        this.dontRenderWhenMaterialDepthWriteIsDisabled = dontRenderWhenMaterialDepthWriteIsDisabled;
         this._frameGraphTask.disabled = disabled;
     }
 

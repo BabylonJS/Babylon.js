@@ -416,14 +416,17 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         if (this.light) {
-            let replaceString = { search: /vPositionW/g, replace: worldPosVariableName + ".xyz" };
+            let replaceString = [{ search: /vPositionW/g, replace: worldPosVariableName + ".xyz" }];
 
             if (isWGSL) {
-                replaceString = { search: /fragmentInputs\.vPositionW/g, replace: worldPosVariableName + ".xyz" };
+                replaceString = [
+                    { search: /fragmentInputs\.vPositionW/g, replace: worldPosVariableName + ".xyz" },
+                    { search: /uniforms\.vReflectivityColor/g, replace: "vReflectivityColor" },
+                ];
             }
 
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
-                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }, replaceString],
+                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }, ...replaceString],
             });
         } else {
             let substitutionVars = `vPositionW,${worldPosVariableName}.xyz`;

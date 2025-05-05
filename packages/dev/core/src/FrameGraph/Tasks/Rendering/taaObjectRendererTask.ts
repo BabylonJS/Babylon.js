@@ -96,6 +96,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+            this._renderer.disableImageProcessing = this.disableImageProcessing;
 
             this.postProcess.updateProjectionMatrix();
 

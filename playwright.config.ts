@@ -105,6 +105,11 @@ export default defineConfig({
             testMatch: "**/*.webxr.test.ts",
             use: getUseDefinition("WebXR"),
         },
+        {
+            name: "audioV2",
+            testMatch: "**/audioV2/*.test.ts",
+            use: getUseDefinition("AudioV2"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",

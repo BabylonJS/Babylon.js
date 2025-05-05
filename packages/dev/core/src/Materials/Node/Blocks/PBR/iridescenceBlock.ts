@@ -134,10 +134,11 @@ export class IridescenceBlock extends NodeMaterialBlock {
                 , specularEnvironmentR0
                 #ifdef CLEARCOAT
                     , NdotVUnclamped
+                    , vClearCoatParams
                 #endif                
             );
 
-            float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
+            ${isWebGPU ? "let" : "float"} iridescenceIntensity = iridescenceOut.iridescenceIntensity;
             specularEnvironmentR0 = iridescenceOut.specularEnvironmentR0;
         #endif\n`;
 

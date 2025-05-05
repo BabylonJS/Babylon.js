@@ -436,7 +436,6 @@ export class UniformBuffer {
                 data = size;
                 size = data.length;
             } else {
-                size = <number>size;
                 data = [];
 
                 // Fill with zeros
@@ -444,12 +443,12 @@ export class UniformBuffer {
                     data.push(0);
                 }
             }
-            this._fillAlignment(<number>size);
+            this._fillAlignment(size);
         }
 
-        this._uniformSizes[name] = <number>size;
+        this._uniformSizes[name] = size;
         this._uniformLocations[name] = this._uniformLocationPointer;
-        this._uniformLocationPointer += <number>size;
+        this._uniformLocationPointer += size;
 
         for (let i = 0; i < size; i++) {
             this._data.push(data[i]);
@@ -1175,6 +1174,13 @@ export class UniformBuffer {
                 this._buffer = dataBuffer;
                 this._createBufferOnWrite = false;
                 this._currentEffect = undefined as any;
+                if (this._buffers[b][1]) {
+                    this._bufferData.set(this._buffers[b][1]!);
+                }
+                this._valueCache = {};
+                // The following line prevents the current buffer (_buffer / _bufferIndex) from being updated during subsequent calls to updateXXX() due to a call to _checkNewFrame()
+                // If we called setDataBuffer, it means that we want to update the buffer we just defined and not another one (_checkNewFrame() can modify the current buffer).
+                this._currentFrameId = this._engine.frameId;
                 return true;
             }
         }
@@ -1201,7 +1207,7 @@ export class UniformBuffer {
         if (this._engine._features.trackUbosInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i][0];
-                this._engine._releaseBuffer(buffer!);
+                this._engine._releaseBuffer(buffer);
             }
         } else if (this._buffer && this._engine._releaseBuffer(this._buffer)) {
             this._buffer = null;

@@ -177,8 +177,8 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         this._updateEffectDefines();
     }
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         const effect = this._drawWrapper.effect!;
 

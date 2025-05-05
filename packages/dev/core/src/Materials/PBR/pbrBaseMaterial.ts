@@ -43,7 +43,7 @@ import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
-import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -274,6 +274,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
     public TWOSIDEDLIGHTING = false;
+    public MIRRORED = false;
     public SHADOWFLOAT = false;
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;
@@ -1556,7 +1557,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
-        addClipPlaneUniforms(uniforms);
+        AddClipPlaneUniforms(uniforms);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1698,6 +1699,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
+                    defines.USEIRRADIANCEMAP = false;
 
                     if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
                         defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
@@ -1921,6 +1923,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             } else {
                 defines.TWOSIDEDLIGHTING = false;
             }
+
+            // We need it to not invert normals in two sided lighting mode (based on the winding of the face)
+            defines.MIRRORED = !!scene._mirroredCameraPosition;
 
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
@@ -2293,11 +2298,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 if (defines.METALLICWORKFLOW) {
                     TmpColors.Color3[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
                     TmpColors.Color3[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
-                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
-
                     const ior = this.subSurface?._indexOfRefraction ?? 1.5;
                     const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
-
+                    TmpColors.Color3[0].b = ior;
+                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model
                     // for dielectrics.
@@ -2422,7 +2426,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
-            bindClipPlane(this._activeEffect, this, scene);
+            BindClipPlane(this._activeEffect, this, scene);
 
             this.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
@@ -2459,7 +2463,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // image processing
-            this._imageProcessingConfiguration!.bind(this._activeEffect);
+            this._imageProcessingConfiguration.bind(this._activeEffect);
 
             // Log. depth
             BindLogDepth(defines, this._activeEffect, scene);

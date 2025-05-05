@@ -86,7 +86,9 @@ export class GamepadManager {
                     disconnectedGamepad._isConnected = false;
 
                     this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
-                    disconnectedGamepad.dispose && disconnectedGamepad.dispose();
+                    if (disconnectedGamepad.dispose) {
+                        disconnectedGamepad.dispose();
+                    }
                     break;
                 }
             }
@@ -150,9 +152,9 @@ export class GamepadManager {
             this._onGamepadDisconnectedEvent = null;
         }
 
-        this._babylonGamepads.forEach((gamepad) => {
+        for (const gamepad of this._babylonGamepads) {
             gamepad.dispose();
-        });
+        }
 
         this.onGamepadConnectedObservable.clear();
         this.onGamepadDisconnectedObservable.clear();
