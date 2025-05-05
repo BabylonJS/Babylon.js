@@ -13,7 +13,7 @@ const NAME = "EXT_materials_diffuse_roughness";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
-    export interface IGLTFLoaderExtensionOptions {
+    export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_materials_diffuse_roughness extension.
          */

@@ -14,7 +14,7 @@ const NAME = "EXT_lights_image_based";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface IGLTFLoaderExtensionOptions {
+    export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_lights_image_based extension.
          */

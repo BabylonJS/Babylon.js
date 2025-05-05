@@ -29,7 +29,7 @@ import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 /**
  * Defines options for glTF loader extensions. This interface is extended by specific extensions.
  */
-export interface IGLTFLoaderExtensionOptions extends Record<string, Record<string, unknown> | undefined> {}
+export interface GLTFLoaderExtensionOptions extends Record<string, Record<string, unknown> | undefined> {}
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -383,8 +383,8 @@ abstract class GLTFLoaderOptions {
         // NOTE: This type is doing two things:
         // 1. Adding an implicit 'enabled' property to the options for each extension.
         // 2. Creating a mapped type of all the options of all the extensions to make it just look like a consolidated plain object in intellisense for the user.
-        [Extension in keyof IGLTFLoaderExtensionOptions]?: {
-            [Option in keyof DefaultExtensionOptions<IGLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<IGLTFLoaderExtensionOptions[Extension]>[Option];
+        [Extension in keyof GLTFLoaderExtensionOptions]?: {
+            [Option in keyof DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>[Option];
         };
     } = {};
 }
