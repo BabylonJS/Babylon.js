@@ -72,7 +72,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return Promise.reject("BVH loader expects string data.");
         }
         try {
-            const skeleton = ReadBvh(data, scene, this._loadingOptions);
+            const skeleton = ReadBvh(data, scene, null, this._loadingOptions);
             return Promise.resolve({
                 meshes: [],
                 particleSystems: [],
@@ -82,7 +82,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 geometries: [],
                 lights: [],
                 spriteManagers: [],
-            });
+            } as ISceneLoaderAsyncResult);
         } catch (e) {
             return Promise.reject(e);
         }
@@ -116,7 +116,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
         const assetContainer = new AssetContainer(scene);
         try {
-            const skeleton = ReadBvh(data, scene, this._loadingOptions);
+            const skeleton = ReadBvh(data, scene, assetContainer, this._loadingOptions);
             assetContainer.skeletons.push(skeleton);
             return Promise.resolve(assetContainer);
         } catch (e) {
