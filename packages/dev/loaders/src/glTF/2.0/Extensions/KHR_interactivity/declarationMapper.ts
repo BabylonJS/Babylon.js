@@ -939,6 +939,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                     return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
                 });
                 if (!onlyIntegers) {
+                    Logger.Warn("Switch cases should be integers. Using empty array instead.");
                     gltfBlock.configuration.cases.value = [] as number[];
                     return { valid: true };
                 }
