@@ -956,6 +956,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 /**
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function _UpdateRGBDAsync(
     internalTexture: InternalTexture,
     data: ArrayBufferView[][],

@@ -1,3 +1,4 @@
+/* eslint-disable github/no-then */
 import type { IInternalTextureLoader } from "./internalTextureLoader";
 import type { Nullable } from "../../../types";
 import { Logger } from "core/Misc/logger";
@@ -40,30 +41,30 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
     }
     if (!RegisteredTextureLoaders.has(extension)) {
         if (extension.endsWith(".ies")) {
-            registerTextureLoader(".ies", () => import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
+            registerTextureLoader(".ies", async () => await import("./iesTextureLoader").then((module) => new module._IESTextureLoader()));
         }
         if (extension.endsWith(".dds")) {
-            registerTextureLoader(".dds", () => import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
+            registerTextureLoader(".dds", async () => await import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
         }
         if (extension.endsWith(".basis")) {
-            registerTextureLoader(".basis", () => import("./basisTextureLoader").then((module) => new module._BasisTextureLoader()));
+            registerTextureLoader(".basis", async () => await import("./basisTextureLoader").then((module) => new module._BasisTextureLoader()));
         }
         if (extension.endsWith(".env")) {
-            registerTextureLoader(".env", () => import("./envTextureLoader").then((module) => new module._ENVTextureLoader()));
+            registerTextureLoader(".env", async () => await import("./envTextureLoader").then((module) => new module._ENVTextureLoader()));
         }
         if (extension.endsWith(".hdr")) {
-            registerTextureLoader(".hdr", () => import("./hdrTextureLoader").then((module) => new module._HDRTextureLoader()));
+            registerTextureLoader(".hdr", async () => await import("./hdrTextureLoader").then((module) => new module._HDRTextureLoader()));
         }
         // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
         if (extension.endsWith(".ktx") || extension.endsWith(".ktx2")) {
-            registerTextureLoader(".ktx", () => import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
-            registerTextureLoader(".ktx2", () => import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
+            registerTextureLoader(".ktx", async () => await import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
+            registerTextureLoader(".ktx2", async () => await import("./ktxTextureLoader").then((module) => new module._KTXTextureLoader()));
         }
         if (extension.endsWith(".tga")) {
-            registerTextureLoader(".tga", () => import("./tgaTextureLoader").then((module) => new module._TGATextureLoader()));
+            registerTextureLoader(".tga", async () => await import("./tgaTextureLoader").then((module) => new module._TGATextureLoader()));
         }
         if (extension.endsWith(".exr")) {
-            registerTextureLoader(".exr", () => import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
+            registerTextureLoader(".exr", async () => await import("./exrTextureLoader").then((module) => new module._ExrTextureLoader()));
         }
     }
     const registered = RegisteredTextureLoaders.get(extension);

@@ -272,6 +272,7 @@ export class GPUPicker {
         }
 
         if (!this._cachedScene || this._cachedScene !== scene) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._createColorMaterialAsync(scene);
         }
 
@@ -366,7 +367,7 @@ export class GPUPicker {
         const invertedY = rttSizeH - adjustedY - 1;
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
 
-        return this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
+        return await this._executePickingAsync(adjustedX, invertedY, disposeWhenDone);
     }
 
     /**
@@ -428,7 +429,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        return this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
+        return await this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _getRenderInfo() {
@@ -474,13 +475,14 @@ export class GPUPicker {
 
     // pick one pixel
     private async _executePickingAsync(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
                 this._pickingInProgress = false;
-                reject();
+                reject(new Error("Picking texture not created"));
                 return;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async () => {
                 this._disableScissor();
 
@@ -533,13 +535,14 @@ export class GPUPicker {
         h: number,
         disposeWhenDone: boolean
     ): Promise<Nullable<IGPUMultiPickingInfo>> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
                 this._pickingInProgress = false;
-                reject();
+                reject(new Error("Picking texture not created"));
                 return;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async () => {
                 this._disableScissor();
 

@@ -158,6 +158,7 @@ const rules = {
                 ],
                 "prefer-rest-params": "off",
                 // the following were enabled per default
+                "@typescript-eslint/require-await": "off",
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
@@ -167,7 +168,6 @@ const rules = {
                 "@typescript-eslint/unbound-method": "off",
                 "@typescript-eslint/no-base-to-string": "off",
                 "@typescript-eslint/restrict-plus-operands": "off",
-                "@typescript-eslint/require-await": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unused-expressions": "off",
                 "@typescript-eslint/no-unsafe-function-type": "off",
@@ -181,19 +181,25 @@ const rules = {
                 "@typescript-eslint/no-array-delete": "off",
                 "@typescript-eslint/no-implied-eval": "off",
                 "@typescript-eslint/no-duplicate-enum-values": "off",
-                "@typescript-eslint/prefer-promise-reject-errors": "off",
                 "@typescript-eslint/only-throw-error": "off",
                 "@typescript-eslint/no-for-in-array": "off",
-                "@typescript-eslint/no-floating-promises": "off",
-                "@typescript-eslint/no-misused-promises": "off",
-                "@typescript-eslint/promise-function-async": "off",
                 "@typescript-eslint/no-deprecated": "off",
                 "@typescript-eslint/no-unnecessary-type-assertion": "off",
                 // till here
+                // async fun
+                "@typescript-eslint/promise-function-async": "error",
+                "@typescript-eslint/no-misused-promises": "error",
+                "@typescript-eslint/no-floating-promises": "error",
+                "@typescript-eslint/return-await": ["error", "always"],
+                "no-await-in-loop": "error",
+                "@typescript-eslint/await-thenable": "error",
+                "@typescript-eslint/prefer-promise-reject-errors": "error",
+                "require-atomic-updates": "error",
+                "github/no-then": "error",
+                // rest of the rules
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
                 "@typescript-eslint/no-this-alias": "error",
-                "@typescript-eslint/await-thenable": "error",
                 "no-restricted-syntax": [
                     "error",
                     // {
@@ -457,6 +463,7 @@ const rules = {
         // "@typescript-eslint"
         "babylonjs",
         "jsdoc",
+        "github",
     ],
     extends: [
         "eslint:recommended",

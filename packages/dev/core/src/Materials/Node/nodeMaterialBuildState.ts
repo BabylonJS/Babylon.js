@@ -114,6 +114,7 @@ export class NodeMaterialBuildState {
      * Returns the processed, compiled shader code
      * @returns the raw shader code used by the engine
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public getProcessedShaderAsync(): Promise<string> {
         if (!this._builtCompilationString) {
             throw new Error("Shader not built yet.");

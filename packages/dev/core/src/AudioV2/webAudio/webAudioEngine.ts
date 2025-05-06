@@ -256,6 +256,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         // Note that OfflineAudioContext does not have a `close` method.
         if (this._audioContext.state !== "closed" && !this._isUsingOfflineAudioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._audioContext.close();
         }
 
@@ -307,6 +308,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
@@ -363,6 +365,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }
@@ -389,6 +392,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             // Wave data for 0.0001 seconds of silence.
             audio.src = "data:audio/wav;base64,UklGRjAAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQwAAAAAAAEA/v8CAP//AQA=";
 
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             audio.play();
         }
 

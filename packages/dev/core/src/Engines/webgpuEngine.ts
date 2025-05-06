@@ -447,10 +447,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             ? Promise.resolve(false)
             : navigator.gpu
                   .requestAdapter()
+                  // eslint-disable-next-line github/no-then
                   .then(
                       (adapter: GPUAdapter | undefined) => !!adapter,
                       () => false
                   )
+                  // eslint-disable-next-line github/no-then
                   .catch(() => false);
     }
 
@@ -541,10 +543,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      * @returns a promise that resolves with the created engine
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public static CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngine> {
         const engine = new WebGPUEngine(canvas, options);
 
         return new Promise((resolve) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             engine.initAsync(options.glslangOptions, options.twgslOptions).then(() => resolve(engine));
         });
     }
@@ -608,12 +612,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Load the glslang and tintWASM libraries and prepare them for use.
      * @returns a promise that resolves when the engine is ready to use the glslang and tintWASM
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public prepareGlslangAndTintAsync(): Promise<void> {
         if (!this._workingGlslangAndTintPromise) {
             this._workingGlslangAndTintPromise = new Promise<void>((resolve) => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._initGlslangAsync(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
                     this._glslang = glslang;
                     this._tintWASM = new WebGPUTintWASM();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
                         this._glslangAndTintAreFullyLoaded = true;
                         resolve();
@@ -631,173 +638,183 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param twgslOptions Defines the Twgsl compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
         (this.uniqueId as number) = WebGPUEngine._InstanceId++;
         this._glslangOptions = glslangOptions;
         this._twgslOptions = twgslOptions;
-        return navigator
-            .gpu!.requestAdapter(this._options)
-            .then((adapter: GPUAdapter | undefined) => {
-                if (!adapter) {
-                    // eslint-disable-next-line no-throw-literal
-                    throw "Could not retrieve a WebGPU adapter (adapter is null).";
-                } else {
-                    this._adapter = adapter!;
-                    this._adapterSupportedExtensions = [];
-                    this._adapter.features?.forEach((feature) => {
-                        this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName);
-                    });
-                    this._adapterSupportedLimits = this._adapter.limits;
-                    this._adapterInfo = this._adapter.info;
-
-                    const deviceDescriptor = this._options.deviceDescriptor ?? {};
-                    const requiredFeatures = deviceDescriptor?.requiredFeatures ?? (this._options.enableAllFeatures ? this._adapterSupportedExtensions : undefined);
-
-                    if (requiredFeatures) {
-                        const requestedExtensions = requiredFeatures;
-                        const validExtensions: GPUFeatureName[] = [];
-
-                        for (const extension of requestedExtensions) {
-                            if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
-                                validExtensions.push(extension);
-                            }
-                        }
-
-                        deviceDescriptor.requiredFeatures = validExtensions;
-                    }
-
-                    if (this._options.setMaximumLimits && !deviceDescriptor.requiredLimits) {
-                        deviceDescriptor.requiredLimits = {};
-                        for (const name in this._adapterSupportedLimits) {
-                            if (name === "minSubgroupSize" || name === "maxSubgroupSize") {
-                                // Chrome exposes these limits in "webgpu developer" mode, but these can't be set on the device.
-                                continue;
-                            }
-                            deviceDescriptor.requiredLimits[name] = this._adapterSupportedLimits[name];
-                        }
-                    }
-
-                    deviceDescriptor.label = `BabylonWebGPUDevice${this.uniqueId}`;
-
-                    return this._adapter.requestDevice(deviceDescriptor);
-                }
-            })
-            .then((device: GPUDevice) => {
-                this._device = device;
-                this._deviceEnabledExtensions = [];
-                this._device.features?.forEach((feature) => {
-                    this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName);
-                });
-                this._deviceLimits = device.limits;
-
-                let numUncapturedErrors = -1;
-                this._device.addEventListener("uncapturederror", (event) => {
-                    if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
-                        Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
-                    } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
-                        Logger.Warn(
-                            `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
-                        );
-                    }
-                });
-
-                if (!this._doNotHandleContextLost) {
-                    this._device.lost?.then((info) => {
-                        if (this._isDisposed) {
-                            return;
-                        }
-                        this._contextWasLost = true;
-                        Logger.Warn("WebGPU context lost. " + info);
-                        this.onContextLostObservable.notifyObservers(this);
-                        this._restoreEngineAfterContextLost(async () => {
-                            const snapshotRenderingMode = this.snapshotRenderingMode;
-                            const snapshotRendering = this.snapshotRendering;
-                            const disableCacheSamplers = this.disableCacheSamplers;
-                            const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
-                            const disableCacheBindGroups = this.disableCacheBindGroups;
-                            const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
-
-                            await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
-
-                            this.snapshotRenderingMode = snapshotRenderingMode;
-                            this.snapshotRendering = snapshotRendering;
-                            this.disableCacheSamplers = disableCacheSamplers;
-                            this.disableCacheRenderPipelines = disableCacheRenderPipelines;
-                            this.disableCacheBindGroups = disableCacheBindGroups;
-                            this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
-                            this._currentRenderPass = null;
+        return (
+            navigator
+                .gpu!.requestAdapter(this._options)
+                // eslint-disable-next-line github/no-then
+                .then(async (adapter: GPUAdapter | undefined) => {
+                    if (!adapter) {
+                        // eslint-disable-next-line no-throw-literal
+                        throw "Could not retrieve a WebGPU adapter (adapter is null).";
+                    } else {
+                        this._adapter = adapter!;
+                        this._adapterSupportedExtensions = [];
+                        this._adapter.features?.forEach((feature) => {
+                            this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName);
                         });
-                    });
-                }
-            })
-            .then(() => {
-                this._initializeLimits();
+                        this._adapterSupportedLimits = this._adapter.limits;
+                        this._adapterInfo = this._adapter.info;
 
-                this._bufferManager = new WebGPUBufferManager(this, this._device);
-                this._textureHelper = new WebGPUTextureManager(this, this._device, this._bufferManager, this._deviceEnabledExtensions);
-                this._cacheSampler = new WebGPUCacheSampler(this._device);
-                this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
-                this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
-                this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : (undefined as any);
-                this._bundleList = new WebGPUBundleList(this._device);
-                this._snapshotRendering = new WebGPUSnapshotRendering(this, this._snapshotRenderingMode, this._bundleList);
+                        const deviceDescriptor = this._options.deviceDescriptor ?? {};
+                        const requiredFeatures = deviceDescriptor?.requiredFeatures ?? (this._options.enableAllFeatures ? this._adapterSupportedExtensions : undefined);
 
-                this._ubInvertY = this._bufferManager.createBuffer(
-                    new Float32Array([-1, 0]),
-                    WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
-                    "UBInvertY"
-                );
-                this._ubDontInvertY = this._bufferManager.createBuffer(
-                    new Float32Array([1, 0]),
-                    WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
-                    "UBDontInvertY"
-                );
+                        if (requiredFeatures) {
+                            const requestedExtensions = requiredFeatures;
+                            const validExtensions: GPUFeatureName[] = [];
 
-                if (this.dbgVerboseLogsForFirstFrames) {
-                    if ((this as any)._count === undefined) {
-                        (this as any)._count = 0;
-                        Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
+                            for (const extension of requestedExtensions) {
+                                if (this._adapterSupportedExtensions.indexOf(extension) !== -1) {
+                                    validExtensions.push(extension);
+                                }
+                            }
+
+                            deviceDescriptor.requiredFeatures = validExtensions;
+                        }
+
+                        if (this._options.setMaximumLimits && !deviceDescriptor.requiredLimits) {
+                            deviceDescriptor.requiredLimits = {};
+                            for (const name in this._adapterSupportedLimits) {
+                                if (name === "minSubgroupSize" || name === "maxSubgroupSize") {
+                                    // Chrome exposes these limits in "webgpu developer" mode, but these can't be set on the device.
+                                    continue;
+                                }
+                                deviceDescriptor.requiredLimits[name] = this._adapterSupportedLimits[name];
+                            }
+                        }
+
+                        deviceDescriptor.label = `BabylonWebGPUDevice${this.uniqueId}`;
+
+                        return await this._adapter.requestDevice(deviceDescriptor);
                     }
-                }
+                })
+                // eslint-disable-next-line github/no-then
+                .then((device: GPUDevice) => {
+                    this._device = device;
+                    this._deviceEnabledExtensions = [];
+                    this._device.features?.forEach((feature) => {
+                        this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName);
+                    });
+                    this._deviceLimits = device.limits;
 
-                this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
-                this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+                    let numUncapturedErrors = -1;
+                    this._device.addEventListener("uncapturederror", (event) => {
+                        if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
+                            Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
+                        } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
+                            Logger.Warn(
+                                `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
+                            );
+                        }
+                    });
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
-                    stride: 1,
-                    offset: 0,
-                    size: 1,
-                    label: "EmptyVertexBuffer",
-                });
+                    if (!this._doNotHandleContextLost) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        this._device.lost?.then((info) => {
+                            if (this._isDisposed) {
+                                return;
+                            }
+                            this._contextWasLost = true;
+                            Logger.Warn("WebGPU context lost. " + info);
+                            this.onContextLostObservable.notifyObservers(this);
+                            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                            this._restoreEngineAfterContextLost(async () => {
+                                const snapshotRenderingMode = this.snapshotRenderingMode;
+                                const snapshotRendering = this.snapshotRendering;
+                                const disableCacheSamplers = this.disableCacheSamplers;
+                                const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
+                                const disableCacheBindGroups = this.disableCacheBindGroups;
+                                const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
 
-                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
+                                await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
 
-                this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
-                this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
-                this._stencilStateComposer.stencilGlobal = this._stencilState;
+                                this.snapshotRenderingMode = snapshotRenderingMode;
+                                this.snapshotRendering = snapshotRendering;
+                                this.disableCacheSamplers = disableCacheSamplers;
+                                this.disableCacheRenderPipelines = disableCacheRenderPipelines;
+                                this.disableCacheBindGroups = disableCacheBindGroups;
+                                this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
+                                this._currentRenderPass = null;
+                            });
+                        });
+                    }
+                })
+                // eslint-disable-next-line github/no-then
+                .then(() => {
+                    this._initializeLimits();
 
-                this._depthCullingState.depthTest = true;
-                this._depthCullingState.depthFunc = Constants.LEQUAL;
-                this._depthCullingState.depthMask = true;
+                    this._bufferManager = new WebGPUBufferManager(this, this._device);
+                    this._textureHelper = new WebGPUTextureManager(this, this._device, this._bufferManager, this._deviceEnabledExtensions);
+                    this._cacheSampler = new WebGPUCacheSampler(this._device);
+                    this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
+                    this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
+                    this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : (undefined as any);
+                    this._bundleList = new WebGPUBundleList(this._device);
+                    this._snapshotRendering = new WebGPUSnapshotRendering(this, this._snapshotRenderingMode, this._bundleList);
 
-                this._textureHelper.setCommandEncoder(this._uploadEncoder);
+                    this._ubInvertY = this._bufferManager.createBuffer(
+                        new Float32Array([-1, 0]),
+                        WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
+                        "UBInvertY"
+                    );
+                    this._ubDontInvertY = this._bufferManager.createBuffer(
+                        new Float32Array([1, 0]),
+                        WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
+                        "UBDontInvertY"
+                    );
 
-                this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
-                this._defaultDrawContext = this.createDrawContext()!;
-                this._currentDrawContext = this._defaultDrawContext;
-                this._defaultMaterialContext = this.createMaterialContext()!;
-                this._currentMaterialContext = this._defaultMaterialContext;
+                    if (this.dbgVerboseLogsForFirstFrames) {
+                        if ((this as any)._count === undefined) {
+                            (this as any)._count = 0;
+                            Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
+                        }
+                    }
 
-                this._initializeContextAndSwapChain();
-                this._initializeMainAttachments();
-                this.resize();
-            })
-            .catch((e: any) => {
-                Logger.Error("A fatal error occurred during WebGPU creation/initialization.");
-                throw e;
-            });
+                    this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
+                    this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+
+                    this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
+                        stride: 1,
+                        offset: 0,
+                        size: 1,
+                        label: "EmptyVertexBuffer",
+                    });
+
+                    this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
+
+                    this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
+                    this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
+                    this._stencilStateComposer.stencilGlobal = this._stencilState;
+
+                    this._depthCullingState.depthTest = true;
+                    this._depthCullingState.depthFunc = Constants.LEQUAL;
+                    this._depthCullingState.depthMask = true;
+
+                    this._textureHelper.setCommandEncoder(this._uploadEncoder);
+
+                    this._clearQuad = new WebGPUClearQuad(this._device, this, this._emptyVertexBuffer);
+                    this._defaultDrawContext = this.createDrawContext()!;
+                    this._currentDrawContext = this._defaultDrawContext;
+                    this._defaultMaterialContext = this.createMaterialContext()!;
+                    this._currentMaterialContext = this._defaultMaterialContext;
+
+                    this._initializeContextAndSwapChain();
+                    this._initializeMainAttachments();
+                    this.resize();
+                })
+                // eslint-disable-next-line github/no-then
+                .catch((e: any) => {
+                    Logger.Error("A fatal error occurred during WebGPU creation/initialization.");
+                    throw e;
+                })
+        );
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     private _initGlslangAsync(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || {};
         glslangOptions = {
@@ -1069,8 +1086,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns ImageBitmap
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public override _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return CreateImageBitmapFromSource(this, imageSource, options);
+    public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return await CreateImageBitmapFromSource(this, imageSource, options);
     }
 
     /**
@@ -2073,6 +2090,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /**
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     public async _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
@@ -2910,7 +2928,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public readPixels(x: number, y: number, width: number, height: number, _hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const renderPassWrapper = this._getCurrentRenderPassWrapper();
         const hardwareTexture = renderPassWrapper.colorAttachmentGPUTextures[0];
@@ -3910,9 +3928,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
-    private _readFromGPUBuffer(gpuBuffer: GPUBuffer, size: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
-        return new Promise((resolve, reject) => {
+    private async _readFromGPUBuffer(gpuBuffer: GPUBuffer, size: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+        return await new Promise((resolve, reject) => {
             const readFromBuffer = () => {
+                // eslint-disable-next-line github/no-then
                 gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size).then(
                     () => {
                         const copyArrayBuffer = gpuBuffer.getMappedRange(0, size);
@@ -3933,6 +3952,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         if (this.isDisposed) {
                             resolve(new Uint8Array());
                         } else {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(reason);
                         }
                     }
@@ -3961,7 +3981,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         size = size || storageBuffer.capacity;
 
@@ -3986,7 +4006,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public readFromMultipleStorageBuffers(storageBuffers: DataBuffer[], offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         size = size || storageBuffers[0].capacity;
 

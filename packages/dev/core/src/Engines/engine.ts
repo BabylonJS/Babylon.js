@@ -423,7 +423,7 @@ export class Engine extends ThinEngine {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return CreateImageBitmapFromSource(this, imageSource, options);
+        return await CreateImageBitmapFromSource(this, imageSource, options);
     }
 
     /**
@@ -551,7 +551,7 @@ export class Engine extends ThinEngine {
      * @internal
      */
     public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._loadFile(
                 url,
                 (data) => {
@@ -561,6 +561,7 @@ export class Engine extends ThinEngine {
                 offlineProvider,
                 useArrayBuffer,
                 (request, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception);
                 }
             );
@@ -1034,6 +1035,7 @@ export class Engine extends ThinEngine {
 
         gl.flush();
 
+        // eslint-disable-next-line github/no-then
         return this._clientWaitAsync(sync, 0, 10).then(() => {
             gl.deleteSync(sync);
 

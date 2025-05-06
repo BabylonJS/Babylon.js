@@ -219,6 +219,7 @@ export abstract class AudioEngineV2 {
      * - Note that the returned promise may already be resolved if the audio engine is already unlocked.
      * @returns A promise that is resolved when the audio engine is unlocked.
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public unlockAsync(): Promise<void> {
         return this.resumeAsync();
     }
@@ -270,6 +271,7 @@ export function _GetAudioEngine(engine: Nullable<AudioEngineV2>): AudioEngineV2 
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created audio bus.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createBusAsync(name, options);
@@ -282,6 +284,7 @@ export function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOpti
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created main audio bus.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createMainBusAsync(name, options);
@@ -295,6 +298,7 @@ export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudi
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function CreateSoundAsync(
     name: string,
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
@@ -318,7 +322,7 @@ export async function CreateSoundBufferAsync(
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
     engine = _GetAudioEngine(engine);
-    return engine.createSoundBufferAsync(source, options);
+    return await engine.createSoundBufferAsync(source, options);
 }
 
 /**
@@ -329,6 +333,7 @@ export async function CreateSoundBufferAsync(
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created streaming sound.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function CreateStreamingSoundAsync(
     name: string,
     source: HTMLMediaElement | string | string[],
