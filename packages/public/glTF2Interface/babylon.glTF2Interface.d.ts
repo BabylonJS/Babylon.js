@@ -1058,6 +1058,9 @@ declare module BABYLON.GLTF2 {
         lights: IKHRLightsPunctual_Light[];
     }
 
+    /**
+     * Interfaces from the KHR_materials_clearcoat extension
+     */
     /** @internal */
     interface IKHRMaterialsClearcoat {
         clearcoatFactor?: number;
@@ -1181,6 +1184,15 @@ declare module BABYLON.GLTF2 {
         diffuseTransmissionTexture?: ITextureInfo;
         diffuseTransmissionColorFactor?: number[];
         diffuseTransmissionColorTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the EXT_materials_diffuse_roughness extension
+     */
+    /** @internal */
+    interface IEXTMaterialsDiffuseRoughness {
+        diffuseRoughnessFactor?: number;
+        diffuseRoughnessTexture?: ITextureInfo;
     }
 
     /**
