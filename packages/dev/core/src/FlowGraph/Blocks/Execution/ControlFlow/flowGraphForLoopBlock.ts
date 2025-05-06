@@ -88,13 +88,13 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
             this.index.setValue(new FlowGraphInteger(i), context);
             this.executionFlow._activateSignal(context);
             endIndex = getNumericValue(this.endIndex.getValue(context));
-            if (i > FlowGraphForLoopBlock.MaxLoopIterations) {
+            if (i > FlowGraphForLoopBlock.MaxLoopIterations * step) {
                 break;
             }
         }
 
         if (this.config?.incrementIndexWhenLoopDone) {
-            this.index.setValue(new FlowGraphInteger(getNumericValue(this.index.getValue(context)) + 1), context);
+            this.index.setValue(new FlowGraphInteger(getNumericValue(this.index.getValue(context)) + step), context);
         }
 
         this.completed._activateSignal(context);
