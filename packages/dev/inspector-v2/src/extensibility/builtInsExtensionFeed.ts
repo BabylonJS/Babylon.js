@@ -1,4 +1,8 @@
-import type { ExtensionMetadata, ExtensionMetadataQuery, ExtensionFeed, ExtensionModule } from "./extensionFeed";
+import type { ExtensionFeed, ExtensionMetadata, ExtensionMetadataQuery, ExtensionModule } from "./extensionFeed";
+
+// This file contains "built in" extensions. They are optional and installed/uninstalled by the user, but they are
+// well-known at build time and the extension is "downloaded" by simply doing a dynamic import. This is different
+// from future extension types that are built and published apart from the inspector, and are downloaded as an isolated script.
 
 const creationToolsExtensionMetadata = {
     name: "Asset Creation",

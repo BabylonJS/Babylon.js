@@ -3,11 +3,12 @@ import type { Node, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
-import type { Service, ServiceDefinition } from "../modularity/serviceDefinition";
+import type { Service, ServiceDefinition } from "../../modularity/serviceDefinition";
 
 import { Button, FlatTree, FlatTreeItem, makeStyles, Text, tokens, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { BoxRegular, BranchRegular, CameraRegular, CubeTreeRegular, EyeRegular, ImageRegular, LightbulbRegular, PaintBrushRegular, SquareRegular } from "@fluentui/react-icons";
+
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -16,10 +17,10 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc/observable";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useObservableState } from "../hooks/observableHooks";
-import { TraverseGraph } from "../misc/graphUtils";
-import { SceneContext } from "./sceneContext";
-import { ShellService } from "./shellService";
+import { useObservableState } from "../../hooks/observableHooks";
+import { TraverseGraph } from "../../misc/graphUtils";
+import { SceneContext } from "../sceneContext";
+import { ShellService } from "../shellService";
 
 export const SceneExplorerService = Symbol("SceneExplorer");
 export interface SceneExplorerService extends Service<typeof SceneExplorerService> {
@@ -75,22 +76,14 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[SceneExplorerSer
         const SceneExplorer: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
             const classes = useStyles();
 
-            // TODO: Probably replace all this state with:
-            // 1. A reducer that manages the open items and visible items (nodes, materials, etc.)
-            // 2. An effect that calls the reducer to update the visible items when the scene changes
-            // 3. A callback that calls the reducer and in turn is called from onOpenChange
-            // Presumably we also need to call the reducer when the filter text changes, so we probably just want to always rebuild.
-            // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
-            // Then just reverse the array of nodes before returning it.
-
             const selectedItem = useObservableState(() => selectedEntityState, selectedEntityObservable);
 
             const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
 
-            // TODO: Handle nodes being dynamically added/removed from the scene
-            // const [visibleItems, setVisibleItems] = useState(["Nodes", "Materials", "Textures"]);
             const [sceneVersion, setSceneVersion] = useState(0);
 
+            // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
+            // Then just reverse the array of nodes before returning it.
             const [itemsFilter /*, setItemsFilter*/] = useState("");
 
             useEffect(() => {
@@ -171,44 +164,17 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[SceneExplorerSer
 
             const onOpenChange = useCallback(
                 (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
+                    // This makes it so we only consider a click on the chevron to be expanding/collapsing an item, not clicking anywhere on the item.
                     if (data.type !== "Click" && data.type !== "Enter") {
                         setOpenItems(data.openItems);
-                    } else {
-                        // if (typeof data.value === "number") {
-                        //         const node = scene.getTransformNodeByUniqueId(data.value);
-                        //         if (node) {
-                        //             selectedEntityState = node;
-                        //             selectedEntityObservable.notifyObservers();
-                        //             return;
-                        //         }
-                        //         const mesh = scene.getMeshByUniqueId(data.value);
-                        //         if (mesh) {
-                        //             selectedEntityState = mesh;
-                        //             selectedEntityObservable.notifyObservers();
-                        //             return;
-                        //         }
-                        //         selectedEntityState = null;
-                        //         selectedEntityObservable.notifyObservers();
-                        // }
                     }
                 },
                 [setOpenItems]
             );
 
-            // const onCheckedChange = useCallback((event: TreeCheckedChangeEvent, data: TreeCheckedChangeData) => {
-            //     // console.log(`${data.value} ${data.checked ? "checked" : "unchecked"}`);
-            // }, []);
-
             return (
                 <div className={classes.rootDiv}>
-                    <FlatTree
-                        className={classes.tree}
-                        openItems={openItems}
-                        onOpenChange={onOpenChange}
-                        // selectionMode="single"
-                        // onCheckedChange={onCheckedChange}
-                        aria-label="Scene Explorer Tree"
-                    >
+                    <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
                         <VirtualizerScrollView numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
                             {(index: number) => {
                                 const item = visibleItems[index];

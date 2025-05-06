@@ -1,8 +1,9 @@
-import type { ServiceDefinition } from "../../modularity/serviceDefinition";
+import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Text, tokens } from "@fluentui/react-components";
+
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { BooleanProperty } from "../../components/booleanProperty";
+import { BooleanProperty } from "../../../components/booleanProperty";
 import { PropertiesService } from "./propertiesService";
 
 const useStyles = makeStyles({

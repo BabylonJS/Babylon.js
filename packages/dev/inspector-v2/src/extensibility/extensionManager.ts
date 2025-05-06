@@ -49,7 +49,7 @@ export interface Extension {
      */
     disable(): Promise<void>;
 
-    // TODO
+    // TODO: Handle updating.
     // readonly isUpdateAvailable: Promise<boolean>; // installed version is saved locally as part of the metadata (local storage), use this to determine if there is an upgrade. Or auto-upgrade in the background with a service worker?
     // update(): Promise<void>;
 
@@ -71,15 +71,15 @@ type InstalledExtension = {
     registrationToken?: IDisposable;
 };
 
-const installedExtensionsKey = "Extensions/InstalledExtensions";
+const installedExtensionsKey = "Babylon/Extensions/InstalledExtensions";
 
-const extensionInstalledKeyPrefix = "Extensions/IsExtensionInstalled";
+const extensionInstalledKeyPrefix = "Babylon/Extensions/IsExtensionInstalled";
 function getExtensionInstalledKey(name: string): string {
     return `${extensionInstalledKeyPrefix}/${name}`;
 }
 
 function getExtensionEnabledKey(name: string): string {
-    return `Extensions/IsExtensionEnabled/${name}`;
+    return `Babylon/Extensions/IsExtensionEnabled/${name}`;
 }
 
 /**

@@ -1,31 +1,32 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
+
 import type { ComponentType, FunctionComponent } from "react";
-import type { Extension } from "./extensibility/extensionManager";
 import type { ExtensionFeed } from "./extensibility/extensionFeed";
+import type { Extension } from "./extensibility/extensionManager";
 import type { AspectRegistry, ServiceRegistry, WeaklyTypedAspectDefinition, WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
 import type { ShellServiceOptions } from "./services/shellService";
 
 import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
+import { createElement, Suspense, useCallback, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+
 import { Deferred } from "core/Misc/deferred";
 import { Observable } from "core/Misc/observable";
-import { createRoot } from "react-dom/client";
-import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { useTernaryDarkMode } from "usehooks-ts";
 import { AspectContext } from "./contexts/aspectContext";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ObservableCollection } from "./misc/observableCollection";
 import { ServiceCatalog } from "./modularity/serviceCatalog";
+import { aspectSelectorServiceDefinition } from "./services/aspectSelectorService";
+import { extensionListServiceDefinition } from "./services/extensionsListService";
+import { MakeShellServiceDefinition } from "./services/shellService";
+import { themeSelectorServiceDefinition } from "./services/themeSelectorService";
 import { ViewHost } from "./services/viewHost";
 import { darkTheme, lightTheme } from "./themes/babylonTheme";
 
-import { MakeShellServiceDefinition } from "./services/shellService";
-import { aspectSelectorServiceDefinition } from "./services/aspectSelectorService";
-import { extensionListServiceDefinition } from "./services/extensionsListService";
-import { themeSelectorServiceDefinition } from "./services/themeSelectorService";
-
-const aspectSettingsKey = "Settings/LastActiveAspect";
+const aspectSettingsKey = "Babylon/Settings/LastActiveAspect";
 
 const useStyles = makeStyles({
     app: {
@@ -44,6 +45,9 @@ const useStyles = makeStyles({
     },
 });
 
+// This custom hook is a helper that:
+// 1. Adds a ViewHost service with a getter/setter for the main view component.
+// 2. Provides the main view component as state (so as soon as the main view is set, the component can be rendered).
 function useViewHostBootstrapper() {
     const [mainViewComponentType, setMainViewComponentType] = useState<ComponentType>();
     const boostrapViewHost = useCallback((serviceCatalog: ServiceCatalog) => {
@@ -69,15 +73,40 @@ function useViewHostBootstrapper() {
 }
 
 export type ModularToolOptions = {
+    /**
+     * The container element where the tool will be rendered.
+     */
     containerElement: HTMLElement;
-    // containerElement: Element;
+
+    /**
+     * The default aspect to be used when the tool is first opened.
+     */
     defaultAspect: WeaklyTypedAspectDefinition;
+
+    /**
+     * Additional aspects to be registered with the tool.
+     */
     additionalAspects?: readonly WeaklyTypedAspectDefinition[];
+
+    /**
+     * The service definitions to be registered with the tool.
+     */
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
+
+    /**
+     * Whether the tool should allow user selection of the theme (e.g. dark/light/system).
+     */
     isThemeable?: boolean;
+
+    /**
+     * The extension feeds that provide optional extensions the user can install.
+     */
     extensionFeeds?: readonly ExtensionFeed[];
 } & ShellServiceOptions;
 
+/**
+ * Creates a modular tool with a base set of common tool services, including the toolbar/side pane basic UI layout.
+ */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
     const { containerElement, defaultAspect, additionalAspects = [], serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
 
@@ -91,6 +120,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
         const [mainView, bootstrapViewHost] = useViewHostBootstrapper();
 
+        // This is the main async initialization.
         useEffect(() => {
             const initializeExtensionManager = async () => {
                 const serviceCatalog = ServiceCatalog.CreateDynamic();
@@ -108,6 +138,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
                 let poppingState = false;
 
+                // The registry is used to configure aspects and services, and is passed to the extension manager.
                 const registry: AspectRegistry & ServiceRegistry = {
                     registerAspect(aspectDefinition) {
                         const availableAspectToken = aspectContext.availableAspects.add({
@@ -120,12 +151,14 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                                         const newContainer = serviceCatalog.createContainer(aspectDefinition.identity);
                                         currentAspectDefinition = aspectDefinition;
                                         localStorage.setItem(aspectSettingsKey, aspectDefinition.identity.toString());
-                                        if (aspectDefinition.identity.description) {
-                                            if (!poppingState) {
-                                                const queryParams = new URLSearchParams(window.location.search);
-                                                queryParams.set("inspector.aspect", aspectDefinition.identity.description);
-                                                window.history.pushState({}, "", `?${queryParams.toString()}`);
+                                        if (!poppingState && aspectDefinition.identity.description) {
+                                            const queryParams = new URLSearchParams(window.location.search);
+                                            if (aspectDefinition.identity === aspectContext.availableAspects.items[0].identity) {
+                                                queryParams.delete("babylon.aspect");
+                                            } else {
+                                                queryParams.set("babylon.aspect", aspectDefinition.identity.description);
                                             }
+                                            window.history.pushState({}, "", queryParams.size ? `?${queryParams.toString()}` : "");
                                         }
                                         aspectContext.activeAspectChanged.notifyObservers();
                                         return newContainer;
@@ -150,17 +183,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     },
                 };
 
-                setAspectContext(aspectContext);
-
                 // Register a ViewHost service (where the main view can be displayed).
                 await bootstrapViewHost(serviceCatalog);
 
                 // Register configured aspects.
                 registry.registerAspect(defaultAspect);
                 additionalAspects.forEach((aspect) => registry.registerAspect(aspect));
-
-                // Register configured services.
-                await registry.registerServices(...serviceDefinitions);
 
                 // Register built in services.
                 {
@@ -173,6 +201,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                         await registry.registerServices(themeSelectorServiceDefinition);
                     }
                 }
+
+                // Register configured services.
+                await registry.registerServices(...serviceDefinitions);
 
                 // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
                 // TODO: Try to replace this with import maps.
@@ -191,10 +222,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     // ["react/jsx-runtime", await import("react/jsx-runtime")],
                 ]);
 
+                // Create the extension manager, passing along the registry for runtime changes to the registered aspects and services.
                 const extensionManager = await ExtensionManager.CreateAsync(registry, externalDependencies, extensionFeeds);
 
+                // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);
-                const requiredExtensions = queryParams.getAll("requiredExtension");
+                const requiredExtensions = queryParams.getAll("babylon.requiredExtension");
                 const uninstalledExtensions: Extension[] = [];
                 const disabledExtensions: Extension[] = [];
                 for (const requiredExtension of requiredExtensions) {
@@ -210,6 +243,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     }
                 }
 
+                // Check if any required extensions are uninstalled or disabled. If so, show a dialog to the user.
                 if (uninstalledExtensions.length > 0 || disabledExtensions.length > 0) {
                     setRequiredExtensions(Array.from(new Set([...uninstalledExtensions, ...disabledExtensions])).map((extension) => extension.metadata.name));
                     const deferred = new Deferred<boolean>();
@@ -226,9 +260,8 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     }
                 }
 
-                setExtensionManagerContext({ extensionManager });
-
-                let requestedAspect = queryParams.get("inspector.aspect");
+                // Check if a non-default aspect is requested in the query params. If so, activate it, otherwise activate the default aspect.
+                let requestedAspect = queryParams.get("babylon.aspect");
                 if (requestedAspect) {
                     requestedAspect = `Symbol(${requestedAspect})`;
                 } else {
@@ -236,8 +269,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 }
                 (aspectContext.availableAspects.items.find((aspect) => aspect.identity.toString() === requestedAspect) ?? aspectContext.availableAspects.items[0]).activate();
 
+                // Respect the aspect on navigation (e.g. popping browser state).
                 const onPopState = () => {
-                    let requestedAspect = new URLSearchParams(window.location.search).get("inspector.aspect");
+                    let requestedAspect = new URLSearchParams(window.location.search).get("babylon.aspect");
                     if (requestedAspect) {
                         requestedAspect = `Symbol(${requestedAspect})`;
                         poppingState = true;
@@ -247,6 +281,10 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 };
 
                 window.addEventListener("popstate", onPopState);
+
+                // Set the contexts.
+                setAspectContext(aspectContext);
+                setExtensionManagerContext({ extensionManager });
 
                 return () => {
                     window.removeEventListener("popstate", onPopState);
@@ -273,6 +311,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         }, [setRequiredExtensions, requiredExtensionsDeferred]);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
+        // Show a spinner until a main view has been set.
         const ContentComponentType: ComponentType = mainView ?? (() => <Spinner className={classes.spinner} />);
 
         return (
@@ -309,13 +348,17 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         );
     };
 
+    // Set the container element to be a flex container so that the tool can be displayed properly.
     const originalContainerElementDisplay = containerElement.style.display;
     containerElement.style.display = "flex";
+
+    // Create and render the react root component.
     const reactRoot = createRoot(containerElement);
     reactRoot.render(createElement(modularToolRootComponent));
 
     return {
         dispose: () => {
+            // Unmount and restore the original container element display.
             reactRoot.unmount();
             containerElement.style.display = originalContainerElementDisplay;
         },

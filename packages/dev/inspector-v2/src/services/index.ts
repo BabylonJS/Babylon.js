@@ -1,11 +1,11 @@
 export { ShellService } from "./shellService";
-import { SceneExplorerServiceDefinition } from "./sceneExplorerService";
+import { SceneExplorerServiceDefinition } from "./panes/sceneExplorerService";
 import { SceneExplorerPropertyBindingServiceDefinition } from "./sceneExplorerPropertyBindingService";
-import { PropertiesServiceDefinitions } from "./properties";
-import { DebugServiceDefinition } from "./debugService";
-import { StatsServiceDefinition } from "./statsService";
-import { ToolsServiceDefinition } from "./toolsService";
-import { SettingsServiceDefinition } from "./settingsService";
+import { PropertiesServiceDefinitions } from "./panes/properties";
+import { DebugServiceDefinition } from "./panes/debugService";
+import { StatsServiceDefinition } from "./panes/statsService";
+import { ToolsServiceDefinition } from "./panes/toolsService";
+import { SettingsServiceDefinition } from "./panes/settingsService";
 
 const DiagosticServiceDefinitions = [
     SceneExplorerServiceDefinition,

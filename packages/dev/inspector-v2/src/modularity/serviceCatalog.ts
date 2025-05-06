@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
+
 import type { ContractIdentity, Service, ServiceDefinition } from "./serviceDefinition";
 
 import { SortGraph } from "../misc/graphUtils";
@@ -47,7 +48,7 @@ export interface AspectRegistry {
 }
 
 /**
- * A registray of all known services.
+ * A registry of all known services.
  */
 export interface ServiceRegistry {
     registerServices(...args: WeaklyTypedServiceDefinition[] | [...serviceDefinitions: WeaklyTypedServiceDefinition[], abortSignal: AbortSignal]): Promise<IDisposable>;

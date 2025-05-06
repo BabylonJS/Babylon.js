@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
+
 import type { ObservableCollection } from "../misc/observableCollection";
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -23,7 +24,6 @@ export type AspectContext = {
 export const AspectContext = createContext<AspectContext | undefined>(undefined);
 
 export function useAspects() {
-    // const aspectContext = useContext(AppContext)?.aspectContext;
     const aspectContext = useContext(AspectContext);
     if (!aspectContext) {
         throw new Error("AspectContext is missing.");

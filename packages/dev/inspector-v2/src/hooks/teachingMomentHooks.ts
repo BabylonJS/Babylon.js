@@ -1,10 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable } from "core/index";
+
 import type { OnOpenChangeData, PositioningImperativeRef } from "@fluentui/react-components";
 
-import { Deferred } from "core/Misc/deferred";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
+
+import { Deferred } from "core/Misc/deferred";
 
 let sequencerPromise = Promise.resolve();
 
@@ -15,7 +17,7 @@ let sequencerPromise = Promise.resolve();
  */
 export function MakeTeachingMoment(name: string) {
     return (suppress?: boolean) => {
-        const [hasDisplayed, setHasDisplayed, resetDisplayed] = useLocalStorage(`TeachingMoments/${name}`, false);
+        const [hasDisplayed, setHasDisplayed, resetDisplayed] = useLocalStorage(`Babylon/TeachingMoments/${name}`, false);
         const [shouldDisplay, setShouldDisplay] = useState(false);
 
         const deferredRef = useRef<Deferred<void>>();

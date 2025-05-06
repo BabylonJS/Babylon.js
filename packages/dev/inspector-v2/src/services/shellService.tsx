@@ -1,18 +1,20 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
-import type { ComponentType, FunctionComponent } from "react";
+
 import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
+import type { ComponentType, FunctionComponent } from "react";
 import type { ComponentInfo } from "../modularity/componentInfo";
 import type { Service, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { Button, Divider, makeStyles, shorthands, Tab, TabList, Text, tokens, Tooltip } from "@fluentui/react-components";
-import { PanelLeftExpandRegular, PanelLeftContractRegular, PanelRightExpandRegular, PanelRightContractRegular } from "@fluentui/react-icons";
-import { ObservableCollection } from "../misc/observableCollection";
-import { useOrderedObservableCollection } from "../hooks/observableHooks";
-import { ViewHost } from "../services/viewHost";
+import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
+
 import { TeachingMoment } from "../components/teachingMoment";
+import { useOrderedObservableCollection } from "../hooks/observableHooks";
+import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
+import { ObservableCollection } from "../misc/observableCollection";
+import { ViewHost } from "../services/viewHost";
 
 type BarComponentInfo = ComponentInfo & Readonly<{ alignment: "left" | "right"; displayName?: string; suppressTeachingMoment?: boolean }>;
 type PaneComponentInfo = Readonly<{ key: string; icon: ComponentType; content: ComponentType; order?: number; title?: string; suppressTeachingMoment?: boolean }>;
@@ -284,7 +286,7 @@ export function MakeShellServiceDefinition({
                     setCollapsed((collapsed) => !collapsed);
                 }, [collapsed]);
 
-                const widthStorageKey = `Settings/${alignment}Pane/Width`;
+                const widthStorageKey = `Babylon/Settings/${alignment}Pane/Width`;
 
                 const [width, setWidth] = useState(Number.parseInt(localStorage.getItem(widthStorageKey) ?? "") || Math.max(defaultWidth, minWidth));
                 const [resizing, setResizing] = useState(false);

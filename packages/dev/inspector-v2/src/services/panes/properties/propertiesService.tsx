@@ -1,14 +1,16 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
-import type { Service, ServiceDefinition } from "../../modularity/serviceDefinition";
+
+import type { Service, ServiceDefinition } from "../../../modularity/serviceDefinition";
+
+import { makeStyles } from "@fluentui/react-components";
+import { DocumentTextRegular } from "@fluentui/react-icons";
 import { useMemo, type ComponentType } from "react";
 
-import { DocumentTextRegular } from "@fluentui/react-icons";
 import { Observable } from "core/Misc/observable";
-import { ShellService } from "../shellService";
-import { ObservableCollection } from "../../misc/observableCollection";
-import { useObservableCollection, useObservableState } from "../../hooks/observableHooks";
-import { makeStyles } from "@fluentui/react-components";
+import { useObservableCollection, useObservableState } from "../../../hooks/observableHooks";
+import { ObservableCollection } from "../../../misc/observableCollection";
+import { ShellService } from "../../shellService";
 
 export const PropertiesService = Symbol("PropertiesService");
 export interface PropertiesService extends Service<typeof PropertiesService> {

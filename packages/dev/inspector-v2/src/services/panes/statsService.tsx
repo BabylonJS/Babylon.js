@@ -1,7 +1,8 @@
-import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 
 import { DataBarHorizontalRegular } from "@fluentui/react-icons";
-import { ShellService } from "./shellService";
+
+import { ShellService } from "../shellService";
 
 export const StatsServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "Stats",
