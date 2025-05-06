@@ -1030,6 +1030,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
+
+        this.clear(null, false, true, false); // make sure the depth texture is cleared with the right value
     }
 
     /**
