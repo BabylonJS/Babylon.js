@@ -66,7 +66,7 @@ export class FlowMap {
      * @returns a promise that resolves to a FlowMap object
      */
     public static async FromUrlAsync(url: string): Promise<FlowMap> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const flowCanvas = document.createElement("canvas");
             const flowCtx = flowCanvas.getContext("2d")!;
             let flowImageData = null;

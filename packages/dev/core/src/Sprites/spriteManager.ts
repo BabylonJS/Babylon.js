@@ -428,6 +428,7 @@ export class SpriteManager implements ISpriteManager {
         const textureSize = this.texture.getSize();
         if (!this._textureContent) {
             this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.texture.readPixels(0, 0, this._textureContent);
         }
 
@@ -775,7 +776,7 @@ export class SpriteManager implements ISpriteManager {
      * @returns a promise that will resolve to the new sprite manager
      */
     public static async ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -789,6 +790,7 @@ export class SpriteManager implements ISpriteManager {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the sprite manager");
                     }
                 }
@@ -806,6 +808,7 @@ export class SpriteManager implements ISpriteManager {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
@@ -824,6 +827,7 @@ export class SpriteManager implements ISpriteManager {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }
