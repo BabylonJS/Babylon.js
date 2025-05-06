@@ -16,6 +16,7 @@ import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
+    onMounted?: () => void;
 }
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
@@ -28,11 +29,17 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.state = { isLoading: true };
         this._consoleRef = React.createRef();
 
-        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => this.setState({ isLoading: state }));
+        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => {
+            this.setState({ isLoading: state });
+        });
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
         });
+    }
+
+    override componentDidMount() {
+        this.props.onMounted?.();
     }
 
     override componentWillUnmount() {
