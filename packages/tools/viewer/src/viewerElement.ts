@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowParams, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -1520,7 +1520,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
         try {
             const options = { quality };
-            this._viewerDetails?.viewer.updateShadows(options);
+            await this._viewerDetails?.viewer.updateShadows(options);
         } catch (error) {
             // If loadEnvironment was aborted (e.g. because a new environment load was requested before this one finished), we can just ignore the error.
             if (!(error instanceof AbortError)) {

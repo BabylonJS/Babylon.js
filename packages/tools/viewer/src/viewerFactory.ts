@@ -65,22 +65,19 @@ export async function CreateViewerForCanvas(
     options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
 ): Promise<Viewer> {
     if (options) {
-        options = new Proxy(options, {
-            get(target, prop: keyof CanvasViewerOptions) {
-                // keyof CanvasViewerOptions only works for the first type or common keys.
-                // so we need to check if the prop is a WebGPUEngineOptions key.
-                const webGPUTarget = target as WebGPUEngineOptions;
-                const webGPUProp = prop as keyof WebGPUEngineOptions;
-                if (webGPUProp === "enableAllFeatures") {
-                    return webGPUTarget.enableAllFeatures ?? defaultCanvasViewerOptions.enableAllFeatures;
-                } else if (webGPUProp === "setMaximumLimits") {
-                    return webGPUTarget.setMaximumLimits ?? defaultCanvasViewerOptions.setMaximumLimits;
-                } else if (prop === "antialias") {
-                    return target.antialias ?? defaultCanvasViewerOptions.antialias;
-                } else if (prop === "adaptToDeviceRatio") {
-                    return target.adaptToDeviceRatio ?? defaultCanvasViewerOptions.adaptToDeviceRatio;
-                } else {
-                    return target[prop];
+        options = new Proxy(options as CanvasViewerOptions & EngineOptions & WebGPUEngineOptions, {
+            get(target, prop: keyof (CanvasViewerOptions & EngineOptions & WebGPUEngineOptions)) {
+                switch (prop) {
+                    case "antialias":
+                        return target.antialias ?? defaultCanvasViewerOptions.antialias;
+                    case "adaptToDeviceRatio":
+                        return target.adaptToDeviceRatio ?? defaultCanvasViewerOptions.adaptToDeviceRatio;
+                    case "enableAllFeatures":
+                        return target.enableAllFeatures ?? defaultCanvasViewerOptions.enableAllFeatures;
+                    case "setMaximumLimits":
+                        return target.setMaximumLimits ?? defaultCanvasViewerOptions.setMaximumLimits;
+                    default:
+                        return target[prop];
                 }
             },
         });
