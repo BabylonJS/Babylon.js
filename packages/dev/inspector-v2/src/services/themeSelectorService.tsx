@@ -16,7 +16,7 @@ const useStyles = makeStyles({
     },
 });
 
-export const themeSelectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "ThemeSelector",
     consumes: [ShellService],
     factory: (shellService) => {

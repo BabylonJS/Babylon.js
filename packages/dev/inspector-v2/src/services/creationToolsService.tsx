@@ -15,7 +15,7 @@ const useStyles = makeStyles({
     },
 });
 
-export const serviceDefinition: ServiceDefinition<[], [ShellService, SceneContext]> = {
+export const CreationToolsServiceDefinition: ServiceDefinition<[], [ShellService, SceneContext]> = {
     friendlyName: "Creation Tools",
     tags: ["scene"],
     consumes: [ShellService, SceneContext],
@@ -68,5 +68,5 @@ export const serviceDefinition: ServiceDefinition<[], [ShellService, SceneContex
 };
 
 export default {
-    serviceDefinitions: [serviceDefinition],
+    serviceDefinitions: [CreationToolsServiceDefinition],
 } as const;

@@ -18,7 +18,7 @@ const useStyles = makeStyles({
 
 const useTeachingMoment = MakePopoverTeachingMoment("Aspects");
 
-export const aspectSelectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+export const AspectSelectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "AspectSelector",
     consumes: [ShellService],
     factory: (shellService) => {

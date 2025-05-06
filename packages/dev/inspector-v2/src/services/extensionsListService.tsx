@@ -164,7 +164,7 @@ const ExtensionDetails: FunctionComponent<{ extension: Extension }> = memo((prop
 
 type TabValue = "available" | "installed";
 
-export const extensionListServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+export const ExtensionListServiceDefinition: ServiceDefinition<[], [ShellService]> = {
     friendlyName: "ExtensionList",
     consumes: [ShellService],
     factory: (shellService) => {

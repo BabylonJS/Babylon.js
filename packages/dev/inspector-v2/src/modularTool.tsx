@@ -19,12 +19,12 @@ import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ObservableCollection } from "./misc/observableCollection";
 import { ServiceCatalog } from "./modularity/serviceCatalog";
-import { aspectSelectorServiceDefinition } from "./services/aspectSelectorService";
-import { extensionListServiceDefinition } from "./services/extensionsListService";
+import { AspectSelectorServiceDefinition } from "./services/aspectSelectorService";
+import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition } from "./services/shellService";
-import { themeSelectorServiceDefinition } from "./services/themeSelectorService";
+import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 import { ViewHost } from "./services/viewHost";
-import { darkTheme, lightTheme } from "./themes/babylonTheme";
+import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
 const aspectSettingsKey = "Babylon/Settings/LastActiveAspect";
 
@@ -193,12 +193,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 // Register built in services.
                 {
                     await registry.registerServices(MakeShellServiceDefinition(options));
-                    await registry.registerServices(aspectSelectorServiceDefinition);
+                    await registry.registerServices(AspectSelectorServiceDefinition);
                     if (extensionFeeds.length > 0) {
-                        await registry.registerServices(extensionListServiceDefinition);
+                        await registry.registerServices(ExtensionListServiceDefinition);
                     }
                     if (isThemeable) {
-                        await registry.registerServices(themeSelectorServiceDefinition);
+                        await registry.registerServices(ThemeSelectorServiceDefinition);
                     }
                 }
 
@@ -317,7 +317,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         return (
             <AspectContext.Provider value={aspectContext}>
                 <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                    <FluentProvider className={classes.app} theme={isDarkMode ? darkTheme : lightTheme}>
+                    <FluentProvider className={classes.app} theme={isDarkMode ? DarkTheme : LightTheme}>
                         <>
                             <Dialog open={!!requiredExtensions} modalType="alert">
                                 <DialogSurface>

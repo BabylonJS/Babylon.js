@@ -23,11 +23,11 @@ const babylonBrand: BrandVariants = {
     160: "#FFE8E2",
 };
 
-export const lightTheme: Theme = {
+export const LightTheme: Theme = {
     ...createLightTheme(babylonBrand),
 };
 
-export const darkTheme: Theme = {
+export const DarkTheme: Theme = {
     ...createDarkTheme(babylonBrand),
     colorBrandForeground1: babylonBrand[110],
     colorBrandForegroundLink: babylonBrand[110],
