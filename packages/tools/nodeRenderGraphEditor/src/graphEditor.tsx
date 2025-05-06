@@ -594,7 +594,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 popUpWindow = w;
                 if (popUpWindow) {
                     popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
-                    const parentControl = popUpWindow.document.getElementById("node-editor-graph-root");
+                    const parentControl = popUpWindow.document.getElementById("node-render-graph-editor-graph-root");
                     await this.createPreviewMeshControlHostAsync(options, parentControl);
                     await this.createPreviewHostAsync(options, parentControl);
                     if (parentControl) {
