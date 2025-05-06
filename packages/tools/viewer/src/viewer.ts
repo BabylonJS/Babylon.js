@@ -29,6 +29,7 @@ import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRota
 import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { DirectionalLight } from "core/Lights/directionalLight";
+import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -134,7 +135,7 @@ type ShadowState = {
     normal?: {
         generator: ShadowGenerator;
         ground: Mesh;
-        light: DirectionalLight;
+        light: DirectionalLight | SpotLight;
         shouldRender: boolean;
     };
     high?: {
@@ -1188,6 +1189,7 @@ export class Viewer implements IDisposable {
 
     public set selectedAnimation(value: number) {
         this._selectAnimation(value, this._loadOperations.size === 0);
+        this._updateShadows();
     }
 
     protected _selectAnimation(index: number, interpolateCamera = true) {
@@ -1790,23 +1792,25 @@ export class Viewer implements IDisposable {
 
         let normal = this._shadowState.normal;
         if (!normal) {
-            const light = new DirectionalLight("shadowMapLight", new Vector3(-x, -1, -z), this._scene);
-            light.intensity = 100.0;
-            const generator = new ShadowGenerator(2048, light);
+            // const light = new DirectionalLight("shadowMapLight", new Vector3(-x, -1, -z), this._scene);
+            const light = new SpotLight("spotLight", new Vector3(x * (radius * 2), radius * 2, z * (radius * 2)), new Vector3(-x, -1, -z), Math.PI / 5, 1, this._scene);
+
+            const generator = new ShadowGenerator(1024, light);
             generator.setDarkness(0.5);
             generator.setTransparencyShadow(true);
-            generator.usePercentageCloserFiltering = false;
-            generator.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
-            generator.bias = -0.01;
-            generator.normalBias = 0.00002;
-            generator.useContactHardeningShadow = true;
-            generator.contactHardeningLightSizeUVRatio = 0.1;
+            generator.usePercentageCloserFiltering = true;
+            generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
+            generator.bias = -0.0001;
+            generator.normalBias = 0.000002;
+            generator.useContactHardeningShadow = false;
+            // generator.contactHardeningLightSizeUVRatio = 0.1;
+            // generator.contactHardeningLightSizeUVRatio = 0.0075;
             generator.useExponentialShadowMap = true;
-            generator.useBlurExponentialShadowMap = true;
+            generator.depthScale = 5;
+            generator.useBlurExponentialShadowMap = false;
             generator.useKernelBlur = false;
             generator.blurScale = 1;
-            generator.blurKernel = 8;
-            generator.depthScale = 1;
+            generator.blurKernel = 32;
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
@@ -1838,16 +1842,19 @@ export class Viewer implements IDisposable {
             });
         }
 
-        normal.light.position.set(x * radius, radius, z * radius);
-        // manually set the extends to take into account animated meshes
-        normal.light.autoUpdateExtends = false;
+        normal.light.intensity = 100.0;
+        normal.light.position.set(x * radius * 1, radius * 1, z * radius * 1);
         normal.light.shadowMinZ = 0.000000007;
-        // arbitrary extend the value to let space for animated meshes
-        normal.light.shadowMaxZ = radius * 4;
-        normal.light.orthoLeft = -radius * 2;
-        normal.light.orthoRight = radius * 2;
-        normal.light.orthoTop = radius * 2;
-        normal.light.orthoBottom = -radius * 2;
+        normal.light.shadowMaxZ = radius * 1;
+        if (normal.light instanceof DirectionalLight) {
+            // manually set the extends to take into account animated meshes
+            // arbitrary extend the value to let space for animated meshes
+            normal.light.autoUpdateExtends = false;
+            normal.light.orthoLeft = -radius * 2;
+            normal.light.orthoRight = radius * 2;
+            normal.light.orthoTop = radius * 2;
+            normal.light.orthoBottom = -radius * 2;
+        }
 
         for (const model of this._loadedModelsBacking) {
             const mesh = model.assetContainer.meshes[0];
