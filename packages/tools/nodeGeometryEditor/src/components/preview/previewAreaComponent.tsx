@@ -11,6 +11,7 @@ import { PreviewMode } from "./previewMode";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
+    onMounted?: () => void;
 }
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
@@ -21,7 +22,9 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         super(props);
         this.state = { isLoading: true };
 
-        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => this.setState({ isLoading: state }));
+        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => {
+            this.setState({ isLoading: state });
+        });
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
@@ -31,6 +34,10 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
     override componentWillUnmount() {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+    }
+
+    override componentDidMount() {
+        this.props.onMounted?.();
     }
 
     _onPointerOverCanvas = () => {
