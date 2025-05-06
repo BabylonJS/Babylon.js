@@ -8,6 +8,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { BVHLoadingOptions } from "./bvhLoadingOptions";
 import { Tools } from "core/Misc/tools";
+import type { AssetContainer } from "core/assetContainer";
 
 const _XPosition = "Xposition";
 const _YPosition = "Yposition";
@@ -327,15 +328,19 @@ function ReadNode(lines: string[], firstLine: string, parent: Nullable<IBVHNode>
  * Reads a BVH file, returns a skeleton
  * @param text - The BVH file content
  * @param scene - The scene to add the skeleton to
+ * @param assetContainer - The asset container to add the skeleton to
  * @param loadingOptions - The loading options
  * @returns The skeleton
  */
-export function ReadBvh(text: string, scene: Scene, loadingOptions: BVHLoadingOptions): Skeleton {
+export function ReadBvh(text: string, scene: Scene, assetContainer: Nullable<AssetContainer>, loadingOptions: BVHLoadingOptions): Skeleton {
     const lines = text.split("\n");
 
     const { loopMode } = loadingOptions;
 
+    scene._blockEntityCollection = !!assetContainer;
     const skeleton = new Skeleton("", "", scene);
+    skeleton._parentContainer = assetContainer;
+    scene._blockEntityCollection = false;
 
     const context = new LoaderContext(skeleton);
     context.loopMode = loopMode;

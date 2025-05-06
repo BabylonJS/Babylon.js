@@ -4,6 +4,7 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
+import type { Vector3 } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
@@ -435,6 +436,14 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._texture._irradianceTexture = value;
         }
     }
+
+    /**
+     * Indicates the average direction of light in an environment map. This
+     * can be treated as the most dominant direction but it's magnitude also
+     * tells you something about how dominant that direction is.
+     */
+    /** @internal */
+    public _dominantDirection: Nullable<Vector3> = null;
 
     /**
      * Define if the texture is a render target.

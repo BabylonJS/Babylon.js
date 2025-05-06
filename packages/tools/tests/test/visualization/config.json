@@ -17,6 +17,35 @@
             "referenceImage": "openpbr_base_weight.png"
         },
         {
+            "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
+            "playgroundId": "#MXACV7#23",
+            "referenceImage": "openpbr_base_diffuse_roughness.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
+            "playgroundId": "#MXACV7#22",
+            "renderCount": 15,
+            "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
+            "playgroundId": "#MXACV7#19",
+            "renderCount": 5,
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
+            "playgroundId": "#MXACV7#20",
+            "renderCount": 5,
+            "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
+        },
+        {
+            "title": "OpenPBR Base Diffuse Roughness SH IBL",
+            "playgroundId": "#MXACV7#21",
+            "renderCount": 2,
+            "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png"
+        },
+        {
             "title": "NME Glow Manual",
             "playgroundId": "#7QCYPB#320",
             "referenceImage": "nme_glow_manual.png"
@@ -2238,7 +2267,7 @@
         {
             "title": "custom-handling-of-materials-for-render-target-pass",
             "renderCount": 60,
-            "playgroundId": "#FIVL25#22"
+            "playgroundId": "#FIVL25#21"
         },
         {
             "title": "dissolve-effect-with-node-material-and-glow-layer",
@@ -2407,7 +2436,7 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#456",
+            "playgroundId": "#8R5SSE#628",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2420,14 +2449,14 @@
         },
         {
             "title": "IBL Voxel Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#457",
+            "playgroundId": "#8R5SSE#630",
             "referenceImage": "voxelShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Voxel Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#458",
+            "playgroundId": "#8R5SSE#629",
             "referenceImage": "voxelShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
