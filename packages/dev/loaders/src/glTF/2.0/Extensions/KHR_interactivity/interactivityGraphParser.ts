@@ -269,7 +269,7 @@ export class InteractivityGraphToFlowGraphParser {
                         configuration[configKey] = {
                             value: configMapping.defaultValue,
                         };
-                    } else if (value.value.length >= 1) {
+                    } else if (value.value.length >= 0) {
                         // supporting int[] and int/boolean/string
                         configuration[configKey] = {
                             value: value.value.length === 1 ? value.value[0] : value.value,
