@@ -1,11 +1,16 @@
-import { Vector3 } from "core/Maths/math.vector";
-import type { Particle } from "./particle";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { ThinParticleSystem } from "./thinParticleSystem";
+import { Particle } from ".";
+import { IVector3Like } from "../Maths/math.like";
 
 const FlowVector = new Vector3(0, 0, 0);
 const ScaledFlowVector = new Vector3(0, 0, 0);
 const ScreenPos = new Vector3(0, 0, 0);
 
+export interface IFlowable {
+    direction: Vector3;
+    position: Vector3;
+}
 /**
  * Class used to represent a particle flow map.
  * #5DM02T#7
@@ -25,12 +30,19 @@ export class FlowMap {
         public readonly data: Uint8ClampedArray
     ) {}
 
-    /** @internal */
-    public _processParticle(particle: Particle, system: ThinParticleSystem, strength = 1) {
-        const scene = system.getScene()!;
+    public processFlowable(flowable: IFlowable, strength = 1, flowMapSamplePosOrTransformationMatrix?: IVector3Like | Matrix) {
+        if (!flowMapSamplePosOrTransformationMatrix) {
+            return;
+        }
 
         // Convert world pos to screen pos
-        Vector3.TransformCoordinatesToRef(particle.position, scene.getTransformMatrix(), ScreenPos);
+        if (flowMapSamplePosOrTransformationMatrix instanceof Matrix) {
+            Vector3.TransformCoordinatesToRef(flowable.position, flowMapSamplePosOrTransformationMatrix, ScreenPos);
+        } else {
+            ScreenPos.x = flowMapSamplePosOrTransformationMatrix.x;
+            ScreenPos.y = flowMapSamplePosOrTransformationMatrix.y;
+            ScreenPos.z = flowMapSamplePosOrTransformationMatrix.z;
+        }
 
         const u = ScreenPos.x * 0.5 + 0.5;
         const v = 1.0 - (ScreenPos.y * 0.5 + 0.5);
@@ -55,9 +67,14 @@ export class FlowMap {
         const localStrength = a / 255.0;
 
         FlowVector.set(fx, fy, fz);
-        FlowVector.scaleToRef(system._tempScaledUpdateSpeed * strength * localStrength, ScaledFlowVector);
+        FlowVector.scaleToRef(strength * localStrength, ScaledFlowVector);
 
-        particle.direction.addInPlace(ScaledFlowVector); // Update particle velocity
+        flowable.direction.addInPlace(ScaledFlowVector); // Update IFlowable velocity
+    }
+
+    /** @internal */
+    public _processParticle(particle: Particle, system: ThinParticleSystem, strength = 1, matrix?: Matrix) {
+        this.processFlowable(particle, system._tempScaledUpdateSpeed * strength, matrix);
     }
 
     /**
