@@ -31,7 +31,8 @@ attribute vec4 color;
 #include<prePassVertexDeclaration>
 
 #include<samplerVertexDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo)
-#include<samplerVertexDeclaration>(_DEFINENAME_,BASEWEIGHT,_VARYINGNAME_,BaseWeight)
+#include<samplerVertexDeclaration>(_DEFINENAME_,BASE_WEIGHT,_VARYINGNAME_,BaseWeight)
+#include<samplerVertexDeclaration>(_DEFINENAME_,BASE_DIFFUSE_ROUGHNESS,_VARYINGNAME_,BaseDiffuseRoughness)
 #include<samplerVertexDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail)
 #include<samplerVertexDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient)
 #include<samplerVertexDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity)
@@ -175,7 +176,15 @@ void main(void) {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
+        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
+            // Bend the normal towards the viewer based on the diffuse roughness
+            vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
+            float NdotV = max(dot(vNormalW, viewDirectionW), 0.0);
+            vec3 roughNormal = mix(vNormalW, viewDirectionW, (0.5 * (1.0 - NdotV)) * baseDiffuseRoughness);
+            vec3 reflectionVector = vec3(reflectionMatrix * vec4(roughNormal, 0)).xyz;
+        #else
+            vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
+        #endif
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
@@ -220,7 +229,8 @@ void main(void) {
     #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
-    #include<samplerVertexImplementation>(_DEFINENAME_,BASEWEIGHT,_VARYINGNAME_,BaseWeight,_MATRIXNAME_,baseWeight,_INFONAME_,BaseWeightInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,BASE_WEIGHT,_VARYINGNAME_,BaseWeight,_MATRIXNAME_,baseWeight,_INFONAME_,BaseWeightInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,BASE_DIFFUSE_ROUGHNESS,_VARYINGNAME_,BaseDiffuseRoughness,_MATRIXNAME_,baseDiffuseRoughness,_INFONAME_,BaseDiffuseRoughnessInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_MATRIXNAME_,ambient,_INFONAME_,AmbientInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_MATRIXNAME_,opacity,_INFONAME_,OpacityInfos.x)

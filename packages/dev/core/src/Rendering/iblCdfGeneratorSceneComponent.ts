@@ -52,6 +52,10 @@ Scene.prototype.enableIblCdfGenerator = function (): Nullable<IblCdfGenerator> {
     }
 
     this._iblCdfGenerator = new IblCdfGenerator(this);
+    if (!this._iblCdfGenerator.isSupported) {
+        this._iblCdfGenerator = null;
+        return null;
+    }
     if (this.environmentTexture) {
         this._iblCdfGenerator.iblSource = this.environmentTexture;
     }

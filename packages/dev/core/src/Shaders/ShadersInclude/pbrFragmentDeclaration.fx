@@ -3,6 +3,7 @@ uniform vec4 vEyePosition;
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
 uniform float baseWeight;
+uniform float baseDiffuseRoughness;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -20,8 +21,12 @@ uniform vec3 vAmbientColor;
 uniform vec2 vAlbedoInfos;
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
 uniform vec2 vBaseWeightInfos;
+#endif
+
+#ifdef BASE_DIFFUSE_ROUGHNESS
+uniform vec2 vBaseDiffuseRoughnessInfos;
 #endif
 
 #ifdef AMBIENT
@@ -67,6 +72,9 @@ uniform mat4 view;
     #endif
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
+    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+        uniform vec3 vReflectionDominantDirection;
+    #endif
 
     #if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
 	    uniform vec3 vReflectionPosition;
