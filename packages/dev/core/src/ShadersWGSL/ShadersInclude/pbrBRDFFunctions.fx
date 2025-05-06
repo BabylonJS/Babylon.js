@@ -3,6 +3,10 @@
 #define BRDF_DIFFUSE_MODEL_EON 0
 #define BRDF_DIFFUSE_MODEL_BURLEY 1
 #define BRDF_DIFFUSE_MODEL_LAMBERT 2
+#define DIELECTRIC_SPECULAR_MODEL_GLTF 0
+#define DIELECTRIC_SPECULAR_MODEL_OPENPBR 1
+#define CONDUCTOR_SPECULAR_MODEL_GLTF 0
+#define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
 // ______________________________________________________________________
 //

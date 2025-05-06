@@ -197,6 +197,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public LINEARSPECULARREFLECTION = false;
     public RADIANCEOCCLUSION = false;
     public HORIZONOCCLUSION = false;
+    public DIELECTRIC_SPECULAR_MODEL = 0;
+    public CONDUCTOR_SPECULAR_MODEL = 0;
 
     public INSTANCES = false;
     public THIN_INSTANCES = false;
@@ -826,6 +828,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     private _baseDiffuseModel: number = PBRBaseMaterial.DEFAULT_DIFFUSE_MODEL;
+
+    private _dielectricSpecularModel: number = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF;
+    private _conductorSpecularModel: number = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF;
 
     /**
      * Can this material render to several textures at once
@@ -2000,6 +2005,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         defines.RADIANCEOCCLUSION = this._useRadianceOcclusion;
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
+
+        defines.DIELECTRIC_SPECULAR_MODEL = this._dielectricSpecularModel;
+
+        defines.CONDUCTOR_SPECULAR_MODEL = this._conductorSpecularModel;
 
         // Misc.
         if (defines._areMiscDirty) {
