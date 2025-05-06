@@ -57,7 +57,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     /**
      * Default value for whether the legacy specular energy conservation is used.
      */
-    public static DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION = false;
+    public static DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION = true;
 
     private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
