@@ -1031,7 +1031,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             depthStencilAttachment: mainDepthAttachment,
         };
 
-        this.clear(null, false, true, false); // make sure the depth texture is cleared with the right value
+        this.beginFrame();
+        this._startMainRenderPass(true, null, true, false);
+        this._endCurrentRenderPass();
+        this.endFrame();
+        this._frameId--; // We don't want to count the frame as a real frame, because it was only used to initialize the depth texture
     }
 
     /**
