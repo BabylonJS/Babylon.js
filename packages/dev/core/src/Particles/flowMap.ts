@@ -1,7 +1,7 @@
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { ThinParticleSystem } from "./thinParticleSystem";
-import { Particle } from ".";
-import { IVector3Like } from "../Maths/math.like";
+import type { Particle } from "../Particles/particle";
+import type { IVector3Like } from "../Maths/math.like";
 
 const FlowVector = new Vector3(0, 0, 0);
 const ScaledFlowVector = new Vector3(0, 0, 0);
