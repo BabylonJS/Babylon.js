@@ -362,43 +362,31 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise that will resolve once the reference space has been set
      */
     public async setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
-        return await this.session
-            .requestReferenceSpace(referenceSpaceType)
-            .then(
-                (referenceSpace) => {
-                    return referenceSpace as XRReferenceSpace;
-                },
-                async (rejectionReason) => {
-                    Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
-                    Logger.Error(rejectionReason);
-                    Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
+        let referenceSpace: XRReferenceSpace;
+        try {
+            referenceSpace = await this.session.requestReferenceSpace(referenceSpaceType);
+        } catch (rejectionReason) {
+            Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
+            Logger.Error(rejectionReason);
+            Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
-                    return await this.session.requestReferenceSpace("viewer").then(
-                        (referenceSpace) => {
-                            const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
-                            return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
-                        },
-                        (rejectionReason) => {
-                            Logger.Error(rejectionReason);
-                            // eslint-disable-next-line no-throw-literal
-                            throw 'XR initialization failed: required "viewer" reference space type not supported.';
-                        }
-                    );
-                }
-            )
-            .then(async (referenceSpace) => {
-                // create viewer reference space before setting the first reference space
-                return await this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace) => {
-                    this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
-                    return referenceSpace;
-                });
-            })
-            .then((referenceSpace) => {
-                // initialize the base and offset (currently the same)
-                this.referenceSpace = this.baseReferenceSpace = referenceSpace;
-                this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);
-                return this.referenceSpace;
-            });
+            try {
+                const referenceSpace = await this.session.requestReferenceSpace("viewer");
+                const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
+                return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
+            } catch (rejectionReason) {
+                Logger.Error(rejectionReason);
+                // eslint-disable-next-line no-throw-literal
+                throw 'XR initialization failed: required "viewer" reference space type not supported.';
+            }
+        }
+        // create viewer reference space before setting the first reference space
+        const viewerReferenceSpace = await this.session.requestReferenceSpace("viewer");
+        this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
+        // initialize the base and offset (currently the same)
+        this.referenceSpace = this.baseReferenceSpace = referenceSpace;
+        this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);
+        return this.referenceSpace;
     }
 
     /**
