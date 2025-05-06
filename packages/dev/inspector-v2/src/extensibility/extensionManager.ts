@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
-import type { AspectRegistry, ServiceRegistry } from "../modularity";
+import type { AspectRegistry, ServiceRegistry } from "../modularity/serviceCatalog";
 import type { ExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
 
 import { Assert } from "../misc/assert";
