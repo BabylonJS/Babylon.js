@@ -2463,7 +2463,7 @@
         },
         {
             "title": "IBL Screen-space Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#459",
+            "playgroundId": "#8R5SSE#631",
             "referenceImage": "ssShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2471,7 +2471,7 @@
         },
         {
             "title": "IBL Screen-space Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#461",
+            "playgroundId": "#8R5SSE#632",
             "referenceImage": "ssShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2561,7 +2561,7 @@
         },
         {
             "title": "IBL radiance roughness",
-            "playgroundId": "#RNO672#9"
+            "playgroundId": "#RNO672#10"
         },
         {
             "title": "Synchronous Effect",
