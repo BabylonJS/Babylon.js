@@ -1556,7 +1556,7 @@ export class Viewer implements IDisposable {
                         (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
                     );
 
-                    if (!(isWebGPU && hasAnyAnimationOrIndices)) {
+                    if (this._loadedModelsBacking.length > 0 && !(isWebGPU && hasAnyAnimationOrIndices)) {
                         await this._updateEnvShadow(abortController.signal);
                     } else {
                         this._log("Environment shadows are not supported in WebGPU with animated meshes.");
