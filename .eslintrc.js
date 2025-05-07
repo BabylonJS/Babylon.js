@@ -192,6 +192,10 @@ const rules = {
                     "error",
                     {
                         checksConditionals: false,
+                        checksVoidReturn: {
+                            arguments: false,
+                            attributes: false,
+                        },
                     },
                 ],
                 "@typescript-eslint/no-floating-promises": "error",

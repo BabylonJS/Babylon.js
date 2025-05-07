@@ -1,3 +1,5 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
@@ -40,6 +42,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         };
 
         this.props.globalState.onRunRequiredObservable.add(() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._compileAndRunAsync();
         });
 
@@ -97,7 +100,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     };
 
     private async _loadScriptAsync(url: string): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             const script = document.createElement("script");
             script.setAttribute("type", "text/javascript");
             script.setAttribute("src", url);

@@ -1,3 +1,4 @@
+/* eslint-disable github/no-then */
 import { DynamicTexture, RawTexture } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import type { Nullable } from "@dev/core";
@@ -12,7 +13,7 @@ export class DownloadManager {
     public constructor(public globalState: GlobalState) {}
 
     private async _addContentToZipAsync(zip: typeof JSZip, name: string, url: string, replace: Nullable<string>, buffer = false): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 resolve();
                 return;
@@ -57,11 +58,11 @@ export class DownloadManager {
 
     private async _addTexturesToZipAsync(zip: typeof JSZip, index: number, textures: any[], folder: Nullable<string>): Promise<void> {
         if (index === textures.length || !textures[index].name) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
 
         if (textures[index].isRenderTarget || textures[index] instanceof RawTexture || textures[index] instanceof DynamicTexture || textures[index].name.indexOf("data:") !== -1) {
-            return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
+            return await this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
 
         if (textures[index].isCube) {
@@ -78,7 +79,7 @@ export class DownloadManager {
             } else {
                 textures.push({ name: textures[index].name });
             }
-            return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
+            return await this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
 
         if (folder == null) {
@@ -95,17 +96,17 @@ export class DownloadManager {
         const name = textures[index].name.replace("textures/", "");
 
         if (url != null) {
-            return this._addContentToZipAsync(folder, name, url, null, true).then(async () => {
-                return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
+            return await this._addContentToZipAsync(folder, name, url, null, true).then(async () => {
+                return await this._addTexturesToZipAsync(zip, index + 1, textures, folder);
             });
         } else {
-            return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
+            return await this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
     }
 
     private async _addImportedFilesToZipAsync(zip: typeof JSZip, index: number, importedFiles: string[], folder: Nullable<string>): Promise<void> {
         if (index === importedFiles.length) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
 
         if (!folder) {
@@ -115,8 +116,8 @@ export class DownloadManager {
 
         const name = url.substring(url.lastIndexOf("/") + 1);
 
-        return this._addContentToZipAsync(folder, name, url, null, true).then(async () => {
-            return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
+        return await this._addContentToZipAsync(folder, name, url, null, true).then(async () => {
+            return await this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
         });
     }
 
@@ -144,12 +145,13 @@ export class DownloadManager {
             // eslint-disable-next-line no-constant-condition
         } while (true);
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._addContentToZipAsync(zip, "index.html", "/zipContent/index.html", zipCode)
             .then(async () => {
-                return this._addTexturesToZipAsync(zip, 0, textures, null);
+                return await this._addTexturesToZipAsync(zip, 0, textures, null);
             })
             .then(async () => {
-                return this._addImportedFilesToZipAsync(zip, 0, importedFiles, null);
+                return await this._addImportedFilesToZipAsync(zip, 0, importedFiles, null);
             })
             .then(() => {
                 const blob = zip.generate({ type: "blob" });
