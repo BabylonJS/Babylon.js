@@ -37,6 +37,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
     }
 
     edit() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.props.material.edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
     }
 

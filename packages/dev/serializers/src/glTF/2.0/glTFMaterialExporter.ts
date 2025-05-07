@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable github/no-then */
 /* eslint-disable babylonjs/available */
 
 import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IImage } from "babylonjs-gltf2interface";
@@ -372,7 +374,7 @@ export class GLTFMaterialExporter {
     ): Promise<IPBRMetallicRoughness> {
         const promises = new Array<Promise<void>>();
         if (!(diffuseTexture || specularGlossinessTexture)) {
-            return Promise.reject("diffuse and specular glossiness textures are not defined!");
+            return await Promise.reject("diffuse and specular glossiness textures are not defined!");
         }
 
         const scene: Nullable<Scene> = diffuseTexture ? diffuseTexture.getScene() : specularGlossinessTexture ? specularGlossinessTexture.getScene() : null;
@@ -393,12 +395,12 @@ export class GLTFMaterialExporter {
             if (diffusePixels) {
                 diffuseBuffer = ConvertPixelArrayToFloat32(diffusePixels);
             } else {
-                return Promise.reject("Failed to retrieve pixels from diffuse texture!");
+                return await Promise.reject("Failed to retrieve pixels from diffuse texture!");
             }
             if (specularPixels) {
                 specularGlossinessBuffer = ConvertPixelArrayToFloat32(specularPixels);
             } else {
-                return Promise.reject("Failed to retrieve pixels from specular glossiness texture!");
+                return await Promise.reject("Failed to retrieve pixels from specular glossiness texture!");
             }
 
             const byteLength = specularGlossinessBuffer.byteLength;
@@ -506,11 +508,11 @@ export class GLTFMaterialExporter {
                 );
             }
 
-            return Promise.all(promises).then(() => {
+            return await Promise.all(promises).then(() => {
                 return metallicRoughnessFactors;
             });
         } else {
-            return Promise.reject("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
+            return await Promise.reject("_ConvertSpecularGlossinessTexturesToMetallicRoughness: Scene from textures is missing!");
         }
     }
 
@@ -739,7 +741,7 @@ export class GLTFMaterialExporter {
         const reflectivityTexture = babylonPBRMaterial._reflectivityTexture;
         const useMicrosurfaceFromReflectivityMapAlpha = babylonPBRMaterial._useMicroSurfaceFromReflectivityMapAlpha;
         if (reflectivityTexture && !useMicrosurfaceFromReflectivityMapAlpha) {
-            return Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
+            return await Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
         }
 
         if ((albedoTexture || reflectivityTexture) && hasUVs) {
@@ -891,6 +893,7 @@ export class GLTFMaterialExporter {
      * @param babylonTexture
      * @returns an array buffer promise containing the pixel data
      */
+    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _getPixelsFromTextureAsync(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
         // If the internal texture format is compressed, we cannot read the pixels directly.
         if (IsCompressedTextureFormat(babylonTexture.textureFormat)) {
@@ -905,14 +908,14 @@ export class GLTFMaterialExporter {
     public async exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
         const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);
         if (!extensionPromise) {
-            return this._exportTextureInfoAsync(babylonTexture, mimeType);
+            return await this._exportTextureInfoAsync(babylonTexture, mimeType);
         }
 
-        return extensionPromise.then((texture) => {
+        return await extensionPromise.then(async (texture) => {
             if (!texture) {
-                return this._exportTextureInfoAsync(babylonTexture, mimeType);
+                return await this._exportTextureInfoAsync(babylonTexture, mimeType);
             }
-            return this._exportTextureInfoAsync(texture, mimeType);
+            return await this._exportTextureInfoAsync(texture, mimeType);
         });
     }
 
