@@ -175,6 +175,7 @@ export class MeshUVSpaceRenderer {
             ...options,
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
     }
 

@@ -238,14 +238,13 @@ export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextu
  * Creates an environment texture from a loaded cube texture.
  * @param texture defines the cube texture to convert in env file
  * @param options options for the conversion process
- * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
- * @param options.imageQuality the image quality of encoded WebP images.
  * @returns a promise containing the environment data if successful.
  */
 export async function CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
     const internalTexture = texture.getInternalTexture();
     if (!internalTexture) {
-        return Promise.reject("The cube texture is invalid.");
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return await Promise.reject("The cube texture is invalid.");
     }
 
     const engine = internalTexture.getEngine();
@@ -258,14 +257,16 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INTEGER &&
         texture.textureType !== -1
     ) {
-        return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return await Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
     }
 
     let textureType = Constants.TEXTURETYPE_FLOAT;
     if (!engine.getCaps().textureFloatRender) {
         textureType = Constants.TEXTURETYPE_HALF_FLOAT;
         if (!engine.getCaps().textureHalfFloatRender) {
-            return Promise.reject("Env texture can only be created when the browser supports half float or full float rendering.");
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            return await Promise.reject("Env texture can only be created when the browser supports half float or full float rendering.");
         }
     }
 
@@ -293,6 +294,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
         // All faces of the cube.
         for (let face = 0; face < 6; face++) {
+            // eslint-disable-next-line no-await-in-loop
             specularTextures[i * 6 + face] = await _GetTextureEncodedDataAsync(hostingScene, texture, textureType, face, i, faceWidth, imageType, options.imageQuality);
         }
     }
@@ -304,6 +306,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
         // All faces of the cube.
         for (let face = 0; face < 6; face++) {
+            // eslint-disable-next-line no-await-in-loop
             diffuseTextures[face] = await _GetTextureEncodedDataAsync(hostingScene, irradianceTexture, textureType, face, 0, faceWidth, imageType, options.imageQuality);
         }
     }
@@ -551,6 +554,7 @@ export function CreateIrradianceImageDataArrayBufferViews(data: ArrayBufferView,
  * @param info defines the texture info retrieved through the GetEnvInfo method
  * @returns a promise
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
     info = normalizeEnvInfo(info);
 
@@ -589,7 +593,7 @@ async function _OnImageReadyAsync(
     cubeRtt: Nullable<RenderTargetWrapper>,
     texture: InternalTexture
 ): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         if (expandTexture) {
             const tempTexture = engine.createTexture(
                 null,
@@ -599,6 +603,7 @@ async function _OnImageReadyAsync(
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 null,
                 (message) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(message);
                 },
                 image
@@ -848,8 +853,9 @@ async function _UploadLevelsAsync(
             let promise: Promise<void>;
 
             if (engine._features.forceBitmapOverHTMLImageElement) {
+                // eslint-disable-next-line github/no-then
                 promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then(async (img) => {
-                    return _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
+                    return await _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });
             } else {
                 const image = new Image();
@@ -859,12 +865,16 @@ async function _UploadLevelsAsync(
                 promise = new Promise<void>((resolve, reject) => {
                     image.onload = () => {
                         _OnImageReadyAsync(image, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture)
+                            // eslint-disable-next-line github/no-then
                             .then(() => resolve())
+                            // eslint-disable-next-line github/no-then
                             .catch((reason) => {
+                                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                 reject(reason);
                             });
                     };
                     image.onerror = (error) => {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(error);
                     };
                 });
@@ -976,6 +986,7 @@ export function _UpdateRGBDAsync(
             internalTexture.samplingMode,
             internalTexture._compression
         );
+    // eslint-disable-next-line github/no-then
     const proxyPromise = UploadRadianceLevelsAsync(proxy, data).then(() => internalTexture);
     internalTexture.onRebuildCallback = (_internalTexture) => {
         return {
@@ -990,6 +1001,7 @@ export function _UpdateRGBDAsync(
     internalTexture._lodGenerationOffset = lodOffset;
     internalTexture._sphericalPolynomial = sphericalPolynomial;
 
+    // eslint-disable-next-line github/no-then
     return UploadRadianceLevelsAsync(internalTexture, data).then(() => {
         internalTexture.isReady = true;
         return internalTexture;

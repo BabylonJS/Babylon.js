@@ -186,7 +186,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
             <DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 },
             <DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }
         );
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
     }
 

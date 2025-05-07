@@ -188,13 +188,18 @@ const rules = {
                 // till here
                 // async fun
                 "@typescript-eslint/promise-function-async": "error",
-                "@typescript-eslint/no-misused-promises": "error",
+                "@typescript-eslint/no-misused-promises": [
+                    "error",
+                    {
+                        checksConditionals: false,
+                    },
+                ],
                 "@typescript-eslint/no-floating-promises": "error",
                 "@typescript-eslint/return-await": ["error", "always"],
                 "no-await-in-loop": "error",
                 "@typescript-eslint/await-thenable": "error",
                 "@typescript-eslint/prefer-promise-reject-errors": "error",
-                "require-atomic-updates": "error",
+                "require-atomic-updates": "warn",
                 "github/no-then": "error",
                 // rest of the rules
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],

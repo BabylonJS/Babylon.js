@@ -831,6 +831,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         if (glslangOptions.jsPath && glslangOptions.wasmPath) {
+            // eslint-disable-next-line github/no-then
             return Tools.LoadBabylonScriptAsync(glslangOptions.jsPath).then(() => {
                 return (self as any).glslang(Tools.GetBabylonScriptURL(glslangOptions.wasmPath!));
             });

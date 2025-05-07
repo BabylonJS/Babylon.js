@@ -412,6 +412,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._keepInRam = keepInRam;
         if (url) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.loadFileAsync(url);
         }
         this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
@@ -1147,7 +1148,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns the loaded splat buffer
      */
     public static async ConvertPLYToSplatAsync(data: ArrayBuffer) {
-        return runCoroutineAsync(GaussianSplattingMesh.ConvertPLYToSplat(data, true), createYieldingScheduler());
+        return await runCoroutineAsync(GaussianSplattingMesh.ConvertPLYToSplat(data, true), createYieldingScheduler());
     }
 
     /**
@@ -1157,7 +1158,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns the loaded splat buffer with SH
      */
     public static async ConvertPLYWithSHToSplatAsync(data: ArrayBuffer) {
-        return runCoroutineAsync(GaussianSplattingMesh.ConvertPLYWithSHToSplat(data, true), createYieldingScheduler());
+        return await runCoroutineAsync(GaussianSplattingMesh.ConvertPLYWithSHToSplat(data, true), createYieldingScheduler());
     }
     /**
      * Loads a .splat Gaussian Splatting array buffer asynchronously
@@ -1165,8 +1166,8 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise that resolves when the operation is complete
      */
 
-    public loadDataAsync(data: ArrayBuffer): Promise<void> {
-        return this.updateDataAsync(data);
+    public async loadDataAsync(data: ArrayBuffer): Promise<void> {
+        return await this.updateDataAsync(data);
     }
 
     /**
@@ -1175,12 +1176,10 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise that resolves when the operation is complete
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
-    public loadFileAsync(url: string): Promise<void> {
-        return Tools.LoadFileAsync(url, true).then((plyBuffer) => {
-            return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any).then((splatsData: IPLYConversionBuffers) => {
-                this.updateDataAsync(splatsData.buffer, splatsData.sh);
-            });
-        });
+    public async loadFileAsync(url: string): Promise<void> {
+        const plyBuffer = await Tools.LoadFileAsync(url, true);
+        const splatsData = await (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any);
+        await this.updateDataAsync(splatsData.buffer, splatsData.sh);
     }
 
     /**
@@ -1498,7 +1497,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise
      */
     public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[]): Promise<void> {
-        return runCoroutineAsync(this._updateData(data, true, sh), createYieldingScheduler());
+        return await runCoroutineAsync(this._updateData(data, true, sh), createYieldingScheduler());
     }
 
     /**

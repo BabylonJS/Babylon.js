@@ -150,7 +150,7 @@ export async function CreateScreenshotAsync(
     quality?: number,
     useFill = false
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         CreateScreenshot(
             engine,
             camera,
@@ -193,7 +193,7 @@ export async function CreateScreenshotWithResizeAsync(
     quality?: number,
     useFill = false
 ): Promise<void> {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         CreateScreenshot(
             engine,
             camera,
@@ -332,29 +332,34 @@ export function CreateScreenshotUsingRenderTarget(
             () => {
                 engine.onEndFrameObservable.addOnce(() => {
                     if (finalWidth === width && finalHeight === height) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
                             dumpDataFunc(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     } else {
                         const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                        importPromise.then(async () =>
-                            ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                                engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                                    dumpDataFunc(
-                                        finalWidth,
-                                        finalHeight,
-                                        data,
-                                        successCallback as (data: string | ArrayBuffer) => void,
-                                        mimeType,
-                                        fileName,
-                                        true,
-                                        undefined,
-                                        quality
-                                    );
-                                    texture.dispose();
-                                });
-                            })
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        importPromise.then(
+                            async () =>
+                                // eslint-disable-next-line github/no-then
+                                await ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                                    engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                                        dumpDataFunc(
+                                            finalWidth,
+                                            finalHeight,
+                                            data,
+                                            successCallback as (data: string | ArrayBuffer) => void,
+                                            mimeType,
+                                            fileName,
+                                            true,
+                                            undefined,
+                                            quality
+                                        );
+                                        texture.dispose();
+                                    });
+                                })
                         );
                     }
                 });
@@ -487,7 +492,7 @@ export async function CreateScreenshotUsingRenderTargetAsync(
         quality?: number
     ) => void
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
             engine,
             camera,

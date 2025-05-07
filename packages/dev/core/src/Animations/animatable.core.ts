@@ -398,7 +398,7 @@ export class Animatable {
      * @returns a promise which will be fulfilled when the animation ends
      */
     public async waitAsync(): Promise<Animatable> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this.onAnimationEndObservable.add(
                 () => {
                     resolve(this);

@@ -992,7 +992,7 @@ export class Engine extends ThinEngine {
 
     private async _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
         const gl = <WebGL2RenderingContext>(this._gl as any);
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             _RetryWithInterval(
                 () => {
                     const res = gl.clientWaitSync(sync, flags, 0);
