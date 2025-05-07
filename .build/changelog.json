@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.6.0",
+    "fromTag": "8.6.1",
     "changelog": {
         "8.6.1": [
             {
@@ -12,6 +12,268 @@
                 },
                 "files": [
                     ".build/config.json",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "8.6.2": [
+            {
+                "pr": "16572",
+                "title": "WebGPU: Make sure the depth texture is cleared with the right value at creation time",
+                "description": "See https://forum.babylonjs.com/t/webgpu-autoclear-and-autocleardepthandstencil/58267",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16574",
+                "title": "Some fixes for glTF interactivity",
+                "description": "Fix 3 issues with flow/switch and flow/for",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16575",
+                "title": "Speed up a couple of vis tests",
+                "description": "I've updated a few visualization tests to just speed up their loading. The main performance culprit is the HDR preprocessing. I just lowered the resolution.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16573",
+                "title": "Try to fix flacky test \"IBL radiance roughness\"",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16571",
+                "title": "NME Preview window does not pop out correctly",
+                "description": "Fixes #16569\nAdding onMounted functionality for the preview so that we know when it is mounted and when we can run the next init",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16253",
+                "title": "Diffuse Roughness support",
+                "description": "This PR replaces https://github.com/BabylonJS/Babylon.js/pull/16183\r\n\r\nThis PR implements the base_diffuse_roughness parameter from the [OpenPBR specification](https://academysoftwarefoundation.github.io/OpenPBR/#model/basesubstrate).\r\n\r\nThe diffuse roughness is implemented for analytic lights, realtime-filtered IBL, prefiltered IBL and spherical harmonics.\r\nI've added a flag to a material to choose between Lambert, Burley and the new Energy Conserving Oren-Nayar (EON) model used by OpenPBR. The default is OpenPBR's EON model. \r\n\r\nThe previous behaviour was to use Burley diffuse for analytical lights and Lambert for IBL. Also, previously, specular roughness was applied to diffuse roughness for analytical lights while IBL didn't use it at all (because it was simply Lambertian). So, the new default slightly changes existing projects that used analytical lights but I question how noticeable that will be.\r\n\r\n**Analytical Light:**\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16253/merge#MXACV7#3\r\n![roughnessCompare](https://github.com/user-attachments/assets/df0f6782-f1c9-42b3-8c82-d2e4ebc59f85)\r\n\r\n**Realtime IBL:**\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16253/merge#MXACV7#5\r\n<img width=\"881\" alt=\"image\" src=\"https://github.com/user-attachments/assets/4d33b49c-a8d5-4903-85ca-78eb368c015e\" />\r\n\r\nThe diffuse roughness models are heavily dependent on the light direction and view direction and are therefore difficult to handle with a prefiltered IBL. I came up with two methods for approximating roughness with prefiltered IBL's. The first, if we prefiltered using CDF, we generate a dominant light direction to use in the BRDF calculations. It works reasonably well.\r\n\r\n**Prefiltered IBL with CDF:**\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16253/merge#MXACV7#9\r\n<img width=\"883\" alt=\"image\" src=\"https://github.com/user-attachments/assets/b4c8383b-30be-4505-a09c-3bc5d6ee4cc3\" />\r\n\r\nThe second approach, if you don't use CDF, is by approximating roughness by bending the surface normal towards the camera to add some of the retro-reflective behaviour that you get with EON. Because of this, you'll notice that Burley and EON are identical and the shadow terminator appears to move as diffuse roughness increases. In practice, however, this example uses an extreme IBL with a bright sunlight. With other IBL's, the effect tends to be more convincing.\r\n\r\n**Prefiltered IBL without CDF**\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16253/merge#MXACV7#10\r\n<img width=\"878\" alt=\"image\" src=\"https://github.com/user-attachments/assets/ffaa366c-6e9f-449a-8cbf-6364354e314f\" />\r\n\r\nThe default IBL lighting in Sandbox uses spherical harmonics so we need to approximate diffuse roughness with this as well. I'm using the same bent normal technique as with prefiltered IBL without CDF.\r\n\r\n**Spherical Harmonics IBL**\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16253/merge#MXACV7#11\r\n![image](https://github.com/user-attachments/assets/13543a47-62aa-4d26-a438-1a6031803027)\r\n",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/materialFlags.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGenerator.ts",
+                    "packages/dev/core/src/Rendering/iblCdfGeneratorSceneComponent.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/hdrIrradianceFiltering.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblDominantDirection.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrIrradianceFiltering.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblDominantDirection.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_materials_diffuse_roughness.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_materials_diffuse_roughness.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/iesprofile2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/normals.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-diffuse-roughness-prefiltered-ibl-with-cdf.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-diffuse-roughness-prefiltered-ibl.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-diffuse-roughness-realtime-ibl.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-diffuse-roughness-spherical-harmonics.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-diffuse-roughness.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadows.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16565",
+                "title": "BVH loader `loadAsserContainerAsync` support",
+                "description": "from #16540\r\n\r\nIn the current BVH loader, the skeleton will be added to the scene twice when load with `loadAssetContainerAsync`.\r\n\r\nTo solve this, I applied the same approach as the gltf loader's Skeleton creation method.\r\nhttps://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/loaders/src/glTF/2.0/glTFLoader.ts#L1378-L1381",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/loaders/src/BVH/bvhFileLoader.ts",
+                    "packages/dev/loaders/src/BVH/bvhLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16568",
+                "title": "gpuPicker optimization",
+                "description": "Some values (rtt size, dpr) were unnecesseraly recalculated in a loop in the `multiPickAsync` function. \r\n\r\nPR tested with:\r\n#XJKQOC#14\r\n#GAB1RS#63\r\n\r\nusing device pixel ratio values of 1,2 and 3.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16566",
+                "title": "Move back to old API till all use cases are clear",
+                "description": "The new change worked with standard http protocol, but is not back-compat with the file: protocol. In order to be 100% sure all use cases are covered, I am reverting the change for the time being.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16567",
+                "title": "Allow moving engines when using offline storage",
+                "description": "There are a few issues addressed here.\n\nThe first - this issue cannot be reproduced on the playground because of the `indexOf(\".babylon\")`. In this case any file hostes on our CDNs will be \"true\", as it has `.babylonjs.com` in the URL.\n\nThe second - when NOT in the playground, WebGPU loads images as array buffers whereas WebGL engine loads images as Blobs. This is the way they are stored in the DB. So when WebGPU is the first engine, the data is stored as array buffer. Now, when moving to WebGL2 engine, the data will be loaded as ArrayBuffer and not a Blob.\n\nThis PR adds 2 fallbacks - if the file loaded is a blob and array buffer is needed, it does that, and if the image is loaded and requires a Blob, it will create a blob if the data is an ArrayBuffer.\n\nSolving https://forum.babylonjs.com/t/switching-engines-vs-createobjecturl/58247?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Offline/database.ts",
+                    "packages/tools/babylonServer/src/sceneJs.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16553",
+                "title": "Pass \"allowCanvas\" into override serialize functions.",
+                "description": "Fixes a bug with instances of BabylonJS running in a \"Canvas-less\" environment crashing when trying to serialize buttons.\r\n\r\nRight now, when using the serialize() function in buttons, they ignore the \"allowCanvas\" parameter which was added in #15033 \r\n\r\nLink to BabylonJS Forum discussion: \r\nhttps://forum.babylonjs.com/t/skip-canvas-being-used-during-control-serialize/49302/13?u=jamessimo\r\n\r\n",
+                "author": {
+                    "name": "jamessimo",
+                    "url": "https://github.com/jamessimo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/button.ts",
+                    "packages/dev/gui/src/2D/controls/grid.ts",
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16563",
+                "title": "WebGPU: Port min/max redux shader to WGSL",
+                "description": "See https://forum.babylonjs.com/t/glslang-csp-issue/58177/11",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/minMaxReducer.ts",
+                    "packages/dev/core/src/ShadersWGSL/minmaxRedux.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16561",
+                "title": "Restore failing test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
