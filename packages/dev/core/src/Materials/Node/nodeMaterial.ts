@@ -2579,7 +2579,7 @@ export class NodeMaterial extends PushMaterial {
      * Awaits for all the material textures to be ready before resolving the returned promise.
      * @returns A promise that resolves when the textures are ready.
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public whenTexturesReadyAsync(): Promise<void[]> {
         // Ensures all textures are ready to render.
         const textureReadyPromises: Promise<void>[] = [];
@@ -2666,7 +2666,7 @@ export class NodeMaterial extends PushMaterial {
      * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene = EngineStore.LastCreatedScene!,
