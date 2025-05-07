@@ -91,13 +91,6 @@
     var environmentBrdfSampler: texture_2d<f32>;
 #endif
 
-#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-    var areaLightsLTC1SamplerSampler: sampler;
-    var areaLightsLTC1Sampler: texture_2d<f32>;
-    var areaLightsLTC2SamplerSampler: sampler;
-    var areaLightsLTC2Sampler: texture_2d<f32>;
-#endif
-
 
 // SUBSURFACE
 #ifdef SUBSURFACE
