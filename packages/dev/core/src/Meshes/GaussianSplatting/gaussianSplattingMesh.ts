@@ -1178,7 +1178,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public async loadFileAsync(url: string): Promise<void> {
         const plyBuffer = await Tools.LoadFileAsync(url, true);
-        const splatsData = await (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any);
+        const splatsData: IPLYConversionBuffers = await (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any);
         await this.updateDataAsync(splatsData.buffer, splatsData.sh);
     }
 
