@@ -4,8 +4,9 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutio
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeFlowGraphInteger } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 /**
  * Configuration for the wait all block.
  */
@@ -34,7 +35,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * Output connection: The number of remaining inputs to be activated.
      */
-    public remainingInputs: FlowGraphDataConnection<number>;
+    public remainingInputs: FlowGraphDataConnection<FlowGraphInteger>;
     /**
      * An array of input signals
      */
@@ -51,7 +52,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
 
         this.reset = this._registerSignalInput("reset");
         this.completed = this._registerSignalOutput("completed");
-        this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeNumber, this.config.inputSignalCount || 0);
+        this.remainingInputs = this.registerDataOutput("remainingInputs", RichTypeFlowGraphInteger, new FlowGraphInteger(this.config.inputSignalCount || 0));
         // The first inFlow is the default input signal all execution blocks have
         for (let i = 0; i < this.config.inputSignalCount; i++) {
             this.inFlows.push(this._registerSignalInput(`in_${i}`));
@@ -88,7 +89,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
                 activationState[index] = true;
             }
         }
-        this.remainingInputs.setValue(activationState.filter((v) => !v).length, context);
+        this.remainingInputs.setValue(new FlowGraphInteger(activationState.filter((v) => !v).length), context);
 
         context._setExecutionVariable(this, "activationState", activationState.slice());
 

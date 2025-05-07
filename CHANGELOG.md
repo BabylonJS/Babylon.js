@@ -1,5 +1,39 @@
 # Changelog
 
+## 8.6.2
+
+### Core
+
+- WebGPU: Make sure the depth texture is cleared with the right value at creation time - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16572](https://github.com/BabylonJS/Babylon.js/pull/16572))
+- Some fixes for glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16574](https://github.com/BabylonJS/Babylon.js/pull/16574))
+- Diffuse Roughness support - by [MiiBond](https://github.com/MiiBond) ([#16253](https://github.com/BabylonJS/Babylon.js/pull/16253))
+- gpuPicker optimization - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16568](https://github.com/BabylonJS/Babylon.js/pull/16568))
+- Move back to old API till all use cases are clear - by [RaananW](https://github.com/RaananW) ([#16566](https://github.com/BabylonJS/Babylon.js/pull/16566))
+- Allow moving engines when using offline storage - by [RaananW](https://github.com/RaananW) ([#16567](https://github.com/BabylonJS/Babylon.js/pull/16567))
+- WebGPU: Port min/max redux shader to WGSL - by [Popov72](https://github.com/Popov72) ([#16563](https://github.com/BabylonJS/Babylon.js/pull/16563))
+
+### GUI
+
+- Pass "allowCanvas" into override serialize functions. - by [jamessimo](https://github.com/jamessimo) ([#16553](https://github.com/BabylonJS/Babylon.js/pull/16553))
+
+### Inspector
+
+- Diffuse Roughness support - by [MiiBond](https://github.com/MiiBond) ([#16253](https://github.com/BabylonJS/Babylon.js/pull/16253))
+
+### Loaders
+
+- Some fixes for glTF interactivity - by [RaananW](https://github.com/RaananW) ([#16574](https://github.com/BabylonJS/Babylon.js/pull/16574))
+- Diffuse Roughness support - by [MiiBond](https://github.com/MiiBond) ([#16253](https://github.com/BabylonJS/Babylon.js/pull/16253))
+- BVH loader `loadAsserContainerAsync` support - by [noname0310](https://github.com/noname0310) ([#16565](https://github.com/BabylonJS/Babylon.js/pull/16565))
+
+### Node Editor
+
+- NME Preview window does not pop out correctly - by [RaananW](https://github.com/RaananW) ([#16571](https://github.com/BabylonJS/Babylon.js/pull/16571))
+
+### Serializers
+
+- Diffuse Roughness support - by [MiiBond](https://github.com/MiiBond) ([#16253](https://github.com/BabylonJS/Babylon.js/pull/16253))
+
 ## 8.6.1
 
 ## 8.6.0
