@@ -207,22 +207,22 @@ const rules = {
                 "@typescript-eslint/no-this-alias": "error",
                 "no-restricted-syntax": [
                     "error",
-                    // {
-                    //     selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
-                    //     message: "Function ending in 'Async' must be declared async",
-                    // },
-                    // {
-                    //     selector: "MethodDefinition[value.async=false][key.name=/Async$/]",
-                    //     message: "Method ending in 'Async' must be declared async",
-                    // },
-                    // {
-                    //     selector: "Property[value.type=/FunctionExpression$/][value.async=false][key.name=/Async$/]",
-                    //     message: "Function ending in 'Async' must be declared async",
-                    // },
-                    // {
-                    //     selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=false][id.name=/Async$/]",
-                    //     message: "Function ending in 'Async' must be declared async",
-                    // },
+                    {
+                        selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "MethodDefinition[value.async=false][key.name=/Async$/]",
+                        message: "Method ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "Property[value.type=/FunctionExpression$/][value.async=false][key.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=false][id.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
                     {
                         selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=true][id.name!=/Async$/]",
                         message: "Async function name must end in 'Async'",

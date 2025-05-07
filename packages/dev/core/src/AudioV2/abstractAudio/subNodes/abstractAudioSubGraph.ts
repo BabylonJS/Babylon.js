@@ -61,7 +61,7 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public createAndAddSubNodeAsync(name: AudioSubNode): Promise<_AbstractAudioSubNode> {
         // eslint-disable-next-line github/no-then
         this._createSubNodePromises[name] ||= this._createSubNode(name).then((node) => {

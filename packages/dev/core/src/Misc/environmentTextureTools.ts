@@ -554,7 +554,7 @@ export function CreateIrradianceImageDataArrayBufferViews(data: ArrayBufferView,
  * @param info defines the texture info retrieved through the GetEnvInfo method
  * @returns a promise
  */
-// eslint-disable-next-line @typescript-eslint/promise-function-async
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void[]> {
     info = normalizeEnvInfo(info);
 
@@ -966,7 +966,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 /**
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/promise-function-async
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function _UpdateRGBDAsync(
     internalTexture: InternalTexture,
     data: ArrayBufferView[][],

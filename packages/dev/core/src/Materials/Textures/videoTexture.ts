@@ -471,7 +471,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
         const video = scene.getEngine().createVideoElement(constraints);
 

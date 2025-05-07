@@ -155,7 +155,7 @@ export class DracoCompression {
      * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
      * @returns A promise that resolves with the decoded mesh data
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },

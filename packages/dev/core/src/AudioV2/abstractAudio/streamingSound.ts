@@ -68,7 +68,7 @@ export abstract class StreamingSound extends AbstractSound {
      * Preloads an instance of the sound.
      * @returns A promise that resolves when the instance is preloaded.
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public preloadInstanceAsync(): Promise<void> {
         const instance = this._createInstance();
 

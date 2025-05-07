@@ -543,7 +543,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      * @returns a promise that resolves with the created engine
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static CreateAsync(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}): Promise<WebGPUEngine> {
         const engine = new WebGPUEngine(canvas, options);
 
@@ -612,7 +612,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Load the glslang and tintWASM libraries and prepare them for use.
      * @returns a promise that resolves when the engine is ready to use the glslang and tintWASM
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public prepareGlslangAndTintAsync(): Promise<void> {
         if (!this._workingGlslangAndTintPromise) {
             this._workingGlslangAndTintPromise = new Promise<void>((resolve) => {
@@ -638,7 +638,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param twgslOptions Defines the Twgsl compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
         (this.uniqueId as number) = WebGPUEngine._InstanceId++;
         this._glslangOptions = glslangOptions;
@@ -814,7 +814,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _initGlslangAsync(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || {};
         glslangOptions = {

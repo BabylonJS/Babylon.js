@@ -126,7 +126,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     }
 
     /** @internal */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         this._disposeForMeshList();
 

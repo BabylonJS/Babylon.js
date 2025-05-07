@@ -353,7 +353,7 @@ export class NodeRenderGraph {
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
     }
@@ -758,7 +758,7 @@ export class NodeRenderGraph {
      * @param skipBuild defines whether to skip building the node render graph (default is true)
      * @returns a promise that will resolve to the new node render graph
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene,

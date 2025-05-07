@@ -308,7 +308,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 

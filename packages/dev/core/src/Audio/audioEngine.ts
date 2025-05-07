@@ -200,7 +200,7 @@ export class AudioEngine implements IAudioEngine {
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _resumeAudioContextAsync(): Promise<void> {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();

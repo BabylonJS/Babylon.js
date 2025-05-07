@@ -685,7 +685,7 @@ export class NodeGeometry {
      * @param skipBuild defines whether to build the node geometry
      * @returns a promise that will resolve to the new node geometry
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(snippetId: string, nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeGeometry.CreateDefault("blank"));
