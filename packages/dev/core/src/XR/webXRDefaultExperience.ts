@@ -249,10 +249,9 @@ export class WebXRDefaultExperience {
 
             if (!options.disableDefaultUI) {
                 // Create ui for entering/exiting xr
-                return await result.enterExitUI.setHelperAsync(result.baseExperience, result.renderTarget);
-            } else {
-                return;
+                await result.enterExitUI.setHelperAsync(result.baseExperience, result.renderTarget);
             }
+            return result;
         } catch (error) {
             Logger.Error("Error initializing XR");
             Logger.Error(error);
