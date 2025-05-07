@@ -1030,6 +1030,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             flows: {
+                reset: { name: "reset" },
                 "[segment]": { name: "in_$1" },
             },
         },
