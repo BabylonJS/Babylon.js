@@ -94,6 +94,11 @@ fn computeHemisphericPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> pr
 #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
+var areaLightsLTC1SamplerSampler: sampler;
+var areaLightsLTC1Sampler: texture_2d<f32>;
+var areaLightsLTC2SamplerSampler: sampler;
+var areaLightsLTC2Sampler: texture_2d<f32>;
+
 fn computeAreaPreLightingInfo(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightCenter:vec3f, halfWidth:vec3f,  halfHeight:vec3f, roughness:f32) -> preLightingInfo {
     var result: preLightingInfo;
 	var data: areaLightData = computeAreaLightSpecularDiffuseFresnel(ltc1, ltc1Sampler, ltc2, ltc2Sampler, viewDirectionW, vNormal, vPosition, lightCenter, halfWidth, halfHeight, roughness);

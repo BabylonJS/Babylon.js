@@ -96,6 +96,9 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
 #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
+uniform sampler2D areaLightsLTC1Sampler;
+uniform sampler2D areaLightsLTC2Sampler;
+
 preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness )
 {
 	preLightingInfo result;
