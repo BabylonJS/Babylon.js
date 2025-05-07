@@ -936,9 +936,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 const cases = gltfBlock.configuration.cases.value;
                 const onlyIntegers = cases.every((caseValue) => {
                     // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
-                    return typeof caseValue === "number" && /^\d+$/.test(caseValue.toString());
+                    return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
                 });
                 if (!onlyIntegers) {
+                    Logger.Warn("Switch cases should be integers. Using empty array instead.");
                     gltfBlock.configuration.cases.value = [] as number[];
                     return { valid: true };
                 }
@@ -989,6 +990,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 loopBody: { name: "executionFlow" },
             },
         },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
+            const serializedObject = serializedObjects[0];
+            serializedObject.config ||= {};
+            serializedObject.config.incrementIndexWhenLoopDone = true;
+            return serializedObjects;
+        },
     },
     "flow/doN": {
         blocks: [FlowGraphBlockNames.DoN],
@@ -1030,6 +1037,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             flows: {
+                reset: { name: "reset" },
                 "[segment]": { name: "in_$1" },
             },
         },

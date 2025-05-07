@@ -1030,6 +1030,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
+
+        this.beginFrame();
+        this._startMainRenderPass(true, null, true, false);
+        this._endCurrentRenderPass();
+        this.endFrame();
+        this._frameId--; // We don't want to count the frame as a real frame, because it was only used to initialize the depth texture
     }
 
     /**
