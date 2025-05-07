@@ -1,4 +1,4 @@
-import type { WeaklyTypedAspectDefinition, WeaklyTypedServiceDefinition } from "../modularity/serviceCatalog";
+import type { WeaklyTypedServiceDefinition } from "../modularity/serviceCatalog";
 
 export type ExtensionMetadata = {
     /**
@@ -37,7 +37,6 @@ export type ExtensionMetadata = {
     readonly peerDependencies?: Readonly<Record<string, string>>;
 };
 
-type AspectDefinitions = readonly WeaklyTypedAspectDefinition[];
 type ServiceDefinitions = readonly WeaklyTypedServiceDefinition[];
 
 export type ExtensionModule = {
@@ -45,11 +44,6 @@ export type ExtensionModule = {
      * The default export of the module (e.g. export default).
      */
     default: {
-        /**
-         * Any new aspects that are introduced by the extension.
-         */
-        aspectDefinitions?: AspectDefinitions;
-
         /**
          * The services that are included with the extension.
          */
@@ -60,7 +54,7 @@ export type ExtensionModule = {
 /**
  * Represents a query to fetch subset ranges of extension metadata from a feed.
  */
-export interface ExtensionMetadataQuery {
+export interface IExtensionMetadataQuery {
     /**
      * The total number of extensions that satisfy the query.
      */
@@ -78,7 +72,7 @@ export interface ExtensionMetadataQuery {
 /**
  * Represents a feed/source of extensions.
  */
-export interface ExtensionFeed {
+export interface IExtensionFeed {
     /**
      * The name of the feed.
      */
@@ -89,7 +83,7 @@ export interface ExtensionFeed {
      * @param filter The filter to apply to the query.
      * @returns A promise that resolves to the extension metadata query.
      */
-    queryExtensionsAsync(filter?: string): Promise<ExtensionMetadataQuery>;
+    queryExtensionsAsync(filter?: string): Promise<IExtensionMetadataQuery>;
 
     /**
      * Fetches the metadata for a specific extension.

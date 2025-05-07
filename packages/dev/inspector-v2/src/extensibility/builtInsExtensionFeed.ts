@@ -1,4 +1,4 @@
-import type { ExtensionFeed, ExtensionMetadata, ExtensionMetadataQuery, ExtensionModule } from "./extensionFeed";
+import type { IExtensionFeed, ExtensionMetadata, IExtensionMetadataQuery, ExtensionModule } from "./extensionFeed";
 
 // This file contains "built in" extensions. They are optional and installed/uninstalled by the user, but they are
 // well-known at build time and the extension is "downloaded" by simply doing a dynamic import. This is different
@@ -15,10 +15,10 @@ const creationToolsExtensionMetadata = {
 
 const extensions: readonly ExtensionMetadata[] = [creationToolsExtensionMetadata];
 
-export class BuiltInsExtensionFeed implements ExtensionFeed {
+export class BuiltInsExtensionFeed implements IExtensionFeed {
     public readonly name = "Built-ins";
 
-    public async queryExtensionsAsync(filter?: string): Promise<ExtensionMetadataQuery> {
+    public async queryExtensionsAsync(filter?: string): Promise<IExtensionMetadataQuery> {
         const filteredExtensions = filter ? extensions.filter((extension) => extension.name.includes(filter)) : extensions;
         return {
             totalCount: filteredExtensions.length,

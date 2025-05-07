@@ -6,27 +6,27 @@ import type { IDisposable } from "core/index";
  * @param constructor The class to create a factory function for.
  * @returns A factory function that creates an instance of the class.
  */
-export function ConstructorFactory<Produces, Consumes extends Service<ContractIdentity>[], Class extends { new (...dependencies: Consumes): Produces }>(constructor: Class) {
+export function ConstructorFactory<Produces, Consumes extends IService<ContractIdentity>[], Class extends { new (...dependencies: Consumes): Produces }>(constructor: Class) {
     return (...dependencies: Consumes) => new constructor(...dependencies);
 }
 
 export type ContractIdentity = symbol;
 
 // This allows us to map from a service contract back to a contract identity.
-const contract = Symbol();
+const Contract = Symbol();
 /**
  * This interface must be implemented by all service contracts.
  */
-export interface Service<ServiceContractIdentity extends ContractIdentity> {
+export interface IService<ServiceContractIdentity extends ContractIdentity> {
     /**
      * @internal
      */
-    readonly [contract]?: ServiceContractIdentity;
+    readonly [Contract]?: ServiceContractIdentity;
 }
 
-type ExtractContractIdentity<ServiceContract extends Service<ContractIdentity>> = ServiceContract extends Service<infer ContractIdentity> ? ContractIdentity : never;
+type ExtractContractIdentity<ServiceContract extends IService<ContractIdentity>> = ServiceContract extends IService<infer ContractIdentity> ? ContractIdentity : never;
 
-type ExtractContractIdentities<ServiceContracts extends Service<ContractIdentity>[]> = {
+type ExtractContractIdentities<ServiceContracts extends IService<ContractIdentity>[]> = {
     [Index in keyof ServiceContracts]: ExtractContractIdentity<ServiceContracts[Index]>;
 };
 
@@ -39,23 +39,18 @@ type MaybePromise<T> = T | Promise<T>;
  * Consumed services are passed as arguments to the factory function.
  * The returned value must implement all produced services.
  */
-export type ServiceFactory<Produces extends Service<ContractIdentity>[], Consumes extends Service<ContractIdentity>[]> = (
+export type ServiceFactory<Produces extends IService<ContractIdentity>[], Consumes extends IService<ContractIdentity>[]> = (
     ...dependencies: [...Consumes, abortSignal?: AbortSignal]
 ) => MaybePromise<Produces extends [] ? Partial<IDisposable> | void : Partial<IDisposable> & UnionToIntersection<Produces[number]>>;
 
 /**
  * Defines a service, which is a logical unit that consumes other services (dependencies), and optionally produces services that can be consumed by other services (dependents).
  */
-export type ServiceDefinition<Produces extends Service<ContractIdentity>[] = [], Consumes extends Service<ContractIdentity>[] = []> = {
+export type ServiceDefinition<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []> = {
     /**
      * A human readable name for the service to help with debugging.
      */
     friendlyName: string;
-
-    /**
-     * The list of tags in which this service is associated with.
-     */
-    tags?: string[];
 
     /**
      * A function that instantiates the service.

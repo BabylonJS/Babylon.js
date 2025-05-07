@@ -2,26 +2,27 @@
 import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
+import type { ISceneContext } from "./services/sceneContext";
+import type { IShellService } from "./services/shellService";
 
 import { makeStyles } from "@fluentui/react-components";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
-import { InspectorAspect } from "./aspects/inspectorAspect";
-import { MakeModularTool } from "./modularTool";
-import { SceneContext } from "./services/sceneContext";
-import { DiagosticServiceDefinitions } from "./services";
-import { ShellService } from "./services/shellService";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
+import { MakeModularTool } from "./modularTool";
+import { DiagosticServiceDefinitions } from "./services";
+import { SceneContextIdentity } from "./services/sceneContext";
+import { ShellServiceIdentity } from "./services/shellService";
 
-let currentInspectorToken: Nullable<IDisposable> = null;
+let CurrentInspectorToken: Nullable<IDisposable> = null;
 
-type InspectorV2Options = Pick<ModularToolOptions, "defaultAspect" | "additionalAspects" | "serviceDefinitions" | "isThemeable"> & {
+type InspectorV2Options = Pick<ModularToolOptions, "serviceDefinitions" | "isThemeable"> & {
     isExtensible?: boolean;
 };
 
 export function IsInspectorVisible(): boolean {
-    return currentInspectorToken != null;
+    return CurrentInspectorToken != null;
 }
 
 export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions & InspectorV2Options>) {
@@ -84,9 +85,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         canvasContainerChildren.forEach((child) => parentElement.appendChild(child));
     });
 
-    const canvasInjectorServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+    const canvasInjectorServiceDefinition: ServiceDefinition<[], [IShellService]> = {
         friendlyName: "Canvas Injector",
-        consumes: [ShellService],
+        consumes: [ShellServiceIdentity],
         factory: (shellService) => {
             const useStyles = makeStyles({
                 canvasContainer: {
@@ -121,9 +122,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         },
     };
 
-    const sceneContextServiceDefinition: ServiceDefinition<[SceneContext], []> = {
+    const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
         friendlyName: "Inspector Scene Context",
-        produces: [SceneContext],
+        produces: [SceneContextIdentity],
         factory: () => {
             return {
                 currentScene: scene,
@@ -143,8 +144,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
     const modularTool = MakeModularTool({
         containerElement: parentElement,
-        defaultAspect: options.defaultAspect ?? InspectorAspect,
-        additionalAspects: options.additionalAspects ?? [],
         serviceDefinitions: [canvasInjectorServiceDefinition, sceneContextServiceDefinition, ...DiagosticServiceDefinitions, ...(options.serviceDefinitions ?? [])],
         isThemeable: options.isThemeable ?? true,
         extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
@@ -152,7 +151,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     });
     disposeActions.push(() => modularTool.dispose());
 
-    currentInspectorToken = {
+    CurrentInspectorToken = {
         dispose: () => {
             disposeActions.reverse().forEach((dispose) => dispose());
             if (options.handleResize) {
@@ -163,8 +162,8 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 }
 
 export function HideInspector() {
-    currentInspectorToken?.dispose();
-    currentInspectorToken = null;
+    CurrentInspectorToken?.dispose();
+    CurrentInspectorToken = null;
 }
 
 export class Inspector {

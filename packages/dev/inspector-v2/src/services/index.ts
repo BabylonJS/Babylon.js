@@ -1,4 +1,4 @@
-export { ShellService } from "./shellService";
+export { ShellServiceIdentity as ShellService } from "./shellService";
 import { SceneExplorerServiceDefinition } from "./panes/sceneExplorerService";
 import { SceneExplorerPropertyBindingServiceDefinition } from "./sceneExplorerPropertyBindingService";
 import { PropertiesServiceDefinitions } from "./panes/properties";

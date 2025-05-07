@@ -3,7 +3,9 @@ import type { Node, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
-import type { Service, ServiceDefinition } from "../../modularity/serviceDefinition";
+import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
+import type { ISceneContext } from "../sceneContext";
+import type { IShellService } from "../shellService";
 
 import { Button, FlatTree, FlatTreeItem, makeStyles, Text, tokens, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
@@ -19,16 +21,16 @@ import { Observable } from "core/Misc/observable";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useObservableState } from "../../hooks/observableHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
-import { SceneContext } from "../sceneContext";
-import { ShellService } from "../shellService";
+import { SceneContextIdentity } from "../sceneContext";
+import { ShellServiceIdentity } from "../shellService";
 
-export const SceneExplorerService = Symbol("SceneExplorer");
-export interface SceneExplorerService extends Service<typeof SceneExplorerService> {
+export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
+export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
     readonly selectedEntity: Nullable<Node | Material | BaseTexture>;
     readonly onSelectedEntityChanged: Observable<void>;
 }
 
-function getNodeDepth(node: Node): number {
+function GetNodeDepth(node: Node): number {
     let depth = 0;
     for (let parent = node.parent; parent; parent = parent.parent) {
         depth++;
@@ -38,6 +40,7 @@ function getNodeDepth(node: Node): number {
 
 type TreeItemData = "Nodes" | "Materials" | "Textures" | Node | Material | BaseTexture;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
@@ -57,11 +60,10 @@ const useStyles = makeStyles({
 //     selector: { style: { display: "none" } },
 // } as const satisfies TreeItemLayoutProps;
 
-export const SceneExplorerServiceDefinition: ServiceDefinition<[SceneExplorerService], [SceneContext, ShellService]> = {
+export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerService], [ISceneContext, IShellService]> = {
     friendlyName: "Scene Explorer",
-    tags: ["diagnostics"],
-    produces: [SceneExplorerService],
-    consumes: [SceneContext, ShellService],
+    produces: [SceneExplorerServiceIdentity],
+    consumes: [SceneContextIdentity, ShellServiceIdentity],
     factory: (sceneContext, shellService) => {
         let selectedEntityState: Nullable<Node | Material | BaseTexture> = null;
         const selectedEntityObservable = new Observable<void>();
@@ -309,7 +311,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[SceneExplorerSer
                                             value={item.uniqueId}
                                             itemType={item.getChildren().length > 0 ? "branch" : "leaf"}
                                             parentValue={item.parent ? item.parent.uniqueId : "Nodes"}
-                                            aria-level={getNodeDepth(item) + 2}
+                                            aria-level={GetNodeDepth(item) + 2}
                                             aria-setsize={1}
                                             aria-posinset={1}
                                             onClick={onItemClick}

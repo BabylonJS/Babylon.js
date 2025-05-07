@@ -1,14 +1,14 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
-import type { AspectRegistry, ServiceRegistry } from "../modularity/serviceCatalog";
-import type { ExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
+import type { IServiceRegistry } from "../modularity/serviceCatalog";
+import type { IExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
 
 import { Assert } from "../misc/assert";
 
 /**
  * Represents a loaded extension.
  */
-export interface Extension {
+export interface IExtension {
     /**
      * The metadata for the extension.
      */
@@ -32,22 +32,22 @@ export interface Extension {
     /**
      * Installs the extension.
      */
-    install(): Promise<void>;
+    installAsync(): Promise<void>;
 
     /**
      * Uninstalls the extension.
      */
-    uninstall(): Promise<void>;
+    uninstallAsync(): Promise<void>;
 
     /**
      * Enables the extension.
      */
-    enable(): Promise<void>;
+    enableAsync(): Promise<void>;
 
     /**
      * Disables the extension.
      */
-    disable(): Promise<void>;
+    disableAsync(): Promise<void>;
 
     // TODO: Handle updating.
     // readonly isUpdateAvailable: Promise<boolean>; // installed version is saved locally as part of the metadata (local storage), use this to determine if there is an upgrade. Or auto-upgrade in the background with a service worker?
@@ -63,7 +63,7 @@ export interface Extension {
 
 type InstalledExtension = {
     metadata: ExtensionMetadata;
-    feed: ExtensionFeed;
+    feed: IExtensionFeed;
     isStateChanging: boolean;
     isEnabled: boolean;
     dependents: Set<ExtensionMetadata>;
@@ -71,21 +71,21 @@ type InstalledExtension = {
     registrationToken?: IDisposable;
 };
 
-const installedExtensionsKey = "Babylon/Extensions/InstalledExtensions";
+const InstalledExtensionsKey = "Babylon/Extensions/InstalledExtensions";
 
-const extensionInstalledKeyPrefix = "Babylon/Extensions/IsExtensionInstalled";
-function getExtensionInstalledKey(name: string): string {
-    return `${extensionInstalledKeyPrefix}/${name}`;
+const ExtensionInstalledKeyPrefix = "Babylon/Extensions/IsExtensionInstalled";
+function GetExtensionInstalledKey(name: string): string {
+    return `${ExtensionInstalledKeyPrefix}/${name}`;
 }
 
-function getExtensionEnabledKey(name: string): string {
+function GetExtensionEnabledKey(name: string): string {
     return `Babylon/Extensions/IsExtensionEnabled/${name}`;
 }
 
 /**
  * Represents a query for loaded extensions.
  */
-export interface ExtensionQuery {
+export interface IExtensionQuery {
     /**
      * The total number of extensions that satisfy the query.
      */
@@ -97,10 +97,10 @@ export interface ExtensionQuery {
      * @param count The number of extensions to fetch.
      * @returns A promise that resolves to the extensions.
      */
-    getExtensionsAsync(index: number, count: number): Promise<Extension[]>;
+    getExtensionsAsync(index: number, count: number): Promise<IExtension[]>;
 }
 
-function getExtensionIdentity(feed: string, name: string) {
+function GetExtensionIdentity(feed: string, name: string) {
     return `${feed}|${name}`;
 }
 
@@ -113,9 +113,9 @@ export class ExtensionManager implements IDisposable {
     private readonly _stateChangedHandlers = new Map<string, Set<() => void>>();
 
     private constructor(
-        private readonly _serviceRegistry: AspectRegistry & ServiceRegistry,
+        private readonly _serviceRegistry: IServiceRegistry,
         private readonly _sharedDependencies: Map<string, unknown>,
-        private readonly _feeds: readonly ExtensionFeed[]
+        private readonly _feeds: readonly IExtensionFeed[]
     ) {}
 
     /**
@@ -126,13 +126,13 @@ export class ExtensionManager implements IDisposable {
      * @param feeds The extension feeds to include.
      * @returns A promise that resolves to the new instance of the ExtensionManager.
      */
-    public static async CreateAsync(serviceRegistry: AspectRegistry & ServiceRegistry, externalDependencies: Map<string, unknown> = new Map(), feeds: readonly ExtensionFeed[]) {
+    public static async CreateAsync(serviceRegistry: IServiceRegistry, externalDependencies: Map<string, unknown> = new Map(), feeds: readonly IExtensionFeed[]) {
         const extensionManager = new ExtensionManager(serviceRegistry, externalDependencies, feeds);
 
         // Rehydrate installed extensions.
-        const installedExtensionNames = JSON.parse(localStorage.getItem(installedExtensionsKey) ?? "[]") as string[];
+        const installedExtensionNames = JSON.parse(localStorage.getItem(InstalledExtensionsKey) ?? "[]") as string[];
         for (const installedExtensionName of installedExtensionNames) {
-            const installedExtensionRaw = localStorage.getItem(getExtensionInstalledKey(installedExtensionName));
+            const installedExtensionRaw = localStorage.getItem(GetExtensionInstalledKey(installedExtensionName));
             if (installedExtensionRaw) {
                 const installedExtensionData = JSON.parse(installedExtensionRaw) as {
                     feed: string;
@@ -157,8 +157,8 @@ export class ExtensionManager implements IDisposable {
 
         // Load installed and enabled extensions.
         for (const extension of extensionManager._installedExtensions.values()) {
-            if (localStorage.getItem(getExtensionEnabledKey(getExtensionIdentity(extension.feed.name, extension.metadata.name))) === String(true)) {
-                await extensionManager._enable(extension.metadata, false);
+            if (localStorage.getItem(GetExtensionEnabledKey(GetExtensionIdentity(extension.feed.name, extension.metadata.name))) === String(true)) {
+                await extensionManager._enableAsync(extension.metadata, false);
             }
         }
 
@@ -180,7 +180,7 @@ export class ExtensionManager implements IDisposable {
      * @param installedOnly Whether to only include installed extensions.
      * @returns A promise that resolves to the extension query.
      */
-    public async queryExtensionsAsync(filter = "", feeds: string[] = this.feedNames, installedOnly = false): Promise<ExtensionQuery> {
+    public async queryExtensionsAsync(filter = "", feeds: string[] = this.feedNames, installedOnly = false): Promise<IExtensionQuery> {
         if (installedOnly) {
             const installedExtensions = Array.from(this._installedExtensions.values()).filter((installedExtension) => feeds.includes(installedExtension.feed.name));
             return {
@@ -199,7 +199,7 @@ export class ExtensionManager implements IDisposable {
         return {
             totalCount,
             getExtensionsAsync: async (index, count) => {
-                const extensions = new Array<Extension>();
+                const extensions = new Array<IExtension>();
                 let remaining = count;
 
                 for (const query of queries) {
@@ -228,13 +228,13 @@ export class ExtensionManager implements IDisposable {
      */
     public dispose() {
         for (const installedExtension of this._installedExtensions.values()) {
-            this._disable(installedExtension.metadata, false, false);
+            this._disableAsync(installedExtension.metadata, false, false);
         }
 
         this._stateChangedHandlers.clear();
     }
 
-    private async _install(metadata: ExtensionMetadata, feed: ExtensionFeed, isNestedStateChange: boolean): Promise<InstalledExtension> {
+    private async _installAsync(metadata: ExtensionMetadata, feed: IExtensionFeed, isNestedStateChange: boolean): Promise<InstalledExtension> {
         let installedExtension = this._installedExtensions.get(metadata.name);
 
         if (!installedExtension) {
@@ -259,7 +259,7 @@ export class ExtensionManager implements IDisposable {
 
                             const metadata = matches[0];
                             if (metadata) {
-                                const dependency = await this._install(metadata, feed, false);
+                                const dependency = await this._installAsync(metadata, feed, false);
                                 dependency.dependents.add(metadata);
                             }
                         }
@@ -271,19 +271,19 @@ export class ExtensionManager implements IDisposable {
 
                 // Mark the extension as being installed.
                 localStorage.setItem(
-                    getExtensionInstalledKey(getExtensionIdentity(feed.name, metadata.name)),
+                    GetExtensionInstalledKey(GetExtensionIdentity(feed.name, metadata.name)),
                     JSON.stringify({
                         feed: feed.name,
                         metadata,
                     })
                 );
                 localStorage.setItem(
-                    installedExtensionsKey,
-                    JSON.stringify(Array.from(this._installedExtensions.values()).map((extension) => getExtensionIdentity(extension.feed.name, extension.metadata.name)))
+                    InstalledExtensionsKey,
+                    JSON.stringify(Array.from(this._installedExtensions.values()).map((extension) => GetExtensionIdentity(extension.feed.name, extension.metadata.name)))
                 );
 
                 // Enable the extension.
-                await this._enable(metadata, true);
+                await this._enableAsync(metadata, true);
             } catch (error) {
                 this._installedExtensions.delete(metadata.name);
                 throw error;
@@ -295,7 +295,7 @@ export class ExtensionManager implements IDisposable {
         return installedExtension;
     }
 
-    private async _uninstall(metadata: ExtensionMetadata, isNestedStateChange: boolean): Promise<void> {
+    private async _uninstallAsync(metadata: ExtensionMetadata, isNestedStateChange: boolean): Promise<void> {
         const installedExtension = this._installedExtensions.get(metadata.name);
         if (installedExtension && (isNestedStateChange || !installedExtension.isStateChanging)) {
             try {
@@ -303,11 +303,11 @@ export class ExtensionManager implements IDisposable {
 
                 // Inspect dependents for other extensions that need to be uninstalled first.
                 for (const dependent of installedExtension.dependents) {
-                    await this._uninstall(dependent, false);
+                    await this._uninstallAsync(dependent, false);
                 }
 
                 // Disable the extension.
-                await this._disable(metadata, true, true);
+                await this._disableAsync(metadata, true, true);
 
                 // Remove the extension from in memory.
                 this._installedExtensions.delete(metadata.name);
@@ -323,8 +323,8 @@ export class ExtensionManager implements IDisposable {
                 }
 
                 // Mark the extension as being uninstalled.
-                localStorage.removeItem(getExtensionInstalledKey(getExtensionIdentity(installedExtension.feed.name, metadata.name)));
-                localStorage.setItem(installedExtensionsKey, JSON.stringify(Array.from(this._installedExtensions.keys())));
+                localStorage.removeItem(GetExtensionInstalledKey(GetExtensionIdentity(installedExtension.feed.name, metadata.name)));
+                localStorage.setItem(InstalledExtensionsKey, JSON.stringify(Array.from(this._installedExtensions.keys())));
 
                 // Remove the extension from the client.
                 await installedExtension.feed.removeExtensionFromClient(metadata.name, metadata.version);
@@ -334,7 +334,7 @@ export class ExtensionManager implements IDisposable {
         }
     }
 
-    private async _enable(metadata: ExtensionMetadata, isNestedStateChange: boolean): Promise<void> {
+    private async _enableAsync(metadata: ExtensionMetadata, isNestedStateChange: boolean): Promise<void> {
         const installedExtension = this._installedExtensions.get(metadata.name);
         if (installedExtension && !installedExtension.isEnabled && (isNestedStateChange || !installedExtension.isStateChanging)) {
             try {
@@ -345,7 +345,7 @@ export class ExtensionManager implements IDisposable {
                     for (const name of Object.keys(metadata.peerDependencies)) {
                         const dependency = this._installedExtensions.get(name);
                         if (dependency) {
-                            await this._enable(dependency.metadata, false);
+                            await this._enableAsync(dependency.metadata, false);
                         }
                     }
                 }
@@ -357,16 +357,11 @@ export class ExtensionManager implements IDisposable {
 
                 Assert(installedExtension.extensionModule);
 
-                // Register the AspectDefinitions.
-                const aspectRegistrationTokens = installedExtension.extensionModule.default.aspectDefinitions?.map((aspectDefinition) =>
-                    this._serviceRegistry.registerAspect(aspectDefinition)
-                );
-
                 // Register the ServiceDefinitions.
                 //const serviceRegistrationTokens: IDisposable[] = [];
                 let servicesRegistrationToken: Nullable<IDisposable> = null;
                 if (installedExtension.extensionModule.default.serviceDefinitions) {
-                    servicesRegistrationToken = await this._serviceRegistry.registerServices(...installedExtension.extensionModule.default.serviceDefinitions);
+                    servicesRegistrationToken = await this._serviceRegistry.registerServicesAsync(...installedExtension.extensionModule.default.serviceDefinitions);
                 }
 
                 // Store the shared dependencies.
@@ -377,12 +372,11 @@ export class ExtensionManager implements IDisposable {
                     dispose: () => {
                         this._sharedDependencies.delete(metadata.name);
                         servicesRegistrationToken?.dispose();
-                        aspectRegistrationTokens?.reverse().forEach((aspectRegistrationToken) => aspectRegistrationToken.dispose());
                     },
                 };
 
                 // Mark the extension as being enabled
-                localStorage.setItem(getExtensionEnabledKey(getExtensionIdentity(installedExtension.feed.name, metadata.name)), true.toString());
+                localStorage.setItem(GetExtensionEnabledKey(GetExtensionIdentity(installedExtension.feed.name, metadata.name)), true.toString());
                 installedExtension.isEnabled = true;
             } finally {
                 !isNestedStateChange && (installedExtension.isStateChanging = false);
@@ -390,7 +384,7 @@ export class ExtensionManager implements IDisposable {
         }
     }
 
-    private async _disable(metadata: ExtensionMetadata, isNestedStateChange: boolean, permanent: boolean): Promise<void> {
+    private async _disableAsync(metadata: ExtensionMetadata, isNestedStateChange: boolean, permanent: boolean): Promise<void> {
         const installedExtension = this._installedExtensions.get(metadata.name);
         if (installedExtension?.isEnabled && (isNestedStateChange || !installedExtension.isStateChanging)) {
             try {
@@ -398,13 +392,13 @@ export class ExtensionManager implements IDisposable {
 
                 // Inspect dependents for other extensions that need to be disabled first.
                 for (const dependent of installedExtension.dependents) {
-                    await this._disable(dependent, false, permanent);
+                    await this._disableAsync(dependent, false, permanent);
                 }
 
                 // Mark the extension as being disabled.
                 installedExtension.isEnabled = false;
                 if (permanent) {
-                    localStorage.removeItem(getExtensionEnabledKey(getExtensionIdentity(installedExtension.feed.name, metadata.name)));
+                    localStorage.removeItem(GetExtensionEnabledKey(GetExtensionIdentity(installedExtension.feed.name, metadata.name)));
                 }
 
                 // Unregister the service registrations.
@@ -433,7 +427,7 @@ export class ExtensionManager implements IDisposable {
         };
     }
 
-    private _createExtension(metadata: ExtensionMetadata, feed: ExtensionFeed): Extension {
+    private _createExtension(metadata: ExtensionMetadata, feed: IExtensionFeed): IExtension {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const extensionManager = this;
         return {
@@ -447,17 +441,17 @@ export class ExtensionManager implements IDisposable {
             get isEnabled() {
                 return extensionManager._installedExtensions.get(metadata.name)?.isEnabled ?? false;
             },
-            install: async () => {
-                await extensionManager._install(metadata, feed, false);
+            installAsync: async () => {
+                await extensionManager._installAsync(metadata, feed, false);
             },
-            uninstall: () => extensionManager._uninstall(metadata, false),
-            enable: () => extensionManager._enable(metadata, false),
-            disable: () => extensionManager._disable(metadata, false, true),
+            uninstallAsync: () => extensionManager._uninstallAsync(metadata, false),
+            enableAsync: () => extensionManager._enableAsync(metadata, false),
+            disableAsync: () => extensionManager._disableAsync(metadata, false, true),
             addStateChangedHandler: (handler: () => void) => extensionManager._addStateChangedHandler(metadata, handler),
         };
     }
 
-    private _createInstalledExtension(metadata: ExtensionMetadata, feed: ExtensionFeed): InstalledExtension {
+    private _createInstalledExtension(metadata: ExtensionMetadata, feed: IExtensionFeed): InstalledExtension {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const extensionManager = this;
         let isStateChanging = false;

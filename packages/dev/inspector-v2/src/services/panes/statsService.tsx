@@ -1,13 +1,13 @@
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
+import type { IShellService } from "../shellService";
 
 import { DataBarHorizontalRegular } from "@fluentui/react-icons";
 
-import { ShellService } from "../shellService";
+import { ShellServiceIdentity } from "../shellService";
 
-export const StatsServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+export const StatsServiceDefinition: ServiceDefinition<[], [IShellService]> = {
     friendlyName: "Stats",
-    tags: ["diagnostics"],
-    consumes: [ShellService],
+    consumes: [ShellServiceIdentity],
     factory: (shellService) => {
         const registration = shellService.addToRightPane({
             key: "Stats",

@@ -1,13 +1,13 @@
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
+import type { IShellService } from "../shellService";
 
 import { WrenchRegular } from "@fluentui/react-icons";
 
-import { ShellService } from "../shellService";
+import { ShellServiceIdentity } from "../shellService";
 
-export const ToolsServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+export const ToolsServiceDefinition: ServiceDefinition<[], [IShellService]> = {
     friendlyName: "Tools",
-    tags: ["diagnostics"],
-    consumes: [ShellService],
+    consumes: [ShellServiceIdentity],
     factory: (shellService) => {
         const registration = shellService.addToRightPane({
             key: "Tools",

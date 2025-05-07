@@ -1,37 +1,39 @@
+import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
-import type { SelectTabEvent, SelectTabData } from "@fluentui/react-components";
-import type { Extension } from "../extensibility/extensionManager";
+import type { IExtension } from "../extensibility/extensionManager";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { IShellService } from "./shellService";
 
-import { memo, useCallback, useEffect, useState } from "react";
 import {
-    Dialog,
-    DialogTrigger,
+    Accordion,
+    AccordionHeader,
+    AccordionItem,
+    AccordionPanel,
     Button,
-    DialogSurface,
+    Dialog,
     DialogBody,
-    DialogTitle,
-    TabList,
-    Tab,
     DialogContent,
+    DialogSurface,
+    DialogTitle,
+    DialogTrigger,
+    Divider,
     makeStyles,
     shorthands,
-    tokens,
-    Accordion,
-    AccordionItem,
-    AccordionHeader,
-    AccordionPanel,
-    Divider,
-    Text,
     Spinner,
+    Tab,
+    TabList,
+    Text,
+    tokens,
     Tooltip,
 } from "@fluentui/react-components";
 import { AppsAddInRegular, DismissRegular } from "@fluentui/react-icons";
+import { memo, useCallback, useEffect, useState } from "react";
+import { TeachingMoment } from "../components/teachingMoment";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
-import { ShellService } from "./shellService";
-import { TeachingMoment } from "../components/teachingMoment";
+import { ShellServiceIdentity } from "./shellService";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     extensionButton: {},
     extensionsDialogSurface: {
@@ -89,9 +91,10 @@ const useStyles = makeStyles({
     },
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useTeachingMoment = MakePopoverTeachingMoment("Extensions");
 
-const ExtensionDetails: FunctionComponent<{ extension: Extension }> = memo((props) => {
+const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((props) => {
     const classes = useStyles();
 
     const [canInstall, setCanInstall] = useState(false);
@@ -116,10 +119,10 @@ const ExtensionDetails: FunctionComponent<{ extension: Extension }> = memo((prop
         return stateChangedHandlerRegistration.dispose;
     }, [props.extension]);
 
-    const install = useCallback(() => props.extension.install(), [props.extension]);
-    const uninstall = useCallback(() => props.extension.uninstall(), [props.extension]);
-    const enable = useCallback(() => props.extension.enable(), [props.extension]);
-    const disable = useCallback(() => props.extension.disable(), [props.extension]);
+    const install = useCallback(() => props.extension.installAsync(), [props.extension]);
+    const uninstall = useCallback(() => props.extension.uninstallAsync(), [props.extension]);
+    const enable = useCallback(() => props.extension.enableAsync(), [props.extension]);
+    const disable = useCallback(() => props.extension.disableAsync(), [props.extension]);
 
     return (
         <>
@@ -164,9 +167,9 @@ const ExtensionDetails: FunctionComponent<{ extension: Extension }> = memo((prop
 
 type TabValue = "available" | "installed";
 
-export const ExtensionListServiceDefinition: ServiceDefinition<[], [ShellService]> = {
+export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellService]> = {
     friendlyName: "ExtensionList",
-    consumes: [ShellService],
+    consumes: [ShellServiceIdentity],
     factory: (shellService) => {
         const registration = shellService.addToTopBar({
             key: "ExtensionList",
@@ -178,10 +181,10 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [ShellService
 
                 const [selectedTab, setSelectedTab] = useState<TabValue>("available");
                 const extensionManager = useExtensionManager();
-                const [extensions, setExtensions] = useState<Extension[]>([]);
+                const [extensions, setExtensions] = useState<IExtension[]>([]);
 
                 useEffect(() => {
-                    const populateExtensions = async () => {
+                    const populateExtensionsAsync = async () => {
                         // TODO: Use https://www.npmjs.com/package/react-window to virtualize the extension list
                         // https://codesandbox.io/p/sandbox/x70ly749rq?file=%2Fsrc%2FExampleWrapper.js
                         const query = await extensionManager.queryExtensionsAsync(undefined, undefined, selectedTab === "installed");
@@ -190,7 +193,7 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [ShellService
                     };
 
                     // TODO: handle errors
-                    populateExtensions();
+                    populateExtensionsAsync();
                 }, [selectedTab]);
 
                 const teachingMoment = useTeachingMoment();

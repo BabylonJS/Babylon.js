@@ -1,11 +1,13 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { IPropertiesService } from "./propertiesService";
 
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Text, tokens } from "@fluentui/react-components";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BooleanProperty } from "../../../components/booleanProperty";
-import { PropertiesService } from "./propertiesService";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
@@ -25,10 +27,9 @@ const useStyles = makeStyles({
     },
 });
 
-export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [PropertiesService]> = {
+export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Mesh Properties",
-    tags: ["diagnostics"],
-    consumes: [PropertiesService],
+    consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
         const registration = propertiesService.addEntityType(
             (entity) => entity instanceof AbstractMesh,

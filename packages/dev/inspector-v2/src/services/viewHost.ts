@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
-import type { Service } from "../modularity/serviceDefinition";
+import type { IService } from "../modularity/serviceDefinition";
 
-export const ViewHost = Symbol("ViewHost");
-export interface ViewHost extends Service<typeof ViewHost> {
+export const ViewHostIdentity = Symbol("ViewHost");
+export interface IViewHost extends IService<typeof ViewHostIdentity> {
     mainView: ComponentType | undefined;
 }

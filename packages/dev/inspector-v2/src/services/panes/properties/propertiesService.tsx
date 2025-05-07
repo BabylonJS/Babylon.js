@@ -1,7 +1,8 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
 
-import type { Service, ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { IShellService } from "../../shellService";
 
 import { makeStyles } from "@fluentui/react-components";
 import { DocumentTextRegular } from "@fluentui/react-icons";
@@ -10,14 +11,15 @@ import { useMemo, type ComponentType } from "react";
 import { Observable } from "core/Misc/observable";
 import { useObservableCollection, useObservableState } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
-import { ShellService } from "../../shellService";
+import { ShellServiceIdentity } from "../../shellService";
 
-export const PropertiesService = Symbol("PropertiesService");
-export interface PropertiesService extends Service<typeof PropertiesService> {
+export const PropertiesServiceIdentity = Symbol("PropertiesService");
+export interface IPropertiesService extends IService<typeof PropertiesServiceIdentity> {
     addEntityType<T>(predicate: (entity: unknown) => entity is T, component: ComponentType<{ entity: T }>): IDisposable;
     boundEntity: Nullable<unknown>;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
@@ -28,11 +30,10 @@ const useStyles = makeStyles({
     },
 });
 
-export const PropertiesServiceDefinition: ServiceDefinition<[PropertiesService], [ShellService]> = {
+export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService], [IShellService]> = {
     friendlyName: "Properties Editor",
-    tags: ["diagnostics"],
-    produces: [PropertiesService],
-    consumes: [ShellService],
+    produces: [PropertiesServiceIdentity],
+    consumes: [ShellServiceIdentity],
     factory: (shellService) => {
         const entityTypesCollection = new ObservableCollection<{ predicate: (entity: unknown) => boolean; component: ComponentType<{ entity: unknown }> }>();
         let boundEntityState: Nullable<unknown> = null;
@@ -78,6 +79,6 @@ export const PropertiesServiceDefinition: ServiceDefinition<[PropertiesService],
                 }
             },
             dispose: () => registration.dispose(),
-        } satisfies PropertiesService & IDisposable;
+        } satisfies IPropertiesService & IDisposable;
     },
 };

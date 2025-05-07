@@ -1,12 +1,13 @@
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { IPropertiesService } from "./panes/properties/propertiesService";
+import type { ISceneExplorerService } from "./panes/sceneExplorerService";
 
-import { SceneExplorerService } from "./panes/sceneExplorerService";
-import { PropertiesService } from "./panes/properties/propertiesService";
+import { PropertiesServiceIdentity } from "./panes/properties/propertiesService";
+import { SceneExplorerServiceIdentity } from "./panes/sceneExplorerService";
 
-export const SceneExplorerPropertyBindingServiceDefinition: ServiceDefinition<[], [SceneExplorerService, PropertiesService]> = {
+export const SceneExplorerPropertyBindingServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, IPropertiesService]> = {
     friendlyName: "Scene Explorer Property Binding",
-    tags: ["diagnostics"],
-    consumes: [SceneExplorerService, PropertiesService],
+    consumes: [SceneExplorerServiceIdentity, PropertiesServiceIdentity],
     factory: (sceneExplorerService, propertiesService) => {
         const observer = sceneExplorerService.onSelectedEntityChanged.add(() => {
             propertiesService.boundEntity = sceneExplorerService.selectedEntity;

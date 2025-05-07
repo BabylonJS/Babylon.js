@@ -1,12 +1,15 @@
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { ISceneContext } from "./sceneContext";
+import type { IShellService } from "./shellService";
 
 import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Button } from "@fluentui/react-components";
-import { ShellService } from "./shellService";
+import { ShellServiceIdentity } from "./shellService";
 
 import { FormNewRegular } from "@fluentui/react-icons";
-import { SceneContext } from "./sceneContext";
+import { SceneContextIdentity } from "./sceneContext";
 import { useObservableState } from "../hooks/observableHooks";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",
@@ -15,10 +18,9 @@ const useStyles = makeStyles({
     },
 });
 
-export const CreationToolsServiceDefinition: ServiceDefinition<[], [ShellService, SceneContext]> = {
+export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext]> = {
     friendlyName: "Creation Tools",
-    tags: ["scene"],
-    consumes: [ShellService, SceneContext],
+    consumes: [ShellServiceIdentity, SceneContextIdentity],
     factory: (shellService, sceneContext) => {
         const registration = shellService.addToLeftPane({
             key: "Create",

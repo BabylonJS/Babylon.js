@@ -1,33 +1,29 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Nullable } from "core/index";
+import type { IDisposable } from "core/index";
 
 import type { ComponentType, FunctionComponent } from "react";
-import type { ExtensionFeed } from "./extensibility/extensionFeed";
-import type { Extension } from "./extensibility/extensionManager";
-import type { AspectRegistry, ServiceRegistry, WeaklyTypedAspectDefinition, WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
+import type { IExtensionFeed } from "./extensibility/extensionFeed";
+import type { IExtension } from "./extensibility/extensionManager";
+import type { WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
 import type { ShellServiceOptions } from "./services/shellService";
+import type { IViewHost } from "./services/viewHost";
 
 import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
-import { Observable } from "core/Misc/observable";
 import { useTernaryDarkMode } from "usehooks-ts";
-import { AspectContext } from "./contexts/aspectContext";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
-import { ObservableCollection } from "./misc/observableCollection";
 import { ServiceCatalog } from "./modularity/serviceCatalog";
-import { AspectSelectorServiceDefinition } from "./services/aspectSelectorService";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { ViewHost } from "./services/viewHost";
+import { ViewHostIdentity } from "./services/viewHost";
 import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
-const aspectSettingsKey = "Babylon/Settings/LastActiveAspect";
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     app: {
         colorScheme: "light dark",
@@ -48,12 +44,13 @@ const useStyles = makeStyles({
 // This custom hook is a helper that:
 // 1. Adds a ViewHost service with a getter/setter for the main view component.
 // 2. Provides the main view component as state (so as soon as the main view is set, the component can be rendered).
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function useViewHostBootstrapper() {
     const [mainViewComponentType, setMainViewComponentType] = useState<ComponentType>();
     const boostrapViewHost = useCallback((serviceCatalog: ServiceCatalog) => {
-        return serviceCatalog.registerService<[ViewHost], []>({
+        return serviceCatalog.registerService<[IViewHost], []>({
             friendlyName: "ViewHost",
-            produces: [ViewHost],
+            produces: [ViewHostIdentity],
             factory: () => {
                 return {
                     get mainView() {
@@ -79,16 +76,6 @@ export type ModularToolOptions = {
     containerElement: HTMLElement;
 
     /**
-     * The default aspect to be used when the tool is first opened.
-     */
-    defaultAspect: WeaklyTypedAspectDefinition;
-
-    /**
-     * Additional aspects to be registered with the tool.
-     */
-    additionalAspects?: readonly WeaklyTypedAspectDefinition[];
-
-    /**
      * The service definitions to be registered with the tool.
      */
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
@@ -101,19 +88,20 @@ export type ModularToolOptions = {
     /**
      * The extension feeds that provide optional extensions the user can install.
      */
-    extensionFeeds?: readonly ExtensionFeed[];
+    extensionFeeds?: readonly IExtensionFeed[];
 } & ShellServiceOptions;
 
 /**
  * Creates a modular tool with a base set of common tool services, including the toolbar/side pane basic UI layout.
+ * @param options The options for the tool.
+ * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { containerElement, defaultAspect, additionalAspects = [], serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
+    const { containerElement, serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
-        const [aspectContext, setAspectContext] = useState<AspectContext>();
         const { isDarkMode } = useTernaryDarkMode();
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
@@ -122,88 +110,25 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
         // This is the main async initialization.
         useEffect(() => {
-            const initializeExtensionManager = async () => {
-                const serviceCatalog = ServiceCatalog.CreateDynamic();
-
-                let currentAspectDefinition: Nullable<WeaklyTypedAspectDefinition> = null;
-                let currentContainer: Promise<Nullable<IDisposable>> = Promise.resolve(null);
-
-                const aspectContext = {
-                    get activeAspect() {
-                        return currentAspectDefinition ?? null;
-                    },
-                    activeAspectChanged: new Observable(),
-                    availableAspects: new ObservableCollection(),
-                } satisfies AspectContext;
-
-                let poppingState = false;
-
-                // The registry is used to configure aspects and services, and is passed to the extension manager.
-                const registry: AspectRegistry & ServiceRegistry = {
-                    registerAspect(aspectDefinition) {
-                        const availableAspectToken = aspectContext.availableAspects.add({
-                            identity: aspectDefinition.identity,
-                            friendlyName: aspectDefinition.friendlyName,
-                            activate: () => {
-                                if (currentAspectDefinition !== aspectDefinition) {
-                                    currentContainer = currentContainer.then((oldContainer) => {
-                                        oldContainer?.dispose();
-                                        const newContainer = serviceCatalog.createContainer(aspectDefinition.identity);
-                                        currentAspectDefinition = aspectDefinition;
-                                        localStorage.setItem(aspectSettingsKey, aspectDefinition.identity.toString());
-                                        if (!poppingState && aspectDefinition.identity.description) {
-                                            const queryParams = new URLSearchParams(window.location.search);
-                                            if (aspectDefinition.identity === aspectContext.availableAspects.items[0].identity) {
-                                                queryParams.delete("babylon.aspect");
-                                            } else {
-                                                queryParams.set("babylon.aspect", aspectDefinition.identity.description);
-                                            }
-                                            window.history.pushState({}, "", queryParams.size ? `?${queryParams.toString()}` : "");
-                                        }
-                                        aspectContext.activeAspectChanged.notifyObservers();
-                                        return newContainer;
-                                    });
-                                }
-                            },
-                        });
-
-                        const aspectRegistrationToken = serviceCatalog.registerAspect(aspectDefinition);
-                        return {
-                            dispose: () => {
-                                if (currentAspectDefinition === aspectDefinition) {
-                                    aspectContext.availableAspects.items[0].activate();
-                                }
-                                availableAspectToken.dispose();
-                                aspectRegistrationToken.dispose();
-                            },
-                        };
-                    },
-                    registerServices(...serviceDefinitions) {
-                        return serviceCatalog.registerServices(...serviceDefinitions);
-                    },
-                };
+            const initializeExtensionManagerAsync = async () => {
+                const serviceCatalog = new ServiceCatalog();
 
                 // Register a ViewHost service (where the main view can be displayed).
                 await bootstrapViewHost(serviceCatalog);
 
-                // Register configured aspects.
-                registry.registerAspect(defaultAspect);
-                additionalAspects.forEach((aspect) => registry.registerAspect(aspect));
-
                 // Register built in services.
                 {
-                    await registry.registerServices(MakeShellServiceDefinition(options));
-                    await registry.registerServices(AspectSelectorServiceDefinition);
+                    await serviceCatalog.registerServicesAsync(MakeShellServiceDefinition(options));
                     if (extensionFeeds.length > 0) {
-                        await registry.registerServices(ExtensionListServiceDefinition);
+                        await serviceCatalog.registerServicesAsync(ExtensionListServiceDefinition);
                     }
                     if (isThemeable) {
-                        await registry.registerServices(ThemeSelectorServiceDefinition);
+                        await serviceCatalog.registerServicesAsync(ThemeSelectorServiceDefinition);
                     }
                 }
 
                 // Register configured services.
-                await registry.registerServices(...serviceDefinitions);
+                await serviceCatalog.registerServicesAsync(...serviceDefinitions);
 
                 // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
                 // TODO: Try to replace this with import maps.
@@ -222,14 +147,14 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     // ["react/jsx-runtime", await import("react/jsx-runtime")],
                 ]);
 
-                // Create the extension manager, passing along the registry for runtime changes to the registered aspects and services.
-                const extensionManager = await ExtensionManager.CreateAsync(registry, externalDependencies, extensionFeeds);
+                // Create the extension manager, passing along the registry for runtime changes to the registered services.
+                const extensionManager = await ExtensionManager.CreateAsync(serviceCatalog, externalDependencies, extensionFeeds);
 
                 // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);
                 const requiredExtensions = queryParams.getAll("babylon.requiredExtension");
-                const uninstalledExtensions: Extension[] = [];
-                const disabledExtensions: Extension[] = [];
+                const uninstalledExtensions: IExtension[] = [];
+                const disabledExtensions: IExtension[] = [];
                 for (const requiredExtension of requiredExtensions) {
                     const query = await extensionManager.queryExtensionsAsync(requiredExtension);
                     const extensions = await query.getExtensionsAsync(0, query.totalCount);
@@ -250,50 +175,29 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     setRequiredExtensionsDeferred(deferred);
                     if (await deferred.promise) {
                         for (const extension of uninstalledExtensions) {
-                            await extension.install();
+                            await extension.installAsync();
                             disabledExtensions.push(extension);
                         }
 
                         for (const extension of disabledExtensions) {
-                            await extension.enable();
+                            await extension.enableAsync();
                         }
                     }
                 }
 
-                // Check if a non-default aspect is requested in the query params. If so, activate it, otherwise activate the default aspect.
-                let requestedAspect = queryParams.get("babylon.aspect");
-                if (requestedAspect) {
-                    requestedAspect = `Symbol(${requestedAspect})`;
-                } else {
-                    requestedAspect = localStorage.getItem(aspectSettingsKey);
-                }
-                (aspectContext.availableAspects.items.find((aspect) => aspect.identity.toString() === requestedAspect) ?? aspectContext.availableAspects.items[0]).activate();
-
-                // Respect the aspect on navigation (e.g. popping browser state).
-                const onPopState = () => {
-                    let requestedAspect = new URLSearchParams(window.location.search).get("babylon.aspect");
-                    if (requestedAspect) {
-                        requestedAspect = `Symbol(${requestedAspect})`;
-                        poppingState = true;
-                        aspectContext.availableAspects.items.find((aspect) => aspect.identity.toString() === requestedAspect)?.activate();
-                        poppingState = false;
-                    }
-                };
-
-                window.addEventListener("popstate", onPopState);
+                const serviceContainer = await serviceCatalog.createContainerAsync("ModularToolContainer");
 
                 // Set the contexts.
-                setAspectContext(aspectContext);
                 setExtensionManagerContext({ extensionManager });
 
                 return () => {
-                    window.removeEventListener("popstate", onPopState);
                     extensionManager.dispose();
+                    serviceContainer.dispose();
                     serviceCatalog.dispose();
                 };
             };
 
-            const disposePromise = initializeExtensionManager();
+            const disposePromise = initializeExtensionManagerAsync();
 
             return () => {
                 disposePromise.then((dispose) => dispose());
@@ -312,39 +216,38 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         // Show a spinner until a main view has been set.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const ContentComponentType: ComponentType = mainView ?? (() => <Spinner className={classes.spinner} />);
 
         return (
-            <AspectContext.Provider value={aspectContext}>
-                <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                    <FluentProvider className={classes.app} theme={isDarkMode ? DarkTheme : LightTheme}>
-                        <>
-                            <Dialog open={!!requiredExtensions} modalType="alert">
-                                <DialogSurface>
-                                    <DialogBody>
-                                        <DialogTitle>Required Extensions</DialogTitle>
-                                        <DialogContent>
-                                            Opening this URL requires the following extensions to be installed and enabled:
-                                            <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
-                                        </DialogContent>
-                                        <DialogActions>
-                                            <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
-                                                Install & Enable
-                                            </Button>
-                                            <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
-                                                No Thanks
-                                            </Button>
-                                        </DialogActions>
-                                    </DialogBody>
-                                </DialogSurface>
-                            </Dialog>
-                            <Suspense fallback={<Spinner className={classes.spinner} />}>
-                                <ContentComponentType />
-                            </Suspense>
-                        </>
-                    </FluentProvider>
-                </ExtensionManagerContext.Provider>
-            </AspectContext.Provider>
+            <ExtensionManagerContext.Provider value={extensionManagerContext}>
+                <FluentProvider className={classes.app} theme={isDarkMode ? DarkTheme : LightTheme}>
+                    <>
+                        <Dialog open={!!requiredExtensions} modalType="alert">
+                            <DialogSurface>
+                                <DialogBody>
+                                    <DialogTitle>Required Extensions</DialogTitle>
+                                    <DialogContent>
+                                        Opening this URL requires the following extensions to be installed and enabled:
+                                        <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
+                                            Install & Enable
+                                        </Button>
+                                        <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
+                                            No Thanks
+                                        </Button>
+                                    </DialogActions>
+                                </DialogBody>
+                            </DialogSurface>
+                        </Dialog>
+                        <Suspense fallback={<Spinner className={classes.spinner} />}>
+                            <ContentComponentType />
+                        </Suspense>
+                    </>
+                </FluentProvider>
+            </ExtensionManagerContext.Provider>
         );
     };
 

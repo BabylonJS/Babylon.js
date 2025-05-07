@@ -4,7 +4,8 @@ import type { IDisposable } from "core/index";
 import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { ComponentInfo } from "../modularity/componentInfo";
-import type { Service, ServiceDefinition } from "../modularity/serviceDefinition";
+import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
+import type { IViewHost } from "../services/viewHost";
 
 import { Button, Divider, makeStyles, shorthands, Tab, TabList, Text, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
@@ -14,13 +15,13 @@ import { TeachingMoment } from "../components/teachingMoment";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ObservableCollection } from "../misc/observableCollection";
-import { ViewHost } from "../services/viewHost";
+import { ViewHostIdentity } from "../services/viewHost";
 
 type BarComponentInfo = ComponentInfo & Readonly<{ alignment: "left" | "right"; displayName?: string; suppressTeachingMoment?: boolean }>;
 type PaneComponentInfo = Readonly<{ key: string; icon: ComponentType; content: ComponentType; order?: number; title?: string; suppressTeachingMoment?: boolean }>;
 
-export const ShellService = Symbol("ShellService");
-export interface ShellService extends Service<typeof ShellService> {
+export const ShellServiceIdentity = Symbol("ShellService");
+export interface IShellService extends IService<typeof ShellServiceIdentity> {
     addToTopBar(entry: BarComponentInfo): IDisposable;
     addToBottomBar(entry: BarComponentInfo): IDisposable;
     addToLeftPane(entry: PaneComponentInfo): IDisposable;
@@ -42,11 +43,11 @@ export function MakeShellServiceDefinition({
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
     toolBarMode = "full",
-}: ShellServiceOptions = {}): ServiceDefinition<[ShellService], [ViewHost]> {
+}: ShellServiceOptions = {}): ServiceDefinition<[IShellService], [IViewHost]> {
     return {
         friendlyName: "MainView",
-        produces: [ShellService],
-        consumes: [ViewHost],
+        produces: [ShellServiceIdentity],
+        consumes: [ViewHostIdentity],
         factory: (viewHost) => {
             const useStyles = makeStyles({
                 mainView: {
