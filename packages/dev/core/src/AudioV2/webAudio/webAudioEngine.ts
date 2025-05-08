@@ -212,6 +212,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public async createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource> {
+        let mediaStream: MediaStream;
+
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            throw new Error("Unable to access microphone: " + e);
+        }
+
+        return this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), options);
+    }
+
+    /** @internal */
     public async createSoundAsync(
         name: string,
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],

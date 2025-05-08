@@ -143,6 +143,15 @@ export abstract class AudioEngineV2 {
      * @returns A promise that resolves with the created main audio bus.
      */
     public abstract createMainBusAsync(name: string, options?: Partial<IMainAudioBusOptions>): Promise<MainAudioBus>;
+
+    /**
+     * Creates a new microphone sound source.
+     * @param name - The name of the sound.
+     * @param options - The options for the sound source.
+     * @returns A promise that resolves to the created sound source.
+     */
+    public abstract createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource>;
+
     /**
      * Creates a new static sound.
      * @param name - The name of the sound.
@@ -295,6 +304,18 @@ export function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOpti
 export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createMainBusAsync(name, options);
+}
+
+/**
+ * Creates a new microphone sound source.
+ * @param name - The name of the sound.
+ * @param options - The options for the sound source.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created sound source.
+ */
+export function CreateMicrophoneSoundSourceAsync(name: string, options: Partial<ISoundSourceOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AbstractSoundSource> {
+    engine = _GetAudioEngine(engine);
+    return engine.createMicrophoneSoundSourceAsync(name, options);
 }
 
 /**
