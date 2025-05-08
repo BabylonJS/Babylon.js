@@ -101,8 +101,7 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
             collider._getResponse(position, velocity, slideOnCollide);
             // Halt all movement at the first collision, if not slideOnCollide
-            if (!slideOnCollide)
-            {
+            if (!slideOnCollide) {
                 velocity.setAll(0);
             }
         }

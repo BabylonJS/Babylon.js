@@ -500,8 +500,7 @@ export class Collider {
     /**
      * @internal
      */
-    public _getResponse(pos: Vector3, vel: Vector3, slideOnCollide: boolean): void
-    {
+    public _getResponse(pos: Vector3, vel: Vector3, slideOnCollide: boolean): void {
         // Handle straight movement up to collision
 
         pos.addToRef(vel, this._destinationPoint);
