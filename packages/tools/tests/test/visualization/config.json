@@ -1078,6 +1078,18 @@
             "referenceImage": "glTFSerializerCameraRightHand.png"
         },
         {
+            "title": "GLTF Serializer camera rotation animation, left-handed",
+            "playgroundId": "#3A00GJ#26",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerCameraRotationAnimationLH.png"
+        },
+        {
+            "title": "GLTF Serializer camera rotation animation, right-handed",
+            "playgroundId": "#3A00GJ#26",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerCameraRotationAnimationRH.png"
+        },
+        {
             "title": "GLTF Serializer Rotation conversion, left-handed",
             "playgroundId": "#UK7FLI#1",
             "referenceImage": "glTFSerializerRotationConversionLH.png"
