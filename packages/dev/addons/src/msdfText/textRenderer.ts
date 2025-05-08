@@ -24,7 +24,8 @@ export interface INodeLike {
  * Class used to render text using MSDF (Multi-channel Signed Distance Field) technique
  * Thanks a lot to the work of Bhushan_Wagh and zb_sj for their amazing work on MSDF for Babylon.js
  * #6RLCWP#16
- * Star wasrs scroller: #6RLCWP#25
+ * Star wars scroller: #6RLCWP#29
+ * With metrics: #6RLCWP#35
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
