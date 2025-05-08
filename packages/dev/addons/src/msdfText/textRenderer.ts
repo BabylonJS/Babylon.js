@@ -140,10 +140,10 @@ export class TextRenderer implements IDisposable {
     /**
      * Add a paragraph of text to the renderer
      * @param text define the text to add
-     * @param worldMatrix define the world matrix to use for the paragraph (optional)
      * @param options define the options to use for the paragraph (optional)
+     * @param worldMatrix define the world matrix to use for the paragraph (optional)
      */
-    public addParagraph(text: string, worldMatrix?: Matrix, options?: Partial<ParagraphOptions>) {
+    public addParagraph(text: string, options?: Partial<ParagraphOptions>, worldMatrix?: Matrix) {
         const paragraph = new SdfTextParagraph(text, this._font, options);
 
         const fontScale = this._font.scale;
