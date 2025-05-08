@@ -10,7 +10,7 @@ import type { Nullable } from "core/types";
 import { SdfTextParagraph } from "./sdf/paragraph";
 import type { FontAsset } from "./fontAsset";
 import type { ParagraphOptions } from "./paragraphOptions";
-import { Matrix } from "core/Maths/math.vector";
+import { Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
 
 /**
@@ -51,6 +51,8 @@ export class TextRenderer implements IDisposable {
     private _localMatrix: Matrix = Matrix.Identity();
     private _finalMatrix: Matrix = Matrix.Identity();
     private _lineMatrix: Matrix = Matrix.Identity();
+    private _parentWorldMatrix: Matrix = Matrix.Identity();
+    private _storedTranslation = TmpVectors.Vector3[0];
 
     /**
      * Gets or sets the color of the text
@@ -68,6 +70,11 @@ export class TextRenderer implements IDisposable {
     public set parent(value: Nullable<INodeLike>) {
         this._parent = value;
     }
+
+    /**
+     * Gets or sets if the text is billboarded
+     */
+    public isBillboard = false;
 
     private constructor(engine: AbstractEngine, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
@@ -214,11 +221,25 @@ export class TextRenderer implements IDisposable {
         engine.enableEffect(drawWrapper);
 
         if (this._parent) {
-            effect.setMatrix("parentWorld", this._parent.getWorldMatrix());
+            this._parentWorldMatrix.copyFrom(this._parent.getWorldMatrix());
         } else {
-            effect.setMatrix("parentWorld", Matrix.IdentityReadOnly);
+            this._parentWorldMatrix.copyFrom(Matrix.IdentityReadOnly);
         }
 
+        if (this.isBillboard) {
+            this._parentWorldMatrix.getTranslationToRef(this._storedTranslation); // Save translation
+
+            // Cancel camera rotation
+            this._baseMatrix.copyFrom(viewMatrix);
+            this._baseMatrix.setTranslationFromFloats(0, 0, 0);
+            this._baseMatrix.invertToRef(this._finalMatrix);
+
+            this._parentWorldMatrix.setTranslationFromFloats(0, 0, 0);
+            this._parentWorldMatrix.multiplyToRef(this._finalMatrix, this._parentWorldMatrix);
+            this._parentWorldMatrix.setTranslation(this._storedTranslation);
+        }
+
+        effect.setMatrix("parentWorld", this._parentWorldMatrix);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
 
