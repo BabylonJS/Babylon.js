@@ -1,6 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AbstractSoundSource, ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "../abstractAudio/audioBus";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
@@ -235,6 +236,16 @@ export class _WebAudioEngine extends AudioEngineV2 {
         await soundBuffer._initAsync(source, options);
 
         return soundBuffer;
+    }
+
+    /** @internal */
+    public async createSoundSourceAsync(name: string, source: AudioNode, options: Partial<ISoundSourceOptions> = {}): Promise<AbstractSoundSource> {
+        const module = await import("./webAudioSoundSource");
+
+        const soundSource = new module._WebAudioSoundSource(name, source, this);
+        await soundSource._initAsync(options);
+
+        return soundSource;
     }
 
     /** @internal */
