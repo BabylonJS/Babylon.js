@@ -14,8 +14,8 @@ import type { ParagraphOptions } from "./paragraphOptions";
 
 /**
  * Class used to render text using MSDF (Multi-channel Signed Distance Field) technique
- * Thanks a lot to the work of @Bhushan_Wagh and @zb_sj for their amazing work on MSDF for Babylon.js
- * #6RLCWP#7
+ * Thanks a lot to the work of Bhushan_Wagh and zb_sj for their amazing work on MSDF for Babylon.js
+ * #6RLCWP#11
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
@@ -31,18 +31,22 @@ export class TextRenderer implements IDisposable {
     private _charMatrices = new Array<number>();
     private _charUvs = new Array<number>();
     private _isDirty = false;
+    private _baseLine = 0;
 
     // Cache
     private _scalingMatrix: Matrix = Matrix.Identity();
     private _translationMatrix: Matrix = Matrix.Identity();
     private _baseMatrix: Matrix = Matrix.Identity();
     private _scaledMatrix: Matrix = Matrix.Identity();
+    private _localMatrix: Matrix = Matrix.Identity();
     private _finalMatrix: Matrix = Matrix.Identity();
+    private _lineMatrix: Matrix = Matrix.Identity();
 
     private constructor(engine: AbstractEngine, capacity: number, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
         this._shaderLanguage = shaderLanguage;
         this._font = font;
+        this._baseLine = font._font.common.lineHeight * font.scale;
 
         this._useVAO = engine.getCaps().vertexArrayObject && !engine.disableVertexArrayObjects;
 
@@ -95,9 +99,10 @@ export class TextRenderer implements IDisposable {
     /**
      * Add a paragraph of text to the renderer
      * @param text define the text to add
-     * @param options define the optional options to use for the paragraph
+     * @param worldMatrix define the world matrix to use for the paragraph (optional)
+     * @param options define the options to use for the paragraph (optional)
      */
-    public addParagraph(text: string, options?: Partial<ParagraphOptions>) {
+    public addParagraph(text: string, worldMatrix?: Matrix, options?: Partial<ParagraphOptions>) {
         const paragraph = new SdfTextParagraph(text, this._font, options);
 
         const fontScale = this._font.scale;
@@ -124,7 +129,18 @@ export class TextRenderer implements IDisposable {
             Matrix.ScalingToRef(fontScale, fontScale, 1.0, this._scalingMatrix);
             Matrix.TranslationToRef(x * fontScale, y * fontScale, 0.0, this._translationMatrix);
             this._baseMatrix.multiplyToRef(this._scalingMatrix, this._scaledMatrix);
-            this._scaledMatrix.multiplyToRef(this._translationMatrix, this._finalMatrix);
+            this._scaledMatrix.multiplyToRef(this._translationMatrix, this._localMatrix);
+
+            let worldMatrixToUse = worldMatrix;
+
+            if (!worldMatrixToUse) {
+                const lineHeight = paragraph.lineHeight * this._font.scale;
+                const lineOffset = paragraph.lines.length * lineHeight;
+                Matrix.TranslationToRef(0, this._baseLine - lineOffset, 0, this._lineMatrix);
+                worldMatrixToUse = this._lineMatrix;
+            }
+
+            this._localMatrix.multiplyToRef(worldMatrixToUse, this._finalMatrix);
             this._finalMatrix.copyToArray(matrices, i * 16);
         });
 
@@ -132,6 +148,8 @@ export class TextRenderer implements IDisposable {
         this._charMatrices.push(...matrices);
 
         this._isDirty = true;
+
+        this._baseLine -= paragraph.lineHeight * this._font.scale * paragraph.lines.length;
     }
 
     /**
@@ -234,6 +252,7 @@ export class TextRenderer implements IDisposable {
         let fragment: string = "";
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
+            //TODO!
         } else {
             vertex = (await import("./webgl/vertex")).msdfVertexShader.shader;
             fragment = (await import("./webgl/fragment")).msdfFragmentShader.shader;
