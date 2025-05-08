@@ -12,7 +12,7 @@ import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
 /**
  * Options for creating a sound source.
  */
-export interface IAbstractSoundSourceOptions extends IAudioAnalyzerOptions, ISpatialAudioOptions, IStereoAudioOptions {
+export interface ISoundSourceOptions extends IAudioAnalyzerOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
      * The output bus for the sound source. Defaults to `null`.
      * - If not set or `null`, the sound source is automatically connected to the audio engine's default main bus.

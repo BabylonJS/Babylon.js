@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudio";
-import type { IAbstractSoundSourceOptions } from "../abstractAudio/abstractSoundSource";
+import type { ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import { AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
 import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
@@ -37,7 +37,7 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     }
 
     /** @internal */
-    public async _initAsync(options: Partial<IAbstractSoundSourceOptions>): Promise<void> {
+    public async _initAsync(options: Partial<ISoundSourceOptions>): Promise<void> {
         if (options.outBus) {
             this.outBus = options.outBus;
         } else {
