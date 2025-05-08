@@ -1,5 +1,4 @@
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import type { ThinParticleSystem } from "./thinParticleSystem";
 import type { Particle } from "../Particles/particle";
 import type { IVector3Like } from "../Maths/math.like";
 
@@ -7,10 +6,21 @@ const FlowVector = new Vector3(0, 0, 0);
 const ScaledFlowVector = new Vector3(0, 0, 0);
 const ScreenPos = new Vector3(0, 0, 0);
 
+/**
+ * Represents an object that can move or be influenced by FlowMap
+ */
 export interface IFlowable {
+    /**
+     * The direction vector indicating the flow or movement direction of the object.
+     */
     direction: Vector3;
+
+    /**
+     * The current position of the object in 3D space.
+     */
     position: Vector3;
 }
+
 /**
  * Class used to represent a particle flow map.
  * #5DM02T#7
@@ -73,8 +83,8 @@ export class FlowMap {
     }
 
     /** @internal */
-    public _processParticle(particle: Particle, system: ThinParticleSystem, strength = 1, matrix?: Matrix) {
-        this.processFlowable(particle, system._tempScaledUpdateSpeed * strength, matrix);
+    public _processParticle(particle: Particle, strength = 1, matrix?: Matrix) {
+        this.processFlowable(particle, strength, matrix);
     }
 
     /**
