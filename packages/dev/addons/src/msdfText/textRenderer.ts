@@ -14,6 +14,13 @@ import { Matrix } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
 
 /**
+ * Abstract Node class from Babylon.js
+ */
+export interface INodeLike {
+    getWorldMatrix(): Matrix;
+}
+
+/**
  * Class used to render text using MSDF (Multi-channel Signed Distance Field) technique
  * Thanks a lot to the work of Bhushan_Wagh and zb_sj for their amazing work on MSDF for Babylon.js
  * #6RLCWP#16
@@ -31,7 +38,7 @@ export class TextRenderer implements IDisposable {
     private _font: FontAsset;
     private _charMatrices = new Array<number>();
     private _charUvs = new Array<number>();
-    private _isDirty = false;
+    private _isDirty = true;
     private _baseLine = 0;
 
     // Cache
@@ -49,8 +56,20 @@ export class TextRenderer implements IDisposable {
      * Gets or sets the color of the text
      */
     public color = new Color4(1.0, 1.0, 1.0, 1.0);
+    private _parent: Nullable<INodeLike> = null;
 
-    private constructor(engine: AbstractEngine, capacity: number, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
+    /**
+     * Gets or sets the parent of the text renderer
+     */
+    public get parent(): Nullable<INodeLike> {
+        return this._parent;
+    }
+
+    public set parent(value: Nullable<INodeLike>) {
+        this._parent = value;
+    }
+
+    private constructor(engine: AbstractEngine, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
         this._shaderLanguage = shaderLanguage;
         this._font = font;
@@ -61,16 +80,30 @@ export class TextRenderer implements IDisposable {
         // Main vertex buffer
         const spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
         this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
+        this._vertexBuffers["offsets"] = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
 
         // Instances
-        this._worldBuffer = new Buffer(engine, new Float32Array(capacity * 16), true, 16);
-        this._vertexBuffers["offsets"] = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
+        this._resizeBuffers(128);
+    }
+
+    private _resizeBuffers(capacity: number) {
+        if (this._worldBuffer) {
+            this._worldBuffer.dispose();
+            this._worldBuffer = null;
+        }
+
+        if (this._uvBuffer) {
+            this._uvBuffer.dispose();
+            this._uvBuffer = null;
+        }
+
+        this._worldBuffer = new Buffer(this._engine, new Float32Array(capacity * 16), true, 16);
         this._vertexBuffers["world0"] = this._worldBuffer.createVertexBuffer("world0", 0, 4, 16, true);
         this._vertexBuffers["world1"] = this._worldBuffer.createVertexBuffer("world1", 4, 4, 16, true);
         this._vertexBuffers["world2"] = this._worldBuffer.createVertexBuffer("world2", 8, 4, 16, true);
         this._vertexBuffers["world3"] = this._worldBuffer.createVertexBuffer("world3", 12, 4, 16, true);
 
-        this._uvBuffer = new Buffer(engine, new Float32Array(capacity * 4), true, 4);
+        this._uvBuffer = new Buffer(this._engine, new Float32Array(capacity * 4), true, 4);
         this._vertexBuffers["uvs"] = this._uvBuffer.createVertexBuffer("uvs", 0, 4, 4, true);
     }
 
@@ -91,7 +124,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["view", "projection", "uColor", "unitRange", "texelSize"],
+            ["parentWorld", "view", "projection", "uColor", "unitRange", "texelSize"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -180,6 +213,12 @@ export class TextRenderer implements IDisposable {
         engine.setState(false);
         engine.enableEffect(drawWrapper);
 
+        if (this._parent) {
+            effect.setMatrix("parentWorld", this._parent.getWorldMatrix());
+        } else {
+            effect.setMatrix("parentWorld", Matrix.IdentityReadOnly);
+        }
+
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
 
@@ -193,9 +232,16 @@ export class TextRenderer implements IDisposable {
         effect.setFloat2("texelSize", 1.0 / textureWidth, 1.0 / textureHeight);
         effect.setDirectColor4("uColor", this.color);
 
+        const instanceCount = this._charMatrices.length / 16;
+
         // Need update?
         if (this._isDirty) {
             this._isDirty = false;
+
+            if (this._worldBuffer!.getBuffer()!.capacity / 4 < instanceCount * 16) {
+                this._resizeBuffers(instanceCount);
+            }
+
             this._worldBuffer!.update(this._charMatrices);
             this._uvBuffer!.update(this._charUvs);
         }
@@ -211,8 +257,6 @@ export class TextRenderer implements IDisposable {
         }
 
         engine.setAlphaMode(Constants.ALPHA_COMBINE);
-
-        const instanceCount = this._charMatrices.length / 16;
 
         engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
 
@@ -248,10 +292,9 @@ export class TextRenderer implements IDisposable {
      * Creates a new TextRenderer instance asynchronously
      * @param font define the font asset to use
      * @param engine define the engine to use
-     * @param capacity define the capacity of the text renderer (maximum number of characters)
      * @returns a promise that resolves to the created TextRenderer instance
      */
-    public static async CreateTextRendererAsync(font: FontAsset, engine: AbstractEngine, capacity: number) {
+    public static async CreateTextRendererAsync(font: FontAsset, engine: AbstractEngine) {
         if (!engine.getCaps().instancedArrays || !engine._features.supportSpriteInstancing) {
             throw new Error("Instanced arrays are required for MSDF text rendering.");
         }
@@ -267,7 +310,7 @@ export class TextRenderer implements IDisposable {
             fragment = (await import("./webgl/fragment")).msdfFragmentShader.shader;
         }
 
-        const textRenderer = new TextRenderer(engine, capacity, shaderLanguage, font);
+        const textRenderer = new TextRenderer(engine, shaderLanguage, font);
         textRenderer._setShaders(vertex, fragment);
 
         return textRenderer;
