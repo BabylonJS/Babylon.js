@@ -5,17 +5,18 @@ import { Constants } from "core/Engines/constants";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Matrix } from "core/Maths";
 import type { IDisposable } from "core/scene";
 import type { Nullable } from "core/types";
 import { SdfTextParagraph } from "./sdf/paragraph";
 import type { FontAsset } from "./fontAsset";
 import type { ParagraphOptions } from "./paragraphOptions";
+import { Matrix } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color";
 
 /**
  * Class used to render text using MSDF (Multi-channel Signed Distance Field) technique
  * Thanks a lot to the work of Bhushan_Wagh and zb_sj for their amazing work on MSDF for Babylon.js
- * #6RLCWP#11
+ * #6RLCWP#16
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
@@ -35,12 +36,19 @@ export class TextRenderer implements IDisposable {
 
     // Cache
     private _scalingMatrix: Matrix = Matrix.Identity();
+    private _fontScaleMatrix: Matrix = Matrix.Identity();
+    private _offsetMatrix: Matrix = Matrix.Identity();
     private _translationMatrix: Matrix = Matrix.Identity();
     private _baseMatrix: Matrix = Matrix.Identity();
     private _scaledMatrix: Matrix = Matrix.Identity();
     private _localMatrix: Matrix = Matrix.Identity();
     private _finalMatrix: Matrix = Matrix.Identity();
     private _lineMatrix: Matrix = Matrix.Identity();
+
+    /**
+     * Gets or sets the color of the text
+     */
+    public color = new Color4(1.0, 1.0, 1.0, 1.0);
 
     private constructor(engine: AbstractEngine, capacity: number, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
@@ -113,6 +121,18 @@ export class TextRenderer implements IDisposable {
         const charUvs = new Float32Array(glyphs.length * 4);
         const matrices = new Float32Array(glyphs.length * 16);
 
+        let worldMatrixToUse = worldMatrix;
+
+        if (!worldMatrixToUse) {
+            const lineHeight = paragraph.lineHeight * fontScale;
+            const lineOffset = (paragraph.lines.length * lineHeight) / 2;
+            Matrix.TranslationToRef(0, this._baseLine - lineOffset, 0, this._lineMatrix);
+            worldMatrixToUse = this._lineMatrix;
+        }
+
+        Matrix.ScalingToRef(fontScale, fontScale, 1.0, this._fontScaleMatrix);
+        Matrix.TranslationToRef(0.5, -0.5, 0, this._offsetMatrix);
+
         glyphs.forEach((g, i) => {
             charUvs[i * 4 + 0] = g.char.x / texWidth;
             charUvs[i * 4 + 1] = g.char.y / texHeight;
@@ -123,22 +143,11 @@ export class TextRenderer implements IDisposable {
             const y = -g.y;
 
             Matrix.ScalingToRef(g.char.width, g.char.height, 1.0, this._scalingMatrix);
-            Matrix.TranslationToRef(0.5, -0.5, 0, this._translationMatrix);
-            this._translationMatrix.multiplyToRef(this._scalingMatrix, this._baseMatrix);
+            this._offsetMatrix.multiplyToRef(this._scalingMatrix, this._baseMatrix);
 
-            Matrix.ScalingToRef(fontScale, fontScale, 1.0, this._scalingMatrix);
             Matrix.TranslationToRef(x * fontScale, y * fontScale, 0.0, this._translationMatrix);
-            this._baseMatrix.multiplyToRef(this._scalingMatrix, this._scaledMatrix);
+            this._baseMatrix.multiplyToRef(this._fontScaleMatrix, this._scaledMatrix);
             this._scaledMatrix.multiplyToRef(this._translationMatrix, this._localMatrix);
-
-            let worldMatrixToUse = worldMatrix;
-
-            if (!worldMatrixToUse) {
-                const lineHeight = paragraph.lineHeight * this._font.scale;
-                const lineOffset = paragraph.lines.length * lineHeight;
-                Matrix.TranslationToRef(0, this._baseLine - lineOffset, 0, this._lineMatrix);
-                worldMatrixToUse = this._lineMatrix;
-            }
 
             this._localMatrix.multiplyToRef(worldMatrixToUse, this._finalMatrix);
             this._finalMatrix.copyToArray(matrices, i * 16);
@@ -149,7 +158,7 @@ export class TextRenderer implements IDisposable {
 
         this._isDirty = true;
 
-        this._baseLine -= paragraph.lineHeight * this._font.scale * paragraph.lines.length;
+        this._baseLine -= paragraph.lineHeight * fontScale * paragraph.lines.length;
     }
 
     /**
@@ -182,7 +191,7 @@ export class TextRenderer implements IDisposable {
         effect.setTexture("fontAtlas", this._font.textures[0]);
         effect.setFloat2("unitRange", distanceRange / textureWidth, distanceRange / textureHeight);
         effect.setFloat2("texelSize", 1.0 / textureWidth, 1.0 / textureHeight);
-        effect.setFloat4("uColor", 1.0, 1.0, 1.0, 1.0);
+        effect.setDirectColor4("uColor", this.color);
 
         // Need update?
         if (this._isDirty) {
