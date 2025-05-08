@@ -24,6 +24,7 @@ export interface INodeLike {
  * Class used to render text using MSDF (Multi-channel Signed Distance Field) technique
  * Thanks a lot to the work of Bhushan_Wagh and zb_sj for their amazing work on MSDF for Babylon.js
  * #6RLCWP#16
+ * Star wasrs scroller: #6RLCWP#25
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
@@ -325,7 +326,8 @@ export class TextRenderer implements IDisposable {
         let fragment: string = "";
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
-            //TODO!
+            vertex = (await import("./webgpu/vertex")).msdfVertexShader.shader;
+            fragment = (await import("./webgpu/fragment")).msdfFragmentShader.shader;
         } else {
             vertex = (await import("./webgl/vertex")).msdfVertexShader.shader;
             fragment = (await import("./webgl/fragment")).msdfFragmentShader.shader;
