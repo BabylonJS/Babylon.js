@@ -167,8 +167,6 @@ export class TextRenderer implements IDisposable {
         const texWidth = this._font._font.common.scaleW;
         const texHeight = this._font._font.common.scaleH;
         const glyphs = paragraph.glyphs.filter((g) => g.char.page >= 0);
-        const charUvs = new Float32Array(glyphs.length * 4);
-        const matrices = new Float32Array(glyphs.length * 16);
 
         let worldMatrixToUse = worldMatrix;
 
@@ -182,11 +180,13 @@ export class TextRenderer implements IDisposable {
         Matrix.ScalingToRef(fontScale, fontScale, 1.0, this._fontScaleMatrix);
         Matrix.TranslationToRef(0.5, -0.5, 0, this._offsetMatrix);
 
+        const charsUvsBase = this._charUvs.length / 4;
+        const matricesBase = this._charMatrices.length / 16;
         glyphs.forEach((g, i) => {
-            charUvs[i * 4 + 0] = g.char.x / texWidth;
-            charUvs[i * 4 + 1] = g.char.y / texHeight;
-            charUvs[i * 4 + 2] = g.char.width / texWidth;
-            charUvs[i * 4 + 3] = g.char.height / texHeight;
+            this._charUvs[charsUvsBase + i * 4 + 0] = g.char.x / texWidth;
+            this._charUvs[charsUvsBase + i * 4 + 1] = g.char.y / texHeight;
+            this._charUvs[charsUvsBase + i * 4 + 2] = g.char.width / texWidth;
+            this._charUvs[charsUvsBase + i * 4 + 3] = g.char.height / texHeight;
 
             const x = g.x;
             const y = -g.y;
@@ -199,11 +199,8 @@ export class TextRenderer implements IDisposable {
             this._scaledMatrix.multiplyToRef(this._translationMatrix, this._localMatrix);
 
             this._localMatrix.multiplyToRef(worldMatrixToUse, this._finalMatrix);
-            this._finalMatrix.copyToArray(matrices, i * 16);
+            this._finalMatrix.copyToArray(this._charMatrices, matricesBase + i * 16);
         });
-
-        this._charUvs.push(...charUvs);
-        this._charMatrices.push(...matrices);
 
         this._isDirty = true;
 
