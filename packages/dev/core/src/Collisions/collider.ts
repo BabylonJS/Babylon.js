@@ -500,11 +500,20 @@ export class Collider {
     /**
      * @internal
      */
-    public _getResponse(pos: Vector3, vel: Vector3): void {
+    public _getResponse(pos: Vector3, vel: Vector3, slideOnCollide: boolean): void {
+        // Handle straight movement up to collision
+
         pos.addToRef(vel, this._destinationPoint);
         vel.scaleInPlace(this._nearestDistance / vel.length());
 
         this._basePoint.addToRef(vel, pos);
+
+        if (!slideOnCollide) {
+            return;
+        }
+
+        // Handle slide movement past collision
+
         pos.subtractToRef(this.intersectionPoint, this._slidePlaneNormal);
         this._slidePlaneNormal.normalize();
         this._slidePlaneNormal.scaleToRef(this._epsilon, this._displacementVector);
