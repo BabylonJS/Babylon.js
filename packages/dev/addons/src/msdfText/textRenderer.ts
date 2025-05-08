@@ -77,6 +77,13 @@ export class TextRenderer implements IDisposable {
      */
     public isBillboard = false;
 
+    /**
+     * Gets the number of characters in the text renderer
+     */
+    public get characterCount(): number {
+        return this._charMatrices.length / 16;
+    }
+
     private constructor(engine: AbstractEngine, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
         this._shaderLanguage = shaderLanguage;
