@@ -1,5 +1,16 @@
 # Changelog
 
+## 8.7.0
+
+### Core
+
+- Fixes Area Lights for NME - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#16577](https://github.com/BabylonJS/Babylon.js/pull/16577))
+- Small fix for waitAll in flow graph - by [RaananW](https://github.com/RaananW) ([#16576](https://github.com/BabylonJS/Babylon.js/pull/16576))
+
+### Loaders
+
+- Small fix for waitAll in flow graph - by [RaananW](https://github.com/RaananW) ([#16576](https://github.com/BabylonJS/Babylon.js/pull/16576))
+
 ## 8.6.2
 
 ### Core
