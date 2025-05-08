@@ -542,7 +542,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , uniforms.vTintColor
             , normalW
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            , vec3f(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+            , vec3f(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))
         #else
             , baseSpecularEnvironmentReflectance
         #endif
@@ -637,7 +637,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

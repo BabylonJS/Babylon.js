@@ -546,7 +546,7 @@ void main(void) {
             , vTintColor
             , normalW
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            , vec3(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+            , vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))
         #else
             , baseSpecularEnvironmentReflectance
         #endif
@@ -635,7 +635,7 @@ void main(void) {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

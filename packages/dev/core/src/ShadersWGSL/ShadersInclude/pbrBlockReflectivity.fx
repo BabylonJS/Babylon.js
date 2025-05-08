@@ -3,9 +3,10 @@ struct reflectivityOutParams
     microSurface: f32,
     roughness: f32,
     diffuseRoughness: f32,
-    colorReflectanceF0: vec3f,
     reflectanceF0: f32,
     reflectanceF90: vec3f,
+    colorReflectanceF0: vec3f,
+    colorReflectanceF90: vec3f,
 #ifdef METALLICWORKFLOW
     surfaceAlbedo: vec3f,
     metallic: f32,
@@ -119,6 +120,35 @@ fn reflectivityBlock(
         #else
             outParams.surfaceAlbedo = baseColor.rgb;
         #endif
+
+        // Compute non-coloured reflectance.
+        // reflectanceF0 is the non-coloured reflectance used for blending between the diffuse and specular components.
+        // It represents the total percentage of light reflected by the specular lobe at normal incidence.
+        // In glTF's material model, the F0 value is multiplied by the maximum component of the specular colour.
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            {
+                let reflectivityColor: vec3f = mix(surfaceReflectivityColor, baseColor.rgb, outParams.metallic);
+                outParams.reflectanceF0 = max(reflectivityColor.r, max(reflectivityColor.g, reflectivityColor.b));
+            }
+        #else
+            #if DIELECTRIC_SPECULAR_MODEL == DIELECTRIC_SPECULAR_MODEL_GLTF
+                let maxF0: f32 = max(surfaceReflectivityColor.r, max(surfaceReflectivityColor.g, surfaceReflectivityColor.b));
+                outParams.reflectanceF0 = mix(dielectricF0 * maxF0, 1.0f, outParams.metallic);
+            #else
+                outParams.reflectanceF0 = mix(dielectricF0, 1.0, outParams.metallic);
+            #endif
+        #endif
+
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            outParams.reflectanceF90 = vec3(specularWeight);
+            var f90Scale: f32 = 1.0f;
+        #else
+            // Scale the reflectanceF90 by the IOR for values less than 1.5.
+            // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
+            // and an IOR of 1.0 should result in no visible glancing specular.
+            var f90Scale: f32 = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
+            outParams.reflectanceF90 = vec3(mix(specularWeight * f90Scale, 1.0, outParams.metallic));
+        #endif
         
         // Compute the coloured F0 reflectance.
         // The coloured reflectance is the percentage of light reflected by the specular lobe at normal incidence.
@@ -128,27 +158,27 @@ fn reflectivityBlock(
         var metallicColorF0: vec3f = baseColor.rgb;
         outParams.colorReflectanceF0 = mix(dielectricColorF0, metallicColorF0, outParams.metallic);
 
-        // Compute non-coloured reflectance.
-        // reflectanceF0 is the non-coloured reflectance used for blending between the diffuse and specular components.
-        // It represents the total percentage of light reflected by the specular lobe at normal incidence.
-        // In glTF's material model, the F0 value is multiplied by the maximum component of the specular colour.
-        dielectricF0 *= max(surfaceReflectivityColor.r, max(surfaceReflectivityColor.g, surfaceReflectivityColor.b));
-        outParams.reflectanceF0 = mix(dielectricF0, 1.0, outParams.metallic);
-
-        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            surfaceReflectivityColor = mix(surfaceReflectivityColor, baseColor.rgb, outParams.metallic);
-            outParams.reflectanceF0 = max(surfaceReflectivityColor.r, max(surfaceReflectivityColor.g, surfaceReflectivityColor.b));
-        #endif
-
-        // Scale the reflectanceF90 by the IOR for values less than 1.5.
-        // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
-        // and an IOR of 1.0 should result in no visible glancing specular.
-        var f90Scale: f32 = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
-        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            outParams.reflectanceF90 = vec3f(specularWeight);
+        // Now, compute the coloured reflectance at glancing angles based on the specular model.
+        #if (DIELECTRIC_SPECULAR_MODEL == DIELECTRIC_SPECULAR_MODEL_OPENPBR)
+            // In OpenPBR, the F90 is coloured using the specular colour for dielectrics.
+            let dielectricColorF90: vec3f = surfaceReflectivityColor * vec3f(specularWeight * f90Scale);
         #else
-            outParams.reflectanceF90 = vec3f(mix(specularWeight * f90Scale, 1.0, outParams.metallic));
+            // In glTF, the F90 is white for dielectrics.
+            let dielectricColorF90: vec3f = vec3f(specularWeight * f90Scale);
         #endif
+        #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
+            // In OpenPBR, we use the "F82" model for conductors.
+            // We'll use the F90 value to hold the F82 tint which will be used in the computation later.
+            let conductorColorF90: vec3f = surfaceReflectivityColor;
+        #else
+            // In glTF, the F90 colour for metals is white.
+            #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                let conductorColorF90: vec3f = outParams.reflectanceF90;
+            #else
+                let conductorColorF90: vec3f = vec3f(1.0f);
+            #endif
+        #endif
+        outParams.colorReflectanceF90 = mix(dielectricColorF90, conductorColorF90, outParams.metallic);
     #else
         #ifdef REFLECTIVITY
             surfaceReflectivityColor *= surfaceMetallicOrReflectivityColorMap.rgb;
@@ -182,6 +212,11 @@ fn reflectivityBlock(
         // In glTF's material model, this is the F0 value calculated from the IOR and then multiplied by the maximum component of the specular colour.
         outParams.reflectanceF0 = max(surfaceReflectivityColor.r, max(surfaceReflectivityColor.g, surfaceReflectivityColor.b));
         outParams.reflectanceF90 = vec3f(1.0);
+        #if (DIELECTRIC_SPECULAR_MODEL == DIELECTRIC_SPECULAR_MODEL_OPENPBR)
+            outParams.colorReflectanceF90 = surfaceReflectivityColor;
+        #else
+            outParams.colorReflectanceF90 = vec3(1.0);
+        #endif
     #endif
 
 	// Adapt microSurface.
