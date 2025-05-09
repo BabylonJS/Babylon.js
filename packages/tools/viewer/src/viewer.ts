@@ -808,7 +808,6 @@ export class Viewer implements IDisposable {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
-    private readonly _shadowGroundScalingFactor = 4.0;
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
 
@@ -1632,8 +1631,9 @@ export class Viewer implements IDisposable {
             return;
         }
 
+        const groundFactor = 4;
         const radius = Vector3.FromArray(worldBounds.size).length();
-        const groundSize = this._shadowGroundScalingFactor * radius;
+        const groundSize = groundFactor * radius;
 
         const updateMaterial = () => {
             if (this._shadowState.high) {
@@ -1641,7 +1641,7 @@ export class Viewer implements IDisposable {
                 groundMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
                 groundMaterial?.setFloat("shadowOpacity", pipeline.shadowOpacity);
                 groundMaterial?.setTexture("shadowTexture", pipeline._getAccumulatedTexture());
-                const groundSize = this._shadowGroundScalingFactor * pipeline?.voxelGridSize;
+                const groundSize = groundFactor * pipeline?.voxelGridSize;
                 ground?.scaling.set(groundSize, groundSize, groundSize);
             }
         };
@@ -1790,27 +1790,33 @@ export class Viewer implements IDisposable {
 
         this._snapshotHelper.disableSnapshotRendering();
 
+        const size = 4096;
+        const positionFactor = 3;
+        const extendsFactor = 5;
+        const groundFactor = 20;
+        const useBlur = true;
+        const blur = 4;
+        const bias = -0.0001;
+        const normalBias = 0.000002;
+        const groundSize = radius * groundFactor;
+
+        const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
         let normal = this._shadowState.normal;
         if (!normal) {
-            // const light = new DirectionalLight("shadowMapLight", new Vector3(-x, -1, -z), this._scene);
-            const light = new SpotLight("spotLight", new Vector3(x * (radius * 2), radius * 2, z * (radius * 2)), new Vector3(-x, -1, -z), Math.PI / 5, 1, this._scene);
+            const light = new SpotLight("spotLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
 
-            const generator = new ShadowGenerator(1024, light);
-            generator.setDarkness(0.5);
+            const generator = new ShadowGenerator(size, light);
+            generator.setDarkness(0.8);
             generator.setTransparencyShadow(true);
             generator.usePercentageCloserFiltering = true;
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
-            generator.bias = -0.0001;
-            generator.normalBias = 0.000002;
-            generator.useContactHardeningShadow = false;
-            // generator.contactHardeningLightSizeUVRatio = 0.1;
-            // generator.contactHardeningLightSizeUVRatio = 0.0075;
+            generator.bias = bias;
+            generator.normalBias = normalBias;
             generator.useExponentialShadowMap = true;
-            generator.depthScale = 5;
-            generator.useBlurExponentialShadowMap = false;
-            generator.useKernelBlur = false;
-            generator.blurScale = 1;
-            generator.blurKernel = 32;
+            generator.useBlurCloseExponentialShadowMap = useBlur;
+            generator.useBlurExponentialShadowMap = useBlur;
+            generator.useKernelBlur = useBlur;
+            generator.blurKernel = blur;
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
@@ -1818,7 +1824,6 @@ export class Viewer implements IDisposable {
             }
 
             const shadowMaterial = new ShadowOnlyMaterial("shadowMapGroundMaterial", this._scene);
-            const groundSize = this._shadowGroundScalingFactor * radius;
 
             const ground = CreateDisc("shadowMapGround", { radius: groundSize, tessellation: 64 }, this._scene);
             ground.rotation.x = Math.PI / 2;
@@ -1842,18 +1847,16 @@ export class Viewer implements IDisposable {
             });
         }
 
-        normal.light.intensity = 100.0;
-        normal.light.position.set(x * radius * 1, radius * 1, z * radius * 1);
-        normal.light.shadowMinZ = 0.000000007;
-        normal.light.shadowMaxZ = radius * 1;
+        normal.light.position = position;
+
         if (normal.light instanceof DirectionalLight) {
             // manually set the extends to take into account animated meshes
             // arbitrary extend the value to let space for animated meshes
             normal.light.autoUpdateExtends = false;
-            normal.light.orthoLeft = -radius * 2;
-            normal.light.orthoRight = radius * 2;
-            normal.light.orthoTop = radius * 2;
-            normal.light.orthoBottom = -radius * 2;
+            normal.light.orthoLeft = -radius * extendsFactor;
+            normal.light.orthoRight = radius * extendsFactor;
+            normal.light.orthoTop = radius * extendsFactor;
+            normal.light.orthoBottom = -radius * extendsFactor;
         }
 
         for (const model of this._loadedModelsBacking) {
@@ -1865,7 +1868,6 @@ export class Viewer implements IDisposable {
         }
 
         normal.ground.position.y = worldBounds.extents.min[1];
-        const groundSize = this._shadowGroundScalingFactor * radius;
         normal.ground.scaling.set(groundSize, groundSize, groundSize);
 
         this._shadowState.high?.ground.setEnabled(false);
