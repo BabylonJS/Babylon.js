@@ -180,8 +180,8 @@ export class TextRenderer implements IDisposable {
         Matrix.ScalingToRef(fontScale, fontScale, 1.0, this._fontScaleMatrix);
         Matrix.TranslationToRef(0.5, -0.5, 0, this._offsetMatrix);
 
-        const charsUvsBase = this._charUvs.length / 4;
-        const matricesBase = this._charMatrices.length / 16;
+        const charsUvsBase = this._charUvs.length;
+        const matricesBase = this._charMatrices.length;
         glyphs.forEach((g, i) => {
             this._charUvs[charsUvsBase + i * 4 + 0] = g.char.x / texWidth;
             this._charUvs[charsUvsBase + i * 4 + 1] = g.char.y / texHeight;
