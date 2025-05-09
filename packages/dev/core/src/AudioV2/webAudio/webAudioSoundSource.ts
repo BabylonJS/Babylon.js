@@ -1,4 +1,4 @@
-import type { Nullable } from "core/types";
+import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio";
 import type { ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import { AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
