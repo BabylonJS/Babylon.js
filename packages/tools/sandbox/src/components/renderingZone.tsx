@@ -25,6 +25,8 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
+const PanningSensibilityFactor = 5000;
+
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
 }
@@ -58,6 +60,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _currentPluginName?: string;
     private _engine: AbstractEngine;
     private _scene: Scene;
+    //private _camera: Nullable<Camera>;
     private _canvas: HTMLCanvasElement;
 
     public constructor(props: IRenderingZoneProps) {
@@ -108,7 +111,15 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.onSceneLoaded(sceneFile.name);
             },
             null,
-            null,
+            () => {
+                // additionalRenderLoopLogicCallback
+                // TODO: make this more efficient
+                const camera = this._scene?.activeCamera as ArcRotateCamera;
+                if (camera) {
+                    // Adapt the camera sensibility based on the distance to the object
+                    camera.panningSensibility = PanningSensibilityFactor / camera.radius;
+                }
+            },
             null,
             () => {
                 Tools.ClearLogCache();
@@ -225,6 +236,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 camera.setPosition(this.props.globalState.cameraPosition);
                 camera.lowerRadiusLimit = camera.radius;
             }
+
+            //this._camera = camera;
         }
 
         this._scene.activeCamera!.attachControl();
@@ -370,7 +383,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     const camera = scene.activeCamera! as ArcRotateCamera;
                     this._engine.runRenderLoop(() => {
                         // Adapt the camera sensibility based on the distance to the object
-                        camera.panningSensibility = 5000 / camera.radius;
+                        camera.panningSensibility = PanningSensibilityFactor / camera.radius;
                         scene.render();
                     });
                 });
