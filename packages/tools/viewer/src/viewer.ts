@@ -1188,7 +1188,6 @@ export class Viewer implements IDisposable {
 
     public set selectedAnimation(value: number) {
         this._selectAnimation(value, this._loadOperations.size === 0);
-        this._updateShadows();
     }
 
     protected _selectAnimation(index: number, interpolateCamera = true) {
@@ -1420,6 +1419,7 @@ export class Viewer implements IDisposable {
 
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
+            const updateShadows = this._updateShadows.bind(this);
 
             const model = {
                 assetContainer,
@@ -1480,6 +1480,7 @@ export class Viewer implements IDisposable {
 
                     selectedAnimation = index;
                     activeAnimation = assetContainer.animationGroups[selectedAnimation];
+                    updateShadows();
 
                     if (activeAnimation) {
                         activeAnimation.goToFrame(0);
