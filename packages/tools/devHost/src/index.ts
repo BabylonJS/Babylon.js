@@ -11,7 +11,7 @@ let SceneInstance: Scene;
 // avoid await on main level
 const CreateSceneResult = CreateScene();
 if (CreateSceneResult instanceof Promise) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
     CreateSceneResult.then(function (result) {
         SceneInstance = result;
     });

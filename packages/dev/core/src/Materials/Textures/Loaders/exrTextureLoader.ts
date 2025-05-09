@@ -129,6 +129,7 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
         const offset = { value: 0 };
         const header = GetExrHeader(dataView, offset);
         CreateDecoderAsync(header, dataView, offset, ExrLoaderGlobalConfiguration.DefaultOutputType)
+            // eslint-disable-next-line github/no-then
             .then((decoder) => {
                 ScanData(decoder, header, dataView, offset);
 
@@ -146,6 +147,7 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
                     }
                 });
             })
+            // eslint-disable-next-line github/no-then
             .catch((error) => {
                 Logger.Error("Failed to load EXR texture: ", error);
             });

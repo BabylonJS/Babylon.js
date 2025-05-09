@@ -45,6 +45,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             },
         };
         TranscodeAsync(data, transcodeConfig)
+            // eslint-disable-next-line github/no-then
             .then((result) => {
                 const hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
                 LoadTextureFromTranscodeResult(texture, result);
@@ -56,6 +57,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                     onLoad();
                 }
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 const errorMessage = "Failed to transcode Basis file, transcoding may not be supported on this device";
                 Tools.Warn(errorMessage);
@@ -89,6 +91,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             },
         };
         TranscodeAsync(data, transcodeConfig)
+            // eslint-disable-next-line github/no-then
             .then((result) => {
                 const rootImage = result.fileInfo.images[0].levels[0];
                 const hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
@@ -96,6 +99,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                     LoadTextureFromTranscodeResult(texture, result);
                 });
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
                 Tools.Warn(`Failed to transcode Basis file: ${err}`);

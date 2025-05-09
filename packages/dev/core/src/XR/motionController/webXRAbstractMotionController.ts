@@ -393,7 +393,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         } else {
             loadingParams = this._getFilenameAndPath();
         }
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const meshesLoaded = (meshes: AbstractMesh[]) => {
                 if (useGeneric) {
                     this._getGenericParentMesh(meshes);
@@ -437,6 +437,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
                 (_scene: Scene, message: string) => {
                     Logger.Log(message);
                     Logger.Warn(`Failed to retrieve controller model of type ${this.profileId} from the remote server: ${loadingParams.path}${loadingParams.filename}`);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(message);
                 }
             );
@@ -474,7 +475,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
         if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
-            return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
+            return await this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
         } else {
             return false;
         }

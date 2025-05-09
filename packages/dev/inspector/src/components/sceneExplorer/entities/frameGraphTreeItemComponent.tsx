@@ -23,6 +23,7 @@ export class FrameGraphTreeItemComponent extends React.Component<IFrameGraphItem
             <div
                 className="icon"
                 onClick={() => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.props.frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: this.props.frameGraph.scene } });
                 }}
                 title="Node Render Graph Editor"

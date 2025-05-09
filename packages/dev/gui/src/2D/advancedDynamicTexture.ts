@@ -1499,7 +1499,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a promise that will resolve on success
      */
     public async parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
+        return await AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
     }
 
     /**
@@ -1530,7 +1530,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a promise that will resolve on success
      */
     public async parseFromURLAsync(url: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
+        return await AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
     }
 
     private static async _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
@@ -1538,7 +1538,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             throw new Error("No URL provided");
         }
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1553,6 +1553,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         const serializationObject = JSON.parse(gui);
                         resolve(serializationObject);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load");
                     }
                 }

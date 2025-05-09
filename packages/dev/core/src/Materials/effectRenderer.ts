@@ -581,6 +581,7 @@ export class EffectWrapper {
         let extraInitializationsAsync: (() => Promise<void>) | undefined;
         if (this.options.extraInitializationsAsync) {
             extraInitializationsAsync = async () => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 waitImportsLoaded?.();
                 await this.options.extraInitializationsAsync();
             };

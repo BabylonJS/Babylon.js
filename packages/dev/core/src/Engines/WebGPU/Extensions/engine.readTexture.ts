@@ -36,6 +36,7 @@ declare module "../../abstractEngine" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 ThinWebGPUEngine.prototype._readTexturePixels = function (
     texture: InternalTexture,
     width: number,

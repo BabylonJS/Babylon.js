@@ -67,8 +67,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param data the bvh data to load
      * @returns a promise containing the loaded skeletons and animations
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public importMeshAsync(_meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown): Promise<ISceneLoaderAsyncResult> {
         if (typeof data !== "string") {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("BVH loader expects string data.");
         }
         try {
@@ -84,6 +86,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 spriteManagers: [],
             } as ISceneLoaderAsyncResult);
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject(e);
         }
     }
@@ -94,11 +97,14 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param data the bvh data to load
      * @returns a promise which completes when objects have been loaded to the scene
      */
+    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     public loadAsync(scene: Scene, data: unknown): Promise<void> {
         if (typeof data !== "string") {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("BVH loader expects string data.");
         }
 
+        // eslint-disable-next-line github/no-then
         return this.importMeshAsync(null, scene, data).then(() => {
             // return void
         });
@@ -110,8 +116,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param data The data to import
      * @returns The loaded asset container
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public loadAssetContainerAsync(scene: Scene, data: unknown): Promise<AssetContainer> {
         if (typeof data !== "string") {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("BVH loader expects string data.");
         }
         const assetContainer = new AssetContainer(scene);
@@ -120,6 +128,7 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             assetContainer.skeletons.push(skeleton);
             return Promise.resolve(assetContainer);
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject(e);
         }
     }

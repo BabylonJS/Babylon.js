@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
@@ -101,7 +103,7 @@ export class TemplateManager {
         };
 
         //build the html tree
-        return this._buildHTMLTree(templates).then((htmlTree) => {
+        return await this._buildHTMLTree(templates).then((htmlTree) => {
             if (this._templates["main"]) {
                 internalInit(htmlTree, "main");
             } else {
@@ -124,7 +126,7 @@ export class TemplateManager {
         const promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(async (name) => {
             // if the template was overridden
             if (!templates[name]) {
-                return Promise.resolve(false);
+                return await Promise.resolve(false);
             }
             // else - we have a template, let's do our job!
             const template = new Template(name, templates[name]);
@@ -138,10 +140,10 @@ export class TemplateManager {
             // make sure the global onEventTriggered is called as well
             template.onEventTriggered.add((eventData) => this.onEventTriggered.notifyObservers(eventData));
             this._templates[name] = template;
-            return template.initPromise;
+            return await template.initPromise;
         });
 
-        return Promise.all(promises).then(() => {
+        return await Promise.all(promises).then(() => {
             const templateStructure = {};
             // now iterate through all templates and check for children:
             const buildTree = (parentObject: any, name: string) => {
@@ -480,13 +482,13 @@ export class Template {
      */
     public async show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (this._isHiding) {
-            return Promise.resolve(this);
+            return await Promise.resolve(this);
         }
-        return Promise.resolve()
+        return await Promise.resolve()
             .then(async () => {
                 this._isShowing = true;
                 if (visibilityFunction) {
-                    return visibilityFunction(this);
+                    return await visibilityFunction(this);
                 } else {
                     // flex? box? should this be configurable easier than the visibilityFunction?
                     this.parent.style.display = "flex";
@@ -515,13 +517,13 @@ export class Template {
      */
     public async hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (this._isShowing) {
-            return Promise.resolve(this);
+            return await Promise.resolve(this);
         }
-        return Promise.resolve()
+        return await Promise.resolve()
             .then(async () => {
                 this._isHiding = true;
                 if (visibilityFunction) {
-                    return visibilityFunction(this);
+                    return await visibilityFunction(this);
                 } else {
                     // flex? box? should this be configurable easier than the visibilityFunction?
                     this.parent.style.display = "none";
@@ -565,13 +567,13 @@ export class Template {
 
     private async _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
-            return Promise.reject("No templateConfig provided");
+            return await Promise.reject("No templateConfig provided");
         } else if (templateConfig.html && !templateConfig.location) {
-            return Promise.resolve(templateConfig.html);
+            return await Promise.resolve(templateConfig.html);
         } else {
             let location = this._getTemplateLocation(templateConfig);
             if (isUrl(location)) {
-                return new Promise((resolve, reject) => {
+                return await new Promise((resolve, reject) => {
                     const fileRequest = Tools.LoadFile(
                         location,
                         (data: string | ArrayBuffer) => {
@@ -590,9 +592,9 @@ export class Template {
                 location = location.replace("#", "");
                 const element = document.getElementById(location);
                 if (element) {
-                    return Promise.resolve(element.innerHTML);
+                    return await Promise.resolve(element.innerHTML);
                 } else {
-                    return Promise.reject("Template ID not found");
+                    return await Promise.reject("Template ID not found");
                 }
             }
         }

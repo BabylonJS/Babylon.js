@@ -1848,7 +1848,7 @@ export class NodeMaterial extends PushMaterial {
             this.build();
         }
 
-        return this._fragmentCompilationState.getProcessedShaderAsync();
+        return await this._fragmentCompilationState.getProcessedShaderAsync();
     }
 
     /**
@@ -2040,7 +2040,7 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise fulfilled when the node editor is visible
      */
     public async edit(config?: INodeMaterialEditorOptions): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
             if (typeof this.BJSNODEMATERIALEDITOR == "undefined") {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
@@ -2267,7 +2267,7 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will fulfil when the material is fully loaded
      */
     public async loadAsync(url: string, rootUrl: string = "") {
-        return NodeMaterial.ParseFromFileAsync("", url, this.getScene(), rootUrl, true, this);
+        return await NodeMaterial.ParseFromFileAsync("", url, this.getScene(), rootUrl, true, this);
     }
 
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
@@ -2579,6 +2579,7 @@ export class NodeMaterial extends PushMaterial {
      * Awaits for all the material textures to be ready before resolving the returned promise.
      * @returns A promise that resolves when the textures are ready.
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public whenTexturesReadyAsync(): Promise<void[]> {
         // Ensures all textures are ready to render.
         const textureReadyPromises: Promise<void>[] = [];
@@ -2592,6 +2593,7 @@ export class NodeMaterial extends PushMaterial {
                             textureResolve();
                         });
                         internalTexture.onErrorObservable.addOnce((e) => {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             textureReject(e);
                         });
                     })
@@ -2664,6 +2666,7 @@ export class NodeMaterial extends PushMaterial {
      * @param options defines options to be used with the node material
      * @returns a promise that will resolve to the new node material
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene = EngineStore.LastCreatedScene!,
@@ -2702,22 +2705,27 @@ export class NodeMaterial extends PushMaterial {
                                 nodeMaterial.build();
                             }
                         } catch (err) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(err);
                         }
 
                         if (waitForTextureReadyness) {
                             nodeMaterial
                                 .whenTexturesReadyAsync()
+                                // eslint-disable-next-line github/no-then
                                 .then(() => {
                                     resolve(nodeMaterial!);
                                 })
+                                // eslint-disable-next-line github/no-then
                                 .catch((err) => {
+                                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                     reject(err);
                                 });
                         } else {
                             resolve(nodeMaterial);
                         }
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

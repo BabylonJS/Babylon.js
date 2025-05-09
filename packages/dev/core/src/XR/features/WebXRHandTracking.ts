@@ -591,7 +591,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         options?: IWebXRHandTrackingOptions
     ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
         // eslint-disable-next-line no-async-promise-executor, @typescript-eslint/no-misused-promises
-        return new Promise(async (resolve) => {
+        return await new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
             // check the cache, defensive
             if (WebXRHandTracking._RightHandGLB?.meshes[1]?.isDisposed()) {
@@ -608,7 +608,9 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 WebXRHandTracking._RightHandGLB || SceneLoader.ImportMeshAsync("", defaulrHandGLBUrl, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene),
                 WebXRHandTracking._LeftHandGLB || SceneLoader.ImportMeshAsync("", defaulrHandGLBUrl, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene),
             ]);
+            // eslint-disable-next-line require-atomic-updates
             WebXRHandTracking._RightHandGLB = handGLBs[0];
+            // eslint-disable-next-line require-atomic-updates
             WebXRHandTracking._LeftHandGLB = handGLBs[1];
             const shaderUrl = Tools.GetAssetUrl(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
             const handShader = await NodeMaterial.ParseFromFileAsync("handShader", shaderUrl, scene, undefined, true);
@@ -839,6 +841,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         this._handResources.rigMappings = this.options.handMeshes?.customRigMappings || null;
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this._xrSessionManager, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {

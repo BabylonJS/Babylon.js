@@ -4866,7 +4866,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static MergeMeshesAsync(
+    public static async MergeMeshesAsync(
         meshes: Array<Mesh>,
         disposeSource = true,
         allow32BitsIndices?: boolean,
@@ -4874,7 +4874,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean
     ) {
-        return runCoroutineAsync(
+        return await runCoroutineAsync(
             Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true),
             createYieldingScheduler()
         );

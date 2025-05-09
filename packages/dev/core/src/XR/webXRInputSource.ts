@@ -109,12 +109,14 @@ export class WebXRInputSource {
 
         // for now only load motion controllers if gamepad object available
         if (this.inputSource.gamepad && this.inputSource.targetRayMode === "tracked-pointer") {
+            // eslint-disable-next-line github/no-then
             WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then(
                 (motionController) => {
                     this.motionController = motionController;
                     this.onMotionControllerInitObservable.notifyObservers(motionController);
                     // should the model be loaded?
                     if (!this._options.doNotLoadControllerMesh && !this.motionController._doNotLoadControllerMesh) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         this.motionController.loadModel().then((success) => {
                             if (success && this.motionController && this.motionController.rootMesh) {
                                 if (this._options.renderingGroupId) {

@@ -83,24 +83,22 @@ export class WebGPUQuerySet {
         }
         const engineId = this._engine.uniqueId;
 
-        return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
-            () => {
-                const arrayBuf = new BigUint64Array(buffer.getMappedRange()).slice();
+        try {
+            await buffer.mapAsync(WebGPUConstants.MapMode.Read);
+            const arrayBuf = new BigUint64Array(buffer.getMappedRange()).slice();
 
-                buffer.unmap();
+            buffer.unmap();
 
-                this._dstBuffers[this._dstBuffers.length] = buffer;
+            this._dstBuffers[this._dstBuffers.length] = buffer;
 
-                return arrayBuf;
-            },
-            (err) => {
-                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
-                    // Engine disposed or context loss/restoration
-                    return null;
-                }
-                throw err;
+            return arrayBuf;
+        } catch (err) {
+            if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                // Engine disposed or context loss/restoration
+                return null;
             }
-        );
+            throw err;
+        }
     }
 
     public async readValue(firstQuery = 0): Promise<number | null> {
@@ -110,25 +108,23 @@ export class WebGPUQuerySet {
         }
         const engineId = this._engine.uniqueId;
 
-        return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
-            () => {
-                const arrayBuf = new BigUint64Array(buffer.getMappedRange());
-                const value = Number(arrayBuf[0]);
+        try {
+            await buffer.mapAsync(WebGPUConstants.MapMode.Read);
+            const arrayBuf = new BigUint64Array(buffer.getMappedRange());
+            const value = Number(arrayBuf[0]);
 
-                buffer.unmap();
+            buffer.unmap();
 
-                this._dstBuffers[this._dstBuffers.length] = buffer;
+            this._dstBuffers[this._dstBuffers.length] = buffer;
 
-                return value;
-            },
-            (err) => {
-                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
-                    // Engine disposed or context loss/restoration
-                    return 0;
-                }
-                throw err;
+            return value;
+        } catch (err) {
+            if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                // Engine disposed or context loss/restoration
+                return 0;
             }
-        );
+            throw err;
+        }
     }
 
     public async readTwoValuesAndSubtract(firstQuery = 0): Promise<number | null> {
@@ -138,25 +134,23 @@ export class WebGPUQuerySet {
         }
         const engineId = this._engine.uniqueId;
 
-        return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
-            () => {
-                const arrayBuf = new BigUint64Array(buffer.getMappedRange());
-                const value = Number(arrayBuf[1] - arrayBuf[0]);
+        try {
+            await buffer.mapAsync(WebGPUConstants.MapMode.Read);
+            const arrayBuf = new BigUint64Array(buffer.getMappedRange());
+            const value = Number(arrayBuf[1] - arrayBuf[0]);
 
-                buffer.unmap();
+            buffer.unmap();
 
-                this._dstBuffers[this._dstBuffers.length] = buffer;
+            this._dstBuffers[this._dstBuffers.length] = buffer;
 
-                return value;
-            },
-            (err) => {
-                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
-                    // Engine disposed or context loss/restoration
-                    return 0;
-                }
-                throw err;
+            return value;
+        } catch (err) {
+            if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                // Engine disposed or context loss/restoration
+                return 0;
             }
-        );
+            throw err;
+        }
     }
 
     public dispose() {

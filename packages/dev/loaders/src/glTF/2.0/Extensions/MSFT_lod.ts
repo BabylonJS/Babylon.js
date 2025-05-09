@@ -1,3 +1,4 @@
+/* eslint-disable github/no-then */
 import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Deferred } from "core/Misc/deferred";
@@ -177,7 +178,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             let firstPromise: Promise<TransformNode>;
 
             const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
@@ -221,7 +222,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             }
 
             this._loader.logClose();
-            return firstPromise!;
+            return await firstPromise!;
         });
     }
 
@@ -241,7 +242,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             return null;
         }
 
-        return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, async (extensionContext, extension) => {
             let firstPromise: Promise<Material>;
 
             const materialLODs = this._getLODs(extensionContext, material, this._loader.gltf.materials, extension.ids);
@@ -286,7 +287,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             }
 
             this._loader.logClose();
-            return firstPromise!;
+            return await firstPromise!;
         });
     }
 
@@ -300,15 +301,15 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             this._loader.log(`deferred`);
             const previousIndexLOD = this._nodeIndexLOD - 1;
             this._nodeSignalLODs[previousIndexLOD] = this._nodeSignalLODs[previousIndexLOD] || new Deferred<void>();
-            return this._nodeSignalLODs[this._nodeIndexLOD - 1].promise.then(() => {
-                return this._loader.loadUriAsync(context, property, uri);
+            return this._nodeSignalLODs[this._nodeIndexLOD - 1].promise.then(async () => {
+                return await this._loader.loadUriAsync(context, property, uri);
             });
         } else if (this._materialIndexLOD !== null) {
             this._loader.log(`deferred`);
             const previousIndexLOD = this._materialIndexLOD - 1;
             this._materialSignalLODs[previousIndexLOD] = this._materialSignalLODs[previousIndexLOD] || new Deferred<void>();
-            return this._materialSignalLODs[previousIndexLOD].promise.then(() => {
-                return this._loader.loadUriAsync(context, property, uri);
+            return this._materialSignalLODs[previousIndexLOD].promise.then(async () => {
+                return await this._loader.loadUriAsync(context, property, uri);
             });
         }
 
@@ -325,7 +326,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 throw new Error(`${context}: Uri is missing or the binary glTF is missing its binary chunk`);
             }
 
-            const loadAsync = (bufferLODs: Array<IBufferInfo>, indexLOD: number) => {
+            const loadAsync = async (bufferLODs: Array<IBufferInfo>, indexLOD: number) => {
                 const start = byteOffset;
                 const end = start + byteLength - 1;
                 let bufferLOD = bufferLODs[indexLOD];
@@ -337,7 +338,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     bufferLODs[indexLOD] = bufferLOD;
                 }
 
-                return bufferLOD.loaded.promise.then((data) => {
+                return await bufferLOD.loaded.promise.then((data) => {
                     return new Uint8Array(data.buffer, data.byteOffset + byteOffset - bufferLOD.start, byteLength);
                 });
             };

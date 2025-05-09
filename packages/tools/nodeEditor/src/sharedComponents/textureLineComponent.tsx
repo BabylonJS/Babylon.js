@@ -53,6 +53,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     public updatePreview() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         TextureLineComponent.UpdatePreview(this._canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
@@ -67,6 +68,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     ) {
         if (!texture.isReady() && texture._texture) {
             texture._texture.onLoadedObservable.addOnce(() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
             });
         }

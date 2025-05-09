@@ -250,12 +250,14 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     private async _initFromUrlsAsync(urls: string[], skipCodecCheck: boolean): Promise<void> {
         for (const url of urls) {
             if (skipCodecCheck) {
+                // eslint-disable-next-line no-await-in-loop
                 await this._initFromUrlAsync(url);
             } else {
                 const matches = url.match(_FileExtensionRegex);
                 const format = matches?.at(1);
                 if (format && this.engine.isFormatValid(format)) {
                     try {
+                        // eslint-disable-next-line no-await-in-loop
                         await this._initFromUrlAsync(url);
                     } catch (e) {
                         if (format && 0 < format.length) {

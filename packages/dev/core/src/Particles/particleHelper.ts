@@ -75,6 +75,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the ParticleSystemSet created
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false, capacity?: number): Promise<ParticleSystemSet> {
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
@@ -87,6 +88,7 @@ export class ParticleHelper {
         return new Promise((resolve, reject) => {
             if (gpu && !GPUParticleSystem.IsSupported) {
                 scene!.removePendingData(token);
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 return reject("Particle system with GPU is not supported.");
             }
 
@@ -102,6 +104,7 @@ export class ParticleHelper {
                 undefined,
                 () => {
                     scene!.removePendingData(token);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
                 }
             );
@@ -134,6 +137,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
@@ -155,6 +159,7 @@ export class ParticleHelper {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the particle system");
                     }
                 }
@@ -174,6 +179,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
             const system = this.CreateDefault(null);
@@ -199,6 +205,7 @@ export class ParticleHelper {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

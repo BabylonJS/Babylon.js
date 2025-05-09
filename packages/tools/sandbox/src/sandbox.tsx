@@ -292,8 +292,7 @@ export class Sandbox extends React.Component<
     }
 
     public static async CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
-        return this._SceneLoadedDeferred.promise.then(async (scene) => {
-            return CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
-        });
+        const scene = await this._SceneLoadedDeferred.promise;
+        return await CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
     }
 }

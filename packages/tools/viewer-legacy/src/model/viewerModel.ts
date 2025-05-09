@@ -244,9 +244,9 @@ export class ViewerModel implements IDisposable {
 
         this._meshes.push(mesh);
         if (triggerLoaded) {
-            return this.onLoadedObservable.notifyObserversWithPromise(this);
+            return await this.onLoadedObservable.notifyObserversWithPromise(this);
         }
-        return Promise.resolve(this);
+        return await Promise.resolve(this);
     }
 
     /**

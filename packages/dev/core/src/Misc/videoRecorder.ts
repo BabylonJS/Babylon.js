@@ -169,6 +169,7 @@ export class VideoRecorder {
      * It defaults to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
      * @returns A promise callback at the end of the recording with the video data in Blob.
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 7): Promise<Blob> {
         if (!this._canvas || !this._mediaRecorder) {
             // eslint-disable-next-line no-throw-literal

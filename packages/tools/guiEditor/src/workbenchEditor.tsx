@@ -52,6 +52,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
         document.addEventListener("keydown", this.addToolControls);
         document.addEventListener("keyup", this.removePressToolControls);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.props.onReady?.();
     }
 

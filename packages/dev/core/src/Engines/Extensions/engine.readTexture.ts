@@ -103,6 +103,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (
     return buffer;
 };
 
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 ThinEngine.prototype._readTexturePixels = function (
     texture: InternalTexture,
     width: number,

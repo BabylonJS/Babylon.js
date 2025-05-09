@@ -201,8 +201,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             isActive={false}
                             copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
-                                this.props.globalState.onCopyObservable.notifyObservers(async (content) =>
-                                    this.props.globalState.hostWindow.navigator.clipboard.writeText(content)
+                                this.props.globalState.onCopyObservable.notifyObservers(
+                                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                                    async (content) => await this.props.globalState.hostWindow.navigator.clipboard.writeText(content)
                                 );
                                 this.forceUpdate();
                             }}
@@ -213,6 +214,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={pasteeIcon}
                             isActive={false}
                             pasteDisabled={isPasteDisabled}
+                            // eslint-disable-next-line @typescript-eslint/no-misused-promises
                             onClick={async () => {
                                 this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
                             }}

@@ -901,6 +901,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._camera = camera ?? null;
         this._useRedTextureType = !!useRedTextureType;
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(forceGLSL);
 
         let shadowGenerators = light._shadowGenerators;
@@ -1517,8 +1518,8 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param options Sets of optional options forcing the compilation with different modes
      * @returns A promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
-        return new Promise((resolve) => {
+    public async forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
+        return await new Promise((resolve) => {
             this.forceCompilation(() => {
                 resolve();
             }, options);

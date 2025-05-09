@@ -175,16 +175,19 @@ export function GetFontOffset(font: string): { ascent: number; height: number; d
 
 /** @internal */
 export async function CreateImageBitmapFromSource(engine: AbstractEngine, imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-    return new Promise<ImageBitmap>((resolve, reject) => {
+    return await new Promise<ImageBitmap>((resolve, reject) => {
         const image = new Image();
         image.onload = () => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             image.decode().then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 engine.createImageBitmap(image, options).then((imageBitmap) => {
                     resolve(imageBitmap);
                 });
             });
         };
         image.onerror = () => {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(`Error loading image ${image.src}`);
         };
 
@@ -228,6 +231,7 @@ export function ExitFullscreen(): void {
     const anyDoc = document as any;
 
     if (document.exitFullscreen) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         document.exitFullscreen();
     } else if (anyDoc.webkitCancelFullScreen) {
         anyDoc.webkitCancelFullScreen();
@@ -245,9 +249,11 @@ export function RequestPointerlock(element: HTMLElement): void {
         const promise: unknown = element.requestPointerLock();
         if (promise instanceof Promise) {
             promise
+                // eslint-disable-next-line github/no-then
                 .then(() => {
                     element.focus();
                 })
+                // eslint-disable-next-line github/no-then
                 .catch(() => {});
         } else {
             element.focus();

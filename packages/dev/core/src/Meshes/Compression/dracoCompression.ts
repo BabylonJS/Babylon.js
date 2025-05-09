@@ -145,7 +145,7 @@ export class DracoCompression {
      * @returns a promise that resolves when ready
      */
     public async whenReadyAsync(): Promise<void> {
-        return this._decoder.whenReadyAsync();
+        return await this._decoder.whenReadyAsync();
     }
 
     /**
@@ -155,6 +155,7 @@ export class DracoCompression {
      * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
      * @returns A promise that resolves with the decoded mesh data
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
@@ -172,7 +173,7 @@ export class DracoCompression {
      * @returns A promise that resolves with the decoded geometry
      */
     public async decodeMeshToGeometryAsync(name: string, scene: Scene, data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<Geometry> {
-        return this._decoder.decodeMeshToGeometryAsync(name, scene, data, attributes);
+        return await this._decoder.decodeMeshToGeometryAsync(name, scene, data, attributes);
     }
 
     /** @internal */
@@ -184,7 +185,7 @@ export class DracoCompression {
         gltfNormalizedOverride: { [kind: string]: boolean },
         boundingInfo: Nullable<BoundingInfo>
     ): Promise<Geometry> {
-        return this._decoder._decodeMeshToGeometryForGltfAsync(name, scene, data, attributes, gltfNormalizedOverride, boundingInfo);
+        return await this._decoder._decodeMeshToGeometryForGltfAsync(name, scene, data, attributes, gltfNormalizedOverride, boundingInfo);
     }
 
     /**

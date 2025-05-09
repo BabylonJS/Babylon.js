@@ -389,7 +389,7 @@ export class SceneSerializer {
             for (let i = 0; i < obj.length; ++i) {
                 const o = obj[i];
                 if (o instanceof Promise) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, github/no-then
                     promises.push(o.then((res: any) => (obj[i] = res)));
                 } else if (o instanceof Object || Array.isArray(o)) {
                     this._CollectPromises(o, promises);
@@ -400,7 +400,7 @@ export class SceneSerializer {
                 if (Object.prototype.hasOwnProperty.call(obj, name)) {
                     const o = obj[name];
                     if (o instanceof Promise) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, github/no-then
                         promises.push(o.then((res: any) => (obj[name] = res)));
                     } else if (o instanceof Object || Array.isArray(o)) {
                         this._CollectPromises(o, promises);

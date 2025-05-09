@@ -106,10 +106,9 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
     public static async XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
-        return xrSession.requestHitTest!(xrRay, referenceSpace).then((results) => {
-            const filterFunction = filter || ((result) => !!result.hitMatrix);
-            return results.filter(filterFunction);
-        });
+        const results = await xrSession.requestHitTest!(xrRay, referenceSpace);
+        const filterFunction = filter || ((result) => !!result.hitMatrix);
+        return results.filter(filterFunction);
     }
 
     /**
@@ -125,7 +124,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         }
         const targetRay = new XRRay(targetRayPose.transform);
 
-        return this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
+        return await this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
     }
 
     /**
@@ -187,6 +186,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
             <DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 },
             <DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }
         );
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
     }
 
@@ -215,6 +215,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         if (!this._onSelectEnabled) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace);
     };
 }

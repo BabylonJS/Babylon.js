@@ -149,6 +149,7 @@ export function EncoderWorkerFunction(): void {
                 if (!encoderPromise) {
                     throw new Error("Draco encoder module is not available");
                 }
+                // eslint-disable-next-line github/no-then
                 encoderPromise.then((encoder) => {
                     const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
                     postMessage({ id: "encodeMeshDone", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
@@ -322,6 +323,7 @@ export function DecoderWorkerFunction(): void {
                 if (!decoderPromise) {
                     throw new Error("Draco decoder module is not available");
                 }
+                // eslint-disable-next-line github/no-then
                 decoderPromise.then((decoder) => {
                     const numPoints = DecodeMesh(
                         decoder,
@@ -353,11 +355,12 @@ export { DecoderWorkerFunction as workerFunction };
  * @returns A promise that resolves when the worker is initialized
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
-    return new Promise<Worker>((resolve, reject) => {
+export async function initializeWebWorker(worker: Worker, wasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
+    return await new Promise<Worker>((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);
             worker.removeEventListener("message", onMessage);
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         };
 

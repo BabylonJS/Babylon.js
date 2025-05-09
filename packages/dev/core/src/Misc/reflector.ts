@@ -52,6 +52,7 @@ export class Reflector {
     private _handleServerMessage(message: string): void {
         switch (message) {
             case "connected": {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 SceneSerializer.SerializeAsync(this._scene).then((serialized) => {
                     this._webSocket.send(`load|${JSON.stringify(serialized)}`);
                 });

@@ -1,3 +1,5 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";

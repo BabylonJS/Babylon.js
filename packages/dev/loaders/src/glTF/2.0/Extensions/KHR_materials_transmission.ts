@@ -367,14 +367,16 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadTransparentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
-            return Promise.all(promises).then(() => {});
+            // eslint-disable-next-line github/no-then
+            return await Promise.all(promises).then(() => {});
         });
     }
 
+    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsTransmission): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
@@ -409,6 +411,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.maximumThickness = 0.0;
         if (extension.transmissionTexture) {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
+            // eslint-disable-next-line github/no-then
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined).then((texture: BaseTexture) => {
                 texture.name = `${babylonMaterial.name} (Transmission)`;
                 pbrMaterial.subSurface.refractionIntensityTexture = texture;

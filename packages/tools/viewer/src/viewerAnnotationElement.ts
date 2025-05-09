@@ -82,6 +82,7 @@ export class HTML3DAnnotationElement extends LitElement {
         this._connectingAbortController = new AbortController();
         const abortSignal = this._connectingAbortController.signal;
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (async () => {
             // Custom element registration can happen at any time via a call to customElements.define, which means it is possible
             // the parent custom element hasn't been defined yet. This especially can happen if the order of imports and exports

@@ -33,6 +33,7 @@ export const Floodfill: IToolData = {
                     this.getParameters().interactionEnabled() &&
                     pointerInfo.pickInfo?.hit
                 ) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.fill();
                 }
             });

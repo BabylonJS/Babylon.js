@@ -266,6 +266,7 @@ export class ProceduralTexture extends Texture {
         }
 
         if (this._contentData) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             this._contentData.then((buffer) => {
                 this._contentData = this.readPixels(0, 0, buffer);
                 this._contentUpdateId = this._frameId;

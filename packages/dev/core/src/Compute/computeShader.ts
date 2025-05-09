@@ -437,7 +437,7 @@ export class ComputeShader {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async dispatchWhenReady(x: number, y?: number, z?: number, delay = 10): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             _RetryWithInterval(() => this.dispatch(x, y, z), resolve, undefined, delay);
         });
     }

@@ -355,6 +355,7 @@ export class InternalTexture extends TextureSampler {
                 this.isReady = data.isReady;
             };
             if (data.isAsync) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 (data.proxy as Promise<InternalTexture>).then(swapAndSetIsReady);
             } else {
                 swapAndSetIsReady(data.proxy as InternalTexture);

@@ -221,11 +221,12 @@ export class DracoEncoder extends DracoCodec {
 
         if (this._workerPoolPromise) {
             const workerPool = await this._workerPoolPromise;
-            return new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
+            return await new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
                 workerPool.push((worker, onComplete) => {
                     const onError = (error: ErrorEvent) => {
                         worker.removeEventListener("error", onError);
                         worker.removeEventListener("message", onMessage);
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(error);
                         onComplete();
                     };
@@ -285,6 +286,6 @@ export class DracoEncoder extends DracoCodec {
         const indices = PrepareIndicesForDraco(input);
         const attributes = PrepareAttributesForDraco(input, options?.excludedAttributes);
 
-        return this._encodeAsync(attributes, indices, options);
+        return await this._encodeAsync(attributes, indices, options);
     }
 }

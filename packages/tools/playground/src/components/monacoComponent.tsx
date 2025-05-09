@@ -30,6 +30,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
 
     override componentDidMount() {
         const hostElement = this.props.refObject.current!;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._monacoManager.setupMonacoAsync(hostElement, true);
     }
 

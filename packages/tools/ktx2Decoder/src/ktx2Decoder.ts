@@ -45,27 +45,24 @@ export class KTX2Decoder {
     public async decode(data: Uint8Array, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
         const finalOptions = { ...options, ...KTX2Decoder.DefaultDecoderOptions };
 
-        return Promise.resolve().then(async () => {
-            const kfr = new KTX2FileReader(data);
+        const kfr = new KTX2FileReader(data);
 
-            if (!kfr.isValid()) {
-                throw new Error("Invalid KT2 file: wrong signature");
+        if (!kfr.isValid()) {
+            throw new Error("Invalid KT2 file: wrong signature");
+        }
+
+        kfr.parse();
+
+        if (kfr.needZSTDDecoder) {
+            if (!this._zstdDecoder) {
+                this._zstdDecoder = new ZSTDDecoder();
             }
 
-            kfr.parse();
+            await this._zstdDecoder.init();
+            return await this._decodeDataAsync(kfr, caps, finalOptions);
+        }
 
-            if (kfr.needZSTDDecoder) {
-                if (!this._zstdDecoder) {
-                    this._zstdDecoder = new ZSTDDecoder();
-                }
-
-                return this._zstdDecoder.init().then(async () => {
-                    return this._decodeDataAsync(kfr, caps, finalOptions);
-                });
-            }
-
-            return this._decodeDataAsync(kfr, caps, finalOptions);
-        });
+        return await this._decodeDataAsync(kfr, caps, finalOptions);
     }
 
     private async _decodeDataAsync(kfr: KTX2FileReader, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
@@ -155,10 +152,12 @@ export class KTX2Decoder {
 
                 const transcodedData = transcoder
                     .transcode(srcTexFormat, transcodeFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
+                    // eslint-disable-next-line github/no-then
                     .then((data) => {
                         mipmap.data = data;
                         return data;
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((reason) => {
                         decodedData.errors = decodedData.errors ?? "";
                         decodedData.errors += reason + "\n" + reason.stack + "\n";
@@ -171,9 +170,8 @@ export class KTX2Decoder {
             }
         }
 
-        return Promise.all(dataPromises).then(() => {
-            return decodedData;
-        });
+        await Promise.all(dataPromises);
+        return decodedData;
     }
 }
 

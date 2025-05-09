@@ -42,6 +42,7 @@ function CreateSceneLTCTextures(scene: Scene): void {
     scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
     DecodeLTCTextureDataAsync()
+        // eslint-disable-next-line github/no-then
         .then((textureData) => {
             if (scene._ltcTextures) {
                 const ltc1 = scene._ltcTextures?.LTC1 as RawTexture;
@@ -56,6 +57,7 @@ function CreateSceneLTCTextures(scene: Scene): void {
                 });
             }
         })
+        // eslint-disable-next-line github/no-then
         .catch((error) => {
             Logger.Error(`Area Light fail to get LTC textures data. Error: ${error}`);
         });

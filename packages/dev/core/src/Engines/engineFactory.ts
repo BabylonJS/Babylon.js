@@ -16,7 +16,7 @@ export class EngineFactory {
     public static async CreateAsync(canvas: HTMLCanvasElement, options: any): Promise<AbstractEngine> {
         const supported = await WebGPUEngine.IsSupportedAsync;
         if (supported) {
-            return WebGPUEngine.CreateAsync(canvas, options);
+            return await WebGPUEngine.CreateAsync(canvas, options);
         }
         if (Engine.IsSupported) {
             return new Engine(canvas, undefined, options);

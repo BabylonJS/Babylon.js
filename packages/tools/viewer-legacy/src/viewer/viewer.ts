@@ -1,3 +1,6 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Engine } from "core/Engines/engine";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
@@ -477,7 +480,7 @@ export abstract class AbstractViewer {
         height = height || this.canvas.clientHeight;
 
         // Create the screenshot
-        return new Promise<string>((resolve, reject) => {
+        return await new Promise<string>((resolve, reject) => {
             try {
                 Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
                     if (callback) {
@@ -612,7 +615,7 @@ export abstract class AbstractViewer {
      * @returns The viewer object will be returned after the object was loaded.
      */
     protected async _onTemplatesLoaded(): Promise<AbstractViewer> {
-        return Promise.resolve(this);
+        return await Promise.resolve(this);
     }
 
     /**
@@ -624,18 +627,18 @@ export abstract class AbstractViewer {
     protected async _onTemplateLoaded(): Promise<AbstractViewer> {
         // check if viewer was disposed right after created
         if (this._isDisposed) {
-            return Promise.reject("viewer was disposed");
+            return await Promise.reject("viewer was disposed");
         }
-        return this._onTemplatesLoaded().then(async () => {
+        return await this._onTemplatesLoaded().then(async () => {
             const autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
-            return this._initEngine()
+            return await this._initEngine()
                 .then(async (engine) => {
-                    return this.onEngineInitObservable.notifyObserversWithPromise(engine);
+                    return await this.onEngineInitObservable.notifyObserversWithPromise(engine);
                 })
                 .then(async () => {
                     this._initTelemetryEvents();
                     if (autoLoad) {
-                        return this.loadModel(this.configuration.model!)
+                        return await this.loadModel(this.configuration.model!)
                             .catch(() => {})
                             .then(() => {
                                 return this.sceneManager.scene;
@@ -645,7 +648,7 @@ export abstract class AbstractViewer {
                     }
                 })
                 .then(async () => {
-                    return this.onInitDoneObservable.notifyObserversWithPromise(this);
+                    return await this.onInitDoneObservable.notifyObserversWithPromise(this);
                 })
                 .catch((e) => {
                     Tools.Warn(e.toString());
@@ -667,7 +670,7 @@ export abstract class AbstractViewer {
 
         //let canvasElement = this.templateManager.getCanvas();
         if (!this.canvas) {
-            return Promise.reject("Canvas element not found!");
+            return await Promise.reject("Canvas element not found!");
         }
         const config = this.configuration.engine || {};
         // TDO enable further configuration
@@ -712,7 +715,7 @@ export abstract class AbstractViewer {
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
 
-        return Promise.resolve(this.engine);
+        return await Promise.resolve(this.engine);
     }
 
     private _isLoading: boolean;
@@ -791,19 +794,19 @@ export abstract class AbstractViewer {
     public async loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
-            return Promise.reject("another model is curently being loaded.");
+            return await Promise.reject("another model is curently being loaded.");
         }
 
-        return Promise.resolve(this.sceneManager.scene)
+        return await Promise.resolve(this.sceneManager.scene)
             .then(async (scene) => {
                 if (!scene) {
-                    return this.sceneManager.initScene(this.configuration.scene);
+                    return await this.sceneManager.initScene(this.configuration.scene);
                 }
                 return scene;
             })
             .then(async () => {
                 const model = this.initModel(modelConfig, clearScene);
-                return new Promise<ViewerModel>((resolve, reject) => {
+                return await new Promise<ViewerModel>((resolve, reject) => {
                     // at this point, configuration.model is an object, not a string
                     model.onLoadedObservable.add(() => {
                         resolve(model);

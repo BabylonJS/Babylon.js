@@ -379,7 +379,7 @@ export class XmlLoader {
      * @returns Promise
      */
     public async loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any> {
-        return new Promise((resolve: any, reject: any) => {
+        return await new Promise((resolve: any, reject: any) => {
             this.loadLayout(xmlFile, rootNode, resolve, reject);
         });
     }

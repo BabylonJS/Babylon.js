@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";

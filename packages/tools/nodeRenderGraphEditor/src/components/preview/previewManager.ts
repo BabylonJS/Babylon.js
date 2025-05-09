@@ -1,3 +1,5 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
@@ -84,6 +86,7 @@ export class PreviewManager {
             this._createNodeRenderGraph();
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initAsync(targetCanvas);
     }
 
@@ -131,7 +134,7 @@ export class PreviewManager {
         this._dummyExternalTexture = new Texture("https://assets.babylonjs.com/textures/Checker_albedo.png", this._scene, true);
         this._dummyExternalTexture.name = "Dummy external texture for preview NRGE";
 
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this._dummyExternalTexture.onLoadObservable.add(() => {
                 this._prepareBackgroundHDR();
 
@@ -254,6 +257,7 @@ export class PreviewManager {
             debugTextures: DebugTextures,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._buildGraphAsync();
 
         (window as any).nrgPreview = this._nodeRenderGraph;

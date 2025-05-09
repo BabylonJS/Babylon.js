@@ -36,6 +36,7 @@ export class InputArrowsComponent extends React.Component<IInputArrowsComponentP
                     this._arrowsRef.current?.ownerDocument.defaultView!.addEventListener("pointerup", this._releaseListener);
                     this._arrowsRef.current?.ownerDocument.defaultView!.addEventListener("mousemove", this._drag);
                     this.props.setDragging(true);
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._arrowsRef.current?.requestPointerLock();
                 }}
                 onDragStart={(evt) => evt.preventDefault()}

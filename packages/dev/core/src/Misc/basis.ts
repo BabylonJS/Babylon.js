@@ -171,20 +171,24 @@ const CreateWorkerAsync = async () => {
                 res(LocalWorker);
             } else {
                 Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisToolsOptions.WasmModuleURL))
+                    // eslint-disable-next-line github/no-then
                     .then((wasmBinary) => {
                         if (typeof URL !== "function") {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             return reject("Basis transcoder requires an environment with a URL constructor");
                         }
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunction})()`], { type: "application/javascript" }));
                         LocalWorker = new Worker(workerBlobUrl);
+                        // eslint-disable-next-line github/no-then
                         initializeWebWorker(LocalWorker, wasmBinary, BasisToolsOptions.JSModuleURL).then(res, reject);
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch(reject);
             }
         });
     }
-    return WorkerPromise;
+    return await WorkerPromise;
 };
 
 /**
@@ -204,7 +208,8 @@ export const SetBasisTranscoderWorker = (worker: Worker) => {
 export const TranscodeAsync = async (data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> => {
     const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
-    return new Promise((res, rej) => {
+    return await new Promise((res, rej) => {
+        // eslint-disable-next-line github/no-then
         CreateWorkerAsync().then(
             () => {
                 const actionId = ActionId++;
@@ -212,6 +217,7 @@ export const TranscodeAsync = async (data: ArrayBuffer | ArrayBufferView, config
                     if (msg.data.action === "transcode" && msg.data.id === actionId) {
                         LocalWorker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             rej("Transcode is not supported on this device");
                         } else {
                             res(msg.data);
@@ -227,6 +233,7 @@ export const TranscodeAsync = async (data: ArrayBuffer | ArrayBufferView, config
                 ]);
             },
             (error) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 rej(error);
             }
         );

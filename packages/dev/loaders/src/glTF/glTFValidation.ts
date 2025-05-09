@@ -1,3 +1,6 @@
+/* eslint-disable github/no-then */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable @typescript-eslint/promise-function-async */
 import type * as GLTF2 from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 
@@ -119,6 +122,7 @@ export class GLTFValidation {
                 const onError = (error: ErrorEvent) => {
                     worker.removeEventListener("error", onError);
                     worker.removeEventListener("message", onMessage);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(error);
                 };
 
@@ -146,6 +150,7 @@ export class GLTFValidation {
                         case "validate.reject": {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(data.reason);
                             worker.terminate();
                         }

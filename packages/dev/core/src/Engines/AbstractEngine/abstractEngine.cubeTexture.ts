@@ -238,6 +238,7 @@ AbstractEngine.prototype.createCubeTextureBase = function (
     };
 
     if (loaderPromise) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         loaderPromise.then((loader) => {
             const onloaddata = (data: ArrayBufferView | ArrayBufferView[]) => {
                 if (beforeLoadCubeDataCallback) {

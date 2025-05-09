@@ -117,10 +117,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your render graph to Babylon.js snippet server...", false));
         this.props.globalState
             .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeRenderGraph, this.props.globalState))
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Render graph saved successfully", false));
                 this.setState({ uploadInProgress: false });
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
                 this.setState({ uploadInProgress: false });
@@ -145,6 +147,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                     this.forceUpdate();
                     if (navigator.clipboard) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         navigator.clipboard.writeText(renderGraph.snippetId);
                     }
 
@@ -195,11 +198,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
 
         NodeRenderGraph.ParseFromSnippetAsync(snippedId, this.props.globalState.scene, undefined, renderGraph)
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 renderGraph.build();
                 this.props.globalState.onFrame.notifyObservers();
                 this.props.globalState.onClearUndoStack.notifyObservers();
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node render graph: " + err);
             });

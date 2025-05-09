@@ -88,6 +88,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     public dispose(): void {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (subNode) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._subGraph.removeSubNodeAsync(subNode);
             subNode.dispose();
         }
@@ -106,6 +107,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             Logger.Warn("AudioAnalyzer not enabled");
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.enableAsync();
             return _GetEmptyByteFrequencyData();
         }
@@ -117,6 +119,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
             Logger.Warn("AudioAnalyzer not enabled");
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.enableAsync();
             return _GetEmptyFloatFrequencyData();
         }

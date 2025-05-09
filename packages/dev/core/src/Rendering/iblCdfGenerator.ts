@@ -369,7 +369,7 @@ export class IblCdfGenerator {
      * Explicitly trigger generation of CDF maps when they are ready to render.
      * @returns Promise that resolves when the CDF maps are rendered.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public renderWhenReady(): Promise<void> {
         this._cachedDominantDirection = null;
         // Once the textures are generated, notify that they are ready to use.
@@ -391,6 +391,7 @@ export class IblCdfGenerator {
                 })
             );
         }
+        // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {
             for (const target of renderTargets) {
                 target.render();
@@ -402,6 +403,7 @@ export class IblCdfGenerator {
      * Finds the average direction of the highest intensity areas of the IBL source
      * @returns Async promise that resolves to the dominant direction of the IBL source
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public findDominantDirection(): Promise<Vector3> {
         if (this._cachedDominantDirection) {
             return Promise.resolve(this._cachedDominantDirection);
@@ -409,6 +411,7 @@ export class IblCdfGenerator {
         return new Promise((resolve) => {
             this._dominantDirectionPT.onGeneratedObservable.addOnce(() => {
                 const data = new Float32Array(4);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._dominantDirectionPT.readPixels(0, 0, data, true)!.then(() => {
                     const dominantDirection = new Vector3(data[0], data[1], data[2]);
                     this._cachedDominantDirection = dominantDirection;

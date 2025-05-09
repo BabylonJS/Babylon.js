@@ -160,9 +160,9 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async initiateRoomCapture(): Promise<void> {
         if (this._xrSessionManager.session.initiateRoomCapture) {
-            return this._xrSessionManager.session.initiateRoomCapture();
+            return await this._xrSessionManager.session.initiateRoomCapture();
         }
-        return Promise.reject("initiateRoomCapture is not supported on this session");
+        throw "initiateRoomCapture is not supported on this session";
     }
 
     protected _onXRFrame(frame: XRFrame) {

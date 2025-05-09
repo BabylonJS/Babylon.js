@@ -592,6 +592,7 @@ async function loadDataAsync(
             const response = await _FetchAsync(fileInfo.url, { method: "HEAD", responseHeaders: ["Content-Type"] });
             const mimeType = response.headerValues ? response.headerValues["Content-Type"] : "";
             if (mimeType) {
+                // eslint-disable-next-line require-atomic-updates
                 registeredPlugin = getPluginForMimeType(mimeType);
             }
         }
@@ -622,6 +623,7 @@ async function loadDataAsync(
             const pluginFactory = registeredPlugin.plugin;
             const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
             if (partialPlugin instanceof Promise) {
+                // eslint-disable-next-line github/no-then
                 partialPlugin.then(callback).catch((error) => {
                     onError("Error instantiating plugin.", error);
                 });
@@ -653,9 +655,11 @@ async function loadDataAsync(
                 const result = plugin.directLoad(scene, directLoad);
                 if (result instanceof Promise) {
                     result
+                        // eslint-disable-next-line github/no-then
                         .then((data: unknown) => {
                             onSuccess(plugin, data);
                         })
+                        // eslint-disable-next-line github/no-then
                         .catch((error: any) => {
                             onError("Error in directLoad of _loadData: " + error, error);
                         });
@@ -853,7 +857,7 @@ export function GetRegisteredSceneLoaderPluginMetadata(): DeepImmutable<
  */
 export async function ImportMeshAsync(source: SceneSource, scene: Scene, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult> {
     const { meshNames, rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return importMeshAsyncCoreAsync(meshNames, rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return await importMeshAsyncCoreAsync(meshNames, rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
 async function importMeshAsync(
@@ -946,6 +950,7 @@ async function importMeshAsync(
                 const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                 asyncedPlugin
                     .importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
+                    // eslint-disable-next-line github/no-then
                     .then((result) => {
                         scene.loadingPluginName = plugin.name;
                         successHandler(
@@ -959,6 +964,7 @@ async function importMeshAsync(
                             result.spriteManagers
                         );
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((error) => {
                         errorHandler(error.message, error);
                     });
@@ -983,7 +989,7 @@ async function importMeshAsyncCoreAsync(
     name?: string,
     pluginOptions?: PluginOptions
 ): Promise<ISceneLoaderAsyncResult> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         try {
             importMeshAsync(
                 meshNames,
@@ -1004,13 +1010,16 @@ async function importMeshAsyncCoreAsync(
                 },
                 onProgress,
                 (scene, message, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
                 name,
                 pluginOptions
+                // eslint-disable-next-line github/no-then
             ).catch(reject);
         } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         }
     });
@@ -1045,7 +1054,7 @@ async function loadSceneImplAsync(
  */
 export async function LoadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadSceneSharedAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
+    return await loadSceneSharedAsync(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1057,7 +1066,7 @@ export async function LoadSceneAsync(source: SceneSource, engine: AbstractEngine
  * @returns The loaded scene
  */
 export async function loadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
-    return LoadSceneAsync(source, engine, options);
+    return await LoadSceneAsync(source, engine, options);
 }
 
 // This function is shared between the new module level loadSceneAsync and the legacy SceneLoader.LoadAsync
@@ -1070,7 +1079,8 @@ async function loadSceneSharedAsync(
     name?: string,
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         loadSceneImplAsync(
             rootUrl,
             sceneFilename,
@@ -1080,6 +1090,7 @@ async function loadSceneSharedAsync(
             },
             onProgress,
             (scene, message, exception) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(exception || new Error(message));
             },
             pluginExtension,
@@ -1178,10 +1189,12 @@ async function appendSceneImplAsync(
                 const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                 asyncedPlugin
                     .loadAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
+                    // eslint-disable-next-line github/no-then
                     .then(() => {
                         scene.loadingPluginName = plugin.name;
                         successHandler();
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((error) => {
                         errorHandler(error.message, error);
                     });
@@ -1217,7 +1230,7 @@ export async function AppendSceneAsync(source: SceneSource, scene: Scene, option
  * @returns A promise that resolves when the scene is appended
  */
 export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: AppendOptions): Promise<void> {
-    return AppendSceneAsync(source, scene, options);
+    return await AppendSceneAsync(source, scene, options);
 }
 
 // This function is shared between the new module level appendSceneAsync and the legacy SceneLoader.AppendAsync
@@ -1230,7 +1243,7 @@ async function appendSceneSharedAsync(
     name?: string,
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         try {
             appendSceneImplAsync(
                 rootUrl,
@@ -1241,13 +1254,16 @@ async function appendSceneSharedAsync(
                 },
                 onProgress,
                 (scene, message, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
                 name,
                 pluginOptions
+                // eslint-disable-next-line github/no-then
             ).catch(reject);
         } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         }
     });
@@ -1334,11 +1350,13 @@ async function loadAssetContainerImplAsync(
                 const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                 asyncedPlugin
                     .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
+                    // eslint-disable-next-line github/no-then
                     .then((assetContainer) => {
                         assetContainer.populateRootNodes();
                         scene.loadingPluginName = plugin.name;
                         successHandler(assetContainer);
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((error) => {
                         errorHandler(error.message, error);
                     });
@@ -1364,7 +1382,7 @@ async function loadAssetContainerImplAsync(
  */
 export async function LoadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadAssetContainerSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return await loadAssetContainerSharedAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1376,7 +1394,7 @@ export async function LoadAssetContainerAsync(source: SceneSource, scene: Scene,
  * @returns The loaded asset container
  */
 export async function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
-    return LoadAssetContainerAsync(source, scene, options);
+    return await LoadAssetContainerAsync(source, scene, options);
 }
 
 // This function is shared between the new module level loadAssetContainerAsync and the legacy SceneLoader.LoadAssetContainerAsync
@@ -1389,7 +1407,7 @@ async function loadAssetContainerSharedAsync(
     name?: string,
     pluginOptions?: PluginOptions
 ): Promise<AssetContainer> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         try {
             loadAssetContainerImplAsync(
                 rootUrl,
@@ -1400,13 +1418,16 @@ async function loadAssetContainerSharedAsync(
                 },
                 onProgress,
                 (scene, message, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
                 name,
                 pluginOptions
+                // eslint-disable-next-line github/no-then
             ).catch(reject);
         } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         }
     });
@@ -1514,7 +1535,7 @@ export async function ImportAnimationsAsync(source: SceneSource, scene: Scene, o
  * @returns A promise that resolves when the animations are imported
  */
 export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
-    return ImportAnimationsAsync(source, scene, options);
+    return await ImportAnimationsAsync(source, scene, options);
 }
 
 // This function is shared between the new module level importAnimationsAsync and the legacy SceneLoader.ImportAnimationsAsync
@@ -1530,7 +1551,7 @@ async function importAnimationsSharedAsync(
     name?: string,
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         try {
             importAnimationsImplAsync(
                 rootUrl,
@@ -1544,13 +1565,16 @@ async function importAnimationsSharedAsync(
                 },
                 onProgress,
                 (scene, message, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
                 name,
                 pluginOptions
+                // eslint-disable-next-line github/no-then
             ).catch(reject);
         } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         }
     });
@@ -1697,6 +1721,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
+        // eslint-disable-next-line github/no-then
         importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.(EngineStore.LastCreatedScene!, error?.message, error)
         );
@@ -1723,7 +1748,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        return importMeshAsyncCoreAsync(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return await importMeshAsyncCoreAsync(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1748,6 +1773,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
+        // eslint-disable-next-line github/no-then
         loadSceneImplAsync(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.(EngineStore.LastCreatedScene!, error?.message, error)
         );
@@ -1772,7 +1798,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return loadSceneSharedAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
+        return await loadSceneSharedAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1797,6 +1823,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
+        // eslint-disable-next-line github/no-then
         appendSceneImplAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
         );
@@ -1821,7 +1848,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return appendSceneSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return await appendSceneSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1846,6 +1873,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ) {
+        // eslint-disable-next-line github/no-then
         loadAssetContainerImplAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
             onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error)
         );
@@ -1870,7 +1898,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<AssetContainer> {
-        return loadAssetContainerSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return await loadAssetContainerSharedAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1913,6 +1941,7 @@ export class SceneLoader {
             onError,
             pluginExtension,
             name
+            // eslint-disable-next-line github/no-then
         ).catch((error) => onError?.((scene ?? EngineStore.LastCreatedScene)!, error?.message, error));
     }
 
@@ -1947,6 +1976,6 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return importAnimationsSharedAsync(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
+        return await importAnimationsSharedAsync(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
     }
 }

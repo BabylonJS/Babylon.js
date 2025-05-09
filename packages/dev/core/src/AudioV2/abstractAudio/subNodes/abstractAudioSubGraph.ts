@@ -38,6 +38,7 @@ export abstract class _AbstractAudioSubGraph {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         this._createSubNodePromisesResolvedAsync().then(() => {
             const node = this.getSubNode(name);
             if (node) {
@@ -45,6 +46,7 @@ export abstract class _AbstractAudioSubGraph {
                 return;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             this.createAndAddSubNodeAsync(name).then((node) => {
                 callback(node as T);
             });
@@ -59,7 +61,9 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public createAndAddSubNodeAsync(name: AudioSubNode): Promise<_AbstractAudioSubNode> {
+        // eslint-disable-next-line github/no-then
         this._createSubNodePromises[name] ||= this._createSubNode(name).then((node) => {
             this._addSubNode(node);
             return node;
@@ -126,8 +130,8 @@ export abstract class _AbstractAudioSubGraph {
      */
     protected abstract _onSubNodesChanged(): void;
 
-    protected _createSubNodePromisesResolvedAsync(): Promise<_AbstractAudioSubNode[]> {
-        return Promise.all(Object.values(this._createSubNodePromises));
+    protected async _createSubNodePromisesResolvedAsync(): Promise<_AbstractAudioSubNode[]> {
+        return await Promise.all(Object.values(this._createSubNodePromises));
     }
 
     private _addSubNode(node: _AbstractAudioSubNode): void {

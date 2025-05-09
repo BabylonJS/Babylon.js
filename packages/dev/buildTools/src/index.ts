@@ -69,6 +69,7 @@ function RunCommand(command: string) {
                 break;
             case "prepare-es6-build":
             case "peb":
+                // eslint-disable-next-line github/no-then
                 prepareES6Build().catch((e) => {
                     console.error(e);
                     process.exit(1);
@@ -88,6 +89,7 @@ function RunCommand(command: string) {
                 break;
             case "update-engine-version":
             case "uev":
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 updateEngineVersion();
                 break;
             case "declarations-es6":

@@ -16,7 +16,8 @@ export class LiteTranscoder extends Transcoder {
     protected _transcodeInPlace: boolean;
 
     private async _instantiateWebAssemblyAsync(wasmBinary: ArrayBuffer): Promise<{ module: any }> {
-        return WebAssembly.instantiate(wasmBinary, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
+        // eslint-disable-next-line github/no-then
+        return await WebAssembly.instantiate(wasmBinary, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
             return { module: moduleWrapper.instance.exports };
         });
     }
@@ -24,10 +25,11 @@ export class LiteTranscoder extends Transcoder {
     protected async _loadModuleAsync(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
         this._modulePromise =
             this._modulePromise ||
+            // eslint-disable-next-line github/no-then
             (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then(async (wasmBinary) => {
-                return this._instantiateWebAssemblyAsync(wasmBinary);
+                return await this._instantiateWebAssemblyAsync(wasmBinary);
             });
-        return this._modulePromise;
+        return await this._modulePromise;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -65,7 +67,8 @@ export class LiteTranscoder extends Transcoder {
         imageDesc: IKTX2_ImageDesc | null,
         encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
-        return this._loadModuleAsync().then((moduleWrapper: any) => {
+        // eslint-disable-next-line github/no-then
+        return await this._loadModuleAsync().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
             const [textureView, uncompressedTextureView, nBlocks] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData);
 

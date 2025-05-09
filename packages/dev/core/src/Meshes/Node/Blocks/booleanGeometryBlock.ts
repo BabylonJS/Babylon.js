@@ -62,6 +62,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
             return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         if (!this._csg2LoadingPromise) {
             this._csg2LoadingPromise = InitializeCSG2Async();
         }

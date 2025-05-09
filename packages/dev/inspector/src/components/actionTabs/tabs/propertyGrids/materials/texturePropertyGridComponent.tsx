@@ -191,6 +191,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     forceRefresh() {
         this.forceUpdate();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (this._textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
@@ -280,6 +281,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         label="Edit"
                         onClick={() => {
                             if (this.props.texture instanceof AdvancedDynamicTexture) {
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                                 EditAdvancedDynamicTexture(this.props.texture);
                             } else {
                                 this.openTextureEditor();

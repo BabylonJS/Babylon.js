@@ -1,3 +1,5 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import type { GlobalState } from "../../globalState";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import type { Nullable } from "core/types";
@@ -648,7 +650,7 @@ export class PreviewManager {
     }
 
     private async _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
-        return material.forceCompilationAsync(mesh);
+        return await material.forceCompilationAsync(mesh);
     }
 
     private _updatePreview() {
@@ -740,7 +742,7 @@ export class PreviewManager {
                     if (this._meshes && this._meshes.length) {
                         const tasks = this._meshes.map(async (m) => {
                             m.hasVertexAlpha = false;
-                            return this._forceCompilationAsync(tempMaterial, m);
+                            return await this._forceCompilationAsync(tempMaterial, m);
                         });
 
                         Promise.all(tasks)

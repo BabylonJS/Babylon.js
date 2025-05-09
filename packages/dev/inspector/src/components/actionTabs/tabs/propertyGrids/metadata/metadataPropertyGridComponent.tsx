@@ -276,6 +276,7 @@ export class MetadataGridComponent extends React.Component<
             const textAreaElement = this._textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
             textAreaElement.select();
             textAreaElement.setSelectionRange(0, 99999); // For mobile devices
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             navigator.clipboard.writeText(textAreaElement.value);
         } catch (error) {
             window.alert("Could not copy to clipboard, see log.");

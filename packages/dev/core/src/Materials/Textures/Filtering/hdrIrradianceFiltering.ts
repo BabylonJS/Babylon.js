@@ -220,6 +220,7 @@ export class HDRIrradianceFiltering {
         const irradianceTexture = this._prefilterInternal(texture);
 
         if (this.useCdf) {
+            // eslint-disable-next-line github/no-then
             await this._cdfGenerator.findDominantDirection().then((dir) => {
                 irradianceTexture._dominantDirection = dir;
             });

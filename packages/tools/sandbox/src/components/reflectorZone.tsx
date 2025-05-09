@@ -56,7 +56,7 @@ class Reflector {
         const [command, payload] = message.split("|", 2);
         switch (command) {
             case "load": {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-deprecated
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-deprecated, github/no-then
                 SceneLoader.LoadAsync("", `data:${payload}`, this._engine).then((scene) => {
                     if (scene.activeCamera) {
                         scene.activeCamera.attachControl();
@@ -68,6 +68,7 @@ class Reflector {
 
                     this._globalState.onSceneLoaded.notifyObservers({ scene: scene, filename: "Reflector scene" });
 
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     scene.debugLayer.show();
                 });
                 break;

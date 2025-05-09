@@ -540,6 +540,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._vertexArrayObject = null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         // Creation queue
@@ -654,6 +655,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             if (this.noiseTexture) {
                 // We need to get texture data back to CPU
                 this._noiseTextureSize = this.noiseTexture.getSize();
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this.noiseTexture.getContent()?.then((data) => {
                     this._noiseTextureData = data as Uint8Array;
                 });

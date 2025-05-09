@@ -242,10 +242,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your material to Babylon.js snippet server...", false));
         this.props.globalState
             .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState))
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Material saved successfully", false));
                 this.setState({ uploadInProgress: false });
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
                 this.setState({ uploadInProgress: false });
@@ -270,6 +272,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                     this.forceUpdate();
                     if (navigator.clipboard) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         navigator.clipboard.writeText(material.snippetId);
                     }
 
@@ -323,6 +326,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
 
         NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material)
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 material.build();
                 if (!this.changeMode(this.props.globalState.nodeMaterial.mode, true, false)) {
@@ -330,6 +334,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 }
                 this.props.globalState.onClearUndoStack.notifyObservers();
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
             });

@@ -757,6 +757,7 @@ export class FluidRenderingTargetRenderer {
             true,
             undefined,
             this._shaderLanguage,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async () => {
                 if (this._shaderLanguage === ShaderLanguage.WGSL) {
                     await import("../../ShadersWGSL/fluidRenderingRender.fragment");

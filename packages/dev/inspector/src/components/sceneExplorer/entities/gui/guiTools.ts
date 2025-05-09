@@ -72,5 +72,6 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, em
             throw `Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`;
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     guiEditorContainer.GUIEditor.Show({ liveGuiTexture: adt }, embed);
 }

@@ -97,8 +97,8 @@ if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self, "
  * Returns _native only after it has been defined by BabylonNative.
  * @internal
  */
-export function AcquireNativeObjectAsync(): Promise<INative> {
-    return new Promise((resolve) => {
+export async function AcquireNativeObjectAsync(): Promise<INative> {
+    return await new Promise((resolve) => {
         if (typeof _native === "undefined") {
             onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
         } else {
@@ -2028,7 +2028,7 @@ export class NativeEngine extends Engine {
      * @param _options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public override _createImageBitmapFromSource(imageSource: string, _options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override async _createImageBitmapFromSource(imageSource: string, _options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = this.createCanvasImage();
             image.onload = () => {
@@ -2036,17 +2036,19 @@ export class NativeEngine extends Engine {
                     const imageBitmap = this._engine.createImageBitmap(image);
                     resolve(imageBitmap);
                 } catch (error) {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(`Error loading image ${image.src} with exception: ${error}`);
                 }
             };
             image.onerror = (error) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(`Error loading image ${image.src} with exception: ${error}`);
             };
 
             image.src = imageSource;
         });
 
-        return promise;
+        return await promise;
     }
 
     /**
@@ -2055,8 +2057,8 @@ export class NativeEngine extends Engine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public override createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return new Promise((resolve, reject) => {
+    public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return await new Promise((resolve, reject) => {
             if (Array.isArray(image)) {
                 const arr = <Array<ArrayBufferView>>image;
                 if (arr.length) {
@@ -2067,6 +2069,7 @@ export class NativeEngine extends Engine {
                     }
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(`Unsupported data for createImageBitmap.`);
         });
     }
@@ -2205,12 +2208,15 @@ export class NativeEngine extends Engine {
 
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
-            Promise.all(reorderedFiles.map((file) => this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
-                .then((data) => {
-                    return new Promise<void>((resolve, reject) => {
+            // eslint-disable-next-line github/no-then
+            Promise.all(reorderedFiles.map(async (file) => await this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
+                // eslint-disable-next-line github/no-then
+                .then(async (data) => {
+                    return await new Promise<void>((resolve, reject) => {
                         this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
                     });
                 })
+                // eslint-disable-next-line github/no-then
                 .then(
                     () => {
                         texture.isReady = true;
@@ -2696,6 +2702,7 @@ export class NativeEngine extends Engine {
      */
     public override flushFramebuffer(): void {}
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public override _readTexturePixels(
         texture: InternalTexture,
         width: number,
@@ -2712,25 +2719,28 @@ export class NativeEngine extends Engine {
             throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
         }
 
-        return this._engine
-            .readTexture(
-                texture._hardwareTexture?.underlyingResource,
-                level ?? 0,
-                x ?? 0,
-                y ?? 0,
-                width,
-                height,
-                buffer?.buffer ?? null,
-                buffer?.byteOffset ?? 0,
-                buffer?.byteLength ?? 0
-            )
-            .then((rawBuffer) => {
-                if (!buffer) {
-                    buffer = new Uint8Array(rawBuffer);
-                }
+        return (
+            this._engine
+                .readTexture(
+                    texture._hardwareTexture?.underlyingResource,
+                    level ?? 0,
+                    x ?? 0,
+                    y ?? 0,
+                    width,
+                    height,
+                    buffer?.buffer ?? null,
+                    buffer?.byteOffset ?? 0,
+                    buffer?.byteLength ?? 0
+                )
+                // eslint-disable-next-line github/no-then
+                .then((rawBuffer) => {
+                    if (!buffer) {
+                        buffer = new Uint8Array(rawBuffer);
+                    }
 
-                return buffer;
-            });
+                    return buffer;
+                })
+        );
     }
 
     override startTimeQuery(): Nullable<_TimeToken> {

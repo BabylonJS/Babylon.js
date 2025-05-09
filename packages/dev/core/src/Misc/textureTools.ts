@@ -95,6 +95,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
  * @param height height of the output texture. If not provided, use the one from internalTexture
  * @returns a promise with the internalTexture having its texture replaced by the result of the processing
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function ApplyPostProcess(
     postProcessName: string,
     internalTexture: InternalTexture,
@@ -336,6 +337,7 @@ export async function GetTextureDataAsync(texture: BaseTexture, width: number, h
     if (!texture.isReady() && texture._texture) {
         await new Promise((resolve, reject) => {
             if (texture._texture === null) {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(0);
                 return;
             }

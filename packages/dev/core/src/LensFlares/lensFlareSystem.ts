@@ -132,6 +132,7 @@ export class LensFlareSystem {
         // Indices
         this._createIndexBuffer();
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
     }
 

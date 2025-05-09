@@ -85,6 +85,7 @@ export class WebGPUOcclusionQuery {
 
         if (this._frameLastBuffer !== this._engine.frameId) {
             this._frameLastBuffer = this._engine.frameId;
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             this._querySet.readValues(0, this._currentTotalIndices).then((arrayBuffer) => {
                 this._lastBuffer = arrayBuffer;
             });

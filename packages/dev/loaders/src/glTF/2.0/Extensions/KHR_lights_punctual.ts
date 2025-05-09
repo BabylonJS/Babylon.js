@@ -76,10 +76,10 @@ export class KHR_lights implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;
 
-            return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
+            return await this._loader.loadNodeAsync(context, node, (babylonMesh) => {
                 let babylonLight: Light;
 
                 const light = ArrayItem.Get(extensionContext, this._lights, extension.light);

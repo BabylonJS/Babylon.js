@@ -1678,6 +1678,7 @@ export abstract class AbstractEngine {
                 this._loadFile(
                     url,
                     (data) => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         callbackAsync(new Uint8Array(data as ArrayBuffer));
                     },
                     undefined,
@@ -1689,8 +1690,10 @@ export abstract class AbstractEngine {
                 );
             } else {
                 if (buffer instanceof ArrayBuffer) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     callbackAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     callbackAsync(buffer);
                 } else {
                     if (onError) {

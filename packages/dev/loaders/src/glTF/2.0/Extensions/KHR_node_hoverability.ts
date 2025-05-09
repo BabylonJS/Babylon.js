@@ -199,7 +199,7 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
         this._loader.gltf.nodes?.forEach((node) => {
             // default is true, so only apply if false

@@ -142,5 +142,6 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     return this.createCubeTexture(rootUrl, scene, null, false, callbackAsync, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
 };

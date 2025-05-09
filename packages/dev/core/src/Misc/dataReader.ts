@@ -49,10 +49,9 @@ export class DataReader {
      * @returns A promise that resolves when the load is complete
      */
     public async loadAsync(byteLength: number): Promise<void> {
-        return this.buffer.readAsync(this.byteOffset, byteLength).then((data) => {
-            this._dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-            this._dataByteOffset = 0;
-        });
+        const data = await this.buffer.readAsync(this.byteOffset, byteLength);
+        this._dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        this._dataByteOffset = 0;
     }
 
     /**

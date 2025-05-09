@@ -112,6 +112,7 @@ export class WebXRInput implements IDisposable {
         if (WebXRMotionControllerManager.UseOnlineRepository) {
             // pre-load the profiles list to load the controllers quicker afterwards
             try {
+                // eslint-disable-next-line github/no-then
                 WebXRMotionControllerManager.UpdateProfilesList().catch(() => {
                     WebXRMotionControllerManager.UseOnlineRepository = false;
                 });

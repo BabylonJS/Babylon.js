@@ -1792,7 +1792,7 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a promise that will resolve to the new ShaderMaterial
      */
     public static async ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1806,6 +1806,7 @@ export class ShaderMaterial extends PushMaterial {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the ShaderMaterial");
                     }
                 }
@@ -1824,7 +1825,7 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a promise that will resolve to the new ShaderMaterial
      */
     public static async ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1837,6 +1838,7 @@ export class ShaderMaterial extends PushMaterial {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

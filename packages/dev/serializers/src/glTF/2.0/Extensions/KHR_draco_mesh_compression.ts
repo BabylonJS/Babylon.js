@@ -120,6 +120,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         };
 
         const promise = DracoEncoder.Default._encodeAsync(attributes, indices, options)
+            // eslint-disable-next-line github/no-then
             .then((encodedData) => {
                 if (!encodedData) {
                     Logger.Error("Draco encoding failed for primitive.");
@@ -143,6 +144,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 primitive.extensions ||= {};
                 primitive.extensions[NAME] = dracoInfo;
             })
+            // eslint-disable-next-line github/no-then
             .catch((error) => {
                 Logger.Error("Draco encoding failed for primitive: " + error);
             });

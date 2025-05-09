@@ -25,7 +25,7 @@ export class GlobalState {
     public currentCode: string;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public getCompiledCode: () => Promise<string> = async () => {
-        return Promise.resolve(this.currentCode);
+        return await Promise.resolve(this.currentCode);
     };
     public language = Utilities.ReadStringFromStore("language", "JS");
     public fpsElement: HTMLDivElement;

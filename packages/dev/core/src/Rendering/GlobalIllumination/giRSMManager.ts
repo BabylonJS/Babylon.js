@@ -453,6 +453,7 @@ export class GIRSMManager {
         this._counters = [];
         this._countersRTW = [];
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         this.generateSampleTexture(maxSamples);

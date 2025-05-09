@@ -24,6 +24,7 @@ export class MaterialTreeItemComponent extends React.Component<IMaterialTreeItem
                 <div
                     className="icon"
                     onClick={() => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         (this.props.material as NodeMaterial).edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
                     }}
                     title="Node Material Editor"

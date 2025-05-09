@@ -635,7 +635,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         const isDepthUsageDeclared = this.options.usagePreference != null && this.options.usagePreference.length !== 0;
         const isDataFormatDeclared = this.options.dataFormatPreference != null && this.options.dataFormatPreference.length !== 0;
 
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             if (isDepthUsageDeclared && isDataFormatDeclared) {
                 const usages: XRDepthUsage[] = this.options.usagePreference.map((usage) => {
                     switch (usage) {
