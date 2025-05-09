@@ -485,6 +485,33 @@ export class Constants {
     public static readonly MATERIAL_DIFFUSE_MODEL_LAMBERT = 2;
 
     /**
+     * Specular lighting for dielectric materials follows the logic
+     * in the glTF specification and KHR_materials_specular extension.
+     * Specular colour is applied only at normal incidence (i.e. F0) while
+     * glancing angles (i.e. F90) tend towards white.
+     */
+    public static readonly MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF = 0;
+
+    /**
+     * Specular lighting for dielectric materials follows the logic
+     * in the OpenPBR specification. Specular colour is applied to all
+     * dielectric reflection, not just at normal incidence (i.e. F0).
+     */
+    public static readonly MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR = 1;
+
+    /**
+     * Specular lighting for metals follows the logic in the glTF specification.
+     * Base colour is applied at F0 while glancing angles tend towards white.
+     */
+    public static readonly MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF = 0;
+
+    /**
+     * Specular lighting for metals follows the logic in the OpenPBR specification.
+     * Specular colour is applied to glancing angles using the F82 spec.
+     */
+    public static readonly MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR = 1;
+
+    /**
      * Nothing
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
