@@ -9,6 +9,7 @@ uniform sampler2D fontAtlas;
 uniform vec2 unitRange;
 uniform vec2 texelSize;
 uniform vec4 uColor;
+uniform float thickness;
 
 varying vec2 atlasUV;
 
@@ -34,7 +35,7 @@ void main(void)
     float dist = median(sdfCenter);
 
     float pxRange = screenPxRange(fontAtlas);
-    float pxDist = pxRange * (dist - 0.5);
+    float pxDist = pxRange * (dist - 0.5 + thickness);
     float alpha = clamp(pxDist / fwidth(pxDist) + 0.5, 0.0, 1.0);
 
     gl_FragColor = vec4(uColor.rgb, alpha * uColor.a);

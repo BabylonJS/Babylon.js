@@ -6,6 +6,7 @@ var fontAtlasSampler: sampler;
 uniform unitRange: vec2f;
 uniform texelSize: vec2f;
 uniform uColor: vec4f;
+uniform thickness: f32;
 
 varying atlasUV: vec2f;
 
@@ -36,7 +37,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let screenTexSize = vec2<f32>(1.0) / vec2<f32>(length(dx), length(dy));
     let pxRange = max(0.5 * dot(uniforms.unitRange, screenTexSize), 1.0);
 
-    let pxDist = pxRange * (dist - 0.5);
+    let pxDist = pxRange * (dist - 0.5 + uniforms.thickness);
     let alpha = clamp(pxDist / length(dpdx(pxDist)) + 0.5, 0.0, 1.0);
 
     fragmentOutputs.color = vec4<f32>(uniforms.uColor.rgb, alpha * uniforms.uColor.a);

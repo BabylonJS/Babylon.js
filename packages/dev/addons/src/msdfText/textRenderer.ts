@@ -60,6 +60,13 @@ export class TextRenderer implements IDisposable {
      * Gets or sets the color of the text
      */
     public color = new Color4(1.0, 1.0, 1.0, 1.0);
+
+    /**
+     * Gets or sets the thickness of the text (0 means as defined in the font)
+     * Value must be between -0.5 and 0.5
+     */
+    public thicknessControl = 0;
+
     private _parent: Nullable<INodeLike> = null;
 
     /**
@@ -140,7 +147,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "unitRange", "texelSize"],
+            ["parentWorld", "view", "projection", "uColor", "unitRange", "texelSize", "thickness"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -258,6 +265,7 @@ export class TextRenderer implements IDisposable {
         effect.setFloat2("unitRange", distanceRange / textureWidth, distanceRange / textureHeight);
         effect.setFloat2("texelSize", 1.0 / textureWidth, 1.0 / textureHeight);
         effect.setDirectColor4("uColor", this.color);
+        effect.setFloat("thickness", this.thicknessControl * 0.9);
 
         const instanceCount = this._charMatrices.length / 16;
 
