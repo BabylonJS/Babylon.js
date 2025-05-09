@@ -38,13 +38,13 @@ export class SerializationTools {
     }
 
     public static Deserialize(serializationObject: any, globalState: GlobalState) {
-        globalState.nodeGeometry!.parseSerializedObject(serializationObject);
+        globalState.nodeGeometry.parseSerializedObject(serializationObject);
         globalState.onIsLoadingChanged.notifyObservers(false);
     }
 
     public static AddFrameToGeometry(serializationObject: any, globalState: GlobalState, currentGeometry: NodeGeometry) {
         this.UpdateLocations(currentGeometry, globalState);
-        globalState.nodeGeometry!.parseSerializedObject(serializationObject, true);
+        globalState.nodeGeometry.parseSerializedObject(serializationObject, true);
         globalState.onImportFrameObservable.notifyObservers(serializationObject);
         globalState.onIsLoadingChanged.notifyObservers(false);
     }

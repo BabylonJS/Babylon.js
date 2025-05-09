@@ -1550,7 +1550,7 @@ describe("Flow Nodes", () => {
 
         // wait for 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
-        const values = log.mock.calls.map((c) => c[0]);
+        const values = log.mock.calls.map((c) => c[0].value);
         // expect log to be called 3 times - after the first was triggered (2 remaining), then after the second (1 remaining), and then after the last one (0 remaining - completed.)
         expect(log).toHaveBeenCalledTimes(3);
         // last remaining inputs test, also testing out and completed flows

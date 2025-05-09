@@ -1,5 +1,8 @@
 // Constants
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+#define BRDF_DIFFUSE_MODEL_EON 0
+#define BRDF_DIFFUSE_MODEL_BURLEY 1
+#define BRDF_DIFFUSE_MODEL_LAMBERT 2
 
 // ______________________________________________________________________
 //
@@ -427,6 +430,42 @@ float diffuseBRDF_Burley(float NdotL, float NdotV, float VdotH, float roughness)
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNV);
 
     return fresnel / PI;
+}
+
+const float constant1_FON = 0.5 - 2.0 / (3.0 * PI);
+const float constant2_FON = 2.0 / 3.0 - 28.0 / (15.0 * PI);
+
+// Fujii Oren-Nayar (FON) directional albedo (approximate).
+float E_FON_approx(float mu, float roughness)
+{
+    float sigma = roughness; // FON sigma prime
+    float mucomp = 1.0 - mu;
+    float mucomp2 = mucomp * mucomp;
+    const mat2 Gcoeffs = mat2(0.0571085289, -0.332181442,
+                               0.491881867, 0.0714429953);
+    float GoverPi = dot(Gcoeffs * vec2(mucomp, mucomp2), vec2(1.0, mucomp2));
+    return (1.0 + sigma * GoverPi) / (1.0 + constant1_FON * sigma);
+}
+
+vec3 diffuseBRDF_EON(vec3 albedo, float roughness, float NdotL, float NdotV, float LdotV)
+{
+    vec3 rho = albedo;
+    float sigma = roughness;                            // FON sigma prime
+    float mu_i = NdotL;                            // input angle cos
+    float mu_o = NdotV;                            // output angle cos
+    float s = LdotV - mu_i * mu_o;    // QON s term
+    float sovertF = s > 0.0 ? s / max(mu_i, mu_o) : s; // FON s/t
+    float AF = 1.0 / (1.0 + constant1_FON * sigma);   // FON A coeff.
+    vec3 f_ss = (rho * RECIPROCAL_PI) * AF * (1.0 + sigma * sovertF); // single-scatter
+    float EFo = E_FON_approx(mu_o, sigma);      // FON wo albedo (approx)
+    float EFi = E_FON_approx(mu_i, sigma);      // FON wi albedo (approx)
+    float avgEF = AF * (1.0 + constant2_FON * sigma);  // avg. albedo
+    vec3 rho_ms = (rho * rho) * avgEF / (vec3(1.0) - rho * (1.0 - avgEF));
+    const float eps = 1.0e-7;
+    vec3 f_ms = (rho_ms * RECIPROCAL_PI) * max(eps, 1.0 - EFo) // multi-scatter lobe
+                                 * max(eps, 1.0 - EFi)
+                                 / max(eps, 1.0 - avgEF);
+    return (f_ss + f_ms);
 }
 
 #ifdef SS_TRANSLUCENCY

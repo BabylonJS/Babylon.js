@@ -14,7 +14,7 @@ export class AudioTestHelper {
      */
     static WaitForAudioContextSuspendedDoubleCheck() {
         jest.advanceTimersByTime(500);
-    };
+    }
 
     static WhenAudioContextResumes(callback: () => void) {
         return Promise.resolve().then(callback);

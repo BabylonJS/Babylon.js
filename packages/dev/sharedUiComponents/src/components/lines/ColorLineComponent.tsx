@@ -11,7 +11,7 @@ import * as style from "./ColorLineComponent.module.scss";
 
 import copyIcon from "../../imgs/copy.svg";
 import { JoinClassNames } from "../classNames";
-const emptyColor = new Color4(0, 0, 0, 0);
+const EmptyColor = new Color4(0, 0, 0, 0);
 
 export interface IColorLineComponentProps {
     label: string;
@@ -61,7 +61,9 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     getValue(props = this.props): Color4 {
         const target = props.target;
         const property = target[props.propertyName];
-        if (!property) return emptyColor;
+        if (!property) {
+            return EmptyColor;
+        }
         if (typeof property === "string") {
             // if (property === conflictingValuesPlaceholder) {
             //     return emptyColor;
@@ -149,7 +151,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
 
     private _convertToColor(color: string): Color4 {
         if (color === "" || color === "transparent") {
-            return emptyColor;
+            return EmptyColor;
         }
 
         if (color.substring(0, 1) !== "#" || (color.length !== 7 && color.length !== 9)) {

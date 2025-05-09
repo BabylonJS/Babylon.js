@@ -24,7 +24,7 @@ import type { ISize } from "../Maths/math.size";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.alpha";
-import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, PrepareStringDefinesForClipPlanes, BindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
@@ -70,40 +70,8 @@ import {
     _ProcessSizeGradients,
     _ProcessVelocityGradients,
 } from "./thinParticleSystem.function";
-
-/** @internal */
-interface IExecutionQueueItem {
-    process: (particle: Particle, system: ThinParticleSystem) => void;
-    previousItem: Nullable<IExecutionQueueItem>;
-    nextItem: Nullable<IExecutionQueueItem>;
-}
-
-function ConnectBefore(newOne: IExecutionQueueItem, activeOne: IExecutionQueueItem) {
-    newOne.previousItem = activeOne.previousItem;
-    newOne.nextItem = activeOne;
-    if (activeOne.previousItem) {
-        activeOne.previousItem.nextItem = newOne;
-    }
-    activeOne.previousItem = newOne;
-}
-
-function ConnectAfter(newOne: IExecutionQueueItem, activeOne: IExecutionQueueItem) {
-    newOne.previousItem = activeOne;
-    newOne.nextItem = activeOne.nextItem;
-    if (activeOne.nextItem) {
-        activeOne.nextItem.previousItem = newOne;
-    }
-    activeOne.nextItem = newOne;
-}
-
-function RemoveFromQueue(item: IExecutionQueueItem) {
-    if (item.previousItem) {
-        item.previousItem.nextItem = item.nextItem;
-    }
-    if (item.nextItem) {
-        item.nextItem.previousItem = item.previousItem;
-    }
-}
+import type { _IExecutionQueueItem } from "./Queue/executionQueue";
+import { _ConnectAfter, _ConnectBefore, _RemoveFromQueue } from "./Queue/executionQueue";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -262,36 +230,36 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _rampGradientsTexture: Nullable<RawTexture>;
     private _useRampGradients = false;
 
-    private _updateQueueStart: Nullable<IExecutionQueueItem> = null;
-    private _colorProcessing: IExecutionQueueItem;
-    private _angularSpeedGradientProcessing: IExecutionQueueItem;
-    private _angularSpeedProcessing: IExecutionQueueItem;
-    private _velocityGradientProcessing: IExecutionQueueItem;
-    private _directionProcessing: IExecutionQueueItem;
-    private _limitVelocityGradientProcessing: IExecutionQueueItem;
-    private _positionProcessing: IExecutionQueueItem;
-    private _dragGradientProcessing: IExecutionQueueItem;
-    private _noiseProcessing: IExecutionQueueItem;
-    private _gravityProcessing: IExecutionQueueItem;
-    private _sizeGradientProcessing: IExecutionQueueItem;
-    private _remapGradientProcessing: IExecutionQueueItem;
+    protected _updateQueueStart: Nullable<_IExecutionQueueItem> = null;
+    protected _colorProcessing: _IExecutionQueueItem;
+    protected _angularSpeedGradientProcessing: _IExecutionQueueItem;
+    protected _angularSpeedProcessing: _IExecutionQueueItem;
+    protected _velocityGradientProcessing: _IExecutionQueueItem;
+    protected _directionProcessing: _IExecutionQueueItem;
+    protected _limitVelocityGradientProcessing: _IExecutionQueueItem;
+    protected _positionProcessing: _IExecutionQueueItem;
+    protected _dragGradientProcessing: _IExecutionQueueItem;
+    protected _noiseProcessing: _IExecutionQueueItem;
+    protected _gravityProcessing: _IExecutionQueueItem;
+    protected _sizeGradientProcessing: _IExecutionQueueItem;
+    protected _remapGradientProcessing: _IExecutionQueueItem;
 
-    private _lifeTimeCreation: IExecutionQueueItem;
-    private _positionCreation: IExecutionQueueItem;
-    private _isLocalCreation: IExecutionQueueItem;
-    private _directionCreation: IExecutionQueueItem;
-    private _emitPowerCreation: IExecutionQueueItem;
-    private _sizeCreation: IExecutionQueueItem;
-    private _startSizeCreation: Nullable<IExecutionQueueItem> = null;
-    private _angleCreation: IExecutionQueueItem;
-    private _velocityCreation: IExecutionQueueItem;
-    private _limitVelocityCreation: IExecutionQueueItem;
-    private _dragCreation: IExecutionQueueItem;
-    private _colorCreation: IExecutionQueueItem;
-    private _sheetCreation: IExecutionQueueItem;
-    private _rampCreation: IExecutionQueueItem;
-    private _noiseCreation: IExecutionQueueItem;
-    private _createQueueStart: Nullable<IExecutionQueueItem> = null;
+    private _lifeTimeCreation: _IExecutionQueueItem;
+    private _positionCreation: _IExecutionQueueItem;
+    private _isLocalCreation: _IExecutionQueueItem;
+    private _directionCreation: _IExecutionQueueItem;
+    private _emitPowerCreation: _IExecutionQueueItem;
+    private _sizeCreation: _IExecutionQueueItem;
+    private _startSizeCreation: Nullable<_IExecutionQueueItem> = null;
+    private _angleCreation: _IExecutionQueueItem;
+    private _velocityCreation: _IExecutionQueueItem;
+    private _limitVelocityCreation: _IExecutionQueueItem;
+    private _dragCreation: _IExecutionQueueItem;
+    private _colorCreation: _IExecutionQueueItem;
+    private _sheetCreation: _IExecutionQueueItem;
+    private _rampCreation: _IExecutionQueueItem;
+    private _noiseCreation: _IExecutionQueueItem;
+    private _createQueueStart: Nullable<_IExecutionQueueItem> = null;
 
     /** @internal */
     public _directionScale: number;
@@ -330,16 +298,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectAfter(this._rampCreation, this._colorCreation);
+            _ConnectAfter(this._rampCreation, this._colorCreation);
             this._remapGradientProcessing = {
                 process: _ProcessRemapGradients,
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectAfter(this._remapGradientProcessing, this._gravityProcessing);
+            _ConnectAfter(this._remapGradientProcessing, this._gravityProcessing);
         } else {
-            RemoveFromQueue(this._rampCreation);
-            RemoveFromQueue(this._remapGradientProcessing);
+            _RemoveFromQueue(this._rampCreation);
+            _RemoveFromQueue(this._remapGradientProcessing);
         }
     }
 
@@ -366,9 +334,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 nextItem: null,
             };
 
-            ConnectAfter(this._isLocalCreation, this._positionCreation);
+            _ConnectAfter(this._isLocalCreation, this._positionCreation);
         } else {
-            RemoveFromQueue(this._isLocalCreation);
+            _RemoveFromQueue(this._isLocalCreation);
         }
     }
 
@@ -411,9 +379,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 nextItem: null,
             };
 
-            ConnectAfter(this._sheetCreation, this._colorCreation);
+            _ConnectAfter(this._sheetCreation, this._colorCreation);
         } else {
-            RemoveFromQueue(this._sheetCreation);
+            _RemoveFromQueue(this._sheetCreation);
         }
     }
 
@@ -461,9 +429,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customWrappers[blendMode] = new DrawWrapper(this._engine);
-        this._customWrappers[blendMode]!.effect = effect;
-        if (this._customWrappers[blendMode]!.drawContext) {
-            this._customWrappers[blendMode]!.drawContext!.useInstancing = this._useInstancing;
+        this._customWrappers[blendMode].effect = effect;
+        if (this._customWrappers[blendMode].drawContext) {
+            this._customWrappers[blendMode].drawContext.useInstancing = this._useInstancing;
         }
     }
 
@@ -514,8 +482,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._noiseTexture = value;
 
         if (!value) {
-            RemoveFromQueue(this._noiseCreation);
-            RemoveFromQueue(this._noiseProcessing);
+            _RemoveFromQueue(this._noiseCreation);
+            _RemoveFromQueue(this._noiseProcessing);
             return;
         }
 
@@ -524,14 +492,14 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._noiseCreation, this._colorCreation);
+        _ConnectAfter(this._noiseCreation, this._colorCreation);
 
         this._noiseProcessing = {
             process: _ProcessNoise,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._noiseProcessing, this._positionProcessing);
+        _ConnectAfter(this._noiseProcessing, this._positionProcessing);
     }
 
     /**
@@ -557,7 +525,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._capacity = capacity;
 
         this._epsilon = epsilon;
-        this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
         if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
@@ -575,22 +542,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         this._initShaderSourceAsync();
 
-        // Setup the default processing configuration to the scene.
-        this._attachImageProcessingConfiguration(null);
-
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        this._customWrappers = { 0: new DrawWrapper(this._engine) };
-        this._customWrappers[0]!.effect = customEffect;
-
-        this._drawWrappers = [];
-        this._useInstancing = this._engine.getCaps().instancedArrays;
-
-        this._createIndexBuffer();
-        this._createVertexBuffers();
-
-        // Default emitter type
-        this.particleEmitterType = new BoxParticleEmitter();
-
         // Creation queue
         this._lifeTimeCreation = {
             process: _CreateLifetimeData,
@@ -603,42 +554,42 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._positionCreation, this._lifeTimeCreation);
+        _ConnectAfter(this._positionCreation, this._lifeTimeCreation);
 
         this._directionCreation = {
             process: _CreateDirectionData,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._directionCreation, this._positionCreation);
+        _ConnectAfter(this._directionCreation, this._positionCreation);
 
         this._emitPowerCreation = {
             process: _CreateEmitPowerData,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._emitPowerCreation, this._directionCreation);
+        _ConnectAfter(this._emitPowerCreation, this._directionCreation);
 
         this._sizeCreation = {
             process: _CreateSizeData,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._sizeCreation, this._emitPowerCreation);
+        _ConnectAfter(this._sizeCreation, this._emitPowerCreation);
 
         this._angleCreation = {
             process: _CreateAngleData,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._angleCreation, this._sizeCreation);
+        _ConnectAfter(this._angleCreation, this._sizeCreation);
 
         this._colorCreation = {
             process: _CreateColorData,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._colorCreation, this._angleCreation);
+        _ConnectAfter(this._colorCreation, this._angleCreation);
 
         this._createQueueStart = this._lifeTimeCreation;
 
@@ -654,21 +605,21 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._angularSpeedProcessing, this._colorProcessing);
+        _ConnectAfter(this._angularSpeedProcessing, this._colorProcessing);
 
         this._directionProcessing = {
             process: _ProcessDirection,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._directionProcessing, this._angularSpeedProcessing);
+        _ConnectAfter(this._directionProcessing, this._angularSpeedProcessing);
 
         this._positionProcessing = {
             process: _ProcessPosition,
             previousItem: null,
             nextItem: null,
         };
-        ConnectAfter(this._positionProcessing, this._directionProcessing);
+        _ConnectAfter(this._positionProcessing, this._directionProcessing);
 
         this._gravityProcessing = {
             process: _ProcessGravity,
@@ -676,9 +627,27 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             nextItem: null,
         };
 
-        ConnectAfter(this._gravityProcessing, this._positionProcessing);
+        _ConnectAfter(this._gravityProcessing, this._positionProcessing);
 
         this._updateQueueStart = this._colorProcessing;
+
+        this._isAnimationSheetEnabled = isAnimationSheetEnabled;
+
+        // Setup the default processing configuration to the scene.
+        this._attachImageProcessingConfiguration(null);
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        this._customWrappers = { 0: new DrawWrapper(this._engine) };
+        this._customWrappers[0]!.effect = customEffect;
+
+        this._drawWrappers = [];
+        this._useInstancing = this._engine.getCaps().instancedArrays;
+
+        this._createIndexBuffer();
+        this._createVertexBuffers();
+
+        // Default emitter type
+        this.particleEmitterType = new BoxParticleEmitter();
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
@@ -813,13 +782,13 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     previousItem: null,
                     nextItem: null,
                 };
-                ConnectAfter(this._startSizeCreation, this._sizeCreation);
+                _ConnectAfter(this._startSizeCreation, this._sizeCreation);
             }
             return;
         }
 
         if (this._startSizeCreation) {
-            RemoveFromQueue(this._startSizeCreation);
+            _RemoveFromQueue(this._startSizeCreation);
             this._startSizeCreation = null;
         }
     }
@@ -891,7 +860,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectBefore(this._sizeGradientProcessing, this._gravityProcessing);
+            _ConnectBefore(this._sizeGradientProcessing, this._gravityProcessing);
         }
 
         this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
@@ -908,7 +877,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._sizeGradients, gradient);
 
         if (this._sizeGradients?.length === 0) {
-            RemoveFromQueue(this._sizeGradientProcessing);
+            _RemoveFromQueue(this._sizeGradientProcessing);
             this._sizeCreation.process = _CreateSizeData;
         }
 
@@ -992,7 +961,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 nextItem: null,
             };
 
-            ConnectBefore(this._angularSpeedGradientProcessing, this._angularSpeedProcessing);
+            _ConnectBefore(this._angularSpeedGradientProcessing, this._angularSpeedProcessing);
         }
 
         this._addFactorGradient(this._angularSpeedGradients, gradient, factor, factor2);
@@ -1010,7 +979,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         if (this._angularSpeedGradients?.length === 0) {
             this._angleCreation.process = _CreateAngleData;
-            RemoveFromQueue(this._angularSpeedGradientProcessing);
+            _RemoveFromQueue(this._angularSpeedGradientProcessing);
         }
 
         return this;
@@ -1034,14 +1003,14 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectAfter(this._velocityCreation, this._angleCreation);
+            _ConnectAfter(this._velocityCreation, this._angleCreation);
 
             this._velocityGradientProcessing = {
                 process: _ProcessVelocityGradients,
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectBefore(this._velocityGradientProcessing, this._directionProcessing);
+            _ConnectBefore(this._velocityGradientProcessing, this._directionProcessing);
         }
 
         this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
@@ -1058,8 +1027,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._velocityGradients, gradient);
 
         if (this._velocityGradients?.length === 0) {
-            RemoveFromQueue(this._velocityCreation);
-            RemoveFromQueue(this._velocityGradientProcessing);
+            _RemoveFromQueue(this._velocityCreation);
+            _RemoveFromQueue(this._velocityGradientProcessing);
         }
 
         return this;
@@ -1083,14 +1052,14 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectAfter(this._limitVelocityCreation, this._angleCreation);
+            _ConnectAfter(this._limitVelocityCreation, this._angleCreation);
 
             this._limitVelocityGradientProcessing = {
                 process: _ProcessLimitVelocityGradients,
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectAfter(this._limitVelocityGradientProcessing, this._directionProcessing);
+            _ConnectAfter(this._limitVelocityGradientProcessing, this._directionProcessing);
         }
 
         this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
@@ -1107,8 +1076,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._limitVelocityGradients, gradient);
 
         if (this._limitVelocityGradients?.length === 0) {
-            RemoveFromQueue(this._limitVelocityCreation);
-            RemoveFromQueue(this._limitVelocityGradientProcessing);
+            _RemoveFromQueue(this._limitVelocityCreation);
+            _RemoveFromQueue(this._limitVelocityGradientProcessing);
         }
 
         return this;
@@ -1132,14 +1101,14 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectBefore(this._dragCreation, this._colorCreation);
+            _ConnectBefore(this._dragCreation, this._colorCreation);
 
             this._dragGradientProcessing = {
                 process: _ProcessDragGradients,
                 previousItem: null,
                 nextItem: null,
             };
-            ConnectBefore(this._dragGradientProcessing, this._positionProcessing);
+            _ConnectBefore(this._dragGradientProcessing, this._positionProcessing);
         }
 
         this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
@@ -1156,8 +1125,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._removeFactorGradient(this._dragGradients, gradient);
 
         if (this._dragGradients?.length === 0) {
-            RemoveFromQueue(this._dragCreation);
-            RemoveFromQueue(this._dragGradientProcessing);
+            _RemoveFromQueue(this._dragCreation);
+            _RemoveFromQueue(this._dragGradientProcessing);
         }
 
         return this;
@@ -1846,7 +1815,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["invView", "view", "projection", "textureMask", "translationPivot", "eyePosition"];
 
-        addClipPlaneUniforms(effectCreationOption);
+        AddClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1871,7 +1840,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing: boolean = true): void {
         if (this._scene) {
-            prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Constants.FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
@@ -2212,7 +2181,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         const defines = effect.defines;
 
         if (this._scene) {
-            bindClipPlane(effect, this, this._scene);
+            BindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
                 BindFogParameters(this._scene, undefined, effect);

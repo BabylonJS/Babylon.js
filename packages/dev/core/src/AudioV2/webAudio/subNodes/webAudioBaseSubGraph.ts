@@ -31,16 +31,16 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
     }
 
     /** @internal */
-    public async init(options: Partial<IWebAudioBaseSubGraphOptions>): Promise<void> {
+    public async initAsync(options: Partial<IWebAudioBaseSubGraphOptions>): Promise<void> {
         const hasAnalyzerOptions = _HasAudioAnalyzerOptions(options);
 
         if (hasAnalyzerOptions) {
-            await this.createAndAddSubNode(AudioSubNode.ANALYZER);
+            await this.createAndAddSubNodeAsync(AudioSubNode.ANALYZER);
         }
 
-        await this.createAndAddSubNode(AudioSubNode.VOLUME);
+        await this.createAndAddSubNodeAsync(AudioSubNode.VOLUME);
 
-        await this._createSubNodePromisesResolved();
+        await this._createSubNodePromisesResolvedAsync();
 
         if (hasAnalyzerOptions) {
             const analyzerNode = _GetAudioAnalyzerSubNode(this);
@@ -89,6 +89,8 @@ export abstract class _WebAudioBaseSubGraph extends _AbstractAudioSubGraph {
         return this._outputNode;
     }
 
+    // Function is async, but throws synchronously. Avoiding breaking changes.
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     protected _createSubNode(name: string): Promise<_AbstractAudioSubNode> {
         switch (name) {
             case AudioSubNode.ANALYZER:

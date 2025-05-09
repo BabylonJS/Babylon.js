@@ -178,7 +178,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
     protected override _setupShadowGenerator() {
         super._setupShadowGenerator();
 
-        const shadowGenerator = this._shadowGenerator as CascadedShadowGenerator | undefined;
+        const shadowGenerator = this._shadowGenerator;
         if (shadowGenerator === undefined) {
             return;
         }

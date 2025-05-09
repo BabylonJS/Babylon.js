@@ -59,7 +59,7 @@ export class SideBarComponent extends React.Component<ISideBarComponentProps, IS
                     }
                 }
             } else {
-                index = (this.props.context.animations as Animation[])!.indexOf(animationToDelete);
+                index = (this.props.context.animations as Animation[]).indexOf(animationToDelete);
             }
 
             if (index > -1) {

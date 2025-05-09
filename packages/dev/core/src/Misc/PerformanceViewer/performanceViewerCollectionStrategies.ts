@@ -23,7 +23,7 @@ export interface IPerfViewerCollectionStrategy {
     dispose: () => void;
 }
 // Dispose which does nothing.
-const defaultDisposeImpl = () => {};
+const DefaultDisposeImpl = () => {};
 
 /**
  * Initializer callback for a strategy
@@ -43,7 +43,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "FPS",
                 getData: () => engine.getFps(),
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -120,7 +120,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Total meshes",
                 getData: () => scene.meshes.length,
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -134,7 +134,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Active meshes",
                 getData: () => scene.getActiveMeshes().length,
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -148,7 +148,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Active indices",
                 getData: () => scene.getActiveIndices(),
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -162,7 +162,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Active faces",
                 getData: () => scene.getActiveIndices() / 3,
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -176,7 +176,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Active bones",
                 getData: () => scene.getActiveBones(),
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -190,7 +190,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Active particles",
                 getData: () => scene.getActiveParticles(),
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -230,7 +230,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Total lights",
                 getData: () => scene.lights.length,
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -244,7 +244,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Total vertices",
                 getData: () => scene.getTotalVertices(),
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -258,7 +258,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Total materials",
                 getData: () => scene.materials.length,
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -272,7 +272,7 @@ export class PerfCollectionStrategy {
             return {
                 id: "Total textures",
                 getData: () => scene.textures.length,
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }
@@ -291,7 +291,7 @@ export class PerfCollectionStrategy {
                 getData: () => {
                     return 1000.0 / sceneInstrumentation.frameTimeCounter.lastSecAverage;
                 },
-                dispose: defaultDisposeImpl,
+                dispose: DefaultDisposeImpl,
             };
         };
     }

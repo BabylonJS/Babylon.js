@@ -31,11 +31,11 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
         if (this.entity?.accessibilityTag?.description) {
             description = this.entity.accessibilityTag.description;
         } else if (options.addAllControls && this.entity instanceof TextBlock) {
-            description = (this.entity as TextBlock).text;
+            description = this.entity.text;
         } else if (options.addAllControls && this.entity instanceof Button) {
-            description = (this.entity as Button).textBlock?.text ?? "";
+            description = this.entity.textBlock?.text ?? "";
         } else if (options.addAllControls && this.entity instanceof Image) {
-            description = (this.entity as Image).alt ?? "";
+            description = this.entity.alt ?? "";
         }
         return description;
     }
@@ -49,7 +49,7 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
         }
 
         // If defined onclick, override default.
-        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         if (eventHandler?.click || eventHandler?.contextmenu) {
             this._isActionable = true;
         } else {
@@ -84,13 +84,13 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
      */
     public override focus(): void {
         // If defined eventHandler, override default.
-        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         if (eventHandler?.focus) {
             eventHandler.focus();
             return;
         }
 
-        const control = this.entity as Control;
+        const control = this.entity;
         control.highlightLineWidth = 10;
         control.isHighlighted = true;
     }
@@ -100,13 +100,13 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
      */
     public override blur(): void {
         // If defined eventHandler, override default.
-        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         if (eventHandler?.blur) {
             eventHandler.blur();
             return;
         }
 
-        const control = this.entity as Control;
+        const control = this.entity;
         control.isHighlighted = false;
     }
 
@@ -116,7 +116,7 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
      * @param eventType - Which event is triggered. E.g. "click", "contextmenu"
      */
     public override triggerEvent(eventType: string): void {
-        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
 
         switch (eventType) {
             case "click":
@@ -125,7 +125,9 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
                     return;
                 }
 
-                if (!this.isActionable) return;
+                if (!this.isActionable) {
+                    return;
+                }
                 this.entity.onPointerClickObservable.notifyObservers(new Vector2WithInfo(new Vector2(this.scene.pointerX, this.scene.pointerY)));
                 break;
 

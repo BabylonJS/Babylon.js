@@ -194,7 +194,7 @@ export class GroundMesh extends Mesh {
     private _initHeightQuads(): GroundMesh {
         const subdivisionsX = this._subdivisionsX;
         const subdivisionsY = this._subdivisionsY;
-        this._heightQuads = new Array();
+        this._heightQuads = [];
         for (let row = 0; row < subdivisionsY; row++) {
             for (let col = 0; col < subdivisionsX; col++) {
                 const quad = { slope: Vector2.Zero(), facet1: new Vector4(0.0, 0.0, 0.0, 0.0), facet2: new Vector4(0.0, 0.0, 0.0, 0.0) };

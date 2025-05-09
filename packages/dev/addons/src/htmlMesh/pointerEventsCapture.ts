@@ -13,25 +13,26 @@ type CaptureReleaseCallbacks = {
     release: CaptureReleaseCallback;
 };
 
-let captureRequestQueue: string[] = [];
+let CaptureRequestQueue: string[] = [];
 
 // Key is request id, value is object with capture and release callbacks
-const pendingRequestCallbacks: Map<string, CaptureReleaseCallbacks> = new Map();
+const PendingRequestCallbacks: Map<string, CaptureReleaseCallbacks> = new Map();
 
 // Keep track of release requests with no matching capture request
 // in case the release request arrived before the capture to avoid
 // the capture request never getting released.
-let unmatchedReleaseRequests: string[] = [];
+let UnmatchedReleaseRequests: string[] = [];
 
-let currentOwner: string | null = null; // Called on first capture or release request
+let CurrentOwner: string | null = null; // Called on first capture or release request
 
 /**
  * Get the id of the object currently capturing pointer events
  * @returns The id of the object currently capturing pointer events
  * or null if no object is capturing pointer events
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getCapturingId = () => {
-    return currentOwner;
+    return CurrentOwner;
 };
 
 /**
@@ -43,21 +44,22 @@ export const getCapturingId = () => {
  * @param captureCallback The callback to call when the request is granted and the object is capturing
  * @param releaseCallback The callback to call when the object is no longer capturing pointer events
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const requestCapture = (requestId: string, captureCallback: CaptureReleaseCallback, releaseCallback: CaptureReleaseCallback) => {
-    debugLog(`In pointerEventsCapture.requestCapture - Pointer events capture requested for ${requestId}`);
+    DebugLog(`In pointerEventsCapture.requestCapture - Pointer events capture requested for ${requestId}`);
 
     // If there is a release for this request, then ignore the request
-    if (removeUnmatchedRequest(requestId)) {
-        debugLog(`In pointerEventsCapture.requestCapture - Capture request matched previous release request ${requestId}.  Cancelling capture request`);
+    if (RemoveUnmatchedRequest(requestId)) {
+        DebugLog(`In pointerEventsCapture.requestCapture - Capture request matched previous release request ${requestId}.  Cancelling capture request`);
         return;
-    } else if (requestId !== currentOwner) {
+    } else if (requestId !== CurrentOwner) {
         // if the request is not already in the queue, add it to the queue
-        enqueueCaptureRequest(requestId, captureCallback, releaseCallback);
+        EnqueueCaptureRequest(requestId, captureCallback, releaseCallback);
     }
 
-    if (!currentOwner) {
+    if (!CurrentOwner) {
         // If there is no current owner, go ahead and grant the request
-        transferPointerEventsOwnership();
+        TransferPointerEventsOwnership();
     }
     // If the request id is the current owner, do nothing
 };
@@ -71,59 +73,61 @@ export const requestCapture = (requestId: string, captureCallback: CaptureReleas
  * the release request arrived before the capture request.
  * @param requestId The id which should match the id of the capture request
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const requestRelease = (requestId: string | null) => {
-    debugLog(`In pointerEventsCapture.requestRelease - Pointer events release requested for ${requestId}`);
+    DebugLog(`In pointerEventsCapture.requestRelease - Pointer events release requested for ${requestId}`);
 
     // if the requestId is the current capture holder release it
-    if (!requestId || requestId === currentOwner) {
-        transferPointerEventsOwnership();
-    } else if (cancelRequest(requestId)) {
+    if (!requestId || requestId === CurrentOwner) {
+        TransferPointerEventsOwnership();
+    } else if (CancelRequest(requestId)) {
         // if the request is in the queue, but not the current capture holder, remove it and it's callbacks
-        pendingRequestCallbacks.delete(requestId);
+        PendingRequestCallbacks.delete(requestId);
     } else {
-        debugLog(`In pointerEventsCapture.requestRelease - Received release request ${requestId} but no matching capture request was received`);
+        DebugLog(`In pointerEventsCapture.requestRelease - Received release request ${requestId} but no matching capture request was received`);
         // request was not current and not in queue, likely because we received a release
         // request before the capture.  Add it to the unmatched list to guard against this possibility
-        if (!unmatchedReleaseRequests.includes(requestId)) {
-            unmatchedReleaseRequests.push(requestId);
+        if (!UnmatchedReleaseRequests.includes(requestId)) {
+            UnmatchedReleaseRequests.push(requestId);
         }
     }
 };
 
 /**
- * Relase pointer events from the current owner
+ * Release pointer events from the current owner
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const releaseCurrent = () => {
-    requestRelease(currentOwner);
+    requestRelease(CurrentOwner);
 };
 
-const enqueueCaptureRequest = (requestId: string, capture: CaptureReleaseCallback, release: CaptureReleaseCallback) => {
-    debugLog(`In pointerEventsCapture.enqueueCaptureRequest - Enqueueing capture request for  ${requestId}`);
-    if (!captureRequestQueue.includes(requestId)) {
-        captureRequestQueue.push(requestId);
-        pendingRequestCallbacks.set(requestId, { capture, release });
+const EnqueueCaptureRequest = (requestId: string, capture: CaptureReleaseCallback, release: CaptureReleaseCallback) => {
+    DebugLog(`In pointerEventsCapture.enqueueCaptureRequest - Enqueueing capture request for  ${requestId}`);
+    if (!CaptureRequestQueue.includes(requestId)) {
+        CaptureRequestQueue.push(requestId);
+        PendingRequestCallbacks.set(requestId, { capture, release });
     }
 };
 
 // Removes the request from the queue if it exists.  Returns true
 // if the request was found and removed, otherwise false
-const cancelRequest = (requestId: string | null) => {
+const CancelRequest = (requestId: string | null) => {
     let removed = false;
-    captureRequestQueue = captureRequestQueue.filter((id) => {
+    CaptureRequestQueue = CaptureRequestQueue.filter((id) => {
         if (id !== requestId) {
             return true;
         } else {
             removed = true;
-            debugLog(`In pointerEventsCapture.cancelRequest - Canceling pointer events capture request ${requestId}`);
+            DebugLog(`In pointerEventsCapture.cancelRequest - Canceling pointer events capture request ${requestId}`);
             return false;
         }
     });
     return removed;
 };
 
-const removeUnmatchedRequest = (requestId: string) => {
+const RemoveUnmatchedRequest = (requestId: string) => {
     let removed = false;
-    unmatchedReleaseRequests = unmatchedReleaseRequests.filter((id) => {
+    UnmatchedReleaseRequests = UnmatchedReleaseRequests.filter((id) => {
         if (id !== requestId) {
             return true;
         } else {
@@ -134,54 +138,55 @@ const removeUnmatchedRequest = (requestId: string) => {
     return removed;
 };
 
-const transferPointerEventsOwnership = () => {
-    const newOwnerId = nextCaptureRequest();
-    debugLog(`In pointerEventsCapture.transferPointerEventsOwnership - Transferrring pointer events from ${currentOwner} to ${newOwnerId}`);
+const TransferPointerEventsOwnership = () => {
+    const newOwnerId = NextCaptureRequest();
+    DebugLog(`In pointerEventsCapture.transferPointerEventsOwnership - Transferrring pointer events from ${CurrentOwner} to ${newOwnerId}`);
     // Release the current owner
-    doRelease();
+    DoRelease();
     if (newOwnerId) {
-        doCapture(newOwnerId);
+        DoCapture(newOwnerId);
     }
 };
 
-const doRelease = () => {
-    debugLog(`In pointerEventsCapture.doRelease - Releasing pointer events from ${currentOwner}`);
-    if (currentOwner) {
+const DoRelease = () => {
+    DebugLog(`In pointerEventsCapture.doRelease - Releasing pointer events from ${CurrentOwner}`);
+    if (CurrentOwner) {
         // call the release callback
-        pendingRequestCallbacks.get(currentOwner)?.release();
+        PendingRequestCallbacks.get(CurrentOwner)?.release();
         // And remove the callbacks
-        pendingRequestCallbacks.delete(currentOwner);
-        currentOwner = null;
+        PendingRequestCallbacks.delete(CurrentOwner);
+        CurrentOwner = null;
     }
 };
 
-const doCapture = (newOwnerId: string) => {
+const DoCapture = (newOwnerId: string) => {
     if (newOwnerId) {
         // call the capture callback
-        pendingRequestCallbacks.get(newOwnerId)?.capture();
+        PendingRequestCallbacks.get(newOwnerId)?.capture();
     }
-    currentOwner = newOwnerId;
-    debugLog(`In pointerEventsCapture.doCapture - Pointer events now captured by ${newOwnerId}`);
+    CurrentOwner = newOwnerId;
+    DebugLog(`In pointerEventsCapture.doCapture - Pointer events now captured by ${newOwnerId}`);
 };
 
-const nextCaptureRequest = () => {
-    return captureRequestQueue.length > 0 ? captureRequestQueue.shift() : null;
+const NextCaptureRequest = () => {
+    return CaptureRequestQueue.length > 0 ? CaptureRequestQueue.shift() : null;
 };
 
 // #region Debugging support
 declare global {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface Window {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         "pointer-events-capture-debug": boolean | null;
     }
 }
 
-const debugLog = (message: string) => {
+const DebugLog = (message: string) => {
     // If we are runnning in a test runner (in node, so window is not defined)
     // or if the debug flag is set, then log the message
     if (typeof window === "undefined" || window["pointer-events-capture-debug"]) {
         Tools.Log(
-            `${performance.now()} - game.scene.pointerEvents - ${message}\ncurrentOwner: ${currentOwner}\nqueue: ${captureRequestQueue}\nunmatched: ${unmatchedReleaseRequests}`
+            `${performance.now()} - game.scene.pointerEvents - ${message}\ncurrentOwner: ${CurrentOwner}\nqueue: ${CaptureRequestQueue}\nunmatched: ${UnmatchedReleaseRequests}`
         );
     }
 };

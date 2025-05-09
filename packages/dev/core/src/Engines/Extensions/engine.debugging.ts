@@ -2,6 +2,7 @@
 import { AbstractEngine } from "../../Engines/abstractEngine";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         _debugPushGroup(groupName: string, targetObject?: number): void;

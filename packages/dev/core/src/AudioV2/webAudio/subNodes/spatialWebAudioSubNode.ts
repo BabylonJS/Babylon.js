@@ -8,15 +8,16 @@ const TmpMatrix = Matrix.Zero();
 const TmpQuaternion = new Quaternion();
 const TmpVector = Vector3.Zero();
 
-function d2r(degrees: number): number {
+function D2r(degrees: number): number {
     return (degrees * Math.PI) / 180;
 }
 
-function r2d(radians: number): number {
+function R2d(radians: number): number {
     return (radians * 180) / Math.PI;
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_SpatialAudioSubNode> {
     return new _SpatialWebAudioSubNode(engine);
 }
@@ -49,20 +50,20 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     /** @internal */
     public get coneInnerAngle(): number {
-        return d2r(this.node.coneInnerAngle);
+        return D2r(this.node.coneInnerAngle);
     }
 
     public set coneInnerAngle(value: number) {
-        this.node.coneInnerAngle = r2d(value);
+        this.node.coneInnerAngle = R2d(value);
     }
 
     /** @internal */
     public get coneOuterAngle(): number {
-        return d2r(this.node.coneOuterAngle);
+        return D2r(this.node.coneOuterAngle);
     }
 
     public set coneOuterAngle(value: number) {
-        this.node.coneOuterAngle = r2d(value);
+        this.node.coneOuterAngle = R2d(value);
     }
 
     /** @internal */

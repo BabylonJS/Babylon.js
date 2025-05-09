@@ -73,16 +73,16 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
             switch (this.x.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(x, y);
+                    return func(x, y);
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    return new Vector2(func!(x.x, y.x), func!(x.y, y.y));
+                    return new Vector2(func(x.x, y.x), func(x.y, y.y));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    return new Vector3(func!(x.x, y.x), func!(x.y, y.y), func!(x.z, y.z));
+                    return new Vector3(func(x.x, y.x), func(x.y, y.y), func(x.z, y.z));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func!(x.x, y.x), func!(x.y, y.y), func!(x.z, y.z), func!(x.w, y.w));
+                    return new Vector4(func(x.x, y.x), func(x.y, y.y), func(x.z, y.z), func(x.w, y.w));
                 }
             }
 

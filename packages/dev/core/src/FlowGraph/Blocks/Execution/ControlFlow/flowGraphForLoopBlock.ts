@@ -19,6 +19,13 @@ export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConf
      * if not set will default to 0
      */
     initialIndex?: FlowGraphNumber;
+
+    /**
+     * If set to true, the index of the case will be incremented when the loop is done.
+     * This will result that the index will equal endIndex when the loop finished its work.
+     * This is the default behavior in glTF interactivity
+     */
+    incrementIndexWhenLoopDone?: boolean;
 }
 /**
  * Block that executes an action in a loop.
@@ -81,9 +88,13 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
             this.index.setValue(new FlowGraphInteger(i), context);
             this.executionFlow._activateSignal(context);
             endIndex = getNumericValue(this.endIndex.getValue(context));
-            if (i > FlowGraphForLoopBlock.MaxLoopIterations) {
+            if (i > FlowGraphForLoopBlock.MaxLoopIterations * step) {
                 break;
             }
+        }
+
+        if (this.config?.incrementIndexWhenLoopDone) {
+            this.index.setValue(new FlowGraphInteger(getNumericValue(this.index.getValue(context)) + step), context);
         }
 
         this.completed._activateSignal(context);

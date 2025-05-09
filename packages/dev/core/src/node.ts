@@ -76,7 +76,7 @@ export class Node implements IBehaviorAware<Node> {
             return null;
         }
 
-        return constructorFunc(name, scene, options);
+        return constructorFunc(name, scene, options) as Nullable<() => Node>;
     }
 
     private _nodeDataStorage = new _InternalNodeDataInfo();

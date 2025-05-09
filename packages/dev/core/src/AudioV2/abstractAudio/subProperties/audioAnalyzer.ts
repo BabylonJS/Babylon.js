@@ -6,23 +6,23 @@ import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { _GetAudioAnalyzerSubNode, _SetAudioAnalyzerProperty } from "../subNodes/audioAnalyzerSubNode";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 
-let _emptyByteFrequencyData: Nullable<Uint8Array> = null;
-let _emptyFloatFrequencyData: Nullable<Float32Array> = null;
+let EmptyByteFrequencyData: Nullable<Uint8Array> = null;
+let EmptyFloatFrequencyData: Nullable<Float32Array> = null;
 
 /** @internal */
 export function _GetEmptyByteFrequencyData(): Uint8Array {
-    if (!_emptyByteFrequencyData) {
-        _emptyByteFrequencyData = new Uint8Array();
+    if (!EmptyByteFrequencyData) {
+        EmptyByteFrequencyData = new Uint8Array();
     }
-    return _emptyByteFrequencyData;
+    return EmptyByteFrequencyData;
 }
 
 /** @internal */
 export function _GetEmptyFloatFrequencyData(): Float32Array {
-    if (!_emptyFloatFrequencyData) {
-        _emptyFloatFrequencyData = new Float32Array();
+    if (!EmptyFloatFrequencyData) {
+        EmptyFloatFrequencyData = new Float32Array();
     }
-    return _emptyFloatFrequencyData;
+    return EmptyFloatFrequencyData;
 }
 
 /** @internal */
@@ -88,7 +88,7 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     public dispose(): void {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (subNode) {
-            this._subGraph.removeSubNode(subNode);
+            this._subGraph.removeSubNodeAsync(subNode);
             subNode.dispose();
         }
     }
@@ -97,9 +97,8 @@ export class _AudioAnalyzer extends AbstractAudioAnalyzer {
     public async enableAsync(): Promise<void> {
         const subNode = _GetAudioAnalyzerSubNode(this._subGraph);
         if (!subNode) {
-            await this._subGraph.createAndAddSubNode(AudioSubNode.ANALYZER);
+            await this._subGraph.createAndAddSubNodeAsync(AudioSubNode.ANALYZER);
         }
-        return Promise.resolve();
     }
 
     /** @internal */

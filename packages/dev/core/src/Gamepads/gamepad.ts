@@ -24,6 +24,7 @@ export class StickValues {
 /**
  * An interface which manages callbacks for gamepad button changes
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GamepadButtonChanges {
     /**
      * Called when a gamepad has been changed

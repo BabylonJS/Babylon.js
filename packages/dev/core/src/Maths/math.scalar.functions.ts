@@ -174,6 +174,7 @@ export function ToHex(i: number): string {
  * @param value the value to compute log2 of
  * @returns the log2 of value.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ILog2(value: number): number {
     if (Math.log2) {
         return Math.floor(Math.log2(value));
