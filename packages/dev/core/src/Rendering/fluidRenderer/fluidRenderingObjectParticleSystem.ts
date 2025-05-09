@@ -123,7 +123,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     }
 
     /**
-     * Releases the ressources used by the class
+     * Releases the resources used by the class
      */
     public override dispose() {
         super.dispose();

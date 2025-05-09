@@ -638,7 +638,7 @@ export class NodeGeometry {
     }
 
     /**
-     * Disposes the ressources
+     * Disposes the resources
      */
     public dispose(): void {
         for (const block of this.attachedBlocks) {
