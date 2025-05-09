@@ -277,7 +277,14 @@ export function MakeShellServiceDefinition({
                 );
             };
 
-            function usePane(alignment: "left" | "right", defaultWidth: number, minWidth: number, paneComponents: PaneComponentInfo[], topBarComponents: BarComponentInfo[]) {
+            function usePane(
+                alignment: "left" | "right",
+                defaultWidth: number,
+                minWidth: number,
+                paneComponents: PaneComponentInfo[],
+                topBarComponents: BarComponentInfo[],
+                bottomBarComponents: BarComponentInfo[]
+            ) {
                 const classes = useStyles();
 
                 const [selectedTab, setSelectedTab] = useState<PaneComponentInfo | undefined>();
@@ -414,6 +421,14 @@ export function MakeShellServiceDefinition({
                                             ) : null}
                                             {selectedTab?.content && <selectedTab.content />}
                                         </div>
+                                        {toolBarMode === "compact" && bottomBarComponents.length > 0 && (
+                                            <>
+                                                <Divider className={classes.barDivider} />
+                                                <div className={classes.barDiv}>
+                                                    <Bar location="bottom" components={bottomBarComponents} />
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                     <div
                                         className={`${classes.resizer} ${alignment === "left" ? classes.resizerLeft : classes.resizerRight}`}
@@ -444,12 +459,24 @@ export function MakeShellServiceDefinition({
                 const topBarLeftComponents = useMemo(() => topBarComponents.filter((entry) => entry.alignment === "left"), [topBarComponents]);
                 const topBarRightComponents = useMemo(() => topBarComponents.filter((entry) => entry.alignment === "right"), [topBarComponents]);
 
+                const bottomBarLeftComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.alignment === "left"), [bottomBarComponents]);
+                const bottomBarRightComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.alignment === "right"), [bottomBarComponents]);
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+
                 const leftPaneComponents = useOrderedObservableCollection(leftPaneComponentCollection);
                 const rightPaneComponents = useOrderedObservableCollection(rightPaneComponentCollection);
                 const contentComponents = useOrderedObservableCollection(contentComponentCollection);
 
-                const [leftPaneTabList, leftPane] = usePane("left", leftPaneDefaultWidth, leftPaneMinWidth, leftPaneComponents, topBarLeftComponents);
-                const [rightPaneTabList, rightPane] = usePane("right", rightPaneDefaultWidth, rightPaneMinWidth, rightPaneComponents, topBarRightComponents);
+                const [leftPaneTabList, leftPane] = usePane("left", leftPaneDefaultWidth, leftPaneMinWidth, leftPaneComponents, topBarLeftComponents, bottomBarLeftComponents);
+                const [rightPaneTabList, rightPane] = usePane(
+                    "right",
+                    rightPaneDefaultWidth,
+                    rightPaneMinWidth,
+                    rightPaneComponents,
+                    topBarRightComponents,
+                    bottomBarRightComponents
+                );
 
                 return (
                     <div className={classes.mainView}>
@@ -472,10 +499,14 @@ export function MakeShellServiceDefinition({
                             </div>
                             {rightPane}
                         </div>
-                        <Divider className={classes.barDivider} />
-                        <div className={classes.barDiv}>
-                            <Bar location="bottom" components={bottomBarComponents} />
-                        </div>
+                        {toolBarMode === "full" && (
+                            <>
+                                <Divider className={classes.barDivider} />
+                                <div className={classes.barDiv}>
+                                    <Bar location="bottom" components={bottomBarComponents} />
+                                </div>
+                            </>
+                        )}
                     </div>
                 );
             };
