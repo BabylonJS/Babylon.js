@@ -356,7 +356,7 @@
                     var clampedAlbedo: vec3f = clamp(surfaceAlbedo, vec3f(0.1), vec3f(1.0));
                     diffuseRoughnessTerm = diffuseBRDF_EON(clampedAlbedo, diffuseRoughness, NoL, NoV, LoV) * PI;
                     diffuseRoughnessTerm = diffuseRoughnessTerm / clampedAlbedo;
-                    diffuseRoughnessTerm = mix(vec3f(1.0), diffuseRoughnessTerm, sqrt(min(mag * NoV, 1.0f)));
+                    diffuseRoughnessTerm = mix(vec3f(1.0), diffuseRoughnessTerm, sqrt(clamp(mag * NoV, 0.0, 1.0f)));
                 #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
                     var H: vec3f = (irradianceView + Ls) * 0.5f;
                     var VoH: f32 = dot(irradianceView, H);
