@@ -111,5 +111,5 @@ export interface IExtensionFeed {
      * @param name The name of the extension.
      * @param version The version of the extension.
      */
-    removeExtensionFromClient(name: string, version: string): Promise<void>;
+    removeExtensionFromClientAsync(name: string, version: string): Promise<void>;
 }

@@ -8,7 +8,7 @@ import { useLocalStorage } from "usehooks-ts";
 
 import { Deferred } from "core/Misc/deferred";
 
-let sequencerPromise = Promise.resolve();
+let SequencerPromise = Promise.resolve();
 
 /**
  * Creates a hook for managing teaching moment state.
@@ -24,7 +24,7 @@ export function MakeTeachingMoment(name: string) {
 
         useEffect(() => {
             if (!hasDisplayed && !suppress && !deferredRef.current) {
-                sequencerPromise = sequencerPromise.then(() => {
+                SequencerPromise = SequencerPromise.then(() => {
                     deferredRef.current = new Deferred<void>();
                     setShouldDisplay(true);
                     return deferredRef.current.promise;

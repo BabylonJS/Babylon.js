@@ -327,7 +327,7 @@ export class ExtensionManager implements IDisposable {
                 localStorage.setItem(InstalledExtensionsKey, JSON.stringify(Array.from(this._installedExtensions.keys())));
 
                 // Remove the extension from the client.
-                await installedExtension.feed.removeExtensionFromClient(metadata.name, metadata.version);
+                await installedExtension.feed.removeExtensionFromClientAsync(metadata.name, metadata.version);
             } finally {
                 !isNestedStateChange && (installedExtension.isStateChanging = false);
             }

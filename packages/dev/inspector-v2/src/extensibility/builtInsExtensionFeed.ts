@@ -4,7 +4,7 @@ import type { IExtensionFeed, ExtensionMetadata, IExtensionMetadataQuery, Extens
 // well-known at build time and the extension is "downloaded" by simply doing a dynamic import. This is different
 // from future extension types that are built and published apart from the inspector, and are downloaded as an isolated script.
 
-const creationToolsExtensionMetadata = {
+const CreationToolsExtensionMetadata = {
     name: "Asset Creation",
     author: "Babylon",
     description: "Adds new features to enable creating Babylon assets such as node materials, flow graphs, and more.",
@@ -13,13 +13,13 @@ const creationToolsExtensionMetadata = {
     license: "MIT",
 } as const;
 
-const extensions: readonly ExtensionMetadata[] = [creationToolsExtensionMetadata];
+const Extensions: readonly ExtensionMetadata[] = [CreationToolsExtensionMetadata];
 
 export class BuiltInsExtensionFeed implements IExtensionFeed {
     public readonly name = "Built-ins";
 
     public async queryExtensionsAsync(filter?: string): Promise<IExtensionMetadataQuery> {
-        const filteredExtensions = filter ? extensions.filter((extension) => extension.name.includes(filter)) : extensions;
+        const filteredExtensions = filter ? Extensions.filter((extension) => extension.name.includes(filter)) : Extensions;
         return {
             totalCount: filteredExtensions.length,
             getExtensionMetadataAsync: async (index: number, count: number) => {
@@ -29,19 +29,19 @@ export class BuiltInsExtensionFeed implements IExtensionFeed {
     }
 
     public async getExtensionMetadataAsync(name: string, version?: string): Promise<ExtensionMetadata | undefined> {
-        return extensions.find((extension) => extension.name === name && (!version || extension.version === version));
+        return Extensions.find((extension) => extension.name === name && (!version || extension.version === version));
     }
 
     public async saveExtensionToClientAsync(name: string, version: string): Promise<void> {
         // No-op
     }
 
-    public async removeExtensionFromClient(name: string, version: string): Promise<void> {
+    public async removeExtensionFromClientAsync(name: string, version: string): Promise<void> {
         // No-op
     }
 
     public async getExtensionModuleAsync(name: string, version: string): Promise<ExtensionModule | undefined> {
-        if (name === creationToolsExtensionMetadata.name && version === creationToolsExtensionMetadata.version) {
+        if (name === CreationToolsExtensionMetadata.name && version === CreationToolsExtensionMetadata.version) {
             return await import("../services/creationToolsService");
         }
         return undefined;

@@ -3,6 +3,7 @@ import type { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 
 import { makeStyles, TeachingPopover, TeachingPopoverBody, TeachingPopoverHeader, TeachingPopoverSurface } from "@fluentui/react-components";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     extensionTeachingPopover: {
         maxWidth: "320px",

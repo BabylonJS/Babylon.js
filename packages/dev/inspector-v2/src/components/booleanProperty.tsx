@@ -8,6 +8,7 @@ import { InfoLabel, makeStyles, Switch, tokens } from "@fluentui/react-component
 import { useCallback, useMemo } from "react";
 import { useObservableState } from "../hooks/observableHooks";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     // TODO: probably common
     rootDiv: {
