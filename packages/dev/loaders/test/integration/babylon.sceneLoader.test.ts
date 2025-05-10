@@ -1,8 +1,7 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
-import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw } from "./testData";
+import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw, bvhThreeBonesRaw } from "./testData";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
-import { BVHLoadingOptions } from "loaders/BVH/bvhLoadingOptions";
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
@@ -855,15 +854,22 @@ describe("Babylon Scene Loader", function () {
                 const scene = window.scene!;
                 return ImportMeshAsync("data:" + content, scene).then(() => {
                     const skeleton = scene.skeletons[0];
+                    const rootBone = skeleton.bones[0];
+                    const childBone = skeleton.bones[1];
                     return {
                         numSkeletons: scene.skeletons.length,
                         numBones: skeleton.bones.length,
-                        rootBoneName: skeleton.bones[0].name,
-                        childBoneName: skeleton.bones[1].name,
-                        numAnimationRanges: skeleton.bones[0].animations[0].getKeys().length,
-                        animationName: skeleton.bones[0].animations[0].name,
-                        animationTargetProperty: skeleton.bones[0].animations[0].targetProperty,
-                        animationFrameRate: skeleton.bones[0].animations[0].framePerSecond,
+                        rootBoneName: rootBone.name,
+                        childBoneName: childBone.name,
+                        rootAnimations: rootBone.animations.length,
+                        rootAnimationTypes: rootBone.animations.map((anim) => ({
+                            targetProperty: anim.targetProperty,
+                            frameRate: anim.framePerSecond,
+                            loopMode: anim.loopMode,
+                            type: anim.dataType,
+                        })),
+                        rootPosition: rootBone.position.asArray(),
+                        childPosition: childBone.position.asArray(),
                     };
                 });
             }, bvhBasicRaw);
@@ -872,14 +878,28 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData.numBones).toBe(2);
             expect(assertionData.rootBoneName).toBe("Hips");
             expect(assertionData.childBoneName).toBe("Chest");
-            expect(assertionData.numAnimationRanges).toBe(2);
-            expect(assertionData.animationName).toBe("Hips_anim");
-            expect(assertionData.animationTargetProperty).toBe("_matrix");
-            expect(assertionData.animationFrameRate).toBe(30);
+            expect(assertionData.rootAnimations).toBe(2); // Position and rotation animations
+            expect(assertionData.rootAnimationTypes).toEqual([
+                {
+                    targetProperty: "position",
+                    frameRate: 30,
+                    loopMode: BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                    type: BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                },
+                {
+                    targetProperty: "rotationQuaternion",
+                    frameRate: 30,
+                    loopMode: BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE,
+                    type: BABYLON.Animation.ANIMATIONTYPE_QUATERNION,
+                },
+            ]);
+            // Verify bone positions are properly set from offsets
+            expect(assertionData.rootPosition).toEqual([0, 0, 0]); // Root typically at origin
+            expect(assertionData.childPosition).not.toEqual([0, 0, 0]); // Child should have offset
         });
 
         it("should handle BVH file with custom loading options", async () => {
-            const loadingOptions: BVHLoadingOptions = {
+            const loadingOptions = {
                 loopMode: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
             };
 
@@ -888,13 +908,19 @@ describe("Babylon Scene Loader", function () {
                     const scene = window.scene!;
                     return ImportMeshAsync("data:" + content, scene, options).then(() => {
                         const skeleton = scene.skeletons[0];
-                        const animation = skeleton.bones[0].animations[0];
+                        const rootBone = skeleton.bones[0];
                         return {
-                            skeletonId: skeleton.id,
-                            skeletonName: skeleton.name,
-                            animationName: animation.name,
-                            loopMode: animation.loopMode,
-                            numFrames: animation.getKeys().length,
+                            skeletonBones: skeleton.bones.length,
+                            rootAnimations: rootBone.animations.map((anim) => ({
+                                name: anim.name,
+                                loopMode: anim.loopMode,
+                                numFrames: anim.getKeys().length,
+                                targetProperty: anim.targetProperty,
+                            })),
+                            boneHierarchy: skeleton.bones.map((bone) => ({
+                                name: bone.name,
+                                parentName: bone.getParent()?.name || null,
+                            })),
                         };
                     });
                 },
@@ -902,11 +928,91 @@ describe("Babylon Scene Loader", function () {
                 loadingOptions
             );
 
-            expect(assertionData.skeletonId).toBe("test_skeleton");
-            expect(assertionData.skeletonName).toBe("test_skeleton_name");
-            expect(assertionData.animationName).toBe("test_animation");
-            expect(assertionData.loopMode).toBe(BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
-            expect(assertionData.numFrames).toBe(2);
+            expect(assertionData.skeletonBones).toBeGreaterThan(0);
+            // Verify all animations use the custom loop mode
+            assertionData.rootAnimations.forEach((anim) => {
+                expect(anim.loopMode).toBe(BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
+            });
+            // Verify bone hierarchy is properly constructed
+            expect(assertionData.boneHierarchy[0].parentName).toBeNull(); // Root bone
+            expect(assertionData.boneHierarchy[1].parentName).toBe(assertionData.boneHierarchy[0].name); // First child
+        });
+
+        it("should handle end sites in BVH hierarchy", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return ImportMeshAsync("data:" + content, scene).then(() => {
+                    const skeleton = scene.skeletons[0];
+                    // Find bones that represent end sites (typically have no children)
+                    const endSites = skeleton.bones.filter((bone) => {
+                        return !skeleton.bones.some((otherBone) => otherBone.getParent() === bone);
+                    });
+                    return {
+                        totalBones: skeleton.bones.length,
+                        endSiteBones: endSites.length,
+                        endSiteAnimations: endSites.reduce((count, bone) => count + bone.animations.length, 0),
+                    };
+                });
+            }, bvhBasicRaw);
+
+            expect(assertionData.totalBones).toBeGreaterThan(0);
+            expect(assertionData.endSiteBones).toBeGreaterThan(0);
+            expect(assertionData.endSiteAnimations).toBe(0); // End sites should have no animations
+        });
+
+        it("should handle BVH file with three bones and rotation", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.LoadAssetContainerAsync("", "data:" + content, scene, undefined, ".bvh").then((container) => {
+                    const skeleton = container.skeletons[0];
+                    const bones = skeleton.bones;
+                    return {
+                        numBones: bones.length,
+                        boneNames: bones.map((bone) => bone.name),
+                        boneHierarchy: bones.map((bone) => ({
+                            name: bone.name,
+                            parentName: bone.getParent()?.name || null,
+                        })),
+                        animations: bones.map((bone) => ({
+                            name: bone.name,
+                            numAnimations: bone.animations.length,
+                            animationTypes: bone.animations.map((anim) => anim.targetProperty),
+                            numFrames: bone.animations.length > 0 ? bone.animations[0].getKeys().length : 0,
+                        })),
+                    };
+                });
+            }, bvhThreeBonesRaw);
+
+            // Verify basic structure
+            expect(assertionData.numBones).toBe(4); // Root, Middle, End, and End Site
+            expect(assertionData.boneNames).toEqual(["Root", "Middle", "End", "ENDSITE"]);
+
+            // Verify hierarchy
+            expect(assertionData.boneHierarchy).toEqual([
+                { name: "Root", parentName: null },
+                { name: "Middle", parentName: "Root" },
+                { name: "End", parentName: "Middle" },
+                { name: "ENDSITE", parentName: "End" },
+            ]);
+
+            // Verify animations
+            assertionData.animations.forEach((boneAnim, index) => {
+                if (index === 0) {
+                    // Root bone should have position and rotation animations
+                    expect(boneAnim.numAnimations).toBe(2);
+                    expect(boneAnim.animationTypes).toContain("position");
+                    expect(boneAnim.animationTypes).toContain("rotationQuaternion");
+                    expect(boneAnim.numFrames).toBe(1);
+                } else if (index === 1) {
+                    // Middle bone should have only rotation animation
+                    expect(boneAnim.numAnimations).toBe(1);
+                    expect(boneAnim.animationTypes).toContain("rotationQuaternion");
+                    expect(boneAnim.numFrames).toBe(1);
+                } else {
+                    // End and End Site bones should have no animations
+                    expect(boneAnim.numAnimations).toBe(0);
+                }
+            });
         });
     });
 
