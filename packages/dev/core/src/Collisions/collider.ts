@@ -504,12 +504,16 @@ export class Collider {
         // Handle straight movement up to collision
 
         pos.addToRef(vel, this._destinationPoint);
-        vel.scaleInPlace(this._nearestDistance / vel.length());
-
-        this._basePoint.addToRef(vel, pos);
 
         if (!slideOnCollide) {
+            // Move to one "close distance" less than the collision point to
+            // prevent any collision penetration from floating point inaccuracy
+            vel.scaleInPlace((this._nearestDistance - this._epsilon) / vel.length());
+            this._basePoint.addToRef(vel, pos);
             return;
+        } else {
+            vel.scaleInPlace(this._nearestDistance / vel.length());
+            this._basePoint.addToRef(vel, pos);
         }
 
         // Handle slide movement past collision
