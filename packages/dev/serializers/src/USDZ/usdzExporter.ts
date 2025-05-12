@@ -244,7 +244,7 @@ function BuildXform(mesh: Mesh) {
     const matrix = mesh.getWorldMatrix().clone();
 
     if (matrix.determinant() < 0) {
-        matrix.multiplyToRef(Matrix.Scaling(-1, 1, 1), matrix);
+        Tools.Warn(`Exporting mesh ${mesh.name} with negative scale. Result may look incorrect in destination engine.`);
     }
     const transform = BuildMatrix(matrix);
 
