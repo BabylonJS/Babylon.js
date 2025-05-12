@@ -192,7 +192,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
 function BuildMesh(geometry: Geometry, options: IUSDZExportOptions) {
     const name = "Geometry";
     const position = geometry.getVerticesData(VertexBuffer.PositionKind);
-    const normal = geometry.getVerticesData(VertexBuffer.PositionKind);
+    const normal = geometry.getVerticesData(VertexBuffer.NormalKind);
 
     if (!position || !normal) {
         return;
