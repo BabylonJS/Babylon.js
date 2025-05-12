@@ -189,7 +189,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     prepareCamera() {
-        let camera = this._scene.activeCamera! as ArcRotateCamera;
+        let camera = this._scene.activeCamera as ArcRotateCamera;
         // Attach camera to canvas inputs
         if (!camera) {
             this._scene.createDefaultCamera(true);
