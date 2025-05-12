@@ -67,7 +67,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
             var ppos: vec4f = uniforms.prevViewProjection * cpos;
             ppos /= ppos.w;
-            ppos.xy = ppos.xy * 0.5 + 0.5;
+            ppos = vec4f(ppos.xy * 0.5 + 0.5, ppos.zw);
 
             var velocity: vec2f = (ppos.xy - input.vUV) * uniforms.motionScale * uniforms.motionStrength;
             var speed: f32 = length(velocity / texelSize);

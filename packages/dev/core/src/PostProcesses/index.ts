@@ -44,6 +44,7 @@ export * from "./thinExtractHighlightsPostProcess";
 export * from "./thinFXAAPostProcess";
 export * from "./thinGrainPostProcess";
 export * from "./thinImageProcessingPostProcess";
+export * from "./thinMotionBlurPostProcess";
 export * from "./thinPassPostProcess";
 
 // Postprocess
