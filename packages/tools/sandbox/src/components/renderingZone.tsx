@@ -120,10 +120,17 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     }
                 }
             },
-            null,
+            () => {
+                // Ensure we stop any existing render loop when reloading, because if there was a previous scene loaded from the URL
+                // the filesInput will not know about it, and so it won't call stopRenderLoop.
+                this._engine.stopRenderLoop();
+                filesInput.reload();
+            },
             (file, scene, message) => {
                 this.props.globalState.onError.notifyObservers({ message: message });
-            }
+            },
+            false,
+            true
         );
 
         filesInput.onProcessFileCallback = (file, name, extension, setSceneFileToLoad) => {
@@ -182,11 +189,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     prepareCamera() {
+        let camera = this._scene.activeCamera as ArcRotateCamera;
         // Attach camera to canvas inputs
-        if (!this._scene.activeCamera) {
+        if (!camera) {
             this._scene.createDefaultCamera(true);
 
-            const camera = this._scene.activeCamera! as ArcRotateCamera;
+            camera = this._scene.activeCamera! as ArcRotateCamera;
 
             if (this._currentPluginName === "gltf" || this._currentPluginName === "obj") {
                 // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
@@ -227,7 +235,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
         }
 
-        this._scene.activeCamera!.attachControl();
+        camera.attachControl();
+        return camera;
     }
 
     handleErrors() {
@@ -294,13 +303,21 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
 
-        this.prepareCamera();
+        const camera = this.prepareCamera();
         this.prepareLighting();
         this.handleErrors();
 
         if (this.props.globalState.isDebugLayerEnabled) {
             this.props.globalState.showDebugLayer();
         }
+
+        this._scene.executeWhenReady(() => {
+            this._engine.runRenderLoop(() => {
+                // Adapt the camera sensibility based on the distance to the object
+                camera.panningSensibility = 5000 / camera.radius;
+                this._scene.render();
+            });
+        });
 
         delete this._currentPluginName;
     }
@@ -365,15 +382,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene = scene;
 
                 this.onSceneLoaded(fileName);
-
-                scene.whenReadyAsync().then(() => {
-                    const camera = scene.activeCamera! as ArcRotateCamera;
-                    this._engine.runRenderLoop(() => {
-                        // Adapt the camera sensibility based on the distance to the object
-                        camera.panningSensibility = 5000 / camera.radius;
-                        scene.render();
-                    });
-                });
             })
             .catch((reason) => {
                 this.props.globalState.onError.notifyObservers({ message: reason.message });
