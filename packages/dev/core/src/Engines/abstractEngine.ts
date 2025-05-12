@@ -1120,7 +1120,7 @@ export abstract class AbstractEngine {
     public onBeginFrameObservable = new Observable<AbstractEngine>();
 
     /**
-     * Observable raised when the engine ends the current frame
+     * Observable raised when the engine ends the current frame (requires a render loop, e.g. 'engine.runRenderLoop(...)')
      */
     public onEndFrameObservable = new Observable<AbstractEngine>();
 
@@ -1313,7 +1313,7 @@ export abstract class AbstractEngine {
     }
 
     /**
-     * Activates an effect, making it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (i.e. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public abstract enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
@@ -1893,14 +1893,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.6.2";
+        return "babylonjs@8.7.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.6.2";
+        return "8.7.0";
     }
 
     /**

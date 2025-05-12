@@ -118,9 +118,10 @@ export class ParticleSystem extends ThinParticleSystem {
             this._flowMapUpdate = null;
         }
         if (value) {
+            const matrix = this.getScene()?.getTransformMatrix();
             this._flowMapUpdate = {
                 process: (particle: Particle) => {
-                    this._flowMap!._processParticle(particle, this, this.flowMapStrength);
+                    this._flowMap!._processParticle(particle, this.flowMapStrength * this._tempScaledUpdateSpeed, matrix);
                 },
                 previousItem: null,
                 nextItem: null,
