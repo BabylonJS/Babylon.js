@@ -235,6 +235,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         this._scene.activeCamera!.attachControl();
+
+        return this._scene.activeCamera! as ArcRotateCamera;
     }
 
     handleErrors() {
@@ -301,7 +303,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
 
-        this.prepareCamera();
+        const camera = this.prepareCamera();
         this.prepareLighting();
         this.handleErrors();
 
@@ -309,7 +311,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this.props.globalState.showDebugLayer();
         }
 
-        const camera = this._scene.activeCamera! as ArcRotateCamera;
         this._scene.executeWhenReady(() => {
             this._engine.runRenderLoop(() => {
                 // Adapt the camera sensibility based on the distance to the object
