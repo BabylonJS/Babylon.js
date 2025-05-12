@@ -113,9 +113,9 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
             if (
                 this.gizmoLayer.utilityLayerScene.activeCamera &&
                 this.gizmoLayer.utilityLayerScene.activeCamera != camera &&
-                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ * 1.5
+                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ
             ) {
-                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ = camera.maxZ * 1.5;
+                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ = camera.maxZ;
             }
 
             if (!this.attachedNode!.reservedDataStore) {
