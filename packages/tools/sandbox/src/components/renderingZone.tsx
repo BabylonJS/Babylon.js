@@ -60,7 +60,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _currentPluginName?: string;
     private _engine: AbstractEngine;
     private _scene: Scene;
-    //private _camera: Nullable<Camera>;
     private _canvas: HTMLCanvasElement;
 
     public constructor(props: IRenderingZoneProps) {
@@ -234,8 +233,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 camera.setPosition(this.props.globalState.cameraPosition);
                 camera.lowerRadiusLimit = camera.radius;
             }
-
-            //this._camera = camera;
         }
 
         this._scene.activeCamera!.attachControl();
