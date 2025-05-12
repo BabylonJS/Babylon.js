@@ -112,8 +112,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             },
             null,
             () => {
-                // additionalRenderLoopLogicCallback
-                // TODO: make this more efficient, and share code if possible with the other codepath
                 const camera = this._scene?.activeCamera as ArcRotateCamera;
                 if (camera) {
                     // Adapt the camera sensibility based on the distance to the object
