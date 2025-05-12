@@ -25,8 +25,6 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
-const PanningSensibilityFactor = 5000;
-
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
 }
@@ -110,13 +108,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.onSceneLoaded(sceneFile.name);
             },
             null,
-            () => {
-                const camera = this._scene?.activeCamera as ArcRotateCamera;
-                if (camera) {
-                    // Adapt the camera sensibility based on the distance to the object
-                    camera.panningSensibility = PanningSensibilityFactor / camera.radius;
-                }
-            },
+            null,
             null,
             () => {
                 Tools.ClearLogCache();
@@ -128,10 +120,17 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     }
                 }
             },
-            null,
+            () => {
+                // Ensure we stop any existing render loop when reloading, because if there was a previous scene loaded from the URL
+                // the filesInput will not know about it, and so it won't call stopRenderLoop.
+                this._engine.stopRenderLoop();
+                filesInput.reload();
+            },
             (file, scene, message) => {
                 this.props.globalState.onError.notifyObservers({ message: message });
-            }
+            },
+            false,
+            true
         );
 
         filesInput.onProcessFileCallback = (file, name, extension, setSceneFileToLoad) => {
@@ -310,6 +309,15 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this.props.globalState.showDebugLayer();
         }
 
+        const camera = this._scene.activeCamera! as ArcRotateCamera;
+        this._scene.executeWhenReady(() => {
+            this._engine.runRenderLoop(() => {
+                // Adapt the camera sensibility based on the distance to the object
+                camera.panningSensibility = 5000 / camera.radius;
+                this._scene.render();
+            });
+        });
+
         delete this._currentPluginName;
     }
 
@@ -373,15 +381,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene = scene;
 
                 this.onSceneLoaded(fileName);
-
-                scene.whenReadyAsync().then(() => {
-                    const camera = scene.activeCamera! as ArcRotateCamera;
-                    this._engine.runRenderLoop(() => {
-                        // Adapt the camera sensibility based on the distance to the object
-                        camera.panningSensibility = PanningSensibilityFactor / camera.radius;
-                        scene.render();
-                    });
-                });
             })
             .catch((reason) => {
                 this.props.globalState.onError.notifyObservers({ message: reason.message });
