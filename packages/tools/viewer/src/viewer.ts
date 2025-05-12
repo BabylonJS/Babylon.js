@@ -28,7 +28,6 @@ import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { DirectionalLight } from "core/Lights/directionalLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -135,7 +134,7 @@ type ShadowState = {
     normal?: {
         generator: ShadowGenerator;
         ground: Mesh;
-        light: DirectionalLight | SpotLight;
+        light: SpotLight;
         shouldRender: boolean;
     };
     high?: {
@@ -1849,16 +1848,6 @@ export class Viewer implements IDisposable {
         }
 
         normal.light.position = position;
-
-        if (normal.light instanceof DirectionalLight) {
-            // manually set the extends to take into account animated meshes
-            // arbitrary extend the value to let space for animated meshes
-            normal.light.autoUpdateExtends = false;
-            normal.light.orthoLeft = -radius * extendsFactor;
-            normal.light.orthoRight = radius * extendsFactor;
-            normal.light.orthoTop = radius * extendsFactor;
-            normal.light.orthoBottom = -radius * extendsFactor;
-        }
 
         for (const model of this._loadedModelsBacking) {
             const mesh = model.assetContainer.meshes[0];
