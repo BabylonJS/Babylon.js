@@ -564,10 +564,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         <ValueGradientGridComponent
                             globalState={this.props.globalState}
                             gradients={system.getEmitRateGradients()}
-                            label="Velocity gradients"
+                            label="Emit rate gradients"
                             docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-speed-over-lifetime"
                             onCreateRequired={() => {
                                 system.addEmitRateGradient(0, 50, 50);
+                            }}
+                            onRemoveRequired={(step) => {
+                                system.removeEmitRateGradient(step.gradient);
                             }}
                             mode={GradientGridMode.Factor}
                             host={system}
@@ -597,6 +600,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onCreateRequired={() => {
                             system.addVelocityGradient(0, 0.1, 0.1);
                         }}
+                        onRemoveRequired={(step) => {
+                            system.removeVelocityGradient(step.gradient);
+                        }}
                         mode={GradientGridMode.Factor}
                         host={system}
                         codeRecorderPropertyName="getVelocityGradients()"
@@ -610,6 +616,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onCreateRequired={() => {
                             system.addLimitVelocityGradient(0, 0.1, 0.1);
                         }}
+                        onRemoveRequired={(step) => {
+                            system.removeLimitVelocityGradient(step.gradient);
+                        }}
                         mode={GradientGridMode.Factor}
                         host={system}
                         codeRecorderPropertyName="getLimitVelocityGradients()"
@@ -622,6 +631,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-drag-over-lifetime"
                         onCreateRequired={() => {
                             system.addDragGradient(0, 0.1, 0.1);
+                        }}
+                        onRemoveRequired={(step) => {
+                            system.removeDragGradient(step.gradient);
                         }}
                         host={system}
                         codeRecorderPropertyName="getDragGradients()"
@@ -685,6 +697,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             onCreateRequired={() => {
                                 system.addStartSizeGradient(0, 1, 1);
                             }}
+                            onRemoveRequired={(step) => {
+                                system.removeStartSizeGradient(step.gradient);
+                            }}
                             host={system}
                             codeRecorderPropertyName="getStartSizeGradients()"
                             mode={GradientGridMode.Factor}
@@ -698,6 +713,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-size-over-lifetime"
                         onCreateRequired={() => {
                             system.addSizeGradient(0, 1, 1);
+                        }}
+                        onRemoveRequired={(step) => {
+                            system.removeSizeGradient(step.gradient);
                         }}
                         host={system}
                         codeRecorderPropertyName="getSizeGradients()"
@@ -735,6 +753,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-lifetime-over-duration"
                             onCreateRequired={() => {
                                 system.addLifeTimeGradient(0, 1, 1);
+                            }}
+                            onRemoveRequired={(step) => {
+                                system.removeLifeTimeGradient(step.gradient);
                             }}
                             host={system}
                             codeRecorderPropertyName="getLifeTimeGradients()"
@@ -778,6 +799,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             system.addColorGradient(0, new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1));
                             system.addColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                         }}
+                        onRemoveRequired={(step) => {
+                            system.removeColorGradient(step.gradient);
+                        }}
                         host={system}
                         codeRecorderPropertyName="getColorGradients()"
                         mode={GradientGridMode.Color4}
@@ -797,6 +821,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                             system.addRampGradient(0, Color3.White());
                                             system.addRampGradient(1, Color3.Black());
                                         }}
+                                        onRemoveRequired={(step) => {
+                                            system.removeRampGradient(step.gradient);
+                                        }}
                                         mode={GradientGridMode.Color3}
                                         host={system}
                                         codeRecorderPropertyName="getRampGradients()"
@@ -811,6 +838,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                         onCreateRequired={() => {
                                             system.addColorRemapGradient(0, 1, 1);
                                         }}
+                                        onRemoveRequired={(step) => {
+                                            system.removeColorRemapGradient(step.gradient);
+                                        }}
                                         host={system}
                                         codeRecorderPropertyName="getColorRemapGradients()"
                                         mode={GradientGridMode.Factor}
@@ -823,6 +853,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                         docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/ramps_and_blends#ramp-gradients"
                                         onCreateRequired={() => {
                                             system.addAlphaRemapGradient(0, 1, 1);
+                                        }}
+                                        onRemoveRequired={(step) => {
+                                            system.removeAlphaRemapGradient(step.gradient);
                                         }}
                                         host={system}
                                         codeRecorderPropertyName="getAlphaRemapGradients()"
@@ -870,6 +903,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-rotation-speed-over-lifetime"
                         onCreateRequired={() => {
                             system.addAngularSpeedGradient(0, 0.1, 0.1);
+                        }}
+                        onRemoveRequired={(step) => {
+                            system.removeAngularSpeedGradient(step.gradient);
                         }}
                         host={system}
                         codeRecorderPropertyName="getAngularSpeedGradients()"
