@@ -165,7 +165,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
 
     for (let i = 0; i < 4; i++) {
         const id = i > 0 ? i : "";
-        const uvAttribute = geometry.getVerticesData(VertexBuffer.UVKind + (id ? id : ""));
+        const uvAttribute = geometry.getVerticesData(VertexBuffer.UVKind + (id ? id + 1 : "")); // UV names go like "uv", "uv2", "uv3", etc.
 
         if (uvAttribute) {
             string += `
