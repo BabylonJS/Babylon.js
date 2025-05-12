@@ -17,7 +17,7 @@ import type { Nullable } from "../../types";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
- * This should not be instanciated directly, as it is part of a scene component
+ * This should not be instantiated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsVoxelTracingPass {
@@ -366,8 +366,8 @@ export class _IblShadowsVoxelTracingPass {
         rotation = rotation % (2.0 * Math.PI);
         this._shadowParameters.set(this._sampleDirections, this._frameId, 1.0, rotation);
         this._outputTexture.setVector4("shadowParameters", this._shadowParameters);
-        const voxelGrid = this._renderPipeline!._getVoxelGridTexture();
-        const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
+        const voxelGrid = this._renderPipeline._getVoxelGridTexture();
+        const highestMip = Math.floor(Math.log2(voxelGrid.getSize().width));
         this._voxelBiasParameters.set(this._voxelNormalBias, this._voxelDirectionBias, highestMip, 0.0);
         this._outputTexture.setVector4("voxelBiasParameters", this._voxelBiasParameters);
 
@@ -377,7 +377,7 @@ export class _IblShadowsVoxelTracingPass {
         this._opacityParameters.set(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0);
         this._outputTexture.setVector4("shadowOpacity", this._opacityParameters);
         this._outputTexture.setTexture("voxelGridSampler", voxelGrid);
-        this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline!._getNoiseTexture());
+        this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline._getNoiseTexture());
         const cdfGenerator = this._scene.iblCdfGenerator;
         if (!cdfGenerator) {
             Logger.Warn("IBLShadowsVoxelTracingPass: Can't bind for render because iblCdfGenerator is not enabled.");
@@ -436,7 +436,7 @@ export class _IblShadowsVoxelTracingPass {
             !(this._debugPassPP && !this._debugPassPP.isReady()) &&
             this._scene.iblCdfGenerator &&
             this._scene.iblCdfGenerator.getIcdfTexture().isReady() &&
-            this._renderPipeline!._getVoxelGridTexture().isReady()
+            this._renderPipeline._getVoxelGridTexture().isReady()
         );
     }
 

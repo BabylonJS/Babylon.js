@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { ImageSource, Nullable, int } from "../../types";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -244,7 +244,7 @@ export class InternalTexture extends TextureSampler {
     public _irradianceTexture: Nullable<BaseTexture> = null;
 
     /** @internal */
-    public _hardwareTexture: Nullable<HardwareTextureWrapper> = null;
+    public _hardwareTexture: Nullable<IHardwareTextureWrapper> = null;
 
     /** @internal */
     public _maxLodLevel: Nullable<number> = null;
@@ -482,7 +482,7 @@ export class InternalTexture extends TextureSampler {
 
             case InternalTextureSource.CubeRaw:
                 proxy = this._engine.createRawCubeTexture(
-                    this._bufferViewArray!,
+                    this._bufferViewArray,
                     this.width,
                     this._originalFormat ?? this.format,
                     this.type,

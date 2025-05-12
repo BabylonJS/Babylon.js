@@ -51,25 +51,25 @@ import cursorRotate6 from "../imgs/cursor_rotate6.svg";
 import cursorRotate7 from "../imgs/cursor_rotate7.svg";
 
 // load in custom cursor icons
-const cursorScaleDiagonaLeft: string = `url("${cursorScaleDiagonalLeftIcon}") 12 12, nwse-resize`;
-const cursorScaleDiagonalRight: string = `url("${cursorScaleDiagonalRightIcon}") 12 12, nesw-resize`;
-const cursorScaleHorizontal: string = `url("${cursorScaleHorizontalIcon}") 12 12, pointer`;
-const cursorScaleVertical: string = `url("${cursorScaleVerticalIcon}") 12 12, ns-resize`;
-const scalePointCursors = [
-    cursorScaleVertical,
-    cursorScaleDiagonalRight,
-    cursorScaleHorizontal,
-    cursorScaleDiagonaLeft,
-    cursorScaleVertical,
-    cursorScaleDiagonalRight,
-    cursorScaleHorizontal,
-    cursorScaleDiagonaLeft,
+const CursorScaleDiagonaLeft: string = `url("${cursorScaleDiagonalLeftIcon}") 12 12, nwse-resize`;
+const CursorScaleDiagonalRight: string = `url("${cursorScaleDiagonalRightIcon}") 12 12, nesw-resize`;
+const CursorScaleHorizontal: string = `url("${cursorScaleHorizontalIcon}") 12 12, pointer`;
+const CursorScaleVertical: string = `url("${cursorScaleVerticalIcon}") 12 12, ns-resize`;
+const ScalePointCursors = [
+    CursorScaleVertical,
+    CursorScaleDiagonalRight,
+    CursorScaleHorizontal,
+    CursorScaleDiagonaLeft,
+    CursorScaleVertical,
+    CursorScaleDiagonalRight,
+    CursorScaleHorizontal,
+    CursorScaleDiagonaLeft,
 ];
-const rotateCursors = [cursorRotate0, cursorRotate1, cursorRotate2, cursorRotate3, cursorRotate4, cursorRotate5, cursorRotate6, cursorRotate7].map(
+const RotateCursors = [cursorRotate0, cursorRotate1, cursorRotate2, cursorRotate3, cursorRotate4, cursorRotate5, cursorRotate6, cursorRotate7].map(
     (cursor) => `url("${cursor}") 12 12, pointer`
 );
 
-const modulo = (dividend: number, divisor: number) => ((dividend % divisor) + divisor) % divisor;
+const Modulo = (dividend: number, divisor: number) => ((dividend % divisor) + divisor) % divisor;
 
 export function GizmoScalePoint(props: IGizmoScalePointProps) {
     const { scalePoint, clickable, onDrag, onRotate, onUp, overrideCursor, canRotate, allowClickOnPivot } = props;
@@ -103,17 +103,17 @@ export function GizmoScalePoint(props: IGizmoScalePointProps) {
     }
     // compute which cursor icon to use on hover
     const angleOfCursor = scalePoint.defaultRotation + scalePoint.rotation;
-    const angleAdjusted = modulo(angleOfCursor, 360);
+    const angleAdjusted = Modulo(angleOfCursor, 360);
     const increment = 45;
     const cursorIndex = Math.round(angleAdjusted / increment) % 8;
-    const cursor = overrideCursor || scalePointCursors[cursorIndex];
+    const cursor = overrideCursor || ScalePointCursors[cursorIndex];
     const scalePointContainerSize = 30; // .scale-point-container width/height in px
     const rotateClickAreaSize = 20; // .rotate-click-area width/height
     const rotateClickAreaOffset = 7; // how much to offset the invisible rotate click area from the center
     const rotateClickAreaStyle = {
         top: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.verticalPosition,
         left: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.horizontalPosition,
-        cursor: rotateCursors[cursorIndex],
+        cursor: RotateCursors[cursorIndex],
     };
     const scaleClickAreaSize = 20; // .scale-click-area width/height
     const scaleClickAreaOffset = 5; // how much to offset the invisible scale click area from the center

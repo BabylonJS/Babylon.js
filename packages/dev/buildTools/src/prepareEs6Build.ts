@@ -4,6 +4,7 @@ import { globSync } from "glob";
 import * as fs from "fs-extra";
 import { checkArgs } from "./utils.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const prepareES6Build = async () => {
     const baseDir = path.resolve(".");
     const constFile = checkArgs(["--constFile", "-cf"], false, true);

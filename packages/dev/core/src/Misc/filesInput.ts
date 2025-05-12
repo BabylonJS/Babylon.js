@@ -5,6 +5,7 @@ import { SceneLoader } from "../Loading/sceneLoader";
 import { Logger } from "../Misc/logger";
 import { FilesInputStore } from "./filesInputStore";
 import type { Nullable } from "../types";
+import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 
 /**
  * Class used to help managing file picking and drag-n-drop
@@ -36,7 +37,7 @@ export class FilesInput {
      * @param onProgress onProgress callback called while loading the file
      * @returns a promise completing when the load is complete
      */
-    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) =>
+    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = async (sceneFile, onProgress) =>
         this.useAppend ? SceneLoader.AppendAsync("file:", sceneFile, this._currentScene, onProgress) : SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
 
     private _engine: AbstractEngine;
@@ -100,6 +101,8 @@ export class FilesInput {
      * Calls this function to listen to drag'n'drop events on a specific DOM element
      * @param elementToMonitor defines the DOM element to track
      */
+    // should probably be DragAndDrop
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public monitorElementForDragNDrop(elementToMonitor: HTMLElement): void {
         if (elementToMonitor) {
             this._elementToMonitor = elementToMonitor;
@@ -306,7 +309,7 @@ export class FilesInput {
                 }
             }
 
-            SceneLoader.ShowLoadingScreen = false;
+            SceneLoaderFlags.ShowLoadingScreen = false;
             if (this.displayLoadingUI) {
                 this._engine.displayLoadingUI();
             }

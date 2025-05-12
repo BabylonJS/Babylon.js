@@ -16,7 +16,11 @@ struct preLightingInfo
     NdotLUnclamped: f32,
     NdotL: f32,
     VdotH: f32,
+    LdotV: f32,
+    
     roughness: f32,
+    diffuseRoughness: f32,
+    surfaceAlbedo: vec3f,
 
     #ifdef IRIDESCENCE
         iridescenceIntensity: f32
@@ -65,7 +69,7 @@ fn computeDirectionalPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> pr
 
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
-
+    result.LdotV = dot(result.L, V);
     return result;
 }
 
@@ -89,6 +93,11 @@ fn computeHemisphericPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> pr
 
 #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
+
+var areaLightsLTC1SamplerSampler: sampler;
+var areaLightsLTC1Sampler: texture_2d<f32>;
+var areaLightsLTC2SamplerSampler: sampler;
+var areaLightsLTC2Sampler: texture_2d<f32>;
 
 fn computeAreaPreLightingInfo(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightCenter:vec3f, halfWidth:vec3f,  halfHeight:vec3f, roughness:f32) -> preLightingInfo {
     var result: preLightingInfo;

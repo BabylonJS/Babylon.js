@@ -187,30 +187,30 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this.onBeforeRenderObservable.add(() => {
             if (this._sceneUBO) {
-                this._currentSceneUBO = scene!.getSceneUniformBuffer();
-                scene!.setSceneUniformBuffer(this._sceneUBO);
-                scene!.getSceneUniformBuffer().unbindEffect();
+                this._currentSceneUBO = scene.getSceneUniformBuffer();
+                scene.setSceneUniformBuffer(this._sceneUBO);
+                scene.getSceneUniformBuffer().unbindEffect();
             }
 
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
-            this._mirrorMatrix.multiplyToRef(scene!.getViewMatrix(), this._transformMatrix);
+            this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
 
-            scene!.setTransformMatrix(this._transformMatrix, scene!.getProjectionMatrix());
+            scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
-            saveClipPlane = scene!.clipPlane;
-            scene!.clipPlane = this.mirrorPlane;
+            saveClipPlane = scene.clipPlane;
+            scene.clipPlane = this.mirrorPlane;
 
-            scene!._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene!.activeCamera).globalPosition, this._mirrorMatrix);
+            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
         });
 
         this.onAfterRenderObservable.add(() => {
             if (this._sceneUBO) {
-                scene!.setSceneUniformBuffer(this._currentSceneUBO);
+                scene.setSceneUniformBuffer(this._currentSceneUBO);
             }
-            scene!.updateTransformMatrix();
-            scene!._mirroredCameraPosition = null;
+            scene.updateTransformMatrix();
+            scene._mirroredCameraPosition = null;
 
-            scene!.clipPlane = saveClipPlane;
+            scene.clipPlane = saveClipPlane;
         });
     }
 

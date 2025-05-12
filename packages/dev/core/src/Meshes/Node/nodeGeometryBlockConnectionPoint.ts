@@ -261,9 +261,9 @@ export class NodeGeometryConnectionPoint {
     public getConnectedValue(state: NodeGeometryBuildState) {
         if (this.isConnected) {
             if (this._connectedPoint?._storedFunction) {
-                this._connectedPoint!._callCount++;
-                this._connectedPoint!._executionCount++;
-                return this._connectedPoint!._storedFunction(state);
+                this._connectedPoint._callCount++;
+                this._connectedPoint._executionCount++;
+                return this._connectedPoint._storedFunction(state);
             }
             this._connectedPoint!._callCount++;
             this._connectedPoint!._executionCount = 1;

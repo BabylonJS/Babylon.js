@@ -35,6 +35,7 @@ import {
 import { Attractor } from "./attractor";
 import type { _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
+import type { FlowMap } from "./flowMap";
 
 /**
  * This represents a particle system in Babylon.
@@ -91,6 +92,45 @@ export class ParticleSystem extends ThinParticleSystem {
         return particleEmitter;
     }
 
+    /** Flow map */
+    private _flowMap: Nullable<FlowMap> = null;
+    private _flowMapUpdate: Nullable<_IExecutionQueueItem> = null;
+
+    /**
+     * The strength of the flow map
+     */
+    public flowMapStrength = 1.0;
+
+    /** Gets or sets the current flow map */
+    public get flowMap(): Nullable<FlowMap> {
+        return this._flowMap;
+    }
+
+    public set flowMap(value: Nullable<FlowMap>) {
+        if (this._flowMap === value) {
+            return;
+        }
+
+        this._flowMap = value;
+
+        if (this._flowMapUpdate) {
+            _RemoveFromQueue(this._flowMapUpdate);
+            this._flowMapUpdate = null;
+        }
+        if (value) {
+            const matrix = this.getScene()?.getTransformMatrix();
+            this._flowMapUpdate = {
+                process: (particle: Particle) => {
+                    this._flowMap!._processParticle(particle, this.flowMapStrength * this._tempScaledUpdateSpeed, matrix);
+                },
+                previousItem: null,
+                nextItem: null,
+            };
+            _ConnectAfter(this._flowMapUpdate, this._directionProcessing!);
+        }
+    }
+
+    /** Attractors */
     private _attractors: Attractor[] = [];
     private _attractorUpdate: Nullable<_IExecutionQueueItem> = null;
 
@@ -221,6 +261,7 @@ export class ParticleSystem extends ThinParticleSystem {
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
+
     public override createDirectedConeEmitter(
         radius = 1,
         angle = Math.PI / 4,
@@ -288,6 +329,7 @@ export class ParticleSystem extends ThinParticleSystem {
         this._rootParticleSystem = null;
     }
 
+    /** @internal */
     public override _emitFromParticle: (particle: Particle) => void = (particle) => {
         if (!this._subEmitters || this._subEmitters.length === 0) {
             return;
@@ -305,6 +347,7 @@ export class ParticleSystem extends ThinParticleSystem {
         }
     };
 
+    /** @internal */
     public override _preStart() {
         // Convert the subEmitters field to the constant type field _subEmitters
         this._prepareSubEmitterInternalArray();
@@ -314,12 +357,14 @@ export class ParticleSystem extends ThinParticleSystem {
         }
     }
 
+    /** @internal */
     public override _postStop(stopSubEmitters: boolean) {
         if (stopSubEmitters) {
             this._stopSubEmitters();
         }
     }
 
+    /** @internal */
     public override _prepareParticle(particle: Particle): void {
         // Attach emitters
         if (this._subEmitters && this._subEmitters.length > 0) {
@@ -328,7 +373,7 @@ export class ParticleSystem extends ThinParticleSystem {
             for (const subEmitter of subEmitters) {
                 if (subEmitter.type === SubEmitterType.ATTACHED) {
                     const newEmitter = subEmitter.clone();
-                    (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
+                    particle._attachedSubEmitters.push(newEmitter);
                     newEmitter.particleSystem.start();
                 }
             }
@@ -388,7 +433,7 @@ export class ParticleSystem extends ThinParticleSystem {
         if (sceneOrEngine instanceof AbstractEngine) {
             scene = null;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
         }
 
         const internalClass = GetClass("BABYLON.Texture");
@@ -696,7 +741,7 @@ export class ParticleSystem extends ThinParticleSystem {
         if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
-            scene = sceneOrEngine as Scene;
+            scene = sceneOrEngine;
             engine = scene.getEngine();
         }
 

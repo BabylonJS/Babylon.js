@@ -9,8 +9,8 @@ interface IFileButtonLineProps {
 }
 
 export class FileButtonLine extends React.Component<IFileButtonLineProps> {
-    private static _IDGenerator = 0;
-    private _id = FileButtonLine._IDGenerator++;
+    private static _IdGenerator = 0;
+    private _id = FileButtonLine._IdGenerator++;
     private _uploadInputRef: React.RefObject<HTMLInputElement>;
 
     constructor(props: IFileButtonLineProps) {

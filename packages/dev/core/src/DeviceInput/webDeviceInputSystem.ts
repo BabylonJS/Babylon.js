@@ -26,7 +26,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
     // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
-    private readonly _usingMacOS: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+    private readonly _usingMacOs: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
@@ -56,7 +56,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerBlurEvent = (evt: any) => {};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _pointerMacOSChromeOutEvent = (evt: any) => {};
+    private _pointerMacOsChromeOutEvent = (evt: any) => {};
     private _wheelEventName: string;
     private _eventsAttached: boolean = false;
 
@@ -102,7 +102,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._enableEvents();
 
-        if (this._usingMacOS) {
+        if (this._usingMacOs) {
             this._metaKeys = [];
         }
 
@@ -230,8 +230,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "leave", this._pointerLeaveEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
-            if (this._usingMacOS && this._isUsingChromium) {
-                this._elementToAttachTo.removeEventListener("lostpointercapture", this._pointerMacOSChromeOutEvent);
+            if (this._usingMacOs && this._isUsingChromium) {
+                this._elementToAttachTo.removeEventListener("lostpointercapture", this._pointerMacOsChromeOutEvent);
             }
 
             // Gamepad Events
@@ -356,7 +356,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
 
-                if (this._usingMacOS && evt.metaKey && evt.key !== "Meta") {
+                if (this._usingMacOs && evt.metaKey && evt.key !== "Meta") {
                     if (!this._metaKeys.includes(evt.keyCode)) {
                         this._metaKeys.push(evt.keyCode);
                     }
@@ -379,7 +379,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
 
-                if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.length > 0) {
+                if (this._usingMacOs && evt.key === "Meta" && this._metaKeys.length > 0) {
                     for (const keyCode of this._metaKeys) {
                         const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, keyCode, 0, this, this._elementToAttachTo);
                         kbKey[keyCode] = 0;
@@ -405,7 +405,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
                 }
-                if (this._usingMacOS) {
+                if (this._usingMacOs) {
                     this._metaKeys.splice(0, this._metaKeys.length);
                 }
             }
@@ -597,7 +597,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             // mouse button were released.
             // If Firefox makes a fix to ensure this is the case, this workaround can be removed.
             // Relevant forum thread: https://forum.babylonjs.com/t/camera-pan-getting-stuck-in-firefox/57158
-            if (!shouldProcessPointerUp && this._isUsingFirefox && this._usingMacOS && pointer) {
+            if (!shouldProcessPointerUp && this._isUsingFirefox && this._usingMacOs && pointer) {
                 // Try the other button (left or right button)
                 button = button === 2 ? 0 : 2;
 
@@ -818,13 +818,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         };
 
         // Workaround for MacOS Chromium Browsers for lost pointer capture bug
-        if (this._usingMacOS && this._isUsingChromium) {
-            this._pointerMacOSChromeOutEvent = (evt) => {
+        if (this._usingMacOs && this._isUsingChromium) {
+            this._pointerMacOsChromeOutEvent = (evt) => {
                 if (evt.buttons > 1) {
                     this._pointerCancelEvent(evt);
                 }
             };
-            this._elementToAttachTo.addEventListener("lostpointercapture", this._pointerMacOSChromeOutEvent);
+            this._elementToAttachTo.addEventListener("lostpointercapture", this._pointerMacOsChromeOutEvent);
         }
 
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);

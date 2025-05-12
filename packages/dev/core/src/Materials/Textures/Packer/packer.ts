@@ -548,7 +548,7 @@ export class TexturePacker {
      * Starts the async promise to compile the texture packer.
      * @returns Promise<void>
      */
-    public processAsync(): Promise<void> {
+    public async processAsync(): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
                 if (this.meshes.length === 0) {
@@ -593,7 +593,7 @@ export class TexturePacker {
                     }
 
                     material.forceCompilationAsync(mesh).then(() => {
-                        doneCheck(material as Material);
+                        doneCheck(material);
                     });
                 }
             } catch (e) {

@@ -1,4 +1,4 @@
-import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions, ShaderCustomProcessingFunction, _IShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -10,7 +10,7 @@ import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
-import { _loadFile } from "core/Engines/abstractEngine.functions";
+import { _LoadFile } from "core/Engines/abstractEngine.functions";
 import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 
 /**
@@ -51,7 +51,7 @@ export interface IPipelineGenerationOptions {
     /**
      * extend the processing options when running code processing
      */
-    extendedProcessingOptions?: Partial<ProcessingOptions>;
+    extendedProcessingOptions?: Partial<_IProcessingOptions>;
 
     /**
      * extend the pipeline generation options
@@ -74,7 +74,7 @@ export interface IPipelineGenerationOptions {
  */
 export interface ICreateAndPreparePipelineContextOptions {
     parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
-    shaderProcessingContext: Nullable<ShaderProcessingContext>;
+    shaderProcessingContext: Nullable<_IShaderProcessingContext>;
     existingPipelineContext?: Nullable<IPipelineContext>;
     name?: string;
     rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
@@ -96,6 +96,7 @@ export interface ICreateAndPreparePipelineContextOptions {
  * @returns the cached pipeline context if it exists
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getCachedPipeline(name: string, context: WebGLContext): IPipelineContext | undefined {
     const stateObject = getStateObject(context);
     return stateObject.cachedPipelines[name];
@@ -104,11 +105,12 @@ export function getCachedPipeline(name: string, context: WebGLContext): IPipelin
 /**
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function resetCachedPipeline(pipeline: IPipelineContext): void {
     const name = pipeline._name;
     const context = (pipeline as WebGLPipelineContext).context;
     if (name && context) {
-        const stateObject = getStateObject(context!);
+        const stateObject = getStateObject(context);
         const cachedPipeline = stateObject.cachedPipelines[name];
         cachedPipeline?.dispose();
         delete stateObject.cachedPipelines[name];
@@ -116,8 +118,9 @@ export function resetCachedPipeline(pipeline: IPipelineContext): void {
 }
 
 /** @internal */
-export function _processShaderCode(
-    processorOptions: ProcessingOptions,
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function _ProcessShaderCode(
+    processorOptions: _IProcessingOptions,
     baseName: any,
     processFinalCode?: Nullable<ShaderCustomProcessingFunction>,
     onFinalCodeReady?: (vertexCode: string, fragmentCode: string) => void,
@@ -167,14 +170,14 @@ export function _processShaderCode(
                     }
                     const finalShaders = Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
                     processorOptions = null as any;
-                    const finalCode = _useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
+                    const finalCode = UseFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
                     onFinalCodeReady?.(finalCode.vertexSourceCode, finalCode.fragmentSourceCode);
                 },
                 engine
             );
         }
     };
-    _loadShader(
+    LoadShader(
         vertexSource,
         "Vertex",
         "",
@@ -199,7 +202,7 @@ export function _processShaderCode(
         },
         shaderLanguage
     );
-    _loadShader(
+    LoadShader(
         fragmentSource,
         "Fragment",
         "Pixel",
@@ -214,7 +217,7 @@ export function _processShaderCode(
     );
 }
 
-function _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void, shaderLanguage?: ShaderLanguage, _loadFileInjection?: typeof _loadFile) {
+function LoadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void, shaderLanguage?: ShaderLanguage, _loadFileInjection?: typeof _LoadFile) {
     if (typeof HTMLElement !== "undefined") {
         // DOM element ?
         if (shader instanceof HTMLElement) {
@@ -257,7 +260,7 @@ function _loadShader(shader: any, key: string, optionalKey: string, callback: (d
     } else {
         shaderUrl = ShaderStore.GetShadersRepository(shaderLanguage) + shader;
     }
-    _loadFileInjection = _loadFileInjection || _loadFile;
+    _loadFileInjection = _loadFileInjection || _LoadFile;
     if (!_loadFileInjection) {
         // we got to this point and loadFile was not injected - throw an error
         throw new Error("loadFileInjection is not defined");
@@ -266,7 +269,7 @@ function _loadShader(shader: any, key: string, optionalKey: string, callback: (d
     _loadFileInjection(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
 }
 
-function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, shaderLanguage?: ShaderLanguage) {
+function UseFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, shaderLanguage?: ShaderLanguage) {
     if (baseName) {
         const vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
         const fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
@@ -287,10 +290,11 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
  * Creates and prepares a pipeline context
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createAndPreparePipelineContext = (
     options: ICreateAndPreparePipelineContextOptions,
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
-    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext,
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContextAsync,
     _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
 ): IPipelineContext => {
     try {

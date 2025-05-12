@@ -18,6 +18,7 @@ export type AccessibilityEntity = Node | Control;
  * @param item the item to retrieve the texture from
  * @returns an accessible texture if found, undefined otherwise
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getAccessibleTexture(item: AccessibilityEntity): AdvancedDynamicTexture | undefined {
     if (item instanceof AbstractMesh && item.material instanceof StandardMaterial) {
         const hasTexture = item.material.emissiveTexture || item.material.diffuseTexture;
@@ -36,6 +37,7 @@ export function getAccessibleTexture(item: AccessibilityEntity): AdvancedDynamic
  * @param item an accessible item
  * @returns a list of accessible items
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getDirectChildrenOf(item: AccessibilityEntity): AccessibilityEntity[] {
     if (item instanceof Node) {
         return item.getDescendants(true);
@@ -50,6 +52,7 @@ export function getDirectChildrenOf(item: AccessibilityEntity): AccessibilityEnt
  * @param item an accessible item
  * @returns its visibility status
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function isVisible(item: AccessibilityEntity): boolean {
     if (item instanceof Node) {
         return item.isEnabled();

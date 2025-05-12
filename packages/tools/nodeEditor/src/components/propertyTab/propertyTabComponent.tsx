@@ -39,7 +39,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { SetToDefaultGaussianSplatting, SetToDefaultSFE } from "core/Materials/Node/nodeMaterialDefault";
-import { alphaModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -207,7 +207,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const decoder = new TextDecoder("utf-8");
                 SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
-                if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
+                if (!this.changeMode(this.props.globalState.nodeMaterial.mode, true, false)) {
                     this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 }
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
@@ -325,7 +325,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material)
             .then(() => {
                 material.build();
-                if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
+                if (!this.changeMode(this.props.globalState.nodeMaterial.mode, true, false)) {
                     this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                 }
                 this.props.globalState.onClearUndoStack.notifyObservers();
@@ -352,22 +352,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (loadDefault) {
             switch (value) {
                 case NodeMaterialModes.Material:
-                    this.props.globalState.nodeMaterial!.setToDefault();
+                    this.props.globalState.nodeMaterial.setToDefault();
                     break;
                 case NodeMaterialModes.PostProcess:
-                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                    this.props.globalState.nodeMaterial.setToDefaultPostProcess();
                     break;
                 case NodeMaterialModes.SFE:
                     SetToDefaultSFE(this.props.globalState.nodeMaterial!);
                     break;
                 case NodeMaterialModes.Particle:
-                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                    this.props.globalState.nodeMaterial.setToDefaultParticle();
                     break;
                 case NodeMaterialModes.ProceduralTexture:
-                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                    this.props.globalState.nodeMaterial.setToDefaultProceduralTexture();
                     break;
                 case NodeMaterialModes.GaussianSplatting:
-                    SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
+                    SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial);
                     break;
             }
         }
@@ -488,7 +488,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Comment"
                             multilines={true}
                             lockObject={this.props.globalState.lockObject}
-                            value={this.props.globalState.nodeMaterial!.comment}
+                            value={this.props.globalState.nodeMaterial.comment}
                             target={this.props.globalState.nodeMaterial}
                             propertyName="comment"
                         />
@@ -497,22 +497,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onClick={() => {
                                 switch (this.props.globalState.mode) {
                                     case NodeMaterialModes.Material:
-                                        this.props.globalState.nodeMaterial!.setToDefault();
+                                        this.props.globalState.nodeMaterial.setToDefault();
                                         break;
                                     case NodeMaterialModes.PostProcess:
-                                        this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                                        this.props.globalState.nodeMaterial.setToDefaultPostProcess();
                                         break;
                                     case NodeMaterialModes.SFE:
                                         SetToDefaultSFE(this.props.globalState.nodeMaterial!);
                                         break;
                                     case NodeMaterialModes.Particle:
-                                        this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                                        this.props.globalState.nodeMaterial.setToDefaultParticle();
                                         break;
                                     case NodeMaterialModes.ProceduralTexture:
-                                        this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                        this.props.globalState.nodeMaterial.setToDefaultProceduralTexture();
                                         break;
                                     case NodeMaterialModes.GaussianSplatting:
-                                        SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
+                                        SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial);
                                         break;
                                 }
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
@@ -586,19 +586,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent
                             label="Generate code"
                             onClick={() => {
-                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial.generateCode(), "code.txt");
                             }}
                         />
                         <ButtonLineComponent
                             label="Export shaders"
                             onClick={() => {
                                 this.props.globalState.nodeMaterial.build();
-                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                             }}
                         />
                         {this.props.globalState.customSave && (
                             <ButtonLineComponent
-                                label={this.props.globalState.customSave!.label}
+                                label={this.props.globalState.customSave.label}
                                 isDisabled={this.state.uploadInProgress}
                                 onClick={() => {
                                     this.customSave();
@@ -609,7 +609,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">
-                            {this.props.globalState.nodeMaterial!.snippetId && <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial!.snippetId} />}
+                            {this.props.globalState.nodeMaterial.snippetId && <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial.snippetId} />}
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                             <ButtonLineComponent
                                 label="Save to snippet server"
@@ -628,7 +628,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                         <OptionsLine
                             label="Alpha mode"
-                            options={alphaModeOptions}
+                            options={AlphaModeOptions}
                             target={this.props.globalState.nodeMaterial}
                             propertyName="alphaMode"
                             onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}

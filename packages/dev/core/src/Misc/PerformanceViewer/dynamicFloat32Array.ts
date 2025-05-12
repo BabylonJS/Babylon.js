@@ -1,4 +1,4 @@
-const growthFactor = 1.5;
+const GrowthFactor = 1.5;
 
 /**
  * A class acting as a dynamic float32array used in the performance viewer
@@ -70,7 +70,7 @@ export class DynamicFloat32Array {
      * Grows the array by the growth factor when necessary.
      */
     private _growArray() {
-        const newCapacity = Math.floor(this._view.length * growthFactor);
+        const newCapacity = Math.floor(this._view.length * GrowthFactor);
         const view = new Float32Array(newCapacity);
         view.set(this._view);
         this._view = view;

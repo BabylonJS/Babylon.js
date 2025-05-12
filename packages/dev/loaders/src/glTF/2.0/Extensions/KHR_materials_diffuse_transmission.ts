@@ -12,7 +12,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_materials_diffuse_transmission";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_diffuse_transmission extension.
@@ -64,6 +64,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDiffuseTransmission>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
@@ -78,7 +79,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const pbrMaterial = babylonMaterial as PBRMaterial;
+        const pbrMaterial = babylonMaterial;
 
         // Enables "translucency" texture which represents diffusely-transmitted light.
         pbrMaterial.subSurface.isTranslucencyEnabled = true;

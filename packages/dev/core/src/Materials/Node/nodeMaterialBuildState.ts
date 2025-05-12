@@ -8,7 +8,7 @@ import { Constants } from "../../Engines/constants";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { Process } from "core/Engines/Processors/shaderProcessor";
-import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 
 /** @internal */
@@ -120,7 +120,7 @@ export class NodeMaterialBuildState {
         }
 
         const engine = this.sharedData.nodeMaterial.getScene().getEngine();
-        const options: ProcessingOptions = {
+        const options: _IProcessingOptions = {
             defines: [],
             indexParameters: undefined,
             isFragment: this.target === NodeMaterialBlockTargets.Fragment,

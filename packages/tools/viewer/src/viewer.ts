@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type {
     AbstractEngine,
     AbstractMesh,
@@ -919,7 +920,7 @@ export class Viewer implements IDisposable {
             },
             suspendRendering: () => this._suspendRendering(),
             markSceneMutated: () => this._markSceneMutated(),
-            pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
+            pick: async (screenX: number, screenY: number) => this._pick(screenX, screenY),
         });
 
         this._reset(false, "source", "environment", "post-processing");
@@ -2414,7 +2415,7 @@ export class Viewer implements IDisposable {
             this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._scene.cameras.forEach(async (camera) => this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 

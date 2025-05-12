@@ -610,6 +610,7 @@ export abstract class Light extends Node implements ISortableLight {
      * Returns the light type ID (integer).
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public getTypeID(): number {
         return 0;
     }

@@ -19,6 +19,7 @@ export * from "./cloudPoint";
 export * from "./pointsCloudSystem";
 export * from "./subEmitter";
 export * from "./attractor";
+export * from "./flowMap";
 
 export * from "../Shaders/particles.fragment";
 export * from "../Shaders/particles.vertex";
