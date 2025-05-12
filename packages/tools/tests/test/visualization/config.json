@@ -2,6 +2,16 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "MSDF",
+            "playgroundId": "#6RLCWP#20",
+            "referenceImage": "msdf.png"
+        },
+        {
+            "title": "MSDF Billboard",
+            "playgroundId": "#6RLCWP#23",
+            "referenceImage": "msdf-billboard.png"
+        },
+        {
             "title": "Attractors",
             "playgroundId": "#DEZ79M#34",
             "referenceImage": "attractors.png"
