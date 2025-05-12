@@ -1793,7 +1793,6 @@ export class Viewer implements IDisposable {
 
         const size = 4096;
         const positionFactor = 3;
-        const extendsFactor = 5;
         const groundFactor = 20;
         const useBlur = true;
         const blur = 4;
