@@ -29,7 +29,7 @@ export class FontAsset {
     public readonly textures: Texture[];
 
     /**
-     * Cresate a new FontAsset instance.
+     * Creates a new FontAsset instance.
      * @param definitionData defines the font data in JSON format.
      * @param textureUrl defines the url of the texture to use for the font.
      */
