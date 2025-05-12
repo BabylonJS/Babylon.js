@@ -189,11 +189,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     prepareCamera() {
+        let camera = this._scene.activeCamera! as ArcRotateCamera;
         // Attach camera to canvas inputs
-        if (!this._scene.activeCamera) {
+        if (!camera) {
             this._scene.createDefaultCamera(true);
 
-            const camera = this._scene.activeCamera! as ArcRotateCamera;
+            camera = this._scene.activeCamera! as ArcRotateCamera;
 
             if (this._currentPluginName === "gltf" || this._currentPluginName === "obj") {
                 // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
@@ -234,9 +235,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
         }
 
-        this._scene.activeCamera!.attachControl();
-
-        return this._scene.activeCamera! as ArcRotateCamera;
+        camera.attachControl();
+        return camera;
     }
 
     handleErrors() {
