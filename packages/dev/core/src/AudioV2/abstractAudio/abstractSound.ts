@@ -6,10 +6,7 @@ import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import { AbstractSoundSource, type ISoundSourceOptions } from "./abstractSoundSource";
 import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
-import type { _AbstractAudioSubGraph } from "./subNodes/abstractAudioSubGraph";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
-import { _GetVolumeAudioProperty, _GetVolumeAudioSubNode } from "./subNodes/volumeAudioSubNode";
-import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
 
 /** @internal */
 export interface IAbstractSoundOptionsBase {
