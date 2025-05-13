@@ -77,7 +77,6 @@ preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N
     result.NdotL = saturateEps(result.NdotLUnclamped);
     result.LdotV = dot(result.L, V);
 
-    result.LdotV = 0.;
     result.roughness = 0.;
     result.diffuseRoughness = 0.;
     result.surfaceAlbedo = vec3(0.);
