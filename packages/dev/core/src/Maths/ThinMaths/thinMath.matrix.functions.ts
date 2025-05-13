@@ -3,7 +3,7 @@ import type { IMatrixLike } from "../math.like";
 import type { ThinMatrix } from "./thinMath.matrix";
 
 function SetMatrixData(
-    mat: Float32Array | Array<number>,
+    result: ThinMatrix,
     m0: number,
     m1: number,
     m2: number,
@@ -21,6 +21,7 @@ function SetMatrixData(
     m14: number,
     m15: number
 ): void {
+    const mat = result.asArray();
     mat[0] = m0;
     mat[1] = m1;
     mat[2] = m2;
@@ -37,6 +38,8 @@ function SetMatrixData(
     mat[13] = m13;
     mat[14] = m14;
     mat[15] = m15;
+
+    result.updateFlag++;
 }
 
 /**
@@ -44,7 +47,7 @@ function SetMatrixData(
  * @param result defines the target matrix
  */
 export function IdentityMatrixToRef(result: ThinMatrix): void {
-    SetMatrixData(result.asArray(), 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    SetMatrixData(result, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
 /**
@@ -55,8 +58,7 @@ export function IdentityMatrixToRef(result: ThinMatrix): void {
  * @param result defines the target matrix
  */
 export function TranslationMatrixToRef(x: number, y: number, z: number, result: ThinMatrix): void {
-    SetMatrixData(result.asArray(), 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0);
-    result.updateFlag++;
+    SetMatrixData(result, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0);
 }
 
 /**
@@ -67,8 +69,7 @@ export function TranslationMatrixToRef(x: number, y: number, z: number, result: 
  * @param result defines the target matrix
  */
 export function ScalingMatrixToRef(x: number, y: number, z: number, result: ThinMatrix): void {
-    SetMatrixData(result.asArray(), x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0);
-    result.updateFlag++;
+    SetMatrixData(result, x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
 /**
