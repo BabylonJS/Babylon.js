@@ -242,33 +242,36 @@ export class TextRenderer implements IDisposable {
         engine.setState(false);
         engine.enableEffect(drawWrapper);
 
-        if (this._parent) {
-            CopyMatrixToArray(this._parent.getWorldMatrix(), this._parentWorldMatrix.asArray());
-        } else {
-            IdentityMatrixToRef(this._parentWorldMatrix);
-        }
-
         if (this.isBillboard) {
-            const pwm = this._parentWorldMatrix.asArray(); // Save translation
-            this._storedTranslation.x = pwm[12];
-            this._storedTranslation.y = pwm[13];
-            this._storedTranslation.z = pwm[14];
-
+            if (this._parent) {
+                const pwm = this._parent.getWorldMatrix().asArray(); // Save translation
+                this._storedTranslation.x = pwm[12];
+                this._storedTranslation.y = pwm[13];
+                this._storedTranslation.z = pwm[14];
+            } else {
+                this._storedTranslation.x = 0;
+                this._storedTranslation.y = 0;
+                this._storedTranslation.z = 0;
+            }
             // Cancel camera rotation
             const baseM = this._baseMatrix.asArray();
             CopyMatrixToArray(viewMatrix, baseM);
             baseM[12] = 0;
             baseM[13] = 0;
             baseM[14] = 0;
-            InvertMatrixToRef(this._baseMatrix, this._finalMatrix.asArray());
+            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix.asArray());
 
-            pwm[12] = 0;
-            pwm[13] = 0;
-            pwm[14] = 0;
-            MultiplyMatricesToRef(this._parentWorldMatrix, this._finalMatrix, this._parentWorldMatrix);
+            // Restore translation
+            const pwm = this._parentWorldMatrix.asArray();
             pwm[12] = this._storedTranslation.x;
             pwm[13] = this._storedTranslation.y;
             pwm[14] = this._storedTranslation.z;
+        } else {
+            if (this._parent) {
+                CopyMatrixToArray(this._parent.getWorldMatrix(), this._parentWorldMatrix.asArray());
+            } else {
+                IdentityMatrixToRef(this._parentWorldMatrix);
+            }
         }
 
         effect.setMatrix("parentWorld", this._parentWorldMatrix);
