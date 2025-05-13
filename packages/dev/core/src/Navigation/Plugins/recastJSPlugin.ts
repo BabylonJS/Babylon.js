@@ -119,7 +119,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      *
      */
-    public intermediates?: SoloNavMeshGeneratorIntermediates | TiledNavMeshGeneratorIntermediates;
+    public intermediates?: SoloNavMeshGeneratorIntermediates;
 
     private _maximumSubStepCount: number = 10;
     private _timeStep: number = 1 / 60;
@@ -141,6 +141,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         return this._indices;
     }
 
+    private _tempVec1: any;
+    private _tempVec2: any;
+
     /**
      * Initializes the recastJS plugin
      * @param recastInjection can be used to inject your own recast reference
@@ -159,8 +162,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         }
         this.setTimeStep();
 
-        // this._tempVec1 = new this.bjsRECAST.Vec3();
-        // this._tempVec2 = new this.bjsRECAST.Vec3();
+        // TODO: use these wherever possible
+        this._tempVec1 = new this.bjsRECAST.vec3();
+        this._tempVec2 = new this.bjsRECAST.vec3();
     }
 
     createNavMeshWorker(_meshes: Array<Mesh>, _parameters: INavMeshParameters0, _completion: (data?: Uint8Array) => void): void {
