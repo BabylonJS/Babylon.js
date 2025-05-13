@@ -243,8 +243,9 @@ export class TextRenderer implements IDisposable {
         engine.enableEffect(drawWrapper);
 
         if (this.isBillboard) {
+            // Save parent translation
             if (this._parent) {
-                const pwm = this._parent.getWorldMatrix().asArray(); // Save translation
+                const pwm = this._parent.getWorldMatrix().asArray();
                 this._storedTranslation.x = pwm[12];
                 this._storedTranslation.y = pwm[13];
                 this._storedTranslation.z = pwm[14];
