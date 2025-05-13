@@ -35,6 +35,7 @@ export interface INodeLike {
  * Star wars scroller: #6RLCWP#29
  * With metrics: #6RLCWP#35
  * Thickness: #IABMEZ#3
+ * Solar system: #9YCDYC#9
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
