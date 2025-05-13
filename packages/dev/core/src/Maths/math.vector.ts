@@ -6455,6 +6455,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         }
 
         InvertMatrixToRef(this, other.asArray());
+        other.markAsUpdated();
         return other;
     }
 
