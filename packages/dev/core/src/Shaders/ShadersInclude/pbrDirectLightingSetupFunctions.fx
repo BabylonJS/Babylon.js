@@ -55,6 +55,10 @@ preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
 
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
     return result;
 }
 
@@ -72,6 +76,11 @@ preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
     result.LdotV = dot(result.L, V);
+
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
     return result;
 }
 
@@ -89,7 +98,10 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
         result.H = normalize(V + result.L);
         result.VdotH = saturate(dot(V, result.H));
     #endif
-
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
     return result;
 }
 
@@ -114,6 +126,11 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 
     result.areaLightSpecular = data.Specular;
 #endif
 	result.areaLightDiffuse = data.Diffuse;
+
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
 	return result;
 }
 #endif
