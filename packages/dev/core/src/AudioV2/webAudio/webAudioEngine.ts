@@ -255,7 +255,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     public async createSoundSourceAsync(name: string, source: AudioNode, options: Partial<ISoundSourceOptions> = {}): Promise<AbstractSoundSource> {
         const module = await import("./webAudioSoundSource");
 
-        const soundSource = new module._WebAudioSoundSource(name, source, this);
+        const soundSource = new module._WebAudioSoundSource(name, source, this, options);
         await soundSource._initAsync(options);
 
         return soundSource;

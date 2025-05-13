@@ -27,8 +27,16 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public constructor(name: string, webAudioNode: AudioNode, engine: _WebAudioEngine) {
+    public constructor(name: string, webAudioNode: AudioNode, engine: _WebAudioEngine, options: Partial<ISoundSourceOptions>) {
         super(name, engine);
+
+        if (typeof options.spatialAutoUpdate === "boolean") {
+            this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
+        }
 
         this._audioContext = this.engine._audioContext;
         this._webAudioNode = webAudioNode;
