@@ -2560,6 +2560,21 @@
             "playgroundId": "#PV8OLY#21"
         },
         {
+            "title": "FrameGraph motion blur screen based",
+            "playgroundId": "#YB006J#746",
+            "renderCount": 10
+        },
+        {
+            "title": "FrameGraph motion blur object based",
+            "playgroundId": "#YB006J#747",
+            "renderCount": 10
+        },
+        {
+            "title": "FrameGraph motion blur skinned",
+            "playgroundId": "#YB006J#749",
+            "renderCount": 40
+        },
+        {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#9"
         },
