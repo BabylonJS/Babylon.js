@@ -70,7 +70,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
-     * Point spread function (default 0.3)
+     * Point spread function (default 0.3). Can be overriden per GS material
      */
     public static KernelSize: number = 0.3;
 
@@ -78,6 +78,30 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Compensation
      */
     public static Compensation: boolean = false;
+
+    /**
+     * Point spread function (default 0.3). Can be overriden per GS material, otherwise, using default static `KernelSize` value
+     */
+    public kernelSize = GaussianSplattingMaterial.KernelSize;
+    private _compensation = GaussianSplattingMaterial.Compensation;
+
+    // set to true when material defines are dirty
+    private _isDirty = false;
+
+    /**
+     * Set compensation default value is `GaussianSplattingMaterial.Compensation`
+     */
+    public set compensation(value: boolean) {
+        this._compensation = value;
+        this._isDirty = true;
+    }
+
+    /**
+     * Get compensation
+     */
+    public get compensation(): boolean {
+        return this._compensation;
+    }
 
     /**
      * Gets a boolean indicating that current material needs to register RTT
@@ -112,6 +136,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const useInstances = true;
 
         const drawWrapper = subMesh._drawWrapper;
+        let defines = <GaussianSplattingMaterialDefines>subMesh.materialDefines;
+
+        if (defines && this._isDirty) {
+            defines.markAsUnprocessed();
+        }
 
         if (drawWrapper.effect && this.isFrozen) {
             if (drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
@@ -120,17 +149,17 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new GaussianSplattingMaterialDefines();
+            defines = subMesh.materialDefines = new GaussianSplattingMaterialDefines();
         }
 
         const scene = this.getScene();
-        const defines = <GaussianSplattingMaterialDefines>subMesh.materialDefines;
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
         const engine = scene.getEngine();
+        const gsMesh = mesh as GaussianSplattingMesh;
 
         // Misc.
         PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
@@ -143,11 +172,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         // SH is disabled for webGL1
         if (engine.version > 1 || engine.isWebGPU) {
-            defines["SH_DEGREE"] = (<GaussianSplattingMesh>mesh).shDegree;
+            defines["SH_DEGREE"] = gsMesh.shDegree;
         }
 
         // Compensation
-        defines["COMPENSATION"] = GaussianSplattingMaterial.Compensation;
+        defines["COMPENSATION"] = gsMesh.material ? (<GaussianSplattingMaterial>gsMesh.material).compensation : GaussianSplattingMaterial.Compensation;
 
         // Get correct effect
         if (defines.isDirty) {
@@ -217,6 +246,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         defines._renderId = scene.getRenderId();
         drawWrapper._wasPreviouslyReady = true;
         drawWrapper._wasPreviouslyUsingInstances = useInstances;
+        this._isDirty = false;
 
         return true;
     }
@@ -233,6 +263,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         const renderWidth = engine.getRenderWidth();
         const renderHeight = engine.getRenderHeight();
+
+        const gsMesh = mesh as GaussianSplattingMesh;
+        const gsMaterial = gsMesh.material as GaussianSplattingMaterial;
 
         // check if rigcamera, get number of rigs
         const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
@@ -258,13 +291,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
-        effect.setFloat("kernelSize", GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("kernelSize", gsMaterial ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
 
         // vEyePosition doesn't get automatially bound on MacOS with Chromium for no apparent reason.
         // Binding it manually here instead. Remove next line when SH rendering is fine on that platform.
         scene.bindEyePosition(effect);
-
-        const gsMesh = mesh as GaussianSplattingMesh;
 
         if (gsMesh.covariancesATexture) {
             const textureSize = gsMesh.covariancesATexture.getSize();

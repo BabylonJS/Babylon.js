@@ -14,6 +14,7 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Scalar } from "core/Maths/math.scalar";
+import type { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
@@ -44,6 +45,7 @@ interface IParsedPLY {
     faces?: number[];
     hasVertexColors?: boolean;
     sh?: Uint8Array[];
+    trainedWithAntialiasing?: boolean;
 }
 
 /**
@@ -191,7 +193,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const shDegree = ubuf[12];
         const fractionalBits = ubuf[13];
-        //const flags = ubuf[14];
+        const flags = ubuf[14];
         const reserved = ubuf[15];
 
         // check magic and version
@@ -317,12 +319,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             }
 
             return new Promise((resolve) => {
-                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
+                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh, trainedWithAntialiasing: !!flags });
             });
         }
 
         return new Promise((resolve) => {
-            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false });
+            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, trainedWithAntialiasing: !!flags });
         });
     }
 
@@ -347,6 +349,11 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     this._parseSPZAsync(buffer, scene).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                        if (parsedSPZ.trainedWithAntialiasing) {
+                            const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
+                            gsMaterial.kernelSize = 0.1;
+                            gsMaterial.compensation = true;
+                        }
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
