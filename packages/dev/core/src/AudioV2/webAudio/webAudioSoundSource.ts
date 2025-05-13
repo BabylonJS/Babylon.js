@@ -143,5 +143,15 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
         protected get _upstreamNodes(): Nullable<Set<AbstractAudioNode>> {
             return this._owner._upstreamNodes ?? null;
         }
+
+        protected override _onSubNodesChanged(): void {
+            super._onSubNodesChanged();
+
+            this._owner._inNode.disconnect();
+
+            if (this._owner._subGraph._inNode) {
+                this._owner._inNode.connect(this._owner._subGraph._inNode);
+            }
+        }
     };
 }
