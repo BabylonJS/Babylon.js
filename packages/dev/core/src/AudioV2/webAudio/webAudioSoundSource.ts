@@ -101,7 +101,7 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
 
     /** @internal */
     public getClassName(): string {
-        return "_WebAudioStaticSound";
+        return "_WebAudioSoundSource";
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
