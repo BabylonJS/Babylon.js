@@ -77,7 +77,7 @@ export function ScalingMatrixToRef(x: number, y: number, z: number, result: Thin
  * @param a defines the first matrix
  * @param b defines the second matrix
  * @param output defines the target array
- * @param offset defines the offset in the target matrix where to store the result (0 by default)
+ * @param offset defines the offset in the target array where to store the result (0 by default)
  */
 export function MultiplyMatricesToArray(a: IMatrixLike, b: IMatrixLike, output: Float32Array | Array<number>, offset = 0): void {
     const m = a.asArray();
