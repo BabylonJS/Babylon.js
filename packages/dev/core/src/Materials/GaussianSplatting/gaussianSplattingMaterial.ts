@@ -92,8 +92,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Set compensation default value is `GaussianSplattingMaterial.Compensation`
      */
     public set compensation(value: boolean) {
+        this._isDirty = this._isDirty != value;
         this._compensation = value;
-        this._isDirty = true;
     }
 
     /**
@@ -176,7 +176,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         // Compensation
-        defines["COMPENSATION"] = gsMesh.material ? (<GaussianSplattingMaterial>gsMesh.material).compensation : GaussianSplattingMaterial.Compensation;
+        const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
+        defines["COMPENSATION"] = splatMaterial && splatMaterial.compensation ? splatMaterial.compensation : GaussianSplattingMaterial.Compensation;
 
         // Get correct effect
         if (defines.isDirty) {
@@ -291,7 +292,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
-        effect.setFloat("kernelSize", gsMaterial ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
 
         // vEyePosition doesn't get automatially bound on MacOS with Chromium for no apparent reason.
         // Binding it manually here instead. Remove next line when SH rendering is fine on that platform.
