@@ -178,6 +178,7 @@ export function CopyMatrixToArray(matrix: IMatrixLike, array: Float32Array | Arr
  * Inverts the given matrix and stores the result in the target array
  * @param source defines the source matrix
  * @param target defines the target array
+ * @returns true if the matrix was inverted successfully, false otherwise
  */
 export function InvertMatrixToRef(source: IMatrixLike, target: Float32Array | Array<number>) {
     // the inverse of a matrix is the transpose of cofactor matrix divided by the determinant
@@ -215,8 +216,7 @@ export function InvertMatrixToRef(source: IMatrixLike, target: Float32Array | Ar
 
     if (det === 0) {
         // Not invertible
-        CopyMatrixToArray(source, target);
-        return;
+        return false;
     }
 
     const detInv = 1 / det;
@@ -264,4 +264,6 @@ export function InvertMatrixToRef(source: IMatrixLike, target: Float32Array | Ar
     target[13] = cofact_13 * detInv;
     target[14] = cofact_23 * detInv;
     target[15] = cofact_33 * detInv;
+
+    return true;
 }
