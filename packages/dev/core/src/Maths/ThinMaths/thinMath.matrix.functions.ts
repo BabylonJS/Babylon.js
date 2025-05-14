@@ -73,7 +73,7 @@ export function ScalingMatrixToRef(x: number, y: number, z: number, result: Thin
 }
 
 /**
- * Multiplies two matrices and stores the result in a third matrix.
+ * Multiplies two matrices and stores the result in the target array.
  * @param a defines the first matrix
  * @param b defines the second matrix
  * @param output defines the target array
