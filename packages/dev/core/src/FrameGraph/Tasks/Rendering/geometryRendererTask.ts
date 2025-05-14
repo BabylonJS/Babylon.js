@@ -38,7 +38,7 @@ export interface IFrameGraphGeometryRendererTextureDescription {
     textureFormat: number;
 }
 
-const ClearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
+const ClearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(0, 0, 0, 0)];
 
 /**
  * Task used to render geometry to a set of textures.

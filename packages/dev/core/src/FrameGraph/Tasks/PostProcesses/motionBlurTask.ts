@@ -14,7 +14,7 @@ export class FrameGraphMotionBlurTask extends FrameGraphPostProcessTask {
     public velocityTexture?: FrameGraphTextureHandle;
 
     /**
-     * The depth texture to use for the motion blur effect.
+     * The (view) depth texture to use for the motion blur effect.
      * Needed for screen-based motion blur.
      */
     public depthTexture?: FrameGraphTextureHandle;
