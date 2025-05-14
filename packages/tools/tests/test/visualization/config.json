@@ -2543,6 +2543,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "FrameGraph nrge motion blur",
+            "playgroundId": "#YB006J#753",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 40
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2568,6 +2574,21 @@
         {
             "title": "FrameGraph image processing",
             "playgroundId": "#PV8OLY#21"
+        },
+        {
+            "title": "FrameGraph motion blur screen based",
+            "playgroundId": "#YB006J#746",
+            "renderCount": 10
+        },
+        {
+            "title": "FrameGraph motion blur object based",
+            "playgroundId": "#YB006J#747",
+            "renderCount": 10
+        },
+        {
+            "title": "FrameGraph motion blur skinned",
+            "playgroundId": "#YB006J#749",
+            "renderCount": 40
         },
         {
             "title": "IBL radiance roughness",
