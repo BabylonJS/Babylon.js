@@ -2533,6 +2533,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "FrameGraph nrge motion blur",
+            "playgroundId": "#YB006J#753",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 40
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
