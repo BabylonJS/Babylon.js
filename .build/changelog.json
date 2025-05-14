@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.6.2",
+    "fromTag": "8.7.0",
     "changelog": {
         "8.7.0": [
             {
@@ -30,6 +30,367 @@
                     "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
                     "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
                     "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "8.7.1": [
+            {
+                "pr": "16603",
+                "title": "Expose limitVelocityDamping parameter in particle system editor",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16599",
+                "title": "First installment of the Thin Maths",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/core/package.json",
+                    "packages/dev/core/src/Maths/ThinMaths/index.ts",
+                    "packages/dev/core/src/Maths/ThinMaths/thinMath.matrix.functions.ts",
+                    "packages/dev/core/src/Maths/ThinMaths/thinMath.matrix.ts",
+                    "packages/dev/core/src/Maths/index.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/public/@babylonjs/core/package.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16601",
+                "title": "Adding handling of InstacedMesh inside of addAllAssetsToContainer that was missing.",
+                "description": "AssetContainer.addAllAssetsToContainer  was missing handling InstancedMeshes, so when one of those meshes existed in the node hierarchy, it was getting added to the transformNodes list instead of the meshes list.",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16602",
+                "title": "FrameGraph: add support for motion blur",
+                "description": "Closes https://github.com/BabylonJS/ThePirateCove/issues/1242",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/motionBlurPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/motionBlurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinMotionBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSRPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/Shaders/motionBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bonesDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bonesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/motionBlur.fragment.fx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-motion-blur-object-based.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-motion-blur-screen-based.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-motion-blur-skinned.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-motion-blur.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16596",
+                "title": "Add WebAudio node and microphone input sound sources to AudioEngineV2",
+                "description": "This change enables using any WebAudio node as a sound source in AudioEngineV2, and uses this new feature to implement microphone input sound sources.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/index.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/soundSource.spatial.test.ts",
+                    "packages/tools/tests/test/audioV2/soundSource.stereo.test.ts",
+                    "packages/tools/tests/test/audioV2/soundSource.volume.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16598",
+                "title": "fix shaders uninitialized members",
+                "description": "this commit https://github.com/BabylonJS/Babylon.js/commit/5366c302a1cd67d3528b67d06fabab4d70d82e3a#diff-8893fe3229ee62f0f24bbfb95ef900191b5b9b7e0eda83bb929f51da05c94eae introduced new struct members.\r\nWith D3D, uninitialized variables trigger an error with D3DCompile.\r\n```\r\nerror X4000: variable 'result' used without having been completely initialized\r\n```\r\n\r\nNewer versions of spriv-cross have an option to fix that issue. But updating our fork will take time (like, a lot!).\r\nAdding a traverser to visit Declarations need an update as well.\r\n\r\nSo, setting these new members to 0. BN Infrastructure update will catch these kind of issue.\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.fx"
+                ],
+                "tags": [
+                    "native"
+                ]
+            },
+            {
+                "pr": "16595",
+                "title": "Fix screenshot tools fxaa background color",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16594",
+                "title": "USDZ Exporter: Some small fixes",
+                "description": "- Retrieve Normal vertex buffer\r\n- Retrieve correct UV set indices\r\n- Add clearcoat support for PBR materials\r\n- Allow export with an odd number of negative scales (aka flipped orientation). Not sure if it is the ideal fix, but my rationale is \r\n   - This is what Three does, and seems to work OK.\r\n   - This piece of documentation (last paragraph of https://openusd.org/release/api/usd_geom_page_front.html#UsdGeom_WindingOrder) seems to suggest that handling the orientation flip can be a run/load-time operation? Or, at least, I can't find anyplace where it says that this must be done at export-time. Someone please correct me if I'm wrong :)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16582",
+                "title": "Add new addon to render text using MSDF",
+                "description": "Some tests:\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16582/merge#6RLCWP#35\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16582/merge#6RLCWP#23\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/16582/merge#6RLCWP#21\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/index.ts",
+                    "packages/dev/addons/src/msdfText/fontAsset.ts",
+                    "packages/dev/addons/src/msdfText/index.ts",
+                    "packages/dev/addons/src/msdfText/paragraphOptions.ts",
+                    "packages/dev/addons/src/msdfText/sdf/bmFont.ts",
+                    "packages/dev/addons/src/msdfText/sdf/font.ts",
+                    "packages/dev/addons/src/msdfText/sdf/glyph.ts",
+                    "packages/dev/addons/src/msdfText/sdf/line.ts",
+                    "packages/dev/addons/src/msdfText/sdf/paragraph.ts",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/fragment.ts",
+                    "packages/dev/addons/src/msdfText/webgl/vertex.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/fragment.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/vertex.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/msdf-billboard.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/msdf.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16590",
+                "title": "Sandbox: fix pan speed when model was loaded via drag and drop",
+                "description": "There were previously 2 possible render loops depending on if you loaded from a URL or drag & drop. The previous fix for camera pan speed only applied to one of them, so if you didn't use a URL and just dragged and dropped in, you wouldn't get the corrected behavior. This change consolidates down to one render loop for both scenarios, so the camera behavior only has to be defined in one place.  Specifically, FilesInput is no longer responsible for creating a render loop - it's now always done by renderingZone.tsx in either case.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16586",
+                "title": "Fix (very broken) BVH animation",
+                "description": "When I started testing the code with multiple animations, I noticed it was completely broken. I also hard coded lots of values that seemed right with the alien.bvh animation but are not necessary.\r\n\r\nAfter this fix, all the [CMU animations](https://mocap.cs.cmu.edu/) work perfectly.",
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/loaders/src/BVH/bvhLoader.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/loaders/test/integration/testData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16579",
+                "title": "Clamp NdotV to 0.0 for diffuse roughness",
+                "description": "For prefiltered IBL, using the \"dominant direction\" approximation for diffuse roughness, slightly negative NdotV values weren't being handled, resulting in artifacts.\r\n\r\n<img width=\"85\" alt=\"Screenshot 2025-05-07 at 1 54 25 PM\" src=\"https://github.com/user-attachments/assets/cf10f92c-1199-4a8d-848e-fe011f8ca157\" />\r\n\r\n<img width=\"86\" alt=\"Screenshot 2025-05-07 at 1 54 04 PM\" src=\"https://github.com/user-attachments/assets/00e56376-05a0-4ad1-af31-4da6aae20137\" />\r\n",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16593",
+                "title": "Deleting particle system velocity limit throws error in console.",
+                "description": "Also fix #16592 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16588",
+                "title": "Removed hard coded value for cameraGizmo",
+                "description": "I browsed history but could not get the reason for that particular bug. Why the fix was valid in the first place or the meaning of the 1.5 value.\r\nThis PR removes it in the hope bug will re-surface and a proper fix will be done.\r\n\r\nhttps://forum.babylonjs.com/t/cameragizmo-changes-maxz-every-time-it-shows/57966/6",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16589",
+                "title": "Fix animation goToFrame with negative speedRatio",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.core.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "16587",
+                "title": "bug fix - \"moveWithCollisions\" method parameter slideOnCollide==false now moves mesh to NEAR the collision point, instead of AT the collision point",
+                "description": "Issue - \"moveWithCollisions\" with the parameter slideOnCollide == false used to move the mesh up to the point of collision.  Due to floating point inaccuracy, this sometimes meant just outside, and sometimes just inside penetration with the collided mesh.  When just inside, subsequent calls to \"moveWithCollisions\" would snag on the mesh previously collided with.\r\n\r\nSolution - \"moveWithCollisions\" with the parameter slideOnCollide == false now moves the mesh NOT up to the point of collision, but up to a point just a small distance short of that collision.  The small distance is based on \"AbstractEngine.CollisionsEpsilon\", the same distance considered \"close\" by other aspects of the collision system.\r\n",
+                "author": {
+                    "name": "jon-heard",
+                    "url": "https://github.com/jon-heard"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/collider.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16584",
+                "title": "Make explicit the need for engine renderloop for end frame, and fix some small typos",
+                "description": "Make explicit the need for `engine.runRenderLoop(...)` as part of `engine.onEndFrameObservable`. \r\n\r\nDrive by fix of some small typos.",
+                "author": {
+                    "name": "mthaddon",
+                    "url": "https://github.com/mthaddon"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.core.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/materials/src/water/readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16570",
+                "title": "IFlowable added",
+                "description": "Added an `IFlowable` interface and  the `FlowMap:public processFlowable(flowable: IFlowable, strength = 1, flowMapSamplePosOrTransformationMatrix?: IVector3Like | Matrix)` function.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/flowMap.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16581",
+                "title": "Add linear hex value to color picker when color is stored in linear mode",
+                "description": "Today if a material stores color in linear mode (Ex: PBR) the color picker will do an auto conversion to gamma mode. This results in confusion when copying the hex value into code (user needs to know to convert it to linear when passing the hex)\r\n\r\nThis change adds the linear hex in the UX as well as a more informative message instructing how to use the hex values.",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.scss",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16580",
+                "title": "new feature - slideOnCollide parameter for \"abstractMesh.moveWithCollisions\" (defaults to true)",
+                "description": "Optional slideOnCollide parameter added to \"abstractMesh.moveWithCollisions\", and it's logic implemented",
+                "author": {
+                    "name": "jon-heard",
+                    "url": "https://github.com/jon-heard"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/collider.ts",
+                    "packages/dev/core/src/Collisions/collisionCoordinator.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
                 ],
                 "tags": []
             }
