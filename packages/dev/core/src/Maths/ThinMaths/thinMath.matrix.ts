@@ -21,5 +21,5 @@ export class ThinMatrix implements IMatrixLike {
      * It will be incremented every time the matrix data change.
      * You can use it to speed the comparison between two versions of the same matrix.
      */
-    public updateFlag: number;
+    public updateFlag: number = 0;
 }
