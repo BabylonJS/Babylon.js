@@ -1265,6 +1265,8 @@ export class AssetContainer extends AbstractAssetContainer {
                     this.geometries.push(nodeToVisit.geometry);
                 }
                 this.meshes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof InstancedMesh) {
+                this.meshes.push(nodeToVisit);
             } else if (nodeToVisit instanceof TransformNode) {
                 this.transformNodes.push(nodeToVisit);
             } else if (nodeToVisit instanceof Light) {
