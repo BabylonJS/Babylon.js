@@ -38,7 +38,7 @@ aggShadow = aggShadow / numLights;
                     baseSpecularEnergy *= baseSpecularEnergyConservationFactor;
                 #endif
             #endif
-            finalIrradiance *= (vec3f(1.0) - baseSpecularEnergy);
+            finalIrradiance *= clamp(vec3f(1.0) - baseSpecularEnergy, vec3f(0.0), vec3f(1.0));
         #endif
     #endif
 
