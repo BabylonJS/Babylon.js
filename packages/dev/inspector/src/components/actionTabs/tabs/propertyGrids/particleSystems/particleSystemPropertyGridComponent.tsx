@@ -624,6 +624,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         codeRecorderPropertyName="getLimitVelocityGradients()"
                         lockObject={this.props.lockObject}
                     />
+                    {system.getLimitVelocityGradients() && system.getLimitVelocityGradients()!.length > 0 && (
+                        <FloatLineComponent
+                            lockObject={this.props.lockObject}
+                            label="Limit Velocity Damping"
+                            target={system}
+                            propertyName="limitVelocityDamping"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
                     <ValueGradientGridComponent
                         globalState={this.props.globalState}
                         gradients={system.getDragGradients()}
