@@ -1,5 +1,6 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
+import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "./audioBus";
 import type { IMainAudioBusOptions, MainAudioBus } from "./mainAudioBus";
 import type { IStaticSoundOptions, StaticSound } from "./staticSound";
@@ -142,6 +143,15 @@ export abstract class AudioEngineV2 {
      * @returns A promise that resolves with the created main audio bus.
      */
     public abstract createMainBusAsync(name: string, options?: Partial<IMainAudioBusOptions>): Promise<MainAudioBus>;
+
+    /**
+     * Creates a new microphone sound source.
+     * @param name - The name of the sound.
+     * @param options - The options for the sound source.
+     * @returns A promise that resolves to the created sound source.
+     */
+    public abstract createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource>;
+
     /**
      * Creates a new static sound.
      * @param name - The name of the sound.
@@ -166,6 +176,15 @@ export abstract class AudioEngineV2 {
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
         options?: Partial<IStaticSoundBufferOptions>
     ): Promise<StaticSoundBuffer>;
+
+    /**
+     * Creates a new sound source.
+     * @param name - The name of the sound.
+     * @param source - The source of the sound.
+     * @param options - The options for the sound source.
+     * @returns A promise that resolves to the created sound source.
+     */
+    public abstract createSoundSourceAsync(name: string, source: AudioNode, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource>;
 
     /**
      * Creates a new streaming sound.
@@ -288,6 +307,18 @@ export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudi
 }
 
 /**
+ * Creates a new microphone sound source.
+ * @param name - The name of the sound.
+ * @param options - The options for the sound source.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created sound source.
+ */
+export function CreateMicrophoneSoundSourceAsync(name: string, options: Partial<ISoundSourceOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AbstractSoundSource> {
+    engine = _GetAudioEngine(engine);
+    return engine.createMicrophoneSoundSourceAsync(name, options);
+}
+
+/**
  * Creates a new static sound.
  * @param name - The name of the sound.
  * @param source - The source of the sound.
@@ -319,6 +350,24 @@ export async function CreateSoundBufferAsync(
 ): Promise<StaticSoundBuffer> {
     engine = _GetAudioEngine(engine);
     return engine.createSoundBufferAsync(source, options);
+}
+
+/**
+ * Creates a new sound source.
+ * @param name - The name of the sound.
+ * @param source - The source of the sound.
+ * @param options - The options for the sound source.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created sound source.
+ */
+export function CreateSoundSourceAsync(
+    name: string,
+    source: AudioNode,
+    options: Partial<ISoundSourceOptions> = {},
+    engine: Nullable<AudioEngineV2> = null
+): Promise<AbstractSoundSource> {
+    engine = _GetAudioEngine(engine);
+    return engine.createSoundSourceAsync(name, source, options);
 }
 
 /**

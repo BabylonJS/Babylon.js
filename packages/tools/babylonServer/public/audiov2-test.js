@@ -110,26 +110,40 @@ class AudioV2Test {
     }
 
     static async CreateAbstractSoundAndOutputNodeAsync(audioNodeType, source, options = {}) {
-        const sound =
-            audioNodeType === "StaticSound" || audioNodeType === "StreamingSound"
-                ? await AudioV2Test.CreateAbstractSoundAsync(audioNodeType, source, options)
-                : await AudioV2Test.CreateAbstractSoundAsync("StaticSound", source, {});
-
+        let sound = null;
         let outputNode = null;
 
-        if (audioNodeType === "AudioBus") {
-            outputNode = await audioEngine.createBusAsync("", options);
-            sound.outBus = outputNode;
-            outputNode.outBus = audioEngine.defaultMainBus;
-        } else if (audioNodeType === "AudioEngineV2") {
-            outputNode = audioEngine;
-        } else if (audioNodeType === "MainAudioBus") {
-            outputNode = await audioEngine.createMainBusAsync("", options);
-            sound.outBus = outputNode;
-        } else if (audioNodeType === "StaticSound") {
-            outputNode = sound;
-        } else if (audioNodeType === "StreamingSound") {
-            outputNode = sound;
+        switch (audioNodeType) {
+            case "SoundSource":
+                sound = await AudioV2Test.CreateSoundSourceAsync(source, options);
+                break;
+            case "StaticSound":
+            case "StreamingSound":
+                sound = await AudioV2Test.CreateAbstractSoundAsync(audioNodeType, source, options);
+                break;
+            default:
+                sound = await AudioV2Test.CreateAbstractSoundAsync("StaticSound", source, {});
+                break;
+        }
+
+        switch (audioNodeType) {
+            case "AudioBus":
+                outputNode = await audioEngine.createBusAsync("", options);
+                sound.outBus = outputNode;
+                outputNode.outBus = audioEngine.defaultMainBus;
+                break;
+            case "AudioEngineV2":
+                outputNode = audioEngine;
+                break;
+            case "MainAudioBus":
+                outputNode = await audioEngine.createMainBusAsync("", options);
+                sound.outBus = outputNode;
+                break;
+            case "SoundSource":
+            case "StaticSound":
+            case "StreamingSound":
+                outputNode = sound;
+                break;
         }
 
         return { sound, outputNode };
@@ -140,6 +154,32 @@ class AudioV2Test {
         AudioV2Test.#AddSound(sound);
 
         return sound;
+    }
+
+    static async CreateSoundSourceAsync(source, options = {}) {
+        const audioBuffer = await audioContext.decodeAudioData(await (await fetch(AudioV2Test.#ExpandSource(source))).arrayBuffer());
+        const audioNode = new AudioBufferSourceNode(audioContext, {
+            buffer: audioBuffer,
+        });
+
+        const soundSource = await BABYLON.CreateSoundSourceAsync("", audioNode, options);
+
+        let state = BABYLON.SoundState.Stopped;
+        Object.defineProperty(soundSource, "state", {
+            get: () => state,
+        });
+        soundSource.play = () => {
+            audioNode.start();
+            state = BABYLON.SoundState.Playing;
+        };
+        soundSource.stop = () => {
+            audioNode.stop();
+            state = BABYLON.SoundState.Stopped;
+        };
+
+        AudioV2Test.#AddSound(soundSource);
+
+        return soundSource;
     }
 
     static async CreateStreamingSoundAsync(source, options = {}) {

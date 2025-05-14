@@ -34,6 +34,7 @@ import { NodeRenderGraphChromaticAberrationPostProcessBlock } from "core/FrameGr
 import { NodeRenderGraphImageProcessingPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/imageProcessingPostProcessBlock";
 import { NodeRenderGraphFXAAPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/fxaaPostProcessBlock";
 import { NodeRenderGraphGrainPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/grainPostProcessBlock";
+import { NodeRenderGraphMotionBlurPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/motionBlurPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -158,6 +159,9 @@ export class BlockTools {
             }
             case "GrainBlock": {
                 return new NodeRenderGraphGrainPostProcessBlock("Grain", frameGraph, scene);
+            }
+            case "MotionBlurBlock": {
+                return new NodeRenderGraphMotionBlurPostProcessBlock("Motion Blur", frameGraph, scene);
             }
         }
 
