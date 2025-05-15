@@ -316,6 +316,7 @@ export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudi
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created sound source.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function CreateMicrophoneSoundSourceAsync(name: string, options: Partial<ISoundSourceOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AbstractSoundSource> {
     engine = _GetAudioEngine(engine);
     return engine.createMicrophoneSoundSourceAsync(name, options);
@@ -364,6 +365,7 @@ export async function CreateSoundBufferAsync(
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created sound source.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function CreateSoundSourceAsync(
     name: string,
     source: AudioNode,
