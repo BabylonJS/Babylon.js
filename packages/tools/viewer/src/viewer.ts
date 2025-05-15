@@ -1982,8 +1982,8 @@ export class Viewer implements IDisposable {
 
             const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
 
-            const textureInitToPromise = (cubeTexture: CubeTexture | HDRCubeTexture) => {
-                return new Promise<void>((resolve, reject) => {
+            const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
+                await new Promise<void>((resolve, reject) => {
                     const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
                         successObserver.remove();
                         errorObserver.remove();
@@ -2053,7 +2053,7 @@ export class Viewer implements IDisposable {
                         } else {
                             // Otherwise, create a new cube texture from the lighting url.
                             const lightingTexture = await createCubeTexture(lightingUrl, this._scene, options.extension);
-                            newTexturePromises.push(textureInitToPromise(lightingTexture));
+                            newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
                             this._setEnvironmentLighting(lightingTexture);
                         }
                     }
@@ -2075,7 +2075,7 @@ export class Viewer implements IDisposable {
                         } else {
                             // Otherwise, create a new cube texture from the skybox url.
                             const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, options.extension);
-                            newTexturePromises.push(textureInitToPromise(skyboxTexture));
+                            newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
                             this._setEnvironmentSkybox(skyboxTexture);
                         }
                     }
@@ -2197,7 +2197,7 @@ export class Viewer implements IDisposable {
 
         if (flags.length === 0 || flags.includes("shadow")) {
             this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
-            this.updateShadows({ quality: this._shadowQuality });
+            observePromise(this.updateShadows({ quality: this._shadowQuality }));
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
