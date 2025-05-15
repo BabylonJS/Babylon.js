@@ -54,6 +54,7 @@ export function workerFunction(): void {
                 });
             }
             if (transcoderModulePromise !== null) {
+                // eslint-disable-next-line github/no-then
                 transcoderModulePromise.then((m) => {
                     BASIS = m;
                     m.initializeBasis();
@@ -242,12 +243,13 @@ export function workerFunction(): void {
  */
 // eslint-disable-next-line no-restricted-syntax
 export async function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
-    return new Promise<Worker>((res, reject) => {
+    return await new Promise<Worker>((res, reject) => {
         const initHandler = (msg: any) => {
             if (msg.data.action === "init") {
                 worker.removeEventListener("message", initHandler);
                 res(worker);
             } else if (msg.data.action === "error") {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(msg.data.error || "error initializing worker");
             }
         };

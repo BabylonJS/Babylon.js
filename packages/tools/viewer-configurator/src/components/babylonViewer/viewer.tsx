@@ -26,6 +26,7 @@ declare global {
 
 export const Viewer: FunctionComponent<{ onViewerCreated: (element: ViewerElement) => void; onOptionsLoaded: (options: ViewerOptions) => void }> = (props) => {
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (async () => {
             let options: ViewerOptions = {};
             if (window.location.hash) {

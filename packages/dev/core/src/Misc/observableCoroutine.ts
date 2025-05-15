@@ -55,6 +55,7 @@ declare module "./observable" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 Observable.prototype.runCoroutineAsync = function (coroutine: AsyncCoroutine<void>) {
     if (!this._coroutineScheduler) {
         const schedulerAndDispose = CreateObservableScheduler<void>(this);

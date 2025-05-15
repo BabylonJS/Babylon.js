@@ -588,6 +588,7 @@ export class ActionManager extends AbstractActionManager {
                 const nothing = new DoNothingAction(trigger, condition);
 
                 if (action) {
+                    // eslint-disable-next-line github/no-then
                     action.then(nothing);
                 } else {
                     actionManager.registerAction(nothing);
@@ -603,6 +604,7 @@ export class ActionManager extends AbstractActionManager {
                 } else {
                     condition = null;
                     if (action) {
+                        // eslint-disable-next-line github/no-then
                         action.then(newAction);
                     } else {
                         actionManager.registerAction(newAction);

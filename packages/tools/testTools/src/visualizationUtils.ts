@@ -116,6 +116,7 @@ export const evaluatePrepareScene = async (
 
             const loadedScene = eval(code + "\r\ncreateScene(engine)");
 
+            // eslint-disable-next-line github/no-then
             if (loadedScene.then) {
                 // Handle if createScene returns a promise
                 window.scene = await loadedScene;
@@ -175,7 +176,7 @@ export const evaluatePrepareScene = async (
 };
 
 export const evaluateRenderSceneForVisualization = async (renderCount: number) => {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         if (!window.scene || !window.engine) {
             return resolve(false);
         }

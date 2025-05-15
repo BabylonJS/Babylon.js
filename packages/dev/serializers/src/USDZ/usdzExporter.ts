@@ -736,12 +736,14 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
         const texture = textureToExports[id];
 
         const size = texture.getSize();
+        // eslint-disable-next-line no-await-in-loop
         const textureData = await texture.readPixels();
 
         if (!textureData) {
             throw new Error("Texture data is not available");
         }
 
+        // eslint-disable-next-line no-await-in-loop
         const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
         files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy

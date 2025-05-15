@@ -869,9 +869,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 parsePromise = NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene);
             }
             parsePromise
+                // eslint-disable-next-line github/no-then
                 .then((mat) => {
                     touchCollisionMesh.material = mat;
                 })
+                // eslint-disable-next-line github/no-then
                 .catch((err) => {
                     Logger.Warn(`Error creating touch material in WebXRNearInteraction: ${err}`);
                 });

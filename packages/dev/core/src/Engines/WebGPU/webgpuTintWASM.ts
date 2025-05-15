@@ -56,6 +56,7 @@ export class WebGPUTintWASM {
         }
 
         if ((self as any).twgsl) {
+            // eslint-disable-next-line require-atomic-updates
             WebGPUTintWASM._Twgsl = await (self as any).twgsl(Tools.GetBabylonScriptURL(twgslOptions.wasmPath!));
             return;
         }

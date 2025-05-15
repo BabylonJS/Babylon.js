@@ -18,7 +18,7 @@ let UniqueResolveID = 0;
  * @internal DO NOT USE outside of Babylon.js core
  */
 export async function _LoadScriptModuleAsync(scriptUrl: string, scriptId?: string): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         // Need a relay
         let windowAsAny: any;
         let windowString: string;
@@ -49,6 +49,7 @@ export async function _LoadScriptModuleAsync(scriptUrl: string, scriptId?: strin
             scriptUrl,
             undefined,
             (message, exception) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(exception || new Error(message));
             },
             scriptId,
