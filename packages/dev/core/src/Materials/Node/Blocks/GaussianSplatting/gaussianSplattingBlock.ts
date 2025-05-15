@@ -27,6 +27,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         this.registerInput("projection", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("splatVertex", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Vertex);
+        this.registerOutput("SH", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Vertex);
     }
 
     /**
@@ -80,6 +81,13 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the SH output contribution
+     */
+    public get SH(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
@@ -111,6 +119,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         const view = this.view;
         const projection = this.projection;
         const output = this.splatVertex;
+        const sh = this.SH;
 
         const addF = state.fSuffix;
         let splatScaleParameter = `vec2${addF}(1.,1.)`;
@@ -124,6 +133,33 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
             input = "input.position";
             uniforms = ", uniforms.focal, uniforms.invViewport, uniforms.kernelSize";
         }
+        if (this.SH.isConnected) {
+            state.compilationString += "#if SH_DEGREE > 0";
+
+            if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                state.compilationString += `
+                let worldRot: mat3x3f =  mat3x3f(${world.associatedVariableName}[0].xyz, ${world.associatedVariableName}[1].xyz, ${world.associatedVariableName}[2].xyz);
+                let normWorldRot: mat3x3f = inverseMat3(worldRot);
+
+                var dir: vec3f = normalize(normWorldRot * (worldPos.xyz - scene.vEyePosition.xyz));
+                dir *= vec3f(1.,1.,-1.);
+                `;
+            } else {
+                state.compilationString += `
+                    mat3 worldRot = mat3(${world.associatedVariableName});
+                    mat3 normWorldRot = inverseMat3(worldRot);
+
+                    vec3 dir = normalize(normWorldRot * (worldPos.xyz - vEyePosition.xyz));
+                    dir *= vec3(1.,1.,-1.);
+                `;
+            }
+
+            state.compilationString += `${state._declareOutput(sh)} = computeSH(splat, splat.color.xyz, dir) - splat.color.xyz;`;
+            state.compilationString += `#else
+            ${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);
+            #endif;`;
+        }
+
         state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;
     }
