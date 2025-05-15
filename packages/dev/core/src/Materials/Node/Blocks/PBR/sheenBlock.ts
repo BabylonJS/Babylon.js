@@ -141,7 +141,7 @@ export class SheenBlock extends NodeMaterialBlock {
                 ${isWebGPU ? `, ${texture}Sampler` : ""}
                 , 1.0
             #endif
-                , reflectance
+                , reflectanceF0
             #ifdef SHEEN_LINKWITHALBEDO
                 , baseColor
                 , surfaceAlbedo
