@@ -24,8 +24,7 @@
 #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
     fn getF82Specular(NdotV: f32, F0: vec3f, edgeTint: vec3f, roughness: f32) -> vec3f {
         // F82 specular model for metals
-        // https://www.slideshare.net/PeterKutz/fresnel-equations-considered-harmful
-        // Peter Kutz, 2020
+        // https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/metal
         const cos_theta_max: f32 = 0.142857143; // 1 / 7
         
         const one_minus_cos_theta_max_to_the_fifth: f32 = 0.462664366; // (1 - cos_theta_max)^5

@@ -13,7 +13,7 @@
         // the F82 lobe with the usual Schlick lobe based on the metallic value. For intermediate metallic values, I'm not
         // sure that the math is correct, but it seems to work well enough in practice.
         // The F90 value is used for the specular colour at F82 incidence. 
-        vec3 metalEnvironmentReflectance = getF82Specular(NdotV, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+        vec3 metalEnvironmentReflectance = reflectivityOut.specularWeight * getF82Specular(NdotV, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
     #endif
     vec3 dielectricEnvironmentReflectance = getReflectanceFromBRDFLookup(clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, environmentBrdf);
     

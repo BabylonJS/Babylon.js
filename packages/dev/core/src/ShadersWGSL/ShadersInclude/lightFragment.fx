@@ -107,9 +107,9 @@
                     // usual Schlick lobe.
                     #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
                         {
-                            let metalF90: vec3f = getF82Specular(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
-                            let dielectricF90: vec3f = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90);
-                            coloredFresnel = mix(dielectricF90, metalF90, reflectivityOut.metallic);
+                            let metalFresnel: vec3f = vec3f(reflectivityOut.specularWeight) * getF82Specular(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                            let dielectricFresnel: vec3f = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                            coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
                         }
                     #else
                         coloredFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);

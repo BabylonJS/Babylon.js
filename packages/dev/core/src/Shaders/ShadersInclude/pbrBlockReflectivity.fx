@@ -10,6 +10,7 @@ struct reflectivityOutParams
 #ifdef METALLICWORKFLOW
     vec3 surfaceAlbedo;
     float metallic;
+    float specularWeight;
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     vec3 ambientOcclusionColor;
@@ -107,8 +108,8 @@ reflectivityOutParams reflectivityBlock(
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
         outParams.metallic = metallicRoughness.r;
-        float specularWeight = metallicReflectanceFactors.a;
-        float dielectricF0 = reflectivityColor.a * specularWeight;
+        outParams.specularWeight = metallicReflectanceFactors.a;
+        float dielectricF0 = reflectivityColor.a * outParams.specularWeight;
         surfaceReflectivityColor = metallicReflectanceFactors.rgb;
 
         #if DEBUGMODE > 0
@@ -140,14 +141,14 @@ reflectivityOutParams reflectivityBlock(
         #endif
 
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            outParams.reflectanceF90 = vec3(specularWeight);
+            outParams.reflectanceF90 = vec3(outParams.specularWeight);
             float f90Scale = 1.0f;
         #else
             // Scale the reflectanceF90 by the IOR for values less than 1.5.
             // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
             // and an IOR of 1.0 should result in no visible glancing specular.
             float f90Scale = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
-            outParams.reflectanceF90 = vec3(mix(specularWeight * f90Scale, 1.0, outParams.metallic));
+            outParams.reflectanceF90 = vec3(mix(outParams.specularWeight * f90Scale, 1.0, outParams.metallic));
         #endif
 
         // Compute the coloured F0 reflectance.
@@ -161,10 +162,10 @@ reflectivityOutParams reflectivityBlock(
         // Now, compute the coloured reflectance at glancing angles based on the specular model.
         #if (DIELECTRIC_SPECULAR_MODEL == DIELECTRIC_SPECULAR_MODEL_OPENPBR)
             // In OpenPBR, the F90 is coloured using the specular colour for dielectrics.
-            vec3 dielectricColorF90 = surfaceReflectivityColor * vec3(specularWeight) * vec3(f90Scale);
+            vec3 dielectricColorF90 = surfaceReflectivityColor * vec3(outParams.specularWeight) * vec3(f90Scale);
         #else
             // In glTF, the F90 is white for dielectrics.
-            vec3 dielectricColorF90 = vec3(specularWeight * f90Scale);
+            vec3 dielectricColorF90 = vec3(outParams.specularWeight * f90Scale);
         #endif
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
             // In OpenPBR, we use the "F82" model for conductors.

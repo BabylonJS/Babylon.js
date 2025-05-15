@@ -195,7 +195,7 @@ void main(void) {
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
             metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
         #endif
-        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
+        metallicReflectanceFactors.a *= metallicReflectanceFactorsMap.a;
     #endif
 #endif
 
