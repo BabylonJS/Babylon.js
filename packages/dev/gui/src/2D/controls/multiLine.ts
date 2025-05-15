@@ -200,7 +200,7 @@ export class MultiLine extends Control {
 
         for (const point of this._points) {
             if (!point) {
-                return;
+                continue;
             }
 
             if (first) {
@@ -230,7 +230,7 @@ export class MultiLine extends Control {
 
         for (const point of this._points) {
             if (!point) {
-                return;
+                continue;
             }
 
             point.translate();

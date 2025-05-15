@@ -41,7 +41,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
 
         for (const m of scene.meshes) {
             if (m.infiniteDistance) {
-                return;
+                continue;
             }
             generator.addShadowCaster(m);
             if (!m.isAnInstance) {
