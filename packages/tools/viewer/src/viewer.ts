@@ -1987,7 +1987,7 @@ export class Viewer implements IDisposable {
         await this._loadEnvironmentLock.lockAsync(async () => {
             throwIfAborted(abortSignal, loadEnvironmentAbortController.signal);
 
-            const getDefaultEnvironmentUrl = async () => (await import("./defaultEnvironment")).default;
+            const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
 
             const textureInitToPromise = (cubeTexture: CubeTexture | HDRCubeTexture) => {
                 return new Promise<void>((resolve, reject) => {
@@ -2020,7 +2020,7 @@ export class Viewer implements IDisposable {
             try {
                 // If both modes are auto, use the default environment.
                 if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
-                    lightingUrl = skyboxUrl = await getDefaultEnvironmentUrl();
+                    lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
                 } else {
                     // If the lighting mode is not auto and we are updating the lighting, use the provided url.
                     if (this._environmentLightingMode !== "auto" && options.lighting) {
@@ -2034,12 +2034,12 @@ export class Viewer implements IDisposable {
 
                     // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
                     if (this._environmentLightingMode === "auto") {
-                        lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrl());
+                        lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
                     }
 
                     // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
                     if (this._environmentSkyboxMode === "auto") {
-                        skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrl());
+                        skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
                     }
                 }
 
