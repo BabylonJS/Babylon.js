@@ -116,7 +116,7 @@ export class DepthRenderer {
         if (this.isPacked) {
             this.clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
         } else {
-            this.clearColor = new Color4(storeCameraSpaceZ ? 1e8 : 1.0, 0.0, 0.0, 1.0);
+            this.clearColor = new Color4(storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 0.0, 1.0);
         }
 
         this._initShaderSourceAsync();

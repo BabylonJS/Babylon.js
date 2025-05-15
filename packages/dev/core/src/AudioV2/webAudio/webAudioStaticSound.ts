@@ -257,7 +257,7 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
                 if (format && this.engine.isFormatValid(format)) {
                     try {
                         await this._initFromUrlAsync(url);
-                    } catch (e) {
+                    } catch {
                         if (format && 0 < format.length) {
                             this.engine.flagInvalidFormat(format);
                         }

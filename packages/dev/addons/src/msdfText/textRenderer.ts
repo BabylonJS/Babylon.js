@@ -10,14 +10,22 @@ import type { Nullable } from "core/types";
 import { SdfTextParagraph } from "./sdf/paragraph";
 import type { FontAsset } from "./fontAsset";
 import type { ParagraphOptions } from "./paragraphOptions";
-import { Matrix, TmpVectors } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
+import { ThinMatrix } from "core/Maths/ThinMaths/thinMath.matrix";
+import {
+    CopyMatrixToArray,
+    IdentityMatrixToRef,
+    InvertMatrixToRef,
+    MultiplyMatricesToRef,
+    ScalingMatrixToRef,
+    TranslationMatrixToRef,
+} from "core/Maths/ThinMaths/thinMath.matrix.functions";
+import type { IColor4Like, IMatrixLike, IVector3Like } from "core/Maths";
 
 /**
  * Abstract Node class from Babylon.js
  */
 export interface INodeLike {
-    getWorldMatrix(): Matrix;
+    getWorldMatrix(): ThinMatrix;
 }
 
 /**
@@ -27,6 +35,7 @@ export interface INodeLike {
  * Star wars scroller: #6RLCWP#29
  * With metrics: #6RLCWP#35
  * Thickness: #IABMEZ#3
+ * Solar system: #9YCDYC#9
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
@@ -45,22 +54,22 @@ export class TextRenderer implements IDisposable {
     private _baseLine = 0;
 
     // Cache
-    private _scalingMatrix: Matrix = Matrix.Identity();
-    private _fontScaleMatrix: Matrix = Matrix.Identity();
-    private _offsetMatrix: Matrix = Matrix.Identity();
-    private _translationMatrix: Matrix = Matrix.Identity();
-    private _baseMatrix: Matrix = Matrix.Identity();
-    private _scaledMatrix: Matrix = Matrix.Identity();
-    private _localMatrix: Matrix = Matrix.Identity();
-    private _finalMatrix: Matrix = Matrix.Identity();
-    private _lineMatrix: Matrix = Matrix.Identity();
-    private _parentWorldMatrix: Matrix = Matrix.Identity();
-    private _storedTranslation = TmpVectors.Vector3[0];
+    private _scalingMatrix = new ThinMatrix();
+    private _fontScaleMatrix = new ThinMatrix();
+    private _offsetMatrix = new ThinMatrix();
+    private _translationMatrix = new ThinMatrix();
+    private _baseMatrix = new ThinMatrix();
+    private _scaledMatrix = new ThinMatrix();
+    private _localMatrix = new ThinMatrix();
+    private _finalMatrix = new ThinMatrix();
+    private _lineMatrix = new ThinMatrix();
+    private _parentWorldMatrix = new ThinMatrix();
+    private _storedTranslation: IVector3Like = { x: 0, y: 0, z: 0 };
 
     /**
      * Gets or sets the color of the text
      */
-    public color = new Color4(1.0, 1.0, 1.0, 1.0);
+    public color: IColor4Like = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
 
     /**
      * Gets or sets the thickness of the text (0 means as defined in the font)
@@ -167,7 +176,7 @@ export class TextRenderer implements IDisposable {
      * @param options define the options to use for the paragraph (optional)
      * @param worldMatrix define the world matrix to use for the paragraph (optional)
      */
-    public addParagraph(text: string, options?: Partial<ParagraphOptions>, worldMatrix?: Matrix) {
+    public addParagraph(text: string, options?: Partial<ParagraphOptions>, worldMatrix?: IMatrixLike) {
         const paragraph = new SdfTextParagraph(text, this._font, options);
 
         const fontScale = this._font.scale;
@@ -181,12 +190,12 @@ export class TextRenderer implements IDisposable {
         if (!worldMatrixToUse) {
             const lineHeight = paragraph.lineHeight * fontScale;
             const lineOffset = (paragraph.lines.length * lineHeight) / 2;
-            Matrix.TranslationToRef(0, this._baseLine - lineOffset, 0, this._lineMatrix);
+            TranslationMatrixToRef(0, this._baseLine - lineOffset, 0, this._lineMatrix);
             worldMatrixToUse = this._lineMatrix;
         }
 
-        Matrix.ScalingToRef(fontScale, fontScale, 1.0, this._fontScaleMatrix);
-        Matrix.TranslationToRef(0.5, -0.5, 0, this._offsetMatrix);
+        ScalingMatrixToRef(fontScale, fontScale, 1.0, this._fontScaleMatrix);
+        TranslationMatrixToRef(0.5, -0.5, 0, this._offsetMatrix);
 
         const charsUvsBase = this._charUvs.length;
         const matricesBase = this._charMatrices.length;
@@ -199,15 +208,15 @@ export class TextRenderer implements IDisposable {
             const x = g.x;
             const y = -g.y;
 
-            Matrix.ScalingToRef(g.char.width, g.char.height, 1.0, this._scalingMatrix);
-            this._offsetMatrix.multiplyToRef(this._scalingMatrix, this._baseMatrix);
+            ScalingMatrixToRef(g.char.width, g.char.height, 1.0, this._scalingMatrix);
+            MultiplyMatricesToRef(this._offsetMatrix, this._scalingMatrix, this._baseMatrix);
 
-            Matrix.TranslationToRef(x * fontScale, y * fontScale, 0.0, this._translationMatrix);
-            this._baseMatrix.multiplyToRef(this._fontScaleMatrix, this._scaledMatrix);
-            this._scaledMatrix.multiplyToRef(this._translationMatrix, this._localMatrix);
+            TranslationMatrixToRef(x * fontScale, y * fontScale, 0.0, this._translationMatrix);
+            MultiplyMatricesToRef(this._baseMatrix, this._fontScaleMatrix, this._scaledMatrix);
+            MultiplyMatricesToRef(this._scaledMatrix, this._translationMatrix, this._localMatrix);
 
-            this._localMatrix.multiplyToRef(worldMatrixToUse, this._finalMatrix);
-            this._finalMatrix.copyToArray(this._charMatrices, matricesBase + i * 16);
+            MultiplyMatricesToRef(this._localMatrix, worldMatrixToUse, this._finalMatrix);
+            CopyMatrixToArray(this._finalMatrix, this._charMatrices, matricesBase + i * 16);
         });
 
         this._isDirty = true;
@@ -220,7 +229,7 @@ export class TextRenderer implements IDisposable {
      * @param viewMatrix define the view matrix to use
      * @param projectionMatrix define the projection matrix to use
      */
-    public render(viewMatrix: Matrix, projectionMatrix: Matrix): void {
+    public render(viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike): void {
         const drawWrapper = this._drawWrapperBase;
 
         const effect = drawWrapper.effect!;
@@ -234,23 +243,38 @@ export class TextRenderer implements IDisposable {
         engine.setState(false);
         engine.enableEffect(drawWrapper);
 
-        if (this._parent) {
-            this._parentWorldMatrix.copyFrom(this._parent.getWorldMatrix());
-        } else {
-            this._parentWorldMatrix.copyFrom(Matrix.IdentityReadOnly);
-        }
-
         if (this.isBillboard) {
-            this._parentWorldMatrix.getTranslationToRef(this._storedTranslation); // Save translation
-
+            // We will only consider translation for parent to simplify computation
+            // Save parent translation
+            if (this._parent) {
+                const pwm = this._parent.getWorldMatrix().asArray();
+                this._storedTranslation.x = pwm[12];
+                this._storedTranslation.y = pwm[13];
+                this._storedTranslation.z = pwm[14];
+            } else {
+                this._storedTranslation.x = 0;
+                this._storedTranslation.y = 0;
+                this._storedTranslation.z = 0;
+            }
             // Cancel camera rotation
-            this._baseMatrix.copyFrom(viewMatrix);
-            this._baseMatrix.setTranslationFromFloats(0, 0, 0);
-            this._baseMatrix.invertToRef(this._finalMatrix);
+            const baseM = this._baseMatrix.asArray();
+            CopyMatrixToArray(viewMatrix, baseM);
+            baseM[12] = 0;
+            baseM[13] = 0;
+            baseM[14] = 0;
+            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix.asArray());
 
-            this._parentWorldMatrix.setTranslationFromFloats(0, 0, 0);
-            this._parentWorldMatrix.multiplyToRef(this._finalMatrix, this._parentWorldMatrix);
-            this._parentWorldMatrix.setTranslation(this._storedTranslation);
+            // Restore translation
+            const pwm = this._parentWorldMatrix.asArray();
+            pwm[12] = this._storedTranslation.x;
+            pwm[13] = this._storedTranslation.y;
+            pwm[14] = this._storedTranslation.z;
+        } else {
+            if (this._parent) {
+                CopyMatrixToArray(this._parent.getWorldMatrix(), this._parentWorldMatrix.asArray());
+            } else {
+                IdentityMatrixToRef(this._parentWorldMatrix);
+            }
         }
 
         effect.setMatrix("parentWorld", this._parentWorldMatrix);

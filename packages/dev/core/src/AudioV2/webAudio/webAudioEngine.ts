@@ -1,6 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AbstractSoundSource, ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "../abstractAudio/audioBus";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
@@ -211,6 +212,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public async createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource> {
+        let mediaStream: MediaStream;
+
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            throw new Error("Unable to access microphone: " + e);
+        }
+
+        return this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), options);
+    }
+
+    /** @internal */
     public async createSoundAsync(
         name: string,
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
@@ -235,6 +249,16 @@ export class _WebAudioEngine extends AudioEngineV2 {
         await soundBuffer._initAsync(source, options);
 
         return soundBuffer;
+    }
+
+    /** @internal */
+    public async createSoundSourceAsync(name: string, source: AudioNode, options: Partial<ISoundSourceOptions> = {}): Promise<AbstractSoundSource> {
+        const module = await import("./webAudioSoundSource");
+
+        const soundSource = new module._WebAudioSoundSource(name, source, this, options);
+        await soundSource._initAsync(options);
+
+        return soundSource;
     }
 
     /** @internal */
