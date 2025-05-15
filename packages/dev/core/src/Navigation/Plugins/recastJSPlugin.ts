@@ -58,9 +58,6 @@ declare let RecastGenerators: any;
 //   maxLayers: number;
 // }
 
-const tmpDelta = new Vector3();
-const tmpMoveTarget = new Vector3();
-
 type ComputeSmoothPathErrorType = (typeof ComputePathError)[keyof typeof ComputePathError];
 
 type ComputeSmoothPathResult = {
@@ -141,6 +138,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         return this._indices;
     }
 
+    private _tmpDelta = new Vector3();
+    private _tmpMoveTarget = new Vector3();
     // private _tempVec1: any;
     // private _tempVec2: any;
 
@@ -835,7 +834,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
             // Find movement delta.
             const steerPos = steerTarget.steerPos;
 
-            const delta = tmpDelta.copyFrom(steerPos).subtract(iterPos);
+            const delta = this._tmpDelta.copyFrom(steerPos).subtract(iterPos);
 
             let len = Math.sqrt(delta.dot(delta));
 
@@ -846,7 +845,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 len = stepSize / len;
             }
 
-            const moveTarget = tmpMoveTarget.copyFrom(iterPos).addInPlace(delta.scale(len));
+            const moveTarget = this._tmpMoveTarget.copyFrom(iterPos).addInPlace(delta.scale(len));
 
             // Move
             const moveAlongSurface = this.navMeshQuery.moveAlongSurface(polys[0], iterPos, moveTarget, { filter, maxVisitedSize: 16 });
