@@ -1,4 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 // Types for the raw lottie .json data
 
@@ -26,7 +27,7 @@ type RawLottieLayer = {
     st?: number; // Start time
     ct?: number; // Collapse Transform (0: false, 1: true), marks that transforms should be applied before masks
     ks?: RawTransform; // Layer transform
-    shapes?: Shape[];
+    shapes?: GraphicElement[];
 };
 
 type RawTransform = {
