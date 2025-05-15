@@ -39,7 +39,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 const int = parseInt(v);
 
                 if (isNaN(int)) {
-                    return;
+                    continue;
                 }
 
                 line.dash.push(int);

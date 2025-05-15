@@ -441,7 +441,7 @@ export class CanvasGraphService {
         for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
             const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
-                return;
+                continue;
             }
 
             const valueMinMax = this._getMinMax(bounds, idOffset);
@@ -883,13 +883,13 @@ export class CanvasGraphService {
         for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
             const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
-                return;
+                continue;
             }
 
             const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
             if (idOffset >= numPoints) {
-                return;
+                continue;
             }
 
             const valueAtClosestPointIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
@@ -905,7 +905,7 @@ export class CanvasGraphService {
             }
 
             if (!valueMinMax) {
-                return;
+                continue;
             }
 
             actualTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex));
@@ -923,7 +923,7 @@ export class CanvasGraphService {
             numberOfTooltipItems++;
             // don't process rest if we aren't panned.
             if (!this._position) {
-                return;
+                continue;
             }
 
             // initially distance between closest data point and mouse point.
