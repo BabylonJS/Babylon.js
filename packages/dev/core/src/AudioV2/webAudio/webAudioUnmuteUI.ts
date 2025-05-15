@@ -30,6 +30,7 @@ export class _WebAudioUnmuteUI {
         this._button.id = "babylonUnmuteButton";
 
         this._button.addEventListener("click", () => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._engine.unlockAsync();
         });
 

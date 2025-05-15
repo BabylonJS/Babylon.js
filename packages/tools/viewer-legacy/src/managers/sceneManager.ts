@@ -224,7 +224,7 @@ export class SceneManager {
                     updateShadows();
                 }
             });
-            return this._observablesManager && this._observablesManager.onSceneInitObservable.notifyObserversWithPromise(this.scene);
+            return await (this._observablesManager && this._observablesManager.onSceneInitObservable.notifyObserversWithPromise(this.scene));
         });
         if (this._observablesManager) {
             this._observablesManager.onModelLoadedObservable.add((model) => {
@@ -446,7 +446,7 @@ export class SceneManager {
             var gl = new GlowLayer("glow", this.scene, options);
         }*/
 
-        return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
+        return await this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
     }
 
     public clearScene(clearModels: boolean = true, clearLights: boolean = false) {
@@ -681,6 +681,7 @@ export class SceneManager {
         }
 
         if (sceneConfig.debug === true) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.scene.debugLayer.show();
         } else if (sceneConfig.debug === false) {
             if (this.scene.debugLayer.isVisible()) {

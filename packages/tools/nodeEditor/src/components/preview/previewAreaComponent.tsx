@@ -120,7 +120,8 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         onPointerOut={this._onPointerOutCanvas}
                         id="preview-canvas"
                         onKeyUp={(evt) => this.onKeyUp(evt)}
-                        onPointerMove={async (evt) => this.processPointerMove(evt)}
+                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                        onPointerMove={async (evt) => await this.processPointerMove(evt)}
                     />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                     <div id="preview-color-picker" className="hidden" ref={this._consoleRef} />

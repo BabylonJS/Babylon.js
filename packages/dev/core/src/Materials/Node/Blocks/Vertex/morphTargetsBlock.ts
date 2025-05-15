@@ -139,6 +139,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 

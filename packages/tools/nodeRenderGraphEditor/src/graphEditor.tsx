@@ -589,7 +589,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 parentControl.id = "node-render-graph-editor-graph-root";
                 parentControl.className = "nrge-right-panel popup";
             },
-            // eslint-disable-next-line @typescript-eslint/naming-convention
+            // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
             onWindowCreateCallback: async (w) => {
                 popUpWindow = w;
                 if (popUpWindow) {

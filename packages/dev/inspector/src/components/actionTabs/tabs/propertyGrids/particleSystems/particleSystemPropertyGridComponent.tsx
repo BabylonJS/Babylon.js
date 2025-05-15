@@ -245,9 +245,11 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
         ParticleHelper.ParseFromSnippetAsync(snippedId, scene, isGpu)
+            // eslint-disable-next-line github/no-then
             .then((newSystem) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 alert("Unable to load your particle system: " + err);
             });
@@ -269,6 +271,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     }
                     this.forceUpdate();
                     if (navigator.clipboard) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         navigator.clipboard.writeText(system.snippetId);
                     }
 

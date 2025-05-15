@@ -222,6 +222,7 @@ function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBo
 // This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
 // If there is any error (other than AbortError) in the async function, it will be logged.
 function observePromise(promise: Promise<unknown>): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
         try {
             await promise;
@@ -755,7 +756,7 @@ export class Viewer implements IDisposable {
 
     public constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _options?: ViewerOptions
+        private readonly _options?: Readonly<ViewerOptions>
     ) {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
@@ -848,6 +849,7 @@ export class Viewer implements IDisposable {
         this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
+        // eslint-disable-next-line github/no-then
         this.resetEnvironment().catch(() => {});
 
         this._beginRendering();
@@ -862,7 +864,7 @@ export class Viewer implements IDisposable {
             },
             suspendRendering: () => this._suspendRendering(),
             markSceneMutated: () => this._markSceneMutated(),
-            pick: async (screenX: number, screenY: number) => this._pick(screenX, screenY),
+            pick: async (screenX: number, screenY: number) => await this._pick(screenX, screenY),
         });
 
         this._reset(false, "source", "environment", "post-processing");
@@ -1101,7 +1103,7 @@ export class Viewer implements IDisposable {
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this._reframeCamera(true);
+            this._reframeCamera(true, model ? [model] : undefined);
             this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
@@ -1602,6 +1604,7 @@ export class Viewer implements IDisposable {
      */
     public toggleAnimation() {
         if (this.isAnimationPlaying) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.pauseAnimation();
         } else {
             this.playAnimation();
@@ -1701,6 +1704,7 @@ export class Viewer implements IDisposable {
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.pauseAnimation();
             }
         }
@@ -1851,6 +1855,7 @@ export class Viewer implements IDisposable {
         const result = new ViewerHotSpotResult();
         const query = this._queryHotSpot(name, result);
         if (query) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.pauseAnimation();
             const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
             this._camera.interpolateTo(cameraOrbit[0], cameraOrbit[1], cameraOrbit[2], new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2]));
@@ -1893,7 +1898,7 @@ export class Viewer implements IDisposable {
             this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._scene.cameras.forEach(async (camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._scene.cameras.forEach(async (camera) => await this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 
@@ -1909,7 +1914,7 @@ export class Viewer implements IDisposable {
         }
 
         if (this._activeModel) {
-            return CreateHotSpotFromCamera(this._activeModel, camera);
+            return await CreateHotSpotFromCamera(this._activeModel, camera);
         }
 
         return null;

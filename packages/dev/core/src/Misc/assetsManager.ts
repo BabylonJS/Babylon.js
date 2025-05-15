@@ -1371,13 +1371,14 @@ export class AssetsManager {
      * @returns a promise returning the list of failed tasks
      */
     public async loadAsync(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             if (this._isLoading) {
                 resolve();
                 return;
             }
             this.onTasksDoneObservable.addOnce((remainingTasks) => {
                 if (remainingTasks && remainingTasks.length) {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(remainingTasks);
                 } else {
                     resolve();
