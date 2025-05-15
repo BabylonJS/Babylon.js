@@ -242,7 +242,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         for (const hitTestResult of hitTestResults) {
             const pose = hitTestResult.getPose(this._xrSessionManager.referenceSpace);
             if (!pose) {
-                return;
+                continue;
             }
             const pos = pose.transform.position;
             const quat = pose.transform.orientation;

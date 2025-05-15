@@ -184,7 +184,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         const namedGroups: string[] = [];
         for (const block of configurableInputBlocks) {
             if (!block.groupInInspector) {
-                return;
+                continue;
             }
 
             if (namedGroups.indexOf(block.groupInInspector) === -1) {
