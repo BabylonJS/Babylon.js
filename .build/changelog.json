@@ -1,7 +1,242 @@
 {
-    "fromTag": "8.7.1",
+    "fromTag": "8.8.0",
     "changelog": {
         "8.8.0": [],
+        "8.8.1": [
+            {
+                "pr": "16459",
+                "title": "Viewer: Add shadow support",
+                "description": "In the viewer, add the support for :\r\n- shadow map,\r\n- ibl shadows\r\n- shadow quality selection `normal`, `high`\r\n\r\nFor now, ibl shadows are dissabled for meshes that have animations in WebGPU even if the animation is paused as there is some issues.\r\n\r\nThe auto shadow selection will come in another PR.\r\nThe placement of the light will come in another PR.\r\n\r\nEdit from @ryantrem: from local testing, these are the remaining issues I'm seeing:\r\n- [x] Shadow map shadows don't work when \"statically\" enabled (e.g. `<babylon-viewer shadow-quality=\"normal\">`).\r\n- [ ] IBL shadows do not update when an animation is running. I assume this is not supported in IBL shadows, but if that is the case, should we disallow IBL shadows for animated models?\r\n- [ ] IBL shadows seem to get into a bad state after I load a few different models. This can be reproed in the Viewer test app by just dragging and dropping a sequence of models with IBL shadows enabled. After a few models, I start seeing wrong shadows or significant rendering artifacts. I'm not sure if there is a missing accumulator reset, or if this is a bug in IBL shadows or what.",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/@babylonjs/viewer/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer/rollup.config.lib.mjs",
+                    "packages/tools/viewer-configurator/package.json",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer-configurator/tsconfig.build.json",
+                    "packages/tools/viewer-configurator/tsconfig.json",
+                    "packages/tools/viewer-configurator/webpack.config.js",
+                    "packages/tools/viewer/rollup.config.common.mjs",
+                    "packages/tools/viewer/src/Shaders/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/Shaders/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/ShadersWGSL/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/ShadersWGSL/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": [
+                    "viewer",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16610",
+                "title": "Remove no AA for 3dCommerce",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16609",
+                "title": "Fix linting for new functionality",
+                "description": "Needed because these lines were added after the PR was created.\n\nFrom here on - async linting FTW.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16608",
+                "title": "Change return statements to continue in for loops",
+                "description": "Following up on PR #16513 that switched from forEach to for loops.\r\n\r\nReplace return statements with continue in various loops to ensure that the iteration continues instead of exiting the function. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTest.ts",
+                    "packages/dev/core/src/XR/motionController/webXRMicrosoftMixedRealityController.ts",
+                    "packages/dev/core/src/XR/motionController/webXRProfiledMotionController.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/gui/src/2D/controls/multiLine.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/graph/canvasGraphService.ts",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/linePropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/linePropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16578",
+                "title": "Linting - Async rules",
+                "description": "Rules added:\n\n\"@typescript-eslint/promise-function-async\"\n\"@typescript-eslint/no-misused-promises\"\n\"@typescript-eslint/no-floating-promises\"\n\"@typescript-eslint/return-await\"\n\"no-await-in-loop\"\n\"@typescript-eslint/await-thenable\"\n\"@typescript-eslint/prefer-promise-reject-errors\"\n\"require-atomic-updates\" (Warning only)\n\"github/no-then\"",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/audioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioUnmuteUI.ts",
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts",
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.common.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineFactory.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/Helpers/sceneHelpers.ts",
+                    "packages/dev/core/src/Helpers/videoDome.ts",
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/areaLight.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/envTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/textureLoaderManager.ts",
+                    "packages/dev/core/src/Materials/Textures/Packer/packer.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.polynomial.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16604",
+                "title": "Viewer: Fix ignored options bug & camera framing with multiple models",
+                "description": "This PR primarily is to address this forum issue: https://forum.babylonjs.com/t/babylon-viewer-v2/54317/82\r\n\r\nThe main problem is that a wrapper options object is constructed, but does not correctly handle options that are just pass-throughs (e.g. the ViewerElement doesn't do anything special with them, like map them to attributes, which is the case for `useRightHandedSystem` for example), and also does not correctly handle callback options (the callbacks passed in are overwritten by the ViewerElement's own callbacks). To fix this, I'm introducing an Options Proxy at the ViewerElement layer similar to what was done in the ViewerFactory layer. While Proxy may be slower for evaluating properties, this is not in the hot path (e.g. options are not evaluated on a per-frame basis), so this should be a fine usage of Proxy.\r\n\r\nOnce this change was in place, it exposed another issue, where the ViewerFactory layer was writing to one of the options, which calls the setter on the Proxy, which passes through to setting a property directly on the target object. This was not intentional, it was just leftover from how the options worked before the Proxy was introduced and got missed. To fix this, instead of overwriting the `onInitialized` options property in the ViewerFactory, it is handled in the options Proxy within the ViewerFactory. To make sure this kind of error doesn't happen again, I also made all the options readonly.\r\n\r\nFinally this PR has one other unrelated but small fix, where in the case of multiple models, when one is made \"active,\" the camera is reset to the bounds of that single model, not all loaded models.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16597",
+                "title": "Compensation and kernel size for AA trained SPZ",
+                "description": "- Compensation and kernelSize can be set per GS material\r\n- set Compensation and kernelSize to 0.1 for AA trained SPZ ( https://niujinshuchong.github.io/mip-splatting/ )\r\n- Fixed value overflow for quaternion.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "8.7.1": [
             {
                 "pr": "16603",
