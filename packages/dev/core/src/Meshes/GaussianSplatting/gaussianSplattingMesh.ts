@@ -1045,10 +1045,10 @@ export class GaussianSplattingMesh extends Mesh {
 
         q.set(r1, r2, r3, r0);
         q.normalize();
-        rot[0] = q.w * 128 + 128;
-        rot[1] = q.x * 128 + 128;
-        rot[2] = q.y * 128 + 128;
-        rot[3] = q.z * 128 + 128;
+        rot[0] = q.w * 127.5 + 127.5;
+        rot[1] = q.x * 127.5 + 127.5;
+        rot[2] = q.y * 127.5 + 127.5;
+        rot[3] = q.z * 127.5 + 127.5;
         offset.value += header.rowVertexLength;
     }
 
