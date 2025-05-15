@@ -57,7 +57,8 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
-const shadowQualityOptions = ["none", "normal", "high"] as const;
+// TODO: Include "high" when remaining IBL shadow issues are resolved.
+const shadowQualityOptions = ["none", "normal" /*, "high"*/] as const;
 export type ShadowQuality = (typeof shadowQualityOptions)[number];
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
@@ -234,6 +235,10 @@ function computeModelsMaxExtents(models: readonly Model[]): Array<{ minimum: Vec
 }
 
 function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3; maximum: Vector3 }>) {
+    if (maxExtents.length === 0) {
+        return null;
+    }
+
     const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
     const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
     const size = max.subtract(min);
@@ -808,7 +813,8 @@ export class Viewer implements IDisposable {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
-    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+    // TODO: Remove the `| "high"` once the IBL shadow issues are resolved.
+    private _shadowQuality: ShadowQuality | "high" = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
 
     public constructor(
@@ -906,7 +912,7 @@ export class Viewer implements IDisposable {
         this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
-        this.resetEnvironment().catch(() => {});
+        observePromise(this.resetEnvironment());
 
         this._beginRendering();
 
@@ -1154,16 +1160,7 @@ export class Viewer implements IDisposable {
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
             this._updateLight();
-            (async () => {
-                try {
-                    await this._updateShadows();
-                } catch (error) {
-                    // If _updateShadows was aborted (e.g. because a new update was requested before this one finished), we can just ignore the error.
-                    if (!(error instanceof AbortError)) {
-                        Logger.Error(error);
-                    }
-                }
-            })();
+            observePromise(this._updateShadows());
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
@@ -1419,7 +1416,7 @@ export class Viewer implements IDisposable {
 
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
-            const updateShadows = this._updateShadows.bind(this);
+            const viewer = this;
 
             const model = {
                 assetContainer,
@@ -1480,7 +1477,7 @@ export class Viewer implements IDisposable {
 
                     selectedAnimation = index;
                     activeAnimation = assetContainer.animationGroups[selectedAnimation];
-                    updateShadows();
+                    observePromise(viewer._updateShadows());
 
                     if (activeAnimation) {
                         activeAnimation.goToFrame(0);
@@ -1543,7 +1540,7 @@ export class Viewer implements IDisposable {
         await this._updateShadowsLock.lockAsync(async () => {
             if (this._shadowQuality === "none") {
                 this._disposeShadows();
-            } else {
+            } else if (this._loadedModelsBacking.length > 0) {
                 // make sure there is an env light before creating shadows
                 if (!this._reflectionTexture) {
                     await this.loadEnvironment("auto", { lighting: true, skybox: false });
@@ -1850,8 +1847,11 @@ export class Viewer implements IDisposable {
         normal.light.position = position;
 
         for (const model of this._loadedModelsBacking) {
-            const mesh = model.assetContainer.meshes[0];
-            normal.generator.addShadowCaster(mesh, true);
+            // Add all root meshes to the shadow generator.
+            for (const mesh of model.assetContainer.meshes.filter((mesh) => !mesh.parent)) {
+                normal.generator.addShadowCaster(mesh, true);
+            }
+            // Set all meshes to receive shadows.
             for (const mesh of model.assetContainer.meshes) {
                 mesh.receiveShadows = true;
             }
@@ -2091,16 +2091,7 @@ export class Viewer implements IDisposable {
                 await Promise.all(newTexturePromises);
 
                 this._updateLight();
-                (async () => {
-                    try {
-                        await this._updateShadows();
-                    } catch (error) {
-                        // If _updateShadows was aborted (e.g. because a new update was requested before this one finished), we can just ignore the error.
-                        if (!(error instanceof AbortError)) {
-                            Logger.Error(error);
-                        }
-                    }
-                })();
+                observePromise(this._updateShadows());
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
                 this.onEnvironmentError.notifyObservers(e);

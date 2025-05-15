@@ -672,7 +672,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
 
     /**
      * The type of shadows to use.
-     * "classic" for shadow maps, "environment" for environment shadows.
      */
     @property({
         attribute: "shadow-quality",
