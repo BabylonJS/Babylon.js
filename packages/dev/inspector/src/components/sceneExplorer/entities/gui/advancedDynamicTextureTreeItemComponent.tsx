@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/promise-function-async */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import type { Nullable } from "core/types";
 import type { Observer, Observable } from "core/Misc/observable";
 import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";

@@ -209,6 +209,7 @@ WebGPUEngine.prototype._executeWhenComputeStateIsCompiled = function (
     pipelineContext: WebGPUComputePipelineContext,
     action: (messages: Nullable<ComputeCompilationMessages>) => void
 ): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
     pipelineContext.stage!.module.getCompilationInfo().then((info) => {
         const compilationMessages: ComputeCompilationMessages = {
             numErrors: 0,

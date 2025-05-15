@@ -735,6 +735,7 @@ export class ThinEffectLayer {
         } else {
             await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._additionalImportShadersAsync?.();
     }
 

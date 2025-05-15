@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";

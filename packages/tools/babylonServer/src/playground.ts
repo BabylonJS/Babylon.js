@@ -17,6 +17,7 @@ export const loadPlayground = async (playgroundId: string) => {
 
     const loadedScene = eval(`${code};${createSceneFunction}(engine);`);
 
+    // eslint-disable-next-line github/no-then
     if (loadedScene.then) {
         // Handle if createScene returns a promise
         return await loadedScene;

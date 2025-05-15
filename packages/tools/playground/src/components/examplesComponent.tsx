@@ -31,6 +31,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
 
     public constructor(props: IExamplesComponentProps) {
         super(props);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._loadScriptsAsync();
 
         this.state = { filter: "", className: "removed", openedOnce: false };

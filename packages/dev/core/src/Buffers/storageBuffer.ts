@@ -70,7 +70,7 @@ export class StorageBuffer {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async read(offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
-        return this._engine.readFromStorageBuffer(this._buffer, offset, size, buffer, noDelay);
+        return await this._engine.readFromStorageBuffer(this._buffer, offset, size, buffer, noDelay);
     }
 
     /**

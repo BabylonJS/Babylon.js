@@ -45,6 +45,7 @@ export class BonesBlock extends NodeMaterialBlock {
         state._excludeVariableName("mBones");
         state._excludeVariableName("BonesPerMesh");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 

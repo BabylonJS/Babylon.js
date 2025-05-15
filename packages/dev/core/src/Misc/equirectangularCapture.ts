@@ -63,7 +63,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
     probe.cubeTexture.render();
     const dumpTexture = new CustomProceduralTexture("tempProceduralTexture", "equirectangularPanorama", { width: options.size * 2, height: options.size }, scene);
     dumpTexture.setTexture("cubeMap", probe.cubeTexture);
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         dumpTexture.onGeneratedObservable.addOnce(() => {
             const pixelDataPromise = dumpTexture.readPixels();
             if (!pixelDataPromise) {
@@ -74,6 +74,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                 }
                 return;
             }
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             pixelDataPromise.then((pixelData) => {
                 dumpTexture.dispose();
                 if (!wasProbeProvided) {

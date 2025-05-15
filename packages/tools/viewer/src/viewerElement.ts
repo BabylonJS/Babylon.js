@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
@@ -1429,7 +1430,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns The created viewer.
      */
     protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
-        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
+        return await CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
     }
 
     private async _tearDownViewer() {

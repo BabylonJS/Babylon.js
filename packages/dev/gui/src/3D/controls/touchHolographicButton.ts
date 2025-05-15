@@ -339,6 +339,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
         const baseUrl = Tools.GetAssetUrl(TouchHolographicButton.MODEL_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
             const alphaMesh = CreateBox(
                 "${this.name}_alphaMesh",

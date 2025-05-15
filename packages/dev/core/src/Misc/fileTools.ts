@@ -247,12 +247,14 @@ export const LoadImage = (
             (data) => {
                 engine
                     .createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions })
+                    // eslint-disable-next-line github/no-then
                     .then((imgBmp) => {
                         onLoad(imgBmp);
                         if (usingObjectURL) {
                             URL.revokeObjectURL(url);
                         }
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((reason) => {
                         if (onError) {
                             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
