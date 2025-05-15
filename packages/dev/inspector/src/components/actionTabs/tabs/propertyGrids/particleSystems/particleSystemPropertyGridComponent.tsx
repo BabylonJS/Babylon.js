@@ -43,6 +43,7 @@ import { Color4LineComponent } from "shared-ui-components/lines/color4LineCompon
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { AttractorsGridComponent } from "./attractorsGridComponent";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -433,6 +434,11 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
+                {system instanceof ParticleSystem && (
+                    <LineContainerComponent title="ATTRACTORS" closed={true} selection={this.props.globalState}>
+                        <AttractorsGridComponent globalState={this.props.globalState} host={system} lockObject={this.props.lockObject} />
+                    </LineContainerComponent>
+                )}
                 <LineContainerComponent title="EMITTER" closed={true} selection={this.props.globalState}>
                     <OptionsLine
                         label="Emitter"
@@ -595,6 +601,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="maxEmitPower"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+
                     <ValueGradientGridComponent
                         globalState={this.props.globalState}
                         gradients={system.getVelocityGradients()}
