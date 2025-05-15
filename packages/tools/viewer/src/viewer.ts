@@ -1416,6 +1416,7 @@ export class Viewer implements IDisposable {
 
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             const viewer = this;
 
             const model = {
@@ -1791,10 +1792,6 @@ export class Viewer implements IDisposable {
         const size = 4096;
         const positionFactor = 3;
         const groundFactor = 20;
-        const useBlur = true;
-        const blur = 4;
-        const bias = -0.0001;
-        const normalBias = 0.000002;
         const groundSize = radius * groundFactor;
 
         const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
@@ -1805,15 +1802,10 @@ export class Viewer implements IDisposable {
             const generator = new ShadowGenerator(size, light);
             generator.setDarkness(0.8);
             generator.setTransparencyShadow(true);
-            generator.usePercentageCloserFiltering = true;
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
-            generator.bias = bias;
-            generator.normalBias = normalBias;
-            generator.useExponentialShadowMap = true;
-            generator.useBlurCloseExponentialShadowMap = useBlur;
-            generator.useBlurExponentialShadowMap = useBlur;
-            generator.useKernelBlur = useBlur;
-            generator.blurKernel = blur;
+            generator.useBlurExponentialShadowMap = true;
+            generator.useKernelBlur = true;
+            generator.blurKernel = 32;
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
