@@ -3,7 +3,7 @@ import type { GlobalState } from "../../../../globalState";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { LinkButtonComponent } from "shared-ui-components/lines/linkButtonComponent";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { ParticleSystem } from "core/Particles/particleSystem";
+import type { ParticleSystem } from "core/Particles/particleSystem";
 import { Attractor } from "core/Particles";
 import { AttractorGridComponent } from "./attractorGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
@@ -12,10 +12,10 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { Color3 } from "core/Maths/math.color";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
-import { Observer } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 
 interface IAttractorsGridComponent {
     globalState: GlobalState;
