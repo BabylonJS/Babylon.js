@@ -188,7 +188,11 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , vThicknessParam
                 , vTintColor
                 , normalW
-                , specularEnvironmentReflectance
+            #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                , vec3(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+            #else
+                , baseSpecularEnvironmentReflectance
+            #endif
             #ifdef SS_THICKNESSANDMASK_TEXTURE
                 , vec4${state.fSuffix}(0.)
             #endif
@@ -282,7 +286,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
             #endif
         #else
-            subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+            subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
         #endif\n`;
 
         return code;

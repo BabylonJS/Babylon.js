@@ -350,7 +350,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , sheenMapData
             , uniforms.vSheenInfos.y
         #endif
-            , reflectance
+            , reflectanceF0
         #ifdef SHEEN_LINKWITHALBEDO
             , baseColor
             , surfaceAlbedo
@@ -541,7 +541,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , uniforms.vThicknessParam
             , uniforms.vTintColor
             , normalW
-            , specularEnvironmentReflectance
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            , vec3f(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+        #else
+            , baseSpecularEnvironmentReflectance
+        #endif
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             , thicknessMap
         #endif
@@ -633,7 +637,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

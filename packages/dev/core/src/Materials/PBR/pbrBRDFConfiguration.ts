@@ -14,6 +14,7 @@ export class MaterialBRDFDefines extends MaterialDefines {
     SPHERICAL_HARMONICS = false;
     SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
     MIX_IBL_RADIANCE_WITH_IRRADIANCE = true;
+    LEGACY_SPECULAR_ENERGY_CONSERVATION = false;
 }
 
 /**
@@ -52,6 +53,11 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      * This better approximates raytracing results for rough surfaces.
      */
     public static DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE = true;
+
+    /**
+     * Default value for whether the legacy specular energy conservation is used.
+     */
+    public static DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION = true;
 
     private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
@@ -107,6 +113,15 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public mixIblRadianceWithIrradiance = PBRBRDFConfiguration.DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE;
 
+    private _useLegacySpecularEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION;
+    /**
+     * Defines if the legacy specular energy conservation is used.
+     * If activated, the specular color is multiplied with (1. - maxChannel(albedo color)).
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useLegacySpecularEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION;
+
     /** @internal */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
 
@@ -136,6 +151,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
         defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
         defines.MIX_IBL_RADIANCE_WITH_IRRADIANCE = this._mixIblRadianceWithIrradiance;
+        defines.LEGACY_SPECULAR_ENERGY_CONSERVATION = this._useLegacySpecularEnergyConservation;
     }
 
     public override getClassName(): string {
