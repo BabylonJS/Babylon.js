@@ -152,7 +152,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         for (const id of ids) {
             const component = this.getComponent(id);
             if (!component.hasChanges) {
-                return;
+                continue;
             }
             const meshes = this._buttonMeshMapping[id];
             const componentInLayout = this.layout.components[id];

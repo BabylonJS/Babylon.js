@@ -501,6 +501,7 @@ export class WebXRFeaturesManager implements IDisposable {
                 }
             }
             if (feature.featureImplementation.getXRSessionInitExtension) {
+                // eslint-disable-next-line no-await-in-loop
                 const extended = await feature.featureImplementation.getXRSessionInitExtension();
                 xrSessionInit = {
                     ...xrSessionInit,

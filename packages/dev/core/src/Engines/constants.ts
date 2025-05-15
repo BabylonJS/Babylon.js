@@ -666,7 +666,7 @@ export class Constants {
      */
     public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
     /**
-     * Constant used to retrieve depth index in the textures array in the prepass
+     * Constant used to retrieve (camera view) depth index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
      */
     public static readonly PREPASS_DEPTH_TEXTURE_TYPE = 5;

@@ -34,28 +34,32 @@ export class ZSTDDecoder {
 
     async init(): Promise<void> {
         if (init) {
-            return init;
+            return await init;
         }
 
         if (typeof fetch !== "undefined") {
             // Web.
 
             init = fetch(Transcoder.GetWasmUrl(ZSTDDecoder.WasmModuleURL))
+                // eslint-disable-next-line github/no-then
                 .then(async (response) => {
                     if (response.ok) {
-                        return response.arrayBuffer();
+                        return await response.arrayBuffer();
                     }
                     throw new Error(`Could not fetch the wasm component for the Zstandard decompression lib: ${response.status} - ${response.statusText}`);
                 })
-                .then(async (arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
+                // eslint-disable-next-line github/no-then
+                .then(async (arrayBuffer) => await WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
+                // eslint-disable-next-line github/no-then
                 .then(this._init);
         } else {
             // Node.js.
 
+            // eslint-disable-next-line github/no-then
             init = WebAssembly.instantiateStreaming(fetch(ZSTDDecoder.WasmModuleURL), IMPORT_OBJECT).then(this._init);
         }
 
-        return init;
+        return await init;
     }
 
     _init(result: WebAssembly.WebAssemblyInstantiatedSource): void {

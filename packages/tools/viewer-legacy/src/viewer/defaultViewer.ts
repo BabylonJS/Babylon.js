@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Template, EventCallback } from "../templating/templateManager";
 import { TemplateManager } from "../templating/templateManager";
@@ -157,7 +159,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             }
         }
 
-        return super._onTemplatesLoaded();
+        return await super._onTemplatesLoaded();
     }
 
     private _initNavbar() {
@@ -555,10 +557,10 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     public async showOverlayScreen(subScreen: string) {
         const template = this.templateManager.getTemplate("overlay");
         if (!template) {
-            return Promise.resolve("Overlay template not found");
+            return await Promise.resolve("Overlay template not found");
         }
 
-        return template.show(async (template) => {
+        return await template.show(async (template) => {
             const canvasRect = this.containerElement.getBoundingClientRect();
 
             template.parent.style.display = "flex";
@@ -568,11 +570,11 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
             const subTemplate = this.templateManager.getTemplate(subScreen);
             if (!subTemplate) {
-                return Promise.reject(subScreen + " template not found");
+                return await Promise.reject(subScreen + " template not found");
             }
-            return subTemplate.show(async (template) => {
+            return await subTemplate.show(async (template) => {
                 template.parent.style.display = "flex";
-                return Promise.resolve(template);
+                return await Promise.resolve(template);
             });
         });
     }
@@ -584,10 +586,10 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     public async hideOverlayScreen() {
         const template = this.templateManager.getTemplate("overlay");
         if (!template) {
-            return Promise.resolve("Overlay template not found");
+            return await Promise.resolve("Overlay template not found");
         }
 
-        return template.hide(async (template) => {
+        return await template.hide(async (template) => {
             template.parent.style.opacity = "0";
             const onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
@@ -602,7 +604,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                     htmlElement.style.display = "none";
                 }
             }
-            return Promise.resolve(template);
+            return await Promise.resolve(template);
         });
     }
 
@@ -616,9 +618,9 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         const template = this.templateManager.getTemplate("main");
         //not possible, but yet:
         if (!template) {
-            return Promise.reject("Main template not found");
+            return await Promise.reject("Main template not found");
         }
-        return template.show(visibilityFunction);
+        return await template.show(visibilityFunction);
     }
 
     /**
@@ -631,9 +633,9 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         const template = this.templateManager.getTemplate("main");
         //not possible, but yet:
         if (!template) {
-            return Promise.reject("Main template not found");
+            return await Promise.reject("Main template not found");
         }
-        return template.hide(visibilityFunction);
+        return await template.hide(visibilityFunction);
     }
 
     /**
@@ -644,10 +646,10 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     public async showLoadingScreen() {
         const template = this.templateManager.getTemplate("loadingScreen");
         if (!template) {
-            return Promise.resolve("Loading Screen template not found");
+            return await Promise.resolve("Loading Screen template not found");
         }
 
-        return template.show(async (template) => {
+        return await template.show(async (template) => {
             const canvasRect = this.containerElement.getBoundingClientRect();
             // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
@@ -661,7 +663,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 color = (this.configuration.templates.loadingScreen.params && <string>this.configuration.templates.loadingScreen.params.backgroundColor) || color;
             }
             template.parent.style.backgroundColor = color;
-            return Promise.resolve(template);
+            return await Promise.resolve(template);
         });
     }
 
@@ -672,17 +674,17 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     public async hideLoadingScreen() {
         const template = this.templateManager.getTemplate("loadingScreen");
         if (!template) {
-            return Promise.resolve("Loading Screen template not found");
+            return await Promise.resolve("Loading Screen template not found");
         }
 
-        return template.hide(async (template) => {
+        return await template.hide(async (template) => {
             template.parent.style.opacity = "0";
             const onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
                 template.parent.style.display = "none";
             };
             template.parent.addEventListener("transitionend", onTransitionEnd);
-            return Promise.resolve(template);
+            return await Promise.resolve(template);
         });
     }
 

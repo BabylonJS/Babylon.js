@@ -154,7 +154,7 @@ export class GeometryBufferRenderer {
     private _enableScreenspaceDepth: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
-    private _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
+    private _clearDepthColor = new Color4(0, 0, 0, 1); // sets an invalid value by default - depth in the depth texture is view.z, so 0 is not possible because view.z can't be less than camera.minZ
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
@@ -508,6 +508,7 @@ export class GeometryBufferRenderer {
         this._depthFormat = depthFormat;
         this._textureTypesAndFormats = textureTypesAndFormats || {};
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);

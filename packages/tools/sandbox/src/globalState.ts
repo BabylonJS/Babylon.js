@@ -32,6 +32,7 @@ export class GlobalState {
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.currentScene.debugLayer.show();
         }
     }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
@@ -1303,74 +1304,72 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     const detailsDeferred = new Deferred<ViewerDetails>();
                     // eslint-disable-next-line @typescript-eslint/no-this-alias
                     const viewerElement = this;
-                    const viewer = await this._createViewer(canvas, {
-                        get engine() {
-                            return viewerElement.engine ?? viewerElement._options.engine;
-                        },
-                        get autoSuspendRendering() {
-                            return !(viewerElement.hasAttribute("render-when-idle") || viewerElement._options.autoSuspendRendering === false);
-                        },
-                        get source() {
-                            return viewerElement.getAttribute("source") ?? viewerElement._options.source;
-                        },
-                        get environmentLighting() {
-                            return viewerElement.getAttribute("environment-lighting") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentLighting;
-                        },
-                        get environmentSkybox() {
-                            return viewerElement.getAttribute("environment-skybox") ?? viewerElement.getAttribute("environment") ?? viewerElement._options.environmentSkybox;
-                        },
-                        get environmentConfig() {
-                            return {
-                                intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? viewerElement._options.environmentConfig?.intensity,
-                                blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? viewerElement._options.environmentConfig?.blur,
-                                rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? viewerElement._options.environmentConfig?.rotation,
-                            };
-                        },
-                        get shadowConfig() {
-                            return {
-                                quality: coerceShadowQuality(viewerElement.getAttribute("shadow-quality")) ?? viewerElement._options.shadowConfig?.quality,
-                            };
-                        },
-                        get cameraOrbit() {
-                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? viewerElement._options.cameraOrbit;
-                        },
-                        get cameraTarget() {
-                            return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-target")) ?? viewerElement._options.cameraTarget;
-                        },
-                        get cameraAutoOrbit() {
-                            return {
-                                enabled: viewerElement.hasAttribute("camera-auto-orbit") || viewerElement._options.cameraAutoOrbit?.enabled,
-                                speed: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-speed")) ?? viewerElement._options.cameraAutoOrbit?.speed,
-                                delay: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-delay")) ?? viewerElement._options.cameraAutoOrbit?.delay,
-                            };
-                        },
-                        get animationAutoPlay() {
-                            return viewerElement.hasAttribute("animation-auto-play") || viewerElement._options.animationAutoPlay;
-                        },
-                        get animationSpeed() {
-                            return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? viewerElement._options.animationSpeed;
-                        },
-                        get selectedAnimation() {
-                            return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? viewerElement._options.selectedAnimation;
-                        },
-                        get postProcessing() {
-                            return {
-                                toneMapping: coerceToneMapping(viewerElement.getAttribute("tone-mapping")) ?? viewerElement._options.postProcessing?.toneMapping,
-                                contrast: coerceNumericAttribute(viewerElement.getAttribute("contrast")) ?? viewerElement._options.postProcessing?.contrast,
-                                exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? viewerElement._options.postProcessing?.exposure,
-                            };
-                        },
-                        get selectedMaterialVariant() {
-                            return viewerElement.getAttribute("material-variant") ?? viewerElement._options.selectedMaterialVariant;
-                        },
-                        onInitialized: (details) => {
-                            detailsDeferred.resolve(details);
-                        },
-                        onFaulted: () => {
-                            this._isFaultedBacking = true;
-                            this._tearDownViewer();
-                        },
-                    });
+                    const viewer = await this._createViewer(
+                        canvas,
+                        new Proxy(this._options, {
+                            get(target, prop: keyof CanvasViewerOptions) {
+                                switch (prop) {
+                                    case "engine":
+                                        return viewerElement.engine ?? target.engine;
+                                    case "autoSuspendRendering":
+                                        return !(viewerElement.hasAttribute("render-when-idle") || target.autoSuspendRendering === false);
+                                    case "source":
+                                        return viewerElement.getAttribute("source") ?? target.source;
+                                    case "environmentLighting":
+                                        return viewerElement.getAttribute("environment-lighting") ?? viewerElement.getAttribute("environment") ?? target.environmentLighting;
+                                    case "environmentSkybox":
+                                        return viewerElement.getAttribute("environment-skybox") ?? viewerElement.getAttribute("environment") ?? target.environmentSkybox;
+                                    case "environmentConfig":
+                                        return {
+                                            intensity: coerceNumericAttribute(viewerElement.getAttribute("environment-intensity")) ?? target.environmentConfig?.intensity,
+                                            blur: coerceNumericAttribute(viewerElement.getAttribute("skybox-blur")) ?? target.environmentConfig?.blur,
+                                            rotation: coerceNumericAttribute(viewerElement.getAttribute("environment-rotation")) ?? target.environmentConfig?.rotation,
+                                        };
+                                    case "shadowConfig":
+                                        return {
+                                            quality: coerceShadowQuality(viewerElement.getAttribute("shadow-quality")) ?? target.shadowConfig?.quality,
+                                        };
+                                    case "cameraOrbit":
+                                        return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-orbit")) ?? target.cameraOrbit;
+                                    case "cameraTarget":
+                                        return coerceCameraOrbitOrTarget(viewerElement.getAttribute("camera-target")) ?? target.cameraTarget;
+                                    case "cameraAutoOrbit":
+                                        return {
+                                            enabled: viewerElement.hasAttribute("camera-auto-orbit") || target.cameraAutoOrbit?.enabled,
+                                            speed: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-speed")) ?? target.cameraAutoOrbit?.speed,
+                                            delay: coerceNumericAttribute(viewerElement.getAttribute("camera-auto-orbit-delay")) ?? target.cameraAutoOrbit?.delay,
+                                        };
+                                    case "animationAutoPlay":
+                                        return viewerElement.hasAttribute("animation-auto-play") || target.animationAutoPlay;
+                                    case "animationSpeed":
+                                        return coerceNumericAttribute(viewerElement.getAttribute("animation-speed")) ?? target.animationSpeed;
+                                    case "selectedAnimation":
+                                        return coerceNumericAttribute(viewerElement.getAttribute("selected-animation")) ?? target.selectedAnimation;
+                                    case "postProcessing":
+                                        return {
+                                            toneMapping: coerceToneMapping(viewerElement.getAttribute("tone-mapping")) ?? target.postProcessing?.toneMapping,
+                                            contrast: coerceNumericAttribute(viewerElement.getAttribute("contrast")) ?? target.postProcessing?.contrast,
+                                            exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? target.postProcessing?.exposure,
+                                        };
+                                    case "selectedMaterialVariant":
+                                        return viewerElement.getAttribute("material-variant") ?? target.selectedMaterialVariant;
+                                    case "onInitialized":
+                                        return (details: Readonly<ViewerDetails>) => {
+                                            target.onInitialized?.(details);
+                                            detailsDeferred.resolve(details);
+                                        };
+                                    case "onFaulted":
+                                        return (error: Error) => {
+                                            viewerElement._isFaultedBacking = true;
+                                            target.onFaulted?.(error);
+                                            viewerElement._tearDownViewer();
+                                        };
+                                    default:
+                                        return target[prop];
+                                }
+                            },
+                        })
+                    );
                     const details = await detailsDeferred.promise;
 
                     this._viewerDetails = Object.assign(details, { viewer });
@@ -1439,7 +1438,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      * @returns The created viewer.
      */
     protected async _createViewer(canvas: HTMLCanvasElement, options: CanvasViewerOptions): Promise<ViewerClass> {
-        return CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
+        return await CreateViewerForCanvas(canvas, Object.assign(options, { viewerClass: this._viewerClass }));
     }
 
     private async _tearDownViewer() {
@@ -1539,7 +1538,7 @@ export class HTML3DElement extends ViewerElement {
      * Creates a new HTML3DElement.
      * @param options The options to use for the viewer. This is optional, and is only used when programmatically creating a viewer element.
      */
-    public constructor(options?: CanvasViewerOptions) {
+    public constructor(options?: Readonly<CanvasViewerOptions>) {
         super(Viewer, options);
     }
 }
@@ -1549,7 +1548,7 @@ export class HTML3DElement extends ViewerElement {
  * @param elementName The name of the custom element.
  * @param options The options to use for the viewer.
  */
-export function ConfigureCustomViewerElement(elementName: string, options: CanvasViewerOptions) {
+export function ConfigureCustomViewerElement(elementName: string, options: Readonly<CanvasViewerOptions>) {
     customElements.define(
         elementName,
         // eslint-disable-next-line jsdoc/require-jsdoc
