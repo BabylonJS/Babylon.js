@@ -755,7 +755,7 @@ export class Viewer implements IDisposable {
 
     public constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _options?: ViewerOptions
+        private readonly _options?: Readonly<ViewerOptions>
     ) {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
@@ -1101,7 +1101,7 @@ export class Viewer implements IDisposable {
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this._reframeCamera(true);
+            this._reframeCamera(true, model ? [model] : undefined);
             this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
