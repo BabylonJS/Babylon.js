@@ -1,39 +1,7 @@
 {
-    "fromTag": "8.7.0",
+    "fromTag": "8.7.1",
     "changelog": {
-        "8.7.0": [
-            {
-                "pr": "16577",
-                "title": "Fixes Area Lights for NME",
-                "description": "The samplers required by Area Lights are placed in files that might not always be included when using NME. I'm moving them to always be paired with the appropriate area Lights functions to make sure we always have the samplers available.\r\n\r\nFixes issue reported from forum: https://forum.babylonjs.com/t/triplanar-node-material-area-lights-issue/58296",
-                "author": {
-                    "name": "SergioRZMasson",
-                    "url": "https://github.com/SergioRZMasson"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16576",
-                "title": "Small fix for waitAll in flow graph",
-                "description": null,
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
-                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts"
-                ],
-                "tags": []
-            }
-        ],
+        "8.8.0": [],
         "8.7.1": [
             {
                 "pr": "16603",
@@ -391,6 +359,39 @@
                     "packages/dev/core/src/Collisions/collider.ts",
                     "packages/dev/core/src/Collisions/collisionCoordinator.ts",
                     "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "8.7.0": [
+            {
+                "pr": "16577",
+                "title": "Fixes Area Lights for NME",
+                "description": "The samplers required by Area Lights are placed in files that might not always be included when using NME. I'm moving them to always be paired with the appropriate area Lights functions to make sure we always have the samplers available.\r\n\r\nFixes issue reported from forum: https://forum.babylonjs.com/t/triplanar-node-material-area-lights-issue/58296",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16576",
+                "title": "Small fix for waitAll in flow graph",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts"
                 ],
                 "tags": []
             }
