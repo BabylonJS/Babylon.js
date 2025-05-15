@@ -459,6 +459,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     positions: this._positions,
                     indices: this._indices,
                     config,
+                    bjsRECAST: this.bjsRECAST,
                 },
                 [this._positions.buffer, this._indices.buffer]
             );
