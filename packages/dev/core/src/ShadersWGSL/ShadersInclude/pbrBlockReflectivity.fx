@@ -145,7 +145,7 @@ fn reflectivityBlock(
         // and an IOR of 1.0 should result in no visible glancing specular.
         var f90Scale: f32 = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            outParams.reflectanceF90 = vec3f(mix(specularWeight * f90Scale, specularWeight, outParams.metallic));
+            outParams.reflectanceF90 = vec3f(specularWeight);
         #else
             outParams.reflectanceF90 = vec3f(mix(specularWeight * f90Scale, 1.0, outParams.metallic));
         #endif
