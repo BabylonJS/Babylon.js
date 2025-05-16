@@ -26,6 +26,7 @@
         "@dev/loaders": "^1.0.0",
         "@dev/materials": "^1.0.0",
         "@dev/serializers": "^1.0.0",
+        "@dev/addons": "^1.0.0",
         "@dev/shared-ui-components": "^1.0.0",
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
         "@fortawesome/free-regular-svg-icons": "^6.0.0",

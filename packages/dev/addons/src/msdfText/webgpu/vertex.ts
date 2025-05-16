@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfVertexShader";
+const name = "msdfVertexShaderWGSL";
 const shader = `
 attribute offsets: vec2f;
 attribute world0: vec4f;
@@ -28,4 +28,4 @@ fn main(input: VertexInputs) -> FragmentInputs {
 }`;
 
 /** @internal */
-export const msdfVertexShader = { name, shader };
+export const msdfVertexShaderWGSL = { name, shader };

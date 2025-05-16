@@ -8,6 +8,7 @@
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
+            "addons/*": ["dev/addons/dist/*"],
             "materials/*": ["dev/materials/dist/*"],
             "post-processes/*": ["dev/postProcesses/dist/*"],
             "procedural-textures/*": ["dev/proceduralTextures/dist/*"],

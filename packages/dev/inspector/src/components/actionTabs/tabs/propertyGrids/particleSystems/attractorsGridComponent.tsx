@@ -16,6 +16,8 @@ import type { Nullable } from "core/types";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
+import { FontAsset } from "addons/msdfText/fontAsset";
+import { TextRenderer } from "addons/msdfText/textRenderer";
 
 interface IAttractorsGridComponent {
     globalState: GlobalState;
@@ -28,6 +30,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
     private _impostorMaterial: Nullable<StandardMaterial> = null;
     private _gizmoManager: Nullable<GizmoManager> = null;
     private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _fontAsset: Nullable<FontAsset> = null;
 
     constructor(props: IAttractorsGridComponent) {
         super(props);
@@ -64,6 +67,12 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
             impostor.dispose();
             (attractor as any)._impostor = null;
+
+            const textRenderer = (attractor as any)._textRenderer;
+            if (textRenderer) {
+                textRenderer.dispose();
+                (attractor as any)._textRenderer = null;
+            }
         }
 
         const particleSystem = this.props.host;
@@ -90,6 +99,9 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
         untypedAttractor._impostor.scaling.setAll(this.state.impostorScale);
         untypedAttractor._impostor.position.copyFrom(attractor.position);
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.addLabelAsync(attractor, index);
+
         if (!this._impostorMaterial) {
             this._impostorMaterial = new StandardMaterial("Attractor impostor material", scene);
             this._impostorMaterial.emissiveColor = this.state.color;
@@ -112,6 +124,27 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
                 }
             });
         }
+    }
+
+    async addLabelAsync(attractor: Attractor, index: number) {
+        const scene = this.props.host.getScene();
+        if (!scene) {
+            return;
+        }
+        const engine = scene.getEngine();
+
+        if (!this._fontAsset) {
+            const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
+            this._fontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
+        }
+
+        const textRenderer = await TextRenderer.CreateTextRendererAsync(this._fontAsset, engine);
+        textRenderer.addParagraph("#" + index);
+
+        const untypedAttractor = attractor as any;
+        textRenderer.parent = untypedAttractor._impostor;
+
+        untypedAttractor._textRenderer = textRenderer;
     }
 
     controlImpostor(attractor: Attractor) {
