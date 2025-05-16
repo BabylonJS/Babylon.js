@@ -11,6 +11,7 @@ struct reflectivityOutParams
     vec3 surfaceAlbedo;
     float metallic;
     float specularWeight;
+    vec3 dielectricColorF0;
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
     vec3 ambientOcclusionColor;
@@ -155,9 +156,9 @@ reflectivityOutParams reflectivityBlock(
         // The coloured reflectance is the percentage of light reflected by the specular lobe at normal incidence.
         // In glTF and OpenPBR, it is not the same thing as the percentage of light blocked from penetrating
         // down to the diffuse lobe. The non-coloured F0 will be used for this (see below).
-        vec3 dielectricColorF0 = vec3(dielectricF0 * surfaceReflectivityColor);
+        outParams.dielectricColorF0 = vec3(dielectricF0 * surfaceReflectivityColor);
         vec3 metallicColorF0 = baseColor.rgb;
-        outParams.colorReflectanceF0 = mix(dielectricColorF0, metallicColorF0, outParams.metallic);
+        outParams.colorReflectanceF0 = mix(outParams.dielectricColorF0, metallicColorF0, outParams.metallic);
         
         // Now, compute the coloured reflectance at glancing angles based on the specular model.
         #if (DIELECTRIC_SPECULAR_MODEL == DIELECTRIC_SPECULAR_MODEL_OPENPBR)

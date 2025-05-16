@@ -108,7 +108,7 @@
                     #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
                         {
                             let metalFresnel: vec3f = vec3f(reflectivityOut.specularWeight) * getF82Specular(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
-                            let dielectricFresnel: vec3f = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                            let dielectricFresnel: vec3f = fresnelSchlickGGXVec3(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
                             coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
                         }
                     #else
