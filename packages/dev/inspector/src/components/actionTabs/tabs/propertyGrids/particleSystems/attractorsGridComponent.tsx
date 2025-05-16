@@ -4,7 +4,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { LinkButtonComponent } from "shared-ui-components/lines/linkButtonComponent";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { ParticleSystem } from "core/Particles/particleSystem";
-import { Attractor } from "core/Particles";
+import { Attractor } from "core/Particles/attractor";
 import { AttractorGridComponent } from "./attractorGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
