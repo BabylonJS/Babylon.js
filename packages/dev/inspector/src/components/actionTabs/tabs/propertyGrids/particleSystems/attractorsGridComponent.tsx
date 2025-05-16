@@ -30,6 +30,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
     private _impostorMaterial: Nullable<StandardMaterial> = null;
     private _gizmoManager: Nullable<GizmoManager> = null;
     private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _fontAsset: Nullable<FontAsset> = null;
 
     constructor(props: IAttractorsGridComponent) {
         super(props);
@@ -66,6 +67,12 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
             impostor.dispose();
             (attractor as any)._impostor = null;
+
+            const textRenderer = (attractor as any)._textRenderer;
+            if (textRenderer) {
+                textRenderer.dispose();
+                (attractor as any)._textRenderer = null;
+            }
         }
 
         const particleSystem = this.props.host;
@@ -126,14 +133,18 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
         }
         const engine = scene.getEngine();
 
-        const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
-        const fontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
+        if (!this._fontAsset) {
+            const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
+            this._fontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
+        }
 
-        const textRenderer = await TextRenderer.CreateTextRendererAsync(fontAsset, engine);
+        const textRenderer = await TextRenderer.CreateTextRendererAsync(this._fontAsset, engine);
         textRenderer.addParagraph("#" + index);
 
         const untypedAttractor = attractor as any;
         textRenderer.parent = untypedAttractor._impostor;
+
+        untypedAttractor._textRenderer = textRenderer;
     }
 
     controlImpostor(attractor: Attractor) {
