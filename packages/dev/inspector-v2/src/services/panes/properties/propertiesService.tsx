@@ -4,18 +4,32 @@ import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IShellService } from "../../shellService";
 
-import { makeStyles } from "@fluentui/react-components";
+import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Text, tokens } from "@fluentui/react-components";
 import { DocumentTextRegular } from "@fluentui/react-icons";
-import { useMemo, type ComponentType } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 
 import { Observable } from "core/Misc/observable";
-import { useObservableCollection, useObservableState } from "../../../hooks/observableHooks";
+import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { ShellServiceIdentity } from "../../shellService";
 
+export type PropertiesServiceSection = {
+    identity: symbol;
+    order: number;
+    predicate: (entity: unknown) => boolean;
+    collapseByDefault?: boolean;
+};
+
+export type PropertiesServicePropertiesProvider<EntityT> = {
+    order: number;
+    predicate: (entity: unknown, section: symbol) => entity is EntityT;
+    component: ComponentType<{ entity: EntityT }>;
+};
+
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 export interface IPropertiesService extends IService<typeof PropertiesServiceIdentity> {
-    addEntityType<T>(predicate: (entity: unknown) => entity is T, component: ComponentType<{ entity: T }>): IDisposable;
+    addSection: (section: PropertiesServiceSection) => IDisposable;
+    addPropertiesProvider: <EntityT>(provider: PropertiesServicePropertiesProvider<EntityT>) => IDisposable;
     boundEntity: Nullable<unknown>;
 }
 
@@ -28,6 +42,16 @@ const useStyles = makeStyles({
         flexDirection: "column",
         // padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
     },
+    accordion: {
+        overflowY: "auto",
+        paddingBottom: tokens.spacingVerticalM,
+    },
+    panelDiv: {
+        display: "flex",
+        flexDirection: "column",
+        rowGap: tokens.spacingVerticalM,
+        overflow: "hidden",
+    },
 });
 
 export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService], [IShellService]> = {
@@ -35,7 +59,9 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
     produces: [PropertiesServiceIdentity],
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
-        const entityTypesCollection = new ObservableCollection<{ predicate: (entity: unknown) => boolean; component: ComponentType<{ entity: unknown }> }>();
+        const sectionsCollection = new ObservableCollection<PropertiesServiceSection>();
+        const propertiesProvidersCollection = new ObservableCollection<PropertiesServicePropertiesProvider<unknown>>();
+
         let boundEntityState: Nullable<unknown> = null;
         const boundEntityObservable = new Observable<Nullable<unknown>>();
 
@@ -47,18 +73,60 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             content: () => {
                 const classes = useStyles();
 
-                const entityTypes = useObservableCollection(entityTypesCollection);
+                const sections = useOrderedObservableCollection(sectionsCollection);
+                const propertiesProviders = useOrderedObservableCollection(propertiesProvidersCollection);
                 const boundEntity = useObservableState(() => boundEntityState, boundEntityObservable);
+                const [version, setVersion] = useState(0);
 
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                const EntityComponent = useMemo(() => entityTypes.find((type) => type.predicate(boundEntity))?.component, [entityTypes, boundEntity]);
+                const visibleSections = useMemo(() => {
+                    // When any of this state changes, we should re-render the Accordion so the defaultOpenItems are re-evaluated.
+                    setVersion((prev) => prev + 1);
+
+                    if (!boundEntity) {
+                        return [];
+                    }
+
+                    const applicableSections = sections.filter((section) => section.predicate(boundEntity));
+                    return applicableSections.map((section) => {
+                        const propertiesProvidersForSection = propertiesProviders.filter((provider) => provider.predicate(boundEntity, section.identity));
+                        return {
+                            identity: section.identity,
+                            collapseByDefault: section.collapseByDefault ?? false,
+                            components: propertiesProvidersForSection.map((provider) => provider.component),
+                        };
+                    });
+                }, [sections, propertiesProviders, boundEntity]);
 
                 return (
                     <div className={classes.rootDiv}>
-                        {EntityComponent ? (
-                            <EntityComponent entity={boundEntity} />
+                        {visibleSections.length > 0 ? (
+                            <Accordion
+                                key={version}
+                                className={classes.accordion}
+                                collapsible
+                                multiple
+                                defaultOpenItems={visibleSections.filter((section) => !section.collapseByDefault).map((section) => section.identity.description)}
+                            >
+                                {visibleSections.map((section) => {
+                                    return (
+                                        <AccordionItem key={section.identity.description} value={section.identity.description}>
+                                            <AccordionHeader expandIconPosition="end">
+                                                <Text size={500}>{section.identity.description}</Text>
+                                            </AccordionHeader>
+                                            <AccordionPanel>
+                                                <div className={classes.panelDiv}>
+                                                    {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
+                                                    {section.components.map((Component) => {
+                                                        return <Component entity={boundEntity} />;
+                                                    })}
+                                                </div>
+                                            </AccordionPanel>
+                                        </AccordionItem>
+                                    );
+                                })}
+                            </Accordion>
                         ) : boundEntity ? (
-                            `No component found for this entity type (${boundEntity.toString()})`
+                            `Can't show properties for this entity type (${boundEntity.toString()})`
                         ) : (
                             "No entity selected"
                         )}
@@ -68,7 +136,8 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
         });
 
         return {
-            addEntityType: (predicate, component) => entityTypesCollection.add({ predicate, component: component as ComponentType<{ entity: unknown }> }),
+            addSection: (section) => sectionsCollection.add(section),
+            addPropertiesProvider: (provider) => propertiesProvidersCollection.add(provider as PropertiesServicePropertiesProvider<unknown>),
             get boundEntity() {
                 return boundEntityState;
             },

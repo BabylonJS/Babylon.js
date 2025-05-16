@@ -143,7 +143,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             const visibleItems = useMemo(() => {
                 const visibleItems: TreeItemData[] = [];
 
-                let depth = -1;
+                let depth = 0;
                 TraverseGraph<Scene | TreeItemData>(
                     [scene],
                     function* (item) {
