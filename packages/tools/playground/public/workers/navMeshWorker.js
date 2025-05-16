@@ -2,18 +2,18 @@
 // import { generateSoloNavMesh } from "@recast-navigation/generators";
 
 self.onmessage = async (event) => {
-    const { positions, indices, config, bjsRECAST } = event.data;
+    const { positions, indices, config, bjsRecast } = event.data;
 
-    await bjsRECAST.init();
+    await bjsRecast.init();
 
-    const result = bjsRECAST.generateSoloNavMesh(positions, indices, config);
+    const result = bjsRecast.generateSoloNavMesh(positions, indices, config);
 
     if (!result.success || !result.navMesh) {
         self.postMessage(result);
         return;
     }
 
-    const navMeshExport = bjsRECAST.exportNavMesh(result.navMesh);
+    const navMeshExport = bjsRecast.exportNavMesh(result.navMesh);
 
     self.postMessage(navMeshExport, { transfer: [navMeshExport.buffer] });
 
