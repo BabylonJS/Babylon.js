@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfFragmentShader";
+const name = "msdfFragmentShaderWGSL";
 const shader = `
 var fontAtlas: texture_2d<f32>;
 var fontAtlasSampler: sampler;
@@ -44,4 +44,4 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 }`;
 
 /** @internal */
-export const msdfFragmentShader = { name, shader };
+export const msdfFragmentShaderWGSL = { name, shader };
