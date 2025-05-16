@@ -2654,6 +2654,22 @@
         {
             "title": "Furnace Test for Metal-Rough",
             "playgroundId": "#KQYNYS#39"
+        },
+        {
+            "title": "Specular reflectance models for IBL",
+            "playgroundId": "#GRQHVV#20"
+        },
+        {
+            "title": "Specular reflectance models for analytic lights",
+            "playgroundId": "#GRQHVV#9"
+        },
+        {
+            "title": "F82 Specular Roughness vs Weight",
+            "playgroundId": "#GRQHVV#18"
+        },
+        {
+            "title": "F82 Specular Metal vs Weight",
+            "playgroundId": "#GRQHVV#19"
         }
     ]
 }
