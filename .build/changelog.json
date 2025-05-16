@@ -1,6 +1,26 @@
 {
-    "fromTag": "8.8.2",
+    "fromTag": "8.8.3",
     "changelog": {
+        "8.8.4": [
+            {
+                "pr": "16618",
+                "title": "urgent fix for thin matrices",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/core/src/Maths/ThinMaths/thinMath.matrix.functions.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "8.8.3": [
             {
                 "pr": "16615",
