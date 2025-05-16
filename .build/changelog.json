@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.8.3",
+    "fromTag": "8.8.4",
     "changelog": {
         "8.8.4": [
             {
@@ -19,6 +19,41 @@
                 "tags": [
                     "skip changelog"
                 ]
+            }
+        ],
+        "8.8.5": [
+            {
+                "pr": "16619",
+                "title": "OpenPBR specular model",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Metal-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Roughness-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-reflectance-models-for-IBL.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-reflectance-models-for-analytic-lights.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
             }
         ],
         "8.8.3": [
