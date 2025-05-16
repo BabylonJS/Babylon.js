@@ -559,7 +559,7 @@ export class FluidRenderer {
     }
 
     /**
-     * Disposes of all the ressources used by the class
+     * Disposes of all the resources used by the class
      */
     public dispose(): void {
         this._engine.onResizeObservable.remove(this._onEngineResizeObserver);

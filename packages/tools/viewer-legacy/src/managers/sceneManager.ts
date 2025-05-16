@@ -1000,9 +1000,9 @@ export class SceneManager {
         this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
-        const sceneDiagonalLenght = sizeVec.length();
-        if (isFinite(sceneDiagonalLenght)) {
-            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+        const sceneDiagonalLength = sizeVec.length();
+        if (isFinite(sceneDiagonalLength)) {
+            this.camera.upperRadiusLimit = sceneDiagonalLength * 4;
         }
 
         if (this._configurationContainer.configuration) {

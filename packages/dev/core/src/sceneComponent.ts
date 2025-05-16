@@ -131,7 +131,7 @@ export interface ISceneComponent {
     rebuild(): void;
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     dispose(): void;
 }
