@@ -1,6 +1,36 @@
 {
-    "fromTag": "8.8.1",
+    "fromTag": "8.8.2",
     "changelog": {
+        "8.8.3": [
+            {
+                "pr": "16615",
+                "title": "Small typo fixes to PhysicsAggregate docs",
+                "description": "Small typo fixes to PhysicsAggregate docs",
+                "author": {
+                    "name": "mthaddon",
+                    "url": "https://github.com/mthaddon"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16616",
+                "title": "ObjectRenderer: Sanity check",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/objectRenderer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "8.8.2": [
             {
                 "pr": "16613",
