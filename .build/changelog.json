@@ -1,7 +1,91 @@
 {
-    "fromTag": "8.8.0",
+    "fromTag": "8.8.1",
     "changelog": {
-        "8.8.0": [],
+        "8.8.2": [
+            {
+                "pr": "16613",
+                "title": "Add inspector tools to debug particle attractors",
+                "description": "Fix #16611 \r\nFix #16605\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorsGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16614",
+                "title": "fix: don't unbind when changing framebuffer",
+                "description": "When changing framebuffer, Babylon will first set the framebuffer to NULL before setting it to the new framebuffer. This causes performance issues on MacOS when setting to the same framebuffer that is currently bound, so this removes that set to NULL.",
+                "author": {
+                    "name": "matanui159",
+                    "url": "https://github.com/matanui159"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16476",
+                "title": "Specular Energy Conservation fix",
+                "description": "Okay, I was starting to work on supporting the OpenPBR specular model (coloured specular right out to F90 and then, after that, texturable IOR and the F82 model for conductors).  However, right away, I noticed that the current diffuse/specular logic isn't correct for dielectrics. We multiply the diffuse part by F0, leaving too much energy at glancing angles.\r\n\r\nHere's a furnace test where metallic increases from left to right and metallicF0Factor increases from bottom to top.\r\n![image](https://github.com/user-attachments/assets/c7dabe4f-addc-41e5-a918-fe3f261b4d61)\r\n\r\nThis PR eliminates this completely.\r\n\r\nI've only touched the metallic workflow (I think) as this is all that's applicable to OpenPBR compatibility (and that's my current focus). Before I continue further, I'd like to hear some feedback as I've made some other changes.\r\n1. I'm passing the full reflectivity colour into the shader now rather than pre-multiplying by F0. This gives us more control in the shader and will be necessary later for coloured F90 and texturable IOR.\r\n2. In `pbrBlockFinalLitComponents`, I'm multiplying the irradiance by 1.0 - reflectance to account for reflected energy that doesn't penetrate the surface.\r\n[https://playground.babylonjs.com/?snapshot=refs/pull/16476/merge#KQYNYS#10](https://playground.babylonjs.com/?snapshot=refs/pull/16476/merge#KQYNYS#10)",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/sheenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBRDFConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Conductor-Transmission.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-Legacy-for-Metal-Rough.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-Legacy-for-Spec-Gloss.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-for-Metal-Rough.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-for-Spec-Gloss.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfExtensionKhrMaterialsVolumeHemiLight.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "8.8.1": [
             {
                 "pr": "16459",
@@ -237,6 +321,7 @@
                 ]
             }
         ],
+        "8.8.0": [],
         "8.7.1": [
             {
                 "pr": "16603",
