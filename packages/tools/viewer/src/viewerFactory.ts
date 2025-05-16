@@ -17,6 +17,8 @@ export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) =
 const DefaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
+    enableAllFeatures: true,
+    setMaximumLimits: true,
 } as const satisfies CanvasViewerOptions;
 
 /**
@@ -67,13 +69,17 @@ export async function CreateViewerForCanvas(
 ): Promise<Viewer> {
     const detailsDeferred = new Deferred<Readonly<ViewerDetails>>();
 
-    options = new Proxy(options, {
-        get(target, prop: keyof CanvasViewerOptions) {
+    options = new Proxy(options as CanvasViewerOptions & EngineOptions & WebGPUEngineOptions, {
+        get(target, prop: keyof (CanvasViewerOptions & EngineOptions & WebGPUEngineOptions)) {
             switch (prop) {
                 case "antialias":
                     return target.antialias ?? DefaultCanvasViewerOptions.antialias;
                 case "adaptToDeviceRatio":
                     return target.adaptToDeviceRatio ?? DefaultCanvasViewerOptions.adaptToDeviceRatio;
+                case "enableAllFeatures":
+                    return target.enableAllFeatures ?? DefaultCanvasViewerOptions.enableAllFeatures;
+                case "setMaximumLimits":
+                    return target.setMaximumLimits ?? DefaultCanvasViewerOptions.setMaximumLimits;
                 case "onInitialized":
                     return (details: ViewerDetails) => {
                         target.onInitialized?.(details);

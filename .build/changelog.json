@@ -1,6 +1,326 @@
 {
-    "fromTag": "8.7.1",
+    "fromTag": "8.8.1",
     "changelog": {
+        "8.8.2": [
+            {
+                "pr": "16613",
+                "title": "Add inspector tools to debug particle attractors",
+                "description": "Fix #16611 \r\nFix #16605\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorsGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16614",
+                "title": "fix: don't unbind when changing framebuffer",
+                "description": "When changing framebuffer, Babylon will first set the framebuffer to NULL before setting it to the new framebuffer. This causes performance issues on MacOS when setting to the same framebuffer that is currently bound, so this removes that set to NULL.",
+                "author": {
+                    "name": "matanui159",
+                    "url": "https://github.com/matanui159"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16476",
+                "title": "Specular Energy Conservation fix",
+                "description": "Okay, I was starting to work on supporting the OpenPBR specular model (coloured specular right out to F90 and then, after that, texturable IOR and the F82 model for conductors).  However, right away, I noticed that the current diffuse/specular logic isn't correct for dielectrics. We multiply the diffuse part by F0, leaving too much energy at glancing angles.\r\n\r\nHere's a furnace test where metallic increases from left to right and metallicF0Factor increases from bottom to top.\r\n![image](https://github.com/user-attachments/assets/c7dabe4f-addc-41e5-a918-fe3f261b4d61)\r\n\r\nThis PR eliminates this completely.\r\n\r\nI've only touched the metallic workflow (I think) as this is all that's applicable to OpenPBR compatibility (and that's my current focus). Before I continue further, I'd like to hear some feedback as I've made some other changes.\r\n1. I'm passing the full reflectivity colour into the shader now rather than pre-multiplying by F0. This gives us more control in the shader and will be necessary later for coloured F90 and texturable IOR.\r\n2. In `pbrBlockFinalLitComponents`, I'm multiplying the irradiance by 1.0 - reflectance to account for reflected energy that doesn't penetrate the surface.\r\n[https://playground.babylonjs.com/?snapshot=refs/pull/16476/merge#KQYNYS#10](https://playground.babylonjs.com/?snapshot=refs/pull/16476/merge#KQYNYS#10)",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/sheenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBRDFConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Conductor-Transmission.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-Legacy-for-Metal-Rough.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-Legacy-for-Spec-Gloss.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-for-Metal-Rough.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Furnace-Test-for-Spec-Gloss.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfExtensionKhrMaterialsVolumeHemiLight.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "8.8.1": [
+            {
+                "pr": "16459",
+                "title": "Viewer: Add shadow support",
+                "description": "In the viewer, add the support for :\r\n- shadow map,\r\n- ibl shadows\r\n- shadow quality selection `normal`, `high`\r\n\r\nFor now, ibl shadows are dissabled for meshes that have animations in WebGPU even if the animation is paused as there is some issues.\r\n\r\nThe auto shadow selection will come in another PR.\r\nThe placement of the light will come in another PR.\r\n\r\nEdit from @ryantrem: from local testing, these are the remaining issues I'm seeing:\r\n- [x] Shadow map shadows don't work when \"statically\" enabled (e.g. `<babylon-viewer shadow-quality=\"normal\">`).\r\n- [ ] IBL shadows do not update when an animation is running. I assume this is not supported in IBL shadows, but if that is the case, should we disallow IBL shadows for animated models?\r\n- [ ] IBL shadows seem to get into a bad state after I load a few different models. This can be reproed in the Viewer test app by just dragging and dropping a sequence of models with IBL shadows enabled. After a few models, I start seeing wrong shadows or significant rendering artifacts. I'm not sure if there is a missing accumulator reset, or if this is a bug in IBL shadows or what.",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/@babylonjs/viewer/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer/rollup.config.lib.mjs",
+                    "packages/tools/viewer-configurator/package.json",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer-configurator/tsconfig.build.json",
+                    "packages/tools/viewer-configurator/tsconfig.json",
+                    "packages/tools/viewer-configurator/webpack.config.js",
+                    "packages/tools/viewer/rollup.config.common.mjs",
+                    "packages/tools/viewer/src/Shaders/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/Shaders/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/ShadersWGSL/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/ShadersWGSL/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts",
+                    "packages/tools/viewer/test/apps/web/index.html"
+                ],
+                "tags": [
+                    "viewer",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16610",
+                "title": "Remove no AA for 3dCommerce",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16609",
+                "title": "Fix linting for new functionality",
+                "description": "Needed because these lines were added after the PR was created.\n\nFrom here on - async linting FTW.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16608",
+                "title": "Change return statements to continue in for loops",
+                "description": "Following up on PR #16513 that switched from forEach to for loops.\r\n\r\nReplace return statements with continue in various loops to ensure that the iteration continues instead of exiting the function. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/addons/src/htmlMesh/htmlMeshRenderer.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTest.ts",
+                    "packages/dev/core/src/XR/motionController/webXRMicrosoftMixedRealityController.ts",
+                    "packages/dev/core/src/XR/motionController/webXRProfiledMotionController.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/gui/src/2D/controls/multiLine.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/graph/canvasGraphService.ts",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/linePropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/linePropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16578",
+                "title": "Linting - Async rules",
+                "description": "Rules added:\n\n\"@typescript-eslint/promise-function-async\"\n\"@typescript-eslint/no-misused-promises\"\n\"@typescript-eslint/no-floating-promises\"\n\"@typescript-eslint/return-await\"\n\"no-await-in-loop\"\n\"@typescript-eslint/await-thenable\"\n\"@typescript-eslint/prefer-promise-reject-errors\"\n\"require-atomic-updates\" (Warning only)\n\"github/no-then\"",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/streamingSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/abstractAudioSubGraph.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/audioAnalyzer.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subProperties/spatialAudio.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioUnmuteUI.ts",
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts",
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.common.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineFactory.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/Helpers/sceneHelpers.ts",
+                    "packages/dev/core/src/Helpers/videoDome.ts",
+                    "packages/dev/core/src/Layers/thinEffectLayer.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/areaLight.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/envTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/textureLoaderManager.ts",
+                    "packages/dev/core/src/Materials/Textures/Packer/packer.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.polynomial.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16604",
+                "title": "Viewer: Fix ignored options bug & camera framing with multiple models",
+                "description": "This PR primarily is to address this forum issue: https://forum.babylonjs.com/t/babylon-viewer-v2/54317/82\r\n\r\nThe main problem is that a wrapper options object is constructed, but does not correctly handle options that are just pass-throughs (e.g. the ViewerElement doesn't do anything special with them, like map them to attributes, which is the case for `useRightHandedSystem` for example), and also does not correctly handle callback options (the callbacks passed in are overwritten by the ViewerElement's own callbacks). To fix this, I'm introducing an Options Proxy at the ViewerElement layer similar to what was done in the ViewerFactory layer. While Proxy may be slower for evaluating properties, this is not in the hot path (e.g. options are not evaluated on a per-frame basis), so this should be a fine usage of Proxy.\r\n\r\nOnce this change was in place, it exposed another issue, where the ViewerFactory layer was writing to one of the options, which calls the setter on the Proxy, which passes through to setting a property directly on the target object. This was not intentional, it was just leftover from how the options worked before the Proxy was introduced and got missed. To fix this, instead of overwriting the `onInitialized` options property in the ViewerFactory, it is handled in the options Proxy within the ViewerFactory. To make sure this kind of error doesn't happen again, I also made all the options readonly.\r\n\r\nFinally this PR has one other unrelated but small fix, where in the case of multiple models, when one is made \"active,\" the camera is reset to the bounds of that single model, not all loaded models.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts",
+                    "packages/tools/viewer/src/viewerElement.ts",
+                    "packages/tools/viewer/src/viewerFactory.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16597",
+                "title": "Compensation and kernel size for AA trained SPZ",
+                "description": "- Compensation and kernelSize can be set per GS material\r\n- set Compensation and kernelSize to 0.1 for AA trained SPZ ( https://niujinshuchong.github.io/mip-splatting/ )\r\n- Fixed value overflow for quaternion.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "8.8.0": [],
         "8.7.1": [
             {

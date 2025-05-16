@@ -1104,6 +1104,12 @@
             "renderCount": 5
         },
         {
+            "title": "GLTF Extension KHR_materials_volume with analytic light",
+            "playgroundId": "#YG3BBF#48",
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png",
+            "renderCount": 5
+        },
+        {
             "title": "GLTF Extension KHR_materials_volume with attenuation",
             "playgroundId": "#YG3BBF#18",
             "referenceImage": "gltfExtensionKhrMaterialsVolumeAttenuation.png",
@@ -2627,7 +2633,27 @@
         },
         {
             "title": "Specular Reflectance with IOR",
-            "playgroundId": "#KQYNYS#2"
+            "playgroundId": "#KQYNYS#41"
+        },
+        {
+            "title": "Conductor Transmission",
+            "playgroundId": "#KQYNYS#15"
+        },
+        {
+            "title": "Furnace Test (Legacy) for Spec-Gloss",
+            "playgroundId": "#KQYNYS#20"
+        },
+        {
+            "title": "Furnace Test (Legacy) for Metal-Rough",
+            "playgroundId": "#KQYNYS#21"
+        },
+        {
+            "title": "Furnace Test for Spec-Gloss",
+            "playgroundId": "#KQYNYS#40"
+        },
+        {
+            "title": "Furnace Test for Metal-Rough",
+            "playgroundId": "#KQYNYS#39"
         }
     ]
 }

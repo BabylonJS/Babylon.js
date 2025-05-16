@@ -8,6 +8,7 @@
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "loaders/*": ["dev/loaders/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "viewer/*": ["tools/viewer/dist/*"],
             "viewer": ["tools/viewer/dist/tsbuild/index"]
