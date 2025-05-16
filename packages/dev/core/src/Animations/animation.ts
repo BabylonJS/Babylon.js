@@ -1559,7 +1559,7 @@ export class Animation {
      * @returns a promise that will resolve to the new animation or an array of animations
      */
     public static async ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1586,6 +1586,7 @@ export class Animation {
                             resolve(output);
                         }
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the animation");
                     }
                 }
@@ -1602,7 +1603,7 @@ export class Animation {
      * @returns a promise that will resolve to the new animation or a new array of animations
      */
     public static async ParseFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1628,6 +1629,7 @@ export class Animation {
                             resolve(output);
                         }
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

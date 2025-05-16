@@ -87,4 +87,5 @@ export class NativeXRFrame implements XRFrame {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);

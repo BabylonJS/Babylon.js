@@ -229,7 +229,7 @@ export class FrameGraph {
      */
     public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();

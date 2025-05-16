@@ -156,7 +156,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
             for (const i of impostors) {
                 if (!i.object.rotationQuaternion) {
-                    return;
+                    continue;
                 }
                 //get the correct bounding box
                 const oldQuaternion = i.object.rotationQuaternion;

@@ -1,14 +1,9 @@
-float reflectance = max(max(reflectivityOut.surfaceReflectivityColor.r, reflectivityOut.surfaceReflectivityColor.g), reflectivityOut.surfaceReflectivityColor.b);
-vec3 specularEnvironmentR0 = reflectivityOut.surfaceReflectivityColor.rgb;
-
-#ifdef METALLICWORKFLOW
-    vec3 specularEnvironmentR90 = vec3(metallicReflectanceFactors.a);
-#else 
-    vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
-#endif
+float reflectanceF0 = reflectivityOut.reflectanceF0;
+vec3 specularEnvironmentR0 = reflectivityOut.colorReflectanceF0;
+vec3 specularEnvironmentR90 = reflectivityOut.colorReflectanceF90;
 
 // Back Compat
 #ifdef ALPHAFRESNEL
-    float reflectance90 = fresnelGrazingReflectance(reflectance);
+    float reflectance90 = fresnelGrazingReflectance(reflectanceF0);
     specularEnvironmentR90 = specularEnvironmentR90 * reflectance90;
 #endif

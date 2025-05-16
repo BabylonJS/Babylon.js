@@ -205,7 +205,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         } else {
             try {
                 const nativeAnchor = await hitTestResult.xrHitResult.createAnchor(m);
-                return new Promise<IWebXRAnchor>((resolve, reject) => {
+                return await new Promise<IWebXRAnchor>((resolve, reject) => {
                     this._futureAnchors.push({
                         nativeAnchor,
                         resolved: false,
@@ -250,7 +250,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 ? await this._createAnchorAtTransformationAsync(xrTransformation, this._xrSessionManager.currentFrame)
                 : undefined;
         // add the transformation to the future anchors list
-        return new Promise<IWebXRAnchor>((resolve, reject) => {
+        return await new Promise<IWebXRAnchor>((resolve, reject) => {
             this._futureAnchors.push({
                 nativeAnchor: xrAnchor,
                 resolved: false,
@@ -367,6 +367,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // process future anchors
         for (const futureAnchor of this._futureAnchors) {
             if (!futureAnchor.resolved && !futureAnchor.submitted) {
+                // eslint-disable-next-line github/no-then
                 this._createAnchorAtTransformationAsync(futureAnchor.xrTransformation, frame).then(
                     (nativeAnchor) => {
                         futureAnchor.nativeAnchor = nativeAnchor;
@@ -418,7 +419,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     private async _createAnchorAtTransformationAsync(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
         if (xrFrame.createAnchor) {
             try {
-                return xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
+                return await xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
             } catch (error) {
                 throw new Error(error);
             }

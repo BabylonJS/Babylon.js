@@ -74,6 +74,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
             if (typeof DeviceOrientationEvent !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === "function") {
                 (<any>DeviceOrientationEvent)
                     .requestPermission()
+                    // eslint-disable-next-line github/no-then
                     .then((response: string) => {
                         if (response === "granted") {
                             hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
@@ -81,6 +82,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
                             Tools.Warn("Permission not granted.");
                         }
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((error: any) => {
                         Tools.Error(error);
                     });

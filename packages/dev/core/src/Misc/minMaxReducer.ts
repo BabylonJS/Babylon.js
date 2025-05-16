@@ -161,6 +161,7 @@ export class MinMaxReducer {
                     const buffer = new Float32Array(4 * w * h),
                         minmax = { min: 0, max: 0 };
                     return () => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         scene.getEngine()._readTexturePixels(reduction.inputTexture.texture!, w, h, -1, 0, buffer, false);
                         minmax.min = buffer[0];
                         minmax.max = buffer[1];

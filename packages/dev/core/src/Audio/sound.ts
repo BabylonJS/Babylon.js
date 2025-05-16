@@ -498,6 +498,7 @@ export class Sound {
         if (!AbstractEngine.audioEngine?.audioContext) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         AbstractEngine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {
@@ -850,6 +851,7 @@ export class Sound {
                                 // In browsers that don’t yet support this functionality,
                                 // playPromise won’t be defined.
                                 if (playPromise !== undefined) {
+                                    // eslint-disable-next-line github/no-then
                                     playPromise.catch(() => {
                                         // Automatic playback failed.
                                         // Waiting for the audio engine to be unlocked by user click on unmute

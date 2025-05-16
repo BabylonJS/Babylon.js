@@ -13,6 +13,7 @@ import type { ParagraphOptions } from "./paragraphOptions";
 import { ThinMatrix } from "core/Maths/ThinMaths/thinMath.matrix";
 import {
     CopyMatrixToArray,
+    CopyMatrixToRef,
     IdentityMatrixToRef,
     InvertMatrixToRef,
     MultiplyMatricesToRef,
@@ -262,7 +263,7 @@ export class TextRenderer implements IDisposable {
             baseM[12] = 0;
             baseM[13] = 0;
             baseM[14] = 0;
-            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix.asArray());
+            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix);
 
             // Restore translation
             const pwm = this._parentWorldMatrix.asArray();
@@ -271,7 +272,7 @@ export class TextRenderer implements IDisposable {
             pwm[14] = this._storedTranslation.z;
         } else {
             if (this._parent) {
-                CopyMatrixToArray(this._parent.getWorldMatrix(), this._parentWorldMatrix.asArray());
+                CopyMatrixToRef(this._parent.getWorldMatrix(), this._parentWorldMatrix);
             } else {
                 IdentityMatrixToRef(this._parentWorldMatrix);
             }
