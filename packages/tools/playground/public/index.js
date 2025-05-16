@@ -94,7 +94,7 @@ var Versions = {
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
-let loadScriptAsync = function (url, instantResolve) {
+let loadScriptAsync = async function (url, instantResolve) {
     return new Promise((resolve) => {
         // eslint-disable-next-line no-undef
         let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
@@ -131,16 +131,16 @@ let readStringFromStore = function (key, defaultValue) {
     return sessionStorage.getItem(key);
 };
 
-let loadInSequence = async function (versions, index, resolve) {
+let loadInSequenceAsync = async function (versions, index, resolve) {
     if (index >= versions.length) {
         resolve();
         return;
     }
     await loadScriptAsync(versions[index], index > 2);
-    loadInSequence(versions, index + 1, resolve);
+    loadInSequenceAsync(versions, index + 1, resolve);
 };
 
-let checkBabylonVersionAsync = function () {
+let checkBabylonVersionAsync = async function () {
     let activeVersion = readStringFromStore("version", "Latest");
 
     if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {
@@ -188,7 +188,7 @@ let checkBabylonVersionAsync = function () {
     }
 
     return new Promise((resolve) => {
-        loadInSequence(frameworkScripts, 0, resolve);
+        loadInSequenceAsync(frameworkScripts, 0, resolve);
     }).then(() => {
         // if local, set the default base URL
         if (snapshot) {

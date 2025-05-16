@@ -243,7 +243,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             }
             this._reflectionCubeMap._texture.isReady = true;
             if (!this.options.disablePreFiltering) {
-                this._xrLightProbe!.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+                this._xrLightProbe.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._hdrFilter.prefilter(this._reflectionCubeMap).then(() => {
                     this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                     this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap!);
@@ -270,10 +271,12 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
 
         const reflectionFormat = this.options.reflectionFormat ?? (this._xrSessionManager.session.preferredReflectionFormat || "srgba8");
         this.options.reflectionFormat = reflectionFormat;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._xrSessionManager.session
             .requestLightProbe({
                 reflectionFormat,
             })
+            // eslint-disable-next-line github/no-then
             .then((xrLightProbe: XRLightProbe) => {
                 this._xrLightProbe = xrLightProbe;
                 if (!this.options.disableCubeMapReflection) {

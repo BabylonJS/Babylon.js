@@ -4,6 +4,7 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { GetExrHeader } from "./EXR/exrLoader.header";
 import { CreateDecoderAsync, ScanData } from "./EXR/exrLoader.decoder";
 import { ExrLoaderGlobalConfiguration } from "./EXR/exrLoader.configuration";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Inspired by https://github.com/sciecode/three.js/blob/dev/examples/jsm/loaders/EXRLoader.js
@@ -117,7 +118,8 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-    public async loadData(
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public loadData(
         data: ArrayBufferView,
         texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void
@@ -126,22 +128,28 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
 
         const offset = { value: 0 };
         const header = GetExrHeader(dataView, offset);
-        const decoder = await CreateDecoderAsync(header, dataView, offset, ExrLoaderGlobalConfiguration.DefaultOutputType);
+        CreateDecoderAsync(header, dataView, offset, ExrLoaderGlobalConfiguration.DefaultOutputType)
+            // eslint-disable-next-line github/no-then
+            .then((decoder) => {
+                ScanData(decoder, header, dataView, offset);
 
-        ScanData(decoder, header, dataView, offset);
-
-        // Updating texture
-        const width = header.dataWindow.xMax - header.dataWindow.xMin + 1;
-        const height = header.dataWindow.yMax - header.dataWindow.yMin + 1;
-        callback(width, height, texture.generateMipMaps, false, () => {
-            const engine = texture.getEngine();
-            texture.format = header.format;
-            texture.type = decoder.textureType;
-            texture.invertY = false;
-            texture._gammaSpace = !header.linearSpace;
-            if (decoder.byteArray) {
-                engine._uploadDataToTextureDirectly(texture, decoder.byteArray, 0, 0, undefined, true);
-            }
-        });
+                // Updating texture
+                const width = header.dataWindow.xMax - header.dataWindow.xMin + 1;
+                const height = header.dataWindow.yMax - header.dataWindow.yMin + 1;
+                callback(width, height, texture.generateMipMaps, false, () => {
+                    const engine = texture.getEngine();
+                    texture.format = header.format;
+                    texture.type = decoder.textureType;
+                    texture.invertY = false;
+                    texture._gammaSpace = !header.linearSpace;
+                    if (decoder.byteArray) {
+                        engine._uploadDataToTextureDirectly(texture, decoder.byteArray, 0, 0, undefined, true);
+                    }
+                });
+            })
+            // eslint-disable-next-line github/no-then
+            .catch((error) => {
+                Logger.Error("Failed to load EXR texture: ", error);
+            });
     }
 }

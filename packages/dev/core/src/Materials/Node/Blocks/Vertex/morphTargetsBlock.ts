@@ -139,6 +139,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -267,7 +268,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const uv2Output = this.uv2Output;
         const colorOutput = this.colorOutput;
         const state = vertexShaderState;
-        const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
+        const repeatCount = defines.NUM_MORPH_INFLUENCERS;
 
         const manager = (<Mesh>mesh).morphTargetManager;
         const supportPositions = manager && manager.supportsPositions;

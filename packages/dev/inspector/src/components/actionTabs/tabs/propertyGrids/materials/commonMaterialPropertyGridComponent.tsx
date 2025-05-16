@@ -20,7 +20,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { alphaModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -29,13 +29,13 @@ interface ICommonMaterialPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-const orientationOptions = [
+const OrientationOptions = [
     { label: "<None>", value: Number.MAX_SAFE_INTEGER },
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
     { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
 ];
 
-const transparencyModeOptions = [
+const TransparencyModeOptions = [
     { label: "<Not Defined>", value: Null_Value },
     { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
     { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
@@ -43,7 +43,7 @@ const transparencyModeOptions = [
     { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
 ];
 
-const depthfunctionOptions = [
+const DepthFunctionOptions = [
     { label: "<Engine Default>", value: 0 },
     { label: "Never", value: Engine.NEVER },
     { label: "Always", value: Engine.ALWAYS },
@@ -55,7 +55,7 @@ const depthfunctionOptions = [
     { label: "Not equal", value: Engine.NOTEQUAL },
 ];
 
-const stencilFunctionOptions = [
+const StencilFunctionOptions = [
     { label: "Never", value: Constants.NEVER },
     { label: "Always", value: Constants.ALWAYS },
     { label: "Equal", value: Constants.EQUAL },
@@ -66,7 +66,7 @@ const stencilFunctionOptions = [
     { label: "Not equal", value: Constants.NOTEQUAL },
 ];
 
-const stencilOperationOptions = [
+const StencilOperationOptions = [
     { label: "Keep", value: Constants.KEEP },
     { label: "Zero", value: Constants.ZERO },
     { label: "Replace", value: Constants.REPLACE },
@@ -114,7 +114,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     />
                     <OptionsLine
                         label="Orientation"
-                        options={orientationOptions}
+                        options={OrientationOptions}
                         target={material}
                         propertyName="sideOrientation"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -141,7 +141,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     />
                     <OptionsLine
                         label="Depth function"
-                        options={depthfunctionOptions}
+                        options={DepthFunctionOptions}
                         target={material}
                         propertyName="depthFunction"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -208,7 +208,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         <OptionsLine
                             allowNullValue={true}
                             label="Transparency mode"
-                            options={transparencyModeOptions}
+                            options={TransparencyModeOptions}
                             target={material}
                             propertyName="transparencyMode"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -217,7 +217,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     )}
                     <OptionsLine
                         label="Alpha mode"
-                        options={alphaModeOptions}
+                        options={AlphaModeOptions}
                         target={material}
                         propertyName="alphaMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -281,7 +281,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                             />
                             <OptionsLine
                                 label="Function"
-                                options={stencilFunctionOptions}
+                                options={StencilFunctionOptions}
                                 target={material.stencil}
                                 propertyName="func"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -305,7 +305,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                             />
                             <OptionsLine
                                 label="Op stencil fail"
-                                options={stencilOperationOptions}
+                                options={StencilOperationOptions}
                                 target={material.stencil}
                                 propertyName="opStencilFail"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -313,7 +313,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                             />
                             <OptionsLine
                                 label="Op depth fail"
-                                options={stencilOperationOptions}
+                                options={StencilOperationOptions}
                                 target={material.stencil}
                                 propertyName="opDepthFail"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -321,7 +321,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                             />
                             <OptionsLine
                                 label="Op stencil+depth pass"
-                                options={stencilOperationOptions}
+                                options={StencilOperationOptions}
                                 target={material.stencil}
                                 propertyName="opStencilDepthPass"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}

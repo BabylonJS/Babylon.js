@@ -1,11 +1,13 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
 import type { Page } from "puppeteer";
 import type { StacktracedObject } from "./window";
 
 declare const BABYLON: typeof window.BABYLON;
 
-const classesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
+const ClassesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface CountValues {
     numberOfObjects: number;
     usedJSHeapSize: number;
@@ -15,7 +17,8 @@ export interface CountValues {
     eventsRegistered: typeof window.eventsRegistered;
 }
 
-export const countCurrentObjects = async (initialValues: CountValues, classes = classesToCheck, checkGlobalObjects?: boolean, flip?: boolean) => {
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+export const countCurrentObjects = async (initialValues: CountValues, classes = ClassesToCheck, checkGlobalObjects?: boolean, flip?: boolean) => {
     const current = await countObjects(page, classes);
     // check that all events are cleared and all objects are gone:
     Object.keys(current.eventsRegistered).forEach((eventName) => {
@@ -58,6 +61,7 @@ export const countCurrentObjects = async (initialValues: CountValues, classes = 
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateInitEngine = async (engineName: string, baseUrl: string, parallelCompilation: boolean = true) => {
     // run garbage collection
     window.gc && window.gc();
@@ -66,7 +70,9 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
     BABYLON.Tools.ScriptBaseUrl = baseUrl;
 
     const canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas) {
+        return;
+    }
     window.canvas = canvas;
     if (engineName === "webgpu") {
         const options = {
@@ -84,11 +90,12 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
         engine.enableOfflineSupport = false;
         window.engine = engine;
     }
-    window.engine!.renderEvenInBackground = true;
+    window.engine.renderEvenInBackground = true;
     window.engine.getCaps().parallelShaderCompile = undefined;
     return !!window.engine;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateEventListenerAugmentation = async () => {
     const realAddEventListener = EventTarget.prototype.addEventListener;
     const realRemoveEventListener = EventTarget.prototype.removeEventListener;
@@ -124,7 +131,7 @@ export const evaluateEventListenerAugmentation = async () => {
                             err.stack,
                             (stackArray) => {
                                 window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                                window.eventsRegistered[a].stackTraces!.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                                window.eventsRegistered[a].stackTraces.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
                                 resolve(null);
                             },
                             {
@@ -137,14 +144,14 @@ export const evaluateEventListenerAugmentation = async () => {
                         );
                     } catch (err) {
                         window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                        window.eventsRegistered[a].stackTraces!.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                        window.eventsRegistered[a].stackTraces.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
                         resolve(null);
                     }
                 });
                 window.sourcemapPromises.push(promise);
             } else {
                 window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                window.eventsRegistered[a].stackTraces!.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                window.eventsRegistered[a].stackTraces.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
             }
         }
     };
@@ -167,6 +174,7 @@ export const evaluateEventListenerAugmentation = async () => {
     };
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateCreateScene = async () => {
     if (window.engine && !window.scene) {
         window.scene = new BABYLON.Scene(window.engine);
@@ -175,6 +183,7 @@ export const evaluateCreateScene = async () => {
     return !!window.scene;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateRenderScene = async (renderCount = 1) => {
     if (window.scene && window.engine) {
         const now = performance.now();
@@ -187,6 +196,7 @@ export const evaluateRenderScene = async (renderCount = 1) => {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateDisposeScene = async () => {
     if (window.scene) {
         window.scene.dispose();
@@ -195,6 +205,7 @@ export const evaluateDisposeScene = async () => {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateDisposeEngine = async () => {
     if (window.engine) {
         window.engine.dispose();
@@ -203,6 +214,7 @@ export const evaluateDisposeEngine = async () => {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const evaluateDefaultScene = async () => {
     if (!window.scene) {
         window.scene = new BABYLON.Scene(window.engine!);
@@ -232,7 +244,8 @@ export const evaluateDefaultScene = async () => {
     BABYLON.MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, window.scene);
 };
 
-export const prepareLeakDetection = async (classes: string[] = classesToCheck) => {
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+export const prepareLeakDetection = async (classes: string[] = ClassesToCheck) => {
     window.classesConstructed = window.classesConstructed || {};
     const setStackStrace = (target: any) => {
         const id = Math.random().toString(36).substring(2, 15);
@@ -281,7 +294,7 @@ export const prepareLeakDetection = async (classes: string[] = classesToCheck) =
             "onNewMaterialAddedObservable",
             "onNewTextureAddedObservable",
         ].forEach((observable: string) => {
-            (scene as any)[observable].add((target: any) => {
+            scene[observable].add((target: any) => {
                 setStackStrace(target);
             });
         });
@@ -294,14 +307,14 @@ export const prepareLeakDetection = async (classes: string[] = classesToCheck) =
         const originalPrototype = parentObject[objectName].prototype;
         const originalDispose = originalPrototype.dispose;
         originalPrototype.dispose = function () {
-            // eslint-disable-next-line prefer-rest-params
             originalDispose.apply(this, arguments);
             this.__disposeCalled = true;
         };
     });
 };
 
-export const countObjects = async (page: Page, classes = classesToCheck) => {
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+export const countObjects = async (page: Page, classes = ClassesToCheck) => {
     await page.waitForNetworkIdle({
         idleTime: 300,
         timeout: 0,
@@ -351,6 +364,7 @@ export const countObjects = async (page: Page, classes = classesToCheck) => {
 
 export type PerformanceTestType = "dev" | "preview" | "stable";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const checkPerformanceOfScene = async (
     page: Page,
     baseUrl: string,
@@ -389,6 +403,7 @@ export const checkPerformanceOfScene = async (
     return time.reduce((partialSum, a) => partialSum + a, 0) / (numberOfPasses - 2);
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const logPageErrors = async (page: Page, debug?: boolean) => {
     page.on("console", async (msg) => {
         // serialize my args the way I want
@@ -396,7 +411,9 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
             msg.args().map((arg: any) =>
                 arg.evaluate((argument: string | Error) => {
                     // I'm in a page context now. If my arg is an error - get me its message.
-                    if (argument instanceof Error) return `[ERR] ${argument.message}`;
+                    if (argument instanceof Error) {
+                        return `[ERR] ${argument.message}`;
+                    }
                     //Return the argument if it is just a message
                     return `[STR] ${argument}`;
                 }, arg)

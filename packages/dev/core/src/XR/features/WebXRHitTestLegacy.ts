@@ -105,11 +105,10 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @param filter filter function that will filter the results
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
-    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
-        return xrSession.requestHitTest!(xrRay, referenceSpace).then((results) => {
-            const filterFunction = filter || ((result) => !!result.hitMatrix);
-            return results.filter(filterFunction);
-        });
+    public static async XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
+        const results = await xrSession.requestHitTest!(xrRay, referenceSpace);
+        const filterFunction = filter || ((result) => !!result.hitMatrix);
+        return results.filter(filterFunction);
     }
 
     /**
@@ -118,14 +117,14 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @param referenceSpace the reference space to use for this hit test
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
-    public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
+    public static async XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
         const targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
         if (!targetRayPose) {
-            return Promise.resolve([]);
+            return [];
         }
         const targetRay = new XRRay(targetRayPose.transform);
 
-        return this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
+        return await this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
     }
 
     /**
@@ -187,6 +186,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
             <DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 },
             <DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }
         );
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
     }
 
@@ -215,6 +215,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         if (!this._onSelectEnabled) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace);
     };
 }

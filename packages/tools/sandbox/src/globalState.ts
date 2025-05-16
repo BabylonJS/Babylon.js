@@ -1,7 +1,8 @@
+import "@dev/inspector";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
-import type { FilesInput } from "core/Misc/filesInput";
-import "@dev/inspector";
 
 export class GlobalState {
     public currentScene: Scene;
@@ -17,16 +18,21 @@ export class GlobalState {
 
     public commerceMode = false;
 
+    public assetUrl?: string;
+    public autoRotate = false;
+    public cameraPosition?: Vector3;
+    public skybox = true;
+    public toneMapping?: number;
+
     public reflector?: {
         hostname: string;
         port: number;
     };
 
-    public skybox = true;
-
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.currentScene.debugLayer.show();
         }
     }

@@ -7,6 +7,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Observer } from "../Misc/observable";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _iblCdfGenerator: Nullable<IblCdfGenerator>;
@@ -51,6 +52,10 @@ Scene.prototype.enableIblCdfGenerator = function (): Nullable<IblCdfGenerator> {
     }
 
     this._iblCdfGenerator = new IblCdfGenerator(this);
+    if (!this._iblCdfGenerator.isSupported) {
+        this._iblCdfGenerator = null;
+        return null;
+    }
     if (this.environmentTexture) {
         this._iblCdfGenerator.iblSource = this.environmentTexture;
     }

@@ -30,9 +30,9 @@ const UpDir = Vector3.Up();
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ZeroVec = Vector3.Zero();
 
-const tmpv1 = new Vector3(),
-    tmpv2 = new Vector3(),
-    tmpMatrix = new Matrix();
+const Tmpv1 = new Vector3();
+const Tmpv2 = new Vector3();
+const TmpMatrix = new Matrix();
 
 /**
  * A CSM implementation allowing casting shadows on large scenes.
@@ -40,7 +40,7 @@ const tmpv1 = new Vector3(),
  * Based on: https://github.com/TheRealMJP/Shadows and https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
  */
 export class CascadedShadowGenerator extends ShadowGenerator {
-    private static readonly _FrustumCornersNDCSpace = [
+    private static readonly _FrustumCornersNdcSpace = [
         new Vector3(-1.0, +1.0, -1.0),
         new Vector3(+1.0, +1.0, -1.0),
         new Vector3(+1.0, -1.0, -1.0),
@@ -545,7 +545,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._computeFrustumInWorldSpace(cascadeIndex);
             this._computeCascadeFrustum(cascadeIndex);
 
-            this._cascadeMaxExtents[cascadeIndex].subtractToRef(this._cascadeMinExtents[cascadeIndex], tmpv1); // tmpv1 = cascadeExtents
+            this._cascadeMaxExtents[cascadeIndex].subtractToRef(this._cascadeMinExtents[cascadeIndex], Tmpv1); // tmpv1 = cascadeExtents
 
             // Get position of the shadow camera
             this._frustumCenter[cascadeIndex].addToRef(this._lightDirection.scale(this._cascadeMinExtents[cascadeIndex].z), this._shadowCameraPos[cascadeIndex]);
@@ -555,7 +555,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
             // Z extents of the current cascade, in cascade view coordinate system
             let viewMinZ = 0,
-                viewMaxZ = tmpv1.z;
+                viewMaxZ = Tmpv1.z;
 
             // Try to tighten minZ and maxZ based on the bounding box of the shadow casters
             const boundingInfo = this._shadowCastersBoundingInfo;
@@ -614,15 +614,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
             // Create the rounding matrix, by projecting the world-space origin and determining
             // the fractional offset in texel space
-            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cascadeIndex], tmpv1); // tmpv1 = shadowOrigin
-            tmpv1.scaleInPlace(this._mapSize / 2);
+            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cascadeIndex], Tmpv1); // tmpv1 = shadowOrigin
+            Tmpv1.scaleInPlace(this._mapSize / 2);
 
-            tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
-            tmpv2.subtractInPlace(tmpv1).scaleInPlace(2 / this._mapSize); // tmpv2 = roundOffset
+            Tmpv2.copyFromFloats(Math.round(Tmpv1.x), Math.round(Tmpv1.y), Math.round(Tmpv1.z)); // tmpv2 = roundedOrigin
+            Tmpv2.subtractInPlace(Tmpv1).scaleInPlace(2 / this._mapSize); // tmpv2 = roundOffset
 
-            Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, tmpMatrix);
+            Matrix.TranslationToRef(Tmpv2.x, Tmpv2.y, 0.0, TmpMatrix);
 
-            this._projectionMatrices[cascadeIndex].multiplyToRef(tmpMatrix, this._projectionMatrices[cascadeIndex]);
+            this._projectionMatrices[cascadeIndex].multiplyToRef(TmpMatrix, this._projectionMatrices[cascadeIndex]);
             this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
 
             this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
@@ -659,24 +659,24 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         const cornerIndexOffset = this._scene.getEngine().useReverseDepthBuffer ? 4 : 0;
-        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length; ++cornerIndex) {
-            tmpv1.copyFrom(CascadedShadowGenerator._FrustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator._FrustumCornersNDCSpace.length]);
-            if (isNDCHalfZRange && tmpv1.z === -1) {
-                tmpv1.z = 0;
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNdcSpace.length; ++cornerIndex) {
+            Tmpv1.copyFrom(CascadedShadowGenerator._FrustumCornersNdcSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator._FrustumCornersNdcSpace.length]);
+            if (isNDCHalfZRange && Tmpv1.z === -1) {
+                Tmpv1.z = 0;
             }
-            Vector3.TransformCoordinatesToRef(tmpv1, invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            Vector3.TransformCoordinatesToRef(Tmpv1, invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
         }
 
         // Get the corners of the current cascade slice of the view frustum
-        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length / 2; ++cornerIndex) {
-            tmpv1.copyFrom(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4]).subtractInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
-            tmpv2.copyFrom(tmpv1).scaleInPlace(prevSplitDist); // near corner ray
-            tmpv1.scaleInPlace(splitDist); // far corner ray
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNdcSpace.length / 2; ++cornerIndex) {
+            Tmpv1.copyFrom(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4]).subtractInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            Tmpv2.copyFrom(Tmpv1).scaleInPlace(prevSplitDist); // near corner ray
+            Tmpv1.scaleInPlace(splitDist); // far corner ray
 
-            tmpv1.addInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            Tmpv1.addInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
 
-            this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4].copyFrom(tmpv1);
-            this._frustumCornersWorldSpace[cascadeIndex][cornerIndex].addInPlace(tmpv2);
+            this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4].copyFrom(Tmpv1);
+            this._frustumCornersWorldSpace[cascadeIndex][cornerIndex].addInPlace(Tmpv2);
         }
     }
 
@@ -702,7 +702,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             // Calculate the radius of a bounding sphere surrounding the frustum corners
             let sphereRadius = 0;
             for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace[cascadeIndex].length; ++cornerIndex) {
-                const dist = this._frustumCornersWorldSpace[cascadeIndex][cornerIndex].subtractToRef(this._frustumCenter[cascadeIndex], tmpv1).length();
+                const dist = this._frustumCornersWorldSpace[cascadeIndex][cornerIndex].subtractToRef(this._frustumCenter[cascadeIndex], Tmpv1).length();
                 sphereRadius = Math.max(sphereRadius, dist);
             }
 
@@ -714,16 +714,16 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             // Create a temporary view matrix for the light
             const lightCameraPos = this._frustumCenter[cascadeIndex];
 
-            this._frustumCenter[cascadeIndex].addToRef(this._lightDirection, tmpv1); // tmpv1 = look at
+            this._frustumCenter[cascadeIndex].addToRef(this._lightDirection, Tmpv1); // tmpv1 = look at
 
-            Matrix.LookAtLHToRef(lightCameraPos, tmpv1, UpDir, tmpMatrix); // matrix = lightView
+            Matrix.LookAtLHToRef(lightCameraPos, Tmpv1, UpDir, TmpMatrix); // matrix = lightView
 
             // Calculate an AABB around the frustum corners
             for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace[cascadeIndex].length; ++cornerIndex) {
-                Vector3.TransformCoordinatesToRef(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex], tmpMatrix, tmpv1);
+                Vector3.TransformCoordinatesToRef(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex], TmpMatrix, Tmpv1);
 
-                this._cascadeMinExtents[cascadeIndex].minimizeInPlace(tmpv1);
-                this._cascadeMaxExtents[cascadeIndex].maximizeInPlace(tmpv1);
+                this._cascadeMinExtents[cascadeIndex].minimizeInPlace(Tmpv1);
+                this._cascadeMaxExtents[cascadeIndex].maximizeInPlace(Tmpv1);
             }
         }
     }
@@ -866,9 +866,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._cascadeMaxExtents[cascadeIndex] = new Vector3();
             this._frustumCenter[cascadeIndex] = new Vector3();
             this._shadowCameraPos[cascadeIndex] = new Vector3();
-            this._frustumCornersWorldSpace[cascadeIndex] = new Array(CascadedShadowGenerator._FrustumCornersNDCSpace.length);
+            this._frustumCornersWorldSpace[cascadeIndex] = new Array(CascadedShadowGenerator._FrustumCornersNdcSpace.length);
 
-            for (let i = 0; i < CascadedShadowGenerator._FrustumCornersNDCSpace.length; ++i) {
+            for (let i = 0; i < CascadedShadowGenerator._FrustumCornersNdcSpace.length; ++i) {
                 this._frustumCornersWorldSpace[cascadeIndex][i] = new Vector3();
             }
         }

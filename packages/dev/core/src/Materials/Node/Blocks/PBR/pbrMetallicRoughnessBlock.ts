@@ -29,7 +29,7 @@ import { SubSurfaceBlock } from "./subSurfaceBlock";
 import type { RefractionBlock } from "./refractionBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
-import { Color3, TmpColors } from "../../../../Maths/math.color";
+import { Color3 } from "../../../../Maths/math.color";
 import { Logger } from "core/Misc/logger";
 import {
     BindLight,
@@ -41,7 +41,7 @@ import {
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-const mapOutputToVariable: { [name: string]: [string, string] } = {
+const MapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
     diffuseDir: ["finalDiffuse", ""],
     specularDir: ["finalSpecularScaled", "!defined(UNLIT) && defined(SPECULARTERM)"],
@@ -91,11 +91,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _scene: Scene;
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
     private _environmentBrdfSamplerName: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _vNormalWName: string;
     private _invertNormalName: string;
     private _metallicReflectanceColor: Color3 = Color3.White();
     private _metallicF0Factor = 1;
     private _vMetallicReflectanceFactorsName: string;
+    private _baseDiffuseRoughnessName: string;
 
     /**
      * Create a new ReflectionBlock
@@ -271,6 +273,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
+     * Base Diffuse Model
+     */
+    @editableInPropertyPage("Diffuse Model", PropertyTypeForEdition.List, "RENDERING", {
+        notifiers: { update: true },
+        options: [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_MODEL_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_MODEL_BURLEY },
+            { label: "Oren-Nayar", value: Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR },
+        ],
+    })
+    public baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+
+    /**
      * Defines if the material uses energy conservation.
      */
     @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
@@ -438,6 +453,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("vClipSpacePosition");
         state._excludeVariableName("vDebugMode");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -761,6 +777,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
         }
 
+        defines.setValue("BASE_DIFFUSE_MODEL", this.baseDiffuseModel, true);
+
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
         defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation, true);
@@ -871,19 +889,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * this._scene.environmentIntensity, this.specularIntensity);
 
         // reflectivity bindings
-        const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
-        const ior = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
-
-        // We are here deriving our default reflectance from a common value for none metallic surface.
-        // Based of the schlick fresnel approximation model
-        // for dielectrics.
-        const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
-
-        // Tweak the default F0 and F90 based on our given setup
-        this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
         const metallicF90 = this._metallicF0Factor;
 
-        effect.setColor4(this._vMetallicReflectanceFactorsName, TmpColors.Color3[0], metallicF90);
+        effect.setColor4(this._vMetallicReflectanceFactorsName, this._metallicReflectanceColor, metallicF90);
 
         if (nodeMaterial.imageProcessingConfiguration) {
             nodeMaterial.imageProcessingConfiguration.bind(effect);
@@ -1013,13 +1021,27 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
+        this._baseDiffuseRoughnessName = state._getFreeVariableName("baseDiffuseRoughness");
+        state._emitUniformFromString(this._baseDiffuseRoughnessName, NodeMaterialBlockConnectionPointTypes.Float);
+
+        const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
+        const ior = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
+        // Based of the schlick fresnel approximation model
+        // for dielectrics.
+        const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
+
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
-            ${isWebGPU ? "let" : `vec4${state.fSuffix}`} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName || "1.5"}, 1.0);
+            ${isWebGPU ? "let" : `vec4${state.fSuffix}`} vReflectivityColor = vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, ${this.indexOfRefraction.associatedVariableName || "1.5"}, ${f0});
             reflectivityOut = reflectivityBlock(
                 vReflectivityColor
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
                 , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
+            #endif
+                , ${(isWebGPU ? "uniforms." : "") + this._baseDiffuseRoughnessName}
+            #ifdef BASE_DIFFUSE_ROUGHNESS
+                , 0.
+                , vec2${state.fSuffix}(0., 0.)
             #endif
             #ifdef REFLECTIVITY
                 , vec3${state.fSuffix}(0., 0., ${aoIntensity})
@@ -1035,6 +1057,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
             ${state._declareLocalVar("microSurface", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.microSurface;
             ${state._declareLocalVar("roughness", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.roughness;
+            ${state._declareLocalVar("diffuseRoughness", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.diffuseRoughness;
 
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo = reflectivityOut.surfaceAlbedo;
@@ -1451,7 +1474,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Generate end points ________________________
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                const remap = mapOutputToVariable[output.name];
+                const remap = MapOutputToVariable[output.name];
                 if (remap) {
                     const [varName, conditions] = remap;
                     if (conditions) {

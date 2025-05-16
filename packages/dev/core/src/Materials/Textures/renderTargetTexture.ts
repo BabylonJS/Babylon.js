@@ -25,6 +25,7 @@ import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 
 declare module "../effect" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Effect {
         /**
          * Sets a depth stencil texture from a render target on the engine to be used in the shader.
@@ -47,6 +48,7 @@ Effect.prototype.setDepthStencilTexture = function (channel: string, texture: Nu
 /**
  * Options for the RenderTargetTexture constructor
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface RenderTargetTextureOptions {
     /** True (default: false) if mipmaps need to be generated after render */
     generateMipMaps?: boolean;
@@ -715,6 +717,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 if (!this._dumpTools) {
                     Logger.Error("dumpTools module is still being loaded. To speed up the process import dump tools directly in your project");
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._dumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
                 }
             }
@@ -1048,6 +1051,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         if (!this._dumpToolsLoading) {
             this._dumpToolsLoading = true;
             // avoid a static import to allow ignoring the import in some cases
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
         }
 

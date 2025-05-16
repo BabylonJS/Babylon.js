@@ -1,8 +1,8 @@
-function getByteIndex(bitIndex: number): number {
+function GetByteIndex(bitIndex: number): number {
     return Math.floor(bitIndex / 8);
 }
 
-function getBitMask(bitIndex: number): number {
+function GetBitMask(bitIndex: number): number {
     return 1 << bitIndex % 8;
 }
 
@@ -31,8 +31,8 @@ export class BitArray {
         if (bitIndex >= this.size) {
             throw new RangeError("Bit index out of range");
         }
-        const byteIndex = getByteIndex(bitIndex);
-        const bitMask = getBitMask(bitIndex);
+        const byteIndex = GetByteIndex(bitIndex);
+        const bitMask = GetBitMask(bitIndex);
         return (this._byteArray[byteIndex] & bitMask) !== 0;
     }
 
@@ -45,8 +45,8 @@ export class BitArray {
         if (bitIndex >= this.size) {
             throw new RangeError("Bit index out of range");
         }
-        const byteIndex = getByteIndex(bitIndex);
-        const bitMask = getBitMask(bitIndex);
+        const byteIndex = GetByteIndex(bitIndex);
+        const bitMask = GetBitMask(bitIndex);
         if (value) {
             this._byteArray[byteIndex] |= bitMask;
         } else {

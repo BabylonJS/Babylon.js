@@ -28,13 +28,13 @@ import { Constants } from "../constants";
 import type { Nullable } from "../../types";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
-import type { ProcessingOptions } from "../Processors/shaderProcessingOptions";
+import type { _IProcessingOptions } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "core/Materials";
 import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
 import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
@@ -311,7 +311,7 @@ export class WebGPUTextureManager {
     private _compiledShaders: GPUShaderModule[][] = [];
     private _videoPipelines: { [format: string]: Array<[GPURenderPipeline, GPUBindGroupLayout]> } = {};
     private _videoCompiledShaders: GPUShaderModule[][] = [];
-    private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
+    private _deferredReleaseTextures: Array<[Nullable<IHardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
 
     //------------------------------------------------------------------------------
@@ -373,7 +373,7 @@ export class WebGPUTextureManager {
                 let vertexCode = shadersForPipelineType[type].vertex;
                 let fragmentCode = shadersForPipelineType[type].fragment;
 
-                const processorOptions: ProcessingOptions = {
+                const processorOptions: _IProcessingOptions = {
                     defines: defines.split("\n"),
                     indexParameters: null,
                     isFragment: false,
@@ -1021,7 +1021,7 @@ export class WebGPUTextureManager {
         if (texture._maxLodLevel !== null) {
             mipmapCount = texture._maxLodLevel;
         } else {
-            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1;
+            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         }
 
         if (texture.isCube) {
@@ -1230,7 +1230,7 @@ export class WebGPUTextureManager {
 
                 buffer.unmap();
 
-                commandEncoder!.copyBufferToTexture(
+                commandEncoder.copyBufferToTexture(
                     {
                         buffer: buffer,
                         offset: 0,
@@ -1241,7 +1241,7 @@ export class WebGPUTextureManager {
                     textureExtent
                 );
 
-                this._device.queue.submit([commandEncoder!.finish()]);
+                this._device.queue.submit([commandEncoder.finish()]);
 
                 this._bufferManager.releaseBuffer(buffer);
             } else {
@@ -1289,6 +1289,7 @@ export class WebGPUTextureManager {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public readPixels(
         texture: GPUTexture,
         x: number,
@@ -1340,7 +1341,7 @@ export class WebGPUTextureManager {
             }
         );
 
-        this._device.queue.submit([commandEncoder!.finish()]);
+        this._device.queue.submit([commandEncoder.finish()]);
 
         return this._bufferManager.readDataFromBuffer(
             gpuBuffer,

@@ -11,7 +11,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_texture_transform";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_texture_transform extension.
@@ -54,9 +54,10 @@ export class KHR_texture_transform implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, (extensionContext, extension) => {
-            return this._loader.loadTextureInfoAsync(context, textureInfo, (babylonTexture) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRTextureTransform, BaseTexture>(context, textureInfo, this.name, async (extensionContext, extension) => {
+            return await this._loader.loadTextureInfoAsync(context, textureInfo, (babylonTexture) => {
                 if (!(babylonTexture instanceof Texture)) {
                     throw new Error(`${extensionContext}: Texture type not supported`);
                 }

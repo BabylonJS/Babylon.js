@@ -938,7 +938,7 @@ interface IGLTFValidationOptions {
     /** Ignored issues */
     ignoredIssues?: Array<string>;
     /** Value to override severy settings */
-    severityOverrides?: Object;
+    severityOverrides?: object;
 }
 
 /**

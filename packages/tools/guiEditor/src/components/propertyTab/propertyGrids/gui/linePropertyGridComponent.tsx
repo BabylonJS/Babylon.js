@@ -39,7 +39,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 const int = parseInt(v);
 
                 if (isNaN(int)) {
-                    return;
+                    continue;
                 }
 
                 line.dash.push(int);
@@ -53,7 +53,9 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         const proxy = makeTargetsProxy(lines, onPropertyChangedObservable);
         let dashes = lines[0].dash;
         for (const line of lines) {
-            if (dashes.length === 0) break;
+            if (dashes.length === 0) {
+                break;
+            }
             if (line.dash.length !== dashes.length) {
                 dashes = [];
             }

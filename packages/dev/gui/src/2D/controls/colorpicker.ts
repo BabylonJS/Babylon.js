@@ -474,7 +474,7 @@ export class ColorPicker extends Control {
      * @param options.savedColors
      * @returns picked color as a hex string and the saved colors array as hex strings.
      */
-    public static ShowPickerDialogAsync(
+    public static async ShowPickerDialogAsync(
         advancedTexture: AdvancedDynamicTexture,
         options: {
             pickerWidth?: string;
@@ -489,7 +489,7 @@ export class ColorPicker extends Control {
         savedColors?: string[];
         pickedColor: string;
     }> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             // Default options
             options.pickerWidth = options.pickerWidth || "640px";
             options.pickerHeight = options.pickerHeight || "400px";
@@ -500,10 +500,10 @@ export class ColorPicker extends Control {
 
             // Window size settings
             const drawerMaxRows: number = options.swatchLimit / options.numSwatchesPerLine;
-            const rawSwatchSize: number = parseFloat(<string>options.pickerWidth) / options.numSwatchesPerLine;
+            const rawSwatchSize: number = parseFloat(options.pickerWidth) / options.numSwatchesPerLine;
             const gutterSize: number = Math.floor(rawSwatchSize * 0.25);
             const colGutters: number = gutterSize * (options.numSwatchesPerLine + 1);
-            const swatchSize: number = Math.floor((parseFloat(<string>options.pickerWidth) - colGutters) / options.numSwatchesPerLine);
+            const swatchSize: number = Math.floor((parseFloat(options.pickerWidth) - colGutters) / options.numSwatchesPerLine);
             const drawerMaxSize: number = swatchSize * drawerMaxRows + gutterSize * (drawerMaxRows + 1);
             const containerSize: string = (parseInt(options.pickerHeight) + drawerMaxSize + Math.floor(swatchSize * 0.25)).toString() + "px";
 
@@ -579,7 +579,7 @@ export class ColorPicker extends Control {
                         swatchDrawer.addRowDefinition(gutterSize, true);
                     }
                 }
-                for (let i = 0; i < options.numSwatchesPerLine! * 2 + 1; i++) {
+                for (let i = 0; i < options.numSwatchesPerLine * 2 + 1; i++) {
                     if (i % 2 != 0) {
                         swatchDrawer.addColumnDefinition(swatchSize, true);
                     } else {
@@ -612,7 +612,7 @@ export class ColorPicker extends Control {
             const headerColor3: Color3 = Color3.FromHexString(header.background);
             const closeIconColor = new Color3(1.0 - headerColor3.r, 1.0 - headerColor3.g, 1.0 - headerColor3.b);
             closeButton.color = closeIconColor.toHexString();
-            closeButton.fontSize = Math.floor(parseInt(options.headerHeight!) * 0.6);
+            closeButton.fontSize = Math.floor(parseInt(options.headerHeight) * 0.6);
             closeButton.textBlock!.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             closeButton.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
             closeButton.height = closeButton.width = options.headerHeight;
@@ -848,7 +848,7 @@ export class ColorPicker extends Control {
                 butSave.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 butSave.thickness = 2;
                 butSave.fontSize = buttonFontSize;
-                if (options.savedColors.length < options.swatchLimit!) {
+                if (options.savedColors.length < options.swatchLimit) {
                     butSave.color = buttonColor;
                     butSave.background = buttonBackgroundColor;
                 } else {

@@ -49,6 +49,7 @@ export class MultiObserver<T> {
 }
 
 declare module "./observable" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Observable<T> {
         /**
          * Calling this will execute each callback, expecting it to be a promise or return a value.
@@ -74,7 +75,7 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
 
     // no observers? return this promise.
     if (!this.observers.length) {
-        return p;
+        return await p;
     }
 
     const state = this._eventState;
@@ -94,11 +95,13 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
         }
         if (obs.mask & mask) {
             if (obs.scope) {
+                // eslint-disable-next-line github/no-then
                 p = p.then((lastReturnedValue) => {
                     state.lastReturnValue = lastReturnedValue;
                     return obs.callback.apply(obs.scope, [eventData, state]);
                 });
             } else {
+                // eslint-disable-next-line github/no-then
                 p = p.then((lastReturnedValue) => {
                     state.lastReturnValue = lastReturnedValue;
                     return obs.callback(eventData, state);

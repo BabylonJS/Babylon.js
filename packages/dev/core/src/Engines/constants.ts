@@ -470,6 +470,48 @@ export class Constants {
     public static readonly MATERIAL_CounterClockWiseSideOrientation = 1;
 
     /**
+     * Energy-conserving Oren Nayar diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR = 0;
+
+    /**
+     * Burley diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_BURLEY = 1;
+
+    /**
+     * Lambertian diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_LAMBERT = 2;
+
+    /**
+     * Specular lighting for dielectric materials follows the logic
+     * in the glTF specification and KHR_materials_specular extension.
+     * Specular colour is applied only at normal incidence (i.e. F0) while
+     * glancing angles (i.e. F90) tend towards white.
+     */
+    public static readonly MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF = 0;
+
+    /**
+     * Specular lighting for dielectric materials follows the logic
+     * in the OpenPBR specification. Specular colour is applied to all
+     * dielectric reflection, not just at normal incidence (i.e. F0).
+     */
+    public static readonly MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR = 1;
+
+    /**
+     * Specular lighting for metals follows the logic in the glTF specification.
+     * Base colour is applied at F0 while glancing angles tend towards white.
+     */
+    public static readonly MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF = 0;
+
+    /**
+     * Specular lighting for metals follows the logic in the OpenPBR specification.
+     * Specular colour is applied to glancing angles using the F82 spec.
+     */
+    public static readonly MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR = 1;
+
+    /**
      * Nothing
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
@@ -651,7 +693,7 @@ export class Constants {
      */
     public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
     /**
-     * Constant used to retrieve depth index in the textures array in the prepass
+     * Constant used to retrieve (camera view) depth index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
      */
     public static readonly PREPASS_DEPTH_TEXTURE_TYPE = 5;

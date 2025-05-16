@@ -69,6 +69,7 @@ import type { AssetContainer } from "core/assetContainer";
  * Tokenizer. Used for shaders compatibility
  * Automatically map world, view, projection, worldViewProjection, attributes and so on
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 enum ETokenType {
     IDENTIFIER = 1,
 
@@ -131,18 +132,20 @@ class Tokenizer {
 /**
  * Values
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const glTFTransforms = ["MODEL", "VIEW", "PROJECTION", "MODELVIEW", "MODELVIEWPROJECTION", "JOINTMATRIX"];
-const babylonTransforms = ["world", "view", "projection", "worldView", "worldViewProjection", "mBones"];
+const BabylonTransforms = ["world", "view", "projection", "worldView", "worldViewProjection", "mBones"];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const glTFAnimationPaths = ["translation", "rotation", "scale"];
-const babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
+const BabylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
 
 /**
  * Parse
  * @param parsedBuffers
  * @param gltfRuntime
  */
-const parseBuffers = (parsedBuffers: any, gltfRuntime: IGLTFRuntime) => {
+const ParseBuffers = (parsedBuffers: any, gltfRuntime: IGLTFRuntime) => {
     for (const buf in parsedBuffers) {
         const parsedBuffer = parsedBuffers[buf];
         gltfRuntime.buffers[buf] = parsedBuffer;
@@ -150,7 +153,7 @@ const parseBuffers = (parsedBuffers: any, gltfRuntime: IGLTFRuntime) => {
     }
 };
 
-const parseShaders = (parsedShaders: any, gltfRuntime: IGLTFRuntime) => {
+const ParseShaders = (parsedShaders: any, gltfRuntime: IGLTFRuntime) => {
     for (const sha in parsedShaders) {
         const parsedShader = parsedShaders[sha];
         gltfRuntime.shaders[sha] = parsedShader;
@@ -158,7 +161,7 @@ const parseShaders = (parsedShaders: any, gltfRuntime: IGLTFRuntime) => {
     }
 };
 
-const parseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: IGLTFRuntime) => {
+const ParseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: IGLTFRuntime) => {
     for (const object in parsedObjects) {
         const parsedObject = parsedObjects[object];
         (<any>gltfRuntime)[runtimeProperty][object] = parsedObject;
@@ -169,7 +172,7 @@ const parseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: I
  * Utils
  * @param buffer
  */
-const normalizeUVs = (buffer: any) => {
+const NormalizeUVs = (buffer: any) => {
     if (!buffer) {
         return;
     }
@@ -179,7 +182,7 @@ const normalizeUVs = (buffer: any) => {
     }
 };
 
-const getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<string> => {
+const GetAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<string> => {
     if (attributeParameter.semantic === "NORMAL") {
         return "normal";
     } else if (attributeParameter.semantic === "POSITION") {
@@ -202,7 +205,7 @@ const getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<str
  * Loads and creates animations
  * @param gltfRuntime
  */
-const loadAnimations = (gltfRuntime: IGLTFRuntime) => {
+const LoadAnimations = (gltfRuntime: IGLTFRuntime) => {
     for (const anim in gltfRuntime.animations) {
         const animation: IGLTFAnimation = gltfRuntime.animations[anim];
 
@@ -254,7 +257,7 @@ const loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             const targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
 
             if (targetPathIndex !== -1) {
-                targetPath = babylonAnimationPaths[targetPathIndex];
+                targetPath = BabylonAnimationPaths[targetPathIndex];
             }
 
             // Determine animation type
@@ -354,7 +357,7 @@ const loadAnimations = (gltfRuntime: IGLTFRuntime) => {
  * @returns the bones transformation matrix
  * @param node
  */
-const configureBoneTransformation = (node: IGLTFNode): Matrix => {
+const ConfigureBoneTransformation = (node: IGLTFNode): Matrix => {
     let mat: Nullable<Matrix> = null;
 
     if (node.translation || node.rotation || node.scale) {
@@ -378,7 +381,7 @@ const configureBoneTransformation = (node: IGLTFNode): Matrix => {
  * @param newSkeleton
  * @returns the parent bone
  */
-const getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
+const GetParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
     // Try to find
     for (let i = 0; i < newSkeleton.bones.length; i++) {
         if (newSkeleton.bones[i].name === jointName) {
@@ -403,8 +406,8 @@ const getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: 
             }
 
             if (child.jointName === jointName) {
-                const mat = configureBoneTransformation(node);
-                const bone = new Bone(node.name || "", newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
+                const mat = ConfigureBoneTransformation(node);
+                const bone = new Bone(node.name || "", newSkeleton, GetParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
                 bone.id = nde;
                 return bone;
             }
@@ -420,7 +423,7 @@ const getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: 
  * @param id
  * @returns the root node
  */
-const getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => {
+const GetNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => {
     for (let i = 0; i < nodesToRoot.length; i++) {
         const nodeToRoot = nodesToRoot[i];
 
@@ -441,7 +444,7 @@ const getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> =
  * @param jointName
  * @returns the node with the joint name
  */
-const getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJointNode> => {
+const GetJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJointNode> => {
     const nodes = gltfRuntime.nodes;
     let node: IGLTFNode = nodes[jointName];
     if (node) {
@@ -470,7 +473,7 @@ const getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJ
  * @param id
  * @returns true if the node is in joints, else false
  */
-const nodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
+const NodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
     for (let i = 0; i < skins.jointNames.length; i++) {
         if (skins.jointNames[i] === id) {
             return true;
@@ -487,18 +490,18 @@ const nodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
  * @param skins
  * @param nodesToRoot
  */
-const getNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins: IGLTFSkins, nodesToRoot: INodeToRoot[]) => {
+const GetNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins: IGLTFSkins, nodesToRoot: INodeToRoot[]) => {
     // Creates nodes for root
     for (const nde in gltfRuntime.nodes) {
         const node: IGLTFNode = gltfRuntime.nodes[nde];
         const id = nde;
 
-        if (!node.jointName || nodeIsInJoints(skins, node.jointName)) {
+        if (!node.jointName || NodeIsInJoints(skins, node.jointName)) {
             continue;
         }
 
         // Create node to root bone
-        const mat = configureBoneTransformation(node);
+        const mat = ConfigureBoneTransformation(node);
         const bone = new Bone(node.name || "", newSkeleton, null, mat);
         bone.id = id;
         nodesToRoot.push({ bone: bone, node: node, id: id });
@@ -535,7 +538,7 @@ const getNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins:
  * @param newSkeleton
  * @returns the bone name
  */
-const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton | undefined): Skeleton => {
+const ImportSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton | undefined): Skeleton => {
     if (!newSkeleton) {
         newSkeleton = new Skeleton(skins.name || "", "", gltfRuntime.scene);
     }
@@ -548,12 +551,12 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
     const nodesToRoot: INodeToRoot[] = [];
     const nodesToRootToAdd: Bone[] = [];
 
-    getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
+    GetNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
     newSkeleton.bones = [];
 
     // Joints
     for (let i = 0; i < skins.jointNames.length; i++) {
-        const jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+        const jointNode = GetJointNode(gltfRuntime, skins.jointNames[i]);
 
         if (!jointNode) {
             continue;
@@ -580,7 +583,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
         let parentBone: Nullable<Bone> = null;
 
         for (let j = 0; j < i; j++) {
-            const jointNode = getJointNode(gltfRuntime, skins.jointNames[j]);
+            const jointNode = GetJointNode(gltfRuntime, skins.jointNames[j]);
 
             if (!jointNode) {
                 continue;
@@ -601,7 +604,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
 
             for (let k = 0; k < children.length; k++) {
                 if (children[k] === id) {
-                    parentBone = getParentBone(gltfRuntime, skins, skins.jointNames[j], newSkeleton);
+                    parentBone = GetParentBone(gltfRuntime, skins, skins.jointNames[j], newSkeleton);
                     foundBone = true;
                     break;
                 }
@@ -613,10 +616,10 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
         }
 
         // Create bone
-        const mat = configureBoneTransformation(node);
+        const mat = ConfigureBoneTransformation(node);
 
         if (!parentBone && nodesToRoot.length > 0) {
-            parentBone = getNodeToRoot(nodesToRoot, id);
+            parentBone = GetNodeToRoot(nodesToRoot, id);
 
             if (parentBone) {
                 if (nodesToRootToAdd.indexOf(parentBone) === -1) {
@@ -634,7 +637,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
     newSkeleton.bones = [];
 
     for (let i = 0; i < skins.jointNames.length; i++) {
-        const jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+        const jointNode = GetJointNode(gltfRuntime, skins.jointNames[i]);
 
         if (!jointNode) {
             continue;
@@ -667,7 +670,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
  * @param newMesh
  * @returns the new mesh
  */
-const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
+const ImportMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
     if (!newMesh) {
         gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
         newMesh = new Mesh(node.name || "", gltfRuntime.scene);
@@ -739,7 +742,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
                     const uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : channel + 1);
                     const uvs = new Float32Array(buffer.length);
                     (<Float32Array>uvs).set(buffer);
-                    normalizeUVs(uvs);
+                    NormalizeUVs(uvs);
                     tempVertexData.set(uvs, uvKind);
                 } else if (semantic === "JOINT") {
                     tempVertexData.matricesIndices = new Float32Array(buffer.length);
@@ -792,7 +795,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
     gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
     if (subMaterials.length > 1) {
         material = new MultiMaterial("multimat" + id, gltfRuntime.scene);
-        (material as MultiMaterial).subMaterials = subMaterials;
+        material.subMaterials = subMaterials;
     } else {
         material = new StandardMaterial("multimat" + id, gltfRuntime.scene);
     }
@@ -845,7 +848,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
  * @param rotation
  * @param scaling
  */
-const configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3) => {
+const ConfigureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3) => {
     if (newNode.position) {
         newNode.position = position;
     }
@@ -864,7 +867,7 @@ const configureNode = (newNode: any, position: Vector3, rotation: Quaternion, sc
  * @param newNode
  * @param node
  */
-const configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode) => {
+const ConfigureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode) => {
     if (node.matrix) {
         const position = new Vector3(0, 0, 0);
         const rotation = new Quaternion();
@@ -872,9 +875,9 @@ const configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode) => {
         const mat = Matrix.FromArray(node.matrix);
         mat.decompose(scaling, rotation, position);
 
-        configureNode(newNode, position, rotation, scaling);
+        ConfigureNode(newNode, position, rotation, scaling);
     } else if (node.translation && node.rotation && node.scale) {
-        configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
+        ConfigureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
     }
 
     newNode.computeWorldMatrix(true);
@@ -887,7 +890,7 @@ const configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode) => {
  * @param id
  * @returns the newly imported node
  */
-const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nullable<Node> => {
+const ImportNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nullable<Node> => {
     let lastNode: Nullable<Node> = null;
 
     if (gltfRuntime.importOnlyMeshes && (node.skin || node.meshes)) {
@@ -901,11 +904,11 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
         if (node.meshes) {
             const skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
-            const newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
+            const newMesh = ImportMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
             newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
 
             if (newMesh.skeleton === null) {
-                newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton);
+                newMesh.skeleton = ImportSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton);
 
                 if (!skin.babylonSkeleton) {
                     skin.babylonSkeleton = newMesh.skeleton;
@@ -918,7 +921,7 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
         /**
          * Improve meshes property
          */
-        const newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id, <Mesh>node.babylonNode);
+        const newMesh = ImportMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id, <Mesh>node.babylonNode);
         lastNode = newMesh;
     }
     // Lights
@@ -1033,12 +1036,12 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
 
     if (lastNode !== null) {
         if (node.matrix && lastNode instanceof Mesh) {
-            configureNodeFromMatrix(lastNode, node);
+            ConfigureNodeFromMatrix(lastNode, node);
         } else {
             const translation = node.translation || [0, 0, 0];
             const rotation = node.rotation || [0, 0, 0, 1];
             const scale = node.scale || [1, 1, 1];
-            configureNode(lastNode, Vector3.FromArray(translation), Quaternion.FromArray(rotation), Vector3.FromArray(scale));
+            ConfigureNode(lastNode, Vector3.FromArray(translation), Quaternion.FromArray(rotation), Vector3.FromArray(scale));
         }
 
         lastNode.updateCache(true);
@@ -1055,7 +1058,7 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
  * @param parent
  * @param meshIncluded
  */
-const traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Node>, meshIncluded: boolean = false) => {
+const TraverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Node>, meshIncluded: boolean = false) => {
     const node: IGLTFNode = gltfRuntime.nodes[id];
     let newNode: Nullable<Node> = null;
 
@@ -1070,7 +1073,7 @@ const traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<N
     }
 
     if (!node.jointName && meshIncluded) {
-        newNode = importNode(gltfRuntime, node, id);
+        newNode = ImportNode(gltfRuntime, node, id);
 
         if (newNode !== null) {
             newNode.id = id;
@@ -1080,7 +1083,7 @@ const traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<N
 
     if (node.children) {
         for (let i = 0; i < node.children.length; i++) {
-            traverseNodes(gltfRuntime, node.children[i], newNode, meshIncluded);
+            TraverseNodes(gltfRuntime, node.children[i], newNode, meshIncluded);
         }
     }
 };
@@ -1089,26 +1092,26 @@ const traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<N
  * do stuff after buffers, shaders are loaded (e.g. hook up materials, load animations, etc.)
  * @param gltfRuntime
  */
-const postLoad = (gltfRuntime: IGLTFRuntime) => {
+const PostLoad = (gltfRuntime: IGLTFRuntime) => {
     // Nodes
     let currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
 
     if (currentScene) {
         for (let i = 0; i < currentScene.nodes.length; i++) {
-            traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+            TraverseNodes(gltfRuntime, currentScene.nodes[i], null);
         }
     } else {
         for (const thing in gltfRuntime.scenes) {
-            currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
+            currentScene = gltfRuntime.scenes[thing];
 
             for (let i = 0; i < currentScene.nodes.length; i++) {
-                traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+                TraverseNodes(gltfRuntime, currentScene.nodes[i], null);
             }
         }
     }
 
     // Set animations
-    loadAnimations(gltfRuntime);
+    LoadAnimations(gltfRuntime);
 
     for (let i = 0; i < gltfRuntime.scene.skeletons.length; i++) {
         const skeleton = gltfRuntime.scene.skeletons[i];
@@ -1126,7 +1129,7 @@ const postLoad = (gltfRuntime: IGLTFRuntime) => {
  * @param material
  * @param onSuccess
  */
-const onBindShaderMaterial = (
+const OnBindShaderMaterial = (
     mesh: AbstractMesh,
     gltfRuntime: IGLTFRuntime,
     unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter },
@@ -1143,7 +1146,7 @@ const onBindShaderMaterial = (
 
         if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
             if (uniform.semantic && !uniform.source && !uniform.node) {
-                GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, <Effect>shaderMaterial.getEffect());
+                GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
             } else if (uniform.semantic && (uniform.source || uniform.node)) {
                 let source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
@@ -1153,7 +1156,7 @@ const onBindShaderMaterial = (
                     continue;
                 }
 
-                GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, <Effect>shaderMaterial.getEffect());
+                GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
             }
         } else {
             const value = (<any>materialValues)[technique.uniforms[unif]];
@@ -1168,9 +1171,9 @@ const onBindShaderMaterial = (
                     continue;
                 }
 
-                (<Effect>shaderMaterial.getEffect()).setTexture(unif, texture);
+                shaderMaterial.getEffect().setTexture(unif, texture);
             } else {
-                GLTFUtils.SetUniform(<Effect>shaderMaterial.getEffect(), unif, value, type);
+                GLTFUtils.SetUniform(shaderMaterial.getEffect(), unif, value, type);
             }
         }
     }
@@ -1186,7 +1189,7 @@ const onBindShaderMaterial = (
  * @param technique
  * @param material
  */
-const prepareShaderMaterialUniforms = (
+const PrepareShaderMaterialUniforms = (
     gltfRuntime: IGLTFRuntime,
     shaderMaterial: ShaderMaterial,
     technique: IGLTFTechnique,
@@ -1244,7 +1247,7 @@ const prepareShaderMaterialUniforms = (
  * @param onError
  * @returns callback when shader is compiled
  */
-const onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial, onError: (message: string) => void) => {
+const OnShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial, onError: (message: string) => void) => {
     return (effect: Effect, error: string) => {
         shaderMaterial.dispose(true);
         onError("Cannot compile program named " + program.name + ". Error: " + error + ". Default material will be applied");
@@ -1261,7 +1264,7 @@ const onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMater
  * @param onSuccess
  * @returns callback when shader is compiled
  */
-const onShaderCompileSuccess = (
+const OnShaderCompileSuccess = (
     gltfRuntime: IGLTFRuntime,
     shaderMaterial: ShaderMaterial,
     technique: IGLTFTechnique,
@@ -1270,10 +1273,10 @@ const onShaderCompileSuccess = (
     onSuccess: (shaderMaterial: ShaderMaterial) => void
 ) => {
     return (_: Effect) => {
-        prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
+        PrepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
 
         shaderMaterial.onBind = (mesh: AbstractMesh) => {
-            onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material, onSuccess);
+            OnBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material, onSuccess);
         };
     };
 };
@@ -1285,7 +1288,7 @@ const onShaderCompileSuccess = (
  * @param unTreatedUniforms
  * @returns the name of the uniform handled by babylon
  */
-const parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }): string => {
+const ParseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }): string => {
     for (const unif in technique.uniforms) {
         const uniform = technique.uniforms[unif];
         const uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
@@ -1296,7 +1299,7 @@ const parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, un
 
                 if (transformIndex !== -1) {
                     delete unTreatedUniforms[unif];
-                    return babylonTransforms[transformIndex];
+                    return BabylonTransforms[transformIndex];
                 }
             }
         }
@@ -1309,7 +1312,7 @@ const parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, un
  * All shaders loaded. Create materials one by one
  * @param gltfRuntime
  */
-const importMaterials = (gltfRuntime: IGLTFRuntime) => {
+const ImportMaterials = (gltfRuntime: IGLTFRuntime) => {
     // Create materials
     for (const mat in gltfRuntime.materials) {
         GLTFLoaderExtension.LoadMaterialAsync(
@@ -1369,75 +1372,75 @@ export class GLTFLoaderBase {
 
         // Parse
         if (parsedData.extensions) {
-            parseObject(parsedData.extensions, "extensions", gltfRuntime);
+            ParseObject(parsedData.extensions, "extensions", gltfRuntime);
         }
 
         if (parsedData.extensionsUsed) {
-            parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
+            ParseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
         }
 
         if (parsedData.buffers) {
-            parseBuffers(parsedData.buffers, gltfRuntime);
+            ParseBuffers(parsedData.buffers, gltfRuntime);
         }
 
         if (parsedData.bufferViews) {
-            parseObject(parsedData.bufferViews, "bufferViews", gltfRuntime);
+            ParseObject(parsedData.bufferViews, "bufferViews", gltfRuntime);
         }
 
         if (parsedData.accessors) {
-            parseObject(parsedData.accessors, "accessors", gltfRuntime);
+            ParseObject(parsedData.accessors, "accessors", gltfRuntime);
         }
 
         if (parsedData.meshes) {
-            parseObject(parsedData.meshes, "meshes", gltfRuntime);
+            ParseObject(parsedData.meshes, "meshes", gltfRuntime);
         }
 
         if (parsedData.lights) {
-            parseObject(parsedData.lights, "lights", gltfRuntime);
+            ParseObject(parsedData.lights, "lights", gltfRuntime);
         }
 
         if (parsedData.cameras) {
-            parseObject(parsedData.cameras, "cameras", gltfRuntime);
+            ParseObject(parsedData.cameras, "cameras", gltfRuntime);
         }
 
         if (parsedData.nodes) {
-            parseObject(parsedData.nodes, "nodes", gltfRuntime);
+            ParseObject(parsedData.nodes, "nodes", gltfRuntime);
         }
 
         if (parsedData.images) {
-            parseObject(parsedData.images, "images", gltfRuntime);
+            ParseObject(parsedData.images, "images", gltfRuntime);
         }
 
         if (parsedData.textures) {
-            parseObject(parsedData.textures, "textures", gltfRuntime);
+            ParseObject(parsedData.textures, "textures", gltfRuntime);
         }
 
         if (parsedData.shaders) {
-            parseShaders(parsedData.shaders, gltfRuntime);
+            ParseShaders(parsedData.shaders, gltfRuntime);
         }
 
         if (parsedData.programs) {
-            parseObject(parsedData.programs, "programs", gltfRuntime);
+            ParseObject(parsedData.programs, "programs", gltfRuntime);
         }
 
         if (parsedData.samplers) {
-            parseObject(parsedData.samplers, "samplers", gltfRuntime);
+            ParseObject(parsedData.samplers, "samplers", gltfRuntime);
         }
 
         if (parsedData.techniques) {
-            parseObject(parsedData.techniques, "techniques", gltfRuntime);
+            ParseObject(parsedData.techniques, "techniques", gltfRuntime);
         }
 
         if (parsedData.materials) {
-            parseObject(parsedData.materials, "materials", gltfRuntime);
+            ParseObject(parsedData.materials, "materials", gltfRuntime);
         }
 
         if (parsedData.animations) {
-            parseObject(parsedData.animations, "animations", gltfRuntime);
+            ParseObject(parsedData.animations, "animations", gltfRuntime);
         }
 
         if (parsedData.skins) {
-            parseObject(parsedData.skins, "skins", gltfRuntime);
+            ParseObject(parsedData.skins, "skins", gltfRuntime);
         }
 
         if (parsedData.scenes) {
@@ -1451,6 +1454,7 @@ export class GLTFLoaderBase {
         return gltfRuntime;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadBufferAsync(
         gltfRuntime: IGLTFRuntime,
         id: string,
@@ -1478,6 +1482,7 @@ export class GLTFLoaderBase {
         }
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void {
         const texture: IGLTFTexture = gltfRuntime.textures[id];
 
@@ -1511,6 +1516,7 @@ export class GLTFLoaderBase {
         }
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: Nullable<ArrayBufferView>, onSuccess: (texture: Texture) => void): void {
         const texture: IGLTFTexture = gltfRuntime.textures[id];
 
@@ -1545,6 +1551,7 @@ export class GLTFLoaderBase {
         onSuccess(newTexture);
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string | ArrayBuffer) => void, onError?: (message: string) => void): void {
         const shader: IGLTFShader = gltfRuntime.shaders[id];
 
@@ -1562,6 +1569,7 @@ export class GLTFLoaderBase {
         }
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void {
         const material: IGLTFMaterial = gltfRuntime.materials[id];
         if (!material.technique) {
@@ -1609,7 +1617,7 @@ export class GLTFLoaderBase {
             if (uniformParameter.semantic && !uniformParameter.node && !uniformParameter.source) {
                 const transformIndex = glTFTransforms.indexOf(uniformParameter.semantic);
                 if (transformIndex !== -1) {
-                    uniforms.push(babylonTransforms[transformIndex]);
+                    uniforms.push(BabylonTransforms[transformIndex]);
                     delete unTreatedUniforms[unif];
                 } else {
                     uniforms.push(unif);
@@ -1626,7 +1634,7 @@ export class GLTFLoaderBase {
             const attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
             if (attributeParameter.semantic) {
-                const name = getAttribute(attributeParameter);
+                const name = GetAttribute(attributeParameter);
                 if (name) {
                     attributes.push(name);
                 }
@@ -1649,7 +1657,7 @@ export class GLTFLoaderBase {
                 const attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
                 if (vertexTokenizer.currentIdentifier === attr && attributeParameter.semantic) {
-                    newVertexShader += getAttribute(attributeParameter);
+                    newVertexShader += GetAttribute(attributeParameter);
                     foundAttribute = true;
                     break;
                 }
@@ -1659,7 +1667,7 @@ export class GLTFLoaderBase {
                 continue;
             }
 
-            newVertexShader += parseShaderUniforms(vertexTokenizer, technique, unTreatedUniforms);
+            newVertexShader += ParseShaderUniforms(vertexTokenizer, technique, unTreatedUniforms);
         }
 
         // Configure pixel shader
@@ -1671,7 +1679,7 @@ export class GLTFLoaderBase {
                 continue;
             }
 
-            newPixelShader += parseShaderUniforms(pixelTokenizer, technique, unTreatedUniforms);
+            newPixelShader += ParseShaderUniforms(pixelTokenizer, technique, unTreatedUniforms);
         }
 
         // Create shader material
@@ -1691,8 +1699,8 @@ export class GLTFLoaderBase {
         Effect.ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
 
         const shaderMaterial = new ShaderMaterial(id, gltfRuntime.scene, shaderPath, options);
-        shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
-        shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
+        shaderMaterial.onError = OnShaderCompileError(program, shaderMaterial, onError);
+        shaderMaterial.onCompiled = OnShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
         shaderMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
 
         if (states && states.functions) {
@@ -1772,6 +1780,7 @@ export class GLTFLoader implements IGLTFLoader {
         // do nothing
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     private _importMeshAsync(
         meshesNames: any,
         scene: Scene,
@@ -1814,7 +1823,7 @@ export class GLTFLoader implements IGLTFLoader {
                     const node: IGLTFNode = gltfRuntime.nodes[nde];
 
                     if (node.babylonNode instanceof AbstractMesh) {
-                        meshes.push(<AbstractMesh>node.babylonNode);
+                        meshes.push(node.babylonNode);
                     }
                 }
 
@@ -1829,8 +1838,8 @@ export class GLTFLoader implements IGLTFLoader {
                 // Load buffers, shaders, materials, etc.
                 this._loadBuffersAsync(gltfRuntime, () => {
                     this._loadShadersAsync(gltfRuntime, () => {
-                        importMaterials(gltfRuntime);
-                        postLoad(gltfRuntime);
+                        ImportMaterials(gltfRuntime);
+                        PostLoad(gltfRuntime);
 
                         if (!GLTFFileLoader.IncrementalLoading && onSuccess) {
                             onSuccess(meshes, skeletons);
@@ -1858,6 +1867,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise containg the loaded meshes, particles, skeletons and animations
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public importMeshAsync(
         meshesNames: any,
         scene: Scene,
@@ -1893,6 +1903,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     private _loadAsync(
         scene: Scene,
         data: IGLTFLoaderData,
@@ -1918,8 +1929,8 @@ export class GLTFLoader implements IGLTFLoader {
                         // Load buffers, shaders, materials, etc.
                         this._loadBuffersAsync(gltfRuntime, () => {
                             this._loadShadersAsync(gltfRuntime, () => {
-                                importMaterials(gltfRuntime);
-                                postLoad(gltfRuntime);
+                                ImportMaterials(gltfRuntime);
+                                PostLoad(gltfRuntime);
 
                                 if (!GLTFFileLoader.IncrementalLoading) {
                                     onSuccess();
@@ -1946,8 +1957,8 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
-        return new Promise((resolve, reject) => {
+    public async loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
+        return await new Promise((resolve, reject) => {
             this._loadAsync(
                 scene,
                 data,
@@ -1963,6 +1974,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     private _loadShadersAsync(gltfRuntime: IGLTFRuntime, onload: () => void): void {
         let hasShaders = false;
 
@@ -2007,6 +2019,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void): void {
         let hasBuffers = false;
 
@@ -2057,15 +2070,15 @@ export class GLTFLoader implements IGLTFLoader {
         if (currentScene) {
             // Only one scene even if multiple scenes are defined
             for (let i = 0; i < currentScene.nodes.length; i++) {
-                traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+                TraverseNodes(gltfRuntime, currentScene.nodes[i], null);
             }
         } else {
             // Load all scenes
             for (const thing in gltfRuntime.scenes) {
-                currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
+                currentScene = gltfRuntime.scenes[thing];
 
                 for (let i = 0; i < currentScene.nodes.length; i++) {
-                    traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+                    TraverseNodes(gltfRuntime, currentScene.nodes[i], null);
                 }
             }
         }
@@ -2094,6 +2107,7 @@ export abstract class GLTFLoaderExtension {
      * @param onError
      * @returns true to stop further extensions from loading the runtime
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean {
         return false;
     }
@@ -2106,6 +2120,7 @@ export abstract class GLTFLoaderExtension {
      * @param onError
      * @returns true to stop further extensions from creating the runtime
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): boolean {
         return false;
     }
@@ -2120,6 +2135,8 @@ export abstract class GLTFLoaderExtension {
      * @param onProgress
      * @returns true to stop further extensions from loading this buffer
      */
+    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     public loadBufferAsync(
         gltfRuntime: IGLTFRuntime,
         id: string,
@@ -2139,6 +2156,7 @@ export abstract class GLTFLoaderExtension {
      * @param onError
      * @returns true to stop further extensions from loading this texture data
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
         return false;
     }
@@ -2153,6 +2171,7 @@ export abstract class GLTFLoaderExtension {
      * @param onError
      * @returns true to stop further extensions from loading this texture
      */
+    // eslint-disable-next-line no-restricted-syntax
     public createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): boolean {
         return false;
     }
@@ -2166,6 +2185,7 @@ export abstract class GLTFLoaderExtension {
      * @param onError
      * @returns true to stop further extensions from loading this shader data
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean {
         return false;
     }
@@ -2179,6 +2199,7 @@ export abstract class GLTFLoaderExtension {
      * @param onError
      * @returns true to stop further extensions from loading this material
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
         return false;
     }
@@ -2187,6 +2208,7 @@ export abstract class GLTFLoaderExtension {
     // Utilities
     // ---------
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadRuntimeAsync(
         scene: Scene,
         data: IGLTFLoaderData,
@@ -2209,6 +2231,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): void {
         GLTFLoaderExtension._ApplyExtensions(
             (loaderExtension) => {
@@ -2222,6 +2245,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadBufferAsync(
         gltfRuntime: IGLTFRuntime,
         id: string,
@@ -2239,6 +2263,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void {
         GLTFLoaderExtension._LoadTextureBufferAsync(
             gltfRuntime,
@@ -2252,6 +2277,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string | ArrayBuffer) => void, onError: (message: string) => void): void {
         GLTFLoaderExtension._ApplyExtensions(
             (loaderExtension) => {
@@ -2263,6 +2289,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void {
         GLTFLoaderExtension._ApplyExtensions(
             (loaderExtension) => {
@@ -2274,6 +2301,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     private static _LoadTextureBufferAsync(
         gltfRuntime: IGLTFRuntime,
         id: string,
@@ -2290,6 +2318,7 @@ export abstract class GLTFLoaderExtension {
         );
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     private static _CreateTextureAsync(
         gltfRuntime: IGLTFRuntime,
         id: string,

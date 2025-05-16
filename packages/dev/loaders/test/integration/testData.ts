@@ -110,3 +110,64 @@ export const stlAsciiBase64 =
 
 export const stlBinaryBase64 =
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAgD8AAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAA=";
+
+export const bvhBasicRaw = `HIERARCHY
+JOINT Hips
+{
+    OFFSET 0.00 0.00 0.00
+    CHANNELS 6 Xposition Yposition Zposition Zrotation Yrotation Xrotation
+    JOINT Chest
+    {
+        OFFSET 0.00 5.21 0.00
+        CHANNELS 3 Zrotation Yrotation Xrotation
+        End Site
+        {
+            OFFSET 0.00 6.28 0.00
+        }
+    }
+}
+MOTION
+Frames: 2
+Frame Time: 0.033333
+0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+0.00 1.00 0.00 0.00 45.00 0.00 0.00 30.00 0.00`;
+
+export const bvhSimpleRaw = `HIERARCHY
+JOINT Root
+{
+    OFFSET 0.00 0.00 0.00
+    CHANNELS 6 Xposition Yposition Zposition Zrotation Yrotation Xrotation
+    End Site
+    {
+        OFFSET 0.00 1.00 0.00
+    }
+}
+MOTION
+Frames: 2
+Frame Time: 0.033333
+0.00 0.00 0.00 0.00 0.00 0.00
+1.00 2.00 3.00 30.00 45.00 60.00`;
+
+export const bvhThreeBonesRaw = `HIERARCHY
+ROOT Root
+{
+    OFFSET 0.00 0.00 0.00
+    CHANNELS 6 Xposition Yposition Zposition Zrotation Yrotation Xrotation
+    JOINT Middle
+    {
+        OFFSET 0.00 1.00 0.00
+        CHANNELS 3 Zrotation Yrotation Xrotation
+        JOINT End
+        {
+            OFFSET 0.00 1.00 0.00
+            End Site
+            {
+                OFFSET 0.00 0.50 0.00
+            }
+        }
+    }
+}
+MOTION
+Frames: 1
+Frame Time: 0.033333
+0.00 0.00 0.00 45.00 0.00 0.00 30.00 0.00 0.00`;

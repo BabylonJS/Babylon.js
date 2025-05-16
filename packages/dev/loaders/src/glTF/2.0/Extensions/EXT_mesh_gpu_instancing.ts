@@ -13,7 +13,7 @@ import "core/Meshes/thinInstanceMesh";
 const NAME = "EXT_mesh_gpu_instancing";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_mesh_gpu_instancing extension.
@@ -57,8 +57,9 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             this._loader._disableInstancedMesh++;
 
             const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);
@@ -66,7 +67,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             this._loader._disableInstancedMesh--;
 
             if (!node._primitiveBabylonMeshes) {
-                return promise;
+                return await promise;
             }
 
             const promises = new Array<Promise<Nullable<Float32Array>>>();
@@ -92,30 +93,26 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             loadAttribute("ROTATION");
             loadAttribute("SCALE");
 
-            return promise.then((babylonTransformNode) => {
-                return Promise.all(promises).then(([translationBuffer, rotationBuffer, scaleBuffer]) => {
-                    const matrices = new Float32Array(instanceCount * 16);
+            // eslint-disable-next-line github/no-then
+            return await promise.then(async (babylonTransformNode) => {
+                const [translationBuffer, rotationBuffer, scaleBuffer] = await Promise.all(promises);
+                const matrices = new Float32Array(instanceCount * 16);
+                TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
+                TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
+                TmpVectors.Vector3[1].copyFromFloats(1, 1, 1); // scale
+                for (let i = 0; i < instanceCount; ++i) {
+                    translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, TmpVectors.Vector3[0]);
+                    rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, TmpVectors.Quaternion[0]);
+                    scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, TmpVectors.Vector3[1]);
 
-                    TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
-                    TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
-                    TmpVectors.Vector3[1].copyFromFloats(1, 1, 1); // scale
+                    Matrix.ComposeToRef(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
 
-                    for (let i = 0; i < instanceCount; ++i) {
-                        translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, TmpVectors.Vector3[0]);
-                        rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, TmpVectors.Quaternion[0]);
-                        scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, TmpVectors.Vector3[1]);
-
-                        Matrix.ComposeToRef(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
-
-                        TmpVectors.Matrix[0].copyToArray(matrices, i * 16);
-                    }
-
-                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                        (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
-                    }
-
-                    return babylonTransformNode;
-                });
+                    TmpVectors.Matrix[0].copyToArray(matrices, i * 16);
+                }
+                for (const babylonMesh of node._primitiveBabylonMeshes!) {
+                    (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+                }
+                return babylonTransformNode;
             });
         });
     }

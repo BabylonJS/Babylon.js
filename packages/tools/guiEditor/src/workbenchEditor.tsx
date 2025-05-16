@@ -52,6 +52,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
         document.addEventListener("keydown", this.addToolControls);
         document.addEventListener("keyup", this.removePressToolControls);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.props.onReady?.();
     }
 
@@ -130,13 +131,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
-        if (evt.button !== 0) return;
+        if (evt.button !== 0) {
+            return;
+        }
         this._moveInProgress = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
 
     onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        if (evt.button !== 0) return;
+        if (evt.button !== 0) {
+            return;
+        }
         this._moveInProgress = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
@@ -146,7 +151,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             return;
         }
 
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
         const maxWidth = this.props.globalState.hostWindow.innerWidth;
 

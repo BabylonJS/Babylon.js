@@ -486,7 +486,6 @@ export class AnimationAssetTask extends AbstractAssetTask {
         const startingIndexForNewAnimationGroups = scene.animationGroups.length;
         this.loadedAnimatables = [];
         this.loadedAnimationGroups = [];
-
         SceneLoader.ImportAnimations(
             this.rootUrl,
             this.filename,
@@ -695,11 +694,11 @@ export class ImageAssetTask extends AbstractAssetTask {
 /**
  * Defines the interface used by texture loading tasks
  */
-export interface ITextureAssetTask<TEX extends BaseTexture> {
+export interface ITextureAssetTask<Tex extends BaseTexture> {
     /**
      * Gets the loaded texture
      */
-    texture: TEX;
+    texture: Tex;
 }
 
 /**
@@ -1371,14 +1370,15 @@ export class AssetsManager {
      * Start the loading process as an async operation
      * @returns a promise returning the list of failed tasks
      */
-    public loadAsync(): Promise<void> {
-        return new Promise((resolve, reject) => {
+    public async loadAsync(): Promise<void> {
+        return await new Promise((resolve, reject) => {
             if (this._isLoading) {
                 resolve();
                 return;
             }
             this.onTasksDoneObservable.addOnce((remainingTasks) => {
                 if (remainingTasks && remainingTasks.length) {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(remainingTasks);
                 } else {
                     resolve();

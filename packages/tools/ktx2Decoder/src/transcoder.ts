@@ -36,7 +36,7 @@ export class Transcoder {
 
     public setMemoryManager(memoryMgr: WASMMemoryManager): void {}
 
-    public transcode(
+    public async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,
@@ -47,6 +47,6 @@ export class Transcoder {
         imageDesc: IKTX2_ImageDesc | null,
         encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
-        return Promise.resolve(null);
+        return null;
     }
 }

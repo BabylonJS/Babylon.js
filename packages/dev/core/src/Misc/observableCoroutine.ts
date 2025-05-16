@@ -29,7 +29,7 @@ function CreateObservableScheduler<T>(observable: Observable<any>): { scheduler:
 }
 
 declare module "./observable" {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Observable<T> {
         /**
          * Internal observable-based coroutine scheduler instance.
@@ -55,6 +55,7 @@ declare module "./observable" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 Observable.prototype.runCoroutineAsync = function (coroutine: AsyncCoroutine<void>) {
     if (!this._coroutineScheduler) {
         const schedulerAndDispose = CreateObservableScheduler<void>(this);

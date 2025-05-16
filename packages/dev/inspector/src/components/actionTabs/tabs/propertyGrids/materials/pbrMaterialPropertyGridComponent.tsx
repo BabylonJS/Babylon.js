@@ -63,6 +63,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Base Diffuse Roughness"
+                    texture={material.baseDiffuseRoughnessTexture}
+                    propertyName="baseDiffuseRoughnessTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Metallic Roughness"
                     texture={material.metallicTexture}
                     propertyName="metallicTexture"
@@ -255,6 +263,22 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
         ];
 
+        const baseDiffuseModelOptions = [
+            { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_MODEL_LAMBERT },
+            { label: "Burley", value: Constants.MATERIAL_DIFFUSE_MODEL_BURLEY },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR },
+        ];
+
+        const dielectricSpecularModelOptions = [
+            { label: "glTF", value: Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF },
+            { label: "OpenPBR", value: Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR },
+        ];
+
+        const conductorSpecularModelOptions = [
+            { label: "glTF", value: Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF },
+            { label: "OpenPBR", value: Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR },
+        ];
+
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
         material.sheen.roughness = material.sheen.roughness ?? (material.sheen as any)._saveRoughness ?? 0;
 
@@ -348,6 +372,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         label="Roughness"
                         target={material}
                         propertyName="roughness"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Base Diffuse Roughness"
+                        target={material}
+                        propertyName="baseDiffuseRoughness"
                         minimum={0}
                         maximum={1}
                         step={0.01}
@@ -1231,6 +1265,30 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         propertyName="realTimeFilteringQuality"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <OptionsLine
+                        allowNullValue={true}
+                        label="Base Diffuse Model"
+                        options={baseDiffuseModelOptions}
+                        target={material}
+                        propertyName="baseDiffuseModel"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLine
+                        allowNullValue={true}
+                        label="Dielectric Specular Model"
+                        options={dielectricSpecularModelOptions}
+                        target={material}
+                        propertyName="dielectricSpecularModel"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLine
+                        allowNullValue={true}
+                        label="Conductor Specular Model"
+                        options={conductorSpecularModelOptions}
+                        target={material}
+                        propertyName="conductorSpecularModel"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="NORMAL MAP" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent
@@ -1277,6 +1335,13 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         label="Mix irradiance with rough radiance"
                         target={material.brdf}
                         propertyName="mixIblRadianceWithIrradiance"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Use legacy specular energy conservation"
+                        target={material.brdf}
+                        propertyName="useLegacySpecularEnergyConservation"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

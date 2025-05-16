@@ -32,7 +32,7 @@ declare module "../../glTFFileLoader" {
         selectedVariant: string;
     };
 
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_variants extension.
@@ -252,6 +252,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadMeshPrimitiveAsync(
         context: string,
         name: string,
@@ -260,7 +261,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         primitive: IMeshPrimitive,
         assign: (babylonMesh: AbstractMesh) => void
     ): Nullable<Promise<AbstractMesh>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(
                 this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
@@ -300,7 +301,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
                                             // Find root to get medata
                                             do {
-                                                newRoot = newRoot!.parent;
+                                                newRoot = newRoot.parent;
                                                 if (!newRoot) {
                                                     return;
                                                 }
@@ -363,7 +364,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     }
                 })
             );
-            return Promise.all(promises).then(([babylonMesh]) => {
+            // eslint-disable-next-line github/no-then
+            return await Promise.all(promises).then(([babylonMesh]) => {
                 return babylonMesh;
             });
         });

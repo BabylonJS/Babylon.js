@@ -8,7 +8,7 @@ import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
 import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
-import { _getClassNameOf } from "core/FlowGraph/utils";
+import { _GetClassNameOf } from "core/FlowGraph/utils";
 
 /**
  * Vector length block.
@@ -19,7 +19,7 @@ export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<FlowGraph
     }
 
     private _polymorphicLength(a: FlowGraphVector) {
-        const aClassName = _getClassNameOf(a);
+        const aClassName = _GetClassNameOf(a);
         switch (aClassName) {
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
@@ -53,7 +53,7 @@ export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGr
     }
 
     private _polymorphicNormalize(a: FlowGraphVector) {
-        const aClassName = _getClassNameOf(a);
+        const aClassName = _GetClassNameOf(a);
         let normalized: FlowGraphVector;
         switch (aClassName) {
             case FlowGraphTypes.Vector2:
@@ -84,7 +84,7 @@ export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVe
     }
 
     private _polymorphicDot(a: FlowGraphVector, b: FlowGraphVector) {
-        const className = _getClassNameOf(a);
+        const className = _GetClassNameOf(a);
         switch (className) {
             case FlowGraphTypes.Vector2:
             case FlowGraphTypes.Vector3:
@@ -137,8 +137,8 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
 }
 RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
 
-function _transformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
-    const className = _getClassNameOf(a);
+function TransformVector(a: FlowGraphVector, b: FlowGraphMatrix): FlowGraphVector {
+    const className = _GetClassNameOf(a);
     switch (className) {
         case FlowGraphTypes.Vector2:
             return (b as FlowGraphMatrix2D).transformVector(a as Vector2);
@@ -180,7 +180,7 @@ export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<FlowG
             getRichTypeByFlowGraphType(vectorType),
             getRichTypeByFlowGraphType(matrixType),
             getRichTypeByFlowGraphType(vectorType),
-            _transformVector,
+            TransformVector,
             FlowGraphBlockNames.TransformVector,
             config
         );

@@ -1,3 +1,5 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
@@ -40,6 +42,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         };
 
         this.props.globalState.onRunRequiredObservable.add(() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._compileAndRunAsync();
         });
 
@@ -97,7 +100,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     };
 
     private async _loadScriptAsync(url: string): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             const script = document.createElement("script");
             script.setAttribute("type", "text/javascript");
             script.setAttribute("src", url);
@@ -399,15 +402,22 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._preventReentrancy = false;
                 return this._notifyError("You must at least create a camera.");
             } else if (globalObject.scene.then) {
-                globalObject.scene.then(() => {
-                    if (this._engine!.scenes[0] && displayInspector) {
-                        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+                globalObject.scene.then(
+                    () => {
+                        if (this._engine!.scenes[0] && displayInspector) {
+                            this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+                        }
+                        this._engine!.scenes[0].executeWhenReady(() => {
+                            this.props.globalState.onRunExecutedObservable.notifyObservers();
+                        });
+                        this._preventReentrancy = false;
+                    },
+                    (err: any) => {
+                        // eslint-disable-next-line no-console
+                        console.error(err);
+                        this._preventReentrancy = false;
                     }
-                    this._engine!.scenes[0].executeWhenReady(() => {
-                        this.props.globalState.onRunExecutedObservable.notifyObservers();
-                    });
-                    this._preventReentrancy = false;
-                });
+                );
             } else {
                 this._engine.scenes[0].executeWhenReady(() => {
                     this.props.globalState.onRunExecutedObservable.notifyObservers();

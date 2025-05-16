@@ -10,6 +10,7 @@ import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/tex
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         createCubeTextureBase(
@@ -237,6 +238,7 @@ AbstractEngine.prototype.createCubeTextureBase = function (
     };
 
     if (loaderPromise) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         loaderPromise.then((loader) => {
             const onloaddata = (data: ArrayBufferView | ArrayBufferView[]) => {
                 if (beforeLoadCubeDataCallback) {

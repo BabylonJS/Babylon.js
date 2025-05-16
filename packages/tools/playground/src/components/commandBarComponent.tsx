@@ -1,3 +1,4 @@
+/* eslint-disable github/no-then */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 import { CommandButtonComponent } from "./commandButtonComponent";
@@ -29,7 +30,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this._procedural = [];
         const url = "procedural.json?uncacher=" + Date.now();
         fetch(url)
-            .then((response) => response.json())
+            .then(async (response) => await response.json())
             .then((data) => {
                 this._procedural = data;
                 this._load();
@@ -45,6 +46,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         });
 
         if (typeof WebGPUEngine !== "undefined") {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             WebGPUEngine.IsSupportedAsync.then((result) => {
                 this._webGPUSupported = result;
                 if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {

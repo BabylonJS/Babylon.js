@@ -548,8 +548,8 @@ export class TexturePacker {
      * Starts the async promise to compile the texture packer.
      * @returns Promise<void>
      */
-    public processAsync(): Promise<void> {
-        return new Promise((resolve, reject) => {
+    public async processAsync(): Promise<void> {
+        return await new Promise((resolve, reject) => {
             try {
                 if (this.meshes.length === 0) {
                     //Must be a JSON load!
@@ -592,11 +592,13 @@ export class TexturePacker {
                         continue;
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     material.forceCompilationAsync(mesh).then(() => {
-                        doneCheck(material as Material);
+                        doneCheck(material);
                     });
                 }
             } catch (e) {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 return reject(e);
             }
         });

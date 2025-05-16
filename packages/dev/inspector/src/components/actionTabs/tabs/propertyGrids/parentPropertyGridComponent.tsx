@@ -70,7 +70,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                                 node.parent = null;
                             }
                         } else {
-                            const newParent = sortedNodes[value as number];
+                            const newParent = sortedNodes[value];
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(newParent);
                             } else {

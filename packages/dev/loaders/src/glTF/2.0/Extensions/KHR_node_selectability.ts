@@ -9,7 +9,7 @@ import { AddObjectAccessorToKey } from "./objectModelMapping";
 const NAME = "KHR_node_selectability";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_selectability extension.
@@ -132,6 +132,7 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
         this._loader.gltf.nodes?.forEach((node) => {
             if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {

@@ -4,6 +4,7 @@ import type { Nullable } from "../../../types";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 declare module "../../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /** @internal */
         _readTexturePixels(
@@ -35,6 +36,7 @@ declare module "../../abstractEngine" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 ThinWebGPUEngine.prototype._readTexturePixels = function (
     texture: InternalTexture,
     width: number,

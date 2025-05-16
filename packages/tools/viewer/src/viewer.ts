@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type {
     AbstractEngine,
     AbstractMesh,
@@ -7,8 +8,10 @@ import type {
     BaseTexture,
     Camera,
     CubeTexture,
+    Engine,
     HDRCubeTexture,
     HotSpotQuery,
+    IblShadowsRenderPipeline,
     IDisposable,
     IMeshDataCache,
     ISceneLoaderProgressEvent,
@@ -16,13 +19,17 @@ import type {
     Nullable,
     Observer,
     PickingInfo,
+    ShaderMaterial,
+    ShadowGenerator,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
+import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
+import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -30,7 +37,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
@@ -48,10 +55,17 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant";
+export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
+
+// TODO: Include "high" when remaining IBL shadow issues are resolved.
+const shadowQualityOptions = ["none", "normal" /*, "high"*/] as const;
+export type ShadowQuality = (typeof shadowQualityOptions)[number];
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
+
+const environmentMode = ["none", "auto", "url"] as const;
+type EnvironmentMode = (typeof environmentMode)[number];
 
 type ActivateModelOptions = Partial<{ source: string | File | ArrayBufferView }>;
 
@@ -92,11 +106,13 @@ export type EnvironmentParams = {
      * The rotation of the environment lighting in radians.
      */
     rotation: number;
+};
 
+export type ShadowParams = {
     /**
-     * If the environment should be visible.
+     * The quality of shadow being used
      */
-    visible: boolean;
+    quality: ShadowQuality;
 };
 
 export type PostProcessing = {
@@ -116,6 +132,23 @@ export type PostProcessing = {
     exposure: number;
 };
 
+type ShadowState = {
+    normal?: {
+        generator: ShadowGenerator;
+        ground: Mesh;
+        light: SpotLight;
+        shouldRender: boolean;
+    };
+    high?: {
+        pipeline: IblShadowsRenderPipeline;
+        ground: Mesh;
+        groundMaterial: ShaderMaterial;
+        renderTimer?: Nullable<ReturnType<typeof setTimeout>>;
+        shouldRender: boolean;
+        resizeObserver: Observer<Engine>;
+    };
+};
+
 /**
  * Checks if the given value is a valid tone mapping option.
  * @param value The value to check.
@@ -123,6 +156,15 @@ export type PostProcessing = {
  */
 export function IsToneMapping(value: string): value is ToneMapping {
     return toneMappingOptions.includes(value as ToneMapping);
+}
+
+/**
+ * Checks if the given value is a valid shadow quality option.
+ * @param value The value to check.
+ * @returns True if the value is a valid shadow quality option, otherwise false.
+ */
+export function IsShadowQuality(value: string): value is ShadowQuality {
+    return shadowQualityOptions.includes(value as ShadowQuality);
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -193,6 +235,10 @@ function computeModelsMaxExtents(models: readonly Model[]): Array<{ minimum: Vec
 }
 
 function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3; maximum: Vector3 }>) {
+    if (maxExtents.length === 0) {
+        return null;
+    }
+
     const min = new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z)));
     const max = new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z)));
     const size = max.subtract(min);
@@ -221,6 +267,7 @@ function computeModelsBoundingInfos(models: readonly Model[]): Nullable<ViewerBo
 // This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
 // If there is any error (other than AbortError) in the async function, it will be logged.
 function observePromise(promise: Promise<unknown>): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
         try {
             await promise;
@@ -402,6 +449,11 @@ export type ViewerOptions = Partial<{
     postProcessing: Partial<PostProcessing>;
 
     /**
+     * Shadow configuration.
+     */
+    shadowConfig: Partial<ShadowParams>;
+
+    /**
      * The default selected material variant.
      * @remarks The default material variant is restored when a new model is loaded.
      */
@@ -428,8 +480,9 @@ export const DefaultViewerOptions = {
         intensity: 1,
         blur: 0.3,
         rotation: 0,
-        visible: true,
     },
+    environmentLighting: "auto",
+    environmentSkybox: "none",
     cameraAutoOrbit: {
         enabled: false,
         delay: 2000,
@@ -437,6 +490,9 @@ export const DefaultViewerOptions = {
     },
     animationAutoPlay: false,
     animationSpeed: 1,
+    shadowConfig: {
+        quality: "none",
+    },
     postProcessing: {
         toneMapping: "neutral",
         contrast: 1,
@@ -637,6 +693,11 @@ export class Viewer implements IDisposable {
     public readonly onEnvironmentError = new Observable<unknown>();
 
     /**
+     * Fired when the shadows configuration changes.
+     */
+    public readonly onShadowsConfigurationChanged = new Observable<void>();
+
+    /**
      * Fired when the post processing state changes.
      */
     public readonly onPostProcessingChanged = new Observable<void>();
@@ -715,9 +776,10 @@ export class Viewer implements IDisposable {
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
+    private _environmentSkyboxMode: EnvironmentMode = "none";
+    private _environmentLightingMode: EnvironmentMode = "none";
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
-    private _skyboxVisible = this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible;
     private _skyboxTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
@@ -739,10 +801,10 @@ export class Viewer implements IDisposable {
     private readonly _loadEnvironmentLock = new AsyncLock();
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
 
-    private readonly _loadSkyboxLock = new AsyncLock();
-    private _loadSkyboxAbortController: Nullable<AbortController> = null;
-
     private _camerasAsHotSpotsAbortController: Nullable<AbortController> = null;
+
+    private readonly _updateShadowsLock = new AsyncLock();
+    private _shadowsAbortController: Nullable<AbortController> = null;
 
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
@@ -752,9 +814,13 @@ export class Viewer implements IDisposable {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
+    // TODO: Remove the `| "high"` once the IBL shadow issues are resolved.
+    private _shadowQuality: ShadowQuality | "high" = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+    private readonly _shadowState: ShadowState = {};
+
     public constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _options?: ViewerOptions
+        private readonly _options?: Readonly<ViewerOptions>
     ) {
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
@@ -847,7 +913,7 @@ export class Viewer implements IDisposable {
         this._reset(false, "camera");
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
-        this.resetEnvironment().catch(() => {});
+        observePromise(this.resetEnvironment());
 
         this._beginRendering();
 
@@ -861,7 +927,7 @@ export class Viewer implements IDisposable {
             },
             suspendRendering: () => this._suspendRendering(),
             markSceneMutated: () => this._markSceneMutated(),
-            pick: (screenX: number, screenY: number) => this._pick(screenX, screenY),
+            pick: async (screenX: number, screenY: number) => await this._pick(screenX, screenY),
         });
 
         this._reset(false, "source", "environment", "post-processing");
@@ -906,7 +972,6 @@ export class Viewer implements IDisposable {
             intensity: this._reflectionsIntensity,
             blur: this._skyboxBlur,
             rotation: this._reflectionsRotation,
-            visible: this._skyboxVisible,
         };
     }
 
@@ -916,14 +981,26 @@ export class Viewer implements IDisposable {
         }
         if (value.intensity !== undefined) {
             this._changeEnvironmentIntensity(value.intensity);
+            this._changeShadowLightIntensity();
         }
         if (value.rotation !== undefined) {
             this._changeEnvironmentRotation(value.rotation);
-        }
-        if (value.visible !== undefined) {
-            this._changeSkyboxVisible(value.visible);
+            this._rotateShadowLightWithEnvironment();
         }
         this.onEnvironmentConfigurationChanged.notifyObservers();
+    }
+
+    /**
+     * Update the shadow configuration.
+     * @param value The new shadow configuration.
+     */
+    public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
+        if (value.quality && this._shadowQuality !== value.quality) {
+            this._shadowQuality = value.quality;
+
+            await this._updateShadows();
+            this.onShadowsConfigurationChanged.notifyObservers();
+        }
     }
 
     private _changeSkyboxBlur(value: number) {
@@ -974,19 +1051,6 @@ export class Viewer implements IDisposable {
             }
             this._snapshotHelper.enableSnapshotRendering();
             this._markSceneMutated();
-        }
-    }
-
-    private _changeSkyboxVisible(value: boolean) {
-        if (value !== this._skyboxVisible) {
-            this._skyboxVisible = value;
-            if (this._skybox) {
-                this._snapshotHelper.disableSnapshotRendering();
-                this._skybox.setEnabled(this._skyboxVisible);
-                this._updateAutoClear();
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
-            }
         }
     }
 
@@ -1097,10 +1161,11 @@ export class Viewer implements IDisposable {
         if (model !== this._activeModelBacking) {
             this._activeModelBacking = model;
             this._updateLight();
+            observePromise(this._updateShadows());
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
-            this._reframeCamera(true);
+            this._reframeCamera(true, model ? [model] : undefined);
             this.onModelChanged.notifyObservers(options?.source ?? null);
         }
     }
@@ -1352,6 +1417,8 @@ export class Viewer implements IDisposable {
 
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const viewer = this;
 
             const model = {
                 assetContainer,
@@ -1412,6 +1479,7 @@ export class Viewer implements IDisposable {
 
                     selectedAnimation = index;
                     activeAnimation = assetContainer.animationGroups[selectedAnimation];
+                    observePromise(viewer._updateShadows());
 
                     if (activeAnimation) {
                         activeAnimation.goToFrame(0);
@@ -1467,6 +1535,386 @@ export class Viewer implements IDisposable {
         this._startSceneOptimizer(true);
     }
 
+    protected async _updateShadows() {
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being change before previous shadows finished initializing."));
+        const abortController = (this._shadowsAbortController = new AbortController());
+
+        await this._updateShadowsLock.lockAsync(async () => {
+            if (this._shadowQuality === "none") {
+                this._disposeShadows();
+            } else if (this._loadedModelsBacking.length > 0) {
+                // make sure there is an env light before creating shadows
+                if (!this._reflectionTexture) {
+                    await this.loadEnvironment("auto", { lighting: true, skybox: false });
+                }
+
+                if (this._shadowQuality === "normal") {
+                    await this._updateShadowMap(abortController.signal);
+                } else if (this._shadowQuality === "high") {
+                    const isWebGPU = this._scene.getEngine().isWebGPU;
+                    // there is some issue with meshes with indices, so disable environment shadows for now
+                    const hasAnyAnimationOrIndices = this._loadedModelsBacking.some(
+                        (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
+                    );
+
+                    if (this._loadedModelsBacking.length > 0 && !(isWebGPU && hasAnyAnimationOrIndices)) {
+                        await this._updateEnvShadow(abortController.signal);
+                    } else {
+                        this._log("Environment shadows are not supported in WebGPU with animated meshes.");
+                    }
+                }
+            }
+        });
+    }
+
+    private _changeShadowLightIntensity() {
+        if (this._shadowState.high) {
+            this._shadowState.high.pipeline.resetAccumulation();
+            this._startIblShadowsRenderTime();
+        }
+    }
+
+    private _rotateShadowLightWithEnvironment(): void {
+        if (this._shadowQuality === "normal" && this._shadowState.normal) {
+            const x = Math.cos(this._reflectionsRotation);
+            const z = Math.sin(this._reflectionsRotation);
+            if (this._shadowState.normal.light) {
+                const light = this._shadowState.normal.light;
+                const radius = light.position.y;
+                light.position.set(x * radius, light.position.y, z * radius);
+                light.direction.set(-x, -1, -z);
+            }
+        } else if (this._shadowQuality === "high" && this._shadowState.high) {
+            this._shadowState.high.pipeline?.resetAccumulation();
+            this._startIblShadowsRenderTime();
+        }
+    }
+
+    // maybe move this into shadow state
+    private _startIblShadowsRenderTime() {
+        if (this._shadowState.high) {
+            if (this._shadowState.high.renderTimer != null) {
+                clearTimeout(this._shadowState.high.renderTimer);
+            }
+            this._shadowState.high.shouldRender = true;
+            const onRenderTimeout = () => {
+                if (this._shadowState.high) {
+                    this._shadowState.high.shouldRender = false;
+                }
+            };
+            this._shadowState.high.renderTimer = setTimeout(
+                onRenderTimeout,
+                // based on the shadow remanence as we can't estimate the time it takes to accumulate the shadows
+                this._shadowState.high.pipeline.shadowRemanence * 4000
+            );
+        }
+    }
+
+    private async _updateEnvShadow(abortSignal?: AbortSignal) {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const [{ ShaderMaterial }, { ShaderLanguage }, { CreateDisc }, { IblShadowsRenderPipeline }] = await Promise.all([
+            import("core/Materials/shaderMaterial"),
+            import("core/Materials/shaderLanguage"),
+            import("core/Meshes/Builders/discBuilder"),
+            import("core/Rendering/IBLShadows/iblShadowsRenderPipeline"),
+            import("core/Engines/Extensions/engine.multiRender"),
+            import("core/Engines/WebGPU/Extensions/engine.multiRender"),
+            import("core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent"),
+        ]);
+
+        // cancel if the model is unloaded before the shadows are created
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+
+        const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
+        if (!worldBounds) {
+            this._log("No models loaded, cannot create shadows.");
+            return;
+        }
+
+        const groundFactor = 4;
+        const radius = Vector3.FromArray(worldBounds.size).length();
+        const groundSize = groundFactor * radius;
+
+        const updateMaterial = () => {
+            if (this._shadowState.high) {
+                const { pipeline, groundMaterial, ground } = this._shadowState.high;
+                groundMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
+                groundMaterial?.setFloat("shadowOpacity", pipeline.shadowOpacity);
+                groundMaterial?.setTexture("shadowTexture", pipeline._getAccumulatedTexture());
+                const groundSize = groundFactor * pipeline?.voxelGridSize;
+                ground?.scaling.set(groundSize, groundSize, groundSize);
+            }
+        };
+
+        this._snapshotHelper.disableSnapshotRendering();
+
+        let high = this._shadowState.high;
+        if (!high) {
+            const pipeline = new IblShadowsRenderPipeline(
+                "ibl shadows",
+                this._scene,
+                {
+                    resolutionExp: 5,
+                    sampleDirections: 3,
+                    ssShadowsEnabled: true,
+                    shadowRemanence: 0.7,
+                    triPlanarVoxelization: true,
+                },
+                [this._camera]
+            );
+
+            pipeline.toggleShadow(false);
+
+            // Useful for debugging, but not needed in production
+            // pipeline.allowDebugPasses = false;
+            // pipeline.gbufferDebugEnabled = false;
+            // pipeline.voxelDebugEnabled = false;
+            // pipeline.accumulationPassDebugEnabled = false;
+
+            const isWebGPU = this._scene.getEngine().isWebGPU;
+            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            const options = {
+                attributes: ["position", "uv"],
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
+                samplers: ["shadowTexture"],
+                shaderLanguage,
+                extraInitializationsAsync: async () => {
+                    if (shaderLanguage === ShaderLanguage.WGSL) {
+                        await Promise.all([import("./ShadersWGSL/envShadowGround.vertex"), import("./ShadersWGSL/envShadowGround.fragment")]);
+                    } else {
+                        await Promise.all([import("./Shaders/envShadowGround.vertex"), import("./Shaders/envShadowGround.fragment")]);
+                    }
+                },
+            };
+
+            const groundMaterial = new ShaderMaterial("envShadowGroundMaterial", this._scene, "envShadowGround", options);
+            groundMaterial.alphaMode = Constants.ALPHA_MULTIPLY;
+            groundMaterial.alpha = 0.99;
+
+            updateMaterial();
+
+            pipeline.onShadowTextureReadyObservable.addOnce(updateMaterial);
+
+            const resizeObserver = this._engine.onResizeObservable.add(() => {
+                updateMaterial();
+                pipeline?.resetAccumulation();
+                this._startIblShadowsRenderTime();
+            });
+
+            this._camera.onViewMatrixChangedObservable.add(() => {
+                this._startIblShadowsRenderTime();
+            });
+
+            const ground = CreateDisc("envShadowGround", { radius: groundSize, tessellation: 64 }, this._scene);
+            ground.setEnabled(false);
+            ground.rotation.x = Math.PI / 2;
+            ground.position.y = worldBounds.extents.min[1];
+            ground.material = groundMaterial;
+
+            high = {
+                pipeline: pipeline,
+                groundMaterial: groundMaterial,
+                resizeObserver: resizeObserver,
+                shouldRender: true,
+                ground: ground,
+            };
+        }
+
+        for (const model of this._loadedModelsBacking) {
+            const meshes = model.assetContainer.meshes;
+            for (const mesh of meshes) {
+                if (mesh instanceof Mesh) {
+                    high.pipeline.addShadowCastingMesh(mesh);
+                    if (mesh.material) {
+                        high.pipeline.addShadowReceivingMaterial(mesh.material);
+                    }
+                }
+            }
+        }
+
+        high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
+            updateMaterial();
+            high.ground.setEnabled(true);
+            high.pipeline.toggleShadow(true);
+            high.ground.setEnabled(true);
+        });
+
+        high.ground.position.y = worldBounds.extents.min[1];
+
+        // call the update now because a model might be loaded before the shadows are created
+        high.pipeline.updateSceneBounds();
+        high.pipeline.updateVoxelization();
+        high.pipeline.resetAccumulation();
+        // shadow map
+        this._shadowState.normal?.ground.setEnabled(false);
+        high.pipeline.toggleShadow(true);
+        high.ground.setEnabled(true);
+        this._startIblShadowsRenderTime();
+
+        this._shadowState.high = high;
+
+        this._snapshotHelper.enableSnapshotRendering();
+        this._markSceneMutated();
+    }
+
+    private async _updateShadowMap(abortSignal?: AbortSignal) {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const [{ CreateDisc }, { ShadowOnlyMaterial }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
+            import("core/Meshes/Builders/discBuilder"),
+            import("materials/shadowOnly/shadowOnlyMaterial"),
+            import("core/Materials/Textures/renderTargetTexture"),
+            import("core/Lights/Shadows/shadowGenerator"),
+            import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
+            // TODO: Why are these explicit imports needed, even though they are imported directly in shadowOnlyMaterial?
+            // Without these explicit imports, the shaders do not end up in the esm dist and we get a runtime error.
+            import("materials/shadowOnly/shadowOnly.vertex"),
+            import("materials/shadowOnly/shadowOnly.fragment"),
+        ]);
+
+        // cancel if the model is unloaded before the shadows are created
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+
+        const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
+        if (!worldBounds) {
+            this._log("No models loaded, cannot create shadows.");
+            return;
+        }
+
+        const radius = Vector3.FromArray(worldBounds.size).length();
+        const x = Math.cos(this._reflectionsRotation);
+        const z = Math.sin(this._reflectionsRotation);
+
+        if (this._shadowQuality !== "normal") {
+            return;
+        }
+
+        this._snapshotHelper.disableSnapshotRendering();
+
+        const size = 4096;
+        const positionFactor = 3;
+        const groundFactor = 20;
+        const groundSize = radius * groundFactor;
+
+        const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
+        let normal = this._shadowState.normal;
+        if (!normal) {
+            const light = new SpotLight("spotLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
+
+            const generator = new ShadowGenerator(size, light);
+            generator.setDarkness(0.8);
+            generator.setTransparencyShadow(true);
+            generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
+            generator.useBlurExponentialShadowMap = true;
+            generator.useKernelBlur = true;
+            generator.blurKernel = 32;
+
+            const shadowMap = generator.getShadowMap();
+            if (shadowMap) {
+                shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
+            }
+
+            const shadowMaterial = new ShadowOnlyMaterial("shadowMapGroundMaterial", this._scene);
+
+            const ground = CreateDisc("shadowMapGround", { radius: groundSize, tessellation: 64 }, this._scene);
+            ground.rotation.x = Math.PI / 2;
+            ground.receiveShadows = true;
+            ground.position.y = worldBounds.extents.min[1];
+            ground.material = shadowMaterial;
+            light.includedOnlyMeshes = [ground];
+
+            const newNormal: ShadowState["normal"] = (normal = {
+                light: light,
+                generator: generator,
+                ground: ground,
+                shouldRender: true,
+            });
+
+            // Since the light is not applied to the meshes of the model (we only want shadows, not lighting),
+            // the ShadowGenerator's isReady will think everything is ready before it actually is. To account
+            // for this, explicitly wait for the first shadow map render to consider shadows in a ready state.
+            generator.onAfterShadowMapRenderObservable.addOnce(() => {
+                newNormal.shouldRender = false;
+            });
+        }
+
+        normal.light.position = position;
+
+        for (const model of this._loadedModelsBacking) {
+            // Add all root meshes to the shadow generator.
+            for (const mesh of model.assetContainer.meshes.filter((mesh) => !mesh.parent)) {
+                normal.generator.addShadowCaster(mesh, true);
+            }
+            // Set all meshes to receive shadows.
+            for (const mesh of model.assetContainer.meshes) {
+                mesh.receiveShadows = true;
+            }
+        }
+
+        normal.ground.position.y = worldBounds.extents.min[1];
+        normal.ground.scaling.set(groundSize, groundSize, groundSize);
+
+        this._shadowState.high?.ground.setEnabled(false);
+        this._shadowState.high?.pipeline.toggleShadow(false);
+        normal.ground.setEnabled(true);
+
+        this._shadowState.normal = normal;
+
+        this._snapshotHelper.enableSnapshotRendering();
+        this._markSceneMutated();
+    }
+
+    private _disposeShadows() {
+        this._snapshotHelper.disableSnapshotRendering();
+
+        if (!this._shadowState) {
+            return;
+        }
+
+        for (const model of this._loadedModelsBacking) {
+            const meshes = model.assetContainer.meshes;
+
+            const mesh = model.assetContainer.meshes[0];
+            this._shadowState.normal?.generator.removeShadowCaster(mesh, true);
+            mesh.receiveShadows = false;
+
+            for (const mesh of meshes) {
+                if (mesh instanceof Mesh) {
+                    this._shadowState.high?.pipeline.removeShadowCastingMesh(mesh);
+                    if (mesh.material) {
+                        this._shadowState.high?.pipeline.removeShadowReceivingMaterial(mesh.material);
+                    }
+                }
+            }
+        }
+
+        const highShadow = this._shadowState.high;
+        const normalShadow = this._shadowState.normal;
+
+        if (normalShadow) {
+            normalShadow.generator.dispose();
+            normalShadow.light.dispose();
+            normalShadow.ground.dispose(true, true);
+            this._scene.removeMesh(normalShadow.ground);
+        }
+
+        if (highShadow) {
+            highShadow.resizeObserver.remove();
+            highShadow.pipeline.dispose();
+            highShadow.ground.dispose(true, true);
+            this._scene.removeMesh(highShadow.ground);
+            if (highShadow.renderTimer) {
+                clearTimeout(highShadow.renderTimer);
+            }
+        }
+
+        delete this._shadowState.normal;
+        delete this._shadowState.high;
+        this.onShadowsConfigurationChanged.clear();
+
+        this._snapshotHelper.enableSnapshotRendering();
+        this._markSceneMutated();
+    }
+
     /**
      * Loads an environment texture from the specified url and sets up a corresponding skybox.
      * @remarks
@@ -1497,103 +1945,155 @@ export class Viewer implements IDisposable {
         await Promise.all(promises);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: LoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
+    private _setEnvironmentLighting(cubeTexture: CubeTexture | HDRCubeTexture): void {
+        this._reflectionTexture = cubeTexture;
+        this._scene.environmentTexture = this._reflectionTexture;
+        this._reflectionTexture.level = this.environmentConfig.intensity;
+        this._reflectionTexture.rotationY = this.environmentConfig.rotation;
+    }
+
+    private _setEnvironmentSkybox(cubeTexture: CubeTexture | HDRCubeTexture): void {
+        this._skyboxTexture = cubeTexture;
+        this._skyboxTexture.level = this.environmentConfig.intensity;
+        this._skyboxTexture.rotationY = this.environmentConfig.rotation;
+        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
+        this._skybox.setEnabled(true);
+        this._snapshotHelper.fixMeshes([this._skybox]);
+        this._updateAutoClear();
+    }
+
+    private async _updateEnvironment(url: Nullable<string | undefined>, options: LoadEnvironmentOptions = defaultLoadEnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        let urlPromise: Nullable<string | undefined> | Promise<string> = url;
-        if (url && url.trim() === "auto") {
-            options = { ...options, extension: ".env" };
-            urlPromise = (async () => (await import("./defaultEnvironment")).default)();
-        }
-
-        options = options ?? defaultLoadEnvironmentOptions;
         if (!options.lighting && !options.skybox) {
             return;
         }
 
-        const locks: AsyncLock[] = [];
-        if (options.lighting) {
-            this._loadEnvironmentAbortController?.abort(new AbortError("New environment lighting is being loaded before previous environment lighting finished loading."));
-            locks.push(this._loadEnvironmentLock);
-        }
-        if (options.skybox) {
-            this._loadSkyboxAbortController?.abort(new AbortError("New environment skybox is being loaded before previous environment skybox finished loading."));
-            locks.push(this._loadSkyboxLock);
+        url = url?.trim();
+        if (url === "auto") {
+            options = { ...options, extension: ".env" };
         }
 
-        const environmentAbortController = (this._loadEnvironmentAbortController = options.lighting ? new AbortController() : null);
-        const skyboxAbortController = (this._loadSkyboxAbortController = options.skybox ? new AbortController() : null);
+        this._loadEnvironmentAbortController?.abort(new AbortError("New environment is being loaded before previous environment finished loading."));
+        const loadEnvironmentAbortController = (this._loadEnvironmentAbortController = new AbortController());
 
-        await AsyncLock.LockAsync(async () => {
-            throwIfAborted(abortSignal, environmentAbortController?.signal, skyboxAbortController?.signal);
+        await this._loadEnvironmentLock.lockAsync(async () => {
+            throwIfAborted(abortSignal, loadEnvironmentAbortController.signal);
+
+            const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
+
+            const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
+                await new Promise<void>((resolve, reject) => {
+                    const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
+                        successObserver.remove();
+                        errorObserver.remove();
+                        resolve();
+                    });
+
+                    const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                        if (texture === cubeTexture) {
+                            successObserver.remove();
+                            errorObserver.remove();
+                            reject(new Error("Failed to load environment texture."));
+                        }
+                    });
+                });
+            };
+
+            const mode: EnvironmentMode = !url ? "none" : url === "auto" ? "auto" : "url";
+
+            this._environmentLightingMode = options.lighting ? mode : this._environmentLightingMode;
+            this._environmentSkyboxMode = options.skybox ? mode : this._environmentSkyboxMode;
+
+            let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
+            let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
+
             this._snapshotHelper.disableSnapshotRendering();
 
-            const dispose = () => {
-                if (options.lighting) {
+            try {
+                // If both modes are auto, use the default environment.
+                if (this._environmentLightingMode === "auto" && this._environmentSkyboxMode === "auto") {
+                    lightingUrl = skyboxUrl = await getDefaultEnvironmentUrlAsync();
+                } else {
+                    // If the lighting mode is not auto and we are updating the lighting, use the provided url.
+                    if (this._environmentLightingMode !== "auto" && options.lighting) {
+                        lightingUrl = url;
+                    }
+
+                    // If the skybox mode is not auto and we are updating the skybox, use the provided url.
+                    if (this._environmentSkyboxMode !== "auto" && options.skybox) {
+                        skyboxUrl = url;
+                    }
+
+                    // If the lighting mode is auto, use the skybox texture if there is one, otherwise use the default environment.
+                    if (this._environmentLightingMode === "auto") {
+                        lightingUrl = skyboxUrl ?? (await getDefaultEnvironmentUrlAsync());
+                    }
+
+                    // If the skybox mode is auto, use the lighting texture if there is one, otherwise use the default environment.
+                    if (this._environmentSkyboxMode === "auto") {
+                        skyboxUrl = lightingUrl ?? (await getDefaultEnvironmentUrlAsync());
+                    }
+                }
+
+                const newTexturePromises: Promise<void>[] = [];
+
+                // If the lighting url is not the same as the current lighting url, load the new lighting texture.
+                if (lightingUrl !== this._reflectionTexture?.url) {
+                    // Dispose the existing lighting texture if it exists.
                     this._reflectionTexture?.dispose();
                     this._reflectionTexture = null;
                     this._scene.environmentTexture = null;
+
+                    // Load the new lighting texture if there is a target url.
+                    if (lightingUrl) {
+                        if (lightingUrl === this._skyboxTexture?.url) {
+                            // If the lighting url is the same as the skybox url, clone the skybox texture.
+                            this._setEnvironmentLighting(this._skyboxTexture.clone());
+                        } else {
+                            // Otherwise, create a new cube texture from the lighting url.
+                            const lightingTexture = await createCubeTexture(lightingUrl, this._scene, options.extension);
+                            newTexturePromises.push(whenTextureLoadedAsync(lightingTexture));
+                            this._setEnvironmentLighting(lightingTexture);
+                        }
+                    }
                 }
-                if (options.skybox) {
+
+                // If the skybox url is not the same as the current skybox url, load the new skybox texture.
+                if (skyboxUrl !== this._skyboxTexture?.url) {
+                    // Dispose the existing skybox texture if it exists.
                     this._skybox?.dispose(undefined, true);
                     this._skyboxTexture = null;
                     this._skybox = null;
                     this._updateAutoClear();
-                }
-            };
 
-            // First dispose the current environment and/or skybox.
-            dispose();
-
-            try {
-                url = await urlPromise;
-                if (url) {
-                    const cubeTexture = await createCubeTexture(url, this._scene, options.extension);
-
-                    if (options.lighting) {
-                        this._reflectionTexture = cubeTexture;
-                        this._scene.environmentTexture = this._reflectionTexture;
-                        cubeTexture.level = this.environmentConfig.intensity;
-                        cubeTexture.rotationY = this.environmentConfig.rotation;
+                    // Load the new skybox texture if there is a target url.
+                    if (skyboxUrl) {
+                        if (skyboxUrl === this._reflectionTexture?.url) {
+                            // If the skybox url is the same as the lighting url, clone the lighting texture.
+                            this._setEnvironmentSkybox(this._reflectionTexture.clone());
+                        } else {
+                            // Otherwise, create a new cube texture from the skybox url.
+                            const skyboxTexture = await createCubeTexture(skyboxUrl, this._scene, options.extension);
+                            newTexturePromises.push(whenTextureLoadedAsync(skyboxTexture));
+                            this._setEnvironmentSkybox(skyboxTexture);
+                        }
                     }
-                    if (options.skybox) {
-                        this._skyboxTexture = options.lighting ? cubeTexture.clone() : cubeTexture;
-                        this._skyboxTexture.level = this.environmentConfig.intensity;
-                        this._skyboxTexture.rotationY = this.environmentConfig.rotation;
-                        this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
-                        this._skybox.setEnabled(this._skyboxVisible);
-                        this._snapshotHelper.fixMeshes([this._skybox]);
-                        this._updateAutoClear();
-                    }
-
-                    await new Promise<void>((resolve, reject) => {
-                        const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
-                            successObserver.remove();
-                            errorObserver.remove();
-                            resolve();
-                        });
-
-                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                            if (texture === cubeTexture) {
-                                successObserver.remove();
-                                errorObserver.remove();
-                                reject(new Error("Failed to load environment texture."));
-                            }
-                        });
-                    });
                 }
+
+                await Promise.all(newTexturePromises);
 
                 this._updateLight();
+                observePromise(this._updateShadows());
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
-                dispose();
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
                 this._snapshotHelper.enableSnapshotRendering();
                 this._markSceneMutated();
             }
-        }, locks);
+        });
     }
 
     /**
@@ -1601,6 +2101,7 @@ export class Viewer implements IDisposable {
      */
     public toggleAnimation() {
         if (this.isAnimationPlaying) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.pauseAnimation();
         } else {
             this.playAnimation();
@@ -1684,14 +2185,19 @@ export class Viewer implements IDisposable {
                 intensity: this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
                 blur: this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
                 rotation: this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
-                visible: this._options?.environmentConfig?.visible ?? DefaultViewerOptions.environmentConfig.visible,
             };
+
             if (this._options?.environmentLighting === this._options?.environmentSkybox) {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }, this._loadEnvironmentAbortController?.signal));
+                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true, skybox: true }));
             } else {
-                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }, this._loadEnvironmentAbortController?.signal));
-                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }, this._loadSkyboxAbortController?.signal));
+                observePromise(this._updateEnvironment(this._options?.environmentLighting, { lighting: true }));
+                observePromise(this._updateEnvironment(this._options?.environmentSkybox, { skybox: true }));
             }
+        }
+
+        if (flags.length === 0 || flags.includes("shadow")) {
+            this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+            observePromise(this.updateShadows({ quality: this._shadowQuality }));
         }
 
         if (flags.length === 0 || flags.includes("animation")) {
@@ -1700,6 +2206,7 @@ export class Viewer implements IDisposable {
             if (this._options?.animationAutoPlay) {
                 this.playAnimation();
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.pauseAnimation();
             }
         }
@@ -1750,13 +2257,14 @@ export class Viewer implements IDisposable {
         this.animationProgress = 0;
 
         this._loadEnvironmentAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._loadSkyboxAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
         this._loadedModelsBacking.forEach((model) => model.dispose());
+        this._disposeShadows();
         this._scene.dispose();
 
         this.onEnvironmentChanged.clear();
@@ -1850,6 +2358,7 @@ export class Viewer implements IDisposable {
         const result = new ViewerHotSpotResult();
         const query = this._queryHotSpot(name, result);
         if (query) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.pauseAnimation();
             const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
             this._camera.interpolateTo(cameraOrbit[0], cameraOrbit[1], cameraOrbit[2], new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2]));
@@ -1892,7 +2401,7 @@ export class Viewer implements IDisposable {
             this._scene.cameras.forEach((camera) => this._removeCameraHotSpot(camera));
         } else {
             const abortController = (this._camerasAsHotSpotsAbortController = new AbortController());
-            this._scene.cameras.forEach((camera) => this._addCameraHotSpot(camera, abortController.signal));
+            this._scene.cameras.forEach(async (camera) => await this._addCameraHotSpot(camera, abortController.signal));
         }
     }
 
@@ -1908,7 +2417,7 @@ export class Viewer implements IDisposable {
         }
 
         if (this._activeModel) {
-            return CreateHotSpotFromCamera(this._activeModel, camera);
+            return await CreateHotSpotFromCamera(this._activeModel, camera);
         }
 
         return null;
@@ -1919,8 +2428,17 @@ export class Viewer implements IDisposable {
         // 1. Auto suspend rendering is disabled.
         // 2. The scene has been mutated.
         // 3. The snapshot helper is not yet in a ready state.
-        // 4. At least one model should render (playing animations).
-        return !this._autoSuspendRendering || this._sceneMutated || !this._snapshotHelper.isReady || this._loadedModelsBacking.some((model) => model._shouldRender());
+        // 4. The classic shadows are not yet in a ready state.
+        // 5. The environment shadows are not yet in a ready state.
+        // 6. At least one model should render (playing animations).
+        return (
+            !this._autoSuspendRendering ||
+            this._sceneMutated ||
+            !this._snapshotHelper.isReady ||
+            this._shadowState.normal?.shouldRender ||
+            this._shadowState.high?.shouldRender ||
+            this._loadedModelsBacking.some((model) => model._shouldRender())
+        );
     }
 
     protected _markSceneMutated() {

@@ -15,7 +15,7 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */
         _meshUVSpaceRendererShader: Nullable<ShaderMaterial>;
@@ -175,6 +175,7 @@ export class MeshUVSpaceRenderer {
             ...options,
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
     }
 

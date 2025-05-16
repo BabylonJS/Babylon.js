@@ -13,7 +13,7 @@ import "../../Engines/Extensions/engine.dynamicTexture";
 import { serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
-function removeSource(video: HTMLVideoElement): void {
+function RemoveSource(video: HTMLVideoElement): void {
     // Remove any <source> elements, etc.
     while (video.firstChild) {
         video.removeChild(video.firstChild);
@@ -32,6 +32,7 @@ function removeSource(video: HTMLVideoElement): void {
 /**
  * Settings for finer control over video usage
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface VideoTextureSettings {
     /**
      * Applies `autoplay` to video, if specified
@@ -129,6 +130,7 @@ export class VideoTexture extends Texture {
 
     private _handlePlay() {
         this._errorFound = false;
+        // eslint-disable-next-line github/no-then
         this.video.play().catch((reason) => {
             if (reason?.name === "NotAllowedError") {
                 if (this._onUserActionRequestedObservable && this._onUserActionRequestedObservable.hasObservers()) {
@@ -138,6 +140,7 @@ export class VideoTexture extends Texture {
                     Logger.Warn("Unable to autoplay a video with sound. Trying again with muted turned true");
                     this.video.muted = true;
                     this._errorFound = false;
+                    // eslint-disable-next-line github/no-then
                     this.video.play().catch((otherReason) => {
                         this._processError(otherReason);
                     });
@@ -230,7 +233,7 @@ export class VideoTexture extends Texture {
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
         if (this._settings.poster && (!this._settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._getEngine()!.createTexture(this._settings.poster!, false, !this.invertY, scene);
+            this._texture = this._getEngine()!.createTexture(this._settings.poster, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         } else if (videoHasEnoughData) {
             this._createInternalTexture();
@@ -279,7 +282,7 @@ export class VideoTexture extends Texture {
         }
 
         this.onDisposeObservable.addOnce(() => {
-            removeSource(video);
+            RemoveSource(video);
         });
 
         return video;
@@ -468,6 +471,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
         const video = scene.getEngine().createVideoElement(constraints);
 
@@ -506,7 +510,7 @@ export class VideoTexture extends Texture {
                     });
                 }
                 videoTexture.onDisposeObservable.addOnce(() => {
-                    removeSource(video);
+                    RemoveSource(video);
                 });
 
                 resolve(videoTexture);
@@ -555,6 +559,7 @@ export class VideoTexture extends Texture {
             return videoTexture;
         }
 
+        // eslint-disable-next-line @typescript-eslint/return-await, @typescript-eslint/prefer-promise-reject-errors
         return Promise.reject("No support for userMedia on this device");
     }
 
@@ -580,11 +585,13 @@ export class VideoTexture extends Texture {
         invertY = true
     ): void {
         this.CreateFromWebCamAsync(scene, constraints, audioConstaints, invertY)
+            // eslint-disable-next-line github/no-then
             .then(function (videoTexture) {
                 if (onReady) {
                     onReady(videoTexture);
                 }
             })
+            // eslint-disable-next-line github/no-then
             .catch(function (err) {
                 Logger.Error(err.name);
             });

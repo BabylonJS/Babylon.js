@@ -5,6 +5,7 @@ import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
 declare module "../../abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Update a video texture
@@ -50,6 +51,7 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
         }
     } else if (video) {
         this.createImageBitmap(video)
+            // eslint-disable-next-line github/no-then
             .then((bitmap) => {
                 this._textureHelper.updateTexture(bitmap, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0);
                 if (texture.generateMipMaps) {
@@ -58,6 +60,7 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
 
                 texture.isReady = true;
             })
+            // eslint-disable-next-line github/no-then
             .catch(() => {
                 // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
                 // Just keep going on

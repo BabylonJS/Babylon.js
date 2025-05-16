@@ -11,7 +11,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_materials_emissive_strength";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_emissive_strength extension.
@@ -59,9 +59,11 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
-            return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, async (extensionContext, extension) => {
+            // eslint-disable-next-line github/no-then
+            return await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
                 this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
             });
         });

@@ -299,8 +299,9 @@ export class HDRCubeTexture extends BaseTexture {
                 if (this._prefilterOnLoad) {
                     radiancePromise = hdrFiltering.prefilter(this);
                 }
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 Promise.all([irradiancePromise, radiancePromise]).then((results) => {
-                    const irradianceTexture = results[0] as Nullable<BaseTexture>;
+                    const irradianceTexture = results[0];
                     if (this._prefilterIrradianceOnLoad && irradianceTexture) {
                         this.irradianceTexture = irradianceTexture;
                         const scene = this.getScene();

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable import/no-internal-modules */
 import type {
     ILightConfiguration,
@@ -185,7 +186,7 @@ export class SceneManager {
         this._handleHardwareLimitations();
         //});
 
-        this.onSceneInitObservable.add((scene) => {
+        this.onSceneInitObservable.add(async (scene) => {
             this.scene.animationPropertiesOverride = this.scene.animationPropertiesOverride || new AnimationPropertiesOverride();
 
             this.labs = new ViewerLabs(scene);
@@ -223,7 +224,7 @@ export class SceneManager {
                     updateShadows();
                 }
             });
-            return this._observablesManager && this._observablesManager.onSceneInitObservable.notifyObserversWithPromise(this.scene);
+            return await (this._observablesManager && this._observablesManager.onSceneInitObservable.notifyObserversWithPromise(this.scene));
         });
         if (this._observablesManager) {
             this._observablesManager.onModelLoadedObservable.add((model) => {
@@ -407,7 +408,7 @@ export class SceneManager {
      * @param sceneConfiguration the configuration of the scene
      * @returns a promise that resolves when the scene is ready
      */
-    public initScene(sceneConfiguration: ISceneConfiguration = {}): Promise<Scene> {
+    public async initScene(sceneConfiguration: ISceneConfiguration = {}): Promise<Scene> {
         // if the scene exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
@@ -445,7 +446,7 @@ export class SceneManager {
             var gl = new GlowLayer("glow", this.scene, options);
         }*/
 
-        return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
+        return await this.onSceneInitObservable.notifyObserversWithPromise(this.scene);
     }
 
     public clearScene(clearModels: boolean = true, clearLights: boolean = false) {
@@ -527,7 +528,7 @@ export class SceneManager {
                     .filter((light) => light instanceof ShadowLight)
                     .forEach((light) => {
                         // casting and '!' are safe, due to the constraints tested before
-                        this.labs.rotateShadowLight(<ShadowLight>light, newConfiguration.lab!.globalLightRotation!);
+                        this.labs.rotateShadowLight(light, newConfiguration.lab!.globalLightRotation!);
                     });
                 this._forceShadowUpdate = true;
             }
@@ -680,6 +681,7 @@ export class SceneManager {
         }
 
         if (sceneConfig.debug === true) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.scene.debugLayer.show();
         } else if (sceneConfig.debug === false) {
             if (this.scene.debugLayer.isVisible()) {
@@ -931,11 +933,11 @@ export class SceneManager {
                 this.scene.activeCamera.attachControl();
             }
 
-            this.camera = <ArcRotateCamera>this.scene.activeCamera!;
+            this.camera = <ArcRotateCamera>this.scene.activeCamera;
             this.camera.setTarget(Vector3.Zero());
         }
         if (!this.camera) {
-            this.camera = <ArcRotateCamera>this.scene.activeCamera!;
+            this.camera = <ArcRotateCamera>this.scene.activeCamera;
         }
         if (cameraConfig.position) {
             const newPosition = this.camera.position.clone();
@@ -1224,10 +1226,10 @@ export class SceneManager {
             lightKeys.forEach((name) => {
                 let lightConfig: ILightConfiguration = { type: 0 };
                 if (typeof lightsConfiguration[name] === "object") {
-                    lightConfig = <ILightConfiguration>lightsConfiguration[name];
+                    lightConfig = lightsConfiguration[name];
                 }
                 if (typeof lightsConfiguration[name] === "number") {
-                    lightConfig.type = <number>lightsConfiguration[name];
+                    lightConfig.type = lightsConfiguration[name];
                 }
 
                 lightConfig.name = name;

@@ -51,6 +51,7 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepRe
             // NOTE: The properties of step have been narrowed, but the type of step itself is not narrowed, so the cast below is the most type safe way to deal with this without instantiating a new object to hold the values.
             onStep(step as { done: typeof step.done; value: typeof step.value });
         } else {
+            // eslint-disable-next-line github/no-then
             step.value.then(() => {
                 step.value = undefined;
                 onStep(step as { done: typeof step.done; value: typeof step.value });
@@ -160,9 +161,9 @@ export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: Abort
 /**
  * @internal
  */
-export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
+export async function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
     // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         runCoroutine(coroutine, scheduler, resolve, reject, abortSignal);
     });
 }
@@ -199,6 +200,7 @@ export function makeAsyncFunction<TParams extends unknown[], TReturn>(
     scheduler: CoroutineScheduler<TReturn>,
     abortSignal?: AbortSignal
 ): (...params: TParams) => Promise<TReturn> {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     return (...params: TParams) => {
         // Run the coroutine asynchronously.
         return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal);

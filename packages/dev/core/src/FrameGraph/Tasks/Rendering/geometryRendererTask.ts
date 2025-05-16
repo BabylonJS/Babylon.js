@@ -38,7 +38,7 @@ export interface IFrameGraphGeometryRendererTextureDescription {
     textureFormat: number;
 }
 
-const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
+const ClearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(0, 0, 0, 0)];
 
 /**
  * Task used to render geometry to a set of textures.
@@ -262,6 +262,33 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         return MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId).excludedSkinnedMesh;
     }
 
+    /**
+     * Excludes the given skinned mesh from computing bones velocities.
+     * Computing bones velocities can have a cost. The cost can be saved by calling this function and by passing the skinned mesh to ignore.
+     * @param skinnedMesh The mesh containing the skeleton to ignore when computing the velocity map.
+     */
+    public excludeSkinnedMeshFromVelocityTexture(skinnedMesh: AbstractMesh): void {
+        if (skinnedMesh.skeleton) {
+            const list = this.excludedSkinnedMeshFromVelocityTexture;
+            if (list.indexOf(skinnedMesh) === -1) {
+                list.push(skinnedMesh);
+            }
+        }
+    }
+
+    /**
+     * Removes the given skinned mesh from the excluded meshes to integrate bones velocities while rendering the velocity map.
+     * @param skinnedMesh The mesh containing the skeleton that has been ignored previously.
+     * @see excludeSkinnedMesh to exclude a skinned mesh from bones velocity computation.
+     */
+    public removeExcludedSkinnedMeshFromVelocityTexture(skinnedMesh: AbstractMesh): void {
+        const list = this.excludedSkinnedMeshFromVelocityTexture;
+        const index = list.indexOf(skinnedMesh);
+        if (index !== -1) {
+            list.splice(index, 1);
+        }
+    }
+
     public override isReady() {
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
@@ -294,6 +321,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(outputTextureHandle);
+
+        let needPreviousWorldMatrices = false;
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
@@ -328,12 +357,16 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
                     break;
                 case Constants.PREPASS_VELOCITY_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryVelocityTexture, handle);
+                    needPreviousWorldMatrices = true;
                     break;
                 case Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryLinearVelocityTexture, handle);
+                    needPreviousWorldMatrices = true;
                     break;
             }
         }
+
+        this._scene.needsPreviousWorldMatrices = needPreviousWorldMatrices;
 
         pass.setRenderTargetDepth(this.depthTexture);
 
@@ -344,7 +377,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
             this._clearAttachmentsLayout.forEach((layout, clearType) => {
-                context.clearColorAttachments(clearColors[clearType], layout);
+                context.clearColorAttachments(ClearColors[clearType], layout);
             });
 
             context.bindAttachments(this._allAttachmentsLayout);

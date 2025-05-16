@@ -3,11 +3,11 @@
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 
-const varyingRegex = /(flat\s)?\s*varying\s*.*/;
+const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
 
 /** @internal */
 export class NativeShaderProcessor implements IShaderProcessor {
@@ -15,7 +15,7 @@ export class NativeShaderProcessor implements IShaderProcessor {
 
     protected _nativeProcessingContext: Nullable<NativeShaderProcessingContext>;
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._nativeProcessingContext = processingContext as Nullable<NativeShaderProcessingContext>;
         if (this._nativeProcessingContext) {
             this._nativeProcessingContext.remappedAttributeNames = {};
@@ -52,7 +52,7 @@ export class NativeShaderProcessor implements IShaderProcessor {
     }
 
     public varyingCheck(varying: string, _isFragment: boolean) {
-        return varyingRegex.test(varying);
+        return VaryingRegex.test(varying);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean) {

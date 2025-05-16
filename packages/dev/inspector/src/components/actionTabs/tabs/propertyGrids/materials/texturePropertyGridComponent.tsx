@@ -46,7 +46,7 @@ interface ITexturePropertyGridComponentState {
     textureEditing: Nullable<BaseTexture>;
 }
 
-const textureFormat = [
+const TextureFormat = [
     { label: "Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_ALPHA },
     { label: "Luminance", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE },
     { label: "Luminance/Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE_ALPHA },
@@ -75,7 +75,7 @@ const textureFormat = [
     { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
 ];
 
-const textureType = [
+const TextureType = [
     { label: "unsigned byte", normalizable: 1, value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
     { label: "32-bit float", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT },
     { label: "16-bit float", normalizable: 0, value: Constants.TEXTURETYPE_HALF_FLOAT },
@@ -120,8 +120,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const adt = texture as AdvancedDynamicTexture;
 
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
-        this._adtInstrumentation!.captureRenderTime = true;
-        this._adtInstrumentation!.captureLayoutTime = true;
+        this._adtInstrumentation.captureRenderTime = true;
+        this._adtInstrumentation.captureLayoutTime = true;
 
         this.onOpenTextureEditor.bind(this);
         this.onCloseTextureEditor.bind(this);
@@ -191,22 +191,23 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     forceRefresh() {
         this.forceUpdate();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (this._textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
     findTextureFormat(format: number) {
-        for (let i = 0; i < textureFormat.length; ++i) {
-            if (textureFormat[i].value === format) {
-                return textureFormat[i];
+        for (let i = 0; i < TextureFormat.length; ++i) {
+            if (TextureFormat[i].value === format) {
+                return TextureFormat[i];
             }
         }
         return null;
     }
 
     findTextureType(type: number) {
-        for (let i = 0; i < textureType.length; ++i) {
-            if (textureType[i].value === type) {
-                return textureType[i];
+        for (let i = 0; i < TextureType.length; ++i) {
+            if (TextureType[i].value === type) {
+                return TextureType[i];
             }
         }
         return null;
@@ -280,7 +281,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         label="Edit"
                         onClick={() => {
                             if (this.props.texture instanceof AdvancedDynamicTexture) {
-                                EditAdvancedDynamicTexture(this.props.texture as AdvancedDynamicTexture);
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                EditAdvancedDynamicTexture(this.props.texture);
                             } else {
                                 this.openTextureEditor();
                             }
@@ -421,8 +423,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 )}
                 {(texture as any).rootContainer && this._adtInstrumentation && (
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES" selection={this.props.globalState}>
-                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
-                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation.renderTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Render scale"

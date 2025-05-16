@@ -14,7 +14,7 @@ import type { EventState } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 
 /**
- * This should not be instanciated directly, as it is part of a scene component
+ * This should not be instantiated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsAccumulationPass {
@@ -200,7 +200,7 @@ export class _IblShadowsAccumulationPass {
             this._scene,
             outputTextureOptions
         );
-        this._outputTexture.refreshRate = -1;
+        this._outputTexture.refreshRate = 1;
         this._outputTexture.autoClear = false;
         this._outputTexture.onGeneratedObservable.addOnce(() => {
             this.onReadyObservable.notifyObservers();

@@ -20,7 +20,7 @@ import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -435,9 +435,10 @@ export class ComputeShader {
      * @param delay Delay between the retries while the shader is not ready (in milliseconds - 10 by default)
      * @returns A promise that is resolved once the shader has been sent to the GPU. Note that it does not mean that the shader execution itself is finished!
      */
-    public dispatchWhenReady(x: number, y?: number, z?: number, delay = 10): Promise<void> {
-        return new Promise((resolve) => {
-            _retryWithInterval(() => this.dispatch(x, y, z), resolve, undefined, delay);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async dispatchWhenReady(x: number, y?: number, z?: number, delay = 10): Promise<void> {
+        return await new Promise((resolve) => {
+            _RetryWithInterval(() => this.dispatch(x, y, z), resolve, undefined, delay);
         });
     }
 

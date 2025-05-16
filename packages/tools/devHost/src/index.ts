@@ -2,28 +2,29 @@ import type { Scene } from "core/scene";
 
 import { createScene as createSceneTS } from "./createScene";
 // import { createScene as createSceneJS } from "./createSceneJS.js";
-import { engine } from "./engine";
+import { EngineInstance } from "./engine";
 
-const createScene = createSceneTS;
+const CreateScene = createSceneTS;
 
-let scene: Scene;
+let SceneInstance: Scene;
 
 // avoid await on main level
-const createSceneResult = createScene();
-if (createSceneResult instanceof Promise) {
-    createSceneResult.then(function (result) {
-        scene = result;
+const CreateSceneResult = CreateScene();
+if (CreateSceneResult instanceof Promise) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+    CreateSceneResult.then(function (result) {
+        SceneInstance = result;
     });
 } else {
-    scene = createSceneResult;
+    SceneInstance = CreateSceneResult;
 }
 
 // Register a render loop to repeatedly render the scene
-engine.runRenderLoop(function () {
-    scene && scene.render();
+EngineInstance.runRenderLoop(function () {
+    SceneInstance && SceneInstance.render();
 });
 
 // Watch for browser/canvas resize events
 window.addEventListener("resize", function () {
-    engine && engine.resize();
+    EngineInstance && EngineInstance.resize();
 });

@@ -1,3 +1,110 @@
+// want to add a new allowed abbreviation? Fear not! Just add it to the regex below.
+// The regex is used to allow abbreviations in strict camelCase and PascalCase.
+const abbreviations = [
+    "[XYZ][A-Z][a-z]",
+    "HTML",
+    "UI",
+    "LOD",
+    "XR",
+    "PBR",
+    "IBL",
+    "HDR",
+    "FFT",
+    "CB",
+    "RTW",
+    "SSR",
+    "RHS",
+    "LHS",
+    "LTC",
+    "CDN",
+    "ARIA",
+    "IES",
+    "RLE",
+    "SSAO",
+    "NME",
+    "NGE",
+    "SMAA",
+    "RT",
+    "TAA",
+    "PT",
+    "PP",
+    "GI",
+    "GBuffer",
+    "[Bb]lur[XY]",
+    "upsampling[XY]",
+    "RSM",
+    "DoF",
+    "MSAA",
+    "FXAA",
+    "TBN",
+    "GPU",
+    "CPU",
+    "FPS",
+    "CSS",
+    "MP3",
+    "OGG",
+    "HRTF",
+    "JSON",
+    "ZOffset",
+    "IK",
+    "UV",
+    "[XYZ]Axis",
+    "VR",
+    "axis[XYZ]",
+    "UBO",
+    "URL",
+    "RGB",
+    "RGBD",
+    "GL",
+    "[23]D",
+    "MRT",
+    "RTT",
+    "WGSL",
+    "GLSL",
+    "OS",
+    "NDCH",
+    "CSM",
+    "POT",
+    "DOM",
+    "WASM",
+    "BRDF",
+    "wheel[XYZ]",
+    "PLY",
+    "STL",
+    "[AB]Texture",
+    "CSG",
+    "DoN",
+    "RAW",
+    "ZIP",
+    "PIZ",
+    "VAO",
+    "JS",
+    "DB",
+    "XHR",
+    "POV",
+    "BABYLON",
+    "HSV",
+    "[VUW](Offset|Rotation|Scale|Ang)",
+    "DDS",
+    "NaN",
+    "SVG",
+    "MRDL",
+    "MTL",
+    "OBJ",
+    "SPLAT",
+    "PLY",
+    "glTF",
+    "GLTF",
+    "MSFT",
+    "MSC",
+    "QR",
+    "BGR",
+    "SFE",
+    "BVH",
+];
+
+// Join them into a single regex string
+const allowedNonStrictAbbreviations = abbreviations.join("|");
 const rules = {
     root: true,
     parser: "@typescript-eslint/parser",
@@ -12,39 +119,23 @@ const rules = {
     // https://github.com/typescript-eslint/typescript-eslint/issues/1928
     overrides: [
         {
-            files: ["src/**/*.{ts,tsx}"],
+            files: ["packages/**/src/**/*.{ts,tsx}"],
             extends: [
                 "plugin:@typescript-eslint/eslint-recommended",
                 "plugin:@typescript-eslint/recommended",
                 "plugin:@typescript-eslint/recommended-requiring-type-checking",
                 // "plugin:eslint-plugin-tsdoc/recommended"
             ],
-            rules: {
-                "@typescript-eslint/ban-ts-comment": "off",
-                "@typescript-eslint/explicit-function-return-type": "off",
-                "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-                // All the @typescript-eslint/* rules here...
-                "@typescript-eslint/no-unnecessary-type-arguments": "error",
-                "@typescript-eslint/prefer-nullish-coalescing": "error",
-                "@typescript-eslint/prefer-optional-chain": "error",
+            parserOptions: {
+                projectService: true,
             },
             parser: "@typescript-eslint/parser",
-            parserOptions: {
-                tsconfigRootDir: "./",
-                project: "./tsconfig.json",
-            },
-        },
-        {
-            files: ["packages/**/src/**/*.{ts,tsx}"],
             rules: {
-                // "babylonjs/existing": "error",
                 "babylonjs/available": [
                     "warn",
                     {
                         contexts: [
                             'PropertyDefinition:not([accessibility="private"]):not([accessibility="protected"])',
-                            // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                            // "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
                             'MethodDefinition:not([accessibility="private"]):not([accessibility="protected"])',
                         ],
                     },
@@ -54,7 +145,6 @@ const rules = {
                     {
                         contexts: [
                             "TSInterfaceDeclaration",
-                            // "TSMethodSignature",
                             "TSPropertySignature",
                             'PropertyDefinition:not([accessibility="private"]):not([accessibility="protected"])',
                             'ArrowFunctionExpression:not([accessibility="private"]):not([accessibility="protected"])',
@@ -66,22 +156,101 @@ const rules = {
                         publicOnly: true,
                     },
                 ],
+                "prefer-rest-params": "off",
+                // the following were enabled per default
+                "@typescript-eslint/require-await": "off",
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-enum-comparison": "off",
+                "@typescript-eslint/unbound-method": "off",
+                "@typescript-eslint/no-base-to-string": "off",
+                "@typescript-eslint/restrict-plus-operands": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/no-unused-expressions": "off",
+                "@typescript-eslint/no-unsafe-function-type": "off",
+                "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+                "@typescript-eslint/no-empty-object-type": "off",
+                "@typescript-eslint/no-unsafe-declaration-merging": "off",
+                "@typescript-eslint/restrict-template-expressions": "off",
+                "@typescript-eslint/no-unnecessary-type-constraint": "off",
+                "@typescript-eslint/no-redundant-type-constituents": "off",
+                "@typescript-eslint/no-namespace": "off",
+                "@typescript-eslint/no-array-delete": "off",
+                "@typescript-eslint/no-implied-eval": "off",
+                "@typescript-eslint/no-duplicate-enum-values": "off",
+                "@typescript-eslint/only-throw-error": "off",
+                "@typescript-eslint/no-for-in-array": "off",
+                "@typescript-eslint/no-deprecated": "off",
+                "@typescript-eslint/no-unnecessary-type-assertion": "off",
+                // till here
+                // async fun
+                "@typescript-eslint/promise-function-async": "error",
+                "@typescript-eslint/no-misused-promises": [
+                    "error",
+                    {
+                        checksConditionals: false,
+                        checksVoidReturn: {
+                            arguments: false,
+                            attributes: false,
+                        },
+                    },
+                ],
+                "@typescript-eslint/no-floating-promises": "error",
+                "@typescript-eslint/return-await": ["error", "always"],
+                "no-await-in-loop": "error",
+                "@typescript-eslint/await-thenable": "error",
+                "@typescript-eslint/prefer-promise-reject-errors": "error",
+                "require-atomic-updates": "warn",
+                "github/no-then": "error",
+                // rest of the rules
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
                 "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
                 "@typescript-eslint/no-this-alias": "error",
+                "no-restricted-syntax": [
+                    "error",
+                    {
+                        selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "MethodDefinition[value.async=false][key.name=/Async$/]",
+                        message: "Method ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "Property[value.type=/FunctionExpression$/][value.async=false][key.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=false][id.name=/Async$/]",
+                        message: "Function ending in 'Async' must be declared async",
+                    },
+                    {
+                        selector: "VariableDeclarator[init.type=/FunctionExpression$/][init.async=true][id.name!=/Async$/]",
+                        message: "Async function name must end in 'Async'",
+                    },
+                ],
                 "@typescript-eslint/naming-convention": [
                     "error",
                     {
                         selector: "default",
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                     },
                     {
                         selector: "import",
-                        format: ["camelCase", "PascalCase"],
+                        format: ["strictCamelCase", "StrictPascalCase"],
                     },
                     {
                         selector: "variable",
-                        format: ["camelCase", "UPPER_CASE", "snake_case"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
+                        modifiers: ["global"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "variable",
+                        format: ["camelCase"],
                         leadingUnderscore: "allow",
                     },
                     {
@@ -91,79 +260,201 @@ const rules = {
                     },
                     {
                         selector: "objectLiteralProperty",
-                        format: ["camelCase", "snake_case", "UPPER_CASE"],
+                        format: ["strictCamelCase", "snake_case", "UPPER_CASE"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "enumMember",
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                     },
+                    // public static members of classes, including constants
                     {
                         selector: "memberLike",
                         modifiers: ["public", "static"],
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         leadingUnderscore: "allow",
                     },
+                    // private static members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["private", "static"],
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         leadingUnderscore: "require",
                     },
+                    // protected static members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["protected", "static"],
-                        format: ["PascalCase", "UPPER_CASE"],
+                        format: ["StrictPascalCase", "UPPER_CASE"],
                         leadingUnderscore: "require",
                     },
+                    // public instance members of classes, including constants
                     {
                         selector: "memberLike",
                         modifiers: ["public"],
-                        format: ["camelCase", "UPPER_CASE"],
+                        format: ["strictCamelCase", "UPPER_CASE"],
                         leadingUnderscore: "allow",
                     },
+                    // private instance members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["private"],
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                         leadingUnderscore: "require",
                     },
+                    // protected instance members of classes
                     {
                         selector: "memberLike",
                         modifiers: ["protected"],
-                        format: ["camelCase"],
+                        format: ["strictCamelCase"],
                         leadingUnderscore: "require",
                     },
+                    // async suffix
                     {
-                        selector: "typeLike",
-                        format: ["PascalCase"],
+                        selector: "memberLike",
+                        modifiers: ["async"],
+                        suffix: ["Async"],
+                        format: ["strictCamelCase", "StrictPascalCase"],
+                        leadingUnderscore: "allow",
                     },
+                    {
+                        selector: "typeLike", // class, interface, enum, type alias
+                        format: ["StrictPascalCase"],
+                    },
+                    // exported variables and functions, module-level
                     {
                         selector: "variable",
-                        modifiers: ["const", "global"],
-                        format: ["PascalCase", "camelCase"],
+                        modifiers: ["const", "global", "exported"],
+                        format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "function",
-                        format: ["PascalCase", "camelCase"],
-                        leadingUnderscore: "allow",
-                    },
-                    {
-                        selector: "function",
-                        modifiers: ["exported", "global"],
-                        format: ["PascalCase", "camelCase"],
+                        modifiers: [/*"exported", */ "global"],
+                        format: ["StrictPascalCase"],
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "interface",
-                        format: ["PascalCase"],
+                        format: ["StrictPascalCase"],
+                        leadingUnderscore: "allow",
+                        prefix: ["I"],
+                    },
+                    {
+                        selector: "class",
+                        format: ["StrictPascalCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    // Remove the strict requirement for abbreviations like HTML, GUI, BRDF, etc.
+                    {
+                        selector: "default",
+                        format: ["camelCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: ["memberLike", "property", "parameter"],
+                        format: ["camelCase", "UPPER_CASE"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: ["memberLike", "variable", "property", "class"],
+                        format: ["PascalCase", "UPPER_CASE"],
+                        modifiers: ["static"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
                         leadingUnderscore: "allow",
                     },
                     {
                         selector: "class",
                         format: ["PascalCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
                         leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "interface",
+                        format: ["PascalCase"],
+                        prefix: ["I"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "import",
+                        format: ["camelCase", "PascalCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "objectLiteralProperty",
+                        format: ["camelCase", "snake_case", "UPPER_CASE"],
+                        leadingUnderscore: "allow",
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "variable",
+                        format: ["PascalCase"],
+                        modifiers: ["global"],
+                        leadingUnderscore: "allow",
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "function",
+                        modifiers: [/*"exported", */ "global"],
+                        format: ["PascalCase"],
+                        leadingUnderscore: "allow",
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "enumMember",
+                        format: ["PascalCase", "UPPER_CASE"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        selector: "typeLike", // class, interface, enum, type alias
+                        format: ["PascalCase"],
+                        filter: {
+                            // you can expand this regex to add more allowed names
+                            regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
                     },
                 ],
             },
@@ -181,6 +472,7 @@ const rules = {
         // "@typescript-eslint"
         "babylonjs",
         "jsdoc",
+        "github",
     ],
     extends: [
         "eslint:recommended",
@@ -263,6 +555,7 @@ const rules = {
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
+        curly: "error",
     },
 };
 

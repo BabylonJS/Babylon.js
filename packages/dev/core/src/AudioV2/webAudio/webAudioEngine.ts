@@ -1,6 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AbstractSoundSource, ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "../abstractAudio/audioBus";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
@@ -52,7 +53,7 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
  */
 export async function CreateAudioEngineAsync(options: Partial<IWebAudioEngineOptions> = {}): Promise<AudioEngineV2> {
     const engine = new _WebAudioEngine(options);
-    await engine._init(options);
+    await engine._initAsync(options);
     return engine;
 }
 
@@ -74,6 +75,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _invalidFormats = new Set<string>();
     private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
+    private readonly _listenerAutoUpdate: boolean = true;
+    private readonly _listenerMinUpdateTime: number = 0;
     private _mainOut: _WebAudioMainOut;
     private _pauseCalled = false;
     private _resumeOnInteraction = true;
@@ -81,8 +84,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumeOnPauseRetryInterval = 1000;
     private _resumeOnPauseTimerId: any = null;
     private _resumePromise: Nullable<Promise<void>> = null;
-    private readonly _listenerAutoUpdate: boolean = true;
-    private readonly _listenerMinUpdateTime: number = 0;
+    private _silentHtmlAudio: Nullable<HTMLAudioElement> = null;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
@@ -128,14 +130,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public async _init(options: Partial<IWebAudioEngineOptions>): Promise<void> {
+    public async _initAsync(options: Partial<IWebAudioEngineOptions>): Promise<void> {
         this._resumeOnInteraction = typeof options.resumeOnInteraction === "boolean" ? options.resumeOnInteraction : true;
         this._resumeOnPause = typeof options.resumeOnPause === "boolean" ? options.resumeOnPause : true;
         this._resumeOnPauseRetryInterval = options.resumeOnPauseRetryInterval ?? 1000;
 
-        document.addEventListener("click", this._onUserGesture);
+        document.addEventListener("click", this._onUserGestureAsync);
 
-        await this._initAudioContext();
+        await this._initAudioContextAsync();
 
         if (_HasSpatialAudioListenerOptions(options)) {
             this._listener = _CreateSpatialAudioListener(this, this._listenerAutoUpdate, this._listenerMinUpdateTime);
@@ -194,7 +196,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioBus");
 
         const bus = new module._WebAudioBus(name, this, options);
-        await bus._init(options);
+        await bus._initAsync(options);
 
         return bus;
     }
@@ -204,9 +206,22 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioMainBus");
 
         const bus = new module._WebAudioMainBus(name, this);
-        await bus._init(options);
+        await bus._initAsync(options);
 
         return bus;
+    }
+
+    /** @internal */
+    public async createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource> {
+        let mediaStream: MediaStream;
+
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            throw new Error("Unable to access microphone: " + e);
+        }
+
+        return await this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), options);
     }
 
     /** @internal */
@@ -218,7 +233,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStaticSound");
 
         const sound = new module._WebAudioStaticSound(name, this, options);
-        await sound._init(source, options);
+        await sound._initAsync(source, options);
 
         return sound;
     }
@@ -231,9 +246,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStaticSound");
 
         const soundBuffer = new module._WebAudioStaticSoundBuffer(this);
-        await soundBuffer._init(source, options);
+        await soundBuffer._initAsync(source, options);
 
         return soundBuffer;
+    }
+
+    /** @internal */
+    public async createSoundSourceAsync(name: string, source: AudioNode, options: Partial<ISoundSourceOptions> = {}): Promise<AbstractSoundSource> {
+        const module = await import("./webAudioSoundSource");
+
+        const soundSource = new module._WebAudioSoundSource(name, source, this, options);
+        await soundSource._initAsync(options);
+
+        return soundSource;
     }
 
     /** @internal */
@@ -241,7 +266,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const module = await import("./webAudioStreamingSound");
 
         const sound = new module._WebAudioStreamingSound(name, this, options);
-        await sound._init(source, options);
+        await sound._initAsync(source, options);
 
         return sound;
     }
@@ -255,11 +280,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         // Note that OfflineAudioContext does not have a `close` method.
         if (this._audioContext.state !== "closed" && !this._isUsingOfflineAudioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._audioContext.close();
         }
 
-        document.removeEventListener("click", this._onUserGesture);
+        document.removeEventListener("click", this._onUserGestureAsync);
         this._audioContext.removeEventListener("statechange", this._onAudioContextStateChange);
+
+        this._silentHtmlAudio?.remove();
 
         this._unmuteUI?.dispose();
         this._unmuteUI = null;
@@ -304,6 +332,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
@@ -340,7 +369,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
 
-    private _initAudioContext: () => Promise<void> = async () => {
+    private _initAudioContextAsync: () => Promise<void> = async () => {
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
         this._mainOut = new _WebAudioMainOut(this);
@@ -360,6 +389,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }
@@ -368,9 +398,26 @@ export class _WebAudioEngine extends AudioEngineV2 {
         this.stateChangedObservable.notifyObservers(this.state);
     };
 
-    private _onUserGesture: () => void = async () => {
+    private _onUserGestureAsync: () => void = async () => {
         if (this._resumeOnInteraction) {
             await this._audioContext.resume();
+        }
+
+        // On iOS the ringer switch must be turned on for WebAudio to play.
+        // This gets WebAudio to play with the ringer switch turned off by playing an HTMLAudioElement.
+        if (!this._silentHtmlAudio) {
+            this._silentHtmlAudio = document.createElement("audio");
+
+            const audio = this._silentHtmlAudio;
+            audio.controls = false;
+            audio.preload = "auto";
+            audio.loop = true;
+
+            // Wave data for 0.0001 seconds of silence.
+            audio.src = "data:audio/wav;base64,UklGRjAAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQwAAAAAAAEA/v8CAP//AQA=";
+
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            audio.play();
         }
 
         this.userGestureObservable.notifyObservers();

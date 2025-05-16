@@ -72,6 +72,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this.save(this.saveSelectedControlLocally);
         });
         this.props.globalState.onSnippetSaveObservable.add(() => {
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this.save(this.saveToSnippetServer);
         });
         this.props.globalState.onSnippetLoadObservable.add(() => {
@@ -181,8 +182,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     };
 
-    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
-        return new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    saveToSnippetServerHelper = async (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
+        return await new Promise((resolve, reject) => {
             const xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = () => {
                 if (xmlHttp.readyState == 4) {
@@ -202,6 +204,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }
                         resolve(adt.snippetId);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to save your GUI");
                     }
                 }
@@ -236,21 +239,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     saveToSnippetServer = async () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
         const savePromise = this.props.globalState.customSave?.action || this.saveToSnippetServerHelper;
         savePromise(content, adt)
+            // eslint-disable-next-line github/no-then
             .then((snippetId: string) => {
                 adt.snippetId = snippetId;
                 const alertMessage = `GUI saved with ID:  ${adt.snippetId}`;
                 if (this.props.globalState.hostWindow.navigator.clipboard) {
                     this.props.globalState.hostWindow.navigator.clipboard
                         .writeText(adt.snippetId)
+                        // eslint-disable-next-line github/no-then
                         .then(() => {
                             this.props.globalState.hostWindow.alert(`${alertMessage}. The ID was copied to your clipboard.`);
                         })
+                        // eslint-disable-next-line github/no-then
                         .catch(() => {
                             this.props.globalState.hostWindow.alert(alertMessage);
                         });
@@ -259,6 +266,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 }
                 this.props.globalState.onBuiltObservable.notifyObservers();
             })
+            // eslint-disable-next-line github/no-then
             .catch((err: any) => {
                 this.props.globalState.hostWindow.alert(err);
             });
@@ -270,6 +278,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (!snippedId) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     }
 
@@ -307,7 +316,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
      * @returns the class name of a list of controls if they share a class, or an empty string if not
      */
     getControlsCommonClassName(nodes: Control[]) {
-        if (nodes.length === 0) return "";
+        if (nodes.length === 0) {
+            return "";
+        }
         const firstNode = nodes[0];
         const firstClass = firstNode.getClassName();
         for (const node of nodes) {
@@ -319,7 +330,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     renderProperties(nodes: Control[]) {
-        if (nodes.length === 0) return;
+        if (nodes.length === 0) {
+            return;
+        }
         const className = this.getControlsCommonClassName(nodes);
         switch (className) {
             case "TextBlock": {
@@ -523,7 +536,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         }
 
-        const controls = nodes as Control[];
+        const controls = nodes;
         return (
             <ControlPropertyGridComponent
                 controls={controls}
@@ -548,7 +561,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     override render() {
-        if (this.props.globalState.guiTexture == undefined) return null;
+        if (this.props.globalState.guiTexture == undefined) {
+            return null;
+        }
         const nodesToRender = this.props.globalState.selectedControls.length > 0 ? this.props.globalState.selectedControls : [this.props.globalState.workbench.trueRootContainer];
         return <div id="ge-propertyTab">{this.renderNode(nodesToRender)}</div>;
     }

@@ -136,17 +136,13 @@ export class PointsCloudSystem implements IDisposable {
      * @param material The material to use to render the mesh. If not provided, will create a default one
      * @returns a promise for the created mesh
      */
-    public buildMeshAsync(material?: Material): Promise<Mesh> {
-        return Promise.all(this._promises).then(() => {
-            this._isReady = true;
-            return this._buildMesh(material);
-        });
+    public async buildMeshAsync(material?: Material): Promise<Mesh> {
+        await Promise.all(this._promises);
+        this._isReady = true;
+        return await this._buildMeshAsync(material);
     }
 
-    /**
-     * @internal
-     */
-    private _buildMesh(material?: Material): Promise<Mesh> {
+    private async _buildMeshAsync(material?: Material): Promise<Mesh> {
         if (this.nbParticles === 0) {
             this.addPoints(1);
         }
@@ -190,7 +186,7 @@ export class PointsCloudSystem implements IDisposable {
         }
         mesh.material = mat;
 
-        return new Promise((resolve) => resolve(mesh));
+        return mesh;
     }
 
     // adds a new particle object in the particles array
@@ -503,7 +499,7 @@ export class PointsCloudSystem implements IDisposable {
             return;
         }
 
-        const clone = <Mesh>mesh.clone();
+        const clone = mesh.clone();
         clone.setEnabled(false);
         this._promises.push(
             new Promise((resolve: (_: void) => void) => {
@@ -527,6 +523,7 @@ export class PointsCloudSystem implements IDisposable {
                     if (!dataPromise) {
                         finalize();
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         dataPromise.then((data) => {
                             pointsGroup._groupImageData = data;
                             finalize();

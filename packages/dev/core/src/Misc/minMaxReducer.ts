@@ -7,10 +7,12 @@ import { Observable } from "./observable";
 import type { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Shaders/minmaxRedux.fragment";
+import "../ShadersWGSL/minmaxRedux.fragment";
 
 /**
  * This class computes a min/max reduction from a texture: it means it computes the minimum
@@ -92,7 +94,8 @@ export class MinMaxReducer {
             undefined,
             undefined,
             undefined,
-            Constants.TEXTUREFORMAT_RG
+            Constants.TEXTUREFORMAT_RG,
+            scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
         );
 
         reductionInitial.autoClear = false;
@@ -132,7 +135,8 @@ export class MinMaxReducer {
                 undefined,
                 undefined,
                 undefined,
-                Constants.TEXTUREFORMAT_RG
+                Constants.TEXTUREFORMAT_RG,
+                scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
             );
 
             reduction.autoClear = false;
@@ -157,6 +161,7 @@ export class MinMaxReducer {
                     const buffer = new Float32Array(4 * w * h),
                         minmax = { min: 0, max: 0 };
                     return () => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         scene.getEngine()._readTexturePixels(reduction.inputTexture.texture!, w, h, -1, 0, buffer, false);
                         minmax.min = buffer[0];
                         minmax.max = buffer[1];

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
@@ -342,7 +343,7 @@ export class TextureCanvasManager {
 
     public async updateTexture() {
         if (this._mipLevel !== 0) {
-            await this._setMipLevel(0);
+            this._setMipLevel(0);
         }
         this._didEdit = true;
         const element = this._editing3D ? this._3DCanvas : this._2DCanvas;
@@ -399,7 +400,7 @@ export class TextureCanvasManager {
 
     public async startPainting(): Promise<CanvasRenderingContext2D> {
         if (this._mipLevel != 0) {
-            await this._setMipLevel(0);
+            this._setMipLevel(0);
         }
         let x = 0,
             y = 0,
@@ -668,9 +669,11 @@ export class TextureCanvasManager {
                     const base64data = reader.result as string;
 
                     if (extension === ".dds" || extension === ".env") {
-                        (this._originalTexture as CubeTexture).updateURL(base64data, extension, () => this.grabOriginalTexture());
+                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                        (this._originalTexture as CubeTexture).updateURL(base64data, extension, async () => await this.grabOriginalTexture());
                     } else {
                         const texture = new Texture(base64data, this._scene, this._originalTexture.noMipmap, false, Texture.NEAREST_SAMPLINGMODE, () => {
+                            // eslint-disable-next-line github/no-then
                             TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, { R: true, G: true, B: true, A: true }).then(
                                 async (pixels) => {
                                     if (this._tool && this._tool.instance.onReset) {

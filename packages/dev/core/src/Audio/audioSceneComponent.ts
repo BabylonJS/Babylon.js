@@ -44,6 +44,7 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
 });
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * @internal
@@ -427,6 +428,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         this._audioEnabled = false;
 
         if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             AbstractEngine.audioEngine.audioContext.suspend();
         }
 
@@ -451,6 +453,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         this._audioEnabled = true;
 
         if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             AbstractEngine.audioEngine.audioContext.resume();
         }
 

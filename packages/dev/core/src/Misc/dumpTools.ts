@@ -17,13 +17,13 @@ type DumpToolsEngine = {
     wrapper: EffectWrapper;
 };
 
-let _dumpToolsEngine: Nullable<DumpToolsEngine>;
+let DumpToolsEngine: Nullable<DumpToolsEngine>;
 
-let _enginePromise: Promise<DumpToolsEngine> | null = null;
+let EnginePromise: Promise<DumpToolsEngine> | null = null;
 
-async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
-    if (!_enginePromise) {
-        _enginePromise = new Promise((resolve, reject) => {
+async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
+    if (!EnginePromise) {
+        EnginePromise = new Promise((resolve, reject) => {
             let canvas: HTMLCanvasElement | OffscreenCanvas;
             let engine: Nullable<ThinEngine> = null;
             const options = {
@@ -36,6 +36,7 @@ async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
                 failIfMajorPerformanceCaveat: false,
             };
             import("../Engines/thinEngine")
+                // eslint-disable-next-line github/no-then
                 .then(({ ThinEngine: thinEngineClass }) => {
                     const engineInstanceCount = EngineStore.Instances.length;
                     try {
@@ -63,8 +64,10 @@ async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
                     });
                     engine.getCaps().parallelShaderCompile = undefined;
                     const renderer = new EffectRenderer(engine);
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     import("../Shaders/pass.fragment").then(({ passPixelShader }) => {
                         if (!engine) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject("Engine is not defined");
                             return;
                         }
@@ -74,19 +77,20 @@ async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
                             fragmentShader: passPixelShader.shader,
                             samplerNames: ["textureSampler"],
                         });
-                        _dumpToolsEngine = {
+                        DumpToolsEngine = {
                             canvas,
                             engine,
                             renderer,
                             wrapper,
                         };
-                        resolve(_dumpToolsEngine);
+                        resolve(DumpToolsEngine);
                     });
                 })
+                // eslint-disable-next-line github/no-then
                 .catch(reject);
         });
     }
-    return await _enginePromise;
+    return await EnginePromise;
 }
 
 /**
@@ -100,6 +104,8 @@ async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @returns a void promise
  */
+// Should have "Async" in the name but this is a public API and we can't break it now
+// eslint-disable-next-line no-restricted-syntax
 export async function DumpFramebuffer(
     width: number,
     height: number,
@@ -129,7 +135,7 @@ export async function DumpFramebuffer(
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @returns a promise that resolve to the final data
  */
-export function DumpDataAsync(
+export async function DumpDataAsync(
     width: number,
     height: number,
     data: ArrayBufferView,
@@ -139,7 +145,7 @@ export function DumpDataAsync(
     toArrayBuffer = false,
     quality?: number
 ): Promise<string | ArrayBuffer> {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
     });
 }
@@ -167,7 +173,8 @@ export function DumpData(
     toArrayBuffer = false,
     quality?: number
 ): void {
-    _CreateDumpRenderer().then((renderer) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+    _CreateDumpRendererAsync().then((renderer) => {
         renderer.engine.setSize(width, height, true);
 
         // Convert if data are float32
@@ -217,20 +224,21 @@ export function DumpData(
  * Dispose the dump tools associated resources
  */
 export function Dispose() {
-    if (_dumpToolsEngine) {
-        _dumpToolsEngine.wrapper.dispose();
-        _dumpToolsEngine.renderer.dispose();
-        _dumpToolsEngine.engine.dispose();
+    if (DumpToolsEngine) {
+        DumpToolsEngine.wrapper.dispose();
+        DumpToolsEngine.renderer.dispose();
+        DumpToolsEngine.engine.dispose();
     } else {
         // in cases where the engine is not yet created, we need to wait for it to dispose it
-        _enginePromise?.then((dumpToolsEngine) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+        EnginePromise?.then((dumpToolsEngine) => {
             dumpToolsEngine.wrapper.dispose();
             dumpToolsEngine.renderer.dispose();
             dumpToolsEngine.engine.dispose();
         });
     }
-    _enginePromise = null;
-    _dumpToolsEngine = null;
+    EnginePromise = null;
+    DumpToolsEngine = null;
 }
 
 /**
@@ -254,11 +262,11 @@ export const DumpTools = {
  * Once we build native modules those need to be exported.
  * @internal
  */
-const initSideEffects = () => {
+const InitSideEffects = () => {
     // References the dependencies.
     Tools.DumpData = DumpData;
     Tools.DumpDataAsync = DumpDataAsync;
     Tools.DumpFramebuffer = DumpFramebuffer;
 };
 
-initSideEffects();
+InitSideEffects();

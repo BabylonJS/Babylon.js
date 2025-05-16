@@ -5,64 +5,64 @@ import { Logger } from "core/Misc/logger";
 import { requestCapture, requestRelease, releaseCurrent, getCapturingId } from "./pointerEventsCapture";
 
 // Module level variable for holding the current scene
-let _scene: Scene | null = null;
+let LocalScene: Scene | null = null;
 
 // Module level variable to hold the count of behavior instances that are currently capturing pointer events
 // on entry.  This is used to determine if we need to start or stop observing pointer movement.
-let captureOnEnterCount = 0;
+let CaptureOnEnterCount = 0;
 
 // Map used to store instance of the PointerEventsCaptureBehavior for a mesh
 // We do this because this gets checked on pointer move and we don't want to
 // use getBehaviorByName() because that is a linear search
-const meshToBehaviorMap = new WeakMap<AbstractMesh, PointerEventsCaptureBehavior>();
+const MeshToBehaviorMap = new WeakMap<AbstractMesh, PointerEventsCaptureBehavior>();
 
-const startCaptureOnEnter = (scene: Scene) => {
+const StartCaptureOnEnter = (scene: Scene) => {
     // If we are not in a browser, do nothing
     if (typeof document === "undefined") {
         return;
     }
-    if (captureOnEnterCount === 0) {
-        document.addEventListener("pointermove", onPointerMove);
-        document.addEventListener("touchstart", onPointerMove);
-        _scene = _scene ?? scene;
+    if (CaptureOnEnterCount === 0) {
+        document.addEventListener("pointermove", OnPointerMove);
+        document.addEventListener("touchstart", OnPointerMove);
+        LocalScene = LocalScene ?? scene;
         Logger.Log("PointerEventsCaptureBehavior: Starting observation of pointer move events.");
-        _scene.onDisposeObservable.add(doStopCaptureOnEnter);
+        LocalScene.onDisposeObservable.add(DoStopCaptureOnEnter);
     }
-    captureOnEnterCount++;
+    CaptureOnEnterCount++;
 };
 
-const doStopCaptureOnEnter = () => {
-    document.removeEventListener("pointermove", onPointerMove);
-    document.removeEventListener("touchstart", onPointerMove);
-    _scene = null;
+const DoStopCaptureOnEnter = () => {
+    document.removeEventListener("pointermove", OnPointerMove);
+    document.removeEventListener("touchstart", OnPointerMove);
+    LocalScene = null;
     Logger.Log("PointerEventsCaptureBehavior: Stopping observation of pointer move events.");
-    captureOnEnterCount = 0;
+    CaptureOnEnterCount = 0;
 };
 
-const stopCaptureOnEnter = () => {
+const StopCaptureOnEnter = () => {
     // If we are not in a browser, do nothing
     if (typeof document === "undefined") {
         return;
     }
 
     // If we are not observing pointer movement, do nothing
-    if (!_scene) {
+    if (!LocalScene) {
         return;
     }
 
-    captureOnEnterCount--;
-    if (captureOnEnterCount <= 0) {
-        doStopCaptureOnEnter();
+    CaptureOnEnterCount--;
+    if (CaptureOnEnterCount <= 0) {
+        DoStopCaptureOnEnter();
     }
 };
 
 // Module level function used to determine if an entered mesh should capture pointer events
-const onPointerMove = (evt: PointerEvent | TouchEvent) => {
-    if (!_scene) {
+const OnPointerMove = (evt: PointerEvent | TouchEvent) => {
+    if (!LocalScene) {
         return;
     }
 
-    const canvasRect = _scene.getEngine().getRenderingCanvasClientRect();
+    const canvasRect = LocalScene.getEngine().getRenderingCanvasClientRect();
     if (!canvasRect) {
         return;
     }
@@ -76,10 +76,10 @@ const onPointerMove = (evt: PointerEvent | TouchEvent) => {
     const pointerScreenY = clientY - canvasRect.top;
 
     let pointerCaptureBehavior: PointerEventsCaptureBehavior | undefined;
-    const pickResult = _scene.pick(pointerScreenX, pointerScreenY, (mesh) => {
+    const pickResult = LocalScene.pick(pointerScreenX, pointerScreenY, (mesh) => {
         // If the mesh has an instance of PointerEventsCaptureBehavior attached to it,
         // and capture on pointer enter is true, then we want to pick it
-        const pointerCaptureBehavior = meshToBehaviorMap.get(mesh);
+        const pointerCaptureBehavior = MeshToBehaviorMap.get(mesh);
         return mesh.isEnabled() && typeof pointerCaptureBehavior !== "undefined" && pointerCaptureBehavior._captureOnPointerEnter;
     });
 
@@ -107,7 +107,7 @@ const onPointerMove = (evt: PointerEvent | TouchEvent) => {
     // the pointer events.  Note that the current capturing mesh has already been
     // released above
     if (pickedMesh) {
-        pointerCaptureBehavior = meshToBehaviorMap.get(pickedMesh);
+        pointerCaptureBehavior = MeshToBehaviorMap.get(pickedMesh);
         pointerCaptureBehavior!.capturePointerEvents();
     }
 };
@@ -160,9 +160,9 @@ export class PointerEventsCaptureBehavior implements Behavior<AbstractMesh> {
         this._captureOnPointerEnter = captureOnPointerEnter;
         if (this._attachedMesh) {
             if (this._captureOnPointerEnter) {
-                startCaptureOnEnter(this._attachedMesh.getScene()!);
+                StartCaptureOnEnter(this._attachedMesh.getScene());
             } else {
-                stopCaptureOnEnter();
+                StopCaptureOnEnter();
             }
         }
     }
@@ -181,9 +181,9 @@ export class PointerEventsCaptureBehavior implements Behavior<AbstractMesh> {
         // reference to the behavior in the onPointerMove function without relying on
         // getBehaviorByName(), which does a linear search of the behaviors array.
         this.attachedMesh = mesh;
-        meshToBehaviorMap.set(mesh, this);
+        MeshToBehaviorMap.set(mesh, this);
         if (this._captureOnPointerEnter) {
-            startCaptureOnEnter(mesh.getScene()!);
+            StartCaptureOnEnter(mesh.getScene());
         }
     }
 
@@ -195,9 +195,9 @@ export class PointerEventsCaptureBehavior implements Behavior<AbstractMesh> {
             return;
         }
         // Remove the reference to this behavior from the mesh
-        meshToBehaviorMap.delete(this.attachedMesh);
+        MeshToBehaviorMap.delete(this.attachedMesh);
         if (this._captureOnPointerEnter) {
-            stopCaptureOnEnter();
+            StopCaptureOnEnter();
         }
         this.attachedMesh = null;
     }

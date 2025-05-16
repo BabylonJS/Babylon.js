@@ -1596,8 +1596,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param options defines additional options for compiling the shaders
      * @returns a promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
-        return new Promise((resolve, reject) => {
+    public async forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
+        return await new Promise((resolve, reject) => {
             this.forceCompilation(
                 mesh,
                 () => {
@@ -1605,6 +1605,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 },
                 options,
                 (reason) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(reason);
                 }
             );

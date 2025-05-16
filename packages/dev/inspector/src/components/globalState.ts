@@ -64,6 +64,7 @@ export class GlobalState {
         EXT_mesh_gpu_instancing: { enabled: true },
         EXT_texture_webp: { enabled: true },
         EXT_texture_avif: { enabled: true },
+        EXT_materials_diffuse_roughness: { enabled: true },
     };
 
     public glTFLoaderOverrideConfig = false;
@@ -99,7 +100,7 @@ export class GlobalState {
             this._onlyUseEulers = DataStorage.ReadBoolean("settings_onlyUseEulers", true);
         }
 
-        return this._onlyUseEulers!;
+        return this._onlyUseEulers;
     }
 
     public set onlyUseEulers(value: boolean) {
@@ -115,7 +116,7 @@ export class GlobalState {
             this._ignoreBackfacesForPicking = DataStorage.ReadBoolean("settings_ignoreBackfacesForPicking", false);
         }
 
-        return this._ignoreBackfacesForPicking!;
+        return this._ignoreBackfacesForPicking;
     }
 
     public set ignoreBackfacesForPicking(value: boolean) {

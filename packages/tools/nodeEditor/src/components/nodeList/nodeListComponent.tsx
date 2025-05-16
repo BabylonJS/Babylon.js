@@ -234,6 +234,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     loadCustomFrame(file: File) {
         Tools.ReadFile(
             file,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async (data) => {
                 // get Frame Data from file
                 const decoder = new TextDecoder("utf-8");
@@ -282,6 +283,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     loadCustomBlock(file: File) {
         Tools.ReadFile(
             file,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async (data) => {
                 // get Block Data from file
                 const decoder = new TextDecoder("utf-8");
@@ -550,7 +552,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Create node menu
         const blockMenu = [];
         for (const key in allBlocks) {
-            const blockList = (allBlocks as any)[key]
+            const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((block: any) => {

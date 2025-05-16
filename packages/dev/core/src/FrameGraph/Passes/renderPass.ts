@@ -61,7 +61,11 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
      * Adds dependencies to the render pass.
      * @param dependencies The dependencies to add.
      */
-    public addDependencies(dependencies: FrameGraphTextureHandle | FrameGraphTextureHandle[]) {
+    public addDependencies(dependencies?: FrameGraphTextureHandle | FrameGraphTextureHandle[]) {
+        if (!dependencies) {
+            return;
+        }
+
         if (Array.isArray(dependencies)) {
             for (const dependency of dependencies) {
                 this._dependencies.add(dependency);

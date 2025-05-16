@@ -54,6 +54,7 @@ export function workerFunction(): void {
                 });
             }
             if (transcoderModulePromise !== null) {
+                // eslint-disable-next-line github/no-then
                 transcoderModulePromise.then((m) => {
                     BASIS = m;
                     m.initializeBasis();
@@ -94,7 +95,7 @@ export function workerFunction(): void {
                     for (let levelIndex = 0; levelIndex < mipCount; levelIndex++) {
                         const levelInfo = image.levels[levelIndex];
 
-                        const pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
+                        const pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format, needsConversion);
                         if (!pixels) {
                             success = false;
                             break;
@@ -240,13 +241,15 @@ export function workerFunction(): void {
  * @param moduleUrl the url to the basis transcoder module
  * @returns a promise that resolves when the worker is initialized
  */
-export function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
-    return new Promise<Worker>((res, reject) => {
+// eslint-disable-next-line no-restricted-syntax
+export async function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, moduleUrl?: string) {
+    return await new Promise<Worker>((res, reject) => {
         const initHandler = (msg: any) => {
             if (msg.data.action === "init") {
-                worker!.removeEventListener("message", initHandler);
-                res(worker!);
+                worker.removeEventListener("message", initHandler);
+                res(worker);
             } else if (msg.data.action === "error") {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(msg.data.error || "error initializing worker");
             }
         };

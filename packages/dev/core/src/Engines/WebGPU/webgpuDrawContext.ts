@@ -95,9 +95,9 @@ export class WebGPUDrawContext implements IDrawContext {
         }
         this._currentInstanceCount = instanceCount;
 
-        this._indirectDrawData![0] = indexOrVertexCount;
-        this._indirectDrawData![1] = instanceCount;
-        this._indirectDrawData![2] = firstIndexOrVertex;
+        this._indirectDrawData[0] = indexOrVertexCount;
+        this._indirectDrawData[1] = instanceCount;
+        this._indirectDrawData[2] = firstIndexOrVertex;
 
         this._bufferManager.setRawData(this.indirectDrawBuffer, 0, this._indirectDrawData, 0, 20);
     }

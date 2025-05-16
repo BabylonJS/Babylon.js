@@ -6,7 +6,7 @@ import { Logger } from "core/Misc/logger";
 import { ConfigureCustomViewerElement } from "viewer/viewerElement";
 import "viewer";
 
-interface HTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
+interface IHTML3DElementAttributes extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> {
     class?: string;
     engine?: "WebGL" | "WebGPU";
     source?: string;
@@ -19,13 +19,14 @@ declare global {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         interface IntrinsicElements {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            "configured-babylon-viewer": HTML3DElementAttributes;
+            "configured-babylon-viewer": IHTML3DElementAttributes;
         }
     }
 }
 
 export const Viewer: FunctionComponent<{ onViewerCreated: (element: ViewerElement) => void; onOptionsLoaded: (options: ViewerOptions) => void }> = (props) => {
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (async () => {
             let options: ViewerOptions = {};
             if (window.location.hash) {

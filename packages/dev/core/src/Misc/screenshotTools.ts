@@ -12,7 +12,7 @@ import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { _retryWithInterval } from "./timingTools";
+import { _RetryWithInterval } from "./timingTools";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -45,7 +45,7 @@ export function CreateScreenshot(
     quality?: number,
     useFill = false
 ): void {
-    const { height, width } = _GetScreenshotSize(engine, camera, size);
+    const { height, width } = GetScreenshotSize(engine, camera, size);
 
     if (!(height && width)) {
         Logger.Error("Invalid 'size' parameter !");
@@ -142,7 +142,7 @@ export function CreateScreenshot(
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotAsync(
+export async function CreateScreenshotAsync(
     engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
@@ -150,7 +150,7 @@ export function CreateScreenshotAsync(
     quality?: number,
     useFill = false
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         CreateScreenshot(
             engine,
             camera,
@@ -184,7 +184,7 @@ export function CreateScreenshotAsync(
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
  * @returns promise that resolves once the screenshot is taken
  */
-export function CreateScreenshotWithResizeAsync(
+export async function CreateScreenshotWithResizeAsync(
     engine: AbstractEngine,
     camera: Camera,
     width: number,
@@ -193,7 +193,7 @@ export function CreateScreenshotWithResizeAsync(
     quality?: number,
     useFill = false
 ): Promise<void> {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         CreateScreenshot(
             engine,
             camera,
@@ -260,7 +260,7 @@ export function CreateScreenshotUsingRenderTarget(
         quality?: number
     ) => void
 ): void {
-    const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
+    const { height, width, finalWidth, finalHeight } = GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
 
     if (!(height && width)) {
@@ -327,34 +327,39 @@ export function CreateScreenshotUsingRenderTarget(
     const dumpDataFunc = customDumpData || DumpData;
 
     const renderWhenReady = () => {
-        _retryWithInterval(
+        _RetryWithInterval(
             () => texture.isReadyForRendering() && camera.isReady(true),
             () => {
                 engine.onEndFrameObservable.addOnce(() => {
                     if (finalWidth === width && finalHeight === height) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
                             dumpDataFunc(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     } else {
                         const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                        importPromise.then(() =>
-                            ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                                engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                                    dumpDataFunc(
-                                        finalWidth,
-                                        finalHeight,
-                                        data,
-                                        successCallback as (data: string | ArrayBuffer) => void,
-                                        mimeType,
-                                        fileName,
-                                        true,
-                                        undefined,
-                                        quality
-                                    );
-                                    texture.dispose();
-                                });
-                            })
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        importPromise.then(
+                            async () =>
+                                // eslint-disable-next-line github/no-then
+                                await ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                                    engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                                        dumpDataFunc(
+                                            finalWidth,
+                                            finalHeight,
+                                            data,
+                                            successCallback as (data: string | ArrayBuffer) => void,
+                                            mimeType,
+                                            fileName,
+                                            true,
+                                            undefined,
+                                            quality
+                                        );
+                                        texture.dispose();
+                                    });
+                                })
                         );
                     }
                 });
@@ -420,6 +425,9 @@ export function CreateScreenshotUsingRenderTarget(
     if (antialiasing) {
         const fxaaPostProcess = new FxaaPostProcess("antialiasing", 1.0, scene.activeCamera);
         texture.addPostProcess(fxaaPostProcess);
+        // Ensures the correct background color is used
+        fxaaPostProcess.autoClear = true;
+
         // Async Shader Compilation can lead to none ready effects in synchronous code
         fxaaPostProcess.onEffectCreatedObservable.addOnce((e) => {
             if (!e.isReady()) {
@@ -462,7 +470,7 @@ export function CreateScreenshotUsingRenderTarget(
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotUsingRenderTargetAsync(
+export async function CreateScreenshotUsingRenderTargetAsync(
     engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
@@ -487,7 +495,7 @@ export function CreateScreenshotUsingRenderTargetAsync(
         quality?: number
     ) => void
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
             engine,
             camera,
@@ -520,7 +528,7 @@ export function CreateScreenshotUsingRenderTargetAsync(
  * @param size This size of the screenshot. can be a number or an object implementing IScreenshotSize
  * @returns height and width for screenshot size
  */
-function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
+function GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;
     let width = 0;
     let finalWidth = 0;

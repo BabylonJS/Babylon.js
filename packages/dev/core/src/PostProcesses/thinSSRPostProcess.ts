@@ -1,13 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Scene, CubeTexture, Camera, EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
-import { Engine } from "core/Engines/engine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector3, Matrix, Quaternion, TmpVectors } from "core/Maths/math.vector";
 
-const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
-const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
+const Trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
+const TrsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
 
 /**
  * @internal
@@ -384,7 +383,7 @@ export class ThinSSRPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: scene.getEngine() || Engine.LastCreatedEngine!,
+            engine: scene.getEngine(),
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSRPostProcess.FragmentUrl,
@@ -431,7 +430,7 @@ export class ThinSSRPostProcess extends EffectWrapper {
 
         Matrix.ScalingToRef(this.textureWidth, this.textureHeight, 1, TmpVectors.Matrix[2]);
 
-        projectionMatrix.multiplyToRef(this._scene.getEngine().isWebGPU ? trsWebGPU : trs, TmpVectors.Matrix[3]);
+        projectionMatrix.multiplyToRef(this._scene.getEngine().isWebGPU ? TrsWebGPU : Trs, TmpVectors.Matrix[3]);
 
         TmpVectors.Matrix[3].multiplyToRef(TmpVectors.Matrix[2], TmpVectors.Matrix[4]);
 

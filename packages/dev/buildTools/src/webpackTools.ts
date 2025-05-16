@@ -7,6 +7,7 @@ import * as path from "path";
 import { camelize } from "./utils.js";
 import type { RuleSetRule, Configuration } from "webpack";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
     return function ({ context, request }: { context: string; request: string }, callback: (err: Error | null, result?: any) => void) {
         if (request.includes("babylonjs-gltf2interface")) {
@@ -50,6 +51,7 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
     };
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getRules = (
     options: {
         includeAssets?: boolean;
@@ -160,6 +162,7 @@ export const getRules = (
     return rules;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const commonDevWebpackConfiguration = (
     env: {
         mode: "development" | "production";
@@ -217,6 +220,7 @@ export const commonDevWebpackConfiguration = (
     };
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const commonUMDWebpackConfiguration = (options: {
     entryPoints?: { [name: string]: string };
     overrideFilename?: string | ((chunk: any) => string);

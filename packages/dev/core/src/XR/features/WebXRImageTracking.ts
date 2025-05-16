@@ -175,11 +175,11 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         if (!this.options.images || !this.options.images.length) {
             return {};
         }
-        const promises = this.options.images.map((image) => {
+        const promises = this.options.images.map(async (image) => {
             if (typeof image.src === "string") {
-                return (this._xrSessionManager.scene.getEngine() as Engine)._createImageBitmapFromSource(image.src);
+                return await (this._xrSessionManager.scene.getEngine() as Engine)._createImageBitmapFromSource(image.src);
             } else {
-                return Promise.resolve(image.src); // resolve is probably unneeded
+                return image.src;
             }
         });
 
@@ -210,6 +210,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         // Image tracking scores may be generated a few frames after the XR Session initializes.
         // If we haven't received scores yet, then kick off the task to check scores and return immediately.
         if (this._trackableScoreStatus === ImageTrackingScoreStatus.NotReceived) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._checkScoresAsync();
             return;
         }

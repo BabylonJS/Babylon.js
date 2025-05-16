@@ -11,10 +11,10 @@ declare let global: any;
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLONGLOBAL = (<any>globalObject).BABYLON;
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    GlobalObject.BABYLON = GlobalObject.BABYLON || {};
+    const BABYLONGLOBAL = GlobalObject.BABYLON;
     if (!BABYLONGLOBAL.Debug) {
         BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
 

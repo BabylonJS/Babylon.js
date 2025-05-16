@@ -9,11 +9,12 @@ import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
-import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike, Vector3LikeInternal } from "./math.like";
+import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike, IVector3LikeInternal } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
+import { CopyMatrixToArray, InvertMatrixToRef, MultiplyMatricesToArray } from "./ThinMaths/thinMath.matrix.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const _ExtractAsInt = (value: number) => {
+const ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
 
@@ -157,8 +158,8 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this.x);
-        const y = _ExtractAsInt(this.y);
+        const x = ExtractAsInt(this.x);
+        const y = ExtractAsInt(this.y);
         let hash = x;
         hash = (hash * 397) ^ y;
         return hash;
@@ -1176,7 +1177,7 @@ Object.defineProperties(Vector2.prototype, {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, IVector3Like {
+export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, IVector3Like {
     /**
      * If the first vector is flagged with integers (as everything is 0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
      * If subsequent vectors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
@@ -1282,9 +1283,9 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this._x);
-        const y = _ExtractAsInt(this._y);
-        const z = _ExtractAsInt(this._z);
+        const x = ExtractAsInt(this._x);
+        const y = ExtractAsInt(this._y);
+        const z = ExtractAsInt(this._z);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -1374,7 +1375,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public add(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
+    public add(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
         return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
@@ -1385,7 +1386,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public addToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+    public addToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
         result._x = this._x + otherVector._x;
         result._y = this._y + otherVector._y;
         result._z = this._z + otherVector._z;
@@ -1399,7 +1400,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public subtractInPlace(otherVector: DeepImmutable<Vector3LikeInternal>): this {
+    public subtractInPlace(otherVector: DeepImmutable<IVector3LikeInternal>): this {
         this._x -= otherVector._x;
         this._y -= otherVector._y;
         this._z -= otherVector._z;
@@ -1413,7 +1414,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public subtract(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
+    public subtract(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
         return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
     }
 
@@ -1424,7 +1425,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public subtractToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+    public subtractToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
     }
 
@@ -1449,7 +1450,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends Vector3LikeInternal>(x: number, y: number, z: number, result: T): T {
+    public subtractFromFloatsToRef<T extends IVector3LikeInternal>(x: number, y: number, z: number, result: T): T {
         result._x = this._x - x;
         result._y = this._y - y;
         result._z = this._z - z;
@@ -1485,7 +1486,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public negateToRef<T extends Vector3LikeInternal>(result: T): T {
+    public negateToRef<T extends IVector3LikeInternal>(result: T): T {
         result._x = this._x * -1;
         result._y = this._y * -1;
         result._z = this._z * -1;
@@ -1524,7 +1525,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public scaleToRef<T extends Vector3LikeInternal>(scale: number, result: T): T {
+    public scaleToRef<T extends IVector3LikeInternal>(scale: number, result: T): T {
         result._x = this._x * scale;
         result._y = this._y * scale;
         result._z = this._z * scale;
@@ -1624,7 +1625,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns result input
      */
-    public scaleAndAddToRef<T extends Vector3LikeInternal>(scale: number, result: T): T {
+    public scaleAndAddToRef<T extends IVector3LikeInternal>(scale: number, result: T): T {
         result._x += this._x * scale;
         result._y += this._y * scale;
         result._z += this._z * scale;
@@ -1717,7 +1718,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public multiplyInPlace(otherVector: DeepImmutable<Vector3LikeInternal>): this {
+    public multiplyInPlace(otherVector: DeepImmutable<IVector3LikeInternal>): this {
         this._x *= otherVector._x;
         this._y *= otherVector._y;
         this._z *= otherVector._z;
@@ -1731,7 +1732,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public multiply(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
+    public multiply(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
         return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
     }
 
@@ -1742,7 +1743,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public multiplyToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+    public multiplyToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
         result._x = this._x * otherVector._x;
         result._y = this._y * otherVector._y;
         result._z = this._z * otherVector._z;
@@ -1768,7 +1769,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public divide(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
+    public divide(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
         return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
@@ -1779,7 +1780,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public divideToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+    public divideToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
         result._x = this._x / otherVector._x;
         result._y = this._y / otherVector._y;
         result._z = this._z / otherVector._z;
@@ -1793,7 +1794,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public divideInPlace(otherVector: DeepImmutable<Vector3LikeInternal>): this {
+    public divideInPlace(otherVector: DeepImmutable<IVector3LikeInternal>): this {
         this._x = this._x / otherVector._x;
         this._y = this._y / otherVector._y;
         this._z = this._z / otherVector._z;
@@ -1807,7 +1808,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    public minimizeInPlace(other: DeepImmutable<Vector3LikeInternal>): this {
+    public minimizeInPlace(other: DeepImmutable<IVector3LikeInternal>): this {
         return this.minimizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
@@ -1817,7 +1818,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    public maximizeInPlace(other: DeepImmutable<Vector3LikeInternal>): this {
+    public maximizeInPlace(other: DeepImmutable<IVector3LikeInternal>): this {
         return this.maximizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
@@ -1911,7 +1912,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public floorToRef<T extends Vector3LikeInternal>(result: T): T {
+    public floorToRef<T extends IVector3LikeInternal>(result: T): T {
         result._x = Math.floor(this._x);
         result._y = Math.floor(this._y);
         result._z = Math.floor(this._z);
@@ -1933,7 +1934,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public fractToRef<T extends Vector3LikeInternal>(result: T): T {
+    public fractToRef<T extends IVector3LikeInternal>(result: T): T {
         result._x = this.x - Math.floor(this._x);
         result._y = this.y - Math.floor(this._y);
         result._z = this.z - Math.floor(this._z);
@@ -2074,7 +2075,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
      * @param result define the Vector3 to update
      * @returns the updated Vector3
      */
-    public normalizeToRef<T extends Vector3LikeInternal>(result: T): T {
+    public normalizeToRef<T extends IVector3LikeInternal>(result: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
             result._x = this._x;
@@ -3394,7 +3395,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, I
         return ref;
     }
 }
-Vector3 satisfies VectorStatic<Vector3, Vector3LikeInternal>;
+Vector3 satisfies VectorStatic<Vector3, IVector3LikeInternal>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
@@ -3463,10 +3464,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this.x);
-        const y = _ExtractAsInt(this.y);
-        const z = _ExtractAsInt(this.z);
-        const w = _ExtractAsInt(this.w);
+        const x = ExtractAsInt(this.x);
+        const y = ExtractAsInt(this.y);
+        const z = ExtractAsInt(this.z);
+        const w = ExtractAsInt(this.w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -4556,10 +4557,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        const x = _ExtractAsInt(this._x);
-        const y = _ExtractAsInt(this._y);
-        const z = _ExtractAsInt(this._z);
-        const w = _ExtractAsInt(this._w);
+        const x = ExtractAsInt(this._x);
+        const y = ExtractAsInt(this._y);
+        const z = ExtractAsInt(this._z);
+        const w = ExtractAsInt(this._w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -6453,94 +6454,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
             return other;
         }
 
-        // the inverse of a Matrix is the transpose of cofactor matrix divided by the determinant
-        const m = this._m;
-        const m00 = m[0],
-            m01 = m[1],
-            m02 = m[2],
-            m03 = m[3];
-        const m10 = m[4],
-            m11 = m[5],
-            m12 = m[6],
-            m13 = m[7];
-        const m20 = m[8],
-            m21 = m[9],
-            m22 = m[10],
-            m23 = m[11];
-        const m30 = m[12],
-            m31 = m[13],
-            m32 = m[14],
-            m33 = m[15];
-
-        const det_22_33 = m22 * m33 - m32 * m23;
-        const det_21_33 = m21 * m33 - m31 * m23;
-        const det_21_32 = m21 * m32 - m31 * m22;
-        const det_20_33 = m20 * m33 - m30 * m23;
-        const det_20_32 = m20 * m32 - m22 * m30;
-        const det_20_31 = m20 * m31 - m30 * m21;
-
-        const cofact_00 = +(m11 * det_22_33 - m12 * det_21_33 + m13 * det_21_32);
-        const cofact_01 = -(m10 * det_22_33 - m12 * det_20_33 + m13 * det_20_32);
-        const cofact_02 = +(m10 * det_21_33 - m11 * det_20_33 + m13 * det_20_31);
-        const cofact_03 = -(m10 * det_21_32 - m11 * det_20_32 + m12 * det_20_31);
-
-        const det = m00 * cofact_00 + m01 * cofact_01 + m02 * cofact_02 + m03 * cofact_03;
-
-        if (det === 0) {
-            // not invertible
+        if (InvertMatrixToRef(this, other.asArray())) {
+            other.markAsUpdated();
+        } else {
             other.copyFrom(this);
-            return other;
         }
-
-        const detInv = 1 / det;
-        const det_12_33 = m12 * m33 - m32 * m13;
-        const det_11_33 = m11 * m33 - m31 * m13;
-        const det_11_32 = m11 * m32 - m31 * m12;
-        const det_10_33 = m10 * m33 - m30 * m13;
-        const det_10_32 = m10 * m32 - m30 * m12;
-        const det_10_31 = m10 * m31 - m30 * m11;
-        const det_12_23 = m12 * m23 - m22 * m13;
-        const det_11_23 = m11 * m23 - m21 * m13;
-        const det_11_22 = m11 * m22 - m21 * m12;
-        const det_10_23 = m10 * m23 - m20 * m13;
-        const det_10_22 = m10 * m22 - m20 * m12;
-        const det_10_21 = m10 * m21 - m20 * m11;
-
-        const cofact_10 = -(m01 * det_22_33 - m02 * det_21_33 + m03 * det_21_32);
-        const cofact_11 = +(m00 * det_22_33 - m02 * det_20_33 + m03 * det_20_32);
-        const cofact_12 = -(m00 * det_21_33 - m01 * det_20_33 + m03 * det_20_31);
-        const cofact_13 = +(m00 * det_21_32 - m01 * det_20_32 + m02 * det_20_31);
-
-        const cofact_20 = +(m01 * det_12_33 - m02 * det_11_33 + m03 * det_11_32);
-        const cofact_21 = -(m00 * det_12_33 - m02 * det_10_33 + m03 * det_10_32);
-        const cofact_22 = +(m00 * det_11_33 - m01 * det_10_33 + m03 * det_10_31);
-        const cofact_23 = -(m00 * det_11_32 - m01 * det_10_32 + m02 * det_10_31);
-
-        const cofact_30 = -(m01 * det_12_23 - m02 * det_11_23 + m03 * det_11_22);
-        const cofact_31 = +(m00 * det_12_23 - m02 * det_10_23 + m03 * det_10_22);
-        const cofact_32 = -(m00 * det_11_23 - m01 * det_10_23 + m03 * det_10_21);
-        const cofact_33 = +(m00 * det_11_22 - m01 * det_10_22 + m02 * det_10_21);
-
-        Matrix.FromValuesToRef(
-            cofact_00 * detInv,
-            cofact_10 * detInv,
-            cofact_20 * detInv,
-            cofact_30 * detInv,
-            cofact_01 * detInv,
-            cofact_11 * detInv,
-            cofact_21 * detInv,
-            cofact_31 * detInv,
-            cofact_02 * detInv,
-            cofact_12 * detInv,
-            cofact_22 * detInv,
-            cofact_32 * detInv,
-            cofact_03 * detInv,
-            cofact_13 * detInv,
-            cofact_23 * detInv,
-            cofact_33 * detInv,
-            other
-        );
-
         return other;
     }
 
@@ -6666,24 +6584,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns the current matrix
      */
     public copyToArray(array: Float32Array | Array<number>, offset: number = 0): this {
-        const source = this._m;
-        array[offset] = source[0];
-        array[offset + 1] = source[1];
-        array[offset + 2] = source[2];
-        array[offset + 3] = source[3];
-        array[offset + 4] = source[4];
-        array[offset + 5] = source[5];
-        array[offset + 6] = source[6];
-        array[offset + 7] = source[7];
-        array[offset + 8] = source[8];
-        array[offset + 9] = source[9];
-        array[offset + 10] = source[10];
-        array[offset + 11] = source[11];
-        array[offset + 12] = source[12];
-        array[offset + 13] = source[13];
-        array[offset + 14] = source[14];
-        array[offset + 15] = source[15];
-
+        CopyMatrixToArray(this, array, offset);
         return this;
     }
 
@@ -6779,61 +6680,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns the current matrix
      */
     public multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array | Array<number>, offset: number): this {
-        const m = this._m;
-        const otherM = other.m;
-        const tm0 = m[0],
-            tm1 = m[1],
-            tm2 = m[2],
-            tm3 = m[3];
-        const tm4 = m[4],
-            tm5 = m[5],
-            tm6 = m[6],
-            tm7 = m[7];
-        const tm8 = m[8],
-            tm9 = m[9],
-            tm10 = m[10],
-            tm11 = m[11];
-        const tm12 = m[12],
-            tm13 = m[13],
-            tm14 = m[14],
-            tm15 = m[15];
-
-        const om0 = otherM[0],
-            om1 = otherM[1],
-            om2 = otherM[2],
-            om3 = otherM[3];
-        const om4 = otherM[4],
-            om5 = otherM[5],
-            om6 = otherM[6],
-            om7 = otherM[7];
-        const om8 = otherM[8],
-            om9 = otherM[9],
-            om10 = otherM[10],
-            om11 = otherM[11];
-        const om12 = otherM[12],
-            om13 = otherM[13],
-            om14 = otherM[14],
-            om15 = otherM[15];
-
-        result[offset] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
-        result[offset + 1] = tm0 * om1 + tm1 * om5 + tm2 * om9 + tm3 * om13;
-        result[offset + 2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
-        result[offset + 3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
-
-        result[offset + 4] = tm4 * om0 + tm5 * om4 + tm6 * om8 + tm7 * om12;
-        result[offset + 5] = tm4 * om1 + tm5 * om5 + tm6 * om9 + tm7 * om13;
-        result[offset + 6] = tm4 * om2 + tm5 * om6 + tm6 * om10 + tm7 * om14;
-        result[offset + 7] = tm4 * om3 + tm5 * om7 + tm6 * om11 + tm7 * om15;
-
-        result[offset + 8] = tm8 * om0 + tm9 * om4 + tm10 * om8 + tm11 * om12;
-        result[offset + 9] = tm8 * om1 + tm9 * om5 + tm10 * om9 + tm11 * om13;
-        result[offset + 10] = tm8 * om2 + tm9 * om6 + tm10 * om10 + tm11 * om14;
-        result[offset + 11] = tm8 * om3 + tm9 * om7 + tm10 * om11 + tm11 * om15;
-
-        result[offset + 12] = tm12 * om0 + tm13 * om4 + tm14 * om8 + tm15 * om12;
-        result[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
-        result[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
-        result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
+        MultiplyMatricesToArray(this, other, result, offset);
         return this;
     }
 
@@ -7035,9 +6882,9 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = _ExtractAsInt(this._m[0]);
+        let hash = ExtractAsInt(this._m[0]);
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ _ExtractAsInt(this._m[i]);
+            hash = (hash * 397) ^ ExtractAsInt(this._m[i]);
         }
         return hash;
     }

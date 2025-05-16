@@ -24,6 +24,7 @@ import { ThinGlowLayer } from "./thinGlowLayer";
 import type { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Return the first glow layer of the scene with a given name.

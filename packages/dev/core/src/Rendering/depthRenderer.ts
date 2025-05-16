@@ -13,7 +13,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -116,9 +116,10 @@ export class DepthRenderer {
         if (this.isPacked) {
             this.clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
         } else {
-            this.clearColor = new Color4(storeCameraSpaceZ ? 1e8 : 1.0, 0.0, 0.0, 1.0);
+            this.clearColor = new Color4(storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 0.0, 1.0);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         DepthRenderer._SceneComponentInitialization(this._scene);
@@ -297,7 +298,7 @@ export class DepthRenderer {
                     BindBonesParameters(renderingMesh, effect);
 
                     // Clip planes
-                    bindClipPlane(effect, material, scene);
+                    BindClipPlane(effect, material, scene);
 
                     // Morph targets
                     BindMorphTargetParameters(renderingMesh, effect);
@@ -501,7 +502,7 @@ export class DepthRenderer {
         }
 
         // Clip planes
-        prepareStringDefinesForClipPlanes(material, scene, defines);
+        PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
@@ -528,7 +529,7 @@ export class DepthRenderer {
             ];
             const samplers = ["diffuseSampler", "morphTargets", "boneSampler", "bakedVertexAnimationTexture"];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
                 engine.createEffect(

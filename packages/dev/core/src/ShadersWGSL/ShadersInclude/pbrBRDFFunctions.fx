@@ -1,5 +1,12 @@
 // Constants
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+#define BRDF_DIFFUSE_MODEL_EON 0
+#define BRDF_DIFFUSE_MODEL_BURLEY 1
+#define BRDF_DIFFUSE_MODEL_LAMBERT 2
+#define DIELECTRIC_SPECULAR_MODEL_GLTF 0
+#define DIELECTRIC_SPECULAR_MODEL_OPENPBR 1
+#define CONDUCTOR_SPECULAR_MODEL_GLTF 0
+#define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
 // ______________________________________________________________________
 //
@@ -29,14 +36,9 @@
         return brdfLookup.rgb;
     }
 
-    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, ior: f32, environmentBrdf: vec3f) -> vec3f {
+    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, environmentBrdf: vec3f) -> vec3f {
         #ifdef BRDF_V_HEIGHT_CORRELATED
-            #ifdef METALLICWORKFLOW
-                // Scale the reflectance by the IOR for values less than 1.5
-                var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * clamp(environmentBrdf.x * 2.0 * (ior - 1.0), 0.0, 1.0) + specularEnvironmentR0 * environmentBrdf.y;
-            #else
-                var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
-            #endif
+            var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
             // Simplification if F90 = 1 var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.xxx + specularEnvironmentR0 * environmentBrdf.yyy;
         #else
             var reflectance: vec3f = specularEnvironmentR0 * environmentBrdf.x + specularEnvironmentR90 * environmentBrdf.y;
@@ -420,6 +422,42 @@ fn normalDistributionFunction_TrowbridgeReitzGGX(NdotH: f32, alphaG: f32) -> f32
 //
 //                              DiffuseBRDF
 // ______________________________________________________________________
+const constant1_FON: f32 = 0.5f - 2.0f / (3.0f * PI);
+const constant2_FON: f32 = 2.0f / 3.0f - 28.0f / (15.0f * PI);
+
+// Fujii Oren-Nayar (FON) directional albedo (approximate).
+fn E_FON_approx(mu: f32, roughness: f32) -> f32
+{
+    var sigma: f32 = roughness; // FON sigma prime
+    var mucomp: f32 = 1.0f - mu;
+    var mucomp2: f32 = mucomp * mucomp;
+    const Gcoeffs: mat2x2f = mat2x2f(0.0571085289f, -0.332181442f,
+                               0.491881867f, 0.0714429953f);
+    var GoverPi: f32 = dot(Gcoeffs * vec2f(mucomp, mucomp2), vec2f(1.0f, mucomp2));
+    return (1.0f + sigma * GoverPi) / (1.0f + constant1_FON * sigma);
+}
+
+fn diffuseBRDF_EON(albedo: vec3f, roughness: f32, NdotL: f32, NdotV: f32, LdotV: f32) -> vec3f
+{
+    var rho: vec3f = albedo;
+    var sigma: f32 = roughness;                            // FON sigma prime
+    var mu_i: f32 = NdotL;                            // input angle cos
+    var mu_o: f32 = NdotV;                            // output angle cos
+    var s: f32 = LdotV - mu_i * mu_o;    // QON s term
+    var sovertF: f32 = select(s, s / max(mu_i, mu_o), s > 0.0f); // FON s/t
+    var AF: f32 = 1.0f / (1.0f + constant1_FON * sigma);   // FON A coeff.
+    var f_ss: vec3f = (rho * RECIPROCAL_PI) * AF * (1.0f + sigma * sovertF); // single-scatter
+    var EFo: f32 = E_FON_approx(mu_o, sigma);      // FON wo albedo (approx)
+    var EFi: f32 = E_FON_approx(mu_i, sigma);      // FON wi albedo (approx)
+    var avgEF: f32 = AF * (1.0f + constant2_FON * sigma);  // avg. albedo
+    var rho_ms: vec3f = (rho * rho) * avgEF / (vec3f(1.0f) - rho * (1.0f - avgEF));
+    const eps: f32 = 1.0e-7f;
+    var f_ms: vec3f = (rho_ms * RECIPROCAL_PI) * max(eps, 1.0f - EFo) // multi-scatter lobe
+                                 * max(eps, 1.0f - EFi)
+                                 / max(eps, 1.0f - avgEF);
+    return (f_ss + f_ms);
+}
+
 
 // Disney diffuse term
 // https://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf

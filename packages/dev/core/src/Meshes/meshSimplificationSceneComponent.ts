@@ -6,6 +6,7 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _simplificationQueue: SimplificationQueue;
@@ -37,6 +38,7 @@ Object.defineProperty(Scene.prototype, "simplificationQueue", {
 });
 
 declare module "../Meshes/mesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
          * Simplify the mesh according to the given array of settings.

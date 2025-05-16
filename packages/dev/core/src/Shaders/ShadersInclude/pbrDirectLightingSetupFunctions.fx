@@ -16,7 +16,12 @@ struct preLightingInfo
     float NdotLUnclamped;
     float NdotL;
     float VdotH;
+    float LdotV;
+
+     // TODO: the code would probably be leaner with material properties out of the structure.
     float roughness;
+    float diffuseRoughness;
+    vec3 surfaceAlbedo;
 
     #ifdef IRIDESCENCE
         float iridescenceIntensity;
@@ -50,6 +55,10 @@ preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
 
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
     return result;
 }
 
@@ -66,7 +75,11 @@ preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N
 
     result.NdotLUnclamped = dot(N, result.L);
     result.NdotL = saturateEps(result.NdotLUnclamped);
+    result.LdotV = dot(result.L, V);
 
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
     return result;
 }
 
@@ -84,14 +97,20 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
         result.H = normalize(V + result.L);
         result.VdotH = saturate(dot(V, result.H));
     #endif
-
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
     return result;
 }
 
 #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
-preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness ) 
+uniform sampler2D areaLightsLTC1Sampler;
+uniform sampler2D areaLightsLTC2Sampler;
+
+preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness )
 {
 	preLightingInfo result;
     result.lightOffset = lightData.xyz - vPosition;
@@ -103,9 +122,14 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 
 
 #ifdef SPECULARTERM
     result.areaLightFresnel = data.Fresnel;
-    result.areaLightSpecular = data.Specular;	
+    result.areaLightSpecular = data.Specular;
 #endif
 	result.areaLightDiffuse = data.Diffuse;
+
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
 	return result;
 }
 #endif

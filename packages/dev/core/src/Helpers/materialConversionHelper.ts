@@ -9,7 +9,7 @@ import { Vector2 } from "core/Maths/math.vector";
  * @param p3 fourth control point
  * @returns number result of cubic bezier curve at the specified t
  */
-function cubicBezierCurve(t: number, p0: number, p1: number, p2: number, p3: number): number {
+function CubicBezierCurve(t: number, p0: number, p1: number, p2: number, p3: number): number {
     return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
 }
 
@@ -29,5 +29,5 @@ export function SpecularPowerToRoughness(specularPower: number, p0 = new Vector2
     //   x = t * t * t * P3.x
     //   t = (x / P3.x)^(1/3)
     const t = Math.pow(specularPower / p3.x, 0.333333);
-    return cubicBezierCurve(t, p0.y, p1.y, p2.y, p3.y);
+    return CubicBezierCurve(t, p0.y, p1.y, p2.y, p3.y);
 }

@@ -163,6 +163,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public applyYInversionOnUpdate = true;
 
     /**
@@ -1497,8 +1498,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
+    public async parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
+        return await AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
     }
 
     /**
@@ -1528,16 +1529,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public parseFromURLAsync(url: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
+    public async parseFromURLAsync(url: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
+        return await AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
     }
 
-    private static _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
+    private static async _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
         if (url === "") {
-            return Promise.reject("No URL provided");
+            throw new Error("No URL provided");
         }
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1552,6 +1553,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         const serializationObject = JSON.parse(gui);
                         resolve(serializationObject);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load");
                     }
                 }

@@ -105,7 +105,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             this._removeCanvas();
         });
 
-        this._makeCanvasCompatibleAsync();
+        this._makeCanvasCompatible();
     }
 
     /**
@@ -117,11 +117,12 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         this.onXRLayerInitObservable.clear();
     }
 
-    private _makeCanvasCompatibleAsync() {
+    private _makeCanvasCompatible() {
         this._canvasCompatiblePromise = new Promise<void>((resolve, reject) => {
             // stay safe - make sure the context has the function
             try {
                 if (this.canvasContext && (this.canvasContext as any).makeXRCompatible) {
+                    // eslint-disable-next-line github/no-then
                     this.canvasContext.makeXRCompatible().then(
                         () => {
                             resolve();
@@ -137,6 +138,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 }
             } catch (e) {
                 // if this fails - the exception will be caught and the promise will be rejected
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(e);
             }
         });
@@ -155,12 +157,14 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             return this.xrLayer;
         };
 
-        return this._canvasCompatiblePromise
+        return await this._canvasCompatiblePromise
+            // eslint-disable-next-line github/no-then
             .then(
                 // catch any error and continue. When using the emulator is throws this error for no apparent reason.
                 () => {},
                 () => {}
             )
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 return createLayer();
             });

@@ -51,7 +51,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
      * @param bufferManager buffer manager
      * @returns nullable promise, resolves with the node
      */
-    public postExportNodeAsync(
+    public async postExportNodeAsync(
         context: string,
         node: Nullable<INode>,
         babylonNode: Node,
@@ -59,7 +59,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         convertToRightHanded: boolean,
         bufferManager: BufferManager
     ): Promise<Nullable<INode>> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             if (node && babylonNode instanceof Mesh) {
                 if (babylonNode.hasThinInstances && this._exporter) {
                     this._wasUsed = true;

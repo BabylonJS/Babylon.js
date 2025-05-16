@@ -232,7 +232,8 @@ export class ViewerModel implements IDisposable {
      * @param triggerLoaded should this mesh trigger the onLoaded observable. Used when adding meshes manually.
      * @returns a promise that will resolve when the model is done loading
      */
-    public addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async addMesh(mesh: AbstractMesh, triggerLoaded?: boolean) {
         if (!mesh.parent) {
             mesh.parent = this._pivotMesh;
         }
@@ -243,9 +244,9 @@ export class ViewerModel implements IDisposable {
 
         this._meshes.push(mesh);
         if (triggerLoaded) {
-            return this.onLoadedObservable.notifyObserversWithPromise(this);
+            return await this.onLoadedObservable.notifyObserversWithPromise(this);
         }
-        return Promise.resolve(this);
+        return await Promise.resolve(this);
     }
 
     /**

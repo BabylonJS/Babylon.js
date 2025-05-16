@@ -25,27 +25,33 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     private _bufferComputeShader: StorageBuffer[] = [];
     private _renderVertexBuffers: Array<{ [key: string]: VertexBuffer }> = [];
 
+    /** @internal */
     public readonly alignDataInBuffer = true;
 
+    /** @internal */
     constructor(parent: GPUParticleSystem, engine: WebGPUEngine) {
         this._parent = parent;
         this._engine = engine;
     }
 
+    /** @internal */
     public contextLost(): void {
         this._updateComputeShader = undefined as any;
         this._bufferComputeShader.length = 0;
         this._renderVertexBuffers.length = 0;
     }
 
+    /** @internal */
     public isUpdateBufferCreated(): boolean {
         return !!this._updateComputeShader;
     }
 
+    /** @internal */
     public isUpdateBufferReady(): boolean {
         return this._updateComputeShader?.isReady() ?? false;
     }
 
+    /** @internal */
     public createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor {
         const bindingsMapping: ComputeBindingMapping = {
             params: { group: 0, binding: 0 },
@@ -72,8 +78,11 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         if (this._parent.noiseTexture) {
             bindingsMapping["noiseTexture"] = { group: 1, binding: 11 };
         }
+        if (this._parent.flowMap) {
+            bindingsMapping["flowMapTexture"] = { group: 1, binding: 13 };
+        }
 
-        this._updateComputeShader = new ComputeShader("updateParticles", this._engine as WebGPUEngine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
+        this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
 
         this._simParamsComputeShader?.dispose();
         this._simParamsComputeShader = new UniformBuffer(this._engine, undefined, undefined, "ComputeShaderParticleSystemUBO");
@@ -101,6 +110,10 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         if (this._parent.noiseTexture) {
             this._simParamsComputeShader.addUniform("noiseStrength", 3);
         }
+        if (this._parent.flowMap) {
+            this._simParamsComputeShader.addUniform("flowMapProjection", 16);
+            this._simParamsComputeShader.addUniform("flowMapStrength", 1);
+        }
         if (!this._parent.isLocal) {
             this._simParamsComputeShader.addUniform("emitterWM", 16);
         }
@@ -113,10 +126,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         return new UniformBufferEffectCommonAccessor(this._simParamsComputeShader);
     }
 
+    /** @internal */
     public createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: { [key: string]: VertexBuffer }): void {
         this._renderVertexBuffers.push(renderVertexBuffers);
     }
 
+    /** @internal */
     public createParticleBuffer(data: number[]): DataArray | DataBuffer {
         const buffer = new StorageBuffer(
             this._engine,
@@ -131,12 +146,15 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         return buffer.getBuffer();
     }
 
+    /** @internal */
     public bindDrawBuffers(index: number, effect: Effect, indexBuffer: Nullable<DataBuffer>): void {
         this._engine.bindBuffers(this._renderVertexBuffers[index], indexBuffer, effect);
     }
 
+    /** @internal */
     public preUpdateParticleBuffer(): void {}
 
+    /** @internal */
     public updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void {
         this._simParamsComputeShader.update();
 
@@ -166,12 +184,17 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             this._updateComputeShader.setTexture("noiseTexture", this._parent.noiseTexture);
         }
 
+        if (this._parent.flowMap) {
+            this._updateComputeShader.setTexture("flowMapTexture", this._parent.flowMap);
+        }
+
         this._updateComputeShader.setStorageBuffer("particlesIn", this._bufferComputeShader[index]);
         this._updateComputeShader.setStorageBuffer("particlesOut", this._bufferComputeShader[index ^ 1]);
 
         this._updateComputeShader.dispatch(Math.ceil(currentActiveCount / 64));
     }
 
+    /** @internal */
     public releaseBuffers(): void {
         for (let i = 0; i < this._bufferComputeShader.length; ++i) {
             this._bufferComputeShader[i].dispose();
@@ -185,6 +208,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         (<any>this._updateComputeShader) = null;
     }
 
+    /** @internal */
     public releaseVertexBuffers(): void {
         this._renderVertexBuffers.length = 0;
     }

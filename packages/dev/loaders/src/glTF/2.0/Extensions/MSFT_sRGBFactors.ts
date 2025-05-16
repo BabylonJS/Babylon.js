@@ -10,7 +10,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "MSFT_sRGBFactors";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the MSFT_sRGBFactors extension.
@@ -42,9 +42,10 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @internal */
+    /** @internal*/
+    // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, (extraContext, extra) => {
+        return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
             if (extra) {
                 if (!(babylonMaterial instanceof PBRMaterial)) {
                     throw new Error(`${extraContext}: Material type not supported`);
@@ -61,10 +62,8 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
                     babylonMaterial.reflectivityColor.toLinearSpaceToRef(babylonMaterial.reflectivityColor, useExactSrgbConversions);
                 }
 
-                return promise;
+                return await promise;
             }
-
-            return null;
         });
     }
 }

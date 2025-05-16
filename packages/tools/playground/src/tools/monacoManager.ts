@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 // import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -266,7 +268,7 @@ class Playground {
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
 
-        const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync(), 500);
+        const analyzeCodeDebounced = debounce(async () => await this._analyzeCodeAsync(), 500);
         this._editor.onDidChangeModelContent(() => {
             const newCode = this._editor.getValue();
             if (this.globalState.currentCode !== newCode) {
@@ -277,10 +279,10 @@ class Playground {
         });
 
         if (this.globalState.currentCode) {
-            this._editor!.setValue(this.globalState.currentCode);
+            this._editor.setValue(this.globalState.currentCode);
         }
 
-        this.globalState.getCompiledCode = () => this._getRunCode();
+        this.globalState.getCompiledCode = async () => await this._getRunCodeAsync();
 
         if (this.globalState.currentCode) {
             this.globalState.onRunRequiredObservable.notifyObservers();
@@ -351,7 +353,7 @@ class Playground {
         }
 
         let libContent = "";
-        const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
+        const responses = await Promise.all(declarations.map(async (declaration) => await fetch(declaration)));
         const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
@@ -404,7 +406,7 @@ declare var canvas: HTMLCanvasElement;
                 Logger.Log("Error loading templates code");
             }
 
-            this._hookMonacoCompletionProvider();
+            this._hookMonacoCompletionProviderAsync();
         }
 
         if (!this.globalState.loadingCodeInProgress) {
@@ -621,7 +623,9 @@ declare var canvas: HTMLCanvasElement;
                 continue;
             }
             const matches = model.findMatches(candidate.name, false, false, true, null, false);
-            if (!matches) continue;
+            if (!matches) {
+                continue;
+            }
 
             for (const match of matches) {
                 if (model.isDisposed()) {
@@ -646,7 +650,9 @@ declare var canvas: HTMLCanvasElement;
                 // the following is time consuming on all suggestions, that's why we precompute tag candidate names in the definition worker to filter calls
                 // @see setupDefinitionWorker
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
-                if (!details || !details.tags) continue;
+                if (!details || !details.tags) {
+                    continue;
+                }
 
                 const tag = details.tags.find((t: { name: string }) => t.name === candidate.tagName);
                 if (tag) {
@@ -692,18 +698,19 @@ declare var canvas: HTMLCanvasElement;
             return tag.text;
         }
 
-        if (tag?.text instanceof Array)
+        if (tag?.text instanceof Array) {
             return tag.text
                 .filter((i: { kind: string }) => i.kind === "text")
                 .map((i: { text: any }) => (i.text.indexOf("data:") === 0 ? `<img src="${i.text}">` : i.text))
                 .join(", ");
+        }
 
         return "";
     }
 
     // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
     // So we need to be super fast.
-    private async _hookMonacoCompletionProvider() {
+    private async _hookMonacoCompletionProviderAsync() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const owner = this;
@@ -729,7 +736,9 @@ declare var canvas: HTMLCanvasElement;
                     const model = monaco.editor.getModel(uri);
                     const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label);
 
-                    if (!details || !details.tags) continue;
+                    if (!details || !details.tags) {
+                        continue;
+                    }
 
                     const tag = details.tags.find((t: { name: string }) => t.name === candidate.tagName);
                     if (tag) {
@@ -760,7 +769,7 @@ declare var canvas: HTMLCanvasElement;
         };
     }
 
-    private async _getRunCode() {
+    private async _getRunCodeAsync() {
         if (this.globalState.language == "JS") {
             return this._editor.getValue();
         } else {

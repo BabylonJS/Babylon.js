@@ -13,7 +13,7 @@ import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import type { Observer } from "../Misc/observable";
 import { RegisterClass } from "../Misc/typeStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * Defines a sound that can be played in the application.
@@ -241,7 +241,7 @@ export class Sound {
 
         if (AbstractEngine.audioEngine?.canUseWebAudio && AbstractEngine.audioEngine.audioContext) {
             this._soundGain = AbstractEngine.audioEngine.audioContext.createGain();
-            this._soundGain!.gain.value = this._volume;
+            this._soundGain.gain.value = this._volume;
             this._inputAudioNode = this._soundGain;
             this._outputAudioNode = this._soundGain;
             if (this._spatialSound) {
@@ -498,6 +498,7 @@ export class Sound {
         if (!AbstractEngine.audioEngine?.audioContext) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         AbstractEngine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {
@@ -554,7 +555,7 @@ export class Sound {
                             this._soundSource.loopStart = this._offset;
                         }
                         if (this._length !== undefined && this._length !== this._soundSource.loopEnd) {
-                            this._soundSource.loopEnd = (this._offset! | 0) + this._length!;
+                            this._soundSource.loopEnd = (this._offset! | 0) + this._length;
                         }
                     }
                 }
@@ -850,6 +851,7 @@ export class Sound {
                                 // In browsers that don’t yet support this functionality,
                                 // playPromise won’t be defined.
                                 if (playPromise !== undefined) {
+                                    // eslint-disable-next-line github/no-then
                                     playPromise.catch(() => {
                                         // Automatic playback failed.
                                         // Waiting for the audio engine to be unlocked by user click on unmute
@@ -895,15 +897,15 @@ export class Sound {
                                     this._soundSource.loopStart = offset;
                                 }
                                 if (length !== undefined) {
-                                    this._soundSource.loopEnd = (offset! | 0) + length!;
+                                    this._soundSource.loopEnd = (offset! | 0) + length;
                                 }
                                 this._soundSource.playbackRate.value = this._playbackRate;
                                 this._soundSource.onended = () => {
                                     this._onended();
                                 };
-                                startTime = time ? AbstractEngine.audioEngine?.audioContext!.currentTime + time : AbstractEngine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = ((this.isPaused ? this.currentTime : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
-                                this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
+                                startTime = time ? AbstractEngine.audioEngine?.audioContext.currentTime + time : AbstractEngine.audioEngine.audioContext.currentTime;
+                                const actualOffset = ((this.isPaused ? this.currentTime : 0) + (this._offset ?? 0)) % this._soundSource.buffer!.duration;
+                                this._soundSource.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
                     };
@@ -1117,7 +1119,7 @@ export class Sound {
     public clone(): Nullable<Sound> {
         if (!this._streaming) {
             const setBufferAndRun = () => {
-                _retryWithInterval(
+                _RetryWithInterval(
                     () => this._isReadyToPlay,
                     () => {
                         clonedSound._audioBuffer = this.getAudioBuffer();
@@ -1269,7 +1271,7 @@ export class Sound {
             scene.addPendingData(newSound);
         } else {
             const setBufferAndRun = () => {
-                _retryWithInterval(
+                _RetryWithInterval(
                     () => sourceSound._isReadyToPlay,
                     () => {
                         newSound._audioBuffer = sourceSound.getAudioBuffer();

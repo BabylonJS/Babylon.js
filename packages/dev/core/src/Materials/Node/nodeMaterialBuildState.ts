@@ -8,7 +8,7 @@ import { Constants } from "../../Engines/constants";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { Process } from "core/Engines/Processors/shaderProcessor";
-import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 
 /** @internal */
@@ -114,13 +114,14 @@ export class NodeMaterialBuildState {
      * Returns the processed, compiled shader code
      * @returns the raw shader code used by the engine
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public getProcessedShaderAsync(): Promise<string> {
         if (!this._builtCompilationString) {
             throw new Error("Shader not built yet.");
         }
 
         const engine = this.sharedData.nodeMaterial.getScene().getEngine();
-        const options: ProcessingOptions = {
+        const options: _IProcessingOptions = {
             defines: [],
             indexParameters: undefined,
             isFragment: this.target === NodeMaterialBlockTargets.Fragment,

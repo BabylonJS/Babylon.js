@@ -89,6 +89,7 @@ export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32
 /**
  * Options for converting the points to the internal number[][] format used by GreasedLine
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GreasedLinePointsOptions {
     /**
      * If defined and a Float32Array is used for the points parameter,
@@ -102,6 +103,7 @@ export interface GreasedLinePointsOptions {
 /**
  * Options for creating a GreasedLineMesh
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GreasedLineMeshOptions {
     /**
      * Points of the line.

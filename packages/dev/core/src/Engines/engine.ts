@@ -48,7 +48,7 @@ import {
     _CommonInit,
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
-import { _retryWithInterval } from "core/Misc/timingTools";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -142,8 +142,10 @@ export class Engine extends ThinEngine {
     /** LUMINANCE_ALPHA */
     public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = Constants.TEXTUREFORMAT_LUMINANCE_ALPHA;
     /** RGB */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGB = Constants.TEXTUREFORMAT_RGB;
     /** RGBA */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGBA = Constants.TEXTUREFORMAT_RGBA;
     /** RED */
     public static readonly TEXTUREFORMAT_RED = Constants.TEXTUREFORMAT_RED;
@@ -154,16 +156,20 @@ export class Engine extends ThinEngine {
     /** RG unsigned short normed to [0, 1] **/
     public static readonly TEXTUREFORMAT_RG16_UNORM = Constants.TEXTUREFORMAT_RG16_UNORM;
     /** RGB unsigned short normed to [0, 1] **/
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGB16_UNORM = Constants.TEXTUREFORMAT_RGB16_UNORM;
     /** RGBA unsigned short normed to [0, 1] **/
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGBA16_UNORM = Constants.TEXTUREFORMAT_RGBA16_UNORM;
     /** RED signed short normed to [-1, 1] **/
     public static readonly TEXTUREFORMAT_R16_SNORM = Constants.TEXTUREFORMAT_R16_SNORM;
     /** RG signed short normed to [-1, 1] **/
     public static readonly TEXTUREFORMAT_RG16_SNORM = Constants.TEXTUREFORMAT_RG16_SNORM;
     /** RGB signed short normed to [-1, 1] **/
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGB16_SNORM = Constants.TEXTUREFORMAT_RGB16_SNORM;
     /** RGBA signed short normed to [-1, 1] **/
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGBA16_SNORM = Constants.TEXTUREFORMAT_RGBA16_SNORM;
     /** RG */
     public static readonly TEXTUREFORMAT_RG = Constants.TEXTUREFORMAT_RG;
@@ -174,8 +180,10 @@ export class Engine extends ThinEngine {
     /** RG_INTEGER */
     public static readonly TEXTUREFORMAT_RG_INTEGER = Constants.TEXTUREFORMAT_RG_INTEGER;
     /** RGB_INTEGER */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGB_INTEGER = Constants.TEXTUREFORMAT_RGB_INTEGER;
     /** RGBA_INTEGER */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTUREFORMAT_RGBA_INTEGER = Constants.TEXTUREFORMAT_RGBA_INTEGER;
 
     /** UNSIGNED_BYTE */
@@ -259,10 +267,13 @@ export class Engine extends ThinEngine {
     /** Inverse Cubic coordinates mode */
     public static readonly TEXTURE_INVCUBIC_MODE = Constants.TEXTURE_INVCUBIC_MODE;
     /** Equirectangular coordinates mode */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTURE_EQUIRECTANGULAR_MODE = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
     /** Equirectangular Fixed coordinates mode */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
     /** Equirectangular Fixed Mirrored coordinates mode */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
     // Texture rescaling mode
@@ -410,8 +421,9 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public override _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return CreateImageBitmapFromSource(this, imageSource, options);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public override async _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return await CreateImageBitmapFromSource(this, imageSource, options);
     }
 
     /**
@@ -532,14 +544,14 @@ export class Engine extends ThinEngine {
     /**
      * @internal
      */
-    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
-    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
+    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
+    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
 
     /**
      * @internal
      */
-    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        return await new Promise((resolve, reject) => {
             this._loadFile(
                 url,
                 (data) => {
@@ -549,6 +561,7 @@ export class Engine extends ThinEngine {
                 offlineProvider,
                 useArrayBuffer,
                 (request, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception);
                 }
             );
@@ -977,10 +990,10 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
+    private async _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
         const gl = <WebGL2RenderingContext>(this._gl as any);
-        return new Promise((resolve, reject) => {
-            _retryWithInterval(
+        return await new Promise((resolve, reject) => {
+            _RetryWithInterval(
                 () => {
                     const res = gl.clientWaitSync(sync, flags, 0);
                     if (res == gl.WAIT_FAILED) {
@@ -999,8 +1012,10 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * This function might return null synchronously, so it is technically not async.
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Nullable<Promise<ArrayBufferView>> {
         if (this._webGLVersion < 2) {
             throw new Error("_readPixelsAsync only work on WebGL2+");
@@ -1020,6 +1035,7 @@ export class Engine extends ThinEngine {
 
         gl.flush();
 
+        // eslint-disable-next-line github/no-then
         return this._clientWaitAsync(sync, 0, 10).then(() => {
             gl.deleteSync(sync);
 

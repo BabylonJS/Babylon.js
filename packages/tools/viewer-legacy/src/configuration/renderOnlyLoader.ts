@@ -1,3 +1,4 @@
+/* eslint-disable github/no-then */
 import { mapperManager } from "./mappers";
 import type { ViewerConfiguration } from "./configuration";
 import { processConfigurationCompatibility } from "./configurationCompatibility";
@@ -59,7 +60,8 @@ export class RenderOnlyConfigurationLoader {
      * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
      * @returns A promise that delivers the extended viewer configuration, when done.
      */
-    public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
         this._processInitialConfiguration(loadedConfig);
 
@@ -67,7 +69,7 @@ export class RenderOnlyConfigurationLoader {
 
         if (loadedConfig.configuration) {
             let mapperType = "json";
-            return Promise.resolve()
+            return await Promise.resolve()
                 .then(() => {
                     if (typeof loadedConfig.configuration === "string" || (loadedConfig.configuration && loadedConfig.configuration.url)) {
                         // a file to load
@@ -88,7 +90,7 @@ export class RenderOnlyConfigurationLoader {
                             }
                             mapperType = type || mapperType;
                         }
-                        return this._loadFile(url);
+                        return this._loadFileAsync(url);
                     } else {
                         if (typeof loadedConfig.configuration === "object") {
                             mapperType = loadedConfig.configuration.mapper || mapperType;
@@ -113,7 +115,7 @@ export class RenderOnlyConfigurationLoader {
             if (callback) {
                 callback(loadedConfig);
             }
-            return Promise.resolve(loadedConfig);
+            return await Promise.resolve(loadedConfig);
         }
     }
 
@@ -141,13 +143,13 @@ export class RenderOnlyConfigurationLoader {
         }
     }
 
-    private _loadFile(url: string): Promise<any> {
+    private async _loadFileAsync(url: string): Promise<any> {
         const cacheReference = this._configurationCache;
         if (this._enableCache && cacheReference[url]) {
-            return Promise.resolve(cacheReference[url]);
+            return await Promise.resolve(cacheReference[url]);
         }
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const fileRequest = Tools.LoadFile(
                 url,
                 (result) => {
@@ -168,6 +170,7 @@ export class RenderOnlyConfigurationLoader {
                     if (idx !== -1) {
                         this._loadRequests.splice(idx, 1);
                     }
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(error);
                 }
             );

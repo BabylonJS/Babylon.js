@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
 declare const BABYLON: typeof window.BABYLON;
@@ -49,7 +50,7 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         engine.compatibilityMode = !window.forceUseNonCompatibilityMode;
         window.engine = engine;
     }
-    window.engine!.renderEvenInBackground = true;
+    window.engine.renderEvenInBackground = true;
     window.engine.getCaps().parallelShaderCompile = undefined;
     return {
         forceUseReverseDepthBuffer: window.forceUseReverseDepthBuffer,
@@ -115,6 +116,7 @@ export const evaluatePrepareScene = async (
 
             const loadedScene = eval(code + "\r\ncreateScene(engine)");
 
+            // eslint-disable-next-line github/no-then
             if (loadedScene.then) {
                 // Handle if createScene returns a promise
                 window.scene = await loadedScene;
@@ -174,7 +176,7 @@ export const evaluatePrepareScene = async (
 };
 
 export const evaluateRenderSceneForVisualization = async (renderCount: number) => {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         if (!window.scene || !window.engine) {
             return resolve(false);
         }
@@ -188,7 +190,7 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
             if (window.scene.activeCamera && (window.scene.activeCamera as any).useAutoRotationBehavior) {
                 (window.scene.activeCamera as any).useAutoRotationBehavior = false;
             }
-            const sceneAdts: any[] = window.scene!.textures.filter((t: any) => t.getClassName() === "AdvancedDynamicTexture");
+            const sceneAdts: any[] = window.scene.textures.filter((t: any) => t.getClassName() === "AdvancedDynamicTexture");
             const adtsAreReady = () => {
                 return sceneAdts.every((adt: any) => adt.guiIsReady());
             };

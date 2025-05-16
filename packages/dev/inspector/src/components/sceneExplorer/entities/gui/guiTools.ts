@@ -5,14 +5,14 @@ import { GUIEditor } from "gui-editor/guiEditor";
 
 declare let BABYLON: any;
 
-let editorUrl = `${Tools._DefaultCdnUrl}/v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
+let EditorUrl = `${Tools._DefaultCdnUrl}/v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let guiEditorContainer: { GUIEditor: typeof GUIEditor };
 /** Get the inspector from bundle or global
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function _getGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
+function GetGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
     // UMD Global name detection from Webpack Bundle UMD Name.
     if (typeof GUIEditor !== "undefined") {
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -40,7 +40,7 @@ export function InjectGUIEditor(guiEditorPackage: any) {
  * @param guiEditorURL
  */
 export function SetGUIEditorURL(guiEditorURL: string) {
-    editorUrl = guiEditorURL;
+    EditorUrl = guiEditorURL;
 }
 
 /**
@@ -52,18 +52,18 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * @returns a promise that resolves when the editor is opened
  */
 export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, embed?: boolean) {
-    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
+    guiEditorContainer = guiEditorContainer || GetGlobalGUIEditor();
     if (!guiEditorContainer) {
         if (typeof BABYLON !== "undefined") {
             // we are in UMD environment
             if (typeof guiEditorContainer === "undefined") {
                 // Load editor and add it to the DOM
                 try {
-                    await Tools.LoadScriptAsync(editorUrl);
-                    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
+                    await Tools.LoadScriptAsync(EditorUrl);
+                    guiEditorContainer = guiEditorContainer || GetGlobalGUIEditor();
                 } catch {
                     // eslint-disable-next-line no-throw-literal
-                    throw `Failed to load GUI editor from ${editorUrl}`;
+                    throw `Failed to load GUI editor from ${EditorUrl}`;
                 }
             }
         } else {
@@ -72,5 +72,6 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, em
             throw `Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`;
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     guiEditorContainer.GUIEditor.Show({ liveGuiTexture: adt }, embed);
 }

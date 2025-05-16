@@ -13,6 +13,7 @@ export abstract class BaseError extends Error {
         (Object as any).setPrototypeOf ||
         ((o, proto) => {
             o.__proto__ = proto;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return o;
         });
 }

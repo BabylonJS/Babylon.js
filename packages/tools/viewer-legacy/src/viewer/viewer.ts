@@ -1,3 +1,7 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Engine } from "core/Engines/engine";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
@@ -471,12 +475,12 @@ export abstract class AbstractViewer {
      * @param height Optional screenshot height (default to 512).
      * @returns a promise with the screenshot data
      */
-    public takeScreenshot(callback?: (data: string) => void, width = 0, height = 0): Promise<string> {
+    public async takeScreenshot(callback?: (data: string) => void, width = 0, height = 0): Promise<string> {
         width = width || this.canvas.clientWidth;
         height = height || this.canvas.clientHeight;
 
         // Create the screenshot
-        return new Promise<string>((resolve, reject) => {
+        return await new Promise<string>((resolve, reject) => {
             try {
                 Tools.CreateScreenshot(this.engine, this.sceneManager.camera, { width, height }, (data) => {
                     if (callback) {
@@ -549,22 +553,22 @@ export abstract class AbstractViewer {
         if (observersConfiguration.onEngineInit) {
             this.onEngineInitObservable.add((window as any)[observersConfiguration.onEngineInit]);
         } else {
-            if (observersConfiguration.onEngineInit === "" && this.configuration.observers && this.configuration.observers!.onEngineInit) {
-                this.onEngineInitObservable.removeCallback((window as any)[this.configuration.observers!.onEngineInit!]);
+            if (observersConfiguration.onEngineInit === "" && this.configuration.observers && this.configuration.observers.onEngineInit) {
+                this.onEngineInitObservable.removeCallback((window as any)[this.configuration.observers.onEngineInit]);
             }
         }
         if (observersConfiguration.onSceneInit) {
             this.onSceneInitObservable.add((window as any)[observersConfiguration.onSceneInit]);
         } else {
-            if (observersConfiguration.onSceneInit === "" && this.configuration.observers && this.configuration.observers!.onSceneInit) {
-                this.onSceneInitObservable.removeCallback((window as any)[this.configuration.observers!.onSceneInit!]);
+            if (observersConfiguration.onSceneInit === "" && this.configuration.observers && this.configuration.observers.onSceneInit) {
+                this.onSceneInitObservable.removeCallback((window as any)[this.configuration.observers.onSceneInit]);
             }
         }
         if (observersConfiguration.onModelLoaded) {
             this.onModelLoadedObservable.add((window as any)[observersConfiguration.onModelLoaded]);
         } else {
-            if (observersConfiguration.onModelLoaded === "" && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
-                this.onModelLoadedObservable.removeCallback((window as any)[this.configuration.observers!.onModelLoaded!]);
+            if (observersConfiguration.onModelLoaded === "" && this.configuration.observers && this.configuration.observers.onModelLoaded) {
+                this.onModelLoadedObservable.removeCallback((window as any)[this.configuration.observers.onModelLoaded]);
             }
         }
     }
@@ -610,8 +614,8 @@ export abstract class AbstractViewer {
      *
      * @returns The viewer object will be returned after the object was loaded.
      */
-    protected _onTemplatesLoaded(): Promise<AbstractViewer> {
-        return Promise.resolve(this);
+    protected async _onTemplatesLoaded(): Promise<AbstractViewer> {
+        return await Promise.resolve(this);
     }
 
     /**
@@ -620,21 +624,21 @@ export abstract class AbstractViewer {
      * But first - it will load the extendible onTemplateLoaded()!
      * @returns A promise that will resolve when the template was loaded
      */
-    protected _onTemplateLoaded(): Promise<AbstractViewer> {
+    protected async _onTemplateLoaded(): Promise<AbstractViewer> {
         // check if viewer was disposed right after created
         if (this._isDisposed) {
-            return Promise.reject("viewer was disposed");
+            return await Promise.reject("viewer was disposed");
         }
-        return this._onTemplatesLoaded().then(() => {
+        return await this._onTemplatesLoaded().then(async () => {
             const autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
-            return this._initEngine()
-                .then((engine) => {
-                    return this.onEngineInitObservable.notifyObserversWithPromise(engine);
+            return await this._initEngine()
+                .then(async (engine) => {
+                    return await this.onEngineInitObservable.notifyObserversWithPromise(engine);
                 })
-                .then(() => {
+                .then(async () => {
                     this._initTelemetryEvents();
                     if (autoLoad) {
-                        return this.loadModel(this.configuration.model!)
+                        return await this.loadModel(this.configuration.model!)
                             .catch(() => {})
                             .then(() => {
                                 return this.sceneManager.scene;
@@ -643,8 +647,8 @@ export abstract class AbstractViewer {
                         return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
                     }
                 })
-                .then(() => {
-                    return this.onInitDoneObservable.notifyObserversWithPromise(this);
+                .then(async () => {
+                    return await this.onInitDoneObservable.notifyObserversWithPromise(this);
                 })
                 .catch((e) => {
                     Tools.Warn(e.toString());
@@ -660,13 +664,13 @@ export abstract class AbstractViewer {
      * @returns {Promise<Engine>}
      * @memberof Viewer
      */
-    protected _initEngine(): Promise<Engine> {
+    protected async _initEngine(): Promise<Engine> {
         // init custom shaders
         this._injectCustomShaders();
 
         //let canvasElement = this.templateManager.getCanvas();
         if (!this.canvas) {
-            return Promise.reject("Canvas element not found!");
+            return await Promise.reject("Canvas element not found!");
         }
         const config = this.configuration.engine || {};
         // TDO enable further configuration
@@ -711,7 +715,7 @@ export abstract class AbstractViewer {
         // create a new template manager for this viewer
         this.sceneManager = new SceneManager(this.engine, this._configurationContainer, this.observablesManager);
 
-        return Promise.resolve(this.engine);
+        return await Promise.resolve(this.engine);
     }
 
     private _isLoading: boolean;
@@ -787,22 +791,22 @@ export abstract class AbstractViewer {
      * @param clearScene Should the scene be cleared before loading the model
      * @returns a Promise the fulfills when the model finished loading successfully.
      */
-    public loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
+    public async loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
-            return Promise.reject("another model is curently being loaded.");
+            return await Promise.reject("another model is curently being loaded.");
         }
 
-        return Promise.resolve(this.sceneManager.scene)
-            .then((scene) => {
+        return await Promise.resolve(this.sceneManager.scene)
+            .then(async (scene) => {
                 if (!scene) {
-                    return this.sceneManager.initScene(this.configuration.scene);
+                    return await this.sceneManager.initScene(this.configuration.scene);
                 }
                 return scene;
             })
-            .then(() => {
+            .then(async () => {
                 const model = this.initModel(modelConfig, clearScene);
-                return new Promise<ViewerModel>((resolve, reject) => {
+                return await new Promise<ViewerModel>((resolve, reject) => {
                     // at this point, configuration.model is an object, not a string
                     model.onLoadedObservable.add(() => {
                         resolve(model);
@@ -846,13 +850,13 @@ export abstract class AbstractViewer {
         if (customShaders.shaders) {
             Object.keys(customShaders.shaders).forEach((key) => {
                 // typescript considers a callback "unsafe", so... '!'
-                Effect.ShadersStore[key] = customShaders!.shaders![key];
+                Effect.ShadersStore[key] = customShaders.shaders![key];
             });
         }
         if (customShaders.includes) {
             Object.keys(customShaders.includes).forEach((key) => {
                 // typescript considers a callback "unsafe", so... '!'
-                Effect.IncludesShadersStore[key] = customShaders!.includes![key];
+                Effect.IncludesShadersStore[key] = customShaders.includes![key];
             });
         }
     }

@@ -11,14 +11,14 @@
             var boneSampler : texture_2d<f32>;
             uniform boneTextureWidth : f32;
         #else
-            uniform mBones : array<mat4x4, BonesPerMesh>;
+            uniform mBones : array<mat4x4f, BonesPerMesh>;
             #ifdef BONES_VELOCITY_ENABLED
-                uniform mPreviousBones : array<mat4x4, BonesPerMesh>;
+                uniform mPreviousBones : array<mat4x4f, BonesPerMesh>;
             #endif
         #endif
 
         #ifdef BONETEXTURE
-            fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
+            fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4f
             {
                 let offset = i32(index)  * 4;	
 
@@ -27,7 +27,7 @@
                 let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
                 let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
 
-                return mat4x4<f32>(m0, m1, m2, m3);
+                return mat4x4f(m0, m1, m2, m3);
             }
         #endif
     #endif

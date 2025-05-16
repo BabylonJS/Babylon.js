@@ -1,5 +1,12 @@
 // Constants
 #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
+#define BRDF_DIFFUSE_MODEL_EON 0
+#define BRDF_DIFFUSE_MODEL_BURLEY 1
+#define BRDF_DIFFUSE_MODEL_LAMBERT 2
+#define DIELECTRIC_SPECULAR_MODEL_GLTF 0
+#define DIELECTRIC_SPECULAR_MODEL_OPENPBR 1
+#define CONDUCTOR_SPECULAR_MODEL_GLTF 0
+#define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
 // ______________________________________________________________________
 //
@@ -11,6 +18,27 @@
     // http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf
     vec3 getEnergyConservationFactor(const vec3 specularEnvironmentR0, const vec3 environmentBrdf) {
         return 1.0 + specularEnvironmentR0 * (1.0 / environmentBrdf.y - 1.0);
+    }
+#endif
+
+#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
+    vec3 getF82Specular(float NdotV, vec3 F0, vec3 edgeTint, float roughness) {
+        // F82 specular model for metals
+        // https://www.slideshare.net/PeterKutz/fresnel-equations-considered-harmful
+        // Peter Kutz, 2020
+        const float cos_theta_max = 0.142857143; // 1 / 7
+        
+        const float one_minus_cos_theta_max_to_the_fifth = 0.462664366; // (1 - cos_theta_max)^5
+        const float one_minus_cos_theta_max_to_the_sixth = 0.396569457; // (1 - cos_theta_max)^6
+        vec3 white_minus_F0 = vec3(1.0) - F0;
+        vec3 b_numerator = (F0 + white_minus_F0 * one_minus_cos_theta_max_to_the_fifth) * (vec3(1.0) - edgeTint);
+        const float b_denominator = cos_theta_max * one_minus_cos_theta_max_to_the_sixth;
+        const float b_denominator_reciprocal = 1.0 / b_denominator;
+        vec3 b = b_numerator * b_denominator_reciprocal; // analogous to "a" in the "Fresnel Equations Considered Harmful" slides
+        float cos_theta = max(roughness, NdotV);
+        float one_minus_cos_theta = 1.0 - cos_theta;
+        vec3 offset_from_F0 = (white_minus_F0 - b * cos_theta * one_minus_cos_theta) * pow(one_minus_cos_theta, 5.0);
+        return clamp(F0 + offset_from_F0, 0.0, 1.0);
     }
 #endif
 
@@ -29,14 +57,9 @@
         return brdfLookup.rgb;
     }
 
-    vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, const vec3 specularEnvironmentR90, const float ior, const vec3 environmentBrdf) {
+    vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, const vec3 specularEnvironmentR90, const vec3 environmentBrdf) {
         #ifdef BRDF_V_HEIGHT_CORRELATED
-            #ifdef METALLICWORKFLOW
-                // Scale the reflectance by the IOR for values less than 1.5
-                vec3 reflectance = (specularEnvironmentR90 - specularEnvironmentR0) * clamp(environmentBrdf.x * 2.0 * (ior - 1.0), 0.0, 1.0) + specularEnvironmentR0 * environmentBrdf.y;
-            #else
-                vec3 reflectance = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
-            #endif
+            vec3 reflectance = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
             // Simplification if F90 = 1 vec3 reflectance = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.xxx + specularEnvironmentR0 * environmentBrdf.yyy;
         #else
             vec3 reflectance = specularEnvironmentR0 * environmentBrdf.x + specularEnvironmentR90 * environmentBrdf.y;
@@ -427,6 +450,42 @@ float diffuseBRDF_Burley(float NdotL, float NdotV, float VdotH, float roughness)
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNV);
 
     return fresnel / PI;
+}
+
+const float constant1_FON = 0.5 - 2.0 / (3.0 * PI);
+const float constant2_FON = 2.0 / 3.0 - 28.0 / (15.0 * PI);
+
+// Fujii Oren-Nayar (FON) directional albedo (approximate).
+float E_FON_approx(float mu, float roughness)
+{
+    float sigma = roughness; // FON sigma prime
+    float mucomp = 1.0 - mu;
+    float mucomp2 = mucomp * mucomp;
+    const mat2 Gcoeffs = mat2(0.0571085289, -0.332181442,
+                               0.491881867, 0.0714429953);
+    float GoverPi = dot(Gcoeffs * vec2(mucomp, mucomp2), vec2(1.0, mucomp2));
+    return (1.0 + sigma * GoverPi) / (1.0 + constant1_FON * sigma);
+}
+
+vec3 diffuseBRDF_EON(vec3 albedo, float roughness, float NdotL, float NdotV, float LdotV)
+{
+    vec3 rho = albedo;
+    float sigma = roughness;                            // FON sigma prime
+    float mu_i = NdotL;                            // input angle cos
+    float mu_o = NdotV;                            // output angle cos
+    float s = LdotV - mu_i * mu_o;    // QON s term
+    float sovertF = s > 0.0 ? s / max(mu_i, mu_o) : s; // FON s/t
+    float AF = 1.0 / (1.0 + constant1_FON * sigma);   // FON A coeff.
+    vec3 f_ss = (rho * RECIPROCAL_PI) * AF * (1.0 + sigma * sovertF); // single-scatter
+    float EFo = E_FON_approx(mu_o, sigma);      // FON wo albedo (approx)
+    float EFi = E_FON_approx(mu_i, sigma);      // FON wi albedo (approx)
+    float avgEF = AF * (1.0 + constant2_FON * sigma);  // avg. albedo
+    vec3 rho_ms = (rho * rho) * avgEF / (vec3(1.0) - rho * (1.0 - avgEF));
+    const float eps = 1.0e-7;
+    vec3 f_ms = (rho_ms * RECIPROCAL_PI) * max(eps, 1.0 - EFo) // multi-scatter lobe
+                                 * max(eps, 1.0 - EFi)
+                                 / max(eps, 1.0 - avgEF);
+    return (f_ss + f_ms);
 }
 
 #ifdef SS_TRANSLUCENCY

@@ -66,12 +66,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this._graphCanvas.createNodeFromObject(
             dataToAppend instanceof NodeMaterialBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend,
             (block: NodeMaterialBlock) => {
-                if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(block) === -1) {
-                    this.props.globalState.nodeMaterial!.attachedBlocks.push(block);
+                if (this.props.globalState.nodeMaterial.attachedBlocks.indexOf(block) === -1) {
+                    this.props.globalState.nodeMaterial.attachedBlocks.push(block);
                 }
 
                 if (block.isFinalMerger) {
-                    this.props.globalState.nodeMaterial!.addOutputNode(block);
+                    this.props.globalState.nodeMaterial.addOutputNode(block);
                 }
             },
             recursion
@@ -146,7 +146,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const globalState = this.props.globalState;
 
         if (globalState.hostDocument) {
-            globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
         globalState.stateManager.onUpdateRequiredObservable.clear();
@@ -246,7 +246,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+        this.props.globalState.hostDocument.addEventListener("keydown", (evt) => {
             if (this._historyStack.processKeyEvent(evt)) {
                 return;
             }
@@ -254,7 +254,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this._graphCanvas.handleKeyDown(
                 evt,
                 (nodeData) => {
-                    this.props.globalState.nodeMaterial!.removeBlock(nodeData.data as NodeMaterialBlock);
+                    this.props.globalState.nodeMaterial.removeBlock(nodeData.data as NodeMaterialBlock);
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
@@ -268,7 +268,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     return this.appendBlock(clone, false);
                 },
-                this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
+                this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
             );
         });
 
@@ -472,7 +472,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        const data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        const data = event.dataTransfer.getData("babylonjs-material-node");
 
         const container = this._diagramContainerRef.current!;
         this.emitNewBlock(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
@@ -529,70 +529,83 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     parentControl.className = "nme-right-panel popup";
                 }
             },
-            onWindowCreateCallback: (w) => {
+            // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
+            onWindowCreateCallback: async (w) => {
                 popUpWindow = w;
                 if (popUpWindow) {
                     popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
                     const parentControl = popUpWindow.document.getElementById("node-editor-graph-root");
-                    this.createPreviewMeshControlHost(options, parentControl);
-                    this.createPreviewHost(options, parentControl);
+                    await this.createPreviewMeshControlHostAsync(options, parentControl);
+                    await this.createPreviewHostAsync(options, parentControl);
                     if (parentControl) {
-                        this.fixPopUpStyles(parentControl.ownerDocument!);
-                        this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
+                        this.fixPopUpStyles(parentControl.ownerDocument);
+                        this.initiatePreviewArea(parentControl.ownerDocument.getElementById("preview-canvas") as HTMLCanvasElement);
                     }
                 }
             },
         });
     };
 
-    createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
+    createPreviewMeshControlHostAsync = async (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
         // Prepare the preview control host
-        if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+        return await new Promise((resolve) => {
+            if (parentControl) {
+                const host = parentControl.ownerDocument.createElement("div");
 
-            host.id = "PreviewMeshControl-host";
-            host.style.width = options.embedHostWidth || "auto";
+                host.id = "PreviewMeshControl-host";
+                host.style.width = options.embedHostWidth || "auto";
 
-            parentControl.appendChild(host);
-            const previewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
-                globalState: this.props.globalState,
-                togglePreviewAreaComponent: this.handlePopUp,
-            });
-            const root = createRoot(host);
-            root.render(previewMeshControlComponentHost);
-        }
+                parentControl.appendChild(host);
+                const previewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+                    globalState: this.props.globalState,
+                    togglePreviewAreaComponent: this.handlePopUp,
+                    onMounted: () => {
+                        resolve(true);
+                    },
+                });
+                const root = createRoot(host);
+                root.render(previewMeshControlComponentHost);
+            }
+            resolve(false);
+        });
     };
 
-    createPreviewHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
-        // Prepare the preview host
-        if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+    createPreviewHostAsync = async (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
+        return await new Promise((resolve) => {
+            // Prepare the preview host
+            if (parentControl) {
+                const host = parentControl.ownerDocument.createElement("div");
 
-            host.id = "PreviewAreaComponent-host";
-            host.style.width = options.embedHostWidth || "auto";
-            host.style.height = "100%";
-            host.style.overflow = "hidden";
-            host.style.display = "grid";
-            host.style.gridRow = "2";
-            host.style.gridTemplateRows = "auto 40px";
-            host.style.gridTemplateRows = "calc(100% - 40px) 40px";
+                host.id = "PreviewAreaComponent-host";
+                host.style.width = options.embedHostWidth || "auto";
+                host.style.height = "100%";
+                host.style.overflow = "hidden";
+                host.style.display = "grid";
+                host.style.gridRow = "2";
+                host.style.gridTemplateRows = "auto 40px";
+                host.style.gridTemplateRows = "calc(100% - 40px) 40px";
 
-            parentControl.appendChild(host);
+                parentControl.appendChild(host);
 
-            this._previewHost = host;
+                this._previewHost = host;
 
-            if (!options.overlay) {
-                this._previewHost.style.position = "relative";
+                if (!options.overlay) {
+                    this._previewHost.style.position = "relative";
+                }
             }
-        }
 
-        if (this._previewHost) {
-            const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
-                globalState: this.props.globalState,
-            });
-            const root = createRoot(this._previewHost);
-            root.render(previewAreaComponentHost);
-        }
+            if (this._previewHost) {
+                const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
+                    globalState: this.props.globalState,
+                    onMounted: () => {
+                        resolve(true);
+                    },
+                });
+                const root = createRoot(this._previewHost);
+                root.render(previewAreaComponentHost);
+            }
+            resolve(false);
+        });
     };
 
     fixPopUpStyles = (document: Document) => {

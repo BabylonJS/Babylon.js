@@ -29,6 +29,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Reference to the Ammo library
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsAMMO: any = {};
     /**
      * Created ammoJS world which physics bodies are added to
@@ -56,6 +57,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorC: any;
     private _tmpAmmoVectorD: any;
     private _tmpContactCallbackResult = false;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _tmpAmmoVectorRCA: any;
     private _tmpAmmoVectorRCB: any;
     private _raycastResult: PhysicsRaycastResult;
@@ -308,7 +310,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         let node: any;
         let nodePositions: any;
         let x, y, z: number;
-        const path: Array<Vector3> = new Array();
+        const path: Array<Vector3> = [];
         for (let n = 0; n < nbVertices; n++) {
             node = bodyVertices.at(n);
             nodePositions = node.get_m_x();
@@ -367,17 +369,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             vertexNormals[3 * n + 2] = nz;
         }
 
-        const vertex_data = new VertexData();
+        const vertexData = new VertexData();
 
-        vertex_data.positions = vertexPositions;
-        vertex_data.normals = vertexNormals;
-        vertex_data.uvs = object.getVerticesData(VertexBuffer.UVKind);
-        vertex_data.colors = object.getVerticesData(VertexBuffer.ColorKind);
+        vertexData.positions = vertexPositions;
+        vertexData.normals = vertexNormals;
+        vertexData.uvs = object.getVerticesData(VertexBuffer.UVKind);
+        vertexData.colors = object.getVerticesData(VertexBuffer.ColorKind);
         if (object && object.getIndices) {
-            vertex_data.indices = object.getIndices();
+            vertexData.indices = object.getIndices();
         }
 
-        vertex_data.applyToMesh(<Mesh>object);
+        vertexData.applyToMesh(<Mesh>object);
     }
 
     private _tmpMatrix = new Matrix();
@@ -760,24 +762,24 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 newNorms.push(n.x, n.y, n.z);
             }
 
-            const vertex_data = new VertexData();
+            const vertexData = new VertexData();
 
-            vertex_data.positions = newPoints;
-            vertex_data.normals = newNorms;
-            vertex_data.uvs = object.getVerticesData(VertexBuffer.UVKind);
-            vertex_data.colors = object.getVerticesData(VertexBuffer.ColorKind);
+            vertexData.positions = newPoints;
+            vertexData.normals = newNorms;
+            vertexData.uvs = object.getVerticesData(VertexBuffer.UVKind);
+            vertexData.colors = object.getVerticesData(VertexBuffer.ColorKind);
             if (object && object.getIndices) {
-                vertex_data.indices = object.getIndices();
+                vertexData.indices = object.getIndices();
             }
 
-            vertex_data.applyToMesh(<Mesh>object);
+            vertexData.applyToMesh(<Mesh>object);
 
             object.position = Vector3.Zero();
             object.rotationQuaternion = null;
             object.rotation = Vector3.Zero();
             object.computeWorldMatrix(true);
 
-            return vertex_data;
+            return vertexData;
         }
         return VertexData.ExtractFromMesh(<Mesh>object);
     }
@@ -795,9 +797,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 indices = [];
             }
 
-            const vertex_data = this._softVertexData(impostor);
-            const vertexPositions = vertex_data.positions;
-            const vertexNormals = vertex_data.normals;
+            const vertexData = this._softVertexData(impostor);
+            const vertexPositions = vertexData.positions;
+            const vertexNormals = vertexData.normals;
 
             if (vertexPositions === null || vertexNormals === null) {
                 return new this.bjsAMMO.btCompoundShape();
@@ -841,9 +843,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 indices = [];
             }
 
-            const vertex_data = this._softVertexData(impostor);
-            const vertexPositions = vertex_data.positions;
-            const vertexNormals = vertex_data.normals;
+            const vertexData = this._softVertexData(impostor);
+            const vertexPositions = vertexData.positions;
+            const vertexNormals = vertexData.normals;
 
             if (vertexPositions === null || vertexNormals === null) {
                 return new this.bjsAMMO.btCompoundShape();
@@ -881,16 +883,16 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _createRope(impostor: PhysicsImpostor) {
         let len: number;
         let segments: number;
-        const vertex_data = this._softVertexData(impostor);
-        const vertexPositions = vertex_data.positions;
-        const vertexNormals = vertex_data.normals;
+        const vertexData = this._softVertexData(impostor);
+        const vertexPositions = vertexData.positions;
+        const vertexNormals = vertexData.normals;
 
         if (vertexPositions === null || vertexNormals === null) {
             return new this.bjsAMMO.btCompoundShape();
         }
 
         //force the mesh to be updatable
-        vertex_data.applyToMesh(<Mesh>impostor.object, true);
+        vertexData.applyToMesh(<Mesh>impostor.object, true);
 
         impostor._isFromLine = true;
 

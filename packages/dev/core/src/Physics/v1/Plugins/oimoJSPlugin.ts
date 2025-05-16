@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
@@ -154,7 +156,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
             for (const i of impostors) {
                 if (!i.object.rotationQuaternion) {
-                    return;
+                    continue;
                 }
                 //get the correct bounding box
                 const oldQuaternion = i.object.rotationQuaternion;

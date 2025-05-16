@@ -9,6 +9,7 @@ import { Observable } from "../../Misc/observable";
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/freeCameraInputsManager" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface FreeCameraInputsManager {
         /**
          * @internal
@@ -65,8 +66,8 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
      * @returns a promise that will resolve on orientation change
      */
-    public static WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
-        return new Promise((res, rej) => {
+    public static async WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
+        return await new Promise((res, rej) => {
             let gotValue = false;
             const eventHandler = () => {
                 window.removeEventListener("deviceorientation", eventHandler);
@@ -79,6 +80,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 setTimeout(() => {
                     if (!gotValue) {
                         window.removeEventListener("deviceorientation", eventHandler);
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         rej("WaitForOrientationChangeAsync timed out");
                     }
                 }, timeout);
@@ -87,6 +89,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
             if (typeof DeviceOrientationEvent !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === "function") {
                 (<any>DeviceOrientationEvent)
                     .requestPermission()
+                    // eslint-disable-next-line github/no-then
                     .then((response: string) => {
                         if (response == "granted") {
                             window.addEventListener("deviceorientation", eventHandler);
@@ -94,6 +97,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                             Tools.Warn("Permission not granted.");
                         }
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((error: any) => {
                         Tools.Error(error);
                     });
@@ -143,8 +147,8 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
         if (hostWindow) {
             const eventHandler = () => {
-                hostWindow!.addEventListener("orientationchange", this._orientationChanged);
-                hostWindow!.addEventListener("deviceorientation", this._deviceOrientation);
+                hostWindow.addEventListener("orientationchange", this._orientationChanged);
+                hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
                 //In certain cases, the attach control is called AFTER orientation was changed,
                 //So this is needed.
                 this._orientationChanged();
@@ -152,6 +156,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
             if (typeof DeviceOrientationEvent !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === "function") {
                 (<any>DeviceOrientationEvent)
                     .requestPermission()
+                    // eslint-disable-next-line github/no-then
                     .then((response: string) => {
                         if (response === "granted") {
                             eventHandler();
@@ -159,6 +164,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                             Tools.Warn("Permission not granted.");
                         }
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((error: any) => {
                         Tools.Error(error);
                     });

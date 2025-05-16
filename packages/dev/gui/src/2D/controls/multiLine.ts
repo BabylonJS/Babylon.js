@@ -62,7 +62,7 @@ export class MultiLine extends Control {
             this._points[index] = new MultiLinePoint(this);
         }
 
-        return this._points[index] as MultiLinePoint;
+        return this._points[index];
     }
 
     /** Function called when a point is updated */
@@ -200,7 +200,7 @@ export class MultiLine extends Control {
 
         for (const point of this._points) {
             if (!point) {
-                return;
+                continue;
             }
 
             if (first) {
@@ -230,7 +230,7 @@ export class MultiLine extends Control {
 
         for (const point of this._points) {
             if (!point) {
-                return;
+                continue;
             }
 
             point.translate();

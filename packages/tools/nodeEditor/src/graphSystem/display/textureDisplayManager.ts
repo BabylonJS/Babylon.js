@@ -55,13 +55,14 @@ export class TextureDisplayManager implements IDisplayManager {
                 contentArea.classList.add(localStyles["refraction-texture-block"]);
             }
 
-            this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
-            this._previewImage = contentArea.ownerDocument!.createElement("img");
+            this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
+            this._previewImage = contentArea.ownerDocument.createElement("img");
             contentArea.appendChild(this._previewImage);
             this._previewImage.classList.add(commonStyles.empty);
         }
 
         if (textureBlock.texture) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             TextureLineComponent.UpdatePreview(
                 this._previewCanvas,
                 textureBlock.texture,

@@ -24,7 +24,7 @@ export class BoundingInfoHelper {
         this._engine = engine;
     }
 
-    private async _initializePlatform() {
+    private async _initializePlatformAsync() {
         if (!this._platform) {
             if (this._engine.getCaps().supportComputeShaders) {
                 const module = await import("./computeShaderBoundingHelper");
@@ -44,8 +44,8 @@ export class BoundingInfoHelper {
      * @returns a promise that resolves when the bounding info is/are computed
      */
     public async computeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
-        await this._initializePlatform();
-        return this._platform.processAsync(target);
+        await this._initializePlatformAsync();
+        return await this._platform.processAsync(target);
     }
 
     /**
@@ -55,8 +55,8 @@ export class BoundingInfoHelper {
      * @returns a promise that resolves when the initialization is done
      */
     public async batchInitializeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
-        await this._initializePlatform();
-        return this._platform.registerMeshListAsync(target);
+        await this._initializePlatformAsync();
+        return await this._platform.registerMeshListAsync(target);
     }
 
     /**
@@ -76,8 +76,8 @@ export class BoundingInfoHelper {
      * @returns a promise that resolves when the bounding info is/are computed
      */
     public async batchFetchResultsAsync(): Promise<void> {
-        await this._initializePlatform();
-        return this._platform.fetchResultsForMeshListAsync();
+        await this._initializePlatformAsync();
+        return await this._platform.fetchResultsForMeshListAsync();
     }
 
     /**

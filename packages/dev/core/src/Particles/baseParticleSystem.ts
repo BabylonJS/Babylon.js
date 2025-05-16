@@ -276,10 +276,12 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /**
      * If using a spritesheet (isAnimationSheetEnabled) defines the first sprite cell to display
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public startSpriteCellID = 0;
     /**
      * If using a spritesheet (isAnimationSheetEnabled) defines the last sprite cell to display
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public endSpriteCellID = 0;
     /**
      * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use

@@ -29,7 +29,9 @@ import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRen
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let NODERENDERGRAPHEDITOR: any;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let BABYLON: any;
 
 /**
@@ -238,8 +240,9 @@ export class NodeRenderGraph {
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
-    public edit(config?: INodeRenderGraphEditorOptions): Promise<void> {
-        return new Promise((resolve) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async edit(config?: INodeRenderGraphEditorOptions): Promise<void> {
+        return await new Promise((resolve) => {
             this.BJSNODERENDERGRAPHEDITOR = this.BJSNODERENDERGRAPHEDITOR || this._getGlobalNodeRenderGraphEditor();
             if (typeof this.BJSNODERENDERGRAPHEDITOR == "undefined") {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeRenderGraph.EditorURL;
@@ -350,6 +353,7 @@ export class NodeRenderGraph {
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the graph is ready
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
     }
@@ -754,6 +758,7 @@ export class NodeRenderGraph {
      * @param skipBuild defines whether to skip building the node render graph (default is true)
      * @returns a promise that will resolve to the new node render graph
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(
         snippetId: string,
         scene: Scene,
@@ -786,9 +791,11 @@ export class NodeRenderGraph {
                             }
                             resolve(nodeRenderGraph);
                         } catch (err) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(err);
                         }
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

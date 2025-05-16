@@ -20,7 +20,7 @@ import { Constants } from "../Engines/constants";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
@@ -668,7 +668,7 @@ export class ThinEffectLayer {
         }
 
         // ClipPlanes
-        prepareStringDefinesForClipPlanes(material, this._scene, defines);
+        PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
         this._addCustomEffectDefines(defines);
 
@@ -694,7 +694,7 @@ export class ThinEffectLayer {
                 "glowIntensity",
             ];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
                 this._engine.createEffect(
@@ -735,6 +735,7 @@ export class ThinEffectLayer {
         } else {
             await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._additionalImportShadersAsync?.();
     }
 
@@ -1006,7 +1007,7 @@ export class ThinEffectLayer {
                 effect.setFloat("glowIntensity", this.getEffectIntensity(renderingMesh));
 
                 // Clip planes
-                bindClipPlane(effect, material, scene);
+                BindClipPlane(effect, material, scene);
             }
 
             // Draw

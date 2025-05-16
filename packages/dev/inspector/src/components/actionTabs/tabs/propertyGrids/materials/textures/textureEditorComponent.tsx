@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import * as React from "react";
 import type { IPixelData } from "./textureCanvasManager";
 import { TextureCanvasManager } from "./textureCanvasManager";
@@ -232,7 +233,9 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             canvas2D: this._textureCanvasManager.canvas2D,
             scene3D: this._textureCanvasManager.scene3D,
             size: this._textureCanvasManager.size,
+            // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
             updateTexture: () => this._textureCanvasManager.updateTexture(),
+            // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
             startPainting: () => this._textureCanvasManager.startPainting(),
             stopPainting: () => this._textureCanvasManager.stopPainting(),
             updatePainting: () => this._textureCanvasManager.updatePainting(),
@@ -280,6 +283,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     }
 
     resizeTexture(width: number, height: number) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._textureCanvasManager.resize({ width, height });
     }
 

@@ -20,7 +20,7 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
@@ -36,7 +36,7 @@ import {
 } from "./materialHelper.functions";
 import type { IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
 
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -847,9 +847,9 @@ export class ShaderMaterial extends PushMaterial {
 
         // Clip planes
         if (this._options.useClipPlane !== false) {
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
-            prepareStringDefinesForClipPlanes(this, scene, defines);
+            PrepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
         // Fog
@@ -913,9 +913,9 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = effect;
-                onCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
-                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                OnCreatedEffectParameters.effect = effect;
+                OnCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
+                this._onEffectCreatedObservable.notifyObservers(OnCreatedEffectParameters);
             }
         }
 
@@ -1040,14 +1040,14 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             if (scene.activeCamera && this._options.uniforms.indexOf("cameraPosition") !== -1) {
-                effect.setVector3("cameraPosition", scene.activeCamera!.globalPosition);
+                effect.setVector3("cameraPosition", scene.activeCamera.globalPosition);
             }
 
             // Bones
             BindBonesParameters(mesh, effect);
 
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Misc
             if (this._useLogarithmicDepth) {
@@ -1791,8 +1791,8 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
-        return new Promise((resolve, reject) => {
+    public static async ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1806,6 +1806,7 @@ export class ShaderMaterial extends PushMaterial {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the ShaderMaterial");
                     }
                 }
@@ -1823,8 +1824,8 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
-        return new Promise((resolve, reject) => {
+    public static async ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1837,6 +1838,7 @@ export class ShaderMaterial extends PushMaterial {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

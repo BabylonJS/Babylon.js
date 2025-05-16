@@ -121,6 +121,7 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public readDataFromBuffer(
         gpuBuffer: GPUBuffer,
         size: number,
@@ -137,6 +138,7 @@ export class WebGPUBufferManager {
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
         const engineId = this._engine.uniqueId;
         return new Promise((resolve, reject) => {
+            // eslint-disable-next-line github/no-then
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(
                 () => {
                     const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
@@ -187,7 +189,7 @@ export class WebGPUBufferManager {
                             bytesPerRow *= 2;
                             bytesPerRowAligned *= 2;
                         }
-                        const data2 = new Uint8Array(data!.buffer);
+                        const data2 = new Uint8Array(data.buffer);
                         let offset = bytesPerRow,
                             offset2 = 0;
                         for (let y = 1; y < height; ++y) {
@@ -206,13 +208,14 @@ export class WebGPUBufferManager {
                     if (destroyBuffer) {
                         this.releaseBuffer(gpuBuffer);
                     }
-                    resolve(data!);
+                    resolve(data);
                 },
                 (reason) => {
                     if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
                         // The engine was disposed while waiting for the promise, or a context loss/restoration has occurred: don't reject
                         resolve(new Uint8Array());
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(reason);
                     }
                 }

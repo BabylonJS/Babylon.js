@@ -24,10 +24,11 @@ import type { WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience
 import { WebXRDefaultExperience } from "../XR/webXRDefaultExperience";
 
 /** @internal */
-// eslint-disable-next-line no-var
+// eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var _forceSceneHelpersToBundle = true;
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Creates a default light for the scene.
@@ -209,8 +210,6 @@ Scene.prototype.createDefaultVRExperience = function (webVROptions: VRExperience
     return new VRExperienceHelper(this, webVROptions);
 };
 
-Scene.prototype.createDefaultXRExperienceAsync = function (options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
-    return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
-        return helper;
-    });
+Scene.prototype.createDefaultXRExperienceAsync = async function (options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
+    return await WebXRDefaultExperience.CreateAsync(this, options);
 };

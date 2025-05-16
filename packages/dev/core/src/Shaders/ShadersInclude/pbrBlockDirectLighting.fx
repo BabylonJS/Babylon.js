@@ -12,6 +12,10 @@ vec3 diffuseBase = vec3(0., 0., 0.);
     vec3 sheenBase = vec3(0., 0., 0.);
 #endif
 
+#if defined(SPECULARTERM) && defined(LIGHT0)
+    vec3 fresnel;
+    vec3 coloredFresnel;
+#endif
 // Direct Lighting Variables
 preLightingInfo preInfo;
 lightingInfo info;

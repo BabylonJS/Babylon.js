@@ -242,11 +242,11 @@ export class DigitalRainPostProcess extends PostProcess {
         // Use options.
         if (options) {
             if (typeof options === "string") {
-                font = <string>options;
+                font = options;
             } else {
-                font = (<IDigitalRainPostProcessOptions>options).font || font;
-                this.mixToTile = (<IDigitalRainPostProcessOptions>options).mixToTile || this.mixToTile;
-                this.mixToNormal = (<IDigitalRainPostProcessOptions>options).mixToNormal || this.mixToNormal;
+                font = options.font || font;
+                this.mixToTile = options.mixToTile || this.mixToTile;
+                this.mixToNormal = options.mixToNormal || this.mixToNormal;
             }
         }
 
