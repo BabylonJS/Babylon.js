@@ -3,10 +3,11 @@ const name = "msdfFragmentShader";
 const shader = `
 var fontAtlas: texture_2d<f32>;
 var fontAtlasSampler: sampler;
-uniform unitRange: vec2f;
-uniform texelSize: vec2f;
 uniform uColor: vec4f;
 uniform thickness: f32;
+uniform uStrokeColor: vec4f;
+uniform uStrokeInsetWidth: f32;
+uniform uStrokeOutsetWidth: f32;
 
 varying atlasUV: vec2f;
 
@@ -18,29 +19,27 @@ fn median(msdf: vec3<f32>) -> f32 {
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    let uv = input.atlasUV;
+    let s = textureSample(fontAtlas, fontAtlasSampler, input.atlasUV).rgb;
+    let sigDist = median(s) - 0.5 + uniforms.thickness;
 
-    // Sample center and neighbors
-    let sdfCenter = textureSample(fontAtlas, fontAtlasSampler, uv).rgb;
-    let sdfLeft   = textureSample(fontAtlas, fontAtlasSampler, uv - vec2<f32>(uniforms.texelSize.x, 0.0)).rgb;
-    let sdfRight  = textureSample(fontAtlas, fontAtlasSampler, uv + vec2<f32>(uniforms.texelSize.x, 0.0)).rgb;
-    let sdfTop    = textureSample(fontAtlas, fontAtlasSampler, uv - vec2<f32>(0.0, uniforms.texelSize.y)).rgb;
-    let sdfBottom = textureSample(fontAtlas, fontAtlasSampler, uv + vec2<f32>(0.0, uniforms.texelSize.y)).rgb;
+    let afwidth = length(vec2<f32>(dpdx(sigDist), dpdy(sigDist)));
+    let alpha = clamp(sigDist / afwidth + 0.5, 0.0, 1.0);
 
-    let sdf = (sdfCenter + sdfLeft + sdfRight + sdfTop + sdfBottom) / 5.0;
+    let sigDistOutset = sigDist + uniforms.uStrokeOutsetWidth * 0.5;
+    let sigDistInset = sigDist - uniforms.uStrokeInsetWidth * 0.5;
 
-    let dist = median(sdfCenter);
+    let afwidthOutset = length(vec2<f32>(dpdx(sigDistOutset), dpdy(sigDistOutset)));
+    let afwidthInset = length(vec2<f32>(dpdx(sigDistInset), dpdy(sigDistInset)));
 
-    // Estimate pixel range in screen space
-    let dx = dpdx(uv);
-    let dy = dpdy(uv);
-    let screenTexSize = vec2<f32>(1.0) / vec2<f32>(length(dx), length(dy));
-    let pxRange = max(0.5 * dot(uniforms.unitRange, screenTexSize), 1.0);
+    let outset = clamp(sigDistOutset / afwidthOutset + 0.5, 0.0, 1.0);
+    let inset = 1.0 - clamp(sigDistInset / afwidthInset + 0.5, 0.0, 1.0);
 
-    let pxDist = pxRange * (dist - 0.5 + uniforms.thickness);
-    let alpha = clamp(pxDist / length(dpdx(pxDist)) + 0.5, 0.0, 1.0);
+    let border = outset * inset;
 
-    fragmentOutputs.color = vec4<f32>(uniforms.uColor.rgb, alpha * uniforms.uColor.a);
+    let filledFragColor = vec4<f32>(uniforms.uColor.rgb, alpha * uniforms.uColor.a);
+    let strokedFragColor = vec4<f32>(uniforms.uStrokeColor.rgb, border * uniforms.uStrokeColor.a);
+
+    fragmentOutputs.color = mix(filledFragColor, strokedFragColor, border);
 }`;
 
 /** @internal */

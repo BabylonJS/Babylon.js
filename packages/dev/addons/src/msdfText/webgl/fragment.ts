@@ -6,8 +6,6 @@ const shader = `
 precision highp float;
 
 uniform sampler2D fontAtlas;
-uniform vec2 unitRange;
-uniform vec2 texelSize;
 uniform vec4 uColor;
 uniform vec4 uStrokeColor;
 uniform float uStrokeInsetWidth;

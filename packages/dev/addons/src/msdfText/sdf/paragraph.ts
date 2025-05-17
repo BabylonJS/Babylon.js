@@ -140,7 +140,7 @@ export class SdfTextParagraph {
             }
 
             const x = currentCursor;
-            const y = currentLine * this.lineHeight + char.yoffset;
+            const y = currentLine * this.lineHeight;
 
             currentGlyphs.push({
                 char,
@@ -162,7 +162,7 @@ export class SdfTextParagraph {
 
         if (currentGlyphs.length > 0) {
             if (lastChar) {
-                currentWidth += lastChar.xadvance;
+                // currentWidth += lastChar.xadvance;
             }
             pushCurrentLine();
         }
