@@ -281,6 +281,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             { label: "Lambert", value: Constants.MATERIAL_DIFFUSE_MODEL_LAMBERT },
             { label: "Burley", value: Constants.MATERIAL_DIFFUSE_MODEL_BURLEY },
             { label: "Oren-Nayar", value: Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR },
+            { label: "Legacy", value: Constants.MATERIAL_DIFFUSE_MODEL_LEGACY },
         ],
     })
     public baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
