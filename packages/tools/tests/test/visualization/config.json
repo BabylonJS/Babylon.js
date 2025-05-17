@@ -28,24 +28,24 @@
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
-            "playgroundId": "#MXACV7#23",
+            "playgroundId": "#MXACV7#30",
             "referenceImage": "openpbr_base_diffuse_roughness.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
-            "playgroundId": "#MXACV7#22",
+            "playgroundId": "#MXACV7#29",
             "renderCount": 15,
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
-            "playgroundId": "#MXACV7#19",
+            "playgroundId": "#MXACV7#28",
             "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
-            "playgroundId": "#MXACV7#20",
+            "playgroundId": "#MXACV7#27",
             "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
         },
@@ -2657,19 +2657,19 @@
         },
         {
             "title": "Specular reflectance models for IBL",
-            "playgroundId": "#GRQHVV#20"
+            "playgroundId": "#GRQHVV#24"
         },
         {
             "title": "Specular reflectance models for analytic lights",
-            "playgroundId": "#GRQHVV#9"
+            "playgroundId": "#GRQHVV#23"
         },
         {
             "title": "F82 Specular Roughness vs Weight",
-            "playgroundId": "#GRQHVV#18"
+            "playgroundId": "#GRQHVV#22"
         },
         {
             "title": "F82 Specular Metal vs Weight",
-            "playgroundId": "#GRQHVV#19"
+            "playgroundId": "#GRQHVV#21"
         }
     ]
 }
