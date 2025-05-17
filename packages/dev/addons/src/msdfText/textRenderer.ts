@@ -73,6 +73,21 @@ export class TextRenderer implements IDisposable {
     public color: IColor4Like = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
 
     /**
+     * Gets or sets the color of the stroke around the text
+     */
+    public strokeColor: IColor4Like = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+
+    /**
+     * Gets or sets the width of the stroke around the text (inset)
+     */
+    public strokeInsetWidth = 0;
+
+    /**
+     * Gets or sets the width of the stroke around the text (outset)
+     */
+    public strokeOutsetWidth = 0;
+
+    /**
      * Gets or sets the thickness of the text (0 means as defined in the font)
      * Value must be between -0.5 and 0.5
      */
@@ -158,7 +173,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "unitRange", "texelSize", "thickness"],
+            ["parentWorld", "view", "projection", "uColor", "unitRange", "texelSize", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -291,7 +306,10 @@ export class TextRenderer implements IDisposable {
         effect.setFloat2("unitRange", distanceRange / textureWidth, distanceRange / textureHeight);
         effect.setFloat2("texelSize", 1.0 / textureWidth, 1.0 / textureHeight);
         effect.setDirectColor4("uColor", this.color);
+        effect.setDirectColor4("uStrokeColor", this.strokeColor);
         effect.setFloat("thickness", this.thicknessControl * 0.9);
+        effect.setFloat("uStrokeInsetWidth", this.strokeInsetWidth);
+        effect.setFloat("uStrokeOutsetWidth", this.strokeOutsetWidth);
 
         const instanceCount = this._charMatrices.length / 16;
 

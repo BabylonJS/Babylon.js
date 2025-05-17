@@ -9,6 +9,9 @@ uniform sampler2D fontAtlas;
 uniform vec2 unitRange;
 uniform vec2 texelSize;
 uniform vec4 uColor;
+uniform vec4 uStrokeColor;
+uniform float uStrokeInsetWidth;
+uniform float uStrokeOutsetWidth;
 uniform float thickness;
 
 varying vec2 atlasUV;
@@ -17,28 +20,27 @@ float median(vec3 msdf) {
     return max(min(msdf.r, msdf.g), min(max(msdf.r, msdf.g), msdf.b));
 }
   
-float screenPxRange(sampler2D tex) {
-    vec2 screenTexSize = vec2(1.0) / fwidth(atlasUV);
-    return max(0.5 * dot(unitRange, screenTexSize), 1.0);
-}
-
 void main(void)
 {
-    vec3 sdfCenter = texture2D(fontAtlas, atlasUV).rgb;
-    vec3 sdfLeft = texture2D(fontAtlas, atlasUV - vec2(texelSize.x, 0.0)).rgb;
-    vec3 sdfRight = texture2D(fontAtlas, atlasUV + vec2(texelSize.x, 0.0)).rgb;
-    vec3 sdfTop = texture2D(fontAtlas, atlasUV - vec2(0.0, texelSize.y)).rgb;
-    vec3 sdfBottom = texture2D(fontAtlas, atlasUV + vec2(0.0, texelSize.y)).rgb;
+    vec3 s = texture2D(fontAtlas, atlasUV).rgb;
+    float sigDist = median(s) - 0.5 + thickness;
 
-    vec3 sdf = (sdfCenter + sdfLeft + sdfRight + sdfTop + sdfBottom) / 5.0;
+    float afwidth = 1.4142135623730951 / 2.0;
 
-    float dist = median(sdfCenter);
+    float alpha = clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0);
 
-    float pxRange = screenPxRange(fontAtlas);
-    float pxDist = pxRange * (dist - 0.5 + thickness);
-    float alpha = clamp(pxDist / fwidth(pxDist) + 0.5, 0.0, 1.0);
+    float sigDistOutset = sigDist + uStrokeOutsetWidth * 0.5;
+    float sigDistInset = sigDist - uStrokeInsetWidth * 0.5;
 
-    gl_FragColor = vec4(uColor.rgb, alpha * uColor.a);
+    float outset = clamp(sigDistOutset / fwidth(sigDistOutset) + 0.5, 0.0, 1.0);
+    float inset = 1.0 - clamp(sigDistInset / fwidth(sigDistInset) + 0.5, 0.0, 1.0);
+
+    float border = outset * inset;
+
+    vec4 filledFragColor = vec4(uColor.rgb, alpha * uColor.a);
+    vec4 strokedFragColor = vec4(uStrokeColor.rgb, border * uStrokeColor.a);
+
+    gl_FragColor = mix(filledFragColor, strokedFragColor, border);
 }`;
 
 /** @internal */

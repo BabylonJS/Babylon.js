@@ -120,7 +120,7 @@ export class SdfTextParagraph {
             const charWidth = char.width;
             const kerning = lastChar ? this.fontAsset._getKerning(lastChar.id, char.id) : 0;
 
-            currentCursor += kerning + char.xoffset;
+            currentCursor += kerning;
             const newWidth = currentCursor + charWidth;
             const cursorProgress = char.xadvance + this.options.letterSpacing;
             const nextPosition = currentCursor + cursorProgress;
@@ -161,6 +161,9 @@ export class SdfTextParagraph {
         }
 
         if (currentGlyphs.length > 0) {
+            if (lastChar) {
+                currentWidth += lastChar.xadvance;
+            }
             pushCurrentLine();
         }
 
