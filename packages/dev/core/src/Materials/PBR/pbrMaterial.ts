@@ -314,20 +314,6 @@ export class PBRMaterial extends PBRBaseMaterial {
     public reflectionColor = new Color3(1.0, 1.0, 1.0);
 
     /**
-     * The material model to use for specular lighting of dielectric materials.
-     */
-    @serialize("dielectricSpecularModel")
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public dielectricSpecularModel: number = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF;
-
-    /**
-     * The material model to use for specular lighting.
-     */
-    @serialize("conductorSpecularModel")
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public conductorSpecularModel: number = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF;
-
-    /**
      * The color emitted from the material.
      */
     @serializeAsColor3("emissive")
