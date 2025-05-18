@@ -22,9 +22,10 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
     friendlyName: "ThemeSelector",
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
-        const registration = shellService.addToTopBar({
+        const registration = shellService.addToolbarItem({
             key: "ThemeSelector",
-            alignment: "right",
+            horizontalLocation: "right",
+            verticalLocation: "top",
             suppressTeachingMoment: true,
             order: -300,
             component: () => {

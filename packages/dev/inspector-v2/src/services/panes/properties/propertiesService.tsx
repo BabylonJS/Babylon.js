@@ -65,10 +65,11 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
         let boundEntityState: Nullable<unknown> = null;
         const boundEntityObservable = new Observable<Nullable<unknown>>();
 
-        const registration = shellService.addToRightPane({
+        const registration = shellService.addSidePane({
             key: "Properties",
             title: "Properties",
             icon: DocumentTextRegular,
+            horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
                 const classes = useStyles();

@@ -22,10 +22,11 @@ export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellServic
     friendlyName: "Creation Tools",
     consumes: [ShellServiceIdentity, SceneContextIdentity],
     factory: (shellService, sceneContext) => {
-        const registration = shellService.addToLeftPane({
+        const registration = shellService.addSidePane({
             key: "Create",
             title: "Create",
             icon: FormNewRegular,
+            horizontalLocation: "left",
             content: () => {
                 const classes = useStyles();
 

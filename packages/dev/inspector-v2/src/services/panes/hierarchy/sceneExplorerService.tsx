@@ -231,10 +231,11 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             );
         };
 
-        const registration = shellService.addToLeftPane({
+        const registration = shellService.addSidePane({
             key: "Scene Explorer",
             title: "Scene Explorer",
             icon: CubeTreeRegular,
+            horizontalLocation: "left",
             suppressTeachingMoment: true,
             content: () => {
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);

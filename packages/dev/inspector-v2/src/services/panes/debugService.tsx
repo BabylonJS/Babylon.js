@@ -9,10 +9,11 @@ export const DebugServiceDefinition: ServiceDefinition<[], [IShellService]> = {
     friendlyName: "Debug",
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
-        const registration = shellService.addToRightPane({
+        const registration = shellService.addSidePane({
             key: "Debug",
             title: "Debug",
             icon: BugRegular,
+            horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
                 return <></>;

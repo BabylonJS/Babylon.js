@@ -9,10 +9,11 @@ export const SettingsServiceDefinition: ServiceDefinition<[], [IShellService]> =
     friendlyName: "Settings",
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
-        const registration = shellService.addToRightPane({
+        const registration = shellService.addSidePane({
             key: "Settings",
             title: "Settings",
             icon: SettingsRegular,
+            horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
                 return <></>;

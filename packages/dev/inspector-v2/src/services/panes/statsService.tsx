@@ -9,10 +9,11 @@ export const StatsServiceDefinition: ServiceDefinition<[], [IShellService]> = {
     friendlyName: "Stats",
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
-        const registration = shellService.addToRightPane({
+        const registration = shellService.addSidePane({
             key: "Stats",
             title: "Stats",
             icon: DataBarHorizontalRegular,
+            horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
                 return <></>;

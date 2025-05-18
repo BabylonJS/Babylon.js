@@ -97,7 +97,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
                 },
             });
 
-            const registration = shellService.addToContent({
+            const registration = shellService.addCentralContent({
                 key: "Canvas Injector",
                 component: () => {
                     const classes = useStyles();

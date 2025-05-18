@@ -157,9 +157,10 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
     friendlyName: "ExtensionList",
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
-        const registration = shellService.addToTopBar({
+        const registration = shellService.addToolbarItem({
             key: "ExtensionList",
-            alignment: "right",
+            horizontalLocation: "right",
+            verticalLocation: "top",
             suppressTeachingMoment: true,
             order: -200,
             component: () => {

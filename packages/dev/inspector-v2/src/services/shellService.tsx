@@ -3,7 +3,6 @@ import type { IDisposable } from "core/index";
 
 import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
-import type { ComponentInfo } from "../modularity/componentInfo";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IViewHost } from "../services/viewHost";
 
@@ -17,16 +16,33 @@ import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ObservableCollection } from "../misc/observableCollection";
 import { ViewHostIdentity } from "../services/viewHost";
 
-type BarComponentInfo = ComponentInfo & Readonly<{ alignment: "left" | "right"; displayName?: string; suppressTeachingMoment?: boolean }>;
-type PaneComponentInfo = Readonly<{ key: string; icon: ComponentType; content: ComponentType; order?: number; title?: string; suppressTeachingMoment?: boolean }>;
+export type BarComponentInfo = Readonly<{
+    key: string;
+    component: ComponentType;
+    order?: number;
+    horizontalLocation: "left" | "right";
+    verticalLocation: "top" | "bottom";
+    displayName?: string;
+    suppressTeachingMoment?: boolean;
+}>;
+
+export type PaneComponentInfo = Readonly<{
+    key: string;
+    icon: ComponentType;
+    content: ComponentType;
+    order?: number;
+    horizontalLocation: "left" | "right";
+    title?: string;
+    suppressTeachingMoment?: boolean;
+}>;
+
+export type ContentComponentInfo = Readonly<{ key: string; component: ComponentType; order?: number }>;
 
 export const ShellServiceIdentity = Symbol("ShellService");
 export interface IShellService extends IService<typeof ShellServiceIdentity> {
-    addToTopBar(entry: BarComponentInfo): IDisposable;
-    addToBottomBar(entry: BarComponentInfo): IDisposable;
-    addToLeftPane(entry: PaneComponentInfo): IDisposable;
-    addToRightPane(entry: PaneComponentInfo): IDisposable;
-    addToContent(entry: ComponentInfo): IDisposable;
+    addToolbarItem(entry: BarComponentInfo): IDisposable;
+    addSidePane(entry: PaneComponentInfo): IDisposable;
+    addCentralContent(entry: ContentComponentInfo): IDisposable;
 }
 
 export type ShellServiceOptions = {
@@ -202,8 +218,8 @@ export function MakeShellServiceDefinition({
             const Bar: FunctionComponent<{ location: "top" | "bottom"; components: BarComponentInfo[] }> = ({ location, components }) => {
                 const classes = useStyles();
 
-                const leftComponents = useMemo(() => components.filter((entry) => entry.alignment === "left"), [components]);
-                const rightComponents = useMemo(() => components.filter((entry) => entry.alignment === "right"), [components]);
+                const leftComponents = useMemo(() => components.filter((entry) => entry.horizontalLocation === "left"), [components]);
+                const rightComponents = useMemo(() => components.filter((entry) => entry.horizontalLocation === "right"), [components]);
 
                 return (
                     <>
@@ -214,7 +230,7 @@ export function MakeShellServiceDefinition({
                                         <BarItem
                                             key={entry.key}
                                             location={location}
-                                            alignment={entry.alignment}
+                                            alignment={entry.horizontalLocation}
                                             id={entry.key}
                                             component={entry.component}
                                             displayName={entry.displayName}
@@ -227,7 +243,7 @@ export function MakeShellServiceDefinition({
                                         <BarItem
                                             key={entry.key}
                                             location={location}
-                                            alignment={entry.alignment}
+                                            alignment={entry.horizontalLocation}
                                             id={entry.key}
                                             component={entry.component}
                                             displayName={entry.displayName}
@@ -446,7 +462,7 @@ export function MakeShellServiceDefinition({
             const bottomBarComponentCollection = new ObservableCollection<BarComponentInfo>();
             const leftPaneComponentCollection = new ObservableCollection<PaneComponentInfo>();
             const rightPaneComponentCollection = new ObservableCollection<PaneComponentInfo>();
-            const contentComponentCollection = new ObservableCollection<ComponentInfo>();
+            const contentComponentCollection = new ObservableCollection<ContentComponentInfo>();
 
             viewHost.mainView = () => {
                 const classes = useStyles();
@@ -454,11 +470,11 @@ export function MakeShellServiceDefinition({
                 const topBarComponents = useOrderedObservableCollection(topBarComponentCollection);
                 const bottomBarComponents = useOrderedObservableCollection(bottomBarComponentCollection);
 
-                const topBarLeftComponents = useMemo(() => topBarComponents.filter((entry) => entry.alignment === "left"), [topBarComponents]);
-                const topBarRightComponents = useMemo(() => topBarComponents.filter((entry) => entry.alignment === "right"), [topBarComponents]);
+                const topBarLeftComponents = useMemo(() => topBarComponents.filter((entry) => entry.horizontalLocation === "left"), [topBarComponents]);
+                const topBarRightComponents = useMemo(() => topBarComponents.filter((entry) => entry.horizontalLocation === "right"), [topBarComponents]);
 
-                const bottomBarLeftComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.alignment === "left"), [bottomBarComponents]);
-                const bottomBarRightComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.alignment === "right"), [bottomBarComponents]);
+                const bottomBarLeftComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "left"), [bottomBarComponents]);
+                const bottomBarRightComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "right"), [bottomBarComponents]);
 
                 // eslint-disable-next-line @typescript-eslint/naming-convention
 
@@ -510,11 +526,21 @@ export function MakeShellServiceDefinition({
             };
 
             return {
-                addToTopBar: topBarComponentCollection.add.bind(topBarComponentCollection),
-                addToBottomBar: bottomBarComponentCollection.add.bind(bottomBarComponentCollection),
-                addToLeftPane: leftPaneComponentCollection.add.bind(leftPaneComponentCollection),
-                addToRightPane: rightPaneComponentCollection.add.bind(rightPaneComponentCollection),
-                addToContent: contentComponentCollection.add.bind(contentComponentCollection),
+                addToolbarItem: (entry) => {
+                    if (entry.verticalLocation === "top") {
+                        return topBarComponentCollection.add(entry);
+                    } else {
+                        return bottomBarComponentCollection.add(entry);
+                    }
+                },
+                addSidePane: (entry) => {
+                    if (entry.horizontalLocation === "left") {
+                        return leftPaneComponentCollection.add(entry);
+                    } else {
+                        return rightPaneComponentCollection.add(entry);
+                    }
+                },
+                addCentralContent: contentComponentCollection.add.bind(contentComponentCollection),
                 dispose: () => {
                     viewHost.mainView = undefined;
                 },
