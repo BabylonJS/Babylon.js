@@ -300,12 +300,12 @@ export function MakeShellServiceDefinition({
                 const [resizing, setResizing] = useState(false);
 
                 useEffect(() => {
-                    if (!selectedTab && paneComponents.length > 0) {
+                    if ((selectedTab && !paneComponents.includes(selectedTab)) || (!selectedTab && paneComponents.length > 0)) {
                         setSelectedTab(paneComponents[0]);
                     } else if (selectedTab && paneComponents.length === 0) {
                         setSelectedTab(undefined);
                     }
-                }, [paneComponents]);
+                }, [selectedTab, paneComponents]);
 
                 const expandCollapseIcon = useMemo(() => {
                     if (alignment === "left") {
