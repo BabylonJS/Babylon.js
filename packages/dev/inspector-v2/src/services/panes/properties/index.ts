@@ -1,7 +1,7 @@
 import { PropertiesServiceDefinition } from "./propertiesService";
-import { CommonPropertiesSectionsServiceDefinition } from "./commonSectionsService";
+import { CommonPropertiesServiceDefinition } from "./commonPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./meshPropertiesService";
 
-const PropertiesServiceDefinitions = [PropertiesServiceDefinition, CommonPropertiesSectionsServiceDefinition, MeshPropertiesServiceDefinition];
+const PropertiesServiceDefinitions = [PropertiesServiceDefinition, CommonPropertiesServiceDefinition, MeshPropertiesServiceDefinition];
 
 export { PropertiesServiceDefinitions };

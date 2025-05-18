@@ -4,7 +4,7 @@ import type { Material } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { Text } from "@fluentui/react-components";
+import { Body1, Body1Strong } from "@fluentui/react-components";
 import { PaintBrushRegular } from "@fluentui/react-icons";
 
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
@@ -29,9 +29,9 @@ export const MaterialHierarchyServiceDefinition: ServiceDefinition<[], [ISceneEx
             },
             component: () => {
                 return (
-                    <Text wrap={false} truncate weight="bold">
+                    <Body1Strong wrap={false} truncate>
                         Materials
-                    </Text>
+                    </Body1Strong>
                 );
             },
         });
@@ -46,9 +46,9 @@ export const MaterialHierarchyServiceDefinition: ServiceDefinition<[], [ISceneEx
             },
             component: ({ entity: material }) => {
                 return (
-                    <Text wrap={false} truncate>
+                    <Body1 wrap={false} truncate>
                         {material.name}
-                    </Text>
+                    </Body1>
                 );
             },
             icon: () => <PaintBrushRegular />,

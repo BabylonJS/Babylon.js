@@ -37,8 +37,6 @@ export type ExtensionMetadata = {
     readonly peerDependencies?: Readonly<Record<string, string>>;
 };
 
-type ServiceDefinitions = readonly WeaklyTypedServiceDefinition[];
-
 export type ExtensionModule = {
     /**
      * The default export of the module (e.g. export default).
@@ -47,7 +45,7 @@ export type ExtensionModule = {
         /**
          * The services that are included with the extension.
          */
-        serviceDefinitions?: ServiceDefinitions;
+        serviceDefinitions?: readonly WeaklyTypedServiceDefinition[];
     };
 };
 
@@ -66,7 +64,7 @@ export interface IExtensionMetadataQuery {
      * @param count The number of extensions to fetch.
      * @returns A promise that resolves to the extension metadata.
      */
-    getExtensionMetadataAsync(index: number, count: number): Promise<ExtensionMetadata[]>;
+    getExtensionMetadataAsync(index: number, count: number): Promise<readonly ExtensionMetadata[]>;
 }
 
 /**

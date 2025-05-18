@@ -6,8 +6,8 @@ import type { IDisposable } from "core/index";
  * @param constructor The class to create a factory function for.
  * @returns A factory function that creates an instance of the class.
  */
-export function ConstructorFactory<Produces, Consumes extends IService<ContractIdentity>[], Class extends { new (...dependencies: Consumes): Produces }>(constructor: Class) {
-    return (...dependencies: Consumes) => new constructor(...dependencies);
+export function ConstructorFactory<Class extends new (...args: any[]) => any>(constructor: Class): (...args: ConstructorParameters<Class>) => InstanceType<Class> {
+    return (...args: ConstructorParameters<Class>) => new constructor(...args);
 }
 
 export type ContractIdentity = symbol;

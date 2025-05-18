@@ -4,7 +4,7 @@ import type { BaseTexture } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { Text } from "@fluentui/react-components";
+import { Body1, Body1Strong } from "@fluentui/react-components";
 import { ImageRegular } from "@fluentui/react-icons";
 
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
@@ -29,9 +29,9 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
             },
             component: () => {
                 return (
-                    <Text wrap={false} truncate weight="bold">
+                    <Body1Strong wrap={false} truncate>
                         Textures
-                    </Text>
+                    </Body1Strong>
                 );
             },
         });
@@ -46,9 +46,9 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
             },
             component: ({ entity: texture }) => {
                 return (
-                    <Text wrap={false} truncate>
+                    <Body1 wrap={false} truncate>
                         {(texture.displayName || texture.name || `Unnamed Texture (${texture.uniqueId})`).substring(0, 100)}
-                    </Text>
+                    </Body1>
                 );
             },
             icon: () => <ImageRegular />,

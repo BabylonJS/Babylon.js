@@ -6,7 +6,7 @@ import type { FunctionComponent } from "react";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { Text } from "@fluentui/react-components";
+import { Body1, Body1Strong } from "@fluentui/react-components";
 import { BoxRegular, BranchRegular, CameraRegular, LightbulbRegular } from "@fluentui/react-icons";
 
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
@@ -36,18 +36,18 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
             },
             component: () => {
                 return (
-                    <Text wrap={false} truncate weight="bold">
+                    <Body1Strong wrap={false} truncate>
                         Nodes
-                    </Text>
+                    </Body1Strong>
                 );
             },
         });
 
         const nodeComponent: FunctionComponent<{ entity: Node }> = ({ entity: node }) => {
             return (
-                <Text wrap={false} truncate>
+                <Body1 wrap={false} truncate>
                     {node.name}
-                </Text>
+                </Body1>
             );
         };
 

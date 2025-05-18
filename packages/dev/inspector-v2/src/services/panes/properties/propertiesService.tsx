@@ -4,7 +4,7 @@ import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IShellService } from "../../shellService";
 
-import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Text, tokens } from "@fluentui/react-components";
+import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Subtitle1, tokens } from "@fluentui/react-components";
 import { DocumentTextRegular } from "@fluentui/react-icons";
 import { useMemo, useState, type ComponentType } from "react";
 
@@ -111,7 +111,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                                     return (
                                         <AccordionItem key={section.identity.description} value={section.identity.description}>
                                             <AccordionHeader expandIconPosition="end">
-                                                <Text size={500}>{section.identity.description}</Text>
+                                                <Subtitle1>{section.identity.description}</Subtitle1>
                                             </AccordionHeader>
                                             <AccordionPanel>
                                                 <div className={classes.panelDiv}>

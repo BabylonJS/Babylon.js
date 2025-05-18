@@ -4,7 +4,7 @@ import type { IPropertiesService } from "./propertiesService";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BooleanProperty } from "../../../components/booleanProperty";
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { GeneralPropertiesSectionIdentity } from "./commonSectionsService";
+import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 
 export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
 

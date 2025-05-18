@@ -7,7 +7,7 @@ import type { ComponentInfo } from "../modularity/componentInfo";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IViewHost } from "../services/viewHost";
 
-import { Button, Divider, makeStyles, shorthands, Tab, TabList, Text, tokens, Tooltip } from "@fluentui/react-components";
+import { Button, Divider, makeStyles, shorthands, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -413,9 +413,7 @@ export function MakeShellServiceDefinition({
                                         <div className={classes.paneContent} style={{ width: `${width}px` }}>
                                             {selectedTab?.title ? (
                                                 <>
-                                                    <Text className={classes.paneHeader} size={600} weight="medium">
-                                                        {selectedTab.title}
-                                                    </Text>
+                                                    <Title3 className={classes.paneHeader}>{selectedTab.title}</Title3>
                                                     <Divider inset className={classes.headerDivider} appearance="brand" />
                                                 </>
                                             ) : null}

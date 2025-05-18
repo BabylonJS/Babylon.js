@@ -9,6 +9,8 @@ import {
     AccordionHeader,
     AccordionItem,
     AccordionPanel,
+    Body1,
+    Body1Strong,
     Button,
     Dialog,
     DialogBody,
@@ -18,11 +20,9 @@ import {
     DialogTrigger,
     Divider,
     makeStyles,
-    shorthands,
     Spinner,
     Tab,
     TabList,
-    Text,
     tokens,
     Tooltip,
 } from "@fluentui/react-components";
@@ -50,24 +50,10 @@ const useStyles = makeStyles({
         marginLeft: `calc(-1 * ${tokens.spacingHorizontalM})`,
         marginRight: `calc(-1 * ${tokens.spacingHorizontalS})`,
     },
-    extensionHeader: {
-        // ...shorthands.borderStyle("solid"),
-        // ...shorthands.borderWidth(tokens.strokeWidthThick, 0),
-        // ...shorthands.borderColor(tokens.colorNeutralStroke1),
-    },
-    extensionItem: {
-        // ...shorthands.borderStyle("solid"),
-        // ...shorthands.borderWidth(tokens.strokeWidthThin),
-        // ...shorthands.borderColor(tokens.colorNeutralStroke1),
-        // ...shorthands.borderRadius(tokens.borderRadiusLarge),
-        // //...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
-        // backgroundColor: tokens.colorNeutralBackground2,
-    },
+    extensionHeader: {},
+    extensionItem: {},
     extensionPanel: {
-        // ...shorthands.borderStyle("solid"),
-        // ...shorthands.borderWidth(0, 0, tokens.strokeWidthThin, 0),
-        // ...shorthands.borderColor(tokens.colorNeutralStroke1),
-        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalS),
+        padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
         backgroundColor: tokens.colorNeutralBackground2,
     },
     extensionIntro: {
@@ -76,7 +62,7 @@ const useStyles = makeStyles({
         columnGap: tokens.spacingHorizontalM,
     },
     extensionDescription: {
-        ...shorthands.padding(tokens.spacingVerticalM, 0),
+        padding: `${tokens.spacingVerticalM} 0`,
     },
     extensionButtonContainer: {
         display: "flex",
@@ -127,15 +113,15 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
     return (
         <>
             <div className={classes.extensionIntro}>
-                <Text>{props.extension.metadata.author}</Text>
+                <Body1>{props.extension.metadata.author}</Body1>
                 <Divider vertical style={{ flexGrow: 0 }} />
-                <Text>v{props.extension.metadata.version}</Text>
+                <Body1>v{props.extension.metadata.version}</Body1>
                 <Divider vertical style={{ flexGrow: 0 }} />
-                <Text>{props.extension.metadata.license}</Text>
+                <Body1>{props.extension.metadata.license}</Body1>
             </div>
 
             <div className={classes.extensionDescription}>
-                <Text>{props.extension.metadata.description}</Text>
+                <Body1>{props.extension.metadata.description}</Body1>
             </div>
 
             <div className={classes.extensionButtonContainer}>
@@ -185,8 +171,6 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
 
                 useEffect(() => {
                     const populateExtensionsAsync = async () => {
-                        // TODO: Use https://www.npmjs.com/package/react-window to virtualize the extension list
-                        // https://codesandbox.io/p/sandbox/x70ly749rq?file=%2Fsrc%2FExampleWrapper.js
                         const query = await extensionManager.queryExtensionsAsync(undefined, undefined, selectedTab === "installed");
                         const extensions = await query.getExtensionsAsync(0, query.totalCount);
                         setExtensions(extensions);
@@ -240,7 +224,7 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
                                             {extensions.map((extension) => (
                                                 <AccordionItem className={classes.extensionItem} key={extension.metadata.name} value={extension.metadata.name}>
                                                     <AccordionHeader className={classes.extensionHeader} expandIconPosition="end">
-                                                        <Text>{extension.metadata.name}</Text>
+                                                        <Body1Strong>{extension.metadata.name}</Body1Strong>
                                                     </AccordionHeader>
                                                     <AccordionPanel className={classes.extensionPanel}>
                                                         <ExtensionDetails extension={extension} />

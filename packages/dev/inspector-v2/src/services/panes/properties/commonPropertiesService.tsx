@@ -12,7 +12,7 @@ type CommonEntity = {
 
 export const GeneralPropertiesSectionIdentity = Symbol("General");
 
-export const CommonPropertiesSectionsServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Common Properties Sections",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
