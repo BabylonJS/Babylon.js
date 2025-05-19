@@ -68,6 +68,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
 
         timers[newIndex] = timer;
         context._setExecutionVariable(this, "pendingDelays", timers);
+        this._updateGlobalTimers(context);
     }
 
     public _cancelPendingTasks(context: FlowGraphContext): void {
@@ -77,6 +78,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._deleteExecutionVariable(this, "pendingDelays");
         this.lastDelayIndex.setValue(-1, context);
+        this._updateGlobalTimers(context);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
@@ -103,6 +105,26 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._removePendingBlock(this);
         this.done._activateSignal(context);
+
+        this._updateGlobalTimers(context);
+    }
+
+    private _updateGlobalTimers(context: FlowGraphContext) {
+        const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
+        const globalTimers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
+        // there should NEVER be the same index in the global and local timers, unless they are equal
+        for (let i = 0; i < timers.length; i++) {
+            if (!timers[i]) {
+                continue;
+            }
+            const timer = timers[i];
+            if (globalTimers[i] && globalTimers[i] !== timer) {
+                Logger.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
+            } else {
+                globalTimers[i] = timer;
+            }
+        }
+        context._setGlobalContextVariable("pendingDelays", globalTimers);
     }
 }
 

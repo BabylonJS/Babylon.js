@@ -27,7 +27,7 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
         if (delayIndex <= 0 || isNaN(delayIndex) || !isFinite(delayIndex)) {
             return this._reportError(context, "Invalid delay index");
         }
-        const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
+        const timers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
         const timer = timers[delayIndex];
         if (timer) {
             timer.dispose();
