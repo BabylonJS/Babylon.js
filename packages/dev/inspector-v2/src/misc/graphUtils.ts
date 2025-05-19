@@ -6,6 +6,8 @@ import type { Nullable } from "core/index";
  * @param graph The set of nodes that make up the graph.
  * @param getAdjacentNodes A function that returns the adjacent nodes for a given node.
  * @param onSortedNode A function that is called for each node in the sorted order.
+ * @remarks
+ * This function allocates. Do not use it in the hot path. Instead use an instance of GraphUtils.
  */
 export function SortGraph<NodeT>(graph: Iterable<NodeT>, getAdjacentNodes: (node: NodeT) => Iterable<NodeT>, onSortedNode: (node: NodeT) => void) {
     const sorter = new GraphUtils<NodeT>();
@@ -18,6 +20,8 @@ export function SortGraph<NodeT>(graph: Iterable<NodeT>, getAdjacentNodes: (node
  * @param getAdjacentNodes A function that returns the adjacent nodes for a given node.
  * @param onBeforeTraverse A function that is called before traversing each node.
  * @param onAfterTraverse A function that is called after traversing each node.
+ * @remarks
+ * This function allocates. Do not use it in the hot path. Instead use an instance of GraphUtils.
  */
 export function TraverseGraph<NodeT>(
     graph: Iterable<NodeT>,
@@ -31,6 +35,8 @@ export function TraverseGraph<NodeT>(
 
 /**
  * A utility class for performing graph operations.
+ * @remarks
+ * The class allocates new objects, but each operation (e.g. sort, traverse) is allocation free. This is useful when used in the hot path.
  */
 export class GraphUtils<DefaultNodeT = unknown> {
     // Tracks three states:

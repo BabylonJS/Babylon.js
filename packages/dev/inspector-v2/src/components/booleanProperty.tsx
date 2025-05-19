@@ -8,6 +8,8 @@ import { InfoLabel, makeStyles, Switch, tokens } from "@fluentui/react-component
 import { useCallback, useMemo } from "react";
 import { useObservableState } from "../hooks/observableHooks";
 
+// TODO: This is just an example. Need to converge this with however we want this type of property like component to work across all tools with the UI overhaul.
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     // TODO: probably common

@@ -10,7 +10,7 @@ const CreationToolsExtensionMetadata = {
     description: "Adds new features to enable creating Babylon assets such as node materials, flow graphs, and more.",
     keywords: ["creation"],
     version: "0.0.1",
-    license: "MIT",
+    license: "Apache",
 } as const;
 
 const Extensions: readonly ExtensionMetadata[] = [CreationToolsExtensionMetadata];

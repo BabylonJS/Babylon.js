@@ -9,11 +9,11 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 import { Body1, Body1Strong } from "@fluentui/react-components";
 import { BoxRegular, BranchRegular, CameraRegular, LightbulbRegular } from "@fluentui/react-icons";
 
-import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { TransformNode } from "core/Meshes/transformNode";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { TransformNode } from "core/Meshes/transformNode";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { Node } from "core/node";
 import { Scene } from "core/scene";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
