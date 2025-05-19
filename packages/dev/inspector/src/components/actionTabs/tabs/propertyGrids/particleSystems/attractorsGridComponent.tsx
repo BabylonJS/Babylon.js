@@ -18,6 +18,7 @@ import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";
+import { Matrix } from "core/Maths/math.vector";
 
 interface IAttractorsGridComponent {
     globalState: GlobalState;
@@ -96,6 +97,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
         }
         const untypedAttractor = attractor as any;
         untypedAttractor._impostor = CreateSphere("Attractor impostor #" + index, { diameter: 1 }, scene);
+        untypedAttractor._impostor.reservedDataStore = { hidden: true };
         untypedAttractor._impostor.scaling.setAll(this.state.impostorScale);
         untypedAttractor._impostor.position.copyFrom(attractor.position);
 
@@ -122,8 +124,12 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
                     attractors[i].position.copyFrom(impostor.position);
 
-                    if (untypedAttractor._textRenderer) {
-                        untypedAttractor._textRenderer.render(scene.getViewMatrix(), scene.getProjectionMatrix());
+                    const localUntypedAttractor = attractors[i] as any;
+                    if (localUntypedAttractor._textRenderer) {
+                        localUntypedAttractor._textRenderer.color.r = this.state.color.r;
+                        localUntypedAttractor._textRenderer.color.g = this.state.color.g;
+                        localUntypedAttractor._textRenderer.color.b = this.state.color.b;
+                        localUntypedAttractor._textRenderer.render(scene.getViewMatrix(), scene.getProjectionMatrix());
                     }
                 }
             });
@@ -143,7 +149,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
         }
 
         const textRenderer = await TextRenderer.CreateTextRendererAsync(this._fontAsset, engine);
-        textRenderer.addParagraph("#" + index);
+        textRenderer.addParagraph("#" + index, {}, Matrix.Scaling(0.5, 0.5, 0.5).multiply(Matrix.Translation(0, 1, 0)));
         textRenderer.isBillboard = true;
         textRenderer.color = Color4.FromColor3(this.state.color, 1.0);
 
@@ -153,7 +159,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
         untypedAttractor._textRenderer = textRenderer;
     }
 
-    controlImpostor(attractor: Attractor) {
+    controlImpostor(attractor: Attractor, index: number) {
         const scene = this.props.host.getScene();
         if (!scene) {
             return;
@@ -161,7 +167,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
         const untypedAttractor = attractor as any;
         if (!untypedAttractor._impostor) {
-            return;
+            this.addImpostor(attractor, index);
         }
 
         if (!this._gizmoManager) {
@@ -248,7 +254,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
                                 }}
                                 addImpostor={(a, i) => this.addImpostor(a, i)}
                                 removeImpostor={(a) => this.removeImpostor(a)}
-                                onControl={(a) => this.controlImpostor(a)}
+                                onControl={(a, i) => this.controlImpostor(a, i)}
                                 onDelete={(attractor) => {
                                     this.props.host.removeAttractor(attractor);
                                     this.forceUpdate();
