@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/promise-function-async */
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
@@ -14,6 +15,7 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Scalar } from "core/Maths/math.scalar";
+import type { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
@@ -44,6 +46,7 @@ interface IParsedPLY {
     faces?: number[];
     hasVertexColors?: boolean;
     sh?: Uint8Array[];
+    trainedWithAntialiasing?: boolean;
 }
 
 /**
@@ -90,8 +93,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param scene the scene the meshes should be added to
      * @param data the gaussian splatting data to load
      * @param rootUrl root url to load from
-     * @param onProgress callback called while file is loading
-     * @param fileName Defines the name of the file to load
+     * @param _onProgress callback called while file is loading
+     * @param _fileName Defines the name of the file to load
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
     public async importMeshAsync(
@@ -99,10 +102,11 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         scene: Scene,
         data: any,
         rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string
+        _onProgress?: (event: ISceneLoaderProgressEvent) => void,
+        _fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        return this._parseAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
+        // eslint-disable-next-line github/no-then
+        return await this._parseAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
                 meshes: meshes,
                 particleSystems: [],
@@ -183,6 +187,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _parseSPZAsync(data: ArrayBuffer, scene: Scene): Promise<IParsedPLY> {
         const ubuf = new Uint8Array(data);
         const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
@@ -191,7 +196,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const shDegree = ubuf[12];
         const fractionalBits = ubuf[13];
-        //const flags = ubuf[14];
+        const flags = ubuf[14];
         const reserved = ubuf[15];
 
         // check magic and version
@@ -317,15 +322,16 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             }
 
             return new Promise((resolve) => {
-                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
+                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh, trainedWithAntialiasing: !!flags });
             });
         }
 
         return new Promise((resolve) => {
-            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false });
+            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, trainedWithAntialiasing: !!flags });
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _parseAsync(meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<Array<AbstractMesh>> {
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
@@ -343,10 +349,17 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return new Promise((resolve) => {
             new Response(decompressedStream)
                 .arrayBuffer()
+                // eslint-disable-next-line github/no-then
                 .then((buffer) => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     this._parseSPZAsync(buffer, scene).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                        if (parsedSPZ.trainedWithAntialiasing) {
+                            const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
+                            gsMaterial.kernelSize = 0.1;
+                            gsMaterial.compensation = true;
+                        }
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
@@ -354,8 +367,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         resolve(babylonMeshesArray);
                     });
                 })
+                // eslint-disable-next-line github/no-then
                 .catch(() => {
                     // Catch any decompression errors
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
                         scene._blockEntityCollection = !!this._assetContainer;
                         switch (parsedPLY.mode) {
@@ -371,6 +386,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                 {
                                     const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
                                     if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
+                                        // eslint-disable-next-line github/no-then
                                         await pointcloud.buildMeshAsync().then((mesh) => {
                                             babylonMeshesArray.push(mesh);
                                         });
@@ -405,23 +421,28 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
-        return this.importMeshAsync(null, scene, data, rootUrl)
-            .then((result) => {
-                for (const mesh of result.meshes) {
-                    container.meshes.push(mesh);
-                }
-                // mesh material will be null before 1st rendered frame.
-                this._assetContainer = null;
-                return container;
-            })
-            .catch((ex) => {
-                this._assetContainer = null;
-                throw ex;
-            });
+        return (
+            this.importMeshAsync(null, scene, data, rootUrl)
+                // eslint-disable-next-line github/no-then
+                .then((result) => {
+                    for (const mesh of result.meshes) {
+                        container.meshes.push(mesh);
+                    }
+                    // mesh material will be null before 1st rendered frame.
+                    this._assetContainer = null;
+                    return container;
+                })
+                // eslint-disable-next-line github/no-then
+                .catch((ex) => {
+                    this._assetContainer = null;
+                    throw ex;
+                })
+        );
     }
 
     /**
@@ -431,8 +452,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
         //Get the 3D model
+        // eslint-disable-next-line github/no-then
         return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
             // return void
         });
@@ -529,6 +552,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const rowVertexLength = rowVertexOffset;
         const rowChunkLength = rowChunkOffset;
 
+        // eslint-disable-next-line github/no-then
         return (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(data) as any).then(async (splatsData: any) => {
             const dataView = new DataView(data, headerEndIndex + headerEnd.length);
             let offset = rowChunkLength * chunkCount + rowVertexLength * vertexCount;
@@ -552,7 +576,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
             // early exit for chunked/quantized ply
             if (chunkCount) {
-                return new Promise((resolve) => {
+                return await new Promise((resolve) => {
                     resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false });
                 });
             }
@@ -574,7 +598,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const hasMandatoryProperties = propertyCount == splatProperties.length && propertyColorCount == 3;
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
-            return new Promise((resolve) => {
+            return await new Promise((resolve) => {
                 resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount });
             });
         });

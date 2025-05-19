@@ -165,7 +165,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
 
     for (let i = 0; i < 4; i++) {
         const id = i > 0 ? i : "";
-        const uvAttribute = geometry.getVerticesData(VertexBuffer.UVKind + (id ? id : ""));
+        const uvAttribute = geometry.getVerticesData(VertexBuffer.UVKind + (id ? id + 1 : "")); // UV names go like "uv", "uv2", "uv3", etc.
 
         if (uvAttribute) {
             string += `
@@ -192,7 +192,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
 function BuildMesh(geometry: Geometry, options: IUSDZExportOptions) {
     const name = "Geometry";
     const position = geometry.getVerticesData(VertexBuffer.PositionKind);
-    const normal = geometry.getVerticesData(VertexBuffer.PositionKind);
+    const normal = geometry.getVerticesData(VertexBuffer.NormalKind);
 
     if (!position || !normal) {
         return;
@@ -244,7 +244,7 @@ function BuildXform(mesh: Mesh) {
     const matrix = mesh.getWorldMatrix().clone();
 
     if (matrix.determinant() < 0) {
-        matrix.multiplyToRef(Matrix.Scaling(-1, 1, 1), matrix);
+        Tools.Warn(`Exporting mesh ${mesh.name} with negative scale. Result may look incorrect in destination engine.`);
     }
     const transform = BuildMatrix(matrix);
 
@@ -387,6 +387,10 @@ function ExtractTextureInformations(material: Material) {
                 aoMapIntensity: 0,
                 alphaMap: (material as StandardMaterial).opacityTexture,
                 ior: 1,
+                clearCoat: 0,
+                clearCoatMap: null,
+                clearCoatRoughness: 0,
+                clearCoatRoughnessMap: null,
             };
         case "PBRMaterial":
             return {
@@ -407,6 +411,12 @@ function ExtractTextureInformations(material: Material) {
                 aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
                 alphaMap: (material as PBRMaterial).opacityTexture,
                 ior: (material as PBRMaterial).indexOfRefraction,
+                clearCoat: (material as PBRMaterial).clearCoat.intensity,
+                clearCoatMap: (material as PBRMaterial).clearCoat.texture,
+                clearCoatRoughness: (material as PBRMaterial).clearCoat.roughness,
+                clearCoatRoughnessMap: (material as PBRMaterial).clearCoat.useRoughnessFromMainTexture
+                    ? (material as PBRMaterial).clearCoat.texture
+                    : (material as PBRMaterial).clearCoat.textureRoughness,
             };
         case "PBRMetallicRoughnessMaterial":
             return {
@@ -427,6 +437,12 @@ function ExtractTextureInformations(material: Material) {
                 aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
                 alphaMap: (material as PBRMaterial).opacityTexture,
                 ior: (material as PBRMaterial).indexOfRefraction,
+                clearCoat: (material as PBRMetallicRoughnessMaterial).clearCoat.intensity,
+                clearCoatMap: (material as PBRMetallicRoughnessMaterial).clearCoat.texture,
+                clearCoatRoughness: (material as PBRMetallicRoughnessMaterial).clearCoat.roughness,
+                clearCoatRoughnessMap: (material as PBRMetallicRoughnessMaterial).clearCoat.useRoughnessFromMainTexture
+                    ? (material as PBRMetallicRoughnessMaterial).clearCoat.texture
+                    : (material as PBRMetallicRoughnessMaterial).clearCoat.textureRoughness,
             };
         default:
             return {
@@ -444,6 +460,10 @@ function ExtractTextureInformations(material: Material) {
                 aoMapIntensity: 0,
                 alphaMap: null,
                 ior: 1,
+                clearCoat: 0,
+                clearCoatMap: null,
+                clearCoatRoughness: 0,
+                clearCoatRoughnessMap: null,
             };
     }
 }
@@ -473,6 +493,10 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         aoMapIntensity,
         alphaMap,
         ior,
+        clearCoat,
+        clearCoatMap,
+        clearCoatRoughness,
+        clearCoatRoughnessMap,
     } = ExtractTextureInformations(material);
 
     if (diffuseMap !== null) {
@@ -533,6 +557,31 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         samplers.push(BuildTexture(alphaMap as Texture, material, "opacity", null, textureToExports, options));
     } else {
         inputs.push(`${pad}float inputs:opacity = ${material.alpha}`);
+    }
+
+    if (clearCoatMap !== null) {
+        inputs.push(`${pad}float inputs:clearcoat.connect = </Materials/Material_${material.uniqueId}/Texture_${clearCoatMap.uniqueId}_clearcoat.outputs:r>`);
+        samplers.push(BuildTexture(clearCoatMap as Texture, material, "clearcoat", new Color3(clearCoat, clearCoat, clearCoat), textureToExports, options));
+    } else {
+        inputs.push(`${pad}float inputs:clearcoat = ${clearCoat}`);
+    }
+
+    if (clearCoatRoughnessMap !== null) {
+        inputs.push(
+            `${pad}float inputs:clearcoatRoughness.connect = </Materials/Material_${material.uniqueId}/Texture_${clearCoatRoughnessMap.uniqueId}_clearcoatRoughness.outputs:g>`
+        );
+        samplers.push(
+            BuildTexture(
+                clearCoatRoughnessMap as Texture,
+                material,
+                "clearcoatRoughness",
+                new Color3(clearCoatRoughness, clearCoatRoughness, clearCoatRoughness),
+                textureToExports,
+                options
+            )
+        );
+    } else {
+        inputs.push(`${pad}float inputs:clearcoatRoughness = ${clearCoatRoughness}`);
     }
 
     inputs.push(`${pad}float inputs:ior = ${ior}`);
@@ -687,12 +736,14 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
         const texture = textureToExports[id];
 
         const size = texture.getSize();
+        // eslint-disable-next-line no-await-in-loop
         const textureData = await texture.readPixels();
 
         if (!textureData) {
             throw new Error("Texture data is not available");
         }
 
+        // eslint-disable-next-line no-await-in-loop
         const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
         files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy

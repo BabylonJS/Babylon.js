@@ -63,6 +63,7 @@ export class WebGPUTimestampQuery {
     public endFrame(commandEncoder: GPUCommandEncoder): void {
         if (this._measureDurationState === 1) {
             this._measureDurationState = 2;
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             this._measureDuration.stop(commandEncoder).then((duration) => {
                 if (duration !== null && duration >= 0) {
                     this._gpuFrameTimeCounter.fetchNewFrame();
@@ -88,6 +89,7 @@ export class WebGPUTimestampQuery {
 
         const currentFrameId = this._engine.frameId;
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         this._measureDuration.stopPass(index).then((duration_) => {
             gpuPerfCounter._addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
         });
@@ -115,7 +117,7 @@ export class WebGPUDurationMeasure {
     public async stop(encoder: GPUCommandEncoder): Promise<number | null> {
         encoder.writeTimestamp?.(this._querySet.querySet, 1);
 
-        return encoder.writeTimestamp ? this._querySet.readTwoValuesAndSubtract(0) : 0;
+        return encoder.writeTimestamp ? await this._querySet.readTwoValuesAndSubtract(0) : 0;
     }
 
     public startPass(descriptor: GPURenderPassDescriptor | GPUComputePassDescriptor, index: number): void {
@@ -131,7 +133,7 @@ export class WebGPUDurationMeasure {
     }
 
     public async stopPass(index: number): Promise<number | null> {
-        return this._querySet.readTwoValuesAndSubtract(index + 2);
+        return await this._querySet.readTwoValuesAndSubtract(index + 2);
     }
 
     public dispose() {

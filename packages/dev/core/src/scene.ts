@@ -2522,7 +2522,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns A promise that resolves when the scene is ready
      */
     public async whenReadyAsync(checkRenderTargets = false): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this.executeWhenReady(() => {
                 resolve();
             }, checkRenderTargets);
@@ -5845,7 +5845,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         useArrayBuffer?: boolean,
         onOpened?: (request: WebRequest) => void
     ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._loadFile(
                 fileOrUrl,
                 (data) => {
@@ -5855,6 +5855,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 useOfflineSupport,
                 useArrayBuffer,
                 (request, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception);
                 },
                 onOpened
@@ -5892,7 +5893,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         useArrayBuffer?: boolean,
         onOpened?: (request: WebRequest) => void
     ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._requestFile(
                 url,
                 (data) => {
@@ -5931,7 +5932,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @internal
      */
     public async _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._readFile(
                 file,
                 (data) => {

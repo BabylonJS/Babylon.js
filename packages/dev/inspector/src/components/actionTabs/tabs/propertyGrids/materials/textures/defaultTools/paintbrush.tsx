@@ -61,6 +61,7 @@ class PaintbrushTool implements IToolType {
     setup() {
         const { scene } = this.getParameters();
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this.pointerObserver = scene.onPointerObservable.add(async (pointerInfo) => {
             const { startPainting, stopPainting, metadata } = this.getParameters();
             if (!this.isPainting) {

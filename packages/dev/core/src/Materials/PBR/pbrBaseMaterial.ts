@@ -81,7 +81,6 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-    public BASE_DIFFUSE_MODEL = 0;
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -358,11 +357,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * (point spot...).
      */
     public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = 0;
-
-    /**
-     * Defines the default diffuse model used by the material.
-     */
-    public static DEFAULT_DIFFUSE_MODEL = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
 
     /**
      * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
@@ -824,8 +818,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._realTimeFilteringQuality = n;
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
-
-    private _baseDiffuseModel: number = PBRBaseMaterial.DEFAULT_DIFFUSE_MODEL;
 
     /**
      * Can this material render to several textures at once
@@ -1662,7 +1654,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
-        defines.BASE_DIFFUSE_MODEL = this._baseDiffuseModel;
 
         // Multiview
         PrepareDefinesForMultiview(scene, defines);
@@ -2363,22 +2354,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 // Colors
                 if (defines.METALLICWORKFLOW) {
-                    TmpColors.Color3[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
-                    TmpColors.Color3[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
+                    TmpColors.Color4[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
+                    TmpColors.Color4[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
                     const ior = this.subSurface?._indexOfRefraction ?? 1.5;
                     const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
-                    TmpColors.Color3[0].b = ior;
-                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
+                    TmpColors.Color4[0].b = ior;
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model
                     // for dielectrics.
                     const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
-
-                    // Tweak the default F0 and F90 based on our given setup
-                    this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
-                    const metallicF90 = this._metallicF0Factor;
-
-                    ubo.updateColor4("vMetallicReflectanceFactors", TmpColors.Color3[0], metallicF90);
+                    TmpColors.Color4[0].a = f0;
+                    ubo.updateDirectColor4("vReflectivityColor", TmpColors.Color4[0]);
+                    ubo.updateColor4("vMetallicReflectanceFactors", this._metallicReflectanceColor, this._metallicF0Factor);
                 } else {
                     ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                 }

@@ -160,6 +160,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     public dispose() {
         // disposing without leaving XR? Exit XR first
         if (this.inXRSession) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.exitXRAsync();
         }
         this.onXRReady.clear();
@@ -252,46 +253,46 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise which will resolve once the session has been initialized
      */
     public async initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
-        return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
-            this.session = session;
-            this._sessionMode = xrSessionMode;
-            this.inXRSession = true;
-            this.onXRSessionInit.notifyObservers(session);
+        const session = await this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit);
 
-            // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
-            this.session.addEventListener(
-                "end",
-                () => {
-                    this.inXRSession = false;
+        this.session = session;
+        this._sessionMode = xrSessionMode;
+        this.inXRSession = true;
+        this.onXRSessionInit.notifyObservers(session);
 
-                    // Notify frame observers
-                    this.onXRSessionEnded.notifyObservers(null);
+        // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
+        this.session.addEventListener(
+            "end",
+            () => {
+                this.inXRSession = false;
 
-                    if (this._engine) {
-                        // make sure dimensions object is restored
-                        this._engine.framebufferDimensionsObject = null;
+                // Notify frame observers
+                this.onXRSessionEnded.notifyObservers(null);
 
-                        // Restore frame buffer to avoid clear on xr framebuffer after session end
-                        this._engine.restoreDefaultFramebuffer();
+                if (this._engine) {
+                    // make sure dimensions object is restored
+                    this._engine.framebufferDimensionsObject = null;
 
-                        // Need to restart render loop as after the session is ended the last request for new frame will never call callback
-                        this._engine.customAnimationFrameRequester = null;
-                        this._engine._renderLoop();
-                    }
+                    // Restore frame buffer to avoid clear on xr framebuffer after session end
+                    this._engine.restoreDefaultFramebuffer();
 
-                    // Dispose render target textures.
-                    // Only dispose on native because we can't destroy opaque textures on browser.
-                    if (this.isNative) {
-                        this._baseLayerRTTProvider?.dispose();
-                    }
-                    this._baseLayerRTTProvider = null;
-                    this._baseLayerWrapper = null;
-                },
-                { once: true }
-            );
+                    // Need to restart render loop as after the session is ended the last request for new frame will never call callback
+                    this._engine.customAnimationFrameRequester = null;
+                    this._engine._renderLoop();
+                }
 
-            return this.session;
-        });
+                // Dispose render target textures.
+                // Only dispose on native because we can't destroy opaque textures on browser.
+                if (this.isNative) {
+                    this._baseLayerRTTProvider?.dispose();
+                }
+                this._baseLayerRTTProvider = null;
+                this._baseLayerWrapper = null;
+            },
+            { once: true }
+        );
+
+        return this.session;
     }
 
     /**
@@ -300,7 +301,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns A Promise that resolves to true if supported and false if not
      */
     public async isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
-        return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
+        return await WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
     /**
@@ -361,43 +362,31 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns a promise that will resolve once the reference space has been set
      */
     public async setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
-        return this.session
-            .requestReferenceSpace(referenceSpaceType)
-            .then(
-                (referenceSpace) => {
-                    return referenceSpace as XRReferenceSpace;
-                },
-                async (rejectionReason) => {
-                    Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
-                    Logger.Error(rejectionReason);
-                    Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
+        let referenceSpace: XRReferenceSpace;
+        try {
+            referenceSpace = await this.session.requestReferenceSpace(referenceSpaceType);
+        } catch (rejectionReason) {
+            Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
+            Logger.Error(rejectionReason);
+            Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
-                    return this.session.requestReferenceSpace("viewer").then(
-                        (referenceSpace) => {
-                            const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
-                            return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
-                        },
-                        (rejectionReason) => {
-                            Logger.Error(rejectionReason);
-                            // eslint-disable-next-line no-throw-literal
-                            throw 'XR initialization failed: required "viewer" reference space type not supported.';
-                        }
-                    );
-                }
-            )
-            .then(async (referenceSpace) => {
-                // create viewer reference space before setting the first reference space
-                return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace) => {
-                    this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
-                    return referenceSpace;
-                });
-            })
-            .then((referenceSpace) => {
-                // initialize the base and offset (currently the same)
-                this.referenceSpace = this.baseReferenceSpace = referenceSpace;
-                this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);
-                return this.referenceSpace;
-            });
+            try {
+                const referenceSpace = await this.session.requestReferenceSpace("viewer");
+                const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
+                return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
+            } catch (rejectionReason) {
+                Logger.Error(rejectionReason);
+                // eslint-disable-next-line no-throw-literal
+                throw 'XR initialization failed: required "viewer" reference space type not supported.';
+            }
+        }
+        // create viewer reference space before setting the first reference space
+        const viewerReferenceSpace = await this.session.requestReferenceSpace("viewer");
+        this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
+        // initialize the base and offset (currently the same)
+        this.referenceSpace = this.baseReferenceSpace = referenceSpace;
+        this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);
+        return this.referenceSpace;
     }
 
     /**
@@ -408,7 +397,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @deprecated Use updateRenderState() instead.
      */
     public async updateRenderStateAsync(state: XRRenderState): Promise<void> {
-        return this.session.updateRenderState(state);
+        return await this.session.updateRenderState(state);
     }
 
     /**
@@ -438,6 +427,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             this._setBaseLayerWrapper(this.isNative ? new NativeXRLayerWrapper(state.baseLayer) : new WebXRWebGLLayerWrapper(state.baseLayer));
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.session.updateRenderState(state);
     }
 
@@ -455,16 +445,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         if (!functionToUse) {
             return false;
         } else {
-            return functionToUse
-                .call((navigator as any).xr, sessionMode)
-                .then(async (result: boolean) => {
-                    const returnValue = typeof result === "undefined" ? true : result;
-                    return returnValue;
-                })
-                .catch(async (e: any) => {
-                    Logger.Warn(e);
-                    return false;
-                });
+            try {
+                const result = functionToUse.call((navigator as any).xr, sessionMode);
+                const returnValue = typeof result === "undefined" ? true : result;
+                return returnValue;
+            } catch (e: any) {
+                Logger.Warn(e);
+                return false;
+            }
         }
     }
 
@@ -496,7 +484,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async updateTargetFrameRate(rate: number): Promise<void> {
-        return this.session.updateTargetFrameRate(rate);
+        return await this.session.updateTargetFrameRate(rate);
     }
 
     /**

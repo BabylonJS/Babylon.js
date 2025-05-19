@@ -165,12 +165,20 @@ export class AudioEngine implements IAudioEngine {
         // the resume promise will never resolve and the only way to get the audio context unstuck is to
         // suspend it and make another resume request.
         if (this._tryToRun) {
-            this._audioContext?.suspend().then(() => {
-                this._tryToRun = false;
-                this._triggerRunningState();
-            });
+            // eslint-disable-next-line github/no-then
+            this._audioContext?.suspend().then(
+                () => {
+                    this._tryToRun = false;
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this._triggerRunningStateAsync();
+                },
+                () => {
+                    Logger.Error("Failed to suspend audio context.");
+                }
+            );
         } else {
-            this._triggerRunningState();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._triggerRunningStateAsync();
         }
     }
 
@@ -180,6 +188,7 @@ export class AudioEngine implements IAudioEngine {
             "statechange",
             () => {
                 if (this.unlocked && this._audioContext?.state !== "running") {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._resumeAudioContextAsync();
                 }
             },
@@ -191,6 +200,7 @@ export class AudioEngine implements IAudioEngine {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _resumeAudioContextAsync(): Promise<void> {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();
@@ -215,7 +225,8 @@ export class AudioEngine implements IAudioEngine {
                 this._audioContextInitialized = true;
                 if (this._audioContext.state === "running") {
                     // Do not wait for the promise to unlock.
-                    this._triggerRunningState();
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this._triggerRunningStateAsync();
                 }
             }
         } catch (e) {
@@ -225,26 +236,25 @@ export class AudioEngine implements IAudioEngine {
     }
 
     private _tryToRun = false;
-    private _triggerRunningState() {
+    private async _triggerRunningStateAsync() {
         if (this._tryToRun) {
             return;
         }
         this._tryToRun = true;
 
-        this._resumeAudioContextAsync()
-            .then(() => {
-                this._tryToRun = false;
-                if (this._muteButton) {
-                    this._hideMuteButton();
-                }
-                // Notify users that the audio stack is unlocked/unmuted
-                this.unlocked = true;
-                this.onAudioUnlockedObservable.notifyObservers(this);
-            })
-            .catch(() => {
-                this._tryToRun = false;
-                this.unlocked = false;
-            });
+        try {
+            await this._resumeAudioContextAsync();
+            this._tryToRun = false;
+            if (this._muteButton) {
+                this._hideMuteButton();
+            }
+            // Notify users that the audio stack is unlocked/unmuted
+            this.unlocked = true;
+            this.onAudioUnlockedObservable.notifyObservers(this);
+        } catch (_e) {
+            this._tryToRun = false;
+            this.unlocked = false;
+        }
     }
 
     private _triggerSuspendedState() {
@@ -282,7 +292,8 @@ export class AudioEngine implements IAudioEngine {
         this._muteButton.addEventListener(
             "touchend",
             () => {
-                this._triggerRunningState();
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this._triggerRunningStateAsync();
             },
             true
         );
@@ -337,6 +348,7 @@ export class AudioEngine implements IAudioEngine {
         this.onAudioLockedObservable.clear();
 
         // close is async.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._audioContext?.close();
         this._audioContext = null;
     }

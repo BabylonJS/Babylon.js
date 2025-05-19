@@ -229,6 +229,7 @@ fn traceScreenSpaceRay1(
     #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
         sceneZMax = linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
     #endif
+        if (sceneZMax == 0.0) { sceneZMax = 1e8; }
 
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
@@ -236,6 +237,7 @@ fn traceScreenSpaceRay1(
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
                 sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
+            if (sceneBackZ == 0.0) { sceneBackZ = -1e8; }
             hit = (rayZMax >= sceneBackZ - csZThickness) && (rayZMin <= sceneZMax);
         #else
             hit = (rayZMax >= sceneZMax - csZThickness) && (rayZMin <= sceneZMax);
@@ -246,6 +248,7 @@ fn traceScreenSpaceRay1(
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
                 sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
+            if (sceneBackZ == 0.0) { sceneBackZ = 1e8; }
             hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
         #else
             hit = (rayZMin <= sceneZMax + csZThickness) && (rayZMax >= sceneZMax);

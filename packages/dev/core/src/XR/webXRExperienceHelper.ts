@@ -87,12 +87,14 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     public static async CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
         const helper = new WebXRExperienceHelper(scene);
-        return helper.sessionManager
+        return await helper.sessionManager
             .initializeAsync()
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 helper._supported = true;
                 return helper;
             })
+            // eslint-disable-next-line github/no-then
             .catch((e) => {
                 helper._setState(WebXRState.NOT_IN_XR);
                 helper.dispose();
@@ -104,6 +106,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * Disposes of the experience helper
      */
     public dispose() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.exitXRAsync();
         this.camera.dispose();
         this.onStateChangedObservable.clear();
@@ -236,7 +239,7 @@ export class WebXRExperienceHelper implements IDisposable {
             return;
         }
         this._setState(WebXRState.EXITING_XR);
-        return this.sessionManager.exitXRAsync();
+        return await this.sessionManager.exitXRAsync();
     }
 
     /**

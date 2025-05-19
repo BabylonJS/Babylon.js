@@ -62,6 +62,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ImageProcessingBlock: "Applies an image processing post process",
         FXAABlock: "Applies a FXAA post process",
         GrainBlock: "Applies a grain post process",
+        MotionBlurBlock: "Applies a motion blur post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -169,6 +170,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FXAABlock",
                 "GrainBlock",
                 "ImageProcessingBlock",
+                "MotionBlurBlock",
                 "PassBlock",
                 "PassCubeBlock",
                 "SSRBlock",

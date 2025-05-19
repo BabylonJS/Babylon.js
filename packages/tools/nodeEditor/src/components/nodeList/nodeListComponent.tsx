@@ -234,6 +234,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     loadCustomFrame(file: File) {
         Tools.ReadFile(
             file,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async (data) => {
                 // get Frame Data from file
                 const decoder = new TextDecoder("utf-8");
@@ -282,6 +283,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     loadCustomBlock(file: File) {
         Tools.ReadFile(
             file,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async (data) => {
                 // get Block Data from file
                 const decoder = new TextDecoder("utf-8");

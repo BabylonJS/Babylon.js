@@ -199,7 +199,7 @@ export class NodeGeometry {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async edit(config?: INodeGeometryEditorOptions): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();
             if (typeof this.BJSNODEGEOMETRYEDITOR == "undefined") {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeGeometry.EditorURL;
@@ -256,6 +256,7 @@ export class NodeGeometry {
         }
 
         if (promises.length) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             Promise.all(promises).then(() => {
                 this.build(verbose, updateBuildId, autoConfigure);
             });
@@ -684,6 +685,7 @@ export class NodeGeometry {
      * @param skipBuild defines whether to build the node geometry
      * @returns a promise that will resolve to the new node geometry
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(snippetId: string, nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeGeometry.CreateDefault("blank"));
@@ -710,9 +712,11 @@ export class NodeGeometry {
                             }
                             resolve(nodeGeometry);
                         } catch (err) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(err);
                         }
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

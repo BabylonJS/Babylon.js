@@ -1,5 +1,98 @@
 # Changelog
 
+## 8.8.5
+
+### Core
+
+- OpenPBR specular model - by [MiiBond](https://github.com/MiiBond) ([#16619](https://github.com/BabylonJS/Babylon.js/pull/16619))
+
+## 8.8.4
+
+### Core
+
+
+## 8.8.3
+
+### Core
+
+- Small typo fixes to PhysicsAggregate docs - by [mthaddon](https://github.com/mthaddon) ([#16615](https://github.com/BabylonJS/Babylon.js/pull/16615))
+
+## 8.8.2
+
+### Core
+
+- fix: don't unbind when changing framebuffer - by [matanui159](https://github.com/matanui159) ([#16614](https://github.com/BabylonJS/Babylon.js/pull/16614))
+- Specular Energy Conservation fix - by [MiiBond](https://github.com/MiiBond) ([#16476](https://github.com/BabylonJS/Babylon.js/pull/16476))
+
+### Inspector
+
+- Add inspector tools to debug particle attractors - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16613](https://github.com/BabylonJS/Babylon.js/pull/16613))
+- Specular Energy Conservation fix - by [MiiBond](https://github.com/MiiBond) ([#16476](https://github.com/BabylonJS/Babylon.js/pull/16476))
+
+## 8.8.1
+
+### Core
+
+- Fix linting for new functionality - by [RaananW](https://github.com/RaananW) ([#16609](https://github.com/BabylonJS/Babylon.js/pull/16609))
+- Change return statements to continue in for loops - by [RaananW](https://github.com/RaananW) ([#16608](https://github.com/BabylonJS/Babylon.js/pull/16608))
+- Linting - Async rules - by [RaananW](https://github.com/RaananW) ([#16578](https://github.com/BabylonJS/Babylon.js/pull/16578))
+
+### GUI
+
+- Change return statements to continue in for loops - by [RaananW](https://github.com/RaananW) ([#16608](https://github.com/BabylonJS/Babylon.js/pull/16608))
+
+### GUI Editor
+
+- Change return statements to continue in for loops - by [RaananW](https://github.com/RaananW) ([#16608](https://github.com/BabylonJS/Babylon.js/pull/16608))
+
+### Inspector
+
+- Change return statements to continue in for loops - by [RaananW](https://github.com/RaananW) ([#16608](https://github.com/BabylonJS/Babylon.js/pull/16608))
+
+### Loaders
+
+
+### Viewer
+
+- Viewer: Add shadow support - [_New Feature_] by [alexandremottet](https://github.com/alexandremottet) ([#16459](https://github.com/BabylonJS/Babylon.js/pull/16459))
+- Viewer: Fix ignored options bug & camera framing with multiple models - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#16604](https://github.com/BabylonJS/Babylon.js/pull/16604))
+
+## 8.8.0
+
+## 8.7.1
+
+### Core
+
+- First installment of the Thin Maths - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16599](https://github.com/BabylonJS/Babylon.js/pull/16599))
+- Adding handling of InstacedMesh inside of addAllAssetsToContainer that was missing. - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#16601](https://github.com/BabylonJS/Babylon.js/pull/16601))
+- FrameGraph: add support for motion blur - by [Popov72](https://github.com/Popov72) ([#16602](https://github.com/BabylonJS/Babylon.js/pull/16602))
+- Add WebAudio node and microphone input sound sources to AudioEngineV2 - [_New Feature_] by [docEdub](https://github.com/docEdub) ([#16596](https://github.com/BabylonJS/Babylon.js/pull/16596))
+- fix shaders uninitialized members - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16598](https://github.com/BabylonJS/Babylon.js/pull/16598))
+- Fix screenshot tools fxaa background color - by [sebavan](https://github.com/sebavan) ([#16595](https://github.com/BabylonJS/Babylon.js/pull/16595))
+- Clamp NdotV to 0.0 for diffuse roughness - by [MiiBond](https://github.com/MiiBond) ([#16579](https://github.com/BabylonJS/Babylon.js/pull/16579))
+- Fix animation goToFrame with negative speedRatio - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16589](https://github.com/BabylonJS/Babylon.js/pull/16589))
+- bug fix - "moveWithCollisions" method parameter slideOnCollide==false now moves mesh to NEAR the collision point, instead of AT the collision point - by [jon-heard](https://github.com/jon-heard) ([#16587](https://github.com/BabylonJS/Babylon.js/pull/16587))
+- Make explicit the need for engine renderloop for end frame, and fix some small typos - by [mthaddon](https://github.com/mthaddon) ([#16584](https://github.com/BabylonJS/Babylon.js/pull/16584))
+- IFlowable added - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16570](https://github.com/BabylonJS/Babylon.js/pull/16570))
+- new feature - slideOnCollide parameter for "abstractMesh.moveWithCollisions" (defaults to true) - by [jon-heard](https://github.com/jon-heard) ([#16580](https://github.com/BabylonJS/Babylon.js/pull/16580))
+
+### Inspector
+
+- Expose limitVelocityDamping parameter in particle system editor - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16603](https://github.com/BabylonJS/Babylon.js/pull/16603))
+- Deleting particle system velocity limit throws error in console. - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16593](https://github.com/BabylonJS/Babylon.js/pull/16593))
+
+### Loaders
+
+- Fix (very broken) BVH animation - by [yuripourre](https://github.com/yuripourre) ([#16586](https://github.com/BabylonJS/Babylon.js/pull/16586))
+
+### Materials
+
+- Make explicit the need for engine renderloop for end frame, and fix some small typos - by [mthaddon](https://github.com/mthaddon) ([#16584](https://github.com/BabylonJS/Babylon.js/pull/16584))
+
+### Serializers
+
+- USDZ Exporter: Some small fixes - by [alexchuber](https://github.com/alexchuber) ([#16594](https://github.com/BabylonJS/Babylon.js/pull/16594))
+
 ## 8.7.0
 
 ### Core

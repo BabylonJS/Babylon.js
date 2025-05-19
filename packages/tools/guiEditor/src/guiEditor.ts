@@ -38,6 +38,7 @@ export class GUIEditor {
         if (this._CurrentState && hostElement) {
             if (options.currentSnippetToken) {
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
                 } catch (error) {
                     //swallow and continue

@@ -176,7 +176,7 @@ void main(void) {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
+        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
             // Bend the normal towards the viewer based on the diffuse roughness
             vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
             float NdotV = max(dot(vNormalW, viewDirectionW), 0.0);

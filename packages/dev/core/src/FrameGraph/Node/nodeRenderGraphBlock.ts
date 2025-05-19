@@ -484,7 +484,7 @@ export class NodeRenderGraphBlock {
             for (const port of serializedInputs) {
                 const input = this.inputs.find((i) => i.name === port.name);
                 if (!input) {
-                    return;
+                    continue;
                 }
                 if (port.displayName) {
                     input.displayName = port.displayName;

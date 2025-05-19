@@ -1289,6 +1289,7 @@ export class WebGPUTextureManager {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public readPixels(
         texture: GPUTexture,
         x: number,

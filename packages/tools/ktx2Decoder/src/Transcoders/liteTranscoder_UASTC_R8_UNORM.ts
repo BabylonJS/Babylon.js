@@ -47,11 +47,10 @@ export class LiteTranscoder_UASTC_R8_UNORM extends LiteTranscoder {
         imageDesc: IKTX2_ImageDesc | null,
         encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
-        return this._loadModuleAsync().then((moduleWrapper: any) => {
-            const transcoder: any = moduleWrapper.module;
-            const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, 1);
+        const moduleWrapper = await this._loadModuleAsync();
+        const transcoder: any = moduleWrapper.module;
+        const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, 1);
 
-            return transcoder.decode(width, height) === 0 ? uncompressedTextureView!.slice() : null;
-        });
+        return transcoder.decode(width, height) === 0 ? uncompressedTextureView!.slice() : null;
     }
 }

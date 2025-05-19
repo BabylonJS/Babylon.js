@@ -36,6 +36,7 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
                 failIfMajorPerformanceCaveat: false,
             };
             import("../Engines/thinEngine")
+                // eslint-disable-next-line github/no-then
                 .then(({ ThinEngine: thinEngineClass }) => {
                     const engineInstanceCount = EngineStore.Instances.length;
                     try {
@@ -63,8 +64,10 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
                     });
                     engine.getCaps().parallelShaderCompile = undefined;
                     const renderer = new EffectRenderer(engine);
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     import("../Shaders/pass.fragment").then(({ passPixelShader }) => {
                         if (!engine) {
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject("Engine is not defined");
                             return;
                         }
@@ -83,6 +86,7 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
                         resolve(DumpToolsEngine);
                     });
                 })
+                // eslint-disable-next-line github/no-then
                 .catch(reject);
         });
     }
@@ -141,7 +145,7 @@ export async function DumpDataAsync(
     toArrayBuffer = false,
     quality?: number
 ): Promise<string | ArrayBuffer> {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
     });
 }
@@ -169,6 +173,7 @@ export function DumpData(
     toArrayBuffer = false,
     quality?: number
 ): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
     _CreateDumpRendererAsync().then((renderer) => {
         renderer.engine.setSize(width, height, true);
 
@@ -225,6 +230,7 @@ export function Dispose() {
         DumpToolsEngine.engine.dispose();
     } else {
         // in cases where the engine is not yet created, we need to wait for it to dispose it
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         EnginePromise?.then((dumpToolsEngine) => {
             dumpToolsEngine.wrapper.dispose();
             dumpToolsEngine.renderer.dispose();

@@ -1,6 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AbstractSoundSource, ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "../abstractAudio/audioBus";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
 import { AudioEngineV2 } from "../abstractAudio/audioEngineV2";
@@ -211,6 +212,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public async createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource> {
+        let mediaStream: MediaStream;
+
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            throw new Error("Unable to access microphone: " + e);
+        }
+
+        return await this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), options);
+    }
+
+    /** @internal */
     public async createSoundAsync(
         name: string,
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
@@ -238,6 +252,16 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public async createSoundSourceAsync(name: string, source: AudioNode, options: Partial<ISoundSourceOptions> = {}): Promise<AbstractSoundSource> {
+        const module = await import("./webAudioSoundSource");
+
+        const soundSource = new module._WebAudioSoundSource(name, source, this, options);
+        await soundSource._initAsync(options);
+
+        return soundSource;
+    }
+
+    /** @internal */
     public async createStreamingSoundAsync(name: string, source: HTMLMediaElement | string | string[], options: Partial<IStreamingSoundOptions> = {}): Promise<StreamingSound> {
         const module = await import("./webAudioStreamingSound");
 
@@ -256,6 +280,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         // Note that OfflineAudioContext does not have a `close` method.
         if (this._audioContext.state !== "closed" && !this._isUsingOfflineAudioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._audioContext.close();
         }
 
@@ -307,6 +332,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override resumeAsync(): Promise<void> {
         this._pauseCalled = false;
 
@@ -363,6 +389,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
                 clearInterval(this._resumeOnPauseTimerId);
 
                 this._resumeOnPauseTimerId = setInterval(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.resumeAsync();
                 }, this._resumeOnPauseRetryInterval);
             }
@@ -389,6 +416,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             // Wave data for 0.0001 seconds of silence.
             audio.src = "data:audio/wav;base64,UklGRjAAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQwAAAAAAAEA/v8CAP//AQA=";
 
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             audio.play();
         }
 

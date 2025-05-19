@@ -261,7 +261,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         primitive: IMeshPrimitive,
         assign: (babylonMesh: AbstractMesh) => void
     ): Nullable<Promise<AbstractMesh>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(
                 this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
@@ -364,7 +364,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     }
                 })
             );
-            return Promise.all(promises).then(([babylonMesh]) => {
+            // eslint-disable-next-line github/no-then
+            return await Promise.all(promises).then(([babylonMesh]) => {
                 return babylonMesh;
             });
         });
