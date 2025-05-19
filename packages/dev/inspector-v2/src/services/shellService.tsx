@@ -4,7 +4,6 @@ import type { IDisposable } from "core/index";
 import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { IViewHost } from "../services/viewHost";
 
 import { Button, Divider, makeStyles, shorthands, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
@@ -14,7 +13,6 @@ import { TeachingMoment } from "../components/teachingMoment";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ObservableCollection } from "../misc/observableCollection";
-import { ViewHostIdentity } from "../services/viewHost";
 
 export type BarComponentInfo = Readonly<{
     key: string;
@@ -38,6 +36,15 @@ export type PaneComponentInfo = Readonly<{
 
 export type ContentComponentInfo = Readonly<{ key: string; component: ComponentType; order?: number }>;
 
+export const RootComponentServiceIdentity = Symbol("RootComponent");
+
+/**
+ * Exposes a root (top level) component for a given
+ */
+export interface IRootComponentService extends IService<typeof RootComponentServiceIdentity> {
+    readonly rootComponent: ComponentType;
+}
+
 export const ShellServiceIdentity = Symbol("ShellService");
 export interface IShellService extends IService<typeof ShellServiceIdentity> {
     addToolbarItem(entry: BarComponentInfo): IDisposable;
@@ -59,12 +66,11 @@ export function MakeShellServiceDefinition({
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
     toolBarMode = "full",
-}: ShellServiceOptions = {}): ServiceDefinition<[IShellService], [IViewHost]> {
+}: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
-        produces: [ShellServiceIdentity],
-        consumes: [ViewHostIdentity],
-        factory: (viewHost) => {
+        produces: [ShellServiceIdentity, RootComponentServiceIdentity],
+        factory: () => {
             const useStyles = makeStyles({
                 mainView: {
                     flex: 1,
@@ -464,7 +470,7 @@ export function MakeShellServiceDefinition({
             const rightPaneComponentCollection = new ObservableCollection<PaneComponentInfo>();
             const contentComponentCollection = new ObservableCollection<ContentComponentInfo>();
 
-            viewHost.mainView = () => {
+            const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
                 const topBarComponents = useOrderedObservableCollection(topBarComponentCollection);
@@ -540,10 +546,8 @@ export function MakeShellServiceDefinition({
                         return rightPaneComponentCollection.add(entry);
                     }
                 },
-                addCentralContent: contentComponentCollection.add.bind(contentComponentCollection),
-                dispose: () => {
-                    viewHost.mainView = undefined;
-                },
+                addCentralContent: (entry) => contentComponentCollection.add(entry),
+                rootComponent,
             };
         },
     };

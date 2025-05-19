@@ -5,8 +5,7 @@ import type { ComponentType, FunctionComponent } from "react";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
 import type { IExtension } from "./extensibility/extensionManager";
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
-import type { ShellServiceOptions } from "./services/shellService";
-import type { IViewHost } from "./services/viewHost";
+import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
 
 import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
@@ -18,9 +17,8 @@ import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ServiceCatalog } from "./modularity/serviceCatalog";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
-import { MakeShellServiceDefinition } from "./services/shellService";
+import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { ViewHostIdentity } from "./services/viewHost";
 import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -40,34 +38,6 @@ const useStyles = makeStyles({
         },
     },
 });
-
-// This custom hook is a helper that:
-// 1. Adds a ViewHost service with a getter/setter for the main view component.
-// 2. Provides the main view component as state (so as soon as the main view is set, the component can be rendered).
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function useViewHostBootstrapper() {
-    const [mainViewComponentType, setMainViewComponentType] = useState<ComponentType>();
-    const boostrapViewHost = useCallback((serviceCatalog: ServiceCatalog) => {
-        return serviceCatalog.registerService<[IViewHost], []>({
-            friendlyName: "ViewHost",
-            produces: [ViewHostIdentity],
-            factory: () => {
-                return {
-                    get mainView() {
-                        return mainViewComponentType;
-                    },
-                    // MainView is a FunctionComponent and can't be set directly as state since React will interpret it as a lazy value provider and invoke the function component.
-                    set mainView(mainView: ComponentType | undefined) {
-                        setMainViewComponentType(() => mainView);
-                    },
-                    dispose: () => setMainViewComponentType(undefined),
-                };
-            },
-        });
-    }, []);
-
-    return [mainViewComponentType, boostrapViewHost] as const;
-}
 
 export type ModularToolOptions = {
     /**
@@ -106,28 +76,40 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
 
-        const [mainView, bootstrapViewHost] = useViewHostBootstrapper();
+        const [rootComponent, setRootComponent] = useState<ComponentType>();
 
         // This is the main async initialization.
         useEffect(() => {
             const initializeExtensionManagerAsync = async () => {
                 const serviceCatalog = new ServiceCatalog();
 
-                // Register a ViewHost service (where the main view can be displayed).
-                await bootstrapViewHost(serviceCatalog);
+                // Register a service that simply consumes the IRootComponentService and sets the root component as state so it can be rendered.
+                await serviceCatalog.registerService<[], [IRootComponentService]>({
+                    friendlyName: "Root Component Bootstrapper",
+                    consumes: [RootComponentServiceIdentity],
+                    factory: (rootComponentService) => {
+                        // Use function syntax for the state setter since the root component may be a function component.
+                        setRootComponent(() => rootComponentService.rootComponent);
+                        return {
+                            dispose: () => setRootComponent(undefined),
+                        };
+                    },
+                });
 
-                // Register built in services.
-                {
-                    await serviceCatalog.registerServicesAsync(MakeShellServiceDefinition(options));
-                    if (extensionFeeds.length > 0) {
-                        await serviceCatalog.registerServicesAsync(ExtensionListServiceDefinition);
-                    }
-                    if (isThemeable) {
-                        await serviceCatalog.registerServicesAsync(ThemeSelectorServiceDefinition);
-                    }
+                // Register the shell service (top level toolbar/side pane UI layout).
+                await serviceCatalog.registerServicesAsync(MakeShellServiceDefinition(options));
+
+                // Register the extension list service (for browsing/installing extensions) if extension feeds are provided.
+                if (extensionFeeds.length > 0) {
+                    await serviceCatalog.registerServicesAsync(ExtensionListServiceDefinition);
                 }
 
-                // Register configured services.
+                // Register the theme selector service (for selecting the theme) if theming is configured.
+                if (isThemeable) {
+                    await serviceCatalog.registerServicesAsync(ThemeSelectorServiceDefinition);
+                }
+
+                // Register all external services (that make up a unique tool).
                 await serviceCatalog.registerServicesAsync(...serviceDefinitions);
 
                 // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
@@ -185,6 +167,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     }
                 }
 
+                // Instantiate a service container, which will in turn instantiate all the services (in order based on the dependency graph).
                 const serviceContainer = await serviceCatalog.createContainerAsync("ModularToolContainer");
 
                 // Set the contexts.
@@ -214,10 +197,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             requiredExtensionsDeferred?.resolve(false);
         }, [setRequiredExtensions, requiredExtensionsDeferred]);
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         // Show a spinner until a main view has been set.
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const ContentComponentType: ComponentType = mainView ?? (() => <Spinner className={classes.spinner} />);
+        const Content: ComponentType = rootComponent ?? (() => <Spinner className={classes.spinner} />);
 
         return (
             <ExtensionManagerContext.Provider value={extensionManagerContext}>
@@ -243,7 +225,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                             </DialogSurface>
                         </Dialog>
                         <Suspense fallback={<Spinner className={classes.spinner} />}>
-                            <ContentComponentType />
+                            <Content />
                         </Suspense>
                     </>
                 </FluentProvider>

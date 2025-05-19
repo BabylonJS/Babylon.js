@@ -56,6 +56,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         parentElement = scene.getEngine().getRenderingCanvas()?.parentElement ?? null;
         while (parentElement) {
             const rootNode = parentElement.getRootNode();
+            // TODO: Right now we never parent the inspector within a ShadowRoot because we need to do more work to get FluentProvider to work correctly in this context.
             if (!(rootNode instanceof ShadowRoot)) {
                 break;
             }
