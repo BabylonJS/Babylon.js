@@ -7,7 +7,7 @@ import type { IService, ServiceDefinition } from "../../../modularity/serviceDef
 import type { ISceneContext } from "../../sceneContext";
 import type { IShellService } from "../../shellService";
 
-import { FlatTree, FlatTreeItem, makeStyles, tokens, TreeItemLayout } from "@fluentui/react-components";
+import { Button, FlatTree, FlatTreeItem, makeStyles, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { CubeTreeRegular } from "@fluentui/react-icons";
 
@@ -39,10 +39,29 @@ export type SceneExplorerEntityObservableProvider<T extends EntityBase> = (scene
     entityRemovedObservable: Observable<T>;
 }>;
 
+export type SceneExplorerEntityCommandProvider<T extends EntityBase> = Readonly<
+    {
+        order: number;
+        predicate: (entity: unknown) => entity is T;
+        command: (scene: Scene, entity: T) => void;
+        displayName: string;
+    } & (
+        | {
+              type: "contextMenu";
+              icon?: ComponentType<{ entity: T }>;
+          }
+        | {
+              type: "inline";
+              icon: ComponentType<{ entity: T }>;
+          }
+    )
+>;
+
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
     addChildEnumerator<ParentT, ChildT extends EntityBase>(childEnumerator: SceneExplorerChildEnumerator<ParentT, ChildT>): IDisposable;
     addEntityObservableProvider<T extends EntityBase>(provider: SceneExplorerEntityObservableProvider<T>): IDisposable;
+    addEntityCommand<T extends EntityBase>(provider: SceneExplorerEntityCommandProvider<T>): IDisposable;
     readonly selectedEntity: Nullable<unknown>;
     readonly onSelectedEntityChanged: Observable<void>;
 }
@@ -80,6 +99,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
     factory: (sceneContext, shellService) => {
         const childEnumeratorCollection = new ObservableCollection<SceneExplorerChildEnumerator<unknown, EntityBase>>();
         const entityObservableProviderCollection = new ObservableCollection<SceneExplorerEntityObservableProvider<EntityBase>>();
+        const entityCommandProviderCollection = new ObservableCollection<SceneExplorerEntityCommandProvider<EntityBase>>();
 
         let selectedEntityState: Nullable<unknown> = null;
         const selectedEntityObservable = new Observable<void>();
@@ -96,6 +116,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
 
             const childEnumerators = useOrderedObservableCollection(childEnumeratorCollection);
             const entityObservableProviders = useObservableCollection(entityObservableProviderCollection);
+            const entityCommandProviders = useOrderedObservableCollection(entityCommandProviderCollection);
 
             const selectedItem = useObservableState(() => selectedEntityState, selectedEntityObservable);
             const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
@@ -205,6 +226,10 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                     setSelectedItem(item.entity);
                                 };
 
+                                const commandProviders = entityCommandProviders.filter((provider) => provider.predicate(item.entity));
+                                const contextMenuCommands = commandProviders.filter((provider) => provider.type === "contextMenu");
+                                const inlineCommands = commandProviders.filter((provider) => provider.type === "inline");
+
                                 return (
                                     <FlatTreeItem
                                         key={item.entity.uniqueId}
@@ -219,6 +244,15 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                         <TreeItemLayout
                                             style={item.entity === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                                             iconBefore={item.icon ? <item.icon entity={item.entity} /> : null}
+                                            actions={inlineCommands.map((provider) => (
+                                                <Tooltip key={provider.displayName} content={provider.displayName} relationship="label">
+                                                    <Button
+                                                        icon={<provider.icon entity={item.entity} />}
+                                                        appearance="subtle"
+                                                        onClick={() => provider.command(scene, item.entity)}
+                                                    />
+                                                </Tooltip>
+                                            ))}
                                         >
                                             <item.component entity={item.entity} />
                                         </TreeItemLayout>
@@ -246,6 +280,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         return {
             addChildEnumerator: (childEnumerator) => childEnumeratorCollection.add(childEnumerator as SceneExplorerChildEnumerator<unknown, EntityBase>),
             addEntityObservableProvider: (provider) => entityObservableProviderCollection.add(provider as SceneExplorerEntityObservableProvider<EntityBase>),
+            addEntityCommand: (provider) => entityCommandProviderCollection.add(provider as SceneExplorerEntityCommandProvider<EntityBase>),
             get selectedEntity() {
                 return selectedEntityState;
             },

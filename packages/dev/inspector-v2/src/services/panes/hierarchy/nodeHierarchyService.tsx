@@ -7,7 +7,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { Body1, Body1Strong } from "@fluentui/react-components";
-import { BoxRegular, BranchRegular, CameraRegular, LightbulbRegular } from "@fluentui/react-icons";
+import { BoxRegular, BranchRegular, CameraRegular, EyeRegular, LightbulbRegular } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
@@ -28,31 +28,23 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
 
         const groupRegistration = sceneExplorerService.addChildEnumerator<Scene, typeof nodesGroup>({
             order: 0,
-            predicate: (entity: unknown) => {
-                return entity instanceof Scene;
-            },
-            getChildren: () => {
-                return [nodesGroup];
-            },
-            component: () => {
-                return (
-                    <Body1Strong wrap={false} truncate>
-                        Nodes
-                    </Body1Strong>
-                );
-            },
+            predicate: (entity: unknown) => entity instanceof Scene,
+            getChildren: () => [nodesGroup],
+            component: () => (
+                <Body1Strong wrap={false} truncate>
+                    Nodes
+                </Body1Strong>
+            ),
         });
 
-        const nodeComponent: FunctionComponent<{ entity: Node }> = ({ entity: node }) => {
-            return (
-                <Body1 wrap={false} truncate>
-                    {node.name}
-                </Body1>
-            );
-        };
+        const nodeComponent: FunctionComponent<{ entity: Node }> = ({ entity: node }) => (
+            <Body1 wrap={false} truncate>
+                {node.name}
+            </Body1>
+        );
 
-        const nodeIcon: FunctionComponent<{ entity: Node }> = ({ entity: node }) => {
-            return node instanceof AbstractMesh ? (
+        const nodeIcon: FunctionComponent<{ entity: Node }> = ({ entity: node }) =>
+            node instanceof AbstractMesh ? (
                 <BoxRegular />
             ) : node instanceof TransformNode ? (
                 <BranchRegular />
@@ -63,16 +55,11 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
             ) : (
                 <></>
             );
-        };
 
         const rootNodesRegistration = sceneExplorerService.addChildEnumerator<typeof nodesGroup, Node>({
             order: 0,
-            predicate: (entity: unknown): entity is typeof nodesGroup => {
-                return entity === nodesGroup;
-            },
-            getChildren: (scene: Scene) => {
-                return scene.rootNodes;
-            },
+            predicate: (entity: unknown): entity is typeof nodesGroup => entity === nodesGroup,
+            getChildren: (scene: Scene) => scene.rootNodes,
             component: nodeComponent,
             icon: nodeIcon,
             isSelectable: true,
@@ -80,12 +67,8 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
 
         const descendentNodesRegistration = sceneExplorerService.addChildEnumerator<Node, Node>({
             order: 1,
-            predicate: (entity: unknown) => {
-                return entity instanceof Node;
-            },
-            getChildren: (scene: Scene, node: Node) => {
-                return node.getChildren();
-            },
+            predicate: (entity: unknown) => entity instanceof Node,
+            getChildren: (scene: Scene, node: Node) => node.getChildren(),
             component: nodeComponent,
             icon: nodeIcon,
             isSelectable: true,
@@ -119,8 +102,20 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
             };
         });
 
+        const meshVisibilityCommandRegistration = sceneExplorerService.addEntityCommand({
+            type: "inline",
+            order: 0,
+            predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh,
+            command: (scene: Scene, mesh: AbstractMesh) => {
+                // TODO
+            },
+            displayName: "Show/Hide Mesh",
+            icon: EyeRegular,
+        });
+
         return {
             dispose: () => {
+                meshVisibilityCommandRegistration.dispose();
                 transformNodeObservableRegistration.dispose();
                 meshObservableRegistration.dispose();
                 cameraObservableRegistration.dispose();
