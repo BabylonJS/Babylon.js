@@ -1929,9 +1929,10 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * Move the mesh using collision engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      * @param displacement defines the requested displacement vector
+     * @param slideOnCollide If true, the mesh will slide along a collider's surface.  If false, it will stop moving at the first collision. (true by default)
      * @returns the current mesh
      */
-    public moveWithCollisions(displacement: Vector3): AbstractMesh {
+    public moveWithCollisions(displacement: Vector3, slideOnCollide: boolean = true): AbstractMesh {
         const globalPosition = this.getAbsolutePosition();
 
         globalPosition.addToRef(this.ellipsoidOffset, this._internalAbstractMeshDataInfo._meshCollisionData._oldPositionForCollisions);
@@ -1950,7 +1951,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             this.collisionRetryCount,
             this,
             this._onCollisionPositionChange,
-            this.uniqueId
+            this.uniqueId,
+            slideOnCollide
         );
         return this;
     }

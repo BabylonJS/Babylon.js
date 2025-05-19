@@ -1120,7 +1120,7 @@ export abstract class AbstractEngine {
     public onBeginFrameObservable = new Observable<AbstractEngine>();
 
     /**
-     * Observable raised when the engine ends the current frame
+     * Observable raised when the engine ends the current frame (requires a render loop, e.g. 'engine.runRenderLoop(...)')
      */
     public onEndFrameObservable = new Observable<AbstractEngine>();
 
@@ -1313,7 +1313,7 @@ export abstract class AbstractEngine {
     }
 
     /**
-     * Activates an effect, making it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (i.e. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public abstract enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
@@ -1678,6 +1678,7 @@ export abstract class AbstractEngine {
                 this._loadFile(
                     url,
                     (data) => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         callbackAsync(new Uint8Array(data as ArrayBuffer));
                     },
                     undefined,
@@ -1689,8 +1690,10 @@ export abstract class AbstractEngine {
                 );
             } else {
                 if (buffer instanceof ArrayBuffer) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     callbackAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     callbackAsync(buffer);
                 } else {
                     if (onError) {
@@ -1893,14 +1896,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.6.1";
+        return "babylonjs@8.8.5";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.6.1";
+        return "8.8.5";
     }
 
     /**

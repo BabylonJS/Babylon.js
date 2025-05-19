@@ -53,6 +53,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
             return false;
         }
 
+        // eslint-disable-next-line github/no-then
         this._bin.readAsync(0, this._bin.byteLength).then(onSuccess, (error) => onError(error.message));
         return true;
     }

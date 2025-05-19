@@ -51,8 +51,8 @@
                         preInfo.attenuation *= computeDirectionalLightFalloff_IES(light{X}.vLightDirection.xyz, preInfo.L, iesLightTexture{X}, iesLightTexture{X}Sampler);
                     #else
                         preInfo.attenuation *= computeDirectionalLightFalloff(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightDirection.w, light{X}.vLightData.w, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
-                    #endif   
-                #endif   
+                    #endif
+                #endif
             #elif defined(POINTLIGHT{X})
                 #ifdef LIGHT_FALLOFF_GLTF{X}
                     preInfo.attenuation = computeDistanceLightFalloff_GLTF(preInfo.lightDistanceSquared, light{X}.vLightFalloff.y);
@@ -74,6 +74,8 @@
             #else
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
+            preInfo.diffuseRoughness = diffuseRoughness;
+            preInfo.surfaceAlbedo = surfaceAlbedo;
 
             #ifdef IRIDESCENCE
                 preInfo.iridescenceIntensity = iridescenceIntensity;
@@ -101,10 +103,31 @@
                 #if AREALIGHT{X}
                     info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb);
                 #else
+                    // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
+                    // usual Schlick lobe.
+                    #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
+                        {
+                            let metalFresnel: vec3f = vec3f(reflectivityOut.specularWeight) * getF82Specular(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                            let dielectricFresnel: vec3f = fresnelSchlickGGXVec3(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
+                            coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
+                        }
+                    #else
+                        coloredFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                    #endif
+                    
+                    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                        {
+                            // The diffuse contribution needs to be decreased by the average Fresnel for the hemisphere.
+                            // We can approximate this with NdotH.
+                            let NdotH: f32 = dot(normalW, preInfo.H);
+                            let fresnel: vec3f = fresnelSchlickGGXVec3(NdotH, vec3f(reflectanceF0), specularEnvironmentR90);
+                            info.diffuse *= (vec3f(1.0) - fresnel);
+                        }
+                    #endif
                     #ifdef ANISOTROPIC
                         info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb);
                     #else
-                        info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb, uniforms.vReflectivityColor.b);
+                        info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, coloredFresnel, AARoughnessFactors.x, diffuse{X}.rgb);
                     #endif
                 #endif
             #endif
@@ -135,7 +158,7 @@
                     #endif
 
                     info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse{X}.rgb);
-                    
+
                     #ifdef CLEARCOAT_TINT
                         // Absorption
                         absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
@@ -167,7 +190,7 @@
                     info = computeIESSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness, iesLightTexture{X}, iesLightTexture{X}Sampler);
                 #else
                     info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
-                #endif                
+                #endif
             #elif defined(HEMILIGHT{X})
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightGround, glossiness);
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
@@ -200,18 +223,18 @@
             #endif
 
             var diff{X}: f32 = 0.;
-            
+
             vPositionFromLight{X}[0] = fragmentInputs.vPositionFromLight{X}_0;
             vPositionFromLight{X}[1] = fragmentInputs.vPositionFromLight{X}_1;
             vPositionFromLight{X}[2] = fragmentInputs.vPositionFromLight{X}_2;
             vPositionFromLight{X}[3] = fragmentInputs.vPositionFromLight{X}_3;
-                       
+
             vDepthMetric{X}[0] = fragmentInputs.vDepthMetric{X}_0;
             vDepthMetric{X}[1] = fragmentInputs.vDepthMetric{X}_1;
             vDepthMetric{X}[2] = fragmentInputs.vDepthMetric{X}_2;
             vDepthMetric{X}[3] = fragmentInputs.vDepthMetric{X}_3;
-            
-            for (var i:i32 = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
+
+            for (var i:i32 = 0; i < SHADOWCSMNUM_CASCADES{X}; i++)
             {
                 #ifdef SHADOWCSM_RIGHTHANDED{X}
                     diff{X} = uniforms.viewFrustumZ{X}[i] + fragmentInputs.vPositionFromCamera{X}.z;
@@ -367,7 +390,7 @@
         #else
             #ifdef SHADOWCSMDEBUG{X}
                 diffuseBase += info.diffuse * shadowDebug{X};
-            #else        
+            #else
                 diffuseBase += info.diffuse * shadow;
             #endif
             #ifdef SS_TRANSLUCENCY

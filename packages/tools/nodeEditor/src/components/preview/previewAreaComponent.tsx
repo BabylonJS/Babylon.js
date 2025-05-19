@@ -16,6 +16,7 @@ import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
+    onMounted?: () => void;
 }
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
@@ -28,11 +29,17 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.state = { isLoading: true };
         this._consoleRef = React.createRef();
 
-        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => this.setState({ isLoading: state }));
+        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => {
+            this.setState({ isLoading: state });
+        });
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
         });
+    }
+
+    override componentDidMount() {
+        this.props.onMounted?.();
     }
 
     override componentWillUnmount() {
@@ -113,7 +120,8 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         onPointerOut={this._onPointerOutCanvas}
                         id="preview-canvas"
                         onKeyUp={(evt) => this.onKeyUp(evt)}
-                        onPointerMove={async (evt) => this.processPointerMove(evt)}
+                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                        onPointerMove={async (evt) => await this.processPointerMove(evt)}
                     />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                     <div id="preview-color-picker" className="hidden" ref={this._consoleRef} />

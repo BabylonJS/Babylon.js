@@ -626,7 +626,7 @@ export class HtmlMeshRenderer {
             const source = [this._inSceneElements?.container, this._overlayElements?.container];
             for (const container of source) {
                 if (!container) {
-                    return;
+                    continue;
                 }
                 // set the top and left of the css container to match the canvas
                 const containerParent = container.offsetParent as HTMLElement;

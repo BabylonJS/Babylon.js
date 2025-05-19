@@ -68,7 +68,7 @@ export async function generatePipelineContext(
         useReverseDepthBuffer: false,
         ...options.extendedProcessingOptions,
     };
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         try {
             _ProcessShaderCode(
                 processorOptions,
@@ -103,12 +103,14 @@ export async function generatePipelineContext(
                             );
                         }
                     } catch (e) {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(e);
                     }
                 },
                 language
             );
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(e);
         }
     });

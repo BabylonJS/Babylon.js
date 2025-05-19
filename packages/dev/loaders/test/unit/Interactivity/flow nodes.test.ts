@@ -582,7 +582,7 @@ describe("Flow Nodes", () => {
         // wait for the delay to pass
         await new Promise((resolve) => setTimeout(resolve, duration * 1000 + 100));
         expect(log).toHaveBeenCalledTimes(1);
-        expect(log).toHaveBeenCalledWith(0);
+        expect(log).toHaveBeenCalledWith({ value: 0 });
     });
 
     // flowDelay with NaN as duration - should activate the error signal
@@ -1550,7 +1550,7 @@ describe("Flow Nodes", () => {
 
         // wait for 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
-        const values = log.mock.calls.map((c) => c[0]);
+        const values = log.mock.calls.map((c) => c[0].value);
         // expect log to be called 3 times - after the first was triggered (2 remaining), then after the second (1 remaining), and then after the last one (0 remaining - completed.)
         expect(log).toHaveBeenCalledTimes(3);
         // last remaining inputs test, also testing out and completed flows

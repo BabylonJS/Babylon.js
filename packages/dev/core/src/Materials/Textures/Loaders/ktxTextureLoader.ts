@@ -115,6 +115,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
             );
         } else if (KhronosTextureContainer2.IsValid(data)) {
             const ktx2 = new KhronosTextureContainer2(texture.getEngine());
+            // eslint-disable-next-line github/no-then
             ktx2._uploadAsync(data, texture, options).then(
                 () => {
                     callback(texture.width, texture.height, texture.generateMipMaps, true, () => {}, false);

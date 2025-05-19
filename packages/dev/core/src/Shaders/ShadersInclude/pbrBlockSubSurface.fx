@@ -7,9 +7,7 @@ struct subSurfaceOutParams
     #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
         float alpha;
     #endif
-    #ifdef REFLECTION
-        float refractionFactorForIrradiance;
-    #endif
+    float refractionOpacity;
 #endif
 #ifdef SS_TRANSLUCENCY
     vec3 transmittance;
@@ -441,13 +439,12 @@ struct subSurfaceOutParams
             environmentRefraction.rgb *= surfaceAlbedo.rgb;
         #endif
 
-        // Decrease Albedo Contribution
-        outParams.surfaceAlbedo = surfaceAlbedo * (1. - refractionIntensity);
-
-        #ifdef REFLECTION
-            // Decrease irradiance Contribution
-            outParams.refractionFactorForIrradiance = (1. - refractionIntensity);
-            //environmentIrradiance *= (1. - refractionIntensity);
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            outParams.surfaceAlbedo = surfaceAlbedo * (1.-refractionIntensity);
+            outParams.refractionOpacity = 1.0;
+        #else
+            outParams.surfaceAlbedo = surfaceAlbedo;
+            outParams.refractionOpacity = (1. - refractionIntensity);
         #endif
 
         #ifdef UNUSED_MULTIPLEBOUNCES
@@ -461,14 +458,14 @@ struct subSurfaceOutParams
             outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
         #endif
 
-        // In theory T = 1 - R.
-        refractionTransmittance *= 1.0 - max(outParams.specularEnvironmentReflectance.r, max(outParams.specularEnvironmentReflectance.g, outParams.specularEnvironmentReflectance.b));
-
         #if DEBUGMODE > 0
             outParams.refractionTransmittance = refractionTransmittance;
         #endif
 
         outParams.finalRefraction = environmentRefraction.rgb * refractionTransmittance * vLightingIntensity.z;
+
+        // Decrease the trasmitted light based on the specular environment reflectance.
+        outParams.finalRefraction *= vec3(1.0) - specularEnvironmentReflectance;
 
         #if DEBUGMODE > 0
             outParams.environmentRefraction = environmentRefraction;
@@ -493,7 +490,7 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo, 0.0, surfaceAlbedo, irradianceVector
                 #ifdef IBL_CDF_FILTERING
                     , icdfSampler
                 #endif

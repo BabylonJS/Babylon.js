@@ -45,7 +45,7 @@ export class BoundingInfoHelper {
      */
     public async computeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
         await this._initializePlatformAsync();
-        return this._platform.processAsync(target);
+        return await this._platform.processAsync(target);
     }
 
     /**
@@ -56,7 +56,7 @@ export class BoundingInfoHelper {
      */
     public async batchInitializeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
         await this._initializePlatformAsync();
-        return this._platform.registerMeshListAsync(target);
+        return await this._platform.registerMeshListAsync(target);
     }
 
     /**
@@ -77,7 +77,7 @@ export class BoundingInfoHelper {
      */
     public async batchFetchResultsAsync(): Promise<void> {
         await this._initializePlatformAsync();
-        return this._platform.fetchResultsForMeshListAsync();
+        return await this._platform.fetchResultsForMeshListAsync();
     }
 
     /**

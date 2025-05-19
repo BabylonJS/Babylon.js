@@ -782,7 +782,7 @@ class PhysicsUpdraftEvent {
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
             for (const impostor of impostors) {
                 if (!this._getImpostorHitData(impostor, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
@@ -997,7 +997,7 @@ class PhysicsVortexEvent {
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
             for (const impostor of impostors) {
                 if (!this._getImpostorHitData(impostor, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);

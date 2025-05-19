@@ -23,7 +23,7 @@ struct lightingInfo
 // Simulate area (small) lights by increasing roughness
 fn adjustRoughnessFromLightProperties(roughness: f32, lightRadius: f32, lightDistance: f32) -> f32 {
     #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
-        // At small angle this approximation works. 
+        // At small angle this approximation works.
         var lightRoughness: f32 = lightRadius / lightDistance;
         // Distribution can sum.
         var totalRoughness: f32 = saturate(lightRoughness + roughness);
@@ -44,7 +44,16 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
 #endif
 
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
-    var diffuseTerm: f32 = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
+    var diffuseTerm: vec3f = vec3f(1.0 / PI);
+    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+        diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness));
+    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+        diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+        var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
+        diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+        diffuseTerm /= clampedAlbedo;
+    #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
@@ -70,28 +79,32 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             transmittanceNdotL = mix(transmittance * wrapNdotL,  vec3f(wrapNdotL), trAdapt);
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
-
-        return (transmittanceNdotL / PI) * info.attenuation * lightColor;
-    #endif
-
+        var diffuseTerm : vec3f = vec3f(1.0 / PI);
+        #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+        diffuseTerm = vec3f(diffuseBRDF_Burley(
+                    info.NdotL, info.NdotV, info.VdotH, info.roughness));
+        #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+        diffuseTerm = vec3f(diffuseBRDF_Burley(
+                    info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+        #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+        var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
+        diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness,
+                    info.NdotL, info.NdotV, info.LdotV);
+                    diffuseTerm /= clampedAlbedo;
+        #endif
+        return (transmittanceNdotL * diffuseTerm) * info.attenuation * lightColor;
+    #else
         let diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
         return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
+    #endif
     }
 #endif
 
 #ifdef SPECULARTERM
-    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f, ior: f32) -> vec3f {
+    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, fresnel: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
-
-        #ifdef METALLICWORKFLOW
-            // Scale the reflectance by the IOR for values less than 1.5
-            var f90Mod = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
-        #else
-            var f90Mod = 1.0;
-        #endif
-        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90 * f90Mod);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);

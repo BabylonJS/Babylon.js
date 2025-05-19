@@ -13,7 +13,7 @@ uniform float hdrScale;
 varying vec3 direction;
 
 void main() {
-    vec3 color = irradiance(inputTexture, direction, vFilteringInfo
+    vec3 color = irradiance(inputTexture, direction, vFilteringInfo, 0.0, vec3(1.0), direction
     #ifdef IBL_CDF_FILTERING
         , icdfTexture
     #endif

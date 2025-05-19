@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 // import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -266,7 +268,7 @@ class Playground {
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
 
-        const analyzeCodeDebounced = debounce(async () => this._analyzeCodeAsync(), 500);
+        const analyzeCodeDebounced = debounce(async () => await this._analyzeCodeAsync(), 500);
         this._editor.onDidChangeModelContent(() => {
             const newCode = this._editor.getValue();
             if (this.globalState.currentCode !== newCode) {
@@ -280,7 +282,7 @@ class Playground {
             this._editor.setValue(this.globalState.currentCode);
         }
 
-        this.globalState.getCompiledCode = async () => this._getRunCodeAsync();
+        this.globalState.getCompiledCode = async () => await this._getRunCodeAsync();
 
         if (this.globalState.currentCode) {
             this.globalState.onRunRequiredObservable.notifyObservers();
@@ -351,7 +353,7 @@ class Playground {
         }
 
         let libContent = "";
-        const responses = await Promise.all(declarations.map(async (declaration) => fetch(declaration)));
+        const responses = await Promise.all(declarations.map(async (declaration) => await fetch(declaration)));
         const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {

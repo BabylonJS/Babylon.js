@@ -747,9 +747,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     !this._useScreenspaceDepth,
                     "SSRBackDepth"
                 );
-                if (!this._useScreenspaceDepth) {
-                    this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
-                }
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
                 this._depthRenderer.forceDepthWriteTransparentMeshes = this.backfaceForceDepthWriteTransparentMeshes;
 

@@ -1019,7 +1019,7 @@ export class ThinEngine extends AbstractEngine {
         const webglRtWrapper = rtWrapper as WebGLRenderTargetWrapper;
 
         if (this._currentRenderTarget) {
-            this.unBindFramebuffer(this._currentRenderTarget);
+            this._resolveAndGenerateMipMapsFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = rtWrapper;
         this._bindUnboundFramebuffer(webglRtWrapper._framebuffer);
@@ -1129,6 +1129,26 @@ export class ThinEngine extends AbstractEngine {
         this._stencilStateComposer.stencilMaterial = stencil;
     }
 
+    private _resolveAndGenerateMipMapsFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false): void {
+        const webglRtWrapper = texture as WebGLRenderTargetWrapper;
+
+        if (!webglRtWrapper.disableAutomaticMSAAResolve) {
+            if (texture.isMulti) {
+                this.resolveMultiFramebuffer(texture);
+            } else {
+                this.resolveFramebuffer(texture);
+            }
+        }
+
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
+        }
+    }
+
     /**
      * @internal
      */
@@ -1161,26 +1181,11 @@ export class ThinEngine extends AbstractEngine {
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void {
         const webglRtWrapper = texture as WebGLRenderTargetWrapper;
 
         this._currentRenderTarget = null;
-
-        if (!webglRtWrapper.disableAutomaticMSAAResolve) {
-            if (texture.isMulti) {
-                this.resolveMultiFramebuffer(texture);
-            } else {
-                this.resolveFramebuffer(texture);
-            }
-        }
-
-        if (!disableGenerateMipMaps) {
-            if (texture.isMulti) {
-                this.generateMipMapsMultiFramebuffer(texture);
-            } else {
-                this.generateMipMapsFramebuffer(texture);
-            }
-        }
+        this._resolveAndGenerateMipMapsFramebuffer(texture, disableGenerateMipMaps);
 
         if (onBeforeUnbind) {
             if (webglRtWrapper._MSAAFramebuffer) {

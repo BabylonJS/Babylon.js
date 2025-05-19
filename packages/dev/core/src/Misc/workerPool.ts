@@ -29,6 +29,7 @@ export class WorkerPool implements IDisposable {
      */
     public dispose(): void {
         for (const workerInfo of this._workerInfos) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             workerInfo.workerPromise.then((worker) => {
                 worker.terminate();
             });
@@ -62,6 +63,7 @@ export class WorkerPool implements IDisposable {
 
     protected _execute(workerInfo: IWorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
         workerInfo.idle = false;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         workerInfo.workerPromise.then((worker) => {
             action(worker, () => {
                 const nextAction = this._pendingActions.shift();
@@ -140,6 +142,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
                 if (workerInfo.idle) {
                     // Schedule the worker to be terminated after the elapsed time.
                     workerInfo.timeoutId = setTimeout(() => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         workerInfo.workerPromise.then((worker) => {
                             worker.terminate();
                         });

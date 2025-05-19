@@ -149,9 +149,11 @@ export class Observable<T> {
         const observable = new Observable<T>();
 
         promise
+            // eslint-disable-next-line github/no-then
             .then((ret: T) => {
                 observable.notifyObservers(ret);
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 if (onErrorObservable) {
                     onErrorObservable.notifyObservers(err as E);

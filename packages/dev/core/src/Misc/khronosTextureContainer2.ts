@@ -290,10 +290,11 @@ export class KhronosTextureContainer2 {
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 const workerContent = `${applyConfig}(${workerFunction})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
-                resolve(new AutoReleaseWorkerPool(numWorkers, async () => initializeWebWorker(new Worker(workerBlobUrl), undefined, urls)));
+                resolve(new AutoReleaseWorkerPool(numWorkers, async () => await initializeWebWorker(new Worker(workerBlobUrl), undefined, urls)));
             });
         } else {
             if (typeof KhronosTextureContainer2._KTX2DecoderModule === "undefined") {
+                // eslint-disable-next-line github/no-then
                 KhronosTextureContainer2._DecoderModulePromise = Tools.LoadBabylonScriptAsync(urls.jsDecoderModule).then(() => {
                     KhronosTextureContainer2._KTX2DecoderModule = KTX2DECODER;
                     KhronosTextureContainer2._KTX2DecoderModule.MSCTranscoder.UseFromWorkerThread = false;
@@ -349,11 +350,12 @@ export class KhronosTextureContainer2 {
 
         if (KhronosTextureContainer2._WorkerPoolPromise) {
             const workerPool = await KhronosTextureContainer2._WorkerPoolPromise;
-            return new Promise((resolve, reject) => {
+            return await new Promise((resolve, reject) => {
                 workerPool.push((worker, onComplete) => {
                     const onError = (error: ErrorEvent) => {
                         worker.removeEventListener("error", onError);
                         worker.removeEventListener("message", onMessage);
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(error);
                         onComplete();
                     };
@@ -363,12 +365,14 @@ export class KhronosTextureContainer2 {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
                             if (!message.data.success) {
+                                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                 reject({ message: message.data.msg });
                             } else {
                                 try {
                                     this._createTexture(message.data.decodedData, internalTexture, options);
                                     resolve();
                                 } catch (err) {
+                                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                     reject({ message: err });
                                 }
                             }
@@ -391,14 +395,17 @@ export class KhronosTextureContainer2 {
             if (KhronosTextureContainer2.DefaultDecoderOptions.isDirty) {
                 KhronosTextureContainer2._KTX2DecoderModule.KTX2Decoder.DefaultDecoderOptions = KhronosTextureContainer2.DefaultDecoderOptions._getKTX2DecoderOptions();
             }
-            return new Promise((resolve, reject) => {
+            return await new Promise((resolve, reject) => {
                 decoder
                     .decode(data, caps)
+                    // eslint-disable-next-line github/no-then
                     .then((data: IDecodedData) => {
                         this._createTexture(data, internalTexture);
                         resolve();
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((reason: any) => {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject({ message: reason });
                     });
             });
