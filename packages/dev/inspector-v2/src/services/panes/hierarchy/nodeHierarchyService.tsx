@@ -109,7 +109,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
                 // TODO
             },
             displayName: "Show/Hide Mesh",
-            icon: () => <EyeRegular />,
+            icon: ({ entity: mesh }) => <EyeRegular />,
         });
 
         return {
