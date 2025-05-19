@@ -646,7 +646,7 @@ export class StandardMaterial extends PushMaterial {
         this._attachImageProcessingConfiguration(value);
 
         // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsTexturesDirty();
+        this._markAllSubMeshesAsImageProcessingDirty();
     }
 
     /**
