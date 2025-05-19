@@ -26,7 +26,7 @@ import type { IColor4Like, IMatrixLike, IVector3Like } from "core/Maths";
  * Abstract Node class from Babylon.js
  */
 export interface INodeLike {
-    getWorldMatrix(): ThinMatrix;
+    getWorldMatrix(): IMatrixLike;
 }
 
 /**
