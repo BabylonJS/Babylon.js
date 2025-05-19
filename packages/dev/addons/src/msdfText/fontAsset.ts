@@ -1,4 +1,4 @@
-import type { Scene } from "core/scene";
+import type { IDisposable, Scene } from "core/scene";
 import type { BMFontChar } from "./sdf/bmFont";
 import type { SdfFont } from "./sdf/font";
 import { Texture } from "core/Materials/Textures/texture";
@@ -11,7 +11,7 @@ enum CharCode {
 /**
  * Class representing a font asset for SDF (Signed Distance Field) rendering.
  */
-export class FontAsset {
+export class FontAsset implements IDisposable {
     private readonly _chars = new Map<number, BMFontChar>();
     private readonly _charsRegex: RegExp;
     private readonly _kernings = new Map<number, Map<number, number>>();
@@ -59,6 +59,13 @@ export class FontAsset {
             texture.anisotropicFilteringLevel = 16;
             return texture;
         });
+    }
+
+    dispose(): void {
+        for (const texture of this.textures) {
+            texture.dispose();
+        }
+        this.textures.length = 0;
     }
 
     private _updateFallbacks() {

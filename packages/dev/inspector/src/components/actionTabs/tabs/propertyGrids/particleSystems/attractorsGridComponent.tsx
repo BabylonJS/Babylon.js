@@ -212,6 +212,11 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
             this.props.host.getScene()?.onAfterRenderObservable.remove(this._sceneOnAfterRenderObserver);
             this._sceneOnAfterRenderObserver = null;
         }
+
+        if (this._fontAsset) {
+            this._fontAsset.dispose();
+            this._fontAsset = null;
+        }
     }
 
     override render() {
