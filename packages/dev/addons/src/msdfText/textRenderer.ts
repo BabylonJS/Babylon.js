@@ -26,7 +26,7 @@ import type { IColor4Like, IMatrixLike, IVector3Like } from "core/Maths";
  * Abstract Node class from Babylon.js
  */
 export interface INodeLike {
-    getWorldMatrix(): ThinMatrix;
+    getWorldMatrix(): IMatrixLike;
 }
 
 /**
@@ -174,7 +174,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth"],
+            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "atlasSize"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -223,7 +223,7 @@ export class TextRenderer implements IDisposable {
             this._charUvs[charsUvsBase + i * 4 + 3] = g.char.height / texHeight;
 
             const x = g.x + g.char.xoffset;
-            const y = -(g.y + g.char.yoffset);
+            const y = 1.0 - (g.y + g.char.yoffset);
 
             ScalingMatrixToRef(g.char.width, g.char.height, 1.0, this._scalingMatrix);
             MultiplyMatricesToRef(this._offsetMatrix, this._scalingMatrix, this._baseMatrix);

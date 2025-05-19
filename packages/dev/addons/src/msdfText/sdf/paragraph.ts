@@ -62,14 +62,14 @@ export class SdfTextParagraph {
                             return 0;
                     }
                 })();
-                const translate = this.options.translate?.multiplyByFloats(width, height);
-                line.glyphs.forEach((glyph) => {
+
+                const x = this.options.translate ? this.options.translate.x * width : 0;
+                const y = this.options.translate ? this.options.translate.y * height : 0;
+                for (const glyph of line.glyphs) {
                     glyph.x += anchor;
-                    if (translate) {
-                        glyph.x += translate.x;
-                        glyph.y += translate.y;
-                    }
-                });
+                    glyph.x += x;
+                    glyph.y += y;
+                }
             });
         }
 
