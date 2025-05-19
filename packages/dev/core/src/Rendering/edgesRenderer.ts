@@ -315,7 +315,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._shaderLanguage = ShaderLanguage.WGSL;
         }
 
-        this._prepareRessources();
+        this._prepareResources();
         if (generateEdgesLines) {
             if (options?.useAlternateEdgeFinder ?? true) {
                 this._generateEdgesLinesAlternate();
@@ -333,7 +333,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         });
     }
 
-    protected _prepareRessources(): void {
+    protected _prepareResources(): void {
         if (this._lineShader) {
             return;
         }
