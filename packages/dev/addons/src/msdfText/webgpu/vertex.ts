@@ -19,14 +19,13 @@ varying atlasUV: vec2f;
 fn main(input: VertexInputs) -> FragmentInputs {
     let world = mat4x4<f32>(input.world0, input.world1, input.world2, input.world3);
     let localOffset = vec4<f32>(input.offsets - vec2<f32>(0.5, 0.5), 0.0, 1.0);
+    let worldPos = (world * localOffset);
 
-    if (uniforms.mode == 1) {
-        let worldPos = (world * localOffset).xyz;
+    if (uniforms.mode == 1) {        
         let viewPos = (uniforms.view * uniforms.parentWorld * vec4f(0., 0., 0., 1.0)).xyz;
-        vertexOutputs.position = uniforms.projection * vec4<f32>(viewPos + worldPos, 1.0);
-    } else {
-        let localOffset = vec4<f32>(input.offsets - vec2<f32>(0.5, 0.5), 0.0, 1.0);
-        let viewPos = (uniforms.view * uniforms.parentWorld * world * localOffset).xyz;
+        vertexOutputs.position = uniforms.projection * vec4<f32>(viewPos + worldPos.xyz, 1.0);
+    } else {        
+        let viewPos = (uniforms.view * uniforms.parentWorld * worldPos).xyz;
         vertexOutputs.position = uniforms.projection * vec4<f32>(viewPos, 1.0);
     }
 
