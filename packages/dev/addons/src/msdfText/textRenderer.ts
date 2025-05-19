@@ -318,10 +318,9 @@ export class TextRenderer implements IDisposable {
         }
 
         engine.setAlphaMode(Constants.ALPHA_COMBINE);
-
         engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
-
         engine.unbindInstanceAttributes();
+        engine.setAlphaMode(Constants.ALPHA_DISABLE);
     }
 
     /**
