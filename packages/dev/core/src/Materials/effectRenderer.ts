@@ -47,6 +47,7 @@ export class EffectRenderer {
 
     private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
+    private _indexBufferLength: number;
 
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
@@ -65,9 +66,11 @@ export class EffectRenderer {
 
         this.engine = engine;
         this._vertexBuffers = {
+            // Note, always assumes stride of 2.
             [VertexBuffer.PositionKind]: new VertexBuffer(engine, positions, VertexBuffer.PositionKind, false, false, 2),
         };
         this._indexBuffer = engine.createIndexBuffer(indices);
+        this._indexBufferLength = indices.length;
 
         this._onContextRestoredObserver = engine.onContextRestoredObservable.add(() => {
             this._indexBuffer = engine.createIndexBuffer(indices);
@@ -130,7 +133,7 @@ export class EffectRenderer {
      * Draws a full screen quad.
      */
     public draw(): void {
-        this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+        this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._indexBufferLength);
     }
 
     private _isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {
