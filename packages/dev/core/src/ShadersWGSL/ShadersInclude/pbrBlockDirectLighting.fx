@@ -13,7 +13,6 @@ var diffuseBase: vec3f = vec3f(0., 0., 0.);
 #endif
 
 #if defined(SPECULARTERM) && defined(LIGHT0)
-    var fresnel: vec3f = vec3f(0., 0., 0.);
     var coloredFresnel: vec3f = vec3f(0., 0., 0.);
 #endif
 // Direct Lighting Variables

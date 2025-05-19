@@ -13,6 +13,7 @@ import type { ParagraphOptions } from "./paragraphOptions";
 import { ThinMatrix } from "core/Maths/ThinMaths/thinMath.matrix";
 import {
     CopyMatrixToArray,
+    CopyMatrixToRef,
     IdentityMatrixToRef,
     InvertMatrixToRef,
     MultiplyMatricesToRef,
@@ -36,6 +37,7 @@ export interface INodeLike {
  * With metrics: #6RLCWP#35
  * Thickness: #IABMEZ#3
  * Solar system: #9YCDYC#9
+ * Stroke: #6RLCWP#37
  */
 export class TextRenderer implements IDisposable {
     private readonly _useVAO: boolean = false;
@@ -70,6 +72,21 @@ export class TextRenderer implements IDisposable {
      * Gets or sets the color of the text
      */
     public color: IColor4Like = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+
+    /**
+     * Gets or sets the color of the stroke around the text
+     */
+    public strokeColor: IColor4Like = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+
+    /**
+     * Gets or sets the width of the stroke around the text (inset)
+     */
+    public strokeInsetWidth = 0;
+
+    /**
+     * Gets or sets the width of the stroke around the text (outset)
+     */
+    public strokeOutsetWidth = 0;
 
     /**
      * Gets or sets the thickness of the text (0 means as defined in the font)
@@ -157,7 +174,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "unitRange", "texelSize", "thickness"],
+            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -205,8 +222,8 @@ export class TextRenderer implements IDisposable {
             this._charUvs[charsUvsBase + i * 4 + 2] = g.char.width / texWidth;
             this._charUvs[charsUvsBase + i * 4 + 3] = g.char.height / texHeight;
 
-            const x = g.x;
-            const y = -g.y;
+            const x = g.x + g.char.xoffset;
+            const y = -(g.y + g.char.yoffset);
 
             ScalingMatrixToRef(g.char.width, g.char.height, 1.0, this._scalingMatrix);
             MultiplyMatricesToRef(this._offsetMatrix, this._scalingMatrix, this._baseMatrix);
@@ -262,7 +279,7 @@ export class TextRenderer implements IDisposable {
             baseM[12] = 0;
             baseM[13] = 0;
             baseM[14] = 0;
-            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix.asArray());
+            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix);
 
             // Restore translation
             const pwm = this._parentWorldMatrix.asArray();
@@ -271,7 +288,7 @@ export class TextRenderer implements IDisposable {
             pwm[14] = this._storedTranslation.z;
         } else {
             if (this._parent) {
-                CopyMatrixToArray(this._parent.getWorldMatrix(), this._parentWorldMatrix.asArray());
+                CopyMatrixToRef(this._parent.getWorldMatrix(), this._parentWorldMatrix);
             } else {
                 IdentityMatrixToRef(this._parentWorldMatrix);
             }
@@ -282,15 +299,12 @@ export class TextRenderer implements IDisposable {
         effect.setMatrix("projection", projectionMatrix);
 
         // Texture
-        const textureWidth = this._font._font.common.scaleW;
-        const textureHeight = this._font._font.common.scaleW;
-        const distanceRange = this._font._font.distanceField.distanceRange;
-
         effect.setTexture("fontAtlas", this._font.textures[0]);
-        effect.setFloat2("unitRange", distanceRange / textureWidth, distanceRange / textureHeight);
-        effect.setFloat2("texelSize", 1.0 / textureWidth, 1.0 / textureHeight);
         effect.setDirectColor4("uColor", this.color);
+        effect.setDirectColor4("uStrokeColor", this.strokeColor);
         effect.setFloat("thickness", this.thicknessControl * 0.9);
+        effect.setFloat("uStrokeInsetWidth", this.strokeInsetWidth);
+        effect.setFloat("uStrokeOutsetWidth", this.strokeOutsetWidth);
 
         const instanceCount = this._charMatrices.length / 16;
 

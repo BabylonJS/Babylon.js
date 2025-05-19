@@ -302,7 +302,7 @@
             var irradianceView: vec3f =  (reflectionMatrix *  vec4f(viewDirectionW, 0)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 // Approximate diffuse roughness by bending the surface normal away from the view.
-                #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
+                #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
                     var NdotV: f32 = max(dot(normalW, viewDirectionW), 0.0);
                     irradianceVector = mix(irradianceVector, irradianceView, (0.5 * (1.0 - NdotV)) * diffuseRoughness);
                 #endif
