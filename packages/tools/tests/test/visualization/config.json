@@ -12,6 +12,11 @@
             "referenceImage": "msdf-billboard.png"
         },
         {
+            "title": "MSDF Stroke",
+            "playgroundId": "#6RLCWP#41",
+            "referenceImage": "msdf-stroke.png"
+        },
+        {
             "title": "Attractors",
             "playgroundId": "#DEZ79M#57",
             "referenceImage": "attractors.png"
