@@ -23,8 +23,6 @@ void main(void)
     vec3 s = texture2D(fontAtlas, atlasUV).rgb;
     float sigDist = median(s) - 0.5 + thickness;
 
-    float afwidth = 1.4142135623730951 / 2.0;
-
     float alpha = clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0);
 
     float sigDistOutset = sigDist + uStrokeOutsetWidth * 0.5;
