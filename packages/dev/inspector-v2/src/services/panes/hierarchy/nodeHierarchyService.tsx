@@ -103,14 +103,13 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
         });
 
         const meshVisibilityCommandRegistration = sceneExplorerService.addEntityCommand({
-            type: "inline",
             order: 0,
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh,
             command: (scene: Scene, mesh: AbstractMesh) => {
                 // TODO
             },
             displayName: "Show/Hide Mesh",
-            icon: EyeRegular,
+            icon: () => <EyeRegular />,
         });
 
         return {

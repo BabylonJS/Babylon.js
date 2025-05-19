@@ -39,23 +39,13 @@ export type SceneExplorerEntityObservableProvider<T extends EntityBase> = (scene
     entityRemovedObservable: Observable<T>;
 }>;
 
-export type SceneExplorerEntityCommandProvider<T extends EntityBase> = Readonly<
-    {
-        order: number;
-        predicate: (entity: unknown) => entity is T;
-        command: (scene: Scene, entity: T) => void;
-        displayName: string;
-    } & (
-        | {
-              type: "contextMenu";
-              icon?: ComponentType<{ entity: T }>;
-          }
-        | {
-              type: "inline";
-              icon: ComponentType<{ entity: T }>;
-          }
-    )
->;
+export type SceneExplorerEntityCommandProvider<T extends EntityBase> = Readonly<{
+    order: number;
+    predicate: (entity: unknown) => entity is T;
+    command: (scene: Scene, entity: T) => void;
+    displayName: string;
+    icon: ComponentType<{ entity: T }>;
+}>;
 
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
@@ -227,8 +217,6 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                 };
 
                                 const commandProviders = entityCommandProviders.filter((provider) => provider.predicate(item.entity));
-                                const contextMenuCommands = commandProviders.filter((provider) => provider.type === "contextMenu");
-                                const inlineCommands = commandProviders.filter((provider) => provider.type === "inline");
 
                                 return (
                                     <FlatTreeItem
@@ -244,7 +232,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                         <TreeItemLayout
                                             style={item.entity === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                                             iconBefore={item.icon ? <item.icon entity={item.entity} /> : null}
-                                            actions={inlineCommands.map((provider) => (
+                                            actions={commandProviders.map((provider) => (
                                                 <Tooltip key={provider.displayName} content={provider.displayName} relationship="label">
                                                     <Button
                                                         icon={<provider.icon entity={item.entity} />}
