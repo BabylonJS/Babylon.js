@@ -269,7 +269,7 @@ export class Database implements IOfflineProvider {
         };
 
         if (!this._mustUpdateResources) {
-            this._loadImageFromDBAsync(completeURL, image, saveAndLoadImage);
+            this._loadImageFromDB(completeURL, image, saveAndLoadImage);
         }
         // First time we're download the images or update requested in the manifest file by a version change
         else {
@@ -531,7 +531,7 @@ export class Database implements IOfflineProvider {
         this._checkVersionFromDB(completeUrl, (version) => {
             if (version !== -1) {
                 if (!this._mustUpdateResources) {
-                    this._loadFileAsync(completeUrl, sceneLoaded, saveAndLoadFile, progressCallBack);
+                    this._loadFile(completeUrl, sceneLoaded, saveAndLoadFile, progressCallBack);
                 } else {
                     this._saveFile(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
                 }
