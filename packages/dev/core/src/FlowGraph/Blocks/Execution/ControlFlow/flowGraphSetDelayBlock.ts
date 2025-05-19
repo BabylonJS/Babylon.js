@@ -2,12 +2,13 @@ import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBl
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import { RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
 /**
  * Block that sets a delay in seconds before activating the output signal.
@@ -30,13 +31,13 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * Output connection: The last delay index that was set.
      */
-    public readonly lastDelayIndex: FlowGraphDataConnection<number>;
+    public readonly lastDelayIndex: FlowGraphDataConnection<FlowGraphInteger>;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.cancel = this._registerSignalInput("cancel");
         this.duration = this.registerDataInput("duration", RichTypeNumber);
-        this.lastDelayIndex = this.registerDataOutput("lastDelayIndex", RichTypeNumber, -1);
+        this.lastDelayIndex = this.registerDataOutput("lastDelayIndex", RichTypeFlowGraphInteger, new FlowGraphInteger(-1));
     }
 
     public _preparePendingTasks(context: FlowGraphContext): void {
@@ -63,7 +64,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         });
         timer.start();
         const newIndex = lastDelayIndex + 1;
-        this.lastDelayIndex.setValue(newIndex, context);
+        this.lastDelayIndex.setValue(new FlowGraphInteger(newIndex), context);
         context._setGlobalContextVariable("lastDelayIndex", newIndex);
 
         timers[newIndex] = timer;
@@ -77,7 +78,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
             timer?.dispose();
         }
         context._deleteExecutionVariable(this, "pendingDelays");
-        this.lastDelayIndex.setValue(-1, context);
+        this.lastDelayIndex.setValue(new FlowGraphInteger(-1), context);
         this._updateGlobalTimers(context);
     }
 
