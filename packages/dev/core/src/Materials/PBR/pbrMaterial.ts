@@ -673,7 +673,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this._attachImageProcessingConfiguration(value);
 
         // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsTexturesDirty();
+        this._markAllSubMeshesAsImageProcessingDirty();
     }
 
     /**
