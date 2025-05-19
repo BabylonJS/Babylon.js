@@ -1269,7 +1269,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         allowNullValue={true}
                         label="Base Diffuse Model"
                         options={baseDiffuseModelOptions}
-                        target={material}
+                        target={material.brdf}
                         propertyName="baseDiffuseModel"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -1277,7 +1277,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         allowNullValue={true}
                         label="Dielectric Specular Model"
                         options={dielectricSpecularModelOptions}
-                        target={material}
+                        target={material.brdf}
                         propertyName="dielectricSpecularModel"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -1285,7 +1285,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         allowNullValue={true}
                         label="Conductor Specular Model"
                         options={conductorSpecularModelOptions}
-                        target={material}
+                        target={material.brdf}
                         propertyName="conductorSpecularModel"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

@@ -89,7 +89,7 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Radiance ________________________________________
 #ifdef REFLECTION
     vec3 finalRadiance = reflectionOut.environmentRadiance.rgb;
-    finalRadiance *= cumulativeSpecularEnvironmentReflectance;
+    finalRadiance *= colorSpecularEnvironmentReflectance;
     
     vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
 

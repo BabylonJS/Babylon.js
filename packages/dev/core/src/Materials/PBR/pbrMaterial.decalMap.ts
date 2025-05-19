@@ -18,12 +18,6 @@ declare module "./pbrBaseMaterial" {
 Object.defineProperty(PBRBaseMaterial.prototype, "decalMap", {
     get: function (this: PBRBaseMaterial) {
         if (!this._decalMap) {
-            if (this._uniformBufferLayoutBuilt) {
-                // Material already used to display a mesh, so it's invalid to add the decal map plugin at that point
-                // Returns null instead of having new DecalMapConfiguration throws an exception
-                return null;
-            }
-
             this._decalMap = new DecalMapConfiguration(this);
         }
         return this._decalMap;

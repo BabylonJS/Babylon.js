@@ -11,7 +11,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
 import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike, IVector3LikeInternal } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
-import { CopyMatrixToArray, InvertMatrixToRef, MultiplyMatricesToArray } from "./ThinMaths/thinMath.matrix.functions";
+import { CopyMatrixToArray, InvertMatrixToArray, MatrixManagement, MultiplyMatricesToArray } from "./ThinMaths/thinMath.matrix.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ExtractAsInt = (value: number) => {
@@ -6061,7 +6061,6 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         return PerformanceConfigurator.MatrixUse64Bits;
     }
 
-    private static _UpdateFlagSeed = 0;
     private static _IdentityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
 
     private _isIdentity = false;
@@ -6088,7 +6087,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * Update the updateFlag to indicate that the matrix has been updated
      */
     public markAsUpdated() {
-        this.updateFlag = Matrix._UpdateFlagSeed++;
+        this.updateFlag = MatrixManagement._UpdateFlagSeed++;
         this._isIdentity = false;
         this._isIdentity3x2 = false;
         this._isIdentityDirty = true;
@@ -6454,7 +6453,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
             return other;
         }
 
-        if (InvertMatrixToRef(this, other.asArray())) {
+        if (InvertMatrixToArray(this, other.asArray())) {
             other.markAsUpdated();
         } else {
             other.copyFrom(this);

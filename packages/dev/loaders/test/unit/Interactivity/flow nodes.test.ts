@@ -582,7 +582,7 @@ describe("Flow Nodes", () => {
         // wait for the delay to pass
         await new Promise((resolve) => setTimeout(resolve, duration * 1000 + 100));
         expect(log).toHaveBeenCalledTimes(1);
-        expect(log).toHaveBeenCalledWith(0);
+        expect(log).toHaveBeenCalledWith({ value: 0 });
     });
 
     // flowDelay with NaN as duration - should activate the error signal
