@@ -1,5 +1,6 @@
 import type { BezierCurveEase } from "core/Animations";
 import type { Vector2 } from "core/Maths";
+import type { Mesh } from "core/Meshes";
 
 /* eslint-disable jsdoc/require-jsdoc */
 export type LottieAnimation = {
@@ -10,23 +11,35 @@ export type LottieAnimation = {
 };
 
 export type LottieLayer = {
-    parent?: number; // Index of the parent layer
-    hidden: boolean; // Whether the layer is hidden
+    index?: number; // Index of the layer, used for parenting layers
+    parent?: LottieLayer; // Parent layer, if any
+    children?: LottieLayer[]; // Children layers, if any
+    sprites?: LottieSprite[]; // Array of shapes in the layer
     inFrame: number; // Frame number where the layer becomes visible
     outFrame: number; // Frame number where the layer becomes invisible
     startTime: number; // Time when the layer starts
     timeStretch: number; // Time stretch factor
-    transform: Transform; // Transform properties of the layer
     autoOrient: boolean; // Whether the layer auto-orients to its path
-    shapes?: LottieSprite[]; // Array of shapes in the layer
+    isVisible: boolean; // Whether this layer is visible
+    transform: Transform; // Initial transform properties and animations of the layer
+    localAnchorPoint: Vector2; // Current values
+    localPosition: Vector2;
+    localRotation: number;
+    localScale: Vector2;
+    localOpacity: number;
 };
 
 export type LottieSprite = {
-    hidden: boolean; // Whether the shape is hidden
-    uvStart?: Vector2; // UV coordinates for the start of the shape
-    uvEnd?: Vector2; // UV coordinates for the end of the shape
-    transform?: Transform; // Transform properties of the shape
-    child?: LottieSprite; // Array of child shapes
+    parent: LottieLayer | LottieSprite;
+    isVisible: boolean; // Whether the shape is visible
+    transform?: Transform; // Initial transform properties and animations of the shape
+    localAnchorPoint?: Vector2; // Current values
+    localPosition?: Vector2;
+    localRotation?: number;
+    localScale?: Vector2;
+    localOpacity?: number;
+    mesh: Mesh; // Sprite to render, it will contain the current transformed values
+    child?: LottieSprite; // Children, if any
 };
 
 export type Transform = {
