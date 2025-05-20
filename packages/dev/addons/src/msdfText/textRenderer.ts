@@ -15,12 +15,11 @@ import {
     CopyMatrixToArray,
     CopyMatrixToRef,
     IdentityMatrixToRef,
-    InvertMatrixToRef,
     MultiplyMatricesToRef,
     ScalingMatrixToRef,
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
-import type { IColor4Like, IMatrixLike, IVector3Like } from "core/Maths";
+import type { IColor4Like, IMatrixLike } from "core/Maths";
 
 /**
  * Abstract Node class from Babylon.js
@@ -66,7 +65,6 @@ export class TextRenderer implements IDisposable {
     private _finalMatrix = new ThinMatrix();
     private _lineMatrix = new ThinMatrix();
     private _parentWorldMatrix = new ThinMatrix();
-    private _storedTranslation: IVector3Like = { x: 0, y: 0, z: 0 };
 
     /**
      * Gets or sets the color of the text
@@ -118,6 +116,12 @@ export class TextRenderer implements IDisposable {
     public get characterCount(): number {
         return this._charMatrices.length / 16;
     }
+
+    /**
+     * Gets or sets if the text renderer should ignore the depth buffer
+     * Default is false
+     */
+    public ignoreDepthBuffer = false;
 
     private constructor(engine: AbstractEngine, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
@@ -174,7 +178,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "atlasSize"],
+            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "mode"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -260,40 +264,17 @@ export class TextRenderer implements IDisposable {
         engine.setState(false);
         engine.enableEffect(drawWrapper);
 
-        if (this.isBillboard) {
-            // We will only consider translation for parent to simplify computation
-            // Save parent translation
-            if (this._parent) {
-                const pwm = this._parent.getWorldMatrix().asArray();
-                this._storedTranslation.x = pwm[12];
-                this._storedTranslation.y = pwm[13];
-                this._storedTranslation.z = pwm[14];
-            } else {
-                this._storedTranslation.x = 0;
-                this._storedTranslation.y = 0;
-                this._storedTranslation.z = 0;
-            }
-            // Cancel camera rotation
-            const baseM = this._baseMatrix.asArray();
-            CopyMatrixToArray(viewMatrix, baseM);
-            baseM[12] = 0;
-            baseM[13] = 0;
-            baseM[14] = 0;
-            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix);
-
-            // Restore translation
-            const pwm = this._parentWorldMatrix.asArray();
-            pwm[12] = this._storedTranslation.x;
-            pwm[13] = this._storedTranslation.y;
-            pwm[14] = this._storedTranslation.z;
-        } else {
-            if (this._parent) {
-                CopyMatrixToRef(this._parent.getWorldMatrix(), this._parentWorldMatrix);
-            } else {
-                IdentityMatrixToRef(this._parentWorldMatrix);
-            }
+        if (this.ignoreDepthBuffer) {
+            engine.setDepthBuffer(false);
         }
 
+        if (this._parent) {
+            CopyMatrixToRef(this._parent.getWorldMatrix(), this._parentWorldMatrix);
+        } else {
+            IdentityMatrixToRef(this._parentWorldMatrix);
+        }
+
+        effect.setInt("mode", this.isBillboard ? 1 : 0);
         effect.setMatrix("parentWorld", this._parentWorldMatrix);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
@@ -334,6 +315,10 @@ export class TextRenderer implements IDisposable {
         engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
         engine.unbindInstanceAttributes();
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        if (this.ignoreDepthBuffer) {
+            engine.setDepthBuffer(true);
+        }
     }
 
     /**
