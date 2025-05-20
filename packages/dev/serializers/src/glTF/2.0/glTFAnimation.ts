@@ -610,51 +610,33 @@ export class _GLTFAnimation {
             const outputData = new Float32Array(animationData.outputs.length * elementCount);
             animationData.outputs.forEach(function (output: number[], index: number) {
                 let outputToWrite: number[] = output;
-                if (convertToRightHanded) {
-                    switch (animationChannelTargetPath) {
-                        case AnimationChannelTargetPath.TRANSLATION:
+                switch (animationChannelTargetPath) {
+                    case AnimationChannelTargetPath.TRANSLATION:
+                        if (convertToRightHanded) {
                             Vector3.FromArrayToRef(output, 0, position);
                             ConvertToRightHandedPosition(position);
                             position.toArray(outputToWrite);
-                            break;
-                        case AnimationChannelTargetPath.ROTATION:
-                            if (output.length === 4) {
-                                Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
-                            } else {
-                                outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
-                                Vector3.FromArrayToRef(output, 0, eulerVec3);
-                                Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
-                            }
+                        }
+                        break;
+                    case AnimationChannelTargetPath.ROTATION:
+                        if (output.length === 4) {
+                            Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
+                        } else {
+                            outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
+                            Vector3.FromArrayToRef(output, 0, eulerVec3);
+                            Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
+                        }
 
-                            if (isCamera) {
-                                ConvertCameraRotationToGLTF(rotationQuaternion);
-                            } else {
-                                if (!Quaternion.IsIdentity(rotationQuaternion)) {
-                                    ConvertToRightHandedRotation(rotationQuaternion);
-                                }
+                        if (isCamera) {
+                            ConvertCameraRotationToGLTF(rotationQuaternion);
+                        } else {
+                            if (!Quaternion.IsIdentity(rotationQuaternion)) {
+                                ConvertToRightHandedRotation(rotationQuaternion);
                             }
+                        }
 
-                            rotationQuaternion.toArray(outputToWrite);
-                            break;
-                    }
-                } else {
-                    switch (animationChannelTargetPath) {
-                        case AnimationChannelTargetPath.ROTATION:
-                            if (output.length === 4) {
-                                Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
-                            } else {
-                                outputToWrite = new Array(4); // Will need 4, not 3, for a quaternion
-                                Vector3.FromArrayToRef(output, 0, eulerVec3);
-                                Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
-                            }
-
-                            if (isCamera) {
-                                ConvertCameraRotationToGLTF(rotationQuaternion);
-                            }
-
-                            rotationQuaternion.toArray(outputToWrite);
-                            break;
-                    }
+                        rotationQuaternion.toArray(outputToWrite);
+                        break;
                 }
                 outputData.set(outputToWrite, index * elementCount);
             });
