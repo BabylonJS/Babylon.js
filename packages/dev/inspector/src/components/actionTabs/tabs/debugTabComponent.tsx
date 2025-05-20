@@ -99,10 +99,12 @@ export class DebugTabComponent extends PaneComponent {
             const textRendererPromises = scene.meshes.map(async (mesh) => {
                 const textRenderer = await TextRenderer.CreateTextRendererAsync(_FontAsset!, scene.getEngine());
 
-                textRenderer.addParagraph(mesh.name, {}, Matrix.Scaling(0.5, 0.5, 0.5));
+                textRenderer.addParagraph(mesh.name);
                 textRenderer.isBillboard = true;
+                textRenderer.isBillboardScreenProjected = true;
                 textRenderer.parent = mesh;
                 textRenderer.ignoreDepthBuffer = true;
+                textRenderer.transformMatrix = Matrix.Scaling(0.02, 0.02, 0.02);
 
                 scene.reservedDataStore.textRenderers.push(textRenderer);
             });

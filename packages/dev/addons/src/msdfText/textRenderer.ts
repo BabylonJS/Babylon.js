@@ -19,7 +19,7 @@ import {
     ScalingMatrixToRef,
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
-import type { IColor4Like, IMatrixLike } from "core/Maths";
+import type { IColor4Like, IMatrixLike } from "core/Maths/math.like";
 
 /**
  * Abstract Node class from Babylon.js
@@ -105,10 +105,31 @@ export class TextRenderer implements IDisposable {
         this._parent = value;
     }
 
+    private _transformMatrix: IMatrixLike = new ThinMatrix();
+
+    /**
+     * Gets or sets the transform matrix of the text renderer
+     * It will be applied in that order:
+     * parent x transform x paragraph world
+     */
+    public get transformMatrix(): IMatrixLike {
+        return this._transformMatrix;
+    }
+
+    public set transformMatrix(value: IMatrixLike) {
+        this._transformMatrix = value;
+    }
+
     /**
      * Gets or sets if the text is billboarded
      */
     public isBillboard = false;
+
+    /**
+     * Gets or sets if the text is screen projected
+     * This will work only if the text is billboarded
+     */
+    public isBillboardScreenProjected = false;
 
     /**
      * Gets the number of characters in the text renderer
@@ -178,7 +199,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "mode"],
+            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "mode", "transform"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -274,10 +295,11 @@ export class TextRenderer implements IDisposable {
             IdentityMatrixToRef(this._parentWorldMatrix);
         }
 
-        effect.setInt("mode", this.isBillboard ? 1 : 0);
+        effect.setInt("mode", this.isBillboard ? (this.isBillboardScreenProjected ? 2 : 1) : 0);
         effect.setMatrix("parentWorld", this._parentWorldMatrix);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
+        effect.setMatrix("transform", this.transformMatrix);
 
         // Texture
         effect.setTexture("fontAtlas", this._font.textures[0]);
