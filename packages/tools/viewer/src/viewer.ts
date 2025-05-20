@@ -2070,6 +2070,11 @@ export class Viewer implements IDisposable {
             }
         }
 
+        this._camera.lowerRadiusLimit = goalRadius * 0.001;
+        this._camera.upperRadiusLimit = goalRadius * 5;
+        this._camera.minZ = goalRadius * 0.001;
+        this._camera.maxZ = goalRadius * 1000;
+
         goalAlpha = alpha ?? goalAlpha;
         goalBeta = beta ?? goalBeta;
         goalRadius = radius ?? goalRadius;
@@ -2090,10 +2095,6 @@ export class Viewer implements IDisposable {
             }
             if (!isNaN(goalRadius)) {
                 this._camera.radius = goalRadius;
-                this._camera.lowerRadiusLimit = goalRadius * 0.001;
-                this._camera.upperRadiusLimit = goalRadius * 5;
-                this._camera.minZ = goalRadius * 0.001;
-                this._camera.maxZ = goalRadius * 1000;
             }
             this._camera.setTarget(
                 new Vector3(
