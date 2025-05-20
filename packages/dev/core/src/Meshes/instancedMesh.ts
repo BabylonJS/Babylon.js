@@ -438,7 +438,12 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     public override getWorldMatrix(): Matrix {
-        if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
+        if (
+            this._currentLOD &&
+            this._currentLOD !== this._sourceMesh &&
+            this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE &&
+            this._currentLOD._masterMesh !== this
+        ) {
             if (!this._billboardWorldMatrix) {
                 this._billboardWorldMatrix = new Matrix();
             }
