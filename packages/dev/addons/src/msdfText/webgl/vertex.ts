@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 const name = "msdfVertexShader";
 const shader = `
+#define BILLBOARD 1
+#define BILLBOARDSCREENPROJECTED 2
+
 attribute vec2 offsets;
 attribute vec4 world0;
 attribute vec4 world1;
 attribute vec4 world2;
 attribute vec4 world3;
 attribute vec4 uvs;
-
 
 uniform mat4 transform;
 uniform mat4 parentWorld;
@@ -22,9 +24,9 @@ void main(void) {
     mat4 world = mat4(world0, world1, world2, world3);
     vec4 worldPos = transform * (world * vec4(offsets.xy - vec2(0.5, 0.5), 0., 1.0));
 
-    if (mode > 0) {
+    if (mode >= BILLBOARD) {
         vec3 viewPos = (view * parentWorld * vec4(0., 0., 0., 1.0)).xyz; 
-        if (mode == 2) {
+        if (mode == BILLBOARDSCREENPROJECTED) {
             viewPos.x /= viewPos.z;
             viewPos.y /= viewPos.z;
             viewPos.z = 1.0;

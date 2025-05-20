@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 const name = "msdfVertexShaderWGSL";
 const shader = `
+#define BILLBOARD 1
+#define BILLBOARDSCREENPROJECTED 2
+
 attribute offsets: vec2f;
 attribute world0: vec4f;
 attribute world1: vec4f;
@@ -22,9 +25,9 @@ fn main(input: VertexInputs) -> FragmentInputs {
     let localOffset = vec4<f32>(input.offsets - vec2<f32>(0.5, 0.5), 0.0, 1.0);
     let worldPos = uniforms.transform * world * localOffset;
 
-    if (uniforms.mode > 0) {        
+    if (uniforms.mode >= BILLBOARD) {        
         var viewPos = (uniforms.view * uniforms.parentWorld * vec4f(0., 0., 0., 1.0)).xyz;
-        if (uniforms.mode == 2) {
+        if (uniforms.mode == BILLBOARDSCREENPROJECTED) {
             viewPos = vec3f(viewPos.x / viewPos.z, viewPos.y / viewPos.z, 1.0);
         }        
         vertexOutputs.position = uniforms.projection * vec4<f32>(viewPos + worldPos.xyz, 1.0);
