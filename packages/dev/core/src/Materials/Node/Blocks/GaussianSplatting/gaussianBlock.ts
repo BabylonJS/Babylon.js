@@ -92,7 +92,7 @@ export class GaussianBlock extends NodeMaterialBlock {
         const alpha = this._outputs[2];
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            state.compilationString += `vec4f ${tempSplatColor} = gaussianColor(${color.associatedVariableName}, input.vPosition);\n`;
+            state.compilationString += `let ${tempSplatColor}:vec4f = gaussianColor(${color.associatedVariableName}, input.vPosition);\n`;
         } else {
             state.compilationString += `vec4 ${tempSplatColor} = gaussianColor(${color.associatedVariableName});\n`;
         }
