@@ -20,16 +20,10 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
         const left = parseInt(preprocessors[this.define] != undefined ? preprocessors[this.define] : this.define);
         const right = parseInt(preprocessors[this.testValue] != undefined ? preprocessors[this.testValue] : this.testValue);
 
-        if (isNaN(left)) {
-            throw new Error(
-                `ShaderDefineArithmeticOperator: "${this.define}" could not be evaluated in expression "${this.toString()}". Make sure you have included all necessary files in your shader.`
-            );
-        }
-
-        if (isNaN(right)) {
-            throw new Error(
-                `ShaderDefineArithmeticOperator: "${this.testValue}" could not be evaluated in expression "${this.toString()}". Make sure you have included all necessary files in your shader.`
-            );
+        if (isNaN(left) || isNaN(right)) {
+            // We can't evaluate the expression because we can't resolve the left and/or right side
+            // We should not throw an error here because the code might be using a define that is not defined in the material/shader!
+            return false;
         }
 
         switch (this.operand) {
