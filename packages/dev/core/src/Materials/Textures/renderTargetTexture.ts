@@ -1149,7 +1149,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
             if (!this._prePassEnabled) {
-                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+                if (!this._postProcessManager._prepareFrame(this._texture, this._postProcesses)) {
+                    this._bindFrameBuffer(faceIndex, layer);
+                }
             }
         } else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
             this._bindFrameBuffer(faceIndex, layer);
