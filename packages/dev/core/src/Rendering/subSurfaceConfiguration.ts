@@ -90,7 +90,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     ];
 
     /**
-     * The clear color of the render targets. If not provided, defaults to (0, 0, 0, 0)
+     * The clear color of the render targets.
      * We need 1 for the alpha channel of the irradiance texture so that we early exit from the SSS post-process if the pixel should not be processed
      */
     public clearColor = new Color4(0, 0, 0, 1);
