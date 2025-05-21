@@ -9,6 +9,8 @@
 #define CONDUCTOR_SPECULAR_MODEL_GLTF 0
 #define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
+#ifndef PBR_VERTEX_SHADER
+
 // ______________________________________________________________________
 //
 //                              BRDF LOOKUP
@@ -513,3 +515,5 @@ fn diffuseBRDF_Burley(NdotL: f32, NdotV: f32, VdotH: f32, roughness: f32) -> f32
         return saturate((NdotL + w) * invt2);
     }
 #endif
+
+#endif // PBR_VERTEX_SHADER
