@@ -25,9 +25,6 @@ export class TargetCamera extends Camera {
     private static _TargetTransformMatrix = new Matrix();
     private static _TargetFocalPoint = new Vector3();
 
-    private _tmpUpVector = Vector3.Zero();
-    private _tmpTargetVector = Vector3.Zero();
-
     /**
      * Define the current direction the camera is moving to
      */
