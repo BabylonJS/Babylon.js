@@ -12,9 +12,6 @@ Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
 });
 
-const RootNodeCounterScaling = Matrix.Scaling(-1, 1, 1);
-const ScaledParentWorldMatrix = Matrix.Identity();
-
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
@@ -33,12 +30,6 @@ export class TargetCamera extends Camera {
      * Define the current rotation the camera is rotating to
      */
     public cameraRotation = new Vector2(0, 0);
-
-    /**
-     * Boolean indicating that the root node handedness correction should be skipped when computing the camera's view matrix.
-     */
-    @serialize()
-    public skipRootNodeHandedness = false;
 
     /**
      * When set, the up vector of the camera will be updated by the rotation of the camera
@@ -509,12 +500,7 @@ export class TargetCamera extends Camera {
         if (this.parent) {
             const parentWorldMatrix = this.parent.getWorldMatrix();
             this._viewMatrix.invert();
-            if (this.skipRootNodeHandedness) {
-                RootNodeCounterScaling.multiplyToRef(parentWorldMatrix, ScaledParentWorldMatrix);
-                this._viewMatrix.multiplyToRef(ScaledParentWorldMatrix, this._viewMatrix);
-            } else {
-                this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
-            }
+            this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
             this._viewMatrix.getTranslationToRef(this._globalPosition);
             this._viewMatrix.invert();
 
