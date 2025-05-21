@@ -1564,7 +1564,9 @@ export class GLTFLoader implements IGLTFLoader {
         const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
         babylonCamera._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
-        babylonCamera.ignoreParentScaling = true;
+        if (!this._babylonScene.useRightHandedSystem) {
+            babylonCamera.skipRootNodeHandedness = true;
+        }
         camera._babylonCamera = babylonCamera;
 
         // Rotation by 180 as glTF has a different convention than Babylon.

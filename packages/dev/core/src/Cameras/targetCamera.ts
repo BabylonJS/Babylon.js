@@ -12,6 +12,9 @@ Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
 });
 
+const RootNodeCounterScaling = Matrix.Scaling(-1, 1, 1);
+const ScaledParentWorldMatrix = Matrix.Identity();
+
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
@@ -34,9 +37,11 @@ export class TargetCamera extends Camera {
      */
     public cameraRotation = new Vector2(0, 0);
 
-    /** Gets or sets a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
+    /**
+     * Boolean indicating that the root node handedness correction should be skipped when computing the camera's view matrix.
+     */
     @serialize()
-    public ignoreParentScaling = false;
+    public skipRootNodeHandedness = false;
 
     /**
      * When set, the up vector of the camera will be updated by the rotation of the camera
@@ -498,27 +503,6 @@ export class TargetCamera extends Camera {
     }
 
     protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void {
-        if (this.ignoreParentScaling) {
-            if (this.parent) {
-                const parentWorldMatrix = this.parent.getWorldMatrix();
-                Vector3.TransformCoordinatesToRef(position, parentWorldMatrix, this._globalPosition);
-                Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._tmpTargetVector);
-                Vector3.TransformNormalToRef(up, parentWorldMatrix, this._tmpUpVector);
-                this._markSyncedWithParent();
-            } else {
-                this._globalPosition.copyFrom(position);
-                this._tmpTargetVector.copyFrom(target);
-                this._tmpUpVector.copyFrom(up);
-            }
-
-            if (this.getScene().useRightHandedSystem) {
-                Matrix.LookAtRHToRef(this._globalPosition, this._tmpTargetVector, this._tmpUpVector, this._viewMatrix);
-            } else {
-                Matrix.LookAtLHToRef(this._globalPosition, this._tmpTargetVector, this._tmpUpVector, this._viewMatrix);
-            }
-            return;
-        }
-
         if (this.getScene().useRightHandedSystem) {
             Matrix.LookAtRHToRef(position, target, up, this._viewMatrix);
         } else {
@@ -528,9 +512,15 @@ export class TargetCamera extends Camera {
         if (this.parent) {
             const parentWorldMatrix = this.parent.getWorldMatrix();
             this._viewMatrix.invert();
-            this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
+            if (this.skipRootNodeHandedness) {
+                RootNodeCounterScaling.multiplyToRef(parentWorldMatrix, ScaledParentWorldMatrix);
+                this._viewMatrix.multiplyToRef(ScaledParentWorldMatrix, this._viewMatrix);
+            } else {
+                this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
+            }
             this._viewMatrix.getTranslationToRef(this._globalPosition);
             this._viewMatrix.invert();
+
             this._markSyncedWithParent();
         } else {
             this._globalPosition.copyFrom(position);
