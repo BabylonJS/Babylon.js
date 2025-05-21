@@ -293,7 +293,7 @@ export class Animatable {
             const fps = runtimeAnimations[0].animation.framePerSecond;
             this._frameToSyncFromJump = this._frameToSyncFromJump ?? runtimeAnimations[0].currentFrame;
             const delay = this.speedRatio === 0 ? 0 : (((frame - this._frameToSyncFromJump) / fps) * 1000) / this.speedRatio;
-            this._manualJumpDelay = Math.abs(delay);
+            this._manualJumpDelay = -delay;
         }
 
         for (let index = 0; index < runtimeAnimations.length; index++) {
@@ -432,7 +432,7 @@ export class Animatable {
         }
 
         if (this._manualJumpDelay !== null) {
-            this._localDelayOffset -= this._manualJumpDelay;
+            this._localDelayOffset += this.speedRatio < 0 ? -this._manualJumpDelay : this._manualJumpDelay;
             this._manualJumpDelay = null;
             this._frameToSyncFromJump = null;
         }
