@@ -11,6 +11,7 @@ export type LottieAnimation = {
 };
 
 export type LottieLayer = {
+    name: string;
     index?: number; // Index of the layer, used for parenting layers
     parent?: LottieLayer; // Parent layer, if any
     children?: LottieLayer[]; // Children layers, if any
@@ -27,6 +28,7 @@ export type LottieLayer = {
     localRotation: number;
     localScale: Vector2;
     localOpacity: number;
+    mesh: Mesh; // Sprite to render, it will contain the current transformed values
 };
 
 export type LottieSprite = {

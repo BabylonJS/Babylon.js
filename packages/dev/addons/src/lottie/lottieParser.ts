@@ -26,6 +26,7 @@ import { StandardMaterial } from "core/Materials";
 export class LottieParser {
     private _processedData: LottieAnimation;
     private _errors = new Array<string>();
+    private _zIndex = 0;
 
     /**
      * Creates an instance of LottieParser.
@@ -100,6 +101,7 @@ export class LottieParser {
         const transform = this._processLottieTransform(rawLayer.ks);
 
         const newLayer: LottieLayer = {
+            name: rawLayer.nm ?? "No name", // DEBUGGING
             parent: undefined,
             index: rawLayer.ind,
             children: [],
@@ -116,7 +118,21 @@ export class LottieParser {
             localScale: transform.scale?.startValue ?? new Vector2(1, 1),
             localOpacity: transform.opacity?.startValue ?? 1,
             sprites: undefined,
+            mesh: MeshBuilder.CreatePlane(rawLayer.nm ?? "No name", { height: 100, width: 100 }), // DEBUGGING
         };
+
+        const material = new StandardMaterial("myMaterial");
+        material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
+        newLayer.mesh.material = material;
+
+        newLayer.mesh.position.x = transform.position?.startValue.x ?? 0;
+        newLayer.mesh.position.y = transform.position?.startValue.y ?? 0;
+        newLayer.mesh.position.z = this._zIndex;
+        this._zIndex += 0.1; // Increment zIndex for each layer
+
+        newLayer.mesh.rotation.z = transform.rotation?.startValue ?? 0;
+        newLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        newLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
         newLayer.sprites = this._processLottieShapes(newLayer, rawLayer.shapes);
         this._processedData.layers.push(newLayer);
@@ -142,6 +158,7 @@ export class LottieParser {
         }
 
         const childLayer: LottieLayer = {
+            name: rawLayer.nm ?? "No name", // DEBUGGING
             parent: parentLayer,
             isVisible: true,
             inFrame: rawLayer.ip ?? 0,
@@ -156,7 +173,20 @@ export class LottieParser {
             localScale: transform.scale?.startValue ?? new Vector2(1, 1),
             localOpacity: transform.opacity?.startValue ?? 1,
             sprites: undefined,
+            mesh: MeshBuilder.CreatePlane(rawLayer.nm ?? "No name", { height: 100, width: 100 }), // DEBUGGING
         };
+
+        const material = new StandardMaterial("myMaterial");
+        material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
+        childLayer.mesh.material = material;
+
+        childLayer.mesh.position.x = transform.position?.startValue.x ?? 0;
+        childLayer.mesh.position.y = transform.position?.startValue.y ?? 0;
+        childLayer.mesh.position.z = 0;
+
+        childLayer.mesh.rotation.z = transform.rotation?.startValue ?? 0;
+        childLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        childLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
         childLayer.sprites = this._processLottieShapes(childLayer, rawLayer.shapes);
         // Add the child layer to the parent layer
@@ -214,7 +244,7 @@ export class LottieParser {
             isVisible: true,
             transform: undefined,
             child: undefined,
-            mesh: MeshBuilder.CreatePlane(group.nm ?? "No name", { height: 1, width: 1 }),
+            mesh: MeshBuilder.CreatePlane(group.nm ?? "No name", { height: 100, width: 100 }),
         };
 
         // TESTING!
@@ -242,8 +272,8 @@ export class LottieParser {
                 sprite.mesh.position.z = 0;
 
                 sprite.mesh.rotation.z = transform.rotation?.startValue ?? 0;
-                sprite.mesh.scaling.x = transform.scale?.startValue.x ?? 1;
-                sprite.mesh.scaling.y = transform.scale?.startValue.y ?? 1;
+                sprite.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+                sprite.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
             } else if (shape.ty === "sh") {
                 this._validatePathShape(shape as RawPathShape);
             } else if (shape.ty === "rc") {
@@ -293,7 +323,8 @@ export class LottieParser {
 
         const keyframes: ScalarKeyframe[] = [];
         const rawKeyFrames = property.k as RawVectorKeyframe[];
-        for (let i = 0; i < rawKeyFrames.length; i++) {
+        let i = 0;
+        for (i = 0; i < rawKeyFrames.length; i++) {
             let easeFunction: BezierCurveEase | undefined = undefined;
             if (rawKeyFrames[i].i !== undefined && rawKeyFrames[i].o !== undefined) {
                 easeFunction = new BezierCurveEase(rawKeyFrames[i].i!.x[0], rawKeyFrames[i].i!.y[0], rawKeyFrames[i].o!.x[0], rawKeyFrames[i].o!.y[0]);
@@ -305,6 +336,13 @@ export class LottieParser {
                 easeFunction,
             });
         }
+
+        // DEBUGGING - Add one extra keyframe at the end to make sure the animation reaches the end value
+        keyframes.push({
+            value: rawKeyFrames[i - 1].s[0],
+            time: rawKeyFrames[i - 1].t + 1,
+            easeFunction: keyframes[i - 2].easeFunction,
+        });
 
         return {
             startValue: rawKeyFrames[0].s[0],
@@ -331,7 +369,8 @@ export class LottieParser {
 
         const keyframes: Vector2Keyframe[] = [];
         const rawKeyFrames = property.k as RawVectorKeyframe[];
-        for (let i = 0; i < rawKeyFrames.length; i++) {
+        let i = 0;
+        for (i = 0; i < rawKeyFrames.length; i++) {
             let easeFunction1: BezierCurveEase | undefined = undefined;
             if (rawKeyFrames[i].i !== undefined && rawKeyFrames[i].o !== undefined) {
                 easeFunction1 = new BezierCurveEase(rawKeyFrames[i].i!.x[0], rawKeyFrames[i].i!.y[0], rawKeyFrames[i].o!.x[0], rawKeyFrames[i].o!.y[0]);
@@ -349,6 +388,14 @@ export class LottieParser {
                 easeFunction2,
             });
         }
+
+        // DEBUGGING - Add one extra keyframe at the end to make sure the animation reaches the end value
+        keyframes.push({
+            value: new Vector2(rawKeyFrames[i - 1].s[0], rawKeyFrames[i - 1].s[1]),
+            time: rawKeyFrames[i - 1].t + 1,
+            easeFunction1: keyframes[i - 2].easeFunction1,
+            easeFunction2: keyframes[i - 2].easeFunction2,
+        });
 
         return {
             startValue: new Vector2(rawKeyFrames[0].s[0], rawKeyFrames[0].s[1]),
