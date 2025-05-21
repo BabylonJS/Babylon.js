@@ -80,7 +80,13 @@ export class InstancedMesh extends AbstractMesh {
 
         this.setPivotMatrix(source.getPivotMatrix());
 
-        this.refreshBoundingInfo(true, true);
+        if (!source.skeleton && !source.morphTargetManager && source.hasBoundingInfo) {
+            // without skeleton or morphTargetManager, use bounding info of source mesh directly
+            const boundingInfo = source.getBoundingInfo();
+            this.buildBoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
+        } else {
+            this.refreshBoundingInfo(true, true);
+        }
         this._syncSubMeshes();
     }
 
