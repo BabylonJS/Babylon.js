@@ -221,12 +221,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
             throw new Error("Unable to access microphone: " + e);
         }
 
-        options = {
+        return await this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), {
             defaultToMainBus: false,
             ...options,
-        };
-
-        return await this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), options);
+        });
     }
 
     /** @internal */
