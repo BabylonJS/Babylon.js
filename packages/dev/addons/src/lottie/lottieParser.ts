@@ -118,8 +118,10 @@ export class LottieParser {
             localScale: transform.scale?.startValue ?? new Vector2(1, 1),
             localOpacity: transform.opacity?.startValue ?? 1,
             sprites: undefined,
-            mesh: MeshBuilder.CreatePlane(rawLayer.nm ?? "No name", { height: 100, width: 100 }), // DEBUGGING
+            mesh: MeshBuilder.CreatePlane(`Layer - ${rawLayer.nm}`, { height: 100, width: 100 }), // DEBUGGING
         };
+
+        newLayer.mesh.isVisible = false;
 
         const material = new StandardMaterial("myMaterial");
         material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
@@ -130,7 +132,8 @@ export class LottieParser {
         newLayer.mesh.position.z = this._zIndex;
         this._zIndex += 0.1; // Increment zIndex for each layer
 
-        newLayer.mesh.rotation.z = transform.rotation?.startValue ?? 0;
+        newLayer.mesh.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+
         newLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
         newLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
@@ -157,7 +160,7 @@ export class LottieParser {
             return;
         }
 
-        const childLayer: LottieLayer = {
+        const newLayer: LottieLayer = {
             name: rawLayer.nm ?? "No name", // DEBUGGING
             parent: parentLayer,
             isVisible: true,
@@ -173,24 +176,29 @@ export class LottieParser {
             localScale: transform.scale?.startValue ?? new Vector2(1, 1),
             localOpacity: transform.opacity?.startValue ?? 1,
             sprites: undefined,
-            mesh: MeshBuilder.CreatePlane(rawLayer.nm ?? "No name", { height: 100, width: 100 }), // DEBUGGING
+            mesh: MeshBuilder.CreatePlane(`Layer - ${rawLayer.nm}`, { height: 100, width: 100 }), // DEBUGGING
         };
+
+        newLayer.mesh.isVisible = false;
+        newLayer.mesh.parent = parentLayer.mesh;
 
         const material = new StandardMaterial("myMaterial");
         material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
-        childLayer.mesh.material = material;
+        newLayer.mesh.material = material;
 
-        childLayer.mesh.position.x = transform.position?.startValue.x ?? 0;
-        childLayer.mesh.position.y = transform.position?.startValue.y ?? 0;
-        childLayer.mesh.position.z = 0;
+        newLayer.mesh.position.x = transform.position?.startValue.x ?? 0;
+        newLayer.mesh.position.y = transform.position?.startValue.y ?? 0;
+        newLayer.mesh.position.z = this._zIndex;
+        this._zIndex += 0.1; // Increment zIndex for each layer
 
-        childLayer.mesh.rotation.z = transform.rotation?.startValue ?? 0;
-        childLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-        childLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+        newLayer.mesh.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
 
-        childLayer.sprites = this._processLottieShapes(childLayer, rawLayer.shapes);
+        newLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        newLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+
+        newLayer.sprites = this._processLottieShapes(newLayer, rawLayer.shapes);
         // Add the child layer to the parent layer
-        parentLayer.children!.push(childLayer);
+        parentLayer.children!.push(newLayer);
     }
 
     private _findParent(parentIndex: number): LottieLayer | undefined {
@@ -244,8 +252,13 @@ export class LottieParser {
             isVisible: true,
             transform: undefined,
             child: undefined,
-            mesh: MeshBuilder.CreatePlane(group.nm ?? "No name", { height: 100, width: 100 }),
+            localPosition: new Vector2(0, 0),
+            localRotation: 0,
+            localScale: new Vector2(1, 1),
+            mesh: MeshBuilder.CreatePlane(`Group - ${group.nm}`, { height: 100, width: 100 }),
         };
+
+        sprite.mesh.parent = parent.mesh;
 
         // TESTING!
         const material = new StandardMaterial("myMaterial");
@@ -264,14 +277,13 @@ export class LottieParser {
                 sprite.localScale = transform.scale?.startValue ?? new Vector2(1, 1);
                 sprite.localOpacity = transform.opacity?.startValue ?? 1;
 
-                // TESTING!
-                const localPosition = sprite.localPosition ?? new Vector2(0, 0);
-                const parentPosition = /*sprite.parent.localPosition ??*/ new Vector2(0, 0);
-                sprite.mesh.position.x = localPosition.x + parentPosition.x;
-                sprite.mesh.position.y = localPosition.y + parentPosition.y;
-                sprite.mesh.position.z = 0;
+                sprite.mesh.position.x = transform.position?.startValue.x ?? 0;
+                sprite.mesh.position.y = transform.position?.startValue.y ?? 0;
+                sprite.mesh.position.z = this._zIndex;
+                this._zIndex += 0.1; // Increment zIndex for each layer
 
-                sprite.mesh.rotation.z = transform.rotation?.startValue ?? 0;
+                sprite.mesh.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+
                 sprite.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
                 sprite.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
             } else if (shape.ty === "sh") {

@@ -36,9 +36,9 @@ export type LottieSprite = {
     isVisible: boolean; // Whether the shape is visible
     transform?: Transform; // Initial transform properties and animations of the shape
     localAnchorPoint?: Vector2; // Current values
-    localPosition?: Vector2;
-    localRotation?: number;
-    localScale?: Vector2;
+    localPosition: Vector2;
+    localRotation: number;
+    localScale: Vector2;
     localOpacity?: number;
     mesh: Mesh; // Sprite to render, it will contain the current transformed values
     child?: LottieSprite; // Children, if any
