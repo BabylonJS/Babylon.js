@@ -1,26 +1,6 @@
 {
-    "fromTag": "8.8.4",
+    "fromTag": "8.8.5",
     "changelog": {
-        "8.8.4": [
-            {
-                "pr": "16618",
-                "title": "urgent fix for thin matrices",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    ".build/config.json",
-                    "packages/dev/addons/src/msdfText/textRenderer.ts",
-                    "packages/dev/core/src/Maths/ThinMaths/thinMath.matrix.functions.ts",
-                    "packages/dev/core/src/Maths/math.vector.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            }
-        ],
         "8.8.5": [
             {
                 "pr": "16619",
@@ -54,6 +34,570 @@
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
+            }
+        ],
+        "8.9.0": [
+            {
+                "pr": "16654",
+                "title": "RenderTargetTexture: Fix framebuffer not bound when post-processes are disabled",
+                "description": "See https://forum.babylonjs.com/t/issue-when-clearing-rendertargettexture-postprocesses-and-when-using-an-optimizer/58588",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16653",
+                "title": "Fix goToFrame",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.core.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16646",
+                "title": "Small cleanup to fx",
+                "description": "@sebavan and I were looking at some potential refactorings to this file, but there was some minor cleanup and small optimizations I wanted to get out of the way first.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16651",
+                "title": "Fix the ignoreParentScaling situation for the camera",
+                "description": "The assumption here is that ignoreParentScaling was only used for glTF loading (and it was badly used)\r\n\r\nIf this happens to not be the case I'll reintroduce the property but for now I assume this is not really a breaking change",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16652",
+                "title": "PBR Sub-Surface Scattering: Fix a performance issue",
+                "description": "See https://forum.babylonjs.com/t/scattering-with-scaling-model/58568/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/prePassEffectConfiguration.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Rendering/subSurfaceConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16650",
+                "title": "CDN switch for qrcode reader",
+                "description": "See https://forum.babylonjs.com/t/could-you-switch-using-jquery-qrcode-min-js-from-cdn-to-local-copy/58585?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/debug.html",
+                    "packages/tools/playground/public/frame.html",
+                    "packages/tools/playground/public/full.html",
+                    "packages/tools/playground/public/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16649",
+                "title": "PBR material: Fix an incorrect #if evaluation in vertex shader",
+                "description": "`pbrBRDFFunctions` was not included in the PBR vertex shader, which means that `#if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY` was not evaluated correctly.\r\n\r\nNote that `environmentBrdfSampler` is defined globally, but only in fragment shader code. That's why I added a check on **PBR_VERTEX_SHADER** to skip evaluating all `pbrBRDFFunctions`, except for the definitions at the top.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineArithmeticOperator.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16648",
+                "title": "instancedMesh: optimize initialization performance",
+                "description": "In the constructor of InstancedMesh, refreshBoundingInfo if called, but if the source mesh does not contain skeleton or morphTargetManager, we can use bounding info of source mesh directly, to avoid overheads introduced by refreshBoundingInfo.\r\n\r\nForum post: <https://forum.babylonjs.com/t/instancedmesh-why-fully-refreshboundinginfo-even-without-bones/58543>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16645",
+                "title": "Introduce screenProjection for textrenderer",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/vertex.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/vertex.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/debugTabComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/msdf-projected.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16642",
+                "title": "now camera limit are computed on reframe interpolate or not",
+                "description": "There was an issue with the last rework on the viewer, were camera limits were only updated when the reframe was done with no interpolation.\r\n\r\nThis fix restore the reframe to compute the limits interpolation or not.",
+                "author": {
+                    "name": "alexandremottet",
+                    "url": "https://github.com/alexandremottet"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16643",
+                "title": "Improve error handling in CubeTexture",
+                "description": "See https://forum.babylonjs.com/t/cubetexture-onerror-callback-not-called/58248?u=raananw\n\nWhen loading a cube texture it is possible that an internal texture will be created that will not be used by the cube texture and will not be disposed. This happens, for example, when the file itself is not an env texture. When that happens, it resides in the cache and returned if the same URL is requested. Playground to reproduce - https://playground.babylonjs.com/#633US3#10\n\nThis adds a local onError that disposes the failed internal texture, thus taking it out of the cache",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16644",
+                "title": "Improved render quality of ADT with adjustToEngineHardwareScalingLevel",
+                "description": "The solution, intoruced in #16393, was to downscale the ADT to fit the right scale, but the better handlign is to scale the texture up while adjusting the root container's scale and size as well. \r\n\r\nBefore:\r\n\r\n![image](https://github.com/user-attachments/assets/2ecd007c-15db-4d27-8168-77b2bcdbd90e)\r\n\r\nAfter:\r\n![image](https://github.com/user-attachments/assets/77251f1a-4093-417d-a960-ec6719020c82)\r\n\r\nSee https://forum.babylonjs.com/t/problem-with-adapttodeviceratio-and-adaptivescaling/57373?u=raananw\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16641",
+                "title": "instancedMesh: fix getWorldMatrix in case billboardMode of source mesh enabled",
+                "description": "The `_currentLOD` of InstancedMesh would be `_sourceMesh` if LOD of source mesh not enabled, but if billboardMode of source mesh enabled, `getWorldMatrix` would incorrectly use the billboardMode of the `sourceMesh` to compute world matrix. This commit would add a check in `getWorldMatrix` to skip this if `_currentLOD` is `_sourceMesh`.\r\n\r\nForum post: <https://forum.babylonjs.com/t/billboardmode-of-sourcemesh-changes-instance-rotation/58469>\r\nPlayground: <https://playground.babylonjs.com/#1RQ8OR>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16638",
+                "title": "Dispose all entities of an AssetContainer",
+                "description": "There was a recent regression in `AssetContainer.dispose` where basically only half the assets actually get disposed and removed from the scene. I noticed this while testing some unrelated stuff in the Viewer. This change includes:\r\n\r\n- Fixing the regression in AssetContainer.dispose by re-introducing the call to .slice(0) to copy the arrays.\r\n- Adding a unit test for this AssetContainer scenario.\r\n- Fixing the original Viewer bug I was looking at, where initial model and env load are doubled (once by the Viewer respecting the current options that includes the source and env, and once by an explicit call that should have been removed when I fleshed out the config/options). 😬",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/test/unit/babylon.assetContainer.test.ts",
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16640",
+                "title": "Use IColor*Like in ShaderMaterial API",
+                "description": "This enables calling code to work with the *Like interface instead of concrete color types.\r\n\r\nAlso removes direct dependency on Vector2/3/4 and otherwise uses the abstract interface/class alternative wherever possible.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16639",
+                "title": "Add a new debug tool for the inspector to display meshes name",
+                "description": "![image](https://github.com/user-attachments/assets/24cd5810-dfe0-4ab0-8bb8-e8c7162d5a04)\r\n\r\n![image](https://github.com/user-attachments/assets/cfb24f4a-cfec-4e03-9e63-925836b5e333)\r\n\r\nAlso use the opportunity to allow TextRenderer to ignore depth buffer and rewrote the billboard logic to be easier and faster\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/fontAsset.ts",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/vertex.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/vertex.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/debugTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorsGridComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16637",
+                "title": "Let Mesh.bakeTransformIntoVertices use DeepImmutable<Matrix>",
+                "description": "I ran into a use case where I would like to transform a mesh by a `DeepImmutable<Matrix>`, but the type checker complains because it does not satisfy `Matrix`.\r\n\r\nHowever, `Mesh.bakeTransformIntoVertices(transform)` does not need the Matrix to be mutable.\r\n\r\nThis PR simply allows a `DeepImmutable<Matrix>` to be passed to `Mesh.bakeTransformIntoVertices(transform)`",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16635",
+                "title": "Add aniso + mipmaps",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/fontAsset.ts",
+                    "packages/dev/addons/src/msdfText/paragraphOptions.ts",
+                    "packages/dev/addons/src/msdfText/sdf/paragraph.ts",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/fragment.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/msdf-stroke.png"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16617",
+                "title": "Inspector msdf",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/addons/src/index.ts",
+                    "packages/dev/addons/src/msdfText/index.ts",
+                    "packages/dev/addons/src/msdfText/sdf/index.ts",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/index.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/fragment.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/index.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/vertex.ts",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/inspector/rollup.config.js",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/attractorsGridComponent.tsx",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/tools/babylonServer/public/index.html",
+                    "packages/tools/playground/public/index.js",
+                    "packages/tools/sandbox/public/index.js",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "tsconfig.devpackages.json"
+                ],
+                "tags": [
+                    "inspector",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16623",
+                "title": "Skip SVG processing if no window/document or SVG support.",
+                "description": "In edge cases where BabylonJS is being ran in a Windowless/DOM-less environment, creation of images fails due to the \"Check SVG\" requiring a DOM to work. Just added a catch to find if you don't have a window and return the same value. ",
+                "author": {
+                    "name": "jamessimo",
+                    "url": "https://github.com/jamessimo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16634",
+                "title": "Ensure the EffectRenderer uses expected index buffer length",
+                "description": "I'm using this to render effects with fullscreen triangles instead of quads. Validated locally it works with hdr filtering, for example.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16632",
+                "title": "WebGPU: Fix buffer accesses outside of allowed range",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16631",
+                "title": "Math switch fixes",
+                "description": "Math switch default is based on the output (!) and not onthe selection number itself.\nAnother change - negative cases are allowed in glTF interactivity",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphDataSwitchBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16633",
+                "title": "Material: Fix image processing not taken into account when changed",
+                "description": "See https://forum.babylonjs.com/t/bug-when-assign-new-image-processing-to-material/58524",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16628",
+                "title": "Move Vector4 to the same architecture as Vector3",
+                "description": "This will help some issues with glTF interactivity when it comes to vector4 and quat computations.\n\nFor example - a dot product between a quat and a vector4 will fail, because quat needs the underscore varibles, even though mathematically it can work without an issue.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16630",
+                "title": "Add new test for msdf stroke",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/msdf-stroke.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16583",
+                "title": "Correct some misspellings thoughout Babylon",
+                "description": "A simple PR: a few words are misspelt, the first I noticed was “length” as “lenght”, but saw ([#9707](https://github.com/BabylonJS/Babylon.js/pull/9707)) and a few from there are also misspelt here. This PR just fixes such.",
+                "author": {
+                    "name": "anthony-beckett",
+                    "url": "https://github.com/anthony-beckett"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/Helpers/environmentHelper.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Offline/database.ts",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectCustomParticles.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/sceneComponent.ts",
+                    "packages/tools/viewer-legacy/src/managers/sceneManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16629",
+                "title": "Please leave the room exactly as you found it",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/textRenderer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16627",
+                "title": "Flow graph Cancel delay fix",
+                "description": "1. Index endpoints should be integers\n2. Pending delays are now a global array so that cancel delay could access all of them.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCancelDelayBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSetDelayBlock.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16626",
+                "title": "Decals: Fix decalMap null at load time",
+                "description": "See https://forum.babylonjs.com/t/decal-graffiti-sample-has-an-error/58490/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.decalMap.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.decalMap.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16622",
+                "title": "Add support for strokes for textRenderer",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/sdf/paragraph.ts",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/fragment.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/fragment.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/attractors.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/msdf-billboard.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16621",
+                "title": "Add Legacy diffuse lighting mode to PBR",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBRDFConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_materials_diffuse_roughness.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "8.8.4": [
+            {
+                "pr": "16618",
+                "title": "urgent fix for thin matrices",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/core/src/Maths/ThinMaths/thinMath.matrix.functions.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "8.8.3": [
