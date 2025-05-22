@@ -634,6 +634,9 @@ export class PrePassRenderer {
         }
 
         this._effectConfigurations.push(cfg);
+        if (cfg.clearColor) {
+            this._clearColor.copyFrom(cfg.clearColor);
+        }
         return cfg;
     }
 

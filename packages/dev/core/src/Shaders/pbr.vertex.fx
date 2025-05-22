@@ -1,3 +1,5 @@
+#define PBR_VERTEX_SHADER
+
 #define CUSTOM_VERTEX_EXTENSION
 
 precision highp float;
@@ -24,6 +26,7 @@ attribute vec4 color;
 #endif
 
 #include<helperFunctions>
+#include<pbrBRDFFunctions>
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
 

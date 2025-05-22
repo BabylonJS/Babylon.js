@@ -21,7 +21,7 @@ export class Database implements IOfflineProvider {
     private _enableSceneOffline: boolean;
     private _enableTexturesOffline: boolean;
     private _manifestVersionFound: number;
-    private _mustUpdateRessources: boolean;
+    private _mustUpdateResources: boolean;
     private _hasReachedQuota: boolean;
     private _isSupported: boolean;
 
@@ -62,7 +62,7 @@ export class Database implements IOfflineProvider {
         this._enableSceneOffline = false;
         this._enableTexturesOffline = false;
         this._manifestVersionFound = 0;
-        this._mustUpdateRessources = false;
+        this._mustUpdateResources = false;
         this._hasReachedQuota = false;
 
         if (!Database.IDBStorageEnabled) {
@@ -268,7 +268,7 @@ export class Database implements IOfflineProvider {
             }
         };
 
-        if (!this._mustUpdateRessources) {
+        if (!this._mustUpdateResources) {
             this._loadImageFromDB(completeURL, image, saveAndLoadImage);
         }
         // First time we're download the images or update requested in the manifest file by a version change
@@ -437,7 +437,7 @@ export class Database implements IOfflineProvider {
                     if (version) {
                         // If the version in the JSON file is different from the version in DB
                         if (this._manifestVersionFound !== version.data) {
-                            this._mustUpdateRessources = true;
+                            this._mustUpdateResources = true;
                             updateInDBCallback();
                         } else {
                             callback(version.data);
@@ -445,7 +445,7 @@ export class Database implements IOfflineProvider {
                     }
                     // version was not found in DB
                     else {
-                        this._mustUpdateRessources = true;
+                        this._mustUpdateResources = true;
                         updateInDBCallback();
                     }
                 };
@@ -530,7 +530,7 @@ export class Database implements IOfflineProvider {
 
         this._checkVersionFromDB(completeUrl, (version) => {
             if (version !== -1) {
-                if (!this._mustUpdateRessources) {
+                if (!this._mustUpdateResources) {
                     this._loadFile(completeUrl, sceneLoaded, saveAndLoadFile, progressCallBack);
                 } else {
                     this._saveFile(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);

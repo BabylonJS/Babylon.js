@@ -208,10 +208,20 @@ AbstractEngine.prototype.createCubeTextureBase = function (
 
     const loaderPromise = _GetCompatibleTextureLoader(extension);
 
+    const localOnError = (message?: string, exception?: any) => {
+        // if an error was thrown during load, dispose the texture, otherwise it will stay in the cache
+        texture.dispose();
+        if (onError) {
+            onError(message, exception);
+        } else if (message) {
+            Logger.Warn(message);
+        }
+    };
+
     const onInternalError = (request?: IWebRequest, exception?: any) => {
         if (rootUrl === originalRootUrl) {
-            if (onError && request) {
-                onError(request.status + " " + request.statusText, exception);
+            if (request) {
+                localOnError(request.status + " " + request.statusText, exception);
             }
         } else {
             // fall back to the original url if the transformed url fails to load
@@ -222,7 +232,7 @@ AbstractEngine.prototype.createCubeTextureBase = function (
                 files,
                 !!noMipmap,
                 onLoad,
-                onError,
+                localOnError,
                 format,
                 forcedExtension,
                 createPolynomials,
@@ -240,26 +250,24 @@ AbstractEngine.prototype.createCubeTextureBase = function (
     if (loaderPromise) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         loaderPromise.then((loader) => {
-            const onloaddata = (data: ArrayBufferView | ArrayBufferView[]) => {
+            const onLoadData = (data: ArrayBufferView | ArrayBufferView[]) => {
                 if (beforeLoadCubeDataCallback) {
                     beforeLoadCubeDataCallback(texture, data);
                 }
-                loader.loadCubeData(data, texture, createPolynomials, onLoad, onError);
+                loader.loadCubeData(data, texture, createPolynomials, onLoad, (message?: string, exception?: any) => {
+                    localOnError(message, exception);
+                });
             };
             if (buffer) {
-                onloaddata(buffer);
+                onLoadData(buffer);
             } else if (files && files.length === 6) {
                 if (loader.supportCascades) {
-                    this._cascadeLoadFiles(scene, (images) => onloaddata(images.map((image) => new Uint8Array(image))), files, onError);
+                    this._cascadeLoadFiles(scene, (images) => onLoadData(images.map((image) => new Uint8Array(image))), files, localOnError);
                 } else {
-                    if (onError) {
-                        onError("Textures type does not support cascades.");
-                    } else {
-                        Logger.Warn("Texture loader does not support cascades.");
-                    }
+                    localOnError("Textures type does not support cascades.");
                 }
             } else {
-                this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
+                this._loadFile(rootUrl, (data) => onLoadData(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
             }
         });
     } else {
@@ -276,7 +284,7 @@ AbstractEngine.prototype.createCubeTextureBase = function (
                 }
             },
             files,
-            onError
+            localOnError
         );
     }
 

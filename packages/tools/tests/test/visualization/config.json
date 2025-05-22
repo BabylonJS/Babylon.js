@@ -7,13 +7,23 @@
             "referenceImage": "msdf.png"
         },
         {
+            "title": "MSDF Screen projected",
+            "playgroundId": "#6RLCWP#48",
+            "referenceImage": "msdf-projected.png"
+        },
+        {
             "title": "MSDF Billboard",
             "playgroundId": "#6RLCWP#23",
             "referenceImage": "msdf-billboard.png"
         },
         {
+            "title": "MSDF Stroke",
+            "playgroundId": "#6RLCWP#41",
+            "referenceImage": "msdf-stroke.png"
+        },
+        {
             "title": "Attractors",
-            "playgroundId": "#DEZ79M#34",
+            "playgroundId": "#DEZ79M#57",
             "referenceImage": "attractors.png"
         },
         {

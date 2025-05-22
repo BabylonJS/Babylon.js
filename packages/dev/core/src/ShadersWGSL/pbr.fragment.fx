@@ -1,3 +1,5 @@
+#define PBR_FRAGMENT_SHADER
+
 #define CUSTOM_FRAGMENT_BEGIN
 
 #include<prePassDeclaration>[SCENE_MRT_COUNT]

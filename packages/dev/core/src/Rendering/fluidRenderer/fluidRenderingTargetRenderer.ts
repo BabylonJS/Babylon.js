@@ -956,8 +956,8 @@ export class FluidRenderingTargetRenderer {
     }
 
     /**
-     * Releases all the ressources used by the class
-     * @param onlyPostProcesses If true, releases only the ressources used by the render post processes
+     * Releases all the resources used by the class
+     * @param onlyPostProcesses If true, releases only the resources used by the render post processes
      */
     public dispose(onlyPostProcesses = false): void {
         if (!onlyPostProcesses) {

@@ -1,3 +1,4 @@
+import type { IDisposable, Scene } from "core/scene";
 import type { BMFontChar } from "./sdf/bmFont";
 import type { SdfFont } from "./sdf/font";
 import { Texture } from "core/Materials/Textures/texture";
@@ -10,7 +11,7 @@ enum CharCode {
 /**
  * Class representing a font asset for SDF (Signed Distance Field) rendering.
  */
-export class FontAsset {
+export class FontAsset implements IDisposable {
     private readonly _chars = new Map<number, BMFontChar>();
     private readonly _charsRegex: RegExp;
     private readonly _kernings = new Map<number, Map<number, number>>();
@@ -32,8 +33,9 @@ export class FontAsset {
      * Creates a new FontAsset instance.
      * @param definitionData defines the font data in JSON format.
      * @param textureUrl defines the url of the texture to use for the font.
+     * @param scene defines the hosting scene.
      */
-    public constructor(definitionData: string, textureUrl: string) {
+    public constructor(definitionData: string, textureUrl: string, scene?: Scene) {
         this._font = JSON.parse(definitionData) as SdfFont;
         // So far we only consider one page
         this._font.pages = [textureUrl];
@@ -52,7 +54,18 @@ export class FontAsset {
         this._updateFallbacks();
 
         this.scale = 1 / this._font.info.size;
-        this.textures = this._font.pages.map((page) => new Texture(page, undefined, { noMipmap: true, invertY: false }));
+        this.textures = this._font.pages.map((page) => {
+            const texture = new Texture(page, scene, { noMipmap: false, invertY: false });
+            texture.anisotropicFilteringLevel = 16;
+            return texture;
+        });
+    }
+
+    dispose(): void {
+        for (const texture of this.textures) {
+            texture.dispose();
+        }
+        this.textures.length = 0;
     }
 
     private _updateFallbacks() {

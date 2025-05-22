@@ -1550,8 +1550,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
          * so saves on memory rather than importing whole Spherical Class
          */
         const radius: number = this.length();
-        let theta: number = Math.acos(this.y / radius);
-        const phi = Math.atan2(this.z, this.x);
+        let theta: number = Math.acos(this._y / radius);
+        const phi = Math.atan2(this._z, this._x);
         //makes angle 90 degs to current vector
         if (theta > Math.PI / 2) {
             theta -= Math.PI / 2;
@@ -1926,7 +1926,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @returns a new Vector3
      */
     public floor(): Vector3 {
-        return new Vector3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
+        return new Vector3(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z));
     }
 
     /**
@@ -1935,9 +1935,9 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @returns the result vector
      */
     public fractToRef<T extends IVector3LikeInternal>(result: T): T {
-        result._x = this.x - Math.floor(this._x);
-        result._y = this.y - Math.floor(this._y);
-        result._z = this.z - Math.floor(this._z);
+        result._x = this._x - Math.floor(this._x);
+        result._y = this._y - Math.floor(this._y);
+        result._z = this._z - Math.floor(this._z);
         result._isDirty = true;
         return result;
     }
@@ -1948,7 +1948,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @returns a new Vector3
      */
     public fract(): Vector3 {
-        return new Vector3(this.x - Math.floor(this._x), this.y - Math.floor(this._y), this.z - Math.floor(this._z));
+        return new Vector3(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z));
     }
 
     // Properties
@@ -3425,6 +3425,57 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      */
     declare public readonly rank: 1;
 
+    /** @internal */
+    public _x: number;
+    /** @internal */
+    public _y: number;
+    /** @internal */
+    public _z: number;
+    /** @internal */
+    public _w: number;
+
+    /** @internal */
+    public _isDirty = true;
+
+    // ---------------------------------
+    // Getters / setters (same pattern as Vector3)
+    // ---------------------------------
+    /** Gets or sets the x coordinate */
+    public get x() {
+        return this._x;
+    }
+    public set x(value: number) {
+        this._x = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the y coordinate */
+    public get y() {
+        return this._y;
+    }
+    public set y(value: number) {
+        this._y = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the z coordinate */
+    public get z() {
+        return this._z;
+    }
+    public set z(value: number) {
+        this._z = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the w coordinate */
+    public get w() {
+        return this._w;
+    }
+    public set w(value: number) {
+        this._w = value;
+        this._isDirty = true;
+    }
+
     /**
      * Creates a Vector4 object from the given floats.
      * @param x x value of the vector
@@ -3432,23 +3483,19 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @param z z value of the vector
      * @param w w value of the vector
      */
-    constructor(
-        /** [0] x value of the vector */
-        public x: number = 0,
-        /** [0] y value of the vector */
-        public y: number = 0,
-        /** [0] z value of the vector */
-        public z: number = 0,
-        /** [0] w value of the vector */
-        public w: number = 0
-    ) {}
+    constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
+        this._x = x;
+        this._y = y;
+        this._z = z;
+        this._w = w;
+    }
 
     /**
      * Returns the string with the Vector4 coordinates.
      * @returns a string containing all the vector values
      */
     public toString(): string {
-        return `{X: ${this.x} Y: ${this.y} Z: ${this.z} W: ${this.w}}`;
+        return `{X: ${this._x} Y: ${this._y} Z: ${this._z} W: ${this._w}}`;
     }
 
     /**
@@ -3464,10 +3511,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        const x = ExtractAsInt(this.x);
-        const y = ExtractAsInt(this.y);
-        const z = ExtractAsInt(this.z);
-        const w = ExtractAsInt(this.w);
+        const x = ExtractAsInt(this._x);
+        const y = ExtractAsInt(this._y);
+        const z = ExtractAsInt(this._z);
+        const w = ExtractAsInt(this._w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -3482,7 +3529,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the resulting array
      */
     public asArray(): Tuple<number, 4> {
-        return [this.x, this.y, this.z, this.w];
+        return [this._x, this._y, this._z, this._w];
     }
 
     /**
@@ -3495,10 +3542,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
         if (index === undefined) {
             index = 0;
         }
-        array[index] = this.x;
-        array[index + 1] = this.y;
-        array[index + 2] = this.z;
-        array[index + 3] = this.w;
+        array[index] = this._x;
+        array[index + 1] = this._y;
+        array[index + 2] = this._z;
+        array[index + 3] = this._w;
         return this;
     }
 
@@ -3519,10 +3566,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the updated Vector4.
      */
     public addInPlace(otherVector: DeepImmutable<Vector4>): this {
-        this.x += otherVector.x;
-        this.y += otherVector.y;
-        this.z += otherVector.z;
-        this.w += otherVector.w;
+        this.x += otherVector._x;
+        this.y += otherVector._y;
+        this.z += otherVector._z;
+        this.w += otherVector._w;
         return this;
     }
 
@@ -3548,7 +3595,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the resulting vector
      */
     public add(otherVector: DeepImmutable<IVector4Like>): Vector4 {
-        return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+        return new Vector4(this._x + otherVector.x, this._y + otherVector.y, this._z + otherVector.z, this._w + otherVector.w);
     }
 
     /**
@@ -3558,10 +3605,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public addToRef<T extends IVector4Like>(otherVector: DeepImmutable<IVector4Like>, result: T): T {
-        result.x = this.x + otherVector.x;
-        result.y = this.y + otherVector.y;
-        result.z = this.z + otherVector.z;
-        result.w = this.w + otherVector.w;
+        result.x = this._x + otherVector.x;
+        result.y = this._y + otherVector.y;
+        result.z = this._z + otherVector.z;
+        result.w = this._w + otherVector.w;
         return result;
     }
 
@@ -3584,7 +3631,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the new vector with the result
      */
     public subtract(otherVector: DeepImmutable<IVector4Like>): Vector4 {
-        return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+        return new Vector4(this._x - otherVector.x, this._y - otherVector.y, this._z - otherVector.z, this._w - otherVector.w);
     }
 
     /**
@@ -3594,10 +3641,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public subtractToRef<T extends IVector4Like>(otherVector: DeepImmutable<IVector4Like>, result: T): T {
-        result.x = this.x - otherVector.x;
-        result.y = this.y - otherVector.y;
-        result.z = this.z - otherVector.z;
-        result.w = this.w - otherVector.w;
+        result.x = this._x - otherVector.x;
+        result.y = this._y - otherVector.y;
+        result.z = this._z - otherVector.z;
+        result.w = this._w - otherVector.w;
         return result;
     }
 
@@ -3610,7 +3657,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns new vector containing the result
      */
     public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
-        return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
+        return new Vector4(this._x - x, this._y - y, this._z - z, this._w - w);
     }
 
     /**
@@ -3623,10 +3670,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public subtractFromFloatsToRef<T extends IVector4Like>(x: number, y: number, z: number, w: number, result: T): T {
-        result.x = this.x - x;
-        result.y = this.y - y;
-        result.z = this.z - z;
-        result.w = this.w - w;
+        result.x = this._x - x;
+        result.y = this._y - y;
+        result.z = this._z - z;
+        result.w = this._w - w;
         return result;
     }
 
@@ -3635,7 +3682,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a new vector with the negated values
      */
     public negate(): Vector4 {
-        return new Vector4(-this.x, -this.y, -this.z, -this.w);
+        return new Vector4(-this._x, -this._y, -this._z, -this._w);
     }
 
     /**
@@ -3656,10 +3703,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the result
      */
     public negateToRef<T extends IVector4Like>(result: T): T {
-        result.x = -this.x;
-        result.y = -this.y;
-        result.z = -this.z;
-        result.w = -this.w;
+        result.x = -this._x;
+        result.y = -this._y;
+        result.z = -this._z;
+        result.w = -this._w;
         return result;
     }
 
@@ -3682,7 +3729,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a new vector with the result
      */
     public scale(scale: number): Vector4 {
-        return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+        return new Vector4(this._x * scale, this._y * scale, this._z * scale, this._w * scale);
     }
 
     /**
@@ -3692,10 +3739,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public scaleToRef<T extends IVector4Like>(scale: number, result: T): T {
-        result.x = this.x * scale;
-        result.y = this.y * scale;
-        result.z = this.z * scale;
-        result.w = this.w * scale;
+        result.x = this._x * scale;
+        result.y = this._y * scale;
+        result.z = this._z * scale;
+        result.w = this._w * scale;
         return result;
     }
 
@@ -3706,10 +3753,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public scaleAndAddToRef<T extends IVector4Like>(scale: number, result: T): T {
-        result.x += this.x * scale;
-        result.y += this.y * scale;
-        result.z += this.z * scale;
-        result.w += this.w * scale;
+        result.x += this._x * scale;
+        result.y += this._y * scale;
+        result.z += this._z * scale;
+        result.w += this._w * scale;
         return result;
     }
 
@@ -3719,7 +3766,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns true if they are equal
      */
     public equals(otherVector: DeepImmutable<IVector4Like>): boolean {
-        return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
+        return otherVector && this._x === otherVector.x && this._y === otherVector.y && this._z === otherVector.z && this._w === otherVector.w;
     }
 
     /**
@@ -3731,10 +3778,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
     public equalsWithEpsilon(otherVector: DeepImmutable<IVector4Like>, epsilon: number = Epsilon): boolean {
         return (
             otherVector &&
-            WithinEpsilon(this.x, otherVector.x, epsilon) &&
-            WithinEpsilon(this.y, otherVector.y, epsilon) &&
-            WithinEpsilon(this.z, otherVector.z, epsilon) &&
-            WithinEpsilon(this.w, otherVector.w, epsilon)
+            WithinEpsilon(this._x, otherVector.x, epsilon) &&
+            WithinEpsilon(this._y, otherVector.y, epsilon) &&
+            WithinEpsilon(this._z, otherVector.z, epsilon) &&
+            WithinEpsilon(this._w, otherVector.w, epsilon)
         );
     }
 
@@ -3747,7 +3794,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns true if equal
      */
     public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
-        return this.x === x && this.y === y && this.z === z && this.w === w;
+        return this._x === x && this._y === y && this._z === z && this._w === w;
     }
 
     /**
@@ -3769,7 +3816,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns resulting new vector
      */
     public multiply(otherVector: DeepImmutable<IVector4Like>): Vector4 {
-        return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+        return new Vector4(this._x * otherVector.x, this._y * otherVector.y, this._z * otherVector.z, this._w * otherVector.w);
     }
     /**
      * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.
@@ -3778,10 +3825,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public multiplyToRef<T extends IVector4Like>(otherVector: DeepImmutable<IVector4Like>, result: T): T {
-        result.x = this.x * otherVector.x;
-        result.y = this.y * otherVector.y;
-        result.z = this.z * otherVector.z;
-        result.w = this.w * otherVector.w;
+        result.x = this._x * otherVector.x;
+        result.y = this._y * otherVector.y;
+        result.z = this._z * otherVector.z;
+        result.w = this._w * otherVector.w;
         return result;
     }
     /**
@@ -3793,7 +3840,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns resulting new vector
      */
     public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
-        return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
+        return new Vector4(this._x * x, this._y * y, this._z * z, this._w * w);
     }
     /**
      * Returns a new Vector4 set with the division result of the current Vector4 by the given one.
@@ -3801,7 +3848,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns resulting new vector
      */
     public divide(otherVector: DeepImmutable<IVector4Like>): Vector4 {
-        return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+        return new Vector4(this._x / otherVector.x, this._y / otherVector.y, this._z / otherVector.z, this._w / otherVector.w);
     }
     /**
      * Updates the given vector "result" with the division result of the current Vector4 by the given one.
@@ -3810,10 +3857,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public divideToRef<T extends IVector4Like>(otherVector: DeepImmutable<IVector4Like>, result: T): T {
-        result.x = this.x / otherVector.x;
-        result.y = this.y / otherVector.y;
-        result.z = this.z / otherVector.z;
-        result.w = this.w / otherVector.w;
+        result.x = this._x / otherVector.x;
+        result.y = this._y / otherVector.y;
+        result.z = this._z / otherVector.z;
+        result.w = this._w / otherVector.w;
         return result;
     }
 
@@ -3832,16 +3879,16 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the current updated Vector4
      */
     public minimizeInPlace(other: DeepImmutable<IVector4Like>): this {
-        if (other.x < this.x) {
+        if (other.x < this._x) {
             this.x = other.x;
         }
-        if (other.y < this.y) {
+        if (other.y < this._y) {
             this.y = other.y;
         }
-        if (other.z < this.z) {
+        if (other.z < this._z) {
             this.z = other.z;
         }
-        if (other.w < this.w) {
+        if (other.w < this._w) {
             this.w = other.w;
         }
         return this;
@@ -3852,16 +3899,16 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the current updated Vector4
      */
     public maximizeInPlace(other: DeepImmutable<IVector4Like>): this {
-        if (other.x > this.x) {
+        if (other.x > this._x) {
             this.x = other.x;
         }
-        if (other.y > this.y) {
+        if (other.y > this._y) {
             this.y = other.y;
         }
-        if (other.z > this.z) {
+        if (other.z > this._z) {
             this.z = other.z;
         }
-        if (other.w > this.w) {
+        if (other.w > this._w) {
             this.w = other.w;
         }
         return this;
@@ -3876,10 +3923,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the current updated Vector4
      */
     public minimizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
-        this.x = Math.min(x, this.x);
-        this.y = Math.min(y, this.y);
-        this.z = Math.min(z, this.z);
-        this.w = Math.min(w, this.w);
+        this.x = Math.min(x, this._x);
+        this.y = Math.min(y, this._y);
+        this.z = Math.min(z, this._z);
+        this.w = Math.min(w, this._w);
         return this;
     }
 
@@ -3892,10 +3939,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the current updated Vector4
      */
     public maximizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
-        this.x = Math.max(x, this.x);
-        this.y = Math.max(y, this.y);
-        this.z = Math.max(z, this.z);
-        this.w = Math.max(w, this.w);
+        this.x = Math.max(x, this._x);
+        this.y = Math.max(y, this._y);
+        this.z = Math.max(z, this._z);
+        this.w = Math.max(w, this._w);
         return this;
     }
 
@@ -3905,10 +3952,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the result vector
      */
     public floorToRef<T extends IVector4Like>(result: T): T {
-        result.x = Math.floor(this.x);
-        result.y = Math.floor(this.y);
-        result.z = Math.floor(this.z);
-        result.w = Math.floor(this.w);
+        result.x = Math.floor(this._x);
+        result.y = Math.floor(this._y);
+        result.z = Math.floor(this._z);
+        result.w = Math.floor(this._w);
         return result;
     }
 
@@ -3917,7 +3964,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a new Vector4
      */
     public floor(): Vector4 {
-        return new Vector4(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+        return new Vector4(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z), Math.floor(this._w));
     }
 
     /**
@@ -3926,10 +3973,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the result vector
      */
     public fractToRef<T extends IVector4Like>(result: T): T {
-        result.x = this.x - Math.floor(this.x);
-        result.y = this.y - Math.floor(this.y);
-        result.z = this.z - Math.floor(this.z);
-        result.w = this.w - Math.floor(this.w);
+        result.x = this._x - Math.floor(this._x);
+        result.y = this._y - Math.floor(this._y);
+        result.z = this._z - Math.floor(this._z);
+        result.w = this._w - Math.floor(this._w);
         return result;
     }
 
@@ -3938,7 +3985,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a new Vector4
      */
     public fract(): Vector4 {
-        return new Vector4(this.x - Math.floor(this.x), this.y - Math.floor(this.y), this.z - Math.floor(this.z), this.w - Math.floor(this.w));
+        return new Vector4(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z), this._w - Math.floor(this._w));
     }
 
     // Properties
@@ -3947,14 +3994,14 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the length
      */
     public length(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
     }
     /**
      * Returns the Vector4 squared length (float).
      * @returns the length squared
      */
     public lengthSquared(): number {
-        return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+        return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
     }
 
     // Methods
@@ -3996,10 +4043,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
     public normalizeToRef<T extends IVector4Like>(reference: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
-            reference.x = this.x;
-            reference.y = this.y;
-            reference.z = this.z;
-            reference.w = this.w;
+            reference.x = this._x;
+            reference.y = this._y;
+            reference.z = this._z;
+            reference.w = this._w;
             return reference;
         }
 
@@ -4011,7 +4058,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns this converted to a new vector3
      */
     public toVector3(): Vector3 {
-        return new Vector3(this.x, this.y, this.z);
+        return new Vector3(this._x, this._y, this._z);
     }
 
     /**
@@ -4019,7 +4066,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the new cloned vector
      */
     public clone(): Vector4 {
-        return new Vector4(this.x, this.y, this.z, this.w);
+        return new Vector4(this._x, this._y, this._z, this._w);
     }
     /**
      * Updates the current Vector4 with the given one coordinates.
@@ -4076,7 +4123,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the dot product
      */
     public dot(otherVector: DeepImmutable<IVector4Like>): number {
-        return this.x * otherVector.x + this.y * otherVector.y + this.z * otherVector.z + this.w * otherVector.w;
+        return this._x * otherVector.x + this._y * otherVector.y + this._z * otherVector.z + this._w * otherVector.w;
     }
 
     // Statics

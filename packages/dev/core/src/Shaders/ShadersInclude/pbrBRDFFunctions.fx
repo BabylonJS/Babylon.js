@@ -9,6 +9,8 @@
 #define CONDUCTOR_SPECULAR_MODEL_GLTF 0
 #define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
+#ifndef PBR_VERTEX_SHADER
+
 // ______________________________________________________________________
 //
 //                              BRDF LOOKUP
@@ -505,3 +507,5 @@ vec3 diffuseBRDF_EON(vec3 albedo, float roughness, float NdotL, float NdotV, flo
         return saturate((NdotL + w) * invt2);
     }
 #endif
+
+#endif // PBR_VERTEX_SHADER

@@ -1,3 +1,5 @@
+#define PBR_VERTEX_SHADER
+
 #include<pbrUboDeclaration>
 
 #define CUSTOM_VERTEX_BEGIN
@@ -20,6 +22,7 @@ attribute color: vec4f;
 #endif
 
 #include<helperFunctions>
+#include<pbrBRDFFunctions>
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
 
