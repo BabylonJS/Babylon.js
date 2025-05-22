@@ -103,10 +103,26 @@
                 #if AREALIGHT{X}
                     info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb);
                 #else
-                    fresnel = fresnelSchlickGGXVec3(preInfo.VdotH, vec3f(reflectanceF0), specularEnvironmentR90);
-                    coloredFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90);
+                    // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
+                    // usual Schlick lobe.
+                    #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
+                        {
+                            let metalFresnel: vec3f = vec3f(reflectivityOut.specularWeight) * getF82Specular(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                            let dielectricFresnel: vec3f = fresnelSchlickGGXVec3(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
+                            coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
+                        }
+                    #else
+                        coloredFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                    #endif
+                    
                     #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
-                        info.diffuse *= (vec3f(1.0) - fresnel);
+                        {
+                            // The diffuse contribution needs to be decreased by the average Fresnel for the hemisphere.
+                            // We can approximate this with NdotH.
+                            let NdotH: f32 = dot(normalW, preInfo.H);
+                            let fresnel: vec3f = fresnelSchlickGGXVec3(NdotH, vec3f(reflectanceF0), specularEnvironmentR90);
+                            info.diffuse *= (vec3f(1.0) - fresnel);
+                        }
                     #endif
                     #ifdef ANISOTROPIC
                         info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb);

@@ -1,4 +1,6 @@
-﻿#define CUSTOM_FRAGMENT_EXTENSION
+﻿#define PBR_FRAGMENT_SHADER
+
+#define CUSTOM_FRAGMENT_EXTENSION
 
 #if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
@@ -195,7 +197,7 @@ void main(void) {
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
             metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
         #endif
-        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
+        metallicReflectanceFactors.a *= metallicReflectanceFactorsMap.a;
     #endif
 #endif
 
@@ -546,7 +548,7 @@ void main(void) {
             , vTintColor
             , normalW
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            , vec3(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+            , vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))
         #else
             , baseSpecularEnvironmentReflectance
         #endif
@@ -635,7 +637,7 @@ void main(void) {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

@@ -1,3 +1,5 @@
+#define PBR_VERTEX_SHADER
+
 #define CUSTOM_VERTEX_EXTENSION
 
 precision highp float;
@@ -24,6 +26,7 @@ attribute vec4 color;
 #endif
 
 #include<helperFunctions>
+#include<pbrBRDFFunctions>
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
 
@@ -176,7 +179,7 @@ void main(void) {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
+        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
             // Bend the normal towards the viewer based on the diffuse roughness
             vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
             float NdotV = max(dot(vNormalW, viewDirectionW), 0.0);

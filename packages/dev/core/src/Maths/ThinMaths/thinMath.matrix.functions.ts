@@ -2,6 +2,12 @@
 import type { IMatrixLike } from "../math.like";
 import type { ThinMatrix } from "./thinMath.matrix";
 
+/** @internal */
+export class MatrixManagement {
+    /** @internal */
+    static _UpdateFlagSeed = 0;
+}
+
 function SetMatrixData(
     result: ThinMatrix,
     m0: number,
@@ -39,7 +45,15 @@ function SetMatrixData(
     mat[14] = m14;
     mat[15] = m15;
 
-    result.updateFlag++;
+    MarkAsDirty(result);
+}
+
+/**
+ * Marks the given matrix as dirty
+ * @param matrix defines the matrix to mark as dirty
+ */
+export function MarkAsDirty(matrix: ThinMatrix): void {
+    matrix.updateFlag = MatrixManagement._UpdateFlagSeed++;
 }
 
 /**
@@ -145,7 +159,17 @@ export function MultiplyMatricesToArray(a: IMatrixLike, b: IMatrixLike, output: 
  */
 export function MultiplyMatricesToRef(a: IMatrixLike, b: IMatrixLike, result: ThinMatrix, offset = 0): void {
     MultiplyMatricesToArray(a, b, result.asArray(), offset);
-    result.updateFlag++;
+    MarkAsDirty(result);
+}
+
+/**
+ * Populates the given matrix with the current matrix values
+ * @param matrix defines the source matrix
+ * @param target defines the target matrix
+ */
+export function CopyMatrixToRef(matrix: IMatrixLike, target: ThinMatrix) {
+    CopyMatrixToArray(matrix, target.asArray());
+    MarkAsDirty(target);
 }
 
 /**
@@ -175,12 +199,28 @@ export function CopyMatrixToArray(matrix: IMatrixLike, array: Float32Array | Arr
 }
 
 /**
+ * Inverts the given matrix and stores the result in the target matrix
+ * @param source defines the source matrix
+ * @param target defines the target matrix
+ * @returns true if the matrix was inverted successfully, false otherwise
+ */
+export function InvertMatrixToRef(source: IMatrixLike, target: ThinMatrix) {
+    const result = InvertMatrixToArray(source, target.asArray());
+
+    if (result) {
+        MarkAsDirty(target);
+    }
+
+    return result;
+}
+
+/**
  * Inverts the given matrix and stores the result in the target array
  * @param source defines the source matrix
  * @param target defines the target array
  * @returns true if the matrix was inverted successfully, false otherwise
  */
-export function InvertMatrixToRef(source: IMatrixLike, target: Float32Array | Array<number>) {
+export function InvertMatrixToArray(source: IMatrixLike, target: Float32Array | Array<number>) {
     // the inverse of a matrix is the transpose of cofactor matrix divided by the determinant
     const m = source.asArray();
     const m00 = m[0],

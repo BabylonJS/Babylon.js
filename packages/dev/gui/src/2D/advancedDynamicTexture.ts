@@ -726,7 +726,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const engine = scene.getEngine();
         if (this.adjustToEngineHardwareScalingLevel) {
             // force the renderScale to the engine's hardware scaling level
-            this._renderScale = engine.getHardwareScalingLevel();
+            this._renderScale = 1 / engine.getHardwareScalingLevel();
         }
         const textureSize = this.getSize();
         let renderWidth = engine.getRenderWidth() * this._renderScale;
@@ -743,6 +743,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
             this.scaleTo(renderWidth, renderHeight);
+            if (this.adjustToEngineHardwareScalingLevel) {
+                const scale = this._renderScale * this._renderScale;
+                this._rootContainer.scaleX = scale;
+                this._rootContainer.scaleY = scale;
+                this._rootContainer.widthInPixels = renderWidth / scale;
+                this._rootContainer.heightInPixels = renderHeight / scale;
+            }
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();

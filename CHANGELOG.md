@@ -1,5 +1,86 @@
 # Changelog
 
+## 8.9.0
+
+### Core
+
+- RenderTargetTexture: Fix framebuffer not bound when post-processes are disabled - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16654](https://github.com/BabylonJS/Babylon.js/pull/16654))
+- Fix goToFrame - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16653](https://github.com/BabylonJS/Babylon.js/pull/16653))
+- Small cleanup to fx - by [kircher1](https://github.com/kircher1) ([#16646](https://github.com/BabylonJS/Babylon.js/pull/16646))
+- Fix the ignoreParentScaling situation for the camera - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16651](https://github.com/BabylonJS/Babylon.js/pull/16651))
+- PBR Sub-Surface Scattering: Fix a performance issue - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16652](https://github.com/BabylonJS/Babylon.js/pull/16652))
+- PBR material: Fix an incorrect #if evaluation in vertex shader - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16649](https://github.com/BabylonJS/Babylon.js/pull/16649))
+- instancedMesh: optimize initialization performance - by [kzhsw](https://github.com/kzhsw) ([#16648](https://github.com/BabylonJS/Babylon.js/pull/16648))
+- Improve error handling in CubeTexture - by [RaananW](https://github.com/RaananW) ([#16643](https://github.com/BabylonJS/Babylon.js/pull/16643))
+- instancedMesh: fix getWorldMatrix in case billboardMode of source mesh enabled - by [kzhsw](https://github.com/kzhsw) ([#16641](https://github.com/BabylonJS/Babylon.js/pull/16641))
+- Dispose all entities of an AssetContainer - by [ryantrem](https://github.com/ryantrem) ([#16638](https://github.com/BabylonJS/Babylon.js/pull/16638))
+- Use IColor*Like in ShaderMaterial API - by [kircher1](https://github.com/kircher1) ([#16640](https://github.com/BabylonJS/Babylon.js/pull/16640))
+- Let Mesh.bakeTransformIntoVertices use DeepImmutable<Matrix> - by [amirt-ms](https://github.com/amirt-ms) ([#16637](https://github.com/BabylonJS/Babylon.js/pull/16637))
+- Ensure the EffectRenderer uses expected index buffer length - by [kircher1](https://github.com/kircher1) ([#16634](https://github.com/BabylonJS/Babylon.js/pull/16634))
+- WebGPU: Fix buffer accesses outside of allowed range - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16632](https://github.com/BabylonJS/Babylon.js/pull/16632))
+- Math switch fixes - by [RaananW](https://github.com/RaananW) ([#16631](https://github.com/BabylonJS/Babylon.js/pull/16631))
+- Material: Fix image processing not taken into account when changed - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16633](https://github.com/BabylonJS/Babylon.js/pull/16633))
+- Move Vector4 to the same architecture as Vector3 - by [RaananW](https://github.com/RaananW) ([#16628](https://github.com/BabylonJS/Babylon.js/pull/16628))
+- Correct some misspellings thoughout Babylon - by [anthony-beckett](https://github.com/anthony-beckett) ([#16583](https://github.com/BabylonJS/Babylon.js/pull/16583))
+- Flow graph Cancel delay fix - by [RaananW](https://github.com/RaananW) ([#16627](https://github.com/BabylonJS/Babylon.js/pull/16627))
+- Decals: Fix decalMap null at load time - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16626](https://github.com/BabylonJS/Babylon.js/pull/16626))
+- Add Legacy diffuse lighting mode to PBR - by [sebavan](https://github.com/sebavan) ([#16621](https://github.com/BabylonJS/Babylon.js/pull/16621))
+
+### GUI
+
+- Improved render quality of ADT with adjustToEngineHardwareScalingLevel - by [RaananW](https://github.com/RaananW) ([#16644](https://github.com/BabylonJS/Babylon.js/pull/16644))
+- Skip SVG processing if no window/document or SVG support. - by [jamessimo](https://github.com/jamessimo) ([#16623](https://github.com/BabylonJS/Babylon.js/pull/16623))
+
+### Inspector
+
+- Add a new debug tool for the inspector to display meshes name - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16639](https://github.com/BabylonJS/Babylon.js/pull/16639))
+- Add Legacy diffuse lighting mode to PBR - by [sebavan](https://github.com/sebavan) ([#16621](https://github.com/BabylonJS/Babylon.js/pull/16621))
+
+### Loaders
+
+- Fix the ignoreParentScaling situation for the camera - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16651](https://github.com/BabylonJS/Babylon.js/pull/16651))
+- Math switch fixes - by [RaananW](https://github.com/RaananW) ([#16631](https://github.com/BabylonJS/Babylon.js/pull/16631))
+- Flow graph Cancel delay fix - by [RaananW](https://github.com/RaananW) ([#16627](https://github.com/BabylonJS/Babylon.js/pull/16627))
+- Add Legacy diffuse lighting mode to PBR - by [sebavan](https://github.com/sebavan) ([#16621](https://github.com/BabylonJS/Babylon.js/pull/16621))
+
+### Playground
+
+- CDN switch for qrcode reader - by [RaananW](https://github.com/RaananW) ([#16650](https://github.com/BabylonJS/Babylon.js/pull/16650))
+
+### Viewer
+
+- now camera limit are computed on reframe interpolate or not - by [alexandremottet](https://github.com/alexandremottet) ([#16642](https://github.com/BabylonJS/Babylon.js/pull/16642))
+- Dispose all entities of an AssetContainer - by [ryantrem](https://github.com/ryantrem) ([#16638](https://github.com/BabylonJS/Babylon.js/pull/16638))
+
+## 8.8.5
+
+### Core
+
+- OpenPBR specular model - by [MiiBond](https://github.com/MiiBond) ([#16619](https://github.com/BabylonJS/Babylon.js/pull/16619))
+
+## 8.8.4
+
+### Core
+
+
+## 8.8.3
+
+### Core
+
+- Small typo fixes to PhysicsAggregate docs - by [mthaddon](https://github.com/mthaddon) ([#16615](https://github.com/BabylonJS/Babylon.js/pull/16615))
+
+## 8.8.2
+
+### Core
+
+- fix: don't unbind when changing framebuffer - by [matanui159](https://github.com/matanui159) ([#16614](https://github.com/BabylonJS/Babylon.js/pull/16614))
+- Specular Energy Conservation fix - by [MiiBond](https://github.com/MiiBond) ([#16476](https://github.com/BabylonJS/Babylon.js/pull/16476))
+
+### Inspector
+
+- Add inspector tools to debug particle attractors - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16613](https://github.com/BabylonJS/Babylon.js/pull/16613))
+- Specular Energy Conservation fix - by [MiiBond](https://github.com/MiiBond) ([#16476](https://github.com/BabylonJS/Babylon.js/pull/16476))
+
 ## 8.8.1
 
 ### Core

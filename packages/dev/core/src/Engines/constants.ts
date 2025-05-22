@@ -485,6 +485,12 @@ export class Constants {
     public static readonly MATERIAL_DIFFUSE_MODEL_LAMBERT = 2;
 
     /**
+     * Babylon.js version less than 8.x
+     * IBL Lambert + Burley diffuse model type.
+     */
+    public static readonly MATERIAL_DIFFUSE_MODEL_LEGACY = 3;
+
+    /**
      * Specular lighting for dielectric materials follows the logic
      * in the glTF specification and KHR_materials_specular extension.
      * Specular colour is applied only at normal incidence (i.e. F0) while

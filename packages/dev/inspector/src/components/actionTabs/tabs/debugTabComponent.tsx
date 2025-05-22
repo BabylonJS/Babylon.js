@@ -12,9 +12,16 @@ import { MaterialFlags } from "core/Materials/materialFlags";
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
 import "core/Physics/v2/physicsEngineComponent";
+import { FontAsset } from "addons/msdfText/fontAsset";
+import type { Nullable } from "core/types";
+import { TextRenderer } from "addons/msdfText/textRenderer";
+import { Matrix } from "core/Maths/math.vector";
+
+let _FontAsset: Nullable<FontAsset> = null;
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;
+    private _namesViewerEnabled = false;
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -30,6 +37,7 @@ export class DebugTabComponent extends PaneComponent {
         }
 
         this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
+        this._namesViewerEnabled = scene.reservedDataStore.textRenderers != null;
     }
 
     switchPhysicsViewers() {
@@ -71,6 +79,53 @@ export class DebugTabComponent extends PaneComponent {
         } else {
             scene.reservedDataStore.physicsViewer.dispose();
             scene.reservedDataStore.physicsViewer = null;
+            _FontAsset?.dispose();
+            _FontAsset = null;
+        }
+    }
+
+    async switchNameViewerAsync() {
+        this._namesViewerEnabled = !this._namesViewerEnabled;
+        const scene = this.props.scene;
+
+        if (this._namesViewerEnabled) {
+            scene.reservedDataStore.textRenderers = [];
+            if (!_FontAsset) {
+                const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
+                // eslint-disable-next-line require-atomic-updates
+                _FontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
+            }
+
+            const textRendererPromises = scene.meshes.map(async (mesh) => {
+                const textRenderer = await TextRenderer.CreateTextRendererAsync(_FontAsset!, scene.getEngine());
+
+                textRenderer.addParagraph(mesh.name);
+                textRenderer.isBillboard = true;
+                textRenderer.isBillboardScreenProjected = true;
+                textRenderer.parent = mesh;
+                textRenderer.ignoreDepthBuffer = true;
+                textRenderer.transformMatrix = Matrix.Scaling(0.02, 0.02, 0.02);
+
+                scene.reservedDataStore.textRenderers.push(textRenderer);
+            });
+
+            await Promise.all(textRendererPromises);
+
+            scene.reservedDataStore.textRenderersHook = scene.onAfterRenderObservable.add(() => {
+                for (const textRenderer of scene.reservedDataStore.textRenderers) {
+                    if (!textRenderer.parent.isVisible || !textRenderer.parent.isEnabled()) {
+                        continue;
+                    }
+                    textRenderer.render(scene.getViewMatrix(), scene.getProjectionMatrix());
+                }
+            });
+        } else {
+            scene.onAfterRenderObservable.remove(scene.reservedDataStore.textRenderersHook);
+            for (const textRenderer of scene.reservedDataStore.textRenderers) {
+                textRenderer.dispose();
+            }
+            scene.reservedDataStore.textRenderersHook = null;
+            scene.reservedDataStore.textRenderers = null;
         }
     }
 
@@ -86,6 +141,13 @@ export class DebugTabComponent extends PaneComponent {
                 <LineContainerComponent title="HELPERS" selection={this.props.globalState}>
                     <RenderGridPropertyGridComponent globalState={this.props.globalState} scene={scene} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
+                    <CheckBoxLineComponent
+                        label="Names"
+                        isSelected={() => this._namesViewerEnabled}
+                        onSelect={() => {
+                            void this.switchNameViewerAsync();
+                        }}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="CORE TEXTURE CHANNELS" selection={this.props.globalState}>
                     <CheckBoxLineComponent

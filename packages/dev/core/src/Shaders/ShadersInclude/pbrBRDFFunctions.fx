@@ -3,10 +3,13 @@
 #define BRDF_DIFFUSE_MODEL_EON 0
 #define BRDF_DIFFUSE_MODEL_BURLEY 1
 #define BRDF_DIFFUSE_MODEL_LAMBERT 2
+#define BRDF_DIFFUSE_MODEL_LEGACY 3
 #define DIELECTRIC_SPECULAR_MODEL_GLTF 0
 #define DIELECTRIC_SPECULAR_MODEL_OPENPBR 1
 #define CONDUCTOR_SPECULAR_MODEL_GLTF 0
 #define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
+
+#ifndef PBR_VERTEX_SHADER
 
 // ______________________________________________________________________
 //
@@ -24,8 +27,7 @@
 #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
     vec3 getF82Specular(float NdotV, vec3 F0, vec3 edgeTint, float roughness) {
         // F82 specular model for metals
-        // https://www.slideshare.net/PeterKutz/fresnel-equations-considered-harmful
-        // Peter Kutz, 2020
+        // https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/metal
         const float cos_theta_max = 0.142857143; // 1 / 7
         
         const float one_minus_cos_theta_max_to_the_fifth = 0.462664366; // (1 - cos_theta_max)^5
@@ -505,3 +507,5 @@ vec3 diffuseBRDF_EON(vec3 albedo, float roughness, float NdotL, float NdotV, flo
         return saturate((NdotL + w) * invt2);
     }
 #endif
+
+#endif // PBR_VERTEX_SHADER

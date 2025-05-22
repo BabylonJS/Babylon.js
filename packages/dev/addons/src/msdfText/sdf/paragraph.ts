@@ -62,14 +62,14 @@ export class SdfTextParagraph {
                             return 0;
                     }
                 })();
-                const translate = this.options.translate?.multiplyByFloats(width, height);
-                line.glyphs.forEach((glyph) => {
+
+                const x = this.options.translate ? this.options.translate.x * width : 0;
+                const y = this.options.translate ? this.options.translate.y * height : 0;
+                for (const glyph of line.glyphs) {
                     glyph.x += anchor;
-                    if (translate) {
-                        glyph.x += translate.x;
-                        glyph.y += translate.y;
-                    }
-                });
+                    glyph.x += x;
+                    glyph.y += y;
+                }
             });
         }
 
@@ -120,7 +120,7 @@ export class SdfTextParagraph {
             const charWidth = char.width;
             const kerning = lastChar ? this.fontAsset._getKerning(lastChar.id, char.id) : 0;
 
-            currentCursor += kerning + char.xoffset;
+            currentCursor += kerning;
             const newWidth = currentCursor + charWidth;
             const cursorProgress = char.xadvance + this.options.letterSpacing;
             const nextPosition = currentCursor + cursorProgress;
@@ -140,7 +140,7 @@ export class SdfTextParagraph {
             }
 
             const x = currentCursor;
-            const y = currentLine * this.lineHeight + char.yoffset;
+            const y = currentLine * this.lineHeight;
 
             currentGlyphs.push({
                 char,
@@ -161,6 +161,9 @@ export class SdfTextParagraph {
         }
 
         if (currentGlyphs.length > 0) {
+            if (lastChar) {
+                // currentWidth += lastChar.xadvance;
+            }
             pushCurrentLine();
         }
 
