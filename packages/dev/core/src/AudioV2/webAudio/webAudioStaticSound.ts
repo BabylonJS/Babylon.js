@@ -74,7 +74,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
         if (options.outBus) {
             this.outBus = options.outBus;
-        } else {
+        } else if (options.defaultToMainBus !== false) {
             await this.engine.isReadyPromise;
             this.outBus = this.engine.defaultMainBus;
         }
