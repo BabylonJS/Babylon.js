@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { DeepImmutable } from "core/types";
+import type { DeepImmutable } from "core/types";
 import type { IMatrixLike } from "../math.like";
 
 /** @internal */
