@@ -15,7 +15,6 @@ uniform mat4 transform;
 uniform mat4 parentWorld;
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec3 center;
 uniform int mode;
 
 varying vec2 atlasUV;
@@ -31,7 +30,7 @@ void main(void) {
             viewPos.y /= viewPos.z;
             viewPos.z = 1.0;
         }
-        gl_Position = projection * vec4(viewPos + worldPos.xyz,1.0); 
+        gl_Position = projection * vec4(viewPos + worldPos.xyz, 1.0); 
     } else {
         vec3 viewPos = (view * parentWorld * worldPos).xyz; 
         gl_Position = projection * vec4(viewPos,1.0); 
