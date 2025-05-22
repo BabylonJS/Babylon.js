@@ -530,8 +530,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     private readonly _onFastPathRenderObserver: Nullable<Observer<number>>;
 
     /**
-     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
-     * or used a shadow, depth texture...
+     * Instantiate a render target texture. This is mainly used to render the scene off screen, to apply (for instance) post processing effects
+     * or use a shadow or depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
      * @param scene The scene the RTT belongs to. Default is the last created scene.
@@ -540,8 +540,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
 
     /**
-     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
-     * or used a shadow, depth texture...
+     * Instantiate a render target texture. This is mainly used to render the scene off screen, to apply (for instance) post processing effects
+     * or use a shadow or depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
      * @param scene The scene the RTT belongs to. Default is the last created scene
