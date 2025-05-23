@@ -583,13 +583,13 @@ export class PreviewManager {
             } else if (this._globalState.mode === NodeMaterialModes.GaussianSplatting) {
                 switch (this._globalState.previewType) {
                     case PreviewType.Parrot:
-                        SceneLoader.AppendAsync("https://assets.babylonjs.com/splats/", "gs_Sqwakers_trimed.splat", this._scene).then(() => {
+                        SceneLoader.AppendAsync("https://raw.githubusercontent.com/CedricGuillemet/dump/master/", "hornedlizard.spz", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
                         break;
                     case PreviewType.BricksSkull:
-                        SceneLoader.AppendAsync("https://assets.babylonjs.com/splats/", "gs_Skull.splat", this._scene).then(() => {
+                        SceneLoader.AppendAsync("https://raw.githubusercontent.com/CedricGuillemet/dump/master/", "hornedlizard.spz", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
