@@ -23,6 +23,7 @@
             "loaders/*": ["dev/loaders/src/*"],
             "serializers/*": ["dev/serializers/src/*"],
             "inspector/*": ["dev/inspector/src/*"],
+            "insepctor-v2/*": ["dev/inspector-v2/src/*"],
             "node-editor/*": ["tools/nodeEditor/src/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
             "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"],
