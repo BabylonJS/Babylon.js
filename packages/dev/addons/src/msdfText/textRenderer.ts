@@ -384,11 +384,11 @@ export class TextRenderer implements IDisposable {
         let fragment: string = "";
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
-            vertex = (await import("./shaders/msdf.vertex")).msdfVertexShader.shader;
+            vertex = (await import("./shadersWGSL/msdf.vertex")).msdfVertexShaderWGSL.shader;
             fragment = (await import("./shadersWGSL/msdf.fragment")).msdfPixelShaderWGSL.shader;
         } else {
             vertex = (await import("./shaders/msdf.vertex")).msdfVertexShader.shader;
-            fragment = (await import("./shadersWGSL/msdf.fragment")).msdfPixelShaderWGSL.shader;
+            fragment = (await import("./shaders/msdf.fragment")).msdfPixelShader.shader;
         }
 
         const textRenderer = new TextRenderer(engine, shaderLanguage, font);
