@@ -73,7 +73,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
         if (options.outBus) {
             this.outBus = options.outBus;
-        } else {
+        } else if (options.outBusAutoDefault !== false) {
             await this.engine.isReadyPromise;
             this.outBus = this.engine.defaultMainBus;
         }
