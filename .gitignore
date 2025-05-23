@@ -19,6 +19,9 @@ src/[Ss]haders/**/*.ts
 *.compute.ts
 **/ShadersInclude/**/*.ts
 shaders/**/*.ts
+**/[Ss]haders/**/*.ts
+**/[Ss]hadersInclude/**/*.ts
+**/[Ss]hadersWGSL/**/*.ts
 jest-screenshot-report/
 junit.xml
 .env

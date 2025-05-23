@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfVertexShaderWGSL";
-const shader = `
 #define BILLBOARD 1
 #define BILLBOARDSCREENPROJECTED 2
 
@@ -40,7 +37,4 @@ fn main(input: VertexInputs) -> FragmentInputs {
         input.uvs.x + input.offsets.x * input.uvs.z,
         input.uvs.y + (1.0 - input.offsets.y) * input.uvs.w
     );
-}`;
-
-/** @internal */
-export const msdfVertexShaderWGSL = { name, shader };
+}

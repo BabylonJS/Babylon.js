@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfFragmentShader";
-const shader = `
 #extension GL_OES_standard_derivatives : enable
 
 precision highp float;
@@ -37,7 +34,4 @@ void main(void)
     vec4 strokedFragColor = vec4(uStrokeColor.rgb, border * uStrokeColor.a);
 
     gl_FragColor = mix(filledFragColor, strokedFragColor, border);
-}`;
-
-/** @internal */
-export const msdfFragmentShader = { name, shader };
+}
