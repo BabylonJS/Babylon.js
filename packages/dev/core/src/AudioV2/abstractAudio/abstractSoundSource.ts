@@ -14,16 +14,16 @@ import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
  */
 export interface ISoundSourceOptions extends IAudioAnalyzerOptions, ISpatialAudioOptions, IStereoAudioOptions {
     /**
-     * Whether the sound's `outBus` should be set to the audio engine's main bus by default. Defaults to `true` for all sound sources except microphones.
-     */
-    defaultToMainBus: boolean;
-
-    /**
      * The output bus for the sound source. Defaults to `null`.
-     * - If not set or `null`, and `defaultToMainBus` is `true`, then the sound source is automatically connected to the audio engine's default main bus.
+     * - If not set or `null`, and `outBusAutoDefault` is `true`, then the sound source is automatically connected to the audio engine's default main bus.
      * @see {@link AudioEngineV2.defaultMainBus}
      */
     outBus: Nullable<PrimaryAudioBus>;
+
+    /**
+     * Whether the sound's `outBus` should default to the audio engine's main bus. Defaults to `true` for all sound sources except microphones.
+     */
+    outBusAutoDefault: boolean;
 }
 
 /**

@@ -6,10 +6,10 @@ import { expect, test } from "@playwright/test";
 
 export const AddSharedAbstractSoundSourceOutBusTests = (audioNodeType: AudioNodeType) => {
     test.describe(`${audioNodeType} outBus`, () => {
-        test("Setting `defaultToMainBus` to false should play sound at 0 volume", async ({ page }) => {
+        test("Setting `outBusAutoDefault` to false should play sound at 0 volume", async ({ page }) => {
             await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                 await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
-                const { sound } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, { defaultToMainBus: false });
+                const { sound } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, { outBusAutoDefault: false });
 
                 sound.play();
                 await AudioV2Test.WaitAsync(1, () => {
@@ -23,10 +23,10 @@ export const AddSharedAbstractSoundSourceOutBusTests = (audioNodeType: AudioNode
             expect(volumes[Channel.R]).toBeCloseTo(0, 0);
         });
 
-        test("Setting `defaultToMainBus` to true should play sound at 1x volume", async ({ page }) => {
+        test("Setting `outBusAutoDefault` to true should play sound at 1x volume", async ({ page }) => {
             await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                 await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
-                const { sound } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, { defaultToMainBus: true });
+                const { sound } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, { outBusAutoDefault: true });
 
                 sound.play();
                 await AudioV2Test.WaitAsync(1, () => {

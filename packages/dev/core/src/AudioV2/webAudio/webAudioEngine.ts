@@ -222,7 +222,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         return await this.createSoundSourceAsync(name, new MediaStreamAudioSourceNode(this._audioContext, { mediaStream }), {
-            defaultToMainBus: false,
+            outBusAutoDefault: false,
             ...options,
         });
     }
