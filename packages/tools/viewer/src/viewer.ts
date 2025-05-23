@@ -58,7 +58,7 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
 // TODO: Include "high" when remaining IBL shadow issues are resolved.
-const shadowQualityOptions = ["none", "normal" /*, "high"*/] as const;
+const shadowQualityOptions = ["none", "normal", "high"] as const;
 export type ShadowQuality = (typeof shadowQualityOptions)[number];
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
@@ -1551,16 +1551,8 @@ export class Viewer implements IDisposable {
                 if (this._shadowQuality === "normal") {
                     await this._updateShadowMap(abortController.signal);
                 } else if (this._shadowQuality === "high") {
-                    const isWebGPU = this._scene.getEngine().isWebGPU;
-                    // there is some issue with meshes with indices, so disable environment shadows for now
-                    const hasAnyAnimationOrIndices = this._loadedModelsBacking.some(
-                        (model) => model.assetContainer.animationGroups.length > 0 && model.assetContainer.meshes.some((mesh) => mesh.getIndices() !== null)
-                    );
-
-                    if (this._loadedModelsBacking.length > 0 && !(isWebGPU && hasAnyAnimationOrIndices)) {
+                    if (this._loadedModelsBacking.length > 0) {
                         await this._updateEnvShadow(abortController.signal);
-                    } else {
-                        this._log("Environment shadows are not supported in WebGPU with animated meshes.");
                     }
                 }
             }
@@ -1647,14 +1639,13 @@ export class Viewer implements IDisposable {
         };
 
         this._snapshotHelper.disableSnapshotRendering();
-
         let high = this._shadowState.high;
         if (!high) {
             const pipeline = new IblShadowsRenderPipeline(
                 "ibl shadows",
                 this._scene,
                 {
-                    resolutionExp: 5,
+                    resolutionExp: 6,
                     sampleDirections: 3,
                     ssShadowsEnabled: true,
                     shadowRemanence: 0.7,
@@ -1693,7 +1684,7 @@ export class Viewer implements IDisposable {
 
             updateMaterial();
 
-            pipeline.onShadowTextureReadyObservable.addOnce(updateMaterial);
+            pipeline.onShadowTextureReadyObservable.add(updateMaterial);
 
             const resizeObserver = this._engine.onResizeObservable.add(() => {
                 updateMaterial();
@@ -1719,6 +1710,9 @@ export class Viewer implements IDisposable {
                 ground: ground,
             };
         }
+        // Remove previous meshes and materials.
+        high.pipeline.clearShadowCastingMeshes();
+        high.pipeline.clearShadowReceivingMaterials();
 
         for (const model of this._loadedModelsBacking) {
             const meshes = model.assetContainer.meshes;
@@ -1753,7 +1747,7 @@ export class Viewer implements IDisposable {
 
         this._shadowState.high = high;
 
-        this._snapshotHelper.enableSnapshotRendering();
+        // this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
     }
 

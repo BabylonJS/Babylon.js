@@ -12,9 +12,10 @@
             uniform boneTextureWidth : f32;
         #else
             uniform mBones : array<mat4x4f, BonesPerMesh>;
-            #ifdef BONES_VELOCITY_ENABLED
-                uniform mPreviousBones : array<mat4x4f, BonesPerMesh>;
-            #endif
+        #endif
+
+        #ifdef BONES_VELOCITY_ENABLED
+            uniform mPreviousBones : array<mat4x4f, BonesPerMesh>;
         #endif
 
         #ifdef BONETEXTURE
