@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfVertexShader";
-const shader = `
 #define BILLBOARD 1
 #define BILLBOARDSCREENPROJECTED 2
 
@@ -37,7 +34,4 @@ void main(void) {
         gl_Position = projection * vec4(viewPos,1.0); 
     }
     atlasUV = vec2(uvs.x + offsets.x * uvs.z, uvs.y + (1.0 - offsets.y) * uvs.w);
-}`;
-
-/** @internal */
-export const msdfVertexShader = { name, shader };
+}
