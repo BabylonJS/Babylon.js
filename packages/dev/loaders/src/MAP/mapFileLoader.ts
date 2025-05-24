@@ -1,10 +1,10 @@
+import { AssetContainer } from "core/assetContainer";
 import type { ISceneLoaderAsyncResult, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import type { Scene } from "core/scene";
 import { MapFileLoaderMetadata } from "./mapFileLoader.metadata";
 import { MapLoader } from "./mapLoader";
-import { MapLoadingOptions } from "./mapLoadingOptions";
-import { AssetContainer } from "core/assetContainer";
+import type { MapLoadingOptions } from "./mapLoadingOptions";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
@@ -55,32 +55,23 @@ export class MapFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public importMeshAsync(_meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown): Promise<ISceneLoaderAsyncResult> {
+    public async importMeshAsync(_meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown): Promise<ISceneLoaderAsyncResult> {
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("Map loader expects string data.");
         }
 
-        return MapLoader.loadMap(data, scene, this._loadingOptions)
-            .then((result) => {
-                return {
-                    meshes: result.meshes,
-                    particleSystems: [],
-                    skeletons: [],
-                    animationGroups: [],
-                    transformNodes: [result.rootNode],
-                    geometries: [],
-                    lights: result.lights,
-                    spriteManagers: [],
-                    metadata: {
-                        entities: result.entities,
-                    },
-                } as ISceneLoaderAsyncResult;
-            })
-            .catch((e) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                return Promise.reject(e);
-            });
+        const result = MapLoader.loadMap(data, scene, this._loadingOptions);
+        return {
+            meshes: result.meshes,
+            particleSystems: [],
+            skeletons: [],
+            animationGroups: [],
+            transformNodes: [result.rootNode],
+            geometries: [],
+            lights: result.lights,
+            spriteManagers: [],
+        };
     }
 
     /**
@@ -109,33 +100,22 @@ export class MapFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns The loaded asset container
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public loadAssetContainerAsync(scene: Scene, data: unknown): Promise<AssetContainer> {
+    public async loadAssetContainerAsync(scene: Scene, data: unknown): Promise<AssetContainer> {
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("Map loader expects string data.");
         }
         const assetContainer = new AssetContainer(scene);
 
-        return MapLoader.loadMap(data, scene, this._loadingOptions)
+        return this.importMeshAsync(null, scene, data)
             .then((result) => {
-                assetContainer.meshes = result.meshes;
-                assetContainer.lights = result.lights;
-
-                // Add all loaded entities (which should be children of mapRootNode) to the asset container.
-                // Also, add the mapRootNode itself to the asset container if it has any children.
-                if (result.entities.length > 0) {
-                    assetContainer.transformNodes.push(result.rootNode);
-                    // The entities are already parented to mapRootNode by MapLoader.loadMap,
-                    // so we don't need to add them explicitly to assetContainer.transformNodes if mapRootNode is added.
-                } else {
-                    result.rootNode.dispose(); // Clean up if no entities were loaded under it
-                }
-
+                result.meshes.forEach((mesh) => assetContainer.meshes.push(mesh));
+                result.lights.forEach((light) => assetContainer.lights.push(light));
+                result.transformNodes.forEach((node) => assetContainer.transformNodes.push(node));
                 return assetContainer;
-            })
-            .catch((e) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                return Promise.reject(e);
+            }) // eslint-disable-next-line github/no-then
+            .catch((ex) => {
+                throw ex;
             });
     }
 }

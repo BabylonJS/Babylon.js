@@ -40,18 +40,17 @@ export class MapLoader {
 
     /**
      * Loads a MAP file from the specified URL and creates meshes in the scene
-     * @param url - The URL of the .map file to load
+     * @param mapData - The .map file content to load
      * @param scene - The Babylon.js scene to add the meshes to
      * @param rootNode - Optional root node to parent the meshes to
      * @param materials - Optional map of texture names to materials
      * @returns Promise that resolves with the map load result containing meshes and entities
      */
-    public static async loadMap(url: string, scene: Scene, loadingOptions?: MapLoadingOptions): Promise<MapLoadResult> {
+    public static loadMap(mapData: string, scene: Scene, loadingOptions?: MapLoadingOptions): MapLoadResult {
         // Create a root node if not provided
         const mapRoot = new TransformNode("map", scene);
 
         try {
-            const mapData = await this.fetchMapFile(url);
             const entities = MapParser.parseMapData(mapData, loadingOptions);
             const result = this.createMeshes(entities, scene, mapRoot, loadingOptions?.materials);
             return result;
@@ -59,19 +58,6 @@ export class MapLoader {
             console.error("Error loading MAP file:", error);
             throw error;
         }
-    }
-
-    /**
-     * Fetches the MAP file from the specified URL
-     * @param url - The URL of the .map file to fetch
-     * @returns Promise that resolves with the map file contents
-     */
-    private static async fetchMapFile(url: string): Promise<string> {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch map file: ${response.statusText}`);
-        }
-        return response.text();
     }
 
     /**
@@ -90,7 +76,7 @@ export class MapLoader {
 
         // Create a standard gray material for all brushes (default)
         const defaultMaterial = new StandardMaterial("mapDefaultMaterial", scene);
-        defaultMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
+        defaultMaterial.diffuseColor = new Color3(0.6, 0.6, 0.6);
 
         // Track missing textures to avoid duplicate warnings
         const missingTextures = new Set<string>();
@@ -390,8 +376,8 @@ export class MapLoader {
                 const scaleY = plane.yScale || 1;
 
                 // Check for invalid scales to prevent division by zero or extreme values
-                const safeScaleX = Math.abs(scaleX) < 1e-6 ? 1.0 : scaleX;
-                const safeScaleY = Math.abs(scaleY) < 1e-6 ? 1.0 : scaleY;
+                const safeScaleX = Math.abs(scaleX) < MapLoader.EPSILON ? 1.0 : scaleX;
+                const safeScaleY = Math.abs(scaleY) < MapLoader.EPSILON ? 1.0 : scaleY;
                 if (safeScaleX !== scaleX || safeScaleY !== scaleY) {
                     console.warn(`Invalid texture scale encountered for texture ${plane.textureName}: scaleX=${scaleX}, scaleY=${scaleY}. Using safe scale.`);
                 }
@@ -420,7 +406,7 @@ export class MapLoader {
 
     private static createDefaultMaterial(name: string, scene: Scene): StandardMaterial {
         const material = new StandardMaterial(`texture_${name}`, scene);
-        material.diffuseColor = new Color3(Math.random() * 0.5 + 0.25, Math.random() * 0.5 + 0.25, Math.random() * 0.5 + 0.25);
+        material.diffuseColor = new Color3(0.6, 0.6, 0.6);
         return material;
     }
 

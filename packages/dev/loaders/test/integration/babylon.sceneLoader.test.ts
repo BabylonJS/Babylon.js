@@ -1,6 +1,6 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
-import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw, bvhThreeBonesRaw } from "./testData";
+import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw, bvhThreeBonesRaw, mapRaw } from "./testData";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
@@ -1013,6 +1013,202 @@ describe("Babylon Scene Loader", function () {
                     expect(boneAnim.numAnimations).toBe(0);
                 }
             });
+        });
+    });
+
+    describe("#MAP", () => {
+        it("should load a basic MAP file", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", "data:" + content, scene, undefined, ".map").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        transformNodes: result.transformNodes.length,
+                        lights: result.lights.length,
+                        rootNodeName: result.transformNodes[0]?.name,
+                        firstMeshName: result.meshes[0]?.name,
+                        firstMeshVertices: result.meshes[0]?.getTotalVertices() || 0,
+                    };
+                });
+            }, mapRaw);
+
+            expect(assertionData.meshes).toBeGreaterThan(0);
+            expect(assertionData.transformNodes).toBe(1);
+            expect(assertionData.lights).toBe(0); // Default loading options don't load lights
+            expect(assertionData.rootNodeName).toBe("map");
+            expect(assertionData.firstMeshName).toContain("worldspawn_brush_");
+            expect(assertionData.firstMeshVertices).toBeGreaterThan(0);
+        });
+
+        it("should load MAP file with lights enabled", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.ImportMeshAsync(
+                    "",
+                    "",
+                    "data:" + content,
+                    scene,
+                    {
+                        pluginOptions: {
+                            map: {
+                                loadLights: true,
+                            },
+                        },
+                    },
+                    ".map"
+                ).then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        lights: result.lights.length,
+                        transformNodes: result.transformNodes.length,
+                        sceneLights: scene.lights.length,
+                    };
+                });
+            }, mapRaw);
+
+            expect(assertionData.meshes).toBeGreaterThan(0);
+            expect(assertionData.lights).toBe(1); // Now there is a light in the map data
+            expect(assertionData.transformNodes).toBe(1);
+            expect(assertionData.sceneLights).toBe(1);
+        });
+
+        it("should load MAP file into AssetContainer", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.LoadAssetContainerAsync("", "data:" + content, scene, undefined, ".map").then((container) => {
+                    return {
+                        meshes: container.meshes.length,
+                        transformNodes: container.transformNodes.length,
+                        lights: container.lights.length,
+                        materials: container.materials.length,
+                        rootNodeName: container.transformNodes[0]?.name,
+                    };
+                });
+            }, mapRaw);
+
+            expect(assertionData.meshes).toBeGreaterThan(0);
+            expect(assertionData.transformNodes).toBe(1);
+            expect(assertionData.lights).toBe(0); // Default loading options don't load lights
+            expect(assertionData.materials).toBeGreaterThan(0);
+            expect(assertionData.rootNodeName).toBe("map");
+        });
+
+        it("should parse MAP entities correctly", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", "data:" + content, scene, undefined, ".map").then((result) => {
+                    const rootNode = result.transformNodes[0];
+                    const entityNodes = rootNode?.getChildren() || [];
+
+                    return {
+                        entityCount: entityNodes.length,
+                        entityNames: entityNodes.map((node) => node.name),
+                        worldspawnExists: entityNodes.some((node) => node.name === "worldspawn"),
+                        playerStartExists: entityNodes.some((node) => node.name === "info_player_start"),
+                        lightExists: entityNodes.some((node) => node.name === "light"),
+                        playerStartMetadata: entityNodes.find((node) => node.name === "info_player_start")?.metadata,
+                        lightMetadata: entityNodes.find((node) => node.name === "light")?.metadata,
+                    };
+                });
+            }, mapRaw);
+
+            expect(assertionData.entityCount).toBe(3); // worldspawn, info_player_start, and light
+            expect(assertionData.entityNames).toContain("worldspawn");
+            expect(assertionData.entityNames).toContain("info_player_start");
+            expect(assertionData.entityNames).toContain("light");
+            expect(assertionData.worldspawnExists).toBe(true);
+            expect(assertionData.playerStartExists).toBe(true);
+            expect(assertionData.lightExists).toBe(true);
+            expect(assertionData.playerStartMetadata).toBeDefined();
+            expect(assertionData.playerStartMetadata.classname).toBe("info_player_start");
+            expect(assertionData.playerStartMetadata.origin).toBe("32 32 24");
+            expect(assertionData.lightMetadata).toBeDefined();
+            expect(assertionData.lightMetadata.classname).toBe("light");
+            expect(assertionData.lightMetadata.light).toBe("250");
+            expect(assertionData.lightMetadata.origin).toBe("32 32 32");
+        });
+
+        it("should handle MAP coordinate system conversion", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", "data:" + content, scene, undefined, ".map").then((result) => {
+                    const rootNode = result.transformNodes[0];
+                    const playerStartNode = rootNode?.getChildren().find((node) => node.name === "info_player_start");
+                    const lightNode = rootNode?.getChildren().find((node) => node.name === "light");
+
+                    return {
+                        playerStartPosition: playerStartNode?.position
+                            ? {
+                                  x: playerStartNode.position.x,
+                                  y: playerStartNode.position.y,
+                                  z: playerStartNode.position.z,
+                              }
+                            : null,
+                        lightPosition: lightNode?.position
+                            ? {
+                                  x: lightNode.position.x,
+                                  y: lightNode.position.y,
+                                  z: lightNode.position.z,
+                              }
+                            : null,
+                        meshCount: result.meshes.length,
+                        firstMeshBounds: result.meshes[0]
+                            ? {
+                                  min: result.meshes[0].getBoundingInfo().boundingBox.minimumWorld,
+                                  max: result.meshes[0].getBoundingInfo().boundingBox.maximumWorld,
+                              }
+                            : null,
+                    };
+                });
+            }, mapRaw);
+
+            expect(assertionData.playerStartPosition).toEqual({
+                x: 32,
+                y: 24,
+                z: 32,
+            });
+            expect(assertionData.lightPosition).toEqual({
+                x: 32,
+                y: 32,
+                z: 32,
+            });
+            expect(assertionData.meshCount).toBeGreaterThan(0);
+            expect(assertionData.firstMeshBounds).toBeDefined();
+        });
+
+        it("should load MAP file with lights into AssetContainer", async () => {
+            const assertionData = await page.evaluate((content) => {
+                const scene = window.scene!;
+                return BABYLON.SceneLoader.LoadAssetContainerAsync(
+                    "",
+                    "data:" + content,
+                    scene,
+                    {
+                        pluginOptions: {
+                            map: {
+                                loadLights: true,
+                            },
+                        },
+                    },
+                    ".map"
+                ).then((container) => {
+                    return {
+                        meshes: container.meshes.length,
+                        transformNodes: container.transformNodes.length,
+                        lights: container.lights.length,
+                        materials: container.materials.length,
+                        rootNodeName: container.transformNodes[0]?.name,
+                        lightIntensity: container.lights[0]?.intensity || 0,
+                    };
+                });
+            }, mapRaw);
+
+            expect(assertionData.meshes).toBeGreaterThan(0);
+            expect(assertionData.transformNodes).toBe(1);
+            expect(assertionData.lights).toBe(1); // Light should be loaded with loadLights: true
+            expect(assertionData.materials).toBeGreaterThan(0);
+            expect(assertionData.rootNodeName).toBe("map");
+            expect(assertionData.lightIntensity).toBeGreaterThan(0); // Light should have intensity
         });
     });
 
