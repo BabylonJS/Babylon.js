@@ -15,6 +15,11 @@ export type MapLoadingOptions = {
     loadTriggers?: boolean;
 
     /**
+     * Whether to load the lights.
+     */
+    loadLights?: boolean;
+
+    /**
      * Map of texture names to materials.
      */
     materials?: MaterialMap;

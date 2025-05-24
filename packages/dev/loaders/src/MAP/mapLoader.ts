@@ -14,6 +14,8 @@ import { Scene } from "core/scene";
 import { MapLoadingOptions } from "./mapLoadingOptions";
 import { MapMathUtils } from "./mapMathUtils";
 import { Brush, Entity, MapParser } from "./mapParser";
+import { Light } from "core/Lights/light";
+import { PointLight } from "core/Lights/pointLight";
 
 /**
  * Interface for a map of texture names to materials
@@ -27,12 +29,14 @@ export interface MaterialMap {
  */
 export interface MapLoadResult {
     rootNode: TransformNode;
-    meshes: Mesh[];
     entities: Entity[];
+    meshes: Mesh[];
+    lights: Light[];
 }
 
 export class MapLoader {
     private static readonly EPSILON = 1e-5;
+    private static readonly DEFAULT_LIGHT_INTENSITY: number = 200;
 
     /**
      * Loads a MAP file from the specified URL and creates meshes in the scene
@@ -78,9 +82,11 @@ export class MapLoader {
      * @param materials - Optional map of texture names to materials
      * @returns Object containing created meshes and entity nodes
      */
-    private static createMeshes(entities: Entity[], scene: Scene, rootNode: TransformNode, materials?: MaterialMap): MapLoadResult {
+    private static createMeshes(entities: Entity[], scene: Scene, rootNode: TransformNode, loadingOptions?: MapLoadingOptions): MapLoadResult {
         const meshes: Mesh[] = [];
+        const lights: Light[] = [];
         const entityNodes: TransformNode[] = [];
+        const materials = loadingOptions?.materials;
 
         // Create a standard gray material for all brushes (default)
         const defaultMaterial = new StandardMaterial("mapDefaultMaterial", scene);
@@ -127,6 +133,24 @@ export class MapLoader {
                         originParts[1] // Y in Quake is Z in Babylon
                     );
                 }
+            } else if (loadingOptions?.loadLights && entity.properties.has("light")) {
+                const originParts = entity.properties.get("origin")?.split(" ").map(Number);
+                const position = new Vector3();
+                if (originParts && originParts.length === 3) {
+                    // Convert from Quake (right-handed, Z-up) to Babylon.js (right-handed, Y-up)
+                    // Quake (x,y,z) -> Babylon (x,z,y)
+                    position.set(
+                        originParts[0],
+                        originParts[2], // Z in Quake is Y in Babylon
+                        originParts[1] // Y in Quake is Z in Babylon
+                    );
+                }
+
+                const intensity: number = Number(entity.properties.get("light")) || MapLoader.DEFAULT_LIGHT_INTENSITY;
+
+                const light = new PointLight("light", position, scene);
+                light.intensity = intensity / MapLoader.DEFAULT_LIGHT_INTENSITY;
+                lights.push(light);
             }
 
             // Process each brush in the entity
@@ -156,7 +180,7 @@ export class MapLoader {
             console.warn(`Missing materials for ${missingTextures.size} textures in the map`);
         }
 
-        return { rootNode, meshes, entities };
+        return { rootNode, entities, meshes, lights };
     }
 
     /**
