@@ -1,9 +1,9 @@
-import { MapLoadingOptions } from "./mapLoadingOptions";
+import type { MapLoadingOptions } from "./mapLoadingOptions";
 
 /**
  * Interface for a brush vertex in MAP format
  */
-export interface BrushVertex {
+export interface IBrushVertex {
     x: number;
     y: number;
     z: number;
@@ -12,8 +12,8 @@ export interface BrushVertex {
 /**
  * Interface for a brush plane in MAP format
  */
-export interface BrushPlane {
-    points: [BrushVertex, BrushVertex, BrushVertex];
+export interface IBrushPlane {
+    points: [IBrushVertex, IBrushVertex, IBrushVertex];
     textureName: string;
     xOffset: number;
     yOffset: number;
@@ -25,28 +25,35 @@ export interface BrushPlane {
 /**
  * Interface for a brush in MAP format
  */
-export interface Brush {
-    planes: BrushPlane[];
+export interface IBrush {
+    planes: IBrushPlane[];
 }
 
 /**
  * Interface for an entity in MAP format
  */
-export interface Entity {
+export interface IEntity {
     properties: Map<string, string>;
-    brushes: Brush[];
+    brushes: IBrush[];
 }
+
+// Legacy exports for backward compatibility
+export type BrushVertex = IBrushVertex;
+export type BrushPlane = IBrushPlane;
+export type Brush = IBrush;
+export type Entity = IEntity;
 
 export class MapParser {
     /**
      * Parses the MAP file data into entities
      * @param mapData - The contents of the MAP file
+     * @param loadingOptions - Optional loading options
      * @returns Array of parsed entities
      */
-    public static parseMapData(mapData: string, loadingOptions?: MapLoadingOptions): Entity[] {
-        const entities: Entity[] = [];
-        let currentEntity: Entity | null = null;
-        let currentBrush: Brush | null = null;
+    public static ParseMapData(mapData: string, loadingOptions?: MapLoadingOptions): IEntity[] {
+        const entities: IEntity[] = [];
+        let currentEntity: IEntity | null = null;
+        let currentBrush: IBrush | null = null;
 
         // Remove comments (// style)
         const sanitizedData = mapData.replace(/\/\/.*$/gm, "");
@@ -60,7 +67,9 @@ export class MapParser {
             const line = lines[i].trim();
 
             // Skip empty lines
-            if (line === "") continue;
+            if (line === "") {
+                continue;
+            }
 
             try {
                 // Start of an entity
@@ -104,6 +113,7 @@ export class MapParser {
                         const value = match[2];
                         currentEntity.properties.set(key, value);
                     } else {
+                        // eslint-disable-next-line no-console
                         console.warn(`Invalid entity property format at line ${lineNumber}: ${line}`);
                     }
                 }
@@ -117,7 +127,7 @@ export class MapParser {
 
                     const match = line.match(planePattern);
                     if (match) {
-                        const plane: BrushPlane = {
+                        const plane: IBrushPlane = {
                             points: [
                                 { x: parseFloat(match[1]), y: parseFloat(match[2]), z: parseFloat(match[3]) },
                                 { x: parseFloat(match[4]), y: parseFloat(match[5]), z: parseFloat(match[6]) },
@@ -137,12 +147,15 @@ export class MapParser {
 
                         currentBrush.planes.push(plane);
                     } else {
+                        // eslint-disable-next-line no-console
                         console.warn(`Invalid brush plane format at line ${lineNumber}: ${line}`);
                     }
                 } else if (line !== "{" && line !== "}" && !line.startsWith('"') && !line.startsWith("(")) {
+                    // eslint-disable-next-line no-console
                     console.warn(`Unrecognized line format at line ${lineNumber}: ${line}`);
                 }
             } catch (e) {
+                // eslint-disable-next-line no-console
                 console.error(`Error parsing line ${lineNumber}: ${line}`, e);
             }
         }

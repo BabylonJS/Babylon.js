@@ -58,10 +58,10 @@ export class MapFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     public async importMeshAsync(_meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown): Promise<ISceneLoaderAsyncResult> {
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            return Promise.reject("Map loader expects string data.");
+            return await Promise.reject("Map loader expects string data.");
         }
 
-        const result = MapLoader.loadMap(data, scene, this._loadingOptions);
+        const result = MapLoader.LoadMap(data, scene, this._loadingOptions);
         return {
             meshes: result.meshes,
             particleSystems: [],
@@ -81,16 +81,13 @@ export class MapFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns a promise which completes when objects have been loaded to the scene
      */
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    public loadAsync(scene: Scene, data: unknown): Promise<void> {
+    public async loadAsync(scene: Scene, data: unknown): Promise<void> {
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            return Promise.reject("Map loader expects string data.");
+            return await Promise.reject("Map loader expects string data.");
         }
 
-        // eslint-disable-next-line github/no-then
-        return this.importMeshAsync(null, scene, data).then(() => {
-            // return void
-        });
+        await this.importMeshAsync(null, scene, data);
     }
 
     /**
@@ -103,20 +100,15 @@ export class MapFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     public async loadAssetContainerAsync(scene: Scene, data: unknown): Promise<AssetContainer> {
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            return Promise.reject("Map loader expects string data.");
+            return await Promise.reject("Map loader expects string data.");
         }
         const assetContainer = new AssetContainer(scene);
 
-        return this.importMeshAsync(null, scene, data)
-            .then((result) => {
-                result.meshes.forEach((mesh) => assetContainer.meshes.push(mesh));
-                result.lights.forEach((light) => assetContainer.lights.push(light));
-                result.transformNodes.forEach((node) => assetContainer.transformNodes.push(node));
-                return assetContainer;
-            }) // eslint-disable-next-line github/no-then
-            .catch((ex) => {
-                throw ex;
-            });
+        const result = await this.importMeshAsync(null, scene, data);
+        result.meshes.forEach((mesh) => assetContainer.meshes.push(mesh));
+        result.lights.forEach((light) => assetContainer.lights.push(light));
+        result.transformNodes.forEach((node) => assetContainer.transformNodes.push(node));
+        return assetContainer;
     }
 }
 

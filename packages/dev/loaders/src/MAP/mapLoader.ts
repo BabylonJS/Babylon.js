@@ -1,7 +1,9 @@
-import { Material } from "core/Materials/material";
+import type { Light } from "core/Lights/light";
+import { PointLight } from "core/Lights/pointLight";
+import type { Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { Angle } from "core/Maths/math";
 import { Color3 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -10,54 +12,47 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { SubMesh } from "core/Meshes/subMesh";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
-import { MapLoadingOptions } from "./mapLoadingOptions";
+import type { Scene } from "core/scene";
+import type { MapLoadingOptions } from "./mapLoadingOptions";
 import { MapMathUtils } from "./mapMathUtils";
-import { Brush, Entity, MapParser } from "./mapParser";
-import { Light } from "core/Lights/light";
-import { PointLight } from "core/Lights/pointLight";
+import type { IBrush, IEntity } from "./mapParser";
+import { MapParser } from "./mapParser";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Interface for a map of texture names to materials
  */
-export interface MaterialMap {
+export interface IMaterialMap {
     [textureName: string]: Material;
 }
 
 /**
  * Interface for map loading result
  */
-export interface MapLoadResult {
+export interface IMapLoadResult {
     rootNode: TransformNode;
-    entities: Entity[];
+    entities: IEntity[];
     meshes: Mesh[];
     lights: Light[];
 }
 
 export class MapLoader {
-    private static readonly EPSILON = 1e-5;
-    private static readonly DEFAULT_LIGHT_INTENSITY: number = 200;
+    private static readonly _EPSILON = 1e-5;
+    private static readonly _DEFAULT_LIGHT_INTENSITY: number = 200;
 
     /**
      * Loads a MAP file from the specified URL and creates meshes in the scene
      * @param mapData - The .map file content to load
      * @param scene - The Babylon.js scene to add the meshes to
-     * @param rootNode - Optional root node to parent the meshes to
-     * @param materials - Optional map of texture names to materials
+     * @param loadingOptions - Optional options for the map loader
      * @returns Promise that resolves with the map load result containing meshes and entities
      */
-    public static loadMap(mapData: string, scene: Scene, loadingOptions?: MapLoadingOptions): MapLoadResult {
+    public static LoadMap(mapData: string, scene: Scene, loadingOptions?: MapLoadingOptions): IMapLoadResult {
         // Create a root node if not provided
         const mapRoot = new TransformNode("map", scene);
 
-        try {
-            const entities = MapParser.parseMapData(mapData, loadingOptions);
-            const result = this.createMeshes(entities, scene, mapRoot, loadingOptions?.materials);
-            return result;
-        } catch (error) {
-            console.error("Error loading MAP file:", error);
-            throw error;
-        }
+        const entities = MapParser.ParseMapData(mapData, loadingOptions);
+        return this._CreateMeshes(entities, scene, mapRoot, loadingOptions?.materials);
     }
 
     /**
@@ -65,10 +60,10 @@ export class MapLoader {
      * @param entities - The parsed entities from the MAP file
      * @param scene - The Babylon.js scene to add the meshes to
      * @param rootNode - The root node to parent the meshes to
-     * @param materials - Optional map of texture names to materials
+     * @param loadingOptions - Optional options for the map loader
      * @returns Object containing created meshes and entity nodes
      */
-    private static createMeshes(entities: Entity[], scene: Scene, rootNode: TransformNode, loadingOptions?: MapLoadingOptions): MapLoadResult {
+    private static _CreateMeshes(entities: IEntity[], scene: Scene, rootNode: TransformNode, loadingOptions?: MapLoadingOptions): IMapLoadResult {
         const meshes: Mesh[] = [];
         const lights: Light[] = [];
         const entityNodes: TransformNode[] = [];
@@ -132,10 +127,10 @@ export class MapLoader {
                     );
                 }
 
-                const intensity: number = Number(entity.properties.get("light")) || MapLoader.DEFAULT_LIGHT_INTENSITY;
+                const intensity: number = Number(entity.properties.get("light")) || MapLoader._DEFAULT_LIGHT_INTENSITY;
 
                 const light = new PointLight("light", position, scene);
-                light.intensity = intensity / MapLoader.DEFAULT_LIGHT_INTENSITY;
+                light.intensity = intensity / MapLoader._DEFAULT_LIGHT_INTENSITY;
                 lights.push(light);
             }
 
@@ -144,15 +139,15 @@ export class MapLoader {
                 const brush = entity.brushes[b];
 
                 // Convert brush planes to plane equations
-                const planeEquations = MapMathUtils.convertBrushPlanesToEquations(brush.planes);
+                const planeEquations = MapMathUtils.ConvertBrushPlanesToEquations(brush.planes);
 
                 if (planeEquations.length < 4) {
-                    console.warn(`Brush ${entityName}_brush_${b} has fewer than 4 valid planes, skipping`);
+                    Logger.Warn(`Brush ${entityName}_brush_${b} has fewer than 4 valid planes, skipping`);
                     continue;
                 }
 
                 // Create a brush mesh with per-face materials
-                const brushMesh = this.createBrushMesh(`${entityName}_brush_${b}`, brush, scene, multiMaterial, materialIndexMap, materials, missingTextures);
+                const brushMesh = this._CreateBrushMesh(`${entityName}_brush_${b}`, brush, scene, multiMaterial, materialIndexMap, materials, missingTextures);
 
                 if (brushMesh) {
                     brushMesh.parent = entityNode;
@@ -163,7 +158,7 @@ export class MapLoader {
 
         // Log summary of missing textures
         if (missingTextures.size > 0) {
-            console.warn(`Missing materials for ${missingTextures.size} textures in the map`);
+            Logger.Warn(`Missing materials for ${missingTextures.size} textures in the map`);
         }
 
         return { rootNode, entities, meshes, lights };
@@ -171,44 +166,52 @@ export class MapLoader {
 
     /**
      * Creates a mesh from a brush using its plane definitions
+     * @param name - The name of the brush
+     * @param brush - The brush to create a mesh from
+     * @param scene - The Babylon.js scene to add the mesh to
+     * @param multiMaterial - The multi-material to use for the mesh
+     * @param materialIndexMap - The map of material indices to sub-materials
+     * @param materials - Optional map of texture names to materials
+     * @param missingTextures - Optional set of missing textures
+     * @returns The created mesh or null if the brush has fewer than 4 planes
      */
-    private static createBrushMesh(
+    private static _CreateBrushMesh(
         name: string,
-        brush: Brush,
+        brush: IBrush,
         scene: Scene,
         multiMaterial: MultiMaterial,
         materialIndexMap: Map<string, number>,
-        materials?: MaterialMap,
+        materials?: IMaterialMap,
         missingTextures?: Set<string>
     ): Mesh | null {
         if (brush.planes.length < 4) {
-            console.warn(`Brush ${name} has fewer than 4 planes, skipping`);
+            Logger.Warn(`Brush ${name} has fewer than 4 planes, skipping`);
             return null;
         }
 
         try {
             // Convert brush planes to plane equations with texture information
-            const planeEquations = MapMathUtils.convertBrushPlanesToEquations(brush.planes);
+            const planeEquations = MapMathUtils.ConvertBrushPlanesToEquations(brush.planes);
 
             if (planeEquations.length < 4) {
-                console.warn(`Brush ${name} has fewer than 4 valid planes after filtering, skipping`);
+                Logger.Warn(`Brush ${name} has fewer than 4 valid planes after filtering, skipping`);
                 return null;
             }
 
             // Find vertices at plane intersections
-            const vertices = MapMathUtils.findBrushVertices(planeEquations);
+            const vertices = MapMathUtils.FindBrushVertices(planeEquations);
 
             if (vertices.length === 0) {
-                console.warn(`Brush ${name} has no valid vertices, creating fallback mesh`);
-                return this.createFallbackMesh(name, brush, scene);
+                Logger.Warn(`Brush ${name} has no valid vertices, creating fallback mesh`);
+                return this._CreateFallbackMesh(name, brush, scene);
             }
 
             // Create faces for each plane with texture information
-            const { positions, indices, uvs, materialIndices } = this.createBrushFaces(vertices, planeEquations, multiMaterial, materialIndexMap, materials, missingTextures);
+            const { positions, indices, uvs, materialIndices } = this._CreateBrushFaces(vertices, planeEquations, multiMaterial, materialIndexMap, materials, missingTextures);
 
             if (positions.length === 0 || indices.length === 0) {
-                console.warn(`Brush ${name} failed to generate valid geometry, creating fallback mesh`);
-                return this.createFallbackMesh(name, brush, scene);
+                Logger.Warn(`Brush ${name} failed to generate valid geometry, creating fallback mesh`);
+                return this._CreateFallbackMesh(name, brush, scene);
             }
 
             // Create a mesh with the calculated geometry
@@ -254,16 +257,26 @@ export class MapLoader {
 
                 return customMesh;
             } catch (e) {
-                console.error(`Error finalizing mesh ${name}:`, e);
-                return this.createFallbackMesh(name, brush, scene);
+                Logger.Error(`Error finalizing mesh ${name}:`, e);
+                return this._CreateFallbackMesh(name, brush, scene);
             }
         } catch (error) {
-            console.error(`Error creating brush mesh ${name}:`, error);
-            return this.createFallbackMesh(name, brush, scene);
+            Logger.Error(`Error creating brush mesh ${name}:`, error);
+            return this._CreateFallbackMesh(name, brush, scene);
         }
     }
 
-    private static createBrushFaces(
+    /**
+     * Creates faces for a brush using its vertices and plane equations
+     * @param vertices - The vertices of the brush
+     * @param planeEquations - The plane equations of the brush
+     * @param multiMaterial - The multi-material to use for the mesh
+     * @param materialIndexMap - The map of material indices to sub-materials
+     * @param materials - Optional map of texture names to materials
+     * @param missingTextures - Optional set of missing textures
+     * @returns The created faces with positions, indices, uvs, and material indices
+     */
+    private static _CreateBrushFaces(
         vertices: Vector3[],
         planeEquations: {
             normal: Vector3;
@@ -277,7 +290,7 @@ export class MapLoader {
         }[],
         multiMaterial: MultiMaterial,
         materialIndexMap: Map<string, number>,
-        materials?: MaterialMap,
+        materials?: IMaterialMap,
         missingTextures?: Set<string>
     ): { positions: number[]; indices: number[]; uvs: number[]; materialIndices: number[] } {
         const positions: number[] = [];
@@ -293,18 +306,18 @@ export class MapLoader {
             // Find vertices that lie on this plane
             for (const vertex of vertices) {
                 const distance = Math.abs(Vector3.Dot(plane.normal, vertex) + plane.distance);
-                if (distance < MapLoader.EPSILON) {
+                if (distance < MapLoader._EPSILON) {
                     planeVertices.push(vertex);
                 }
             }
 
             if (planeVertices.length < 3) {
-                console.warn(`Skipping plane with normal ${plane.normal.toString()} - only found ${planeVertices.length} vertices`);
+                Logger.Warn(`Skipping plane with normal ${plane.normal.toString()} - only found ${planeVertices.length} vertices`);
                 continue;
             }
 
             // Sort vertices in clockwise order
-            MapMathUtils.sortVerticesForFace(planeVertices, plane.normal);
+            MapMathUtils.SortVerticesForFace(planeVertices, plane.normal);
 
             // Get material index
             let materialIndex = 0;
@@ -314,10 +327,10 @@ export class MapLoader {
                     let material = materials?.[textureName];
                     if (!material) {
                         if (missingTextures && !missingTextures.has(textureName)) {
-                            console.warn(`Material not found for texture: ${textureName}`);
+                            Logger.Warn(`Material not found for texture: ${textureName}`);
                             missingTextures.add(textureName);
                         }
-                        material = this.createDefaultMaterial(textureName, multiMaterial.getScene());
+                        material = this._CreateDefaultMaterial(textureName, multiMaterial.getScene());
                     }
                     multiMaterial.subMaterials.push(material);
                     materialIndexMap.set(textureName, multiMaterial.subMaterials.length - 1);
@@ -327,10 +340,10 @@ export class MapLoader {
             materialIndices.push(materialIndex);
 
             // Triangulate using ear clipping
-            const triangleIndices = MapMathUtils.triangulatePolygon(planeVertices, plane.normal);
+            const triangleIndices = MapMathUtils.TriangulatePolygon(planeVertices, plane.normal);
 
             if (triangleIndices.length === 0) {
-                console.warn(`Failed to triangulate plane with normal ${plane.normal.toString()}`);
+                Logger.Warn(`Failed to triangulate plane with normal ${plane.normal.toString()}`);
                 continue;
             }
 
@@ -367,19 +380,19 @@ export class MapLoader {
                 }
 
                 // Get raw UV dot products
-                const uvDot0 = this.calculateUVForPoint(v0, plane);
-                const uvDot1 = this.calculateUVForPoint(v1, plane);
-                const uvDot2 = this.calculateUVForPoint(v2, plane);
+                const uvDot0 = this._CalculateUVForPoint(v0, plane);
+                const uvDot1 = this._CalculateUVForPoint(v1, plane);
+                const uvDot2 = this._CalculateUVForPoint(v2, plane);
 
                 // Apply scale and offset to get Quake texel coordinates
                 const scaleX = plane.xScale || 1;
                 const scaleY = plane.yScale || 1;
 
                 // Check for invalid scales to prevent division by zero or extreme values
-                const safeScaleX = Math.abs(scaleX) < MapLoader.EPSILON ? 1.0 : scaleX;
-                const safeScaleY = Math.abs(scaleY) < MapLoader.EPSILON ? 1.0 : scaleY;
+                const safeScaleX = Math.abs(scaleX) < MapLoader._EPSILON ? 1.0 : scaleX;
+                const safeScaleY = Math.abs(scaleY) < MapLoader._EPSILON ? 1.0 : scaleY;
                 if (safeScaleX !== scaleX || safeScaleY !== scaleY) {
-                    console.warn(`Invalid texture scale encountered for texture ${plane.textureName}: scaleX=${scaleX}, scaleY=${scaleY}. Using safe scale.`);
+                    Logger.Warn(`Invalid texture scale encountered for texture ${plane.textureName}: scaleX=${scaleX}, scaleY=${scaleY}. Using safe scale.`);
                 }
 
                 const uTexel0 = uvDot0.x / safeScaleX + plane.xOffset;
@@ -404,7 +417,13 @@ export class MapLoader {
         return { positions, indices, uvs, materialIndices };
     }
 
-    private static createDefaultMaterial(name: string, scene: Scene): StandardMaterial {
+    /**
+     * Creates a default (fallback) material for faces without a texture
+     * @param name - The name of the material
+     * @param scene - The Babylon.js scene to add the material to
+     * @returns The created material
+     */
+    private static _CreateDefaultMaterial(name: string, scene: Scene): StandardMaterial {
         const material = new StandardMaterial(`texture_${name}`, scene);
         material.diffuseColor = new Color3(0.6, 0.6, 0.6);
         return material;
@@ -412,8 +431,11 @@ export class MapLoader {
 
     /**
      * Calculates UV coordinates for a point on a textured plane
+     * @param point - The point to calculate the UV for
+     * @param plane - The plane to calculate the UV for
+     * @returns The calculated UV coordinates as a Vector2
      */
-    private static calculateUVForPoint(
+    private static _CalculateUVForPoint(
         point: Vector3,
         plane: {
             normal: Vector3;
@@ -487,19 +509,23 @@ export class MapLoader {
         }
 
         // 4. Calculate U and V dot products using rotated axes
-        let u_dot = Vector3.Dot(point, uAxis);
-        let v_dot = Vector3.Dot(point, vAxis);
+        const uDot = Vector3.Dot(point, uAxis);
+        const vDot = Vector3.Dot(point, vAxis);
 
         // 5. Return raw dot products. Scale and offset will be applied by the caller.
-        return new Vector2(u_dot, v_dot);
+        return new Vector2(uDot, vDot);
     }
 
     /**
      * Creates a simple fallback mesh for visualization when brush creation fails
+     * @param name - The name of the fallback mesh
+     * @param brush - The brush to create a fallback mesh for
+     * @param scene - The Babylon.js scene to add the fallback mesh to
+     * @returns The created fallback mesh
      */
-    private static createFallbackMesh(name: string, brush: Brush, scene: Scene): Mesh {
+    private static _CreateFallbackMesh(name: string, brush: IBrush, scene: Scene): Mesh {
         // Find the center point of all the planes
-        let center = new Vector3(0, 0, 0);
+        const center = new Vector3(0, 0, 0);
         let count = 0;
 
         for (const plane of brush.planes) {

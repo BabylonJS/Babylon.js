@@ -1,4 +1,4 @@
-import { MaterialMap } from "./mapLoader";
+import type { IMaterialMap } from "./mapLoader";
 
 /**
  * Options for loading MAP files
@@ -22,5 +22,5 @@ export type MapLoadingOptions = {
     /**
      * Map of texture names to materials.
      */
-    materials?: MaterialMap;
+    materials?: IMaterialMap;
 };

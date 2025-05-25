@@ -1,14 +1,16 @@
 import { Vector3 } from "core/Maths/math.vector";
-import { BrushPlane } from "./mapParser";
+import type { IBrushPlane } from "./mapParser";
 
 export class MapMathUtils {
-    private static readonly DETERMINANT_EPSILON = 1e-5;
-    private static readonly POSITION_EPSILON = 1e-3;
+    private static readonly _DETERMINANT_EPSILON = 1e-5;
+    private static readonly _POSITION_EPSILON = 1e-3;
 
     /**
      * Calculates the determinant of a 3x3 matrix
+     * @param matrix - The 3x3 matrix to calculate the determinant of
+     * @returns The determinant of the matrix
      */
-    public static determinant3x3(matrix: number[][]): number {
+    public static Determinant3x3(matrix: number[][]): number {
         return (
             matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
             matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0]) +
@@ -18,28 +20,34 @@ export class MapMathUtils {
 
     /**
      * Solves a 3x3 system of linear equations using Cramer's rule
+     * @param matrix - The 3x3 matrix to solve
+     * @param constants - The constants to solve for
+     * @param precomputedDet - The precomputed determinant of the matrix (optional)
+     * @returns The solution to the system of equations or null if the matrix is singular
      */
-    public static solveLinearSystem3x3(matrix: number[][], constants: number[], precomputedDet?: number): number[] | null {
+    public static SolveLinearSystem3x3(matrix: number[][], constants: number[], precomputedDet?: number): number[] | null {
         if (matrix.length !== 3 || matrix.some((row) => row.length !== 3) || constants.length !== 3) {
             throw new Error("Expected a 3x3 matrix and 3-length constants array.");
         }
 
-        const det = precomputedDet !== undefined ? precomputedDet : this.determinant3x3(matrix);
-        if (Math.abs(det) < this.DETERMINANT_EPSILON) return null;
+        const det = precomputedDet !== undefined ? precomputedDet : this.Determinant3x3(matrix);
+        if (Math.abs(det) < this._DETERMINANT_EPSILON) {
+            return null;
+        }
 
-        const detX = this.determinant3x3([
+        const detX = this.Determinant3x3([
             [constants[0], matrix[0][1], matrix[0][2]],
             [constants[1], matrix[1][1], matrix[1][2]],
             [constants[2], matrix[2][1], matrix[2][2]],
         ]);
 
-        const detY = this.determinant3x3([
+        const detY = this.Determinant3x3([
             [matrix[0][0], constants[0], matrix[0][2]],
             [matrix[1][0], constants[1], matrix[1][2]],
             [matrix[2][0], constants[2], matrix[2][2]],
         ]);
 
-        const detZ = this.determinant3x3([
+        const detZ = this.Determinant3x3([
             [matrix[0][0], matrix[0][1], constants[0]],
             [matrix[1][0], matrix[1][1], constants[1]],
             [matrix[2][0], matrix[2][1], constants[2]],
@@ -50,14 +58,19 @@ export class MapMathUtils {
 
     /**
      * Sorts vertices in clockwise order around a face's normal
+     * @param vertices - The vertices to sort
+     * @param normal - The normal of the face
      */
-    public static sortVerticesForFace(vertices: Vector3[], normal: Vector3): void {
-        if (vertices.length < 3) return;
+    public static SortVerticesForFace(vertices: Vector3[], normal: Vector3): void {
+        if (vertices.length < 3) {
+            return;
+        }
 
         const center = vertices.reduce((sum, v) => sum.add(v), Vector3.Zero()).scale(1 / vertices.length);
         const refDir = vertices[0].subtract(center).normalize();
 
-        if (refDir.lengthSquared() < this.POSITION_EPSILON) {
+        if (refDir.lengthSquared() < this._POSITION_EPSILON) {
+            // eslint-disable-next-line no-console
             console.warn("Degenerate geometry detected in sortVerticesForFace.");
             return;
         }
@@ -76,15 +89,20 @@ export class MapMathUtils {
 
     /**
      * Checks if there's a nearby vertex in the array
+     * @param vertices - The vertices to check
+     * @param vertex - The vertex to check for
+     * @returns True if there's a nearby vertex, false otherwise
      */
-    public static hasNearbyVertex(vertices: Vector3[], vertex: Vector3): boolean {
-        return vertices.some((v) => Vector3.Distance(v, vertex) < this.POSITION_EPSILON);
+    public static HasNearbyVertex(vertices: Vector3[], vertex: Vector3): boolean {
+        return vertices.some((v) => Vector3.Distance(v, vertex) < this._POSITION_EPSILON);
     }
 
     /**
      * Finds the vertices of a brush by intersecting its planes
+     * @param planeEquations - The plane equations of the brush
+     * @returns Array of vertices
      */
-    public static findBrushVertices(planeEquations: { normal: Vector3; distance: number }[]): Vector3[] {
+    public static FindBrushVertices(planeEquations: { normal: Vector3; distance: number }[]): Vector3[] {
         const vertices: Vector3[] = [];
 
         for (let i = 0; i < planeEquations.length - 2; i++) {
@@ -94,16 +112,20 @@ export class MapMathUtils {
                     const p2 = planeEquations[j];
                     const p3 = planeEquations[k];
 
-                    const vertex = MapMathUtils.solveThreePlaneIntersection(p1, p2, p3);
-                    if (!vertex) continue;
+                    const vertex = MapMathUtils.SolveThreePlaneIntersection(p1, p2, p3);
+                    if (!vertex) {
+                        continue;
+                    }
 
                     const isValid = planeEquations.every((plane, idx) => {
-                        if (idx === i || idx === j || idx === k) return true;
+                        if (idx === i || idx === j || idx === k) {
+                            return true;
+                        }
                         const d = Vector3.Dot(plane.normal, vertex) + plane.distance;
-                        return d <= this.POSITION_EPSILON;
+                        return d <= this._POSITION_EPSILON;
                     });
 
-                    if (isValid && !this.hasNearbyVertex(vertices, vertex)) {
+                    if (isValid && !this.HasNearbyVertex(vertices, vertex)) {
                         vertices.push(vertex);
                     }
                 }
@@ -111,8 +133,10 @@ export class MapMathUtils {
         }
 
         if (vertices.length === 0) {
+            // eslint-disable-next-line no-console
             console.warn("Failed to find any valid vertices for brush");
         } else {
+            // eslint-disable-next-line no-console
             console.debug(`Found ${vertices.length} vertices for brush`);
         }
 
@@ -121,8 +145,12 @@ export class MapMathUtils {
 
     /**
      * Solves the intersection of three planes
+     * @param p1 - The first plane
+     * @param p2 - The second plane
+     * @param p3 - The third plane
+     * @returns The intersection point or null if no intersection
      */
-    public static solveThreePlaneIntersection(
+    public static SolveThreePlaneIntersection(
         p1: { normal: Vector3; distance: number },
         p2: { normal: Vector3; distance: number },
         p3: { normal: Vector3; distance: number }
@@ -135,13 +163,16 @@ export class MapMathUtils {
             ];
 
             const constants = [-p1.distance, -p2.distance, -p3.distance];
-            const det = this.determinant3x3(matrix);
+            const det = this.Determinant3x3(matrix);
 
-            if (Math.abs(det) < this.DETERMINANT_EPSILON) return null;
+            if (Math.abs(det) < this._DETERMINANT_EPSILON) {
+                return null;
+            }
 
-            const solution = this.solveLinearSystem3x3(matrix, constants, det);
+            const solution = this.SolveLinearSystem3x3(matrix, constants, det);
             return solution ? new Vector3(solution[0], solution[1], solution[2]) : null;
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.warn("Error solving plane intersection:", e);
             return null;
         }
@@ -149,8 +180,10 @@ export class MapMathUtils {
 
     /**
      * Converts brush planes to plane equations with texture information
+     * @param planes - The brush planes to convert
+     * @returns Array of plane equations with texture information
      */
-    public static convertBrushPlanesToEquations(planes: BrushPlane[]): {
+    public static ConvertBrushPlanesToEquations(planes: IBrushPlane[]): {
         normal: Vector3;
         distance: number;
         textureName: string;
@@ -180,6 +213,7 @@ export class MapMathUtils {
 
                 // Skip planes with degenerate normals
                 if (normal.lengthSquared() < 0.0001) {
+                    // eslint-disable-next-line no-console
                     console.warn(`Skipping plane with degenerate normal`);
                     return null;
                 }
@@ -205,6 +239,7 @@ export class MapMathUtils {
                     yScale: plane.yScale,
                 };
             } catch (e) {
+                // eslint-disable-next-line no-console
                 console.warn(`Error calculating plane equation:`, e);
                 return null;
             }
@@ -229,16 +264,18 @@ export class MapMathUtils {
      * @param normal - Face normal for orientation checks
      * @returns Array of triangle indices (triplets)
      */
-    static triangulatePolygon(vertices: Vector3[], normal: Vector3): number[] {
-        if (vertices.length < 3) return [];
+    public static TriangulatePolygon(vertices: Vector3[], normal: Vector3): number[] {
+        if (vertices.length < 3) {
+            return [];
+        }
 
         // Create working copy of indices
         const indices = vertices.map((_, i) => i);
         const triangles: number[] = [];
 
         // Project 3D vertices to 2D space using face normal
-        const basis = this.createBasisVectors(normal);
-        const points2D = vertices.map((v) => this.projectTo2D(v, basis));
+        const basis = this._CreateBasisVectors(normal);
+        const points2D = vertices.map((v) => this._ProjectTo2D(v, basis));
 
         let currentIndex = 0;
         let safeGuard = 0;
@@ -253,7 +290,7 @@ export class MapMathUtils {
 
             const triangle = [a, b, c];
 
-            if (this.isEar(points2D, indices, prevIndex, currentIndex, nextIndex)) {
+            if (this._IsEar(points2D, indices, prevIndex, currentIndex, nextIndex)) {
                 // Add the ear triangle
                 triangles.push(...triangle);
 
@@ -275,7 +312,12 @@ export class MapMathUtils {
         return triangles;
     }
 
-    private static createBasisVectors(normal: Vector3): {
+    /**
+     * Creates orthogonal basis vectors for 2D projection
+     * @param normal - The normal of the face
+     * @returns The basis vectors
+     */
+    private static _CreateBasisVectors(normal: Vector3): {
         u: Vector3;
         v: Vector3;
     } {
@@ -299,32 +341,60 @@ export class MapMathUtils {
         return { u, v };
     }
 
-    private static projectTo2D(point: Vector3, basis: { u: Vector3; v: Vector3 }): { x: number; y: number } {
+    /**
+     * Projects a 3D point to 2D space using the basis vectors
+     * @param point - The point to project
+     * @param basis - The basis vectors
+     * @returns The projected point
+     */
+    private static _ProjectTo2D(point: Vector3, basis: { u: Vector3; v: Vector3 }): { x: number; y: number } {
         return {
             x: Vector3.Dot(point, basis.u),
             y: Vector3.Dot(point, basis.v),
         };
     }
 
-    private static isEar(points2D: { x: number; y: number }[], indices: number[], prevIndex: number, currentIndex: number, nextIndex: number): boolean {
+    /**
+     * Checks if a triangle is an ear
+     * @param points2D - The projected points
+     * @param indices - The indices of the points
+     * @param prevIndex - The previous index
+     * @param currentIndex - The current index
+     * @param nextIndex - The next index
+     * @returns True if the triangle is an ear, false otherwise
+     */
+    private static _IsEar(points2D: { x: number; y: number }[], indices: number[], prevIndex: number, currentIndex: number, nextIndex: number): boolean {
         const a = points2D[indices[prevIndex]];
         const b = points2D[indices[currentIndex]];
         const c = points2D[indices[nextIndex]];
 
         // Check if triangle is convex
-        if (!this.isConvex(a, b, c)) return false;
+        if (!this._IsConvex(a, b, c)) {
+            return false;
+        }
 
         // Check if any other points are inside the triangle
         for (let i = 0; i < indices.length; i++) {
-            if (i === prevIndex || i === currentIndex || i === nextIndex) continue;
+            if (i === prevIndex || i === currentIndex || i === nextIndex) {
+                continue;
+            }
             const p = points2D[indices[i]];
-            if (this.pointInTriangle(p, a, b, c)) return false;
+            if (this._PointInTriangle(p, a, b, c)) {
+                return false;
+            }
         }
 
         return true;
     }
 
-    private static isConvex(a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): boolean {
+    /**
+     * Checks if a triangle is convex
+     * @param a - The first point
+     * @param b - The second point
+     * @param c - The third point
+     * @returns True if the triangle is convex, false otherwise
+     */
+    private static _IsConvex(a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): boolean {
         // Calculate cross product of AB and BC vectors
         const abx = b.x - a.x;
         const aby = b.y - a.y;
@@ -334,7 +404,15 @@ export class MapMathUtils {
         return abx * bcy - aby * bcx > 0;
     }
 
-    private static pointInTriangle(p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): boolean {
+    /**
+     * Checks if a point is inside a triangle
+     * @param p - The point to check
+     * @param a - The first point
+     * @param b - The second point
+     * @param c - The third point
+     * @returns True if the point is inside the triangle, false otherwise
+     */
+    private static _PointInTriangle(p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): boolean {
         // Barycentric coordinate check
         const v0 = { x: c.x - a.x, y: c.y - a.y };
         const v1 = { x: b.x - a.x, y: b.y - a.y };
