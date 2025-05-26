@@ -87,70 +87,6 @@ export function ScalingMatrixToRef(x: number, y: number, z: number, result: IMat
 }
 
 /**
- * Multiplies two matrices and stores the result in the target array.
- * @param a defines the first matrix
- * @param b defines the second matrix
- * @param output defines the target array
- * @param offset defines the offset in the target array where to store the result (0 by default)
- */
-export function MultiplyMatricesToArray(a: DeepImmutable<IMatrixLike>, b: DeepImmutable<IMatrixLike>, output: Float32Array | Array<number>, offset = 0): void {
-    const m = a.asArray();
-    const otherM = b.asArray();
-    const tm0 = m[0],
-        tm1 = m[1],
-        tm2 = m[2],
-        tm3 = m[3];
-    const tm4 = m[4],
-        tm5 = m[5],
-        tm6 = m[6],
-        tm7 = m[7];
-    const tm8 = m[8],
-        tm9 = m[9],
-        tm10 = m[10],
-        tm11 = m[11];
-    const tm12 = m[12],
-        tm13 = m[13],
-        tm14 = m[14],
-        tm15 = m[15];
-
-    const om0 = otherM[0],
-        om1 = otherM[1],
-        om2 = otherM[2],
-        om3 = otherM[3];
-    const om4 = otherM[4],
-        om5 = otherM[5],
-        om6 = otherM[6],
-        om7 = otherM[7];
-    const om8 = otherM[8],
-        om9 = otherM[9],
-        om10 = otherM[10],
-        om11 = otherM[11];
-    const om12 = otherM[12],
-        om13 = otherM[13],
-        om14 = otherM[14],
-        om15 = otherM[15];
-    output[offset] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
-    output[offset + 1] = tm0 * om1 + tm1 * om5 + tm2 * om9 + tm3 * om13;
-    output[offset + 2] = tm0 * om2 + tm1 * om6 + tm2 * om10 + tm3 * om14;
-    output[offset + 3] = tm0 * om3 + tm1 * om7 + tm2 * om11 + tm3 * om15;
-
-    output[offset + 4] = tm4 * om0 + tm5 * om4 + tm6 * om8 + tm7 * om12;
-    output[offset + 5] = tm4 * om1 + tm5 * om5 + tm6 * om9 + tm7 * om13;
-    output[offset + 6] = tm4 * om2 + tm5 * om6 + tm6 * om10 + tm7 * om14;
-    output[offset + 7] = tm4 * om3 + tm5 * om7 + tm6 * om11 + tm7 * om15;
-
-    output[offset + 8] = tm8 * om0 + tm9 * om4 + tm10 * om8 + tm11 * om12;
-    output[offset + 9] = tm8 * om1 + tm9 * om5 + tm10 * om9 + tm11 * om13;
-    output[offset + 10] = tm8 * om2 + tm9 * om6 + tm10 * om10 + tm11 * om14;
-    output[offset + 11] = tm8 * om3 + tm9 * om7 + tm10 * om11 + tm11 * om15;
-
-    output[offset + 12] = tm12 * om0 + tm13 * om4 + tm14 * om8 + tm15 * om12;
-    output[offset + 13] = tm12 * om1 + tm13 * om5 + tm14 * om9 + tm15 * om13;
-    output[offset + 14] = tm12 * om2 + tm13 * om6 + tm14 * om10 + tm15 * om14;
-    output[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
-}
-
-/**
  * Multiplies two matrices and stores the result in a third matrix.
  * @param a defines the first matrix
  * @param b defines the second matrix
@@ -306,4 +242,182 @@ export function InvertMatrixToArray(source: DeepImmutable<IMatrixLike>, target: 
     target[15] = cofact_33 * detInv;
 
     return true;
+}
+
+/**
+ * Multiplies two 4x4 matrices using the Strassen algorithm and stores the result in the target array.
+ * @param a defines the first matrix
+ * @param b defines the second matrix
+ * @param output defines the target array
+ * @param offset defines the offset in the target array where to store the result (0 by default)
+ * @see https://en.wikipedia.org/wiki/Strassen_algorithm for more details on the algorithm
+ * Playground comparing previous and new implementations: https://playground.babylonjs.com/#RO25DY#3
+ */
+export function MultiplyMatricesToArray(a: DeepImmutable<IMatrixLike>, b: DeepImmutable<IMatrixLike>, output: Float32Array | Array<number>, offset = 0): void {
+    const A = a.asArray();
+    const B = b.asArray();
+
+    // Extract 2x2 blocks from A and B
+    const A11_0 = A[0],
+        A11_1 = A[1],
+        A11_2 = A[4],
+        A11_3 = A[5];
+    const A12_0 = A[2],
+        A12_1 = A[3],
+        A12_2 = A[6],
+        A12_3 = A[7];
+    const A21_0 = A[8],
+        A21_1 = A[9],
+        A21_2 = A[12],
+        A21_3 = A[13];
+    const A22_0 = A[10],
+        A22_1 = A[11],
+        A22_2 = A[14],
+        A22_3 = A[15];
+
+    const B11_0 = B[0],
+        B11_1 = B[1],
+        B11_2 = B[4],
+        B11_3 = B[5];
+    const B12_0 = B[2],
+        B12_1 = B[3],
+        B12_2 = B[6],
+        B12_3 = B[7];
+    const B21_0 = B[8],
+        B21_1 = B[9],
+        B21_2 = B[12],
+        B21_3 = B[13];
+    const B22_0 = B[10],
+        B22_1 = B[11],
+        B22_2 = B[14],
+        B22_3 = B[15];
+
+    // Strassen's 7 products (fully inlined)
+    // M1 = (A11 + A22) * (B11 + B22)
+    const S1_0 = A11_0 + A22_0,
+        S1_1 = A11_1 + A22_1,
+        S1_2 = A11_2 + A22_2,
+        S1_3 = A11_3 + A22_3;
+    const S2_0 = B11_0 + B22_0,
+        S2_1 = B11_1 + B22_1,
+        S2_2 = B11_2 + B22_2,
+        S2_3 = B11_3 + B22_3;
+    const M1_0 = S1_0 * S2_0 + S1_1 * S2_2,
+        M1_1 = S1_0 * S2_1 + S1_1 * S2_3;
+    const M1_2 = S1_2 * S2_0 + S1_3 * S2_2,
+        M1_3 = S1_2 * S2_1 + S1_3 * S2_3;
+
+    // M2 = (A21 + A22) * B11
+    const S3_0 = A21_0 + A22_0,
+        S3_1 = A21_1 + A22_1,
+        S3_2 = A21_2 + A22_2,
+        S3_3 = A21_3 + A22_3;
+    const M2_0 = S3_0 * B11_0 + S3_1 * B11_2,
+        M2_1 = S3_0 * B11_1 + S3_1 * B11_3;
+    const M2_2 = S3_2 * B11_0 + S3_3 * B11_2,
+        M2_3 = S3_2 * B11_1 + S3_3 * B11_3;
+
+    // M3 = A11 * (B12 - B22)
+    const S4_0 = B12_0 - B22_0,
+        S4_1 = B12_1 - B22_1,
+        S4_2 = B12_2 - B22_2,
+        S4_3 = B12_3 - B22_3;
+    const M3_0 = A11_0 * S4_0 + A11_1 * S4_2,
+        M3_1 = A11_0 * S4_1 + A11_1 * S4_3;
+    const M3_2 = A11_2 * S4_0 + A11_3 * S4_2,
+        M3_3 = A11_2 * S4_1 + A11_3 * S4_3;
+
+    // M4 = A22 * (B21 - B11)
+    const S5_0 = B21_0 - B11_0,
+        S5_1 = B21_1 - B11_1,
+        S5_2 = B21_2 - B11_2,
+        S5_3 = B21_3 - B11_3;
+    const M4_0 = A22_0 * S5_0 + A22_1 * S5_2,
+        M4_1 = A22_0 * S5_1 + A22_1 * S5_3;
+    const M4_2 = A22_2 * S5_0 + A22_3 * S5_2,
+        M4_3 = A22_2 * S5_1 + A22_3 * S5_3;
+
+    // M5 = (A11 + A12) * B22
+    const S6_0 = A11_0 + A12_0,
+        S6_1 = A11_1 + A12_1,
+        S6_2 = A11_2 + A12_2,
+        S6_3 = A11_3 + A12_3;
+    const M5_0 = S6_0 * B22_0 + S6_1 * B22_2,
+        M5_1 = S6_0 * B22_1 + S6_1 * B22_3;
+    const M5_2 = S6_2 * B22_0 + S6_3 * B22_2,
+        M5_3 = S6_2 * B22_1 + S6_3 * B22_3;
+
+    // M6 = (A21 - A11) * (B11 + B12)
+    const S7_0 = A21_0 - A11_0,
+        S7_1 = A21_1 - A11_1,
+        S7_2 = A21_2 - A11_2,
+        S7_3 = A21_3 - A11_3;
+    const S8_0 = B11_0 + B12_0,
+        S8_1 = B11_1 + B12_1,
+        S8_2 = B11_2 + B12_2,
+        S8_3 = B11_3 + B12_3;
+    const M6_0 = S7_0 * S8_0 + S7_1 * S8_2,
+        M6_1 = S7_0 * S8_1 + S7_1 * S8_3;
+    const M6_2 = S7_2 * S8_0 + S7_3 * S8_2,
+        M6_3 = S7_2 * S8_1 + S7_3 * S8_3;
+
+    // M7 = (A12 - A22) * (B21 + B22)
+    const S9_0 = A12_0 - A22_0,
+        S9_1 = A12_1 - A22_1,
+        S9_2 = A12_2 - A22_2,
+        S9_3 = A12_3 - A22_3;
+    const S10_0 = B21_0 + B22_0,
+        S10_1 = B21_1 + B22_1,
+        S10_2 = B21_2 + B22_2,
+        S10_3 = B21_3 + B22_3;
+    const M7_0 = S9_0 * S10_0 + S9_1 * S10_2,
+        M7_1 = S9_0 * S10_1 + S9_1 * S10_3;
+    const M7_2 = S9_2 * S10_0 + S9_3 * S10_2,
+        M7_3 = S9_2 * S10_1 + S9_3 * S10_3;
+
+    // Compute result blocks (fully inlined)
+    // C11 = M1 + M4 - M5 + M7
+    const C11_0 = M1_0 + M4_0 - M5_0 + M7_0;
+    const C11_1 = M1_1 + M4_1 - M5_1 + M7_1;
+    const C11_2 = M1_2 + M4_2 - M5_2 + M7_2;
+    const C11_3 = M1_3 + M4_3 - M5_3 + M7_3;
+
+    // C12 = M3 + M5
+    const C12_0 = M3_0 + M5_0;
+    const C12_1 = M3_1 + M5_1;
+    const C12_2 = M3_2 + M5_2;
+    const C12_3 = M3_3 + M5_3;
+
+    // C21 = M2 + M4
+    const C21_0 = M2_0 + M4_0;
+    const C21_1 = M2_1 + M4_1;
+    const C21_2 = M2_2 + M4_2;
+    const C21_3 = M2_3 + M4_3;
+
+    // C22 = M1 + M3 - M2 + M6
+    const C22_0 = M1_0 + M3_0 - M2_0 + M6_0;
+    const C22_1 = M1_1 + M3_1 - M2_1 + M6_1;
+    const C22_2 = M1_2 + M3_2 - M2_2 + M6_2;
+    const C22_3 = M1_3 + M3_3 - M2_3 + M6_3;
+
+    // Write result to output
+    output[offset + 0] = C11_0;
+    output[offset + 1] = C11_1;
+    output[offset + 2] = C12_0;
+    output[offset + 3] = C12_1;
+
+    output[offset + 4] = C11_2;
+    output[offset + 5] = C11_3;
+    output[offset + 6] = C12_2;
+    output[offset + 7] = C12_3;
+
+    output[offset + 8] = C21_0;
+    output[offset + 9] = C21_1;
+    output[offset + 10] = C22_0;
+    output[offset + 11] = C22_1;
+
+    output[offset + 12] = C21_2;
+    output[offset + 13] = C21_3;
+    output[offset + 14] = C22_2;
+    output[offset + 15] = C22_3;
 }
