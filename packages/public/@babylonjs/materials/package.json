@@ -23,7 +23,7 @@
         "@lts/materials": "^1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0"
+        "@babylonjs/core": "^8.6.0"
     },
     "keywords": [
         "3D",
