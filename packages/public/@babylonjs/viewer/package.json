@@ -31,9 +31,9 @@
         "lit": "^3.2.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.6.0",
-        "@babylonjs/loaders": "^8.6.0",
-        "@babylonjs/materials": "^8.6.0"
+        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/loaders": "^8.0.0",
+        "@babylonjs/materials": "^8.0.0"
     },
     "devDependencies": {
         "@babylonjs/core": "^8.9.0",
