@@ -9,13 +9,16 @@ import { AttractorGridComponent } from "./attractorGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { Color3 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import type { Nullable } from "core/types";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
+import { FontAsset } from "addons/msdfText/fontAsset";
+import { TextRenderer } from "addons/msdfText/textRenderer";
+import { Matrix } from "core/Maths/math.vector";
 
 interface IAttractorsGridComponent {
     globalState: GlobalState;
@@ -27,7 +30,8 @@ interface IAttractorsGridComponent {
 export class AttractorsGridComponent extends React.Component<IAttractorsGridComponent, { impostorScale: number; color: Color3 }> {
     private _impostorMaterial: Nullable<StandardMaterial> = null;
     private _gizmoManager: Nullable<GizmoManager> = null;
-    private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _sceneOnAfterRenderObserver: Nullable<Observer<Scene>> = null;
+    private _fontAsset: Nullable<FontAsset> = null;
 
     constructor(props: IAttractorsGridComponent) {
         super(props);
@@ -64,6 +68,12 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
             impostor.dispose();
             (attractor as any)._impostor = null;
+
+            const textRenderer = (attractor as any)._textRenderer;
+            if (textRenderer) {
+                textRenderer.dispose();
+                (attractor as any)._textRenderer = null;
+            }
         }
 
         const particleSystem = this.props.host;
@@ -87,8 +97,12 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
         }
         const untypedAttractor = attractor as any;
         untypedAttractor._impostor = CreateSphere("Attractor impostor #" + index, { diameter: 1 }, scene);
+        untypedAttractor._impostor.reservedDataStore = { hidden: true };
         untypedAttractor._impostor.scaling.setAll(this.state.impostorScale);
         untypedAttractor._impostor.position.copyFrom(attractor.position);
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.addLabelAsync(attractor, index);
 
         if (!this._impostorMaterial) {
             this._impostorMaterial = new StandardMaterial("Attractor impostor material", scene);
@@ -98,9 +112,9 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
         untypedAttractor._impostor.material = this._impostorMaterial;
 
-        if (!this._sceneOnBeforeRenderObserver) {
+        if (!this._sceneOnAfterRenderObserver) {
             const particleSystem = this.props.host;
-            this._sceneOnBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+            this._sceneOnAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
                 const attractors = particleSystem.attractors;
                 for (let i = 0; i < attractors.length; i++) {
                     const impostor = (attractors[i] as any)._impostor;
@@ -109,12 +123,43 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
                     }
 
                     attractors[i].position.copyFrom(impostor.position);
+
+                    const localUntypedAttractor = attractors[i] as any;
+                    if (localUntypedAttractor._textRenderer) {
+                        localUntypedAttractor._textRenderer.color.r = this.state.color.r;
+                        localUntypedAttractor._textRenderer.color.g = this.state.color.g;
+                        localUntypedAttractor._textRenderer.color.b = this.state.color.b;
+                        localUntypedAttractor._textRenderer.render(scene.getViewMatrix(), scene.getProjectionMatrix());
+                    }
                 }
             });
         }
     }
 
-    controlImpostor(attractor: Attractor) {
+    async addLabelAsync(attractor: Attractor, index: number) {
+        const scene = this.props.host.getScene();
+        if (!scene) {
+            return;
+        }
+        const engine = scene.getEngine();
+
+        if (!this._fontAsset) {
+            const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
+            this._fontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
+        }
+
+        const textRenderer = await TextRenderer.CreateTextRendererAsync(this._fontAsset, engine);
+        textRenderer.addParagraph("#" + index, {}, Matrix.Scaling(0.5, 0.5, 0.5).multiply(Matrix.Translation(0, 1, 0)));
+        textRenderer.isBillboard = true;
+        textRenderer.color = Color4.FromColor3(this.state.color, 1.0);
+
+        const untypedAttractor = attractor as any;
+        textRenderer.parent = untypedAttractor._impostor;
+
+        untypedAttractor._textRenderer = textRenderer;
+    }
+
+    controlImpostor(attractor: Attractor, index: number) {
         const scene = this.props.host.getScene();
         if (!scene) {
             return;
@@ -122,7 +167,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
 
         const untypedAttractor = attractor as any;
         if (!untypedAttractor._impostor) {
-            return;
+            this.addImpostor(attractor, index);
         }
 
         if (!this._gizmoManager) {
@@ -163,9 +208,14 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
             this.removeImpostor(attractor);
         }
 
-        if (this._sceneOnBeforeRenderObserver) {
-            this.props.host.getScene()?.onBeforeRenderObservable.remove(this._sceneOnBeforeRenderObserver);
-            this._sceneOnBeforeRenderObserver = null;
+        if (this._sceneOnAfterRenderObserver) {
+            this.props.host.getScene()?.onAfterRenderObservable.remove(this._sceneOnAfterRenderObserver);
+            this._sceneOnAfterRenderObserver = null;
+        }
+
+        if (this._fontAsset) {
+            this._fontAsset.dispose();
+            this._fontAsset = null;
         }
     }
 
@@ -209,7 +259,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
                                 }}
                                 addImpostor={(a, i) => this.addImpostor(a, i)}
                                 removeImpostor={(a) => this.removeImpostor(a)}
-                                onControl={(a) => this.controlImpostor(a)}
+                                onControl={(a, i) => this.controlImpostor(a, i)}
                                 onDelete={(attractor) => {
                                     this.props.host.removeAttractor(attractor);
                                     this.forceUpdate();

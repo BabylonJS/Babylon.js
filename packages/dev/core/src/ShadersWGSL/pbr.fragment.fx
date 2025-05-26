@@ -1,3 +1,5 @@
+#define PBR_FRAGMENT_SHADER
+
 #define CUSTOM_FRAGMENT_BEGIN
 
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
@@ -184,7 +186,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
             metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * metallicReflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
         #endif
-        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
+        metallicReflectanceFactors.a *= metallicReflectanceFactorsMap.a;
     #endif
 #endif
 
@@ -542,7 +544,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , uniforms.vTintColor
             , normalW
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            , vec3f(max(cumulativeSpecularEnvironmentReflectance.r, max(cumulativeSpecularEnvironmentReflectance.g, cumulativeSpecularEnvironmentReflectance.b)))
+            , vec3f(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))
         #else
             , baseSpecularEnvironmentReflectance
         #endif
@@ -637,7 +639,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = cumulativeSpecularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

@@ -741,7 +741,7 @@ export class ObjectRenderer {
         const renderListLength = this.renderList ? this.renderList.length : this._scene.getActiveMeshes().length;
         for (let i = 0; i < renderListLength; i++) {
             const mesh = renderList[i];
-            if (mesh.getMaterialForRenderPass(this.renderPassId) !== undefined) {
+            if (mesh && mesh.getMaterialForRenderPass(this.renderPassId) !== undefined) {
                 mesh.setMaterialForRenderPass(this.renderPassId, undefined);
             }
         }

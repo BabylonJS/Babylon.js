@@ -399,7 +399,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     tmpSnapEvent.snapDistance = angle;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
-                this._angles.y += angle;
+                this._angles.y += gizmoLayer.utilityLayerScene.useRightHandedSystem ? -angle : angle;
                 this.angle += cameraFlipped ? -angle : angle;
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
                 this._matrixChanged();

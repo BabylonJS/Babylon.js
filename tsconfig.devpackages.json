@@ -35,6 +35,9 @@
             "path": "packages/dev/proceduralTextures/tsconfig.build.json"
         },
         {
+            "path": "packages/dev/addons/tsconfig.build.json"
+        },
+        {
             "path": "packages/tools/nodeEditor/tsconfig.build.json"
         },
         {

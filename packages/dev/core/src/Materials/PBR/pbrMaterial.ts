@@ -3,7 +3,6 @@ import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { Constants } from "../../Engines/constants";
 import type { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { ColorCurves } from "../../Materials/colorCurves";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -46,11 +45,6 @@ export class PBRMaterial extends PBRBaseMaterial {
      * (point spot...).
      */
     public static override DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
-
-    /**
-     * Defines the default diffuse model used by the material.
-     */
-    public static override DEFAULT_DIFFUSE_MODEL = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -305,13 +299,6 @@ export class PBRMaterial extends PBRBaseMaterial {
     public baseDiffuseRoughness: Nullable<number>;
 
     /**
-     * Defines the base diffuse roughness model of the material.
-     */
-    @serialize("baseDiffuseModel")
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public baseDiffuseModel: number = PBRMaterial.DEFAULT_DIFFUSE_MODEL;
-
-    /**
      * AKA Specular Color in other nomenclature.
      */
     @serializeAsColor3("reflectivity")
@@ -324,20 +311,6 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serializeAsColor3("reflection")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionColor = new Color3(1.0, 1.0, 1.0);
-
-    /**
-     * The material model to use for specular lighting of dielectric materials.
-     */
-    @serialize("dielectricSpecularModel")
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public dielectricSpecularModel: number = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_GLTF;
-
-    /**
-     * The material model to use for specular lighting.
-     */
-    @serialize("conductorSpecularModel")
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public conductorSpecularModel: number = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_GLTF;
 
     /**
      * The color emitted from the material.
@@ -700,7 +673,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this._attachImageProcessingConfiguration(value);
 
         // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsTexturesDirty();
+        this._markAllSubMeshesAsImageProcessingDirty();
     }
 
     /**
