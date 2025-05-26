@@ -14,8 +14,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
  * Block used for the Gaussian Splatting
  */
 export class GaussianSplattingBlock extends NodeMaterialBlock {
-    private _shDegreeDefineName: string;
-
     /**
      * Create a new GaussianSplattingBlock
      * @param name defines the block name
@@ -100,6 +98,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._excludeVariableName("focal");
         state._excludeVariableName("invViewport");
         state._excludeVariableName("kernelSize");
+        state._excludeVariableName("eyePosition");
     }
     /**
      * Update defines for shader compilation
@@ -109,7 +108,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
      */
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (mesh.getClassName() == "GaussianSplattingMesh") {
-            defines.setValue(this._shDegreeDefineName, (<GaussianSplattingMesh>mesh).shDegree, true);
+            defines.setValue("SH_DEGREE", (<GaussianSplattingMesh>mesh).shDegree, true);
         }
     }
 
@@ -121,7 +120,6 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         }
 
         state.sharedData.blocksWithDefines.push(this);
-        this._shDegreeDefineName = state._getFreeDefineName("SH_DEGREE");
 
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
@@ -130,6 +128,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("kernelSize", NodeMaterialBlockConnectionPointTypes.Float);
+        state._emitUniformFromString("eyePosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         state.attributes.push(VertexBuffer.PositionKind);
         state.sharedData.nodeMaterial.backFaceCulling = false;
 
@@ -154,26 +153,23 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
             uniforms = ", uniforms.focal, uniforms.invViewport, uniforms.kernelSize";
         }
         if (this.SH.isConnected) {
-            state.compilationString += `#if ${this._shDegreeDefineName} > 0\n`;
+            state.compilationString += `#if SH_DEGREE > 0\n`;
 
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                state.compilationString += `
-                let worldRot: mat3x3f =  mat3x3f(${world.associatedVariableName}[0].xyz, ${world.associatedVariableName}[1].xyz, ${world.associatedVariableName}[2].xyz);
-                let normWorldRot: mat3x3f = inverseMat3(worldRot);
-                var dir: vec3f = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - scene.vEyePosition.xyz));\n`;
+                state.compilationString += `let worldRot: mat3x3f =  mat3x3f(${world.associatedVariableName}[0].xyz, ${world.associatedVariableName}[1].xyz, ${world.associatedVariableName}[2].xyz);`;
+                state.compilationString += `let normWorldRot: mat3x3f = inverseMat3(worldRot);`;
+                state.compilationString += `var dir: vec3f = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - uniforms.eyePosition));\n`;
             } else {
-                state.compilationString += `
-                    mat3 worldRot = mat3(${world.associatedVariableName});
-                    mat3 normWorldRot = inverseMat3(worldRot);
-                    vec3 dir = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - vEyePosition.xyz));\n`;
+                state.compilationString += `mat3 worldRot = mat3(${world.associatedVariableName});`;
+                state.compilationString += `mat3 normWorldRot = inverseMat3(worldRot);`;
+                state.compilationString += `vec3 dir = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - eyePosition));\n`;
             }
 
-            state.compilationString += `
-            dir *= vec3${addF}(1.,1.,-1.);
-            ${state._declareOutput(sh)} = computeSH(splat, splat.color.xyz, dir) - splat.color.xyz;
-            #else
-            ${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);
-            #endif;\n`;
+            state.compilationString += `dir *= vec3${addF}(1.,1.,-1.);\n`;
+            state.compilationString += `${state._declareOutput(sh)} = computeSH(splat, dir);\n`;
+            state.compilationString += `#else\n`;
+            state.compilationString += `${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);\n`;
+            state.compilationString += `#endif;\n`;
         } else {
             state.compilationString += `${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);`;
         }
