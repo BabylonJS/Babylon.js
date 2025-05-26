@@ -727,8 +727,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this.adjustToEngineHardwareScalingLevel) {
             // force the renderScale to the engine's hardware scaling level
             this._renderScale = engine.getHardwareScalingLevel();
-            // calculate the max renderScale, based on the max texture size of 4096 (enforced by some mobile devices)
-            this._renderScale = 1 / Math.max(this._renderScale, engine.getRenderWidth() / 4096, engine.getRenderHeight() / 4096);
+            // calculate the max renderScale, based on the max texture size of engine.getCaps().maxTextureSize (enforced by some mobile devices)
+            this._renderScale =
+                1 / Math.max(this._renderScale, engine.getRenderWidth() / engine.getCaps().maxTextureSize, engine.getRenderHeight() / engine.getCaps().maxTextureSize);
         }
         const textureSize = this.getSize();
         let renderWidth = engine.getRenderWidth() * this._renderScale;
