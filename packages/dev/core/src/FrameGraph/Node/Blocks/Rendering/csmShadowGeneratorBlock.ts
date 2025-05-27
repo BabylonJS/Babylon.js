@@ -106,6 +106,16 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         this._frameGraphTask.autoCalcDepthBounds = value;
     }
 
+    /** Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true. */
+    @editableInPropertyPage("Auto-Calc depth bounds refresh rate", PropertyTypeForEdition.Int, "CSM PROPERTIES")
+    public get autoCalcDepthBoundsRefreshRate() {
+        return this._frameGraphTask.autoCalcDepthBoundsRefreshRate;
+    }
+
+    public set autoCalcDepthBoundsRefreshRate(value: number) {
+        this._frameGraphTask.autoCalcDepthBoundsRefreshRate = value;
+    }
+
     /** Gets or sets the maximum shadow Z value. */
     @editableInPropertyPage("Shadow maxZ", PropertyTypeForEdition.Float, "CSM PROPERTIES")
     public get shadowMaxZ() {
@@ -133,6 +143,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         codes.push(`${this._codeVariableName}.cascadeBlendPercentage = ${this.cascadeBlendPercentage};`);
         codes.push(`${this._codeVariableName}.depthClamp = ${this.depthClamp};`);
         codes.push(`${this._codeVariableName}.autoCalcDepthBounds = ${this.autoCalcDepthBounds};`);
+        codes.push(`${this._codeVariableName}.autoCalcDepthBoundsRefreshRate = ${this.autoCalcDepthBoundsRefreshRate};`);
         codes.push(`${this._codeVariableName}.shadowMaxZ = ${this.shadowMaxZ};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
@@ -146,6 +157,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         serializationObject.cascadeBlendPercentage = this.cascadeBlendPercentage;
         serializationObject.depthClamp = this.depthClamp;
         serializationObject.autoCalcDepthBounds = this.autoCalcDepthBounds;
+        serializationObject.autoCalcDepthBoundsRefreshRate = this.autoCalcDepthBoundsRefreshRate;
         serializationObject.shadowMaxZ = this.shadowMaxZ;
         return serializationObject;
     }
@@ -159,6 +171,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         this.cascadeBlendPercentage = serializationObject.cascadeBlendPercentage;
         this.depthClamp = serializationObject.depthClamp;
         this.autoCalcDepthBounds = serializationObject.autoCalcDepthBounds;
+        this.autoCalcDepthBoundsRefreshRate = serializationObject.autoCalcDepthBoundsRefreshRate ?? 1;
         this.shadowMaxZ = serializationObject.shadowMaxZ;
     }
 }
