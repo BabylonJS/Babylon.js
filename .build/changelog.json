@@ -1,37 +1,301 @@
 {
-    "fromTag": "8.8.5",
+    "fromTag": "8.9.0",
     "changelog": {
-        "8.8.5": [
+        "8.9.1": [
             {
-                "pr": "16619",
-                "title": "OpenPBR specular model",
+                "pr": "16682",
+                "title": "Frame Graph: make GPU picker work with frame graphs",
+                "description": "See https://forum.babylonjs.com/t/feedback-on-frame-graphs/58672/4\r\n\r\nI also did a few more changes, see https://forum.babylonjs.com/t/autocalcdepthboundsrefreshrate-in-frame-graph-task/58671/2\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/csmShadowGeneratorTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16681",
+                "title": "glTF Loader: Add visual test for cameras",
+                "description": "Tests the imported glTF camera's orientation relative to a mesh also in the glTF.\r\nSome rough comparisons:\r\n\r\n## Babylon\r\n<img width=\"728\" alt=\"image\" src=\"https://github.com/user-attachments/assets/781f87ea-ae4d-42ee-a634-a50990a81be5\" />\r\n\r\n## Blender\r\n<img width=\"1231\" alt=\"image\" src=\"https://github.com/user-attachments/assets/28004089-f959-4fb7-bf42-7536e3cbc266\" />\r\n\r\n## glTF Sample Viewer\r\n<img width=\"685\" alt=\"image\" src=\"https://github.com/user-attachments/assets/43d64e8c-5158-4cb4-b45e-ff78fe3a1298\" />\r\n\r\n## Don McCurdy's glTF Viewer\r\n<img width=\"764\" alt=\"image\" src=\"https://github.com/user-attachments/assets/209e7a2b-408f-45c4-a523-28fcd9c690c0\" />\r\n",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFLoaderCameras.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16676",
+                "title": "Update dependencies",
                 "description": null,
                 "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/package.json",
+                    "packages/public/umd/babylonjs-testproject/tsconfig.json",
+                    "packages/tools/testTools/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16680",
+                "title": "Viewer: small fixes to test apps",
+                "description": "This PR has a few small fixes to the Viewer test apps:\r\n1. Add the addons package to the vite config (needed for inspector)\r\n2. Remove @preview in the public package test html\r\n3. Remove the `environment` attribute (use the default embedded one instead)",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer/test/apps/web/index.html",
+                    "packages/public/@babylonjs/viewer/test/apps/web/published.html",
+                    "packages/tools/viewer/vite.config.mjs"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16679",
+                "title": "PBRBlockReflectivity: Remove `f` suffix",
+                "description": "... to avoid in WebGL1\r\nError: FRAGMENT SHADER ERROR: 0:552: '1.0f' : Floating-point suffix unsupported prior to GLSL ES 3.00\r\nERROR: 0:552: '1.0f' : syntax error",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16678",
+                "title": "PBR material: Fix code inlining",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
                     "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance0.fx",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
                     "packages/dev/core/src/Shaders/pbr.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
-                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
-                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Metal-vs-Weight.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Roughness-vs-Weight.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-reflectance-models-for-IBL.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-reflectance-models-for-analytic-lights.png",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Test-code-inlining.png",
                     "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16675",
+                "title": "Fix native build",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16670",
+                "title": "Texture max size - Some devices enforce a max texture size of 4096",
+                "description": "See - https://forum.babylonjs.com/t/problem-with-adapttodeviceratio-and-adaptivescaling/57373/11?u=raananw\n\nAndroid devices (tested on 2 different samsung devices) enfore a max texture size fot the ADT. It is set at 4096. This sets the max render scale at the ratio that gets us to 4096 (or, if it doesn[t get to 4096, the hardware scaling level)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16672",
+                "title": "Viewer: add @babylonjs/materials as peerDependency",
+                "description": "With the introduction of shadows in the Viewer, we took a dependency on `ShadowOnlyMaterial` from `@babylonjs/materials`, but missed adding it as a `peerDependency`. This PR adds it, and addresses https://forum.babylonjs.com/t/babylon-viewer-v2/54317/90.\r\n\r\nHowever, while testing I noticed that what happens for existing projects is that they may have `@babylonjs/core` <8.6.0, and then `@babylonjs/materials` >=8.6.0 gets installed, and these two versions are incompatible because of internal API breaking changes (casing on function names). I expect hitting this issue would be common. We can deal with it in the Viewer by making all @babylonjs/* dependencies be ^8.6.0, but it seems like the correct fix is to update `@babylonjs/materials`'s dependency on `@babylonjs/core` to ^8.6.0. @RaananW thoughts?",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/viewer/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16668",
+                "title": "WebGL: Fix flicker on MacOS",
+                "description": "See https://forum.babylonjs.com/t/needdepthprepass-creates-flickering-in-8-6-2/58421/12",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16667",
+                "title": "Fix rotation gizmo fragment shader angle when using right handed system",
+                "description": "I am working on a project that uses a right-handed coordinate system and rotation gizmos. However, when using the rotation gizmo in a right-handed coordinate system, the shaded region of the rotation gizmo appears on the wrong side of the gizmo drag point.\r\n\r\nThis PR inverts the rotation angle sign if the scene uses a right-handed coordinate system, so the rotation gizmo shaded region always appears on the correct side of the drag point.\r\n\r\nHere is a demo using this playground from the docs: https://playground.babylonjs.com/#31M2AP#11 \r\n\r\n**Before:**\r\n\r\nhttps://github.com/user-attachments/assets/2bd0bad9-2cdc-4c21-a542-6a821db67789\r\n\r\n**After:**\r\n\r\nhttps://github.com/user-attachments/assets/80c15e49-d5c5-4ce6-b909-6c7e74cb8d9d\r\n\r\n",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16662",
+                "title": "Allow fx files in addons",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    ".gitignore",
+                    ".vscode/settings.json",
+                    "packages/dev/addons/src/msdfText/index.ts",
+                    "packages/dev/addons/src/msdfText/shaders/msdf.fragment.fx",
+                    "packages/dev/addons/src/msdfText/shaders/msdf.vertex.fx",
+                    "packages/dev/addons/src/msdfText/shadersWGSL/msdf.fragment.fx",
+                    "packages/dev/addons/src/msdfText/shadersWGSL/msdf.vertex.fx",
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/addons/src/msdfText/webgl/index.ts",
+                    "packages/dev/addons/src/msdfText/webgpu/index.ts",
+                    "packages/dev/buildTools/src/buildShaders.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16660",
+                "title": "Prevent microphone feedback loop",
+                "description": "Microphone sound sources are connected to the main audio bus by default, and get output to the speakers. This causes an extremely loud feedback loop that should be avoided.\r\n\r\nThis change adds an `outBusAutoDefault` option to the sound source, defaulted to `true`, except for the microphone sound sources which default to `false` so they don't automatically output to the speakers.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStreamingSound.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSoundSource.outBus.ts",
+                    "packages/tools/tests/test/audioV2/soundSource.outBus.test.ts",
+                    "packages/tools/tests/test/audioV2/staticSound.outBus.test.ts",
+                    "packages/tools/tests/test/audioV2/streamingSound.outBus.test.ts"
+                ],
+                "tags": [
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16658",
+                "title": "PBR material: Fix wrong reflectivity color in legacy specular mode",
+                "description": "See https://forum.babylonjs.com/t/pbr-material-sheen-has-changed-in-latest-babylon-8-9-0-version/58608",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "16657",
+                "title": "Min/max reducer: add some documentation",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/minMaxReducer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "16655",
+                "title": "Fix the active camera rotation and position reference in glTF interactivity",
+                "description": "Camera is not part of the glTF tree, so the RHS->LHS conversion applied to all other glTF nodes doesn't affect the its transformation.\nWe need to compensate that so that the coordinates are correct, relative to the glTF coordinates system.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16647",
+                "title": "More `IMatrixLike` usage",
+                "description": "Building on top of the recent thin math changes, this PR demonstrates that if `asArray` returned a mutable array, then the new math functions do not need to even take a dependency on `ThinMatrix`.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/ThinMaths/thinMath.matrix.functions.ts",
+                    "packages/dev/core/src/Maths/math.like.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16656",
+                "title": "Clarify wording of RenderTargetTexture constructor",
+                "description": "Trivial change to clarify wording of `RenderTargetTexture` constructor.",
+                "author": {
+                    "name": "mthaddon",
+                    "url": "https://github.com/mthaddon"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
                 ],
                 "tags": []
             }
@@ -575,6 +839,41 @@
                     "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
                     "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
                     "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_materials_diffuse_roughness.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "8.8.5": [
+            {
+                "pr": "16619",
+                "title": "OpenPBR specular model",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Metal-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Roughness-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-reflectance-models-for-IBL.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular-reflectance-models-for-analytic-lights.png",
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
