@@ -15,6 +15,7 @@ import type { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * Class used to store the result of a GPU picking operation
@@ -62,6 +63,9 @@ export class GPUPicker {
     private _meshRenderingCount: number = 0;
     private readonly _attributeName = "instanceMeshID";
     private _warningIssued = false;
+    private _renderPickingTexture = false;
+    private _sceneBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _pickingTextureAfterRenderObservable: Nullable<Observer<number>> = null;
 
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -109,6 +113,13 @@ export class GPUPicker {
     }
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
+        if (this._cachedScene && this._pickingTexture) {
+            const index = this._cachedScene.customRenderTargets.indexOf(this._pickingTexture);
+            if (index > -1) {
+                this._cachedScene.customRenderTargets.splice(index, 1);
+                this._renderPickingTexture = false;
+            }
+        }
         if (this._pickingTexture) {
             this._pickingTexture.dispose();
         }
@@ -270,6 +281,14 @@ export class GPUPicker {
                 this._createRenderTarget(scene, rttSizeW, rttSizeH);
             }
         }
+
+        this._sceneBeforeRenderObserver?.remove();
+        this._sceneBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+            if (scene.frameGraph && this._renderPickingTexture && this._cachedScene && this._pickingTexture) {
+                this._cachedScene._renderRenderTarget(this._pickingTexture, this._cachedScene.cameras?.[0] ?? null);
+                this._cachedScene.activeCamera = null;
+            }
+        });
 
         if (!this._cachedScene || this._cachedScene !== scene) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -470,7 +489,13 @@ export class GPUPicker {
             this._enableScissor(x, y, w, h);
         };
 
+        this._pickingTextureAfterRenderObservable?.remove();
+        this._pickingTextureAfterRenderObservable = this._pickingTexture!.onAfterRenderObservable.add(() => {
+            this._disableScissor();
+        });
+
         this._cachedScene!.customRenderTargets.push(this._pickingTexture!);
+        this._renderPickingTexture = true;
     }
 
     // pick one pixel
@@ -484,8 +509,6 @@ export class GPUPicker {
 
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async () => {
-                this._disableScissor();
-
                 if (this._checkRenderStatus()) {
                     this._pickingTexture!.onAfterRender = null as any;
                     let pickedMesh: Nullable<AbstractMesh> = null;
@@ -495,6 +518,7 @@ export class GPUPicker {
                     const index = this._cachedScene!.customRenderTargets.indexOf(this._pickingTexture!);
                     if (index > -1) {
                         this._cachedScene!.customRenderTargets.splice(index, 1);
+                        this._renderPickingTexture = false;
                     }
 
                     // Do the actual picking
@@ -544,8 +568,6 @@ export class GPUPicker {
 
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this._pickingTexture.onAfterRender = async () => {
-                this._disableScissor();
-
                 if (this._checkRenderStatus()) {
                     this._pickingTexture!.onAfterRender = null as any;
                     const pickedMeshes: Nullable<AbstractMesh>[] = [];
@@ -591,6 +613,7 @@ export class GPUPicker {
             const index = this._cachedScene!.customRenderTargets.indexOf(this._pickingTexture!);
             if (index > -1) {
                 this._cachedScene!.customRenderTargets.splice(index, 1);
+                this._renderPickingTexture = false;
             }
             return true;
         }
@@ -654,5 +677,7 @@ export class GPUPicker {
         this._pickingTexture = null;
         this._defaultRenderMaterial?.dispose();
         this._defaultRenderMaterial = null;
+        this._sceneBeforeRenderObserver?.remove();
+        this._sceneBeforeRenderObserver = null;
     }
 }
