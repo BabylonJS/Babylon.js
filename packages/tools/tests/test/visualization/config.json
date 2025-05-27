@@ -2680,6 +2680,10 @@
         {
             "title": "F82 Specular Metal vs Weight",
             "playgroundId": "#GRQHVV#21"
+        },
+        {
+            "title": "Test code inlining",
+            "playgroundId": "#YG3BBF#51"
         }
     ]
 }
