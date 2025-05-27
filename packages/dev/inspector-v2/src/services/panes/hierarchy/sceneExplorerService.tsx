@@ -155,9 +155,9 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                 const visibleItems: TreeItemData[] = [];
 
                 let depth = 0;
-                TraverseGraph<Scene | TreeItemData>(
+                TraverseGraph(
                     [scene],
-                    function* (item) {
+                    function* (item: Scene | TreeItemData) {
                         const isScene = item instanceof Scene;
                         for (const enumerator of childEnumerators) {
                             if (enumerator.predicate(isScene ? item : item.entity)) {

@@ -3,6 +3,8 @@ import type { IDisposable, Nullable } from "core/index";
 import type { IServiceRegistry } from "../modularity/serviceCatalog";
 import type { IExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
 
+import { Logger } from "core/Misc/logger";
+
 import { Assert } from "../misc/assert";
 
 /**
@@ -156,11 +158,14 @@ export class ExtensionManager implements IDisposable {
         }
 
         // Load installed and enabled extensions.
+        const enablePromises: Promise<void>[] = [];
         for (const extension of extensionManager._installedExtensions.values()) {
             if (localStorage.getItem(GetExtensionEnabledKey(GetExtensionIdentity(extension.feed.name, extension.metadata.name))) === String(true)) {
-                await extensionManager._enableAsync(extension.metadata, false);
+                enablePromises.push(extensionManager._enableAsync(extension.metadata, false));
             }
         }
+
+        await Promise.all(enablePromises);
 
         return extensionManager;
     }
@@ -212,6 +217,8 @@ export class ExtensionManager implements IDisposable {
                         continue;
                     }
 
+                    // This is intentionally sequential as we are querying for results until the count of results is met.
+                    // eslint-disable-next-line no-await-in-loop
                     const metadataSlice = await query.getExtensionMetadataAsync(index, remaining);
                     extensions.push(...metadataSlice.map((metadata) => this._createExtension(metadata, query.feed)));
                     remaining -= metadataSlice.length;
@@ -228,7 +235,10 @@ export class ExtensionManager implements IDisposable {
      */
     public dispose() {
         for (const installedExtension of this._installedExtensions.values()) {
-            this._disableAsync(installedExtension.metadata, false, false);
+            // eslint-disable-next-line github/no-then
+            this._disableAsync(installedExtension.metadata, false, false).catch((error) => {
+                Logger.Warn(`Failed to disable extension ${installedExtension.metadata.name}: ${error}`);
+            });
         }
 
         this._stateChangedHandlers.clear();
@@ -252,13 +262,15 @@ export class ExtensionManager implements IDisposable {
                             //       If we get to the point where extensions can be built and deployed independently, then the solution will probably be more
                             //       complex. We will probably need to resolve the entire dependency graph to find extension versions that are all compatible
                             //       (similar to how npm resolves a versioned dependency graph). The semver package may be able to help with this.
-                            const matches = (await Promise.all(this._feeds.map((feed) => feed.getExtensionMetadataAsync(name)))).filter((extension) => !!extension);
+                            // eslint-disable-next-line no-await-in-loop
+                            const matches = (await Promise.all(this._feeds.map(async (feed) => await feed.getExtensionMetadataAsync(name)))).filter((extension) => !!extension);
                             if (matches.length > 1) {
                                 throw new Error(`Ambiguous dependency: ${name}@${version}`);
                             }
 
                             const metadata = matches[0];
                             if (metadata) {
+                                // eslint-disable-next-line no-await-in-loop
                                 const dependency = await this._installAsync(metadata, feed, false);
                                 dependency.dependents.add(metadata);
                             }
@@ -303,6 +315,7 @@ export class ExtensionManager implements IDisposable {
 
                 // Inspect dependents for other extensions that need to be uninstalled first.
                 for (const dependent of installedExtension.dependents) {
+                    // eslint-disable-next-line no-await-in-loop
                     await this._uninstallAsync(dependent, false);
                 }
 
@@ -345,6 +358,7 @@ export class ExtensionManager implements IDisposable {
                     for (const name of Object.keys(metadata.peerDependencies)) {
                         const dependency = this._installedExtensions.get(name);
                         if (dependency) {
+                            // eslint-disable-next-line no-await-in-loop
                             await this._enableAsync(dependency.metadata, false);
                         }
                     }
@@ -392,6 +406,7 @@ export class ExtensionManager implements IDisposable {
 
                 // Inspect dependents for other extensions that need to be disabled first.
                 for (const dependent of installedExtension.dependents) {
+                    // eslint-disable-next-line no-await-in-loop
                     await this._disableAsync(dependent, false, permanent);
                 }
 
@@ -444,9 +459,9 @@ export class ExtensionManager implements IDisposable {
             installAsync: async () => {
                 await extensionManager._installAsync(metadata, feed, false);
             },
-            uninstallAsync: () => extensionManager._uninstallAsync(metadata, false),
-            enableAsync: () => extensionManager._enableAsync(metadata, false),
-            disableAsync: () => extensionManager._disableAsync(metadata, false, true),
+            uninstallAsync: async () => await extensionManager._uninstallAsync(metadata, false),
+            enableAsync: async () => await extensionManager._enableAsync(metadata, false),
+            disableAsync: async () => await extensionManager._disableAsync(metadata, false, true),
             addStateChangedHandler: (handler: () => void) => extensionManager._addStateChangedHandler(metadata, handler),
         };
     }

@@ -6,9 +6,10 @@ import type { OnOpenChangeData, PositioningImperativeRef } from "@fluentui/react
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
+import { AsyncLock } from "core/Misc/asyncLock";
 import { Deferred } from "core/Misc/deferred";
 
-let SequencerPromise = Promise.resolve();
+const SequencerLock = new AsyncLock();
 
 /**
  * Creates a hook for managing teaching moment state.
@@ -24,10 +25,12 @@ export function MakeTeachingMoment(name: string) {
 
         useEffect(() => {
             if (!hasDisplayed && !suppress && !deferredRef.current) {
-                SequencerPromise = SequencerPromise.then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                SequencerLock.lockAsync(async () => {
                     deferredRef.current = new Deferred<void>();
                     setShouldDisplay(true);
-                    return deferredRef.current.promise;
+                    // Just hold the lock until the hook cleanup, which is effectively component unmount (e.g. the teaching moment is dismissed).
+                    await deferredRef.current.promise;
                 });
             }
 

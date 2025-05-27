@@ -104,14 +104,14 @@ export class ServiceCatalog implements IServiceRegistry, IDisposable {
      * @param abortSignal An optional abort signal.
      * @returns A disposable that will remove the service definition from the service catalog.
      */
-    public registerService<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []>(
+    public async registerServiceAsync<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []>(
         serviceDefinition: ServiceDefinition<Produces, Consumes>,
         abortSignal?: AbortSignal
     ): Promise<IDisposable> {
         if (abortSignal) {
-            return this.registerServicesAsync(serviceDefinition, abortSignal);
+            return await this.registerServicesAsync(serviceDefinition, abortSignal);
         } else {
-            return this.registerServicesAsync(serviceDefinition);
+            return await this.registerServicesAsync(serviceDefinition);
         }
     }
 

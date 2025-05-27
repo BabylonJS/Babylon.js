@@ -84,7 +84,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 const serviceCatalog = new ServiceCatalog();
 
                 // Register a service that simply consumes the IRootComponentService and sets the root component as state so it can be rendered.
-                await serviceCatalog.registerService<[], [IRootComponentService]>({
+                await serviceCatalog.registerServiceAsync<[], [IRootComponentService]>({
                     friendlyName: "Root Component Bootstrapper",
                     consumes: [RootComponentServiceIdentity],
                     factory: (rootComponentService) => {

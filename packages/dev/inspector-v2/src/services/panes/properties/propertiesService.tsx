@@ -149,6 +149,6 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 }
             },
             dispose: () => registration.dispose(),
-        } satisfies IPropertiesService & IDisposable;
+        };
     },
 };
