@@ -57,7 +57,6 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
-// TODO: Include "high" when remaining IBL shadow issues are resolved.
 const shadowQualityOptions = ["none", "normal", "high"] as const;
 export type ShadowQuality = (typeof shadowQualityOptions)[number];
 
@@ -814,8 +813,7 @@ export class Viewer implements IDisposable {
     private _camerasAsHotSpots = false;
     private _hotSpots: Record<string, HotSpot> = this._options?.hotSpots ?? {};
 
-    // TODO: Remove the `| "high"` once the IBL shadow issues are resolved.
-    private _shadowQuality: ShadowQuality | "high" = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
+    private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
 
     public constructor(
@@ -905,6 +903,7 @@ export class Viewer implements IDisposable {
         this._scene.skipPointerUpPicking = true;
         this._scene.skipPointerMovePicking = true;
         this._snapshotHelper = new SnapshotRenderingHelper(this._scene, { morphTargetsNumMaxInfluences: 30 });
+        // this._snapshotHelper.showDebugLogs = true;
         this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             this._snapshotHelper.updateMesh(this._scene.meshes);
         });
@@ -1548,10 +1547,10 @@ export class Viewer implements IDisposable {
                     await this.loadEnvironment("auto", { lighting: true, skybox: false });
                 }
 
-                if (this._shadowQuality === "normal") {
-                    await this._updateShadowMap(abortController.signal);
-                } else if (this._shadowQuality === "high") {
-                    if (this._loadedModelsBacking.length > 0) {
+                if (this._loadedModelsBacking.length > 0) {
+                    if (this._shadowQuality === "normal") {
+                        await this._updateShadowMap(abortController.signal);
+                    } else if (this._shadowQuality === "high") {
                         await this._updateEnvShadow(abortController.signal);
                     }
                 }
@@ -1587,12 +1586,18 @@ export class Viewer implements IDisposable {
         if (this._shadowState.high) {
             if (this._shadowState.high.renderTimer != null) {
                 clearTimeout(this._shadowState.high.renderTimer);
+            } else {
+                // Only disable if a timeout is not pending, otherwise it has already been called without a paired enable call.
+                this._snapshotHelper.disableSnapshotRendering();
             }
+
             this._shadowState.high.shouldRender = true;
             const onRenderTimeout = () => {
                 if (this._shadowState.high) {
                     this._shadowState.high.shouldRender = false;
+                    this._shadowState.high.renderTimer = null;
                 }
+                this._snapshotHelper.enableSnapshotRendering();
             };
             this._shadowState.high.renderTimer = setTimeout(
                 onRenderTimeout,
@@ -1629,12 +1634,15 @@ export class Viewer implements IDisposable {
 
         const updateMaterial = () => {
             if (this._shadowState.high) {
+                this._snapshotHelper.disableSnapshotRendering();
                 const { pipeline, groundMaterial, ground } = this._shadowState.high;
                 groundMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
                 groundMaterial?.setFloat("shadowOpacity", pipeline.shadowOpacity);
                 groundMaterial?.setTexture("shadowTexture", pipeline._getAccumulatedTexture());
                 const groundSize = groundFactor * pipeline?.voxelGridSize;
                 ground?.scaling.set(groundSize, groundSize, groundSize);
+                this._snapshotHelper.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         };
 
@@ -1710,6 +1718,7 @@ export class Viewer implements IDisposable {
                 ground: ground,
             };
         }
+
         // Remove previous meshes and materials.
         high.pipeline.clearShadowCastingMeshes();
         high.pipeline.clearShadowReceivingMaterials();
@@ -1727,10 +1736,13 @@ export class Viewer implements IDisposable {
         }
 
         high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
+            this._snapshotHelper.disableSnapshotRendering();
             updateMaterial();
             high.ground.setEnabled(true);
             high.pipeline.toggleShadow(true);
             high.ground.setEnabled(true);
+            this._snapshotHelper.enableSnapshotRendering();
+            this._markSceneMutated();
         });
 
         high.ground.position.y = worldBounds.extents.min[1];
@@ -1747,7 +1759,7 @@ export class Viewer implements IDisposable {
 
         this._shadowState.high = high;
 
-        // this._snapshotHelper.enableSnapshotRendering();
+        this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
     }
 
