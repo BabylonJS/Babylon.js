@@ -143,7 +143,7 @@ reflectivityOutParams reflectivityBlock(
 
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
             outParams.reflectanceF90 = vec3(outParams.specularWeight);
-            float f90Scale = 1.0f;
+            float f90Scale = 1.0;
         #else
             // Scale the reflectanceF90 by the IOR for values less than 1.5.
             // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
