@@ -2462,13 +2462,13 @@
         },
         {
             "title": "glTF Loader Cameras RH",
-            "playgroundId": "#933H4X#9",
+            "playgroundId": "#933H4X#11",
             "replace": "//options//, useRightHandedSystem = true;",
             "referenceImage": "glTFLoaderCameras.png"
         },
         {
             "title": "glTF Loader Cameras LH",
-            "playgroundId": "#933H4X#9",
+            "playgroundId": "#933H4X#11",
             "replace": "//options//, useRightHandedSystem = false;",
             "referenceImage": "glTFLoaderCameras.png"
         },
