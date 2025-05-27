@@ -183,7 +183,7 @@ void main(void) {
             // Bend the normal towards the viewer based on the diffuse roughness
             vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
-            #ifndef NATIVE
+            #if !defined(NATIVE) && !defined(WEBGPU)
                 // Next two lines fixes a flickering that occurs on some specific circumstances on MacOS/iOS
                 // See https://forum.babylonjs.com/t/needdepthprepass-creates-flickering-in-8-6-2/58421/12
                 // Note that the variable passed to isnan doesn't matter...
