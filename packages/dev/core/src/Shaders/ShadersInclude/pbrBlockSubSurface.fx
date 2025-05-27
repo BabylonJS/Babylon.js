@@ -158,7 +158,7 @@ struct subSurfaceOutParams
         , in vec2 vThicknessParam
         , in vec4 vTintColor
         , in vec3 normalW
-        , in vec3 specularEnvironmentReflectance
+        , in vec3 vSpecularEnvironmentReflectance
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         , in vec4 thicknessMap
     #endif
@@ -250,7 +250,7 @@ struct subSurfaceOutParams
     )
     {
         subSurfaceOutParams outParams;
-        outParams.specularEnvironmentReflectance = specularEnvironmentReflectance;
+        outParams.specularEnvironmentReflectance = vSpecularEnvironmentReflectance;
 
     // ______________________________________________________________________________________
     // _____________________________ Intensities & thickness ________________________________
@@ -454,8 +454,8 @@ struct subSurfaceOutParams
             // nomenclatures (probably coming from our V1)
 
             // Add Multiple internal bounces.
-            vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
-            outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
+            vec3 bounceSpecularEnvironmentReflectance = (2.0 * vSpecularEnvironmentReflectance) / (1.0 + vSpecularEnvironmentReflectance);
+            outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, vSpecularEnvironmentReflectance, refractionIntensity);
         #endif
 
         #if DEBUGMODE > 0
@@ -465,7 +465,7 @@ struct subSurfaceOutParams
         outParams.finalRefraction = environmentRefraction.rgb * refractionTransmittance * vLightingIntensity.z;
 
         // Decrease the trasmitted light based on the specular environment reflectance.
-        outParams.finalRefraction *= vec3(1.0) - specularEnvironmentReflectance;
+        outParams.finalRefraction *= vec3(1.0) - vSpecularEnvironmentReflectance;
 
         #if DEBUGMODE > 0
             outParams.environmentRefraction = environmentRefraction;
