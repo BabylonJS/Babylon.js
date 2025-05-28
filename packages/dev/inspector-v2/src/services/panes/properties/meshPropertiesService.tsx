@@ -15,38 +15,44 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
         const transformsSectionRegistration = propertiesService.addSection({
             order: 1,
             identity: TransformsPropertiesSectionIdentity,
+        });
+
+        const contentRegistration = propertiesService.addSectionContent({
+            key: "Mesh Properties",
             predicate: (entity: unknown) => entity instanceof AbstractMesh,
-        });
+            content: [
+                // "GENERAL" section.
+                {
+                    section: GeneralPropertiesSectionIdentity,
+                    order: 1,
+                    component: ({ entity: mesh }) => {
+                        return (
+                            <BooleanProperty
+                                key="MeshIsEnabled"
+                                label="Is enabled"
+                                description="Determines whether a mesh is enabled within the scene"
+                                accessor={() => mesh.isEnabled(false)}
+                                mutator={(value) => mesh.setEnabled(value)}
+                                observable={mesh.onEnabledStateChangedObservable}
+                            />
+                        );
+                    },
+                },
 
-        const generalPropertiesRegistration = propertiesService.addPropertiesProvider({
-            order: 1,
-            predicate: (entity: unknown, section: symbol): entity is AbstractMesh => section === GeneralPropertiesSectionIdentity && entity instanceof AbstractMesh,
-            component: ({ entity: mesh }) => {
-                return (
-                    <BooleanProperty
-                        key="MeshIsEnabled"
-                        label="Is enabled"
-                        description="Determines whether a mesh is enabled within the scene"
-                        accessor={() => mesh.isEnabled(false)}
-                        mutator={(value) => mesh.setEnabled(value)}
-                        observable={mesh.onEnabledStateChangedObservable}
-                    />
-                );
-            },
-        });
-
-        const transformsPropertiesRegistration = propertiesService.addPropertiesProvider({
-            order: 0,
-            predicate: (entity: unknown, section: symbol): entity is AbstractMesh => section === TransformsPropertiesSectionIdentity && entity instanceof AbstractMesh,
-            component: ({ entity: mesh }) => {
-                return <div key="PositionTransform">Position: {mesh.position.toString()}</div>;
-            },
+                // "TRANSFORMS" section.
+                {
+                    section: TransformsPropertiesSectionIdentity,
+                    order: 0,
+                    component: ({ entity: mesh }) => {
+                        return <div key="PositionTransform">Position: {mesh.position.toString()}</div>;
+                    },
+                },
+            ],
         });
 
         return {
             dispose: () => {
-                generalPropertiesRegistration.dispose();
-                transformsPropertiesRegistration.dispose();
+                contentRegistration.dispose();
                 transformsSectionRegistration.dispose();
             },
         };

@@ -4,32 +4,88 @@ import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IShellService } from "../../shellService";
 
-import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Subtitle1, tokens } from "@fluentui/react-components";
+import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, Body1Strong, makeStyles, Subtitle1, tokens } from "@fluentui/react-components";
 import { DocumentTextRegular } from "@fluentui/react-icons";
 import { useMemo, useState, type ComponentType } from "react";
 
 import { Observable } from "core/Misc/observable";
-import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { ShellServiceIdentity } from "../../shellService";
 
 export type PropertiesServiceSection = {
+    /**
+     * A unique identity for the section, which can be referenced by section content.
+     */
     identity: symbol;
-    order: number;
-    predicate: (entity: unknown) => boolean;
+
+    /**
+     * An optional order for the section, relative to other sections.
+     * Defaults to 0.
+     */
+    order?: number;
+
+    /**
+     * An optional flag indicating whether the section should be collapsed by default.
+     * Defaults to false.
+     */
     collapseByDefault?: boolean;
 };
 
-export type PropertiesServicePropertiesProvider<EntityT> = {
-    order: number;
-    predicate: (entity: unknown, section: symbol) => entity is EntityT;
-    component: ComponentType<{ entity: EntityT }>;
+export type PropertiesServiceSectionContent<EntityT> = {
+    /**
+     * A unique key for the the content.
+     */
+    key: string;
+
+    /**
+     * A predicate function that determines if the content is applicable to the given entity.
+     */
+    predicate: (entity: unknown) => entity is EntityT;
+
+    /**
+     * The content that is added to individual sections.
+     */
+    content: {
+        /**
+         * The section this content belongs to.
+         */
+        section: symbol;
+
+        /**
+         * An optional order for the content within the section.
+         * Defaults to 0.
+         */
+        order?: number;
+
+        /**
+         * The React component that will be rendered for this content.
+         */
+        component: ComponentType<{ entity: EntityT }>;
+    }[];
 };
 
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
+
+/**
+ * Provides a properties pane that enables displaying and editing properties of an entity such as a mesh or a texture.
+ */
 export interface IPropertiesService extends IService<typeof PropertiesServiceIdentity> {
-    addSection: (section: PropertiesServiceSection) => IDisposable;
-    addPropertiesProvider: <EntityT>(provider: PropertiesServicePropertiesProvider<EntityT>) => IDisposable;
+    /**
+     * Adds a new section (e.g. "General", "Transforms", etc.).
+     * @param section A description of the section to add.
+     */
+    addSection(section: PropertiesServiceSection): IDisposable;
+
+    /**
+     * Adds content to one or more sections.
+     * @param content A description of the content to add.
+     */
+    addSectionContent<EntityT>(content: PropertiesServiceSectionContent<EntityT>): IDisposable;
+
+    /**
+     * Gets or sets the currently bound entity.
+     */
     boundEntity: Nullable<unknown>;
 }
 
@@ -40,7 +96,9 @@ const useStyles = makeStyles({
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        // padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
+    },
+    placeholderDiv: {
+        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
     },
     accordion: {
         overflowY: "auto",
@@ -60,7 +118,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
     consumes: [ShellServiceIdentity],
     factory: (shellService) => {
         const sectionsCollection = new ObservableCollection<PropertiesServiceSection>();
-        const propertiesProvidersCollection = new ObservableCollection<PropertiesServicePropertiesProvider<unknown>>();
+        const sectionContentCollection = new ObservableCollection<PropertiesServiceSectionContent<unknown>>();
 
         let boundEntityState: Nullable<unknown> = null;
         const boundEntityObservable = new Observable<Nullable<unknown>>();
@@ -75,7 +133,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 const classes = useStyles();
 
                 const sections = useOrderedObservableCollection(sectionsCollection);
-                const propertiesProviders = useOrderedObservableCollection(propertiesProvidersCollection);
+                const sectionContent = useObservableCollection(sectionContentCollection);
                 const boundEntity = useObservableState(() => boundEntityState, boundEntityObservable);
                 const [version, setVersion] = useState(0);
 
@@ -87,16 +145,31 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                         return [];
                     }
 
-                    const applicableSections = sections.filter((section) => section.predicate(boundEntity));
-                    return applicableSections.map((section) => {
-                        const propertiesProvidersForSection = propertiesProviders.filter((provider) => provider.predicate(boundEntity, section.identity));
-                        return {
-                            identity: section.identity,
-                            collapseByDefault: section.collapseByDefault ?? false,
-                            components: propertiesProvidersForSection.map((provider) => provider.component),
-                        };
-                    });
-                }, [sections, propertiesProviders, boundEntity]);
+                    const applicableContent = sectionContent.filter((content) => content.predicate(boundEntity));
+                    return sections
+                        .map((section) => {
+                            // Get a flat list of the section content, preserving the key so it can be used when each component for each section is rendered.
+                            const contentForSection = applicableContent
+                                .flatMap((entry) => entry.content.map((content) => ({ key: entry.key, ...content })))
+                                .filter((content) => content.section === section.identity);
+
+                            // If there is no content for this section, we skip it.
+                            if (contentForSection.length === 0) {
+                                return null; // No content for this section
+                            }
+
+                            // Sort the content for this section by order, defaulting to 0 if not specified.
+                            contentForSection.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+                            // Return the section with its identity, collapseByDefault flag, and the content components to render.
+                            return {
+                                identity: section.identity,
+                                collapseByDefault: section.collapseByDefault ?? false,
+                                components: contentForSection.map((content) => ({ key: content.key, component: content.component })),
+                            };
+                        })
+                        .filter((section) => section !== null);
+                }, [sections, sectionContent, boundEntity]);
 
                 return (
                     <div className={classes.rootDiv}>
@@ -116,9 +189,8 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                                             </AccordionHeader>
                                             <AccordionPanel>
                                                 <div className={classes.panelDiv}>
-                                                    {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-                                                    {section.components.map((Component) => {
-                                                        return <Component entity={boundEntity} />;
+                                                    {section.components.map((component) => {
+                                                        return <component.component key={component.key} entity={boundEntity} />;
                                                     })}
                                                 </div>
                                             </AccordionPanel>
@@ -126,10 +198,12 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                                     );
                                 })}
                             </Accordion>
-                        ) : boundEntity ? (
-                            `Can't show properties for this entity type (${boundEntity.toString()})`
                         ) : (
-                            "No entity selected"
+                            <div className={classes.placeholderDiv}>
+                                <Body1Strong italic>
+                                    {boundEntity ? `Can't show properties for the selected entity type (${boundEntity.toString()})` : "No entity selected."}
+                                </Body1Strong>
+                            </div>
                         )}
                     </div>
                 );
@@ -138,7 +212,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
 
         return {
             addSection: (section) => sectionsCollection.add(section),
-            addPropertiesProvider: (provider) => propertiesProvidersCollection.add(provider as PropertiesServicePropertiesProvider<unknown>),
+            addSectionContent: (content) => sectionContentCollection.add(content as PropertiesServiceSectionContent<unknown>),
             get boundEntity() {
                 return boundEntityState;
             },

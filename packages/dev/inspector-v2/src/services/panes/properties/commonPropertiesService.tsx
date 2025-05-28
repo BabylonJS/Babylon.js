@@ -13,39 +13,42 @@ type CommonEntity = {
 export const GeneralPropertiesSectionIdentity = Symbol("General");
 
 export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
-    friendlyName: "Common Properties Sections",
+    friendlyName: "Common Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
         const generalSectionRegistration = propertiesService.addSection({
             order: 0,
             identity: GeneralPropertiesSectionIdentity,
-            predicate: () => true,
         });
 
-        const generalPropertiesRegistration = propertiesService.addPropertiesProvider({
-            order: 0,
-            predicate: (entity: unknown, section: symbol): entity is CommonEntity => {
-                if (section === GeneralPropertiesSectionIdentity) {
-                    const commonEntity = entity as CommonEntity;
-                    return commonEntity.id !== undefined || commonEntity.name !== undefined || commonEntity.uniqueId !== undefined || commonEntity.getClassName !== undefined;
-                }
-                return false;
+        const contentRegistration = propertiesService.addSectionContent({
+            key: "Common Properties",
+            predicate: (entity: unknown): entity is CommonEntity => {
+                const commonEntity = entity as CommonEntity;
+                return commonEntity.id !== undefined || commonEntity.name !== undefined || commonEntity.uniqueId !== undefined || commonEntity.getClassName !== undefined;
             },
-            component: ({ entity }) => {
-                return (
-                    <>
-                        {entity.id !== undefined && <div key="EntityId">ID: {entity.id}</div>}
-                        {entity.name !== undefined && <div key="EntityName">Name: {entity.name}</div>}
-                        {entity.uniqueId !== undefined && <div key="EntityUniqueId">Unique ID: {entity.uniqueId}</div>}
-                        {entity.getClassName !== undefined && <div key="EntityClassName">Class: {entity.getClassName()}</div>}
-                    </>
-                );
-            },
+            content: [
+                // "GENERAL" section.
+                {
+                    section: GeneralPropertiesSectionIdentity,
+                    order: 0,
+                    component: ({ entity }) => {
+                        return (
+                            <>
+                                {entity.id !== undefined && <div key="EntityId">ID: {entity.id}</div>}
+                                {entity.name !== undefined && <div key="EntityName">Name: {entity.name}</div>}
+                                {entity.uniqueId !== undefined && <div key="EntityUniqueId">Unique ID: {entity.uniqueId}</div>}
+                                {entity.getClassName !== undefined && <div key="EntityClassName">Class: {entity.getClassName()}</div>}
+                            </>
+                        );
+                    },
+                },
+            ],
         });
 
         return {
             dispose: () => {
-                generalPropertiesRegistration.dispose();
+                contentRegistration.dispose();
                 generalSectionRegistration.dispose();
             },
         };
