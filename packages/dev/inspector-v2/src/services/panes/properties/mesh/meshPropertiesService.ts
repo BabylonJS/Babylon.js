@@ -1,10 +1,12 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
+import type { IPropertiesService } from "../propertiesService";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { BooleanProperty } from "../../../components/booleanProperty";
-import { PropertiesServiceIdentity } from "./propertiesService";
-import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
+
+import { GeneralPropertiesSectionIdentity } from "../common/commonPropertiesService";
+import { PropertiesServiceIdentity } from "../propertiesService";
+import { MeshGeneralProperties } from "./meshGeneralProperties";
+import { MeshTransformProperties } from "./meshTransformProperties";
 
 export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
 
@@ -25,27 +27,14 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                 {
                     section: GeneralPropertiesSectionIdentity,
                     order: 1,
-                    component: ({ entity: mesh }) => {
-                        return (
-                            <BooleanProperty
-                                key="MeshIsEnabled"
-                                label="Is enabled"
-                                description="Determines whether a mesh is enabled within the scene"
-                                accessor={() => mesh.isEnabled(false)}
-                                mutator={(value) => mesh.setEnabled(value)}
-                                observable={mesh.onEnabledStateChangedObservable}
-                            />
-                        );
-                    },
+                    component: MeshGeneralProperties,
                 },
 
                 // "TRANSFORMS" section.
                 {
                     section: TransformsPropertiesSectionIdentity,
                     order: 0,
-                    component: ({ entity: mesh }) => {
-                        return <div key="PositionTransform">Position: {mesh.position.toString()}</div>;
-                    },
+                    component: MeshTransformProperties,
                 },
             ],
         });

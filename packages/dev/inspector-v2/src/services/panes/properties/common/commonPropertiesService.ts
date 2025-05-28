@@ -1,7 +1,8 @@
-import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
+import type { IPropertiesService } from "../propertiesService";
 
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { PropertiesServiceIdentity } from "../propertiesService";
+import { CommonGeneralProperties } from "./commonGeneralProperties";
 
 type CommonEntity = {
     id?: number;
@@ -32,16 +33,7 @@ export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 {
                     section: GeneralPropertiesSectionIdentity,
                     order: 0,
-                    component: ({ entity }) => {
-                        return (
-                            <>
-                                {entity.id !== undefined && <div key="EntityId">ID: {entity.id}</div>}
-                                {entity.name !== undefined && <div key="EntityName">Name: {entity.name}</div>}
-                                {entity.uniqueId !== undefined && <div key="EntityUniqueId">Unique ID: {entity.uniqueId}</div>}
-                                {entity.getClassName !== undefined && <div key="EntityClassName">Class: {entity.getClassName()}</div>}
-                            </>
-                        );
-                    },
+                    component: CommonGeneralProperties,
                 },
             ],
         });
