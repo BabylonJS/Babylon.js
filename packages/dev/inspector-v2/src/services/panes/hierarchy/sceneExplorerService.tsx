@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Nullable } from "core/index";
+import type { IDisposable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
@@ -7,64 +7,62 @@ import type { IService, ServiceDefinition } from "../../../modularity/serviceDef
 import type { ISceneContext } from "../../sceneContext";
 import type { IShellService } from "../../shellService";
 
-import { Button, FlatTree, FlatTreeItem, makeStyles, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { CubeTreeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
+import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { TraverseGraph } from "../../../misc/graphUtils";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SceneContextIdentity } from "../../sceneContext";
 import { ShellServiceIdentity } from "../../shellService";
-// import type { ObservableCollection } from "../../../misc/observableCollection";
 
 type EntityBase = Readonly<{
     uniqueId: number;
 }>;
 
-export type SceneExplorerChildEnumerator<ParentT, ChildT extends EntityBase> = Readonly<{
-    order: number;
-    predicate: (entity: unknown) => entity is ParentT;
-    getChildren: (scene: Scene, entity: ParentT) => readonly ChildT[];
-    component: ComponentType<{ entity: ChildT }>;
-    icon?: ComponentType<{ entity: ChildT }>;
-    isSelectable?: boolean | ((entity: ChildT) => boolean);
+export type SceneExplorerSection<T extends EntityBase> = Readonly<{
+    name: string;
+    order?: number;
+    getRootEntities: (scene: Scene) => readonly T[];
+    getEntityChildren?: (entity: T) => readonly T[];
+    getEntityDisplayName: (entity: T) => string;
+    entityIcon?: ComponentType<{ entity: T }>;
+    watch: (scene: Scene, onAdded: (entity: T) => void, onRemoved: (entity: T) => void) => IDisposable;
 }>;
 
-export type SceneExplorerEntityObservableProvider<T extends EntityBase> = (scene: Scene) => Readonly<{
-    entityAddedObservable: Observable<T>;
-    entityRemovedObservable: Observable<T>;
-}>;
-
-export type SceneExplorerEntityCommandProvider<T extends EntityBase> = Readonly<{
+export type SceneExplorerEntityCommand<T extends EntityBase> = Readonly<{
     order: number;
     predicate: (entity: unknown) => entity is T;
-    command: (scene: Scene, entity: T) => void;
+    execute: (scene: Scene, entity: T) => void;
     displayName: string;
     icon: ComponentType<{ entity: T }>;
 }>;
 
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
-    addChildEnumerator<ParentT, ChildT extends EntityBase>(childEnumerator: SceneExplorerChildEnumerator<ParentT, ChildT>): IDisposable;
-    addEntityObservableProvider<T extends EntityBase>(provider: SceneExplorerEntityObservableProvider<T>): IDisposable;
-    addEntityCommand<T extends EntityBase>(provider: SceneExplorerEntityCommandProvider<T>): IDisposable;
+    addSection<T extends EntityBase>(section: SceneExplorerSection<T>): IDisposable;
+    addCommand<T extends EntityBase>(provider: SceneExplorerEntityCommand<T>): IDisposable;
     readonly selectedEntity: Nullable<unknown>;
     readonly onSelectedEntityChanged: Observable<void>;
 }
 
-type TreeItemData = {
-    entity: EntityBase;
-    depth: number;
-    parent: Nullable<TreeItemData>;
-    hasChildren: boolean;
-    component: ComponentType<{ entity: EntityBase }>;
-    icon?: ComponentType<{ entity: EntityBase }>;
-    isSelectable: boolean;
-};
+type TreeItemData =
+    | {
+          type: "section";
+          sectionName: string;
+          hasChildren: boolean;
+      }
+    | {
+          type: "entity";
+          entity: EntityBase;
+          depth: number;
+          hasChildren: boolean;
+          title: string;
+          icon?: ComponentType<{ entity: EntityBase }>;
+      };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -87,9 +85,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
     produces: [SceneExplorerServiceIdentity],
     consumes: [SceneContextIdentity, ShellServiceIdentity],
     factory: (sceneContext, shellService) => {
-        const childEnumeratorCollection = new ObservableCollection<SceneExplorerChildEnumerator<unknown, EntityBase>>();
-        const entityObservableProviderCollection = new ObservableCollection<SceneExplorerEntityObservableProvider<EntityBase>>();
-        const entityCommandProviderCollection = new ObservableCollection<SceneExplorerEntityCommandProvider<EntityBase>>();
+        const sectionsCollection = new ObservableCollection<SceneExplorerSection<EntityBase>>();
+        const commandsCollection = new ObservableCollection<SceneExplorerEntityCommand<EntityBase>>();
 
         let selectedEntityState: Nullable<unknown> = null;
         const selectedEntityObservable = new Observable<void>();
@@ -104,9 +101,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         const SceneExplorer: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
             const classes = useStyles();
 
-            const childEnumerators = useOrderedObservableCollection(childEnumeratorCollection);
-            const entityObservableProviders = useObservableCollection(entityObservableProviderCollection);
-            const entityCommandProviders = useOrderedObservableCollection(entityCommandProviderCollection);
+            const sections = useOrderedObservableCollection(sectionsCollection);
+            const commands = useOrderedObservableCollection(commandsCollection);
 
             const selectedItem = useObservableState(() => selectedEntityState, selectedEntityObservable);
             const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
@@ -138,62 +134,55 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                     }
                 };
 
-                const itemAddedObservers = entityObservableProviders.map((provider) => provider(scene).entityAddedObservable.add(onSceneItemAdded));
-                const itemRemovedObservers = entityObservableProviders.map((provider) => provider(scene).entityRemovedObservable.add(onSceneItemRemoved));
+                const watchTokens = sections.map((section) => section.watch(scene, onSceneItemAdded, onSceneItemRemoved));
 
                 return () => {
-                    for (const observer of itemAddedObservers) {
-                        observer.remove();
-                    }
-                    for (const observer of itemRemovedObservers) {
-                        observer.remove();
+                    for (const token of watchTokens) {
+                        token.dispose();
                     }
                 };
-            }, [entityObservableProviders, openItems]);
+            }, [sections, openItems]);
 
             const visibleItems = useMemo(() => {
                 const visibleItems: TreeItemData[] = [];
 
-                let depth = 0;
-                TraverseGraph(
-                    [scene],
-                    function* (item: Scene | TreeItemData) {
-                        const isScene = item instanceof Scene;
-                        for (const enumerator of childEnumerators) {
-                            if (enumerator.predicate(isScene ? item : item.entity)) {
-                                for (const child of enumerator.getChildren(scene, isScene ? item : item.entity)) {
-                                    if (!isScene) {
-                                        item.hasChildren = true;
-                                    }
+                for (const section of sections) {
+                    visibleItems.push({
+                        type: "section",
+                        sectionName: section.name,
+                        hasChildren: section.getRootEntities(scene).length > 0,
+                    });
 
-                                    if (isScene || openItems.has(item.entity.uniqueId)) {
-                                        yield {
-                                            entity: child,
-                                            parent: isScene ? null : item,
-                                            depth,
-                                            hasChildren: false,
-                                            component: enumerator.component,
-                                            icon: enumerator.icon,
-                                            isSelectable: (enumerator.isSelectable === true || (enumerator.isSelectable !== false && enumerator.isSelectable?.(child))) ?? false,
-                                        };
-                                    }
+                    if (openItems.has(section.name)) {
+                        let depth = 1;
+                        TraverseGraph(
+                            section.getRootEntities(scene),
+                            (entity) => {
+                                if (openItems.has(entity.uniqueId) && section.getEntityChildren) {
+                                    return section.getEntityChildren(entity);
                                 }
+                                return null;
+                            },
+                            (entity) => {
+                                depth++;
+                                visibleItems.push({
+                                    type: "entity",
+                                    entity,
+                                    depth,
+                                    hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
+                                    title: section.getEntityDisplayName(entity),
+                                    icon: section.entityIcon,
+                                });
+                            },
+                            () => {
+                                depth--;
                             }
-                        }
-                    },
-                    (item) => {
-                        depth++;
-                        if (!(item instanceof Scene)) {
-                            visibleItems.push(item);
-                        }
-                    },
-                    () => {
-                        depth--;
+                        );
                     }
-                );
+                }
 
                 return visibleItems;
-            }, [scene, sceneVersion, childEnumerators, openItems, itemsFilter]);
+            }, [scene, sceneVersion, sections, openItems, itemsFilter]);
 
             const onOpenChange = useCallback(
                 (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
@@ -212,40 +201,56 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                             {(index: number) => {
                                 const item = visibleItems[index];
 
-                                const onItemClick = () => {
-                                    setSelectedItem(item.entity);
-                                };
-
-                                const commandProviders = entityCommandProviders.filter((provider) => provider.predicate(item.entity));
-
-                                return (
-                                    <FlatTreeItem
-                                        key={item.entity.uniqueId}
-                                        value={item.entity.uniqueId}
-                                        parentValue={item.parent?.entity.uniqueId ?? undefined}
-                                        itemType={item.hasChildren ? "branch" : "leaf"}
-                                        aria-level={item.depth}
-                                        aria-setsize={1}
-                                        aria-posinset={1}
-                                        onClick={item.isSelectable ? onItemClick : undefined}
-                                    >
-                                        <TreeItemLayout
-                                            style={item.entity === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                                            iconBefore={item.icon ? <item.icon entity={item.entity} /> : null}
-                                            actions={commandProviders.map((provider) => (
-                                                <Tooltip key={provider.displayName} content={provider.displayName} relationship="label">
-                                                    <Button
-                                                        icon={<provider.icon entity={item.entity} />}
-                                                        appearance="subtle"
-                                                        onClick={() => provider.command(scene, item.entity)}
-                                                    />
-                                                </Tooltip>
-                                            ))}
+                                if (item.type === "section") {
+                                    return (
+                                        <FlatTreeItem
+                                            key={item.sectionName}
+                                            value={item.sectionName}
+                                            itemType={item.hasChildren ? "branch" : "leaf"}
+                                            aria-level={0}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
                                         >
-                                            <item.component entity={item.entity} />
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
+                                            <TreeItemLayout>
+                                                <Body1Strong wrap={false} truncate>
+                                                    {item.sectionName.substring(0, 100)}
+                                                </Body1Strong>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                } else if (item.type === "entity") {
+                                    return (
+                                        <FlatTreeItem
+                                            key={item.entity.uniqueId}
+                                            value={item.entity.uniqueId}
+                                            itemType={item.hasChildren ? "branch" : "leaf"}
+                                            aria-level={item.depth}
+                                            aria-setsize={1}
+                                            aria-posinset={1}
+                                            onClick={() => setSelectedItem(item.entity)}
+                                        >
+                                            <TreeItemLayout
+                                                iconBefore={item.icon ? <item.icon entity={item.entity} /> : null}
+                                                style={item.entity === selectedItem ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                                                actions={commands
+                                                    .filter((command) => command.predicate(item.entity))
+                                                    .map((command) => (
+                                                        <Tooltip key={command.displayName} content={command.displayName} relationship="label">
+                                                            <Button
+                                                                icon={<command.icon entity={item.entity} />}
+                                                                appearance="subtle"
+                                                                onClick={() => command.execute(scene, item.entity)}
+                                                            />
+                                                        </Tooltip>
+                                                    ))}
+                                            >
+                                                <Body1 wrap={false} truncate>
+                                                    {item.title.substring(0, 100)}
+                                                </Body1>
+                                            </TreeItemLayout>
+                                        </FlatTreeItem>
+                                    );
+                                }
                             }}
                         </VirtualizerScrollView>
                     </FlatTree>
@@ -266,9 +271,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         });
 
         return {
-            addChildEnumerator: (childEnumerator) => childEnumeratorCollection.add(childEnumerator as SceneExplorerChildEnumerator<unknown, EntityBase>),
-            addEntityObservableProvider: (provider) => entityObservableProviderCollection.add(provider as SceneExplorerEntityObservableProvider<EntityBase>),
-            addEntityCommand: (provider) => entityCommandProviderCollection.add(provider as SceneExplorerEntityCommandProvider<EntityBase>),
+            addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<EntityBase>),
+            addCommand: (command) => commandsCollection.add(command as SceneExplorerEntityCommand<EntityBase>),
             get selectedEntity() {
                 return selectedEntityState;
             },

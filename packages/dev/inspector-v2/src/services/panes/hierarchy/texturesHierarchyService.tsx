@@ -1,72 +1,51 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { BaseTexture } from "core/index";
+import type { Observer } from "core/index";
 
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { Body1, Body1Strong } from "@fluentui/react-components";
 import { ImageRegular } from "@fluentui/react-icons";
 
-import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import { Scene } from "core/scene";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
     friendlyName: "Texture Hierarchy",
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {
-        const texturesGroup = {
-            uniqueId: UniqueIdGenerator.UniqueId,
-        } as const;
+        const sectionRegistration = sceneExplorerService.addSection({
+            name: "Textures",
+            order: 3,
+            getRootEntities: (scene) => scene.textures,
+            getEntityDisplayName: (texture) => texture.displayName || texture.name || `Unnamed Texture (${texture.uniqueId})`,
+            entityIcon: () => <ImageRegular />,
+            watch: (scene, onAdded, onRemoved) => {
+                const observers: Observer<any>[] = [];
 
-        const groupRegistration = sceneExplorerService.addChildEnumerator<Scene, typeof texturesGroup>({
-            order: 2,
-            predicate: (entity: unknown) => {
-                return entity instanceof Scene;
-            },
-            getChildren: () => {
-                return [texturesGroup];
-            },
-            component: () => {
-                return (
-                    <Body1Strong wrap={false} truncate>
-                        Textures
-                    </Body1Strong>
+                observers.push(
+                    scene.onNewTextureAddedObservable.add((texture) => {
+                        onAdded(texture);
+                    })
                 );
-            },
-        });
 
-        const texturesRegistration = sceneExplorerService.addChildEnumerator<typeof texturesGroup, BaseTexture>({
-            order: 0,
-            predicate: (entity: unknown): entity is typeof texturesGroup => {
-                return entity === texturesGroup;
-            },
-            getChildren: (scene: Scene) => {
-                return scene.textures;
-            },
-            component: ({ entity: texture }) => {
-                return (
-                    <Body1 wrap={false} truncate>
-                        {(texture.displayName || texture.name || `Unnamed Texture (${texture.uniqueId})`).substring(0, 100)}
-                    </Body1>
+                observers.push(
+                    scene.onTextureRemovedObservable.add((texture) => {
+                        onRemoved(texture);
+                    })
                 );
-            },
-            icon: () => <ImageRegular />,
-            isSelectable: true,
-        });
 
-        const observableRegistration = sceneExplorerService.addEntityObservableProvider((scene) => {
-            return {
-                entityAddedObservable: scene.onNewTextureAddedObservable,
-                entityRemovedObservable: scene.onTextureRemovedObservable,
-            };
+                return {
+                    dispose: () => {
+                        for (const observer of observers) {
+                            scene.onNewTextureAddedObservable.remove(observer);
+                        }
+                    },
+                };
+            },
         });
 
         return {
             dispose: () => {
-                observableRegistration.dispose();
-                texturesRegistration.dispose();
-                groupRegistration.dispose();
+                sectionRegistration.dispose();
             },
         };
     },
