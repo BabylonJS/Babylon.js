@@ -13,7 +13,7 @@ import { useObservableCollection, useObservableState, useOrderedObservableCollec
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { ShellServiceIdentity } from "../../shellService";
 
-export type PropertiesServiceSection = {
+export type PropertiesServiceSection = Readonly<{
     /**
      * A unique identity for the section, which can be referenced by section content.
      */
@@ -30,9 +30,9 @@ export type PropertiesServiceSection = {
      * Defaults to false.
      */
     collapseByDefault?: boolean;
-};
+}>;
 
-export type PropertiesServiceSectionContent<EntityT> = {
+export type PropertiesServiceSectionContent<EntityT> = Readonly<{
     /**
      * A unique key for the the content.
      */
@@ -46,7 +46,7 @@ export type PropertiesServiceSectionContent<EntityT> = {
     /**
      * The content that is added to individual sections.
      */
-    content: {
+    content: readonly Readonly<{
         /**
          * The section this content belongs to.
          */
@@ -62,8 +62,8 @@ export type PropertiesServiceSectionContent<EntityT> = {
          * The React component that will be rendered for this content.
          */
         component: ComponentType<{ entity: EntityT }>;
-    }[];
-};
+    }>[];
+}>;
 
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
