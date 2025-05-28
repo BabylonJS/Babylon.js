@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Scene, CubeTexture, Camera, EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
-import { Engine } from "core/Engines/engine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector3, Matrix, Quaternion, TmpVectors } from "core/Maths/math.vector";
@@ -384,7 +383,7 @@ export class ThinSSRPostProcess extends EffectWrapper {
         super({
             ...options,
             name,
-            engine: scene.getEngine() || Engine.LastCreatedEngine!,
+            engine: scene.getEngine(),
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinSSRPostProcess.FragmentUrl,

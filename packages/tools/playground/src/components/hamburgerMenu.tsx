@@ -23,6 +23,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         this.state = { isExpanded: false };
 
         if (typeof WebGPUEngine !== "undefined") {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             WebGPUEngine.IsSupportedAsync.then((result) => {
                 this._webGPUSupported = result;
                 if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {

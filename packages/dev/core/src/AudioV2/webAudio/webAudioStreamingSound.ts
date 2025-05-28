@@ -73,7 +73,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
         if (options.outBus) {
             this.outBus = options.outBus;
-        } else {
+        } else if (options.outBusAutoDefault !== false) {
             await this.engine.isReadyPromise;
             this.outBus = this.engine.defaultMainBus;
         }
@@ -473,6 +473,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             // It's possible that the play() method fails on Safari, even if the audio engine's state is "running".
             // This occurs when the audio context is paused by the system and resumed automatically by the audio engine
             // without a user interaction (e.g. when the Vision Pro exits and reenters immersive mode).
+            // eslint-disable-next-line github/no-then
             result.catch(() => {
                 this._setState(SoundState.FailedToStart);
 
@@ -490,9 +491,11 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     private _playWhenReady(): void {
         this._isReadyPromise
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 this._play();
             })
+            // eslint-disable-next-line github/no-then
             .catch(() => {
                 Logger.Error("Streaming sound instance failed to play");
                 this._setState(SoundState.FailedToStart);

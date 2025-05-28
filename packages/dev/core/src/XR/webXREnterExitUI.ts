@@ -178,7 +178,7 @@ export class WebXREnterExitUI implements IDisposable {
         this._helper = helper;
         this._renderTarget = renderTarget;
         const supportedPromises = this._buttons.map(async (btn) => {
-            return helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
+            return await helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
         });
         helper.onStateChangedObservable.add((state) => {
             if (state == WebXRState.NOT_IN_XR) {
@@ -265,6 +265,7 @@ export class WebXREnterExitUI implements IDisposable {
         // } else
 
         if (this._helper) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._enterXRWithButtonIndexAsync(0);
         }
     };

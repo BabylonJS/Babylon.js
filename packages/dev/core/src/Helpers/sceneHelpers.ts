@@ -211,7 +211,5 @@ Scene.prototype.createDefaultVRExperience = function (webVROptions: VRExperience
 };
 
 Scene.prototype.createDefaultXRExperienceAsync = async function (options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
-    return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
-        return helper;
-    });
+    return await WebXRDefaultExperience.CreateAsync(this, options);
 };

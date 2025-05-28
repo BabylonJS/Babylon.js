@@ -7,13 +7,23 @@
             "referenceImage": "msdf.png"
         },
         {
+            "title": "MSDF Screen projected",
+            "playgroundId": "#6RLCWP#48",
+            "referenceImage": "msdf-projected.png"
+        },
+        {
             "title": "MSDF Billboard",
             "playgroundId": "#6RLCWP#23",
             "referenceImage": "msdf-billboard.png"
         },
         {
+            "title": "MSDF Stroke",
+            "playgroundId": "#6RLCWP#41",
+            "referenceImage": "msdf-stroke.png"
+        },
+        {
             "title": "Attractors",
-            "playgroundId": "#DEZ79M#34",
+            "playgroundId": "#DEZ79M#57",
             "referenceImage": "attractors.png"
         },
         {
@@ -28,24 +38,24 @@
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
-            "playgroundId": "#MXACV7#23",
+            "playgroundId": "#MXACV7#30",
             "referenceImage": "openpbr_base_diffuse_roughness.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Realtime IBL",
-            "playgroundId": "#MXACV7#22",
+            "playgroundId": "#MXACV7#29",
             "renderCount": 15,
             "referenceImage": "openpbr_base_diffuse_roughness_realtime_ibl.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL with CDF",
-            "playgroundId": "#MXACV7#19",
+            "playgroundId": "#MXACV7#28",
             "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl_with_cdf.png"
         },
         {
             "title": "OpenPBR Base Diffuse Roughness Prefiltered IBL",
-            "playgroundId": "#MXACV7#20",
+            "playgroundId": "#MXACV7#27",
             "renderCount": 5,
             "referenceImage": "openpbr_base_diffuse_roughness_prefiltered_ibl.png"
         },
@@ -1101,6 +1111,12 @@
             "title": "GLTF Extension KHR_materials_volume",
             "playgroundId": "#YG3BBF#16",
             "referenceImage": "gltfExtensionKhrMaterialsVolume.png",
+            "renderCount": 5
+        },
+        {
+            "title": "GLTF Extension KHR_materials_volume with analytic light",
+            "playgroundId": "#YG3BBF#48",
+            "referenceImage": "gltfExtensionKhrMaterialsVolumeHemiLight.png",
             "renderCount": 5
         },
         {
@@ -2445,6 +2461,18 @@
             "referenceImage": "glTFLoaderCapabilities.png"
         },
         {
+            "title": "glTF Loader Cameras RH",
+            "playgroundId": "#933H4X#11",
+            "replace": "//options//, useRightHandedSystem = true;",
+            "referenceImage": "glTFLoaderCameras.png"
+        },
+        {
+            "title": "glTF Loader Cameras LH",
+            "playgroundId": "#933H4X#11",
+            "replace": "//options//, useRightHandedSystem = false;",
+            "referenceImage": "glTFLoaderCameras.png"
+        },
+        {
             "title": "IBL Voxel Shadowing",
             "playgroundId": "#8R5SSE#628",
             "referenceImage": "voxelShadows.png",
@@ -2543,6 +2571,12 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "FrameGraph nrge motion blur",
+            "playgroundId": "#YB006J#753",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 40
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2568,6 +2602,21 @@
         {
             "title": "FrameGraph image processing",
             "playgroundId": "#PV8OLY#21"
+        },
+        {
+            "title": "FrameGraph motion blur screen based",
+            "playgroundId": "#YB006J#746",
+            "renderCount": 10
+        },
+        {
+            "title": "FrameGraph motion blur object based",
+            "playgroundId": "#YB006J#747",
+            "renderCount": 10
+        },
+        {
+            "title": "FrameGraph motion blur skinned",
+            "playgroundId": "#YB006J#749",
+            "renderCount": 40
         },
         {
             "title": "IBL radiance roughness",
@@ -2606,7 +2655,47 @@
         },
         {
             "title": "Specular Reflectance with IOR",
-            "playgroundId": "#KQYNYS#2"
+            "playgroundId": "#KQYNYS#41"
+        },
+        {
+            "title": "Conductor Transmission",
+            "playgroundId": "#KQYNYS#15"
+        },
+        {
+            "title": "Furnace Test (Legacy) for Spec-Gloss",
+            "playgroundId": "#KQYNYS#20"
+        },
+        {
+            "title": "Furnace Test (Legacy) for Metal-Rough",
+            "playgroundId": "#KQYNYS#21"
+        },
+        {
+            "title": "Furnace Test for Spec-Gloss",
+            "playgroundId": "#KQYNYS#40"
+        },
+        {
+            "title": "Furnace Test for Metal-Rough",
+            "playgroundId": "#KQYNYS#39"
+        },
+        {
+            "title": "Specular reflectance models for IBL",
+            "playgroundId": "#GRQHVV#24"
+        },
+        {
+            "title": "Specular reflectance models for analytic lights",
+            "playgroundId": "#GRQHVV#23"
+        },
+        {
+            "title": "F82 Specular Roughness vs Weight",
+            "playgroundId": "#GRQHVV#22"
+        },
+        {
+            "title": "F82 Specular Metal vs Weight",
+            "playgroundId": "#GRQHVV#21"
+        },
+        {
+            "title": "Test code inlining",
+            "playgroundId": "#YG3BBF#51"
         }
     ]
 }

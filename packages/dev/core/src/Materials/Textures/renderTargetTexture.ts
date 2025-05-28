@@ -530,8 +530,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     private readonly _onFastPathRenderObserver: Nullable<Observer<number>>;
 
     /**
-     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
-     * or used a shadow, depth texture...
+     * Instantiate a render target texture. This is mainly used to render the scene off screen, to apply (for instance) post processing effects
+     * or use a shadow or depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
      * @param scene The scene the RTT belongs to. Default is the last created scene.
@@ -540,8 +540,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
 
     /**
-     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
-     * or used a shadow, depth texture...
+     * Instantiate a render target texture. This is mainly used to render the scene off screen, to apply (for instance) post processing effects
+     * or use a shadow or depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
      * @param scene The scene the RTT belongs to. Default is the last created scene
@@ -717,6 +717,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 if (!this._dumpTools) {
                     Logger.Error("dumpTools module is still being loaded. To speed up the process import dump tools directly in your project");
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._dumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
                 }
             }
@@ -1050,6 +1051,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         if (!this._dumpToolsLoading) {
             this._dumpToolsLoading = true;
             // avoid a static import to allow ignoring the import in some cases
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
         }
 
@@ -1147,7 +1149,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
             if (!this._prePassEnabled) {
-                this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
+                if (!this._postProcessManager._prepareFrame(this._texture, this._postProcesses)) {
+                    this._bindFrameBuffer(faceIndex, layer);
+                }
             }
         } else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
             this._bindFrameBuffer(faceIndex, layer);

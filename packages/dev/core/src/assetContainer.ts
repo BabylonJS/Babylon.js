@@ -729,89 +729,89 @@ export class AssetContainer extends AbstractAssetContainer {
         const addedNodes: Node[] = [];
         for (const o of this.cameras) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addCamera(o);
             addedNodes.push(o);
         }
         for (const o of this.lights) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addLight(o);
             addedNodes.push(o);
         }
         for (const o of this.meshes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMesh(o);
             addedNodes.push(o);
         }
         for (const o of this.skeletons) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addSkeleton(o);
         }
         for (const o of this.animations) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addAnimation(o);
         }
         for (const o of this.animationGroups) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addAnimationGroup(o);
         }
         for (const o of this.multiMaterials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMultiMaterial(o);
         }
         for (const o of this.materials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMaterial(o);
         }
         for (const o of this.morphTargetManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMorphTargetManager(o);
         }
         for (const o of this.geometries) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addGeometry(o);
         }
         for (const o of this.transformNodes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addTransformNode(o);
             addedNodes.push(o);
         }
         for (const o of this.actionManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addActionManager(o);
         }
         for (const o of this.textures) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addTexture(o);
         }
         for (const o of this.reflectionProbes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addReflectionProbe(o);
         }
@@ -857,85 +857,85 @@ export class AssetContainer extends AbstractAssetContainer {
     public removeFromScene(predicate: Nullable<(entity: any) => boolean> = null) {
         for (const o of this.cameras) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeCamera(o);
         }
         for (const o of this.lights) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeLight(o);
         }
         for (const o of this.meshes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMesh(o, true);
         }
         for (const o of this.skeletons) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeSkeleton(o);
         }
         for (const o of this.animations) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeAnimation(o);
         }
         for (const o of this.animationGroups) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeAnimationGroup(o);
         }
         for (const o of this.multiMaterials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMultiMaterial(o);
         }
         for (const o of this.materials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMaterial(o);
         }
         for (const o of this.morphTargetManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMorphTargetManager(o);
         }
         for (const o of this.geometries) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeGeometry(o);
         }
         for (const o of this.transformNodes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeTransformNode(o);
         }
         for (const o of this.actionManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeActionManager(o);
         }
         for (const o of this.textures) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeTexture(o);
         }
         for (const o of this.reflectionProbes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeReflectionProbe(o);
         }
@@ -945,79 +945,79 @@ export class AssetContainer extends AbstractAssetContainer {
      * Disposes all the assets in the container
      */
     public dispose() {
-        const cameras = this.cameras;
+        const cameras = this.cameras.slice(0);
         for (const camera of cameras) {
             camera.dispose();
         }
         this.cameras.length = 0;
 
-        const lights = this.lights;
+        const lights = this.lights.slice(0);
         for (const light of lights) {
             light.dispose();
         }
         this.lights.length = 0;
 
-        const meshes = this.meshes;
+        const meshes = this.meshes.slice(0);
         for (const mesh of meshes) {
             mesh.dispose();
         }
         this.meshes.length = 0;
 
-        const skeletons = this.skeletons;
+        const skeletons = this.skeletons.slice(0);
         for (const skeleton of skeletons) {
             skeleton.dispose();
         }
         this.skeletons.length = 0;
 
-        const animationGroups = this.animationGroups;
+        const animationGroups = this.animationGroups.slice(0);
         for (const animationGroup of animationGroups) {
             animationGroup.dispose();
         }
         this.animationGroups.length = 0;
 
-        const multiMaterials = this.multiMaterials;
+        const multiMaterials = this.multiMaterials.slice(0);
         for (const multiMaterial of multiMaterials) {
             multiMaterial.dispose();
         }
         this.multiMaterials.length = 0;
 
-        const materials = this.materials;
+        const materials = this.materials.slice(0);
         for (const material of materials) {
             material.dispose();
         }
         this.materials.length = 0;
 
-        const geometries = this.geometries;
+        const geometries = this.geometries.slice(0);
         for (const geometry of geometries) {
             geometry.dispose();
         }
         this.geometries.length = 0;
 
-        const transformNodes = this.transformNodes;
+        const transformNodes = this.transformNodes.slice(0);
         for (const transformNode of transformNodes) {
             transformNode.dispose();
         }
         this.transformNodes.length = 0;
 
-        const actionManagers = this.actionManagers;
+        const actionManagers = this.actionManagers.slice(0);
         for (const actionManager of actionManagers) {
             actionManager.dispose();
         }
         this.actionManagers.length = 0;
 
-        const textures = this.textures;
+        const textures = this.textures.slice(0);
         for (const texture of textures) {
             texture.dispose();
         }
         this.textures.length = 0;
 
-        const reflectionProbes = this.reflectionProbes;
+        const reflectionProbes = this.reflectionProbes.slice(0);
         for (const reflectionProbe of reflectionProbes) {
             reflectionProbe.dispose();
         }
         this.reflectionProbes.length = 0;
 
-        const morphTargetManagers = this.morphTargetManagers;
+        const morphTargetManagers = this.morphTargetManagers.slice(0);
         for (const morphTargetManager of morphTargetManagers) {
             morphTargetManager.dispose();
         }
@@ -1264,6 +1264,8 @@ export class AssetContainer extends AbstractAssetContainer {
                 if (nodeToVisit.geometry && this.geometries.indexOf(nodeToVisit.geometry) === -1) {
                     this.geometries.push(nodeToVisit.geometry);
                 }
+                this.meshes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof InstancedMesh) {
                 this.meshes.push(nodeToVisit);
             } else if (nodeToVisit instanceof TransformNode) {
                 this.transformNodes.push(nodeToVisit);

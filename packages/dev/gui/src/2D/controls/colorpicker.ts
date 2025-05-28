@@ -489,7 +489,7 @@ export class ColorPicker extends Control {
         savedColors?: string[];
         pickedColor: string;
     }> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             // Default options
             options.pickerWidth = options.pickerWidth || "640px";
             options.pickerHeight = options.pickerHeight || "400px";

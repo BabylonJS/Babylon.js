@@ -1,6 +1,6 @@
 import { Logger } from "../Misc/logger";
 import type { Scene } from "../scene";
-import { Color3 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
@@ -88,6 +88,12 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
         Constants.PREPASS_COLOR_TEXTURE_TYPE,
         Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
     ];
+
+    /**
+     * The clear color of the render targets.
+     * We need 1 for the alpha channel of the irradiance texture so that we early exit from the SSS post-process if the pixel should not be processed
+     */
+    public clearColor = new Color4(0, 0, 0, 1);
 
     private _scene: Scene;
 

@@ -75,7 +75,8 @@ export class FlowGraphDataSwitchBlock<T> extends FlowGraphBlock {
         let outputValue: T | undefined;
         if (isNumeric(selectionValue)) {
             outputValue = this._getOutputValueForCase(getNumericValue(selectionValue), context);
-        } else {
+        }
+        if (!outputValue) {
             outputValue = this.default.getValue(context);
         }
 

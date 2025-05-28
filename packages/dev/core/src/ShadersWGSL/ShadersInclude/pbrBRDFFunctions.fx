@@ -3,6 +3,13 @@
 #define BRDF_DIFFUSE_MODEL_EON 0
 #define BRDF_DIFFUSE_MODEL_BURLEY 1
 #define BRDF_DIFFUSE_MODEL_LAMBERT 2
+#define BRDF_DIFFUSE_MODEL_LEGACY 3
+#define DIELECTRIC_SPECULAR_MODEL_GLTF 0
+#define DIELECTRIC_SPECULAR_MODEL_OPENPBR 1
+#define CONDUCTOR_SPECULAR_MODEL_GLTF 0
+#define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
+
+#ifndef PBR_VERTEX_SHADER
 
 // ______________________________________________________________________
 //
@@ -14,6 +21,26 @@
     // http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf
     fn getEnergyConservationFactor(specularEnvironmentR0: vec3f, environmentBrdf: vec3f) -> vec3f {
         return 1.0 + specularEnvironmentR0 * (1.0 / environmentBrdf.y - 1.0);
+    }
+#endif
+
+#if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR 
+    fn getF82Specular(NdotV: f32, F0: vec3f, edgeTint: vec3f, roughness: f32) -> vec3f {
+        // F82 specular model for metals
+        // https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/metal
+        const cos_theta_max: f32 = 0.142857143; // 1 / 7
+        
+        const one_minus_cos_theta_max_to_the_fifth: f32 = 0.462664366; // (1 - cos_theta_max)^5
+        const one_minus_cos_theta_max_to_the_sixth: f32 = 0.396569457; // (1 - cos_theta_max)^6
+        let white_minus_F0: vec3f = vec3f(1.0f) - F0;
+        let b_numerator: vec3f = (F0 + white_minus_F0 * one_minus_cos_theta_max_to_the_fifth) * (vec3f(1.0) - edgeTint);
+        const b_denominator: f32 = cos_theta_max * one_minus_cos_theta_max_to_the_sixth;
+        const b_denominator_reciprocal: f32 = 1.0f / b_denominator;
+        let b: vec3f = b_numerator * b_denominator_reciprocal; // analogous to "a" in the "Fresnel Equations Considered Harmful" slides
+        let cos_theta: f32 = max(roughness, NdotV);
+        let one_minus_cos_theta: f32 = 1.0 - cos_theta;
+        let offset_from_F0: vec3f = (white_minus_F0 - b * cos_theta * one_minus_cos_theta) * pow(one_minus_cos_theta, 5.0f);
+        return clamp(F0 + offset_from_F0, vec3f(0.0f), vec3f(1.0f));
     }
 #endif
 
@@ -32,14 +59,9 @@
         return brdfLookup.rgb;
     }
 
-    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, ior: f32, environmentBrdf: vec3f) -> vec3f {
+    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, environmentBrdf: vec3f) -> vec3f {
         #ifdef BRDF_V_HEIGHT_CORRELATED
-            #ifdef METALLICWORKFLOW
-                // Scale the reflectance by the IOR for values less than 1.5
-                var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * clamp(environmentBrdf.x * 2.0 * (ior - 1.0), 0.0, 1.0) + specularEnvironmentR0 * environmentBrdf.y;
-            #else
-                var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
-            #endif
+            var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
             // Simplification if F90 = 1 var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.xxx + specularEnvironmentR0 * environmentBrdf.yyy;
         #else
             var reflectance: vec3f = specularEnvironmentR0 * environmentBrdf.x + specularEnvironmentR90 * environmentBrdf.y;
@@ -493,3 +515,5 @@ fn diffuseBRDF_Burley(NdotL: f32, NdotV: f32, VdotH: f32, roughness: f32) -> f32
         return saturate((NdotL + w) * invt2);
     }
 #endif
+
+#endif // PBR_VERTEX_SHADER

@@ -221,6 +221,7 @@ export class Slider3D extends Control3D {
         sliderBackplate.visibility = 0;
         sliderBackplate.scaling = new Vector3(1, 0.5, 0.8);
         const baseUrl = Tools.GetAssetUrl(Slider3D.MODEL_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, Slider3D.MODEL_FILENAME, scene).then((result) => {
             // make all meshes not pickable. Required meshes' pickable state will be set later.
             for (const m of result.meshes) {

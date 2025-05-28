@@ -470,7 +470,7 @@ export class Tools {
      * @returns a promise containing an ArrayBuffer corresponding to the loaded file
      */
     public static async LoadFileAsync(url: string, useArrayBuffer = true): Promise<ArrayBuffer | string> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             FileToolsLoadFile(
                 url,
                 (data) => {
@@ -480,6 +480,7 @@ export class Tools {
                 undefined,
                 useArrayBuffer,
                 (request, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception);
                 }
             );
@@ -566,7 +567,7 @@ export class Tools {
      */
     public static async LoadBabylonScriptAsync(scriptUrl: string): Promise<void> {
         scriptUrl = Tools.GetBabylonScriptURL(scriptUrl);
-        return Tools.LoadScriptAsync(scriptUrl);
+        return await Tools.LoadScriptAsync(scriptUrl);
     }
 
     /**
@@ -629,13 +630,14 @@ export class Tools {
      * @returns a promise request object
      */
     public static async LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this.LoadScript(
                 scriptUrl,
                 () => {
                     resolve();
                 },
                 (message, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception || new Error(message));
                 },
                 scriptId
@@ -888,11 +890,13 @@ export class Tools {
             };
         }
         if (Tools._IsOffScreenCanvas(canvas)) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             canvas
                 .convertToBlob({
                     type: mimeType,
                     quality,
                 })
+                // eslint-disable-next-line github/no-then
                 .then((blob) => successCallback(blob));
         } else {
             canvas.toBlob(
@@ -970,11 +974,13 @@ export class Tools {
             );
         } else if (successCallback) {
             if (Tools._IsOffScreenCanvas(canvas)) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 canvas
                     .convertToBlob({
                         type: mimeType,
                         quality,
                     })
+                    // eslint-disable-next-line github/no-then
                     .then((blob) => {
                         const reader = new FileReader();
                         reader.readAsDataURL(blob);

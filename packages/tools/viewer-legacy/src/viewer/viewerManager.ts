@@ -79,7 +79,7 @@ export class ViewerManager {
      * @returns a promise that will resolve to the viewer
      */
     public async getViewerPromiseById(id: string): Promise<AbstractViewer> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             const localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);

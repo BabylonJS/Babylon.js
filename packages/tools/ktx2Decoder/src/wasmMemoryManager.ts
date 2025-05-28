@@ -12,16 +12,20 @@ export class WASMMemoryManager {
 
     public static async LoadWASM(path: string): Promise<ArrayBuffer> {
         if (this.LoadBinariesFromCurrentThread) {
-            return new Promise((resolve, reject) => {
+            return await new Promise((resolve, reject) => {
                 fetch(path)
+                    // eslint-disable-next-line github/no-then
                     .then(async (response) => {
                         if (response.ok) {
-                            return response.arrayBuffer();
+                            return await response.arrayBuffer();
                         }
                         throw new Error(`Could not fetch the wasm component from "${path}": ${response.status} - ${response.statusText}`);
                     })
+                    // eslint-disable-next-line github/no-then
                     .then((wasmBinary) => resolve(wasmBinary))
+                    // eslint-disable-next-line github/no-then
                     .catch((reason) => {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(reason);
                     });
             });
@@ -29,7 +33,7 @@ export class WASMMemoryManager {
 
         const id = this._RequestId++;
 
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             const wasmLoadedHandler = (msg: any) => {
                 if (msg.data.action === "wasmLoaded" && msg.data.id === id) {
                     self.removeEventListener("message", wasmLoadedHandler);

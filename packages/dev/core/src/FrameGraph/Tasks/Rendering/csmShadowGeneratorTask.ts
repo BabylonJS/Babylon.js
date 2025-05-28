@@ -148,6 +148,26 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         }
     }
 
+    private _autoCalcDepthBoundsRefreshRate = 1;
+    /**
+     * Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true
+     * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+     */
+    public get autoCalcDepthBoundsRefreshRate() {
+        return this._autoCalcDepthBoundsRefreshRate;
+    }
+
+    public set autoCalcDepthBoundsRefreshRate(value: number) {
+        if (value === this._autoCalcDepthBoundsRefreshRate) {
+            return;
+        }
+
+        this._autoCalcDepthBoundsRefreshRate = value;
+        if (this._shadowGenerator) {
+            this._shadowGenerator.autoCalcDepthBoundsRefreshRate = value;
+        }
+    }
+
     private _shadowMaxZ = 10000;
     /**
      * Gets or sets the maximum shadow Z value.

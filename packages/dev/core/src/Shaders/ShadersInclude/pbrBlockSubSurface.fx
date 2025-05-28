@@ -7,9 +7,7 @@ struct subSurfaceOutParams
     #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
         float alpha;
     #endif
-    #ifdef REFLECTION
-        float refractionFactorForIrradiance;
-    #endif
+    float refractionOpacity;
 #endif
 #ifdef SS_TRANSLUCENCY
     vec3 transmittance;
@@ -160,7 +158,7 @@ struct subSurfaceOutParams
         , in vec2 vThicknessParam
         , in vec4 vTintColor
         , in vec3 normalW
-        , in vec3 specularEnvironmentReflectance
+        , in vec3 vSpecularEnvironmentReflectance
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         , in vec4 thicknessMap
     #endif
@@ -252,7 +250,7 @@ struct subSurfaceOutParams
     )
     {
         subSurfaceOutParams outParams;
-        outParams.specularEnvironmentReflectance = specularEnvironmentReflectance;
+        outParams.specularEnvironmentReflectance = vSpecularEnvironmentReflectance;
 
     // ______________________________________________________________________________________
     // _____________________________ Intensities & thickness ________________________________
@@ -441,13 +439,12 @@ struct subSurfaceOutParams
             environmentRefraction.rgb *= surfaceAlbedo.rgb;
         #endif
 
-        // Decrease Albedo Contribution
-        outParams.surfaceAlbedo = surfaceAlbedo * (1. - refractionIntensity);
-
-        #ifdef REFLECTION
-            // Decrease irradiance Contribution
-            outParams.refractionFactorForIrradiance = (1. - refractionIntensity);
-            //environmentIrradiance *= (1. - refractionIntensity);
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            outParams.surfaceAlbedo = surfaceAlbedo * (1.-refractionIntensity);
+            outParams.refractionOpacity = 1.0;
+        #else
+            outParams.surfaceAlbedo = surfaceAlbedo;
+            outParams.refractionOpacity = (1. - refractionIntensity);
         #endif
 
         #ifdef UNUSED_MULTIPLEBOUNCES
@@ -457,18 +454,18 @@ struct subSurfaceOutParams
             // nomenclatures (probably coming from our V1)
 
             // Add Multiple internal bounces.
-            vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
-            outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
+            vec3 bounceSpecularEnvironmentReflectance = (2.0 * vSpecularEnvironmentReflectance) / (1.0 + vSpecularEnvironmentReflectance);
+            outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, vSpecularEnvironmentReflectance, refractionIntensity);
         #endif
-
-        // In theory T = 1 - R.
-        refractionTransmittance *= 1.0 - max(outParams.specularEnvironmentReflectance.r, max(outParams.specularEnvironmentReflectance.g, outParams.specularEnvironmentReflectance.b));
 
         #if DEBUGMODE > 0
             outParams.refractionTransmittance = refractionTransmittance;
         #endif
 
         outParams.finalRefraction = environmentRefraction.rgb * refractionTransmittance * vLightingIntensity.z;
+
+        // Decrease the trasmitted light based on the specular environment reflectance.
+        outParams.finalRefraction *= vec3(1.0) - vSpecularEnvironmentReflectance;
 
         #if DEBUGMODE > 0
             outParams.environmentRefraction = environmentRefraction;

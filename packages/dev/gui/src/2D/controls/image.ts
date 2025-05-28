@@ -625,6 +625,11 @@ export class Image extends Control {
      * @returns the svg
      */
     private _svgCheck(value: string): string {
+        // Skip SVG processing if no window/document or SVG support
+        if (typeof window === "undefined" || typeof document === "undefined" || !window.SVGSVGElement) {
+            return value;
+        }
+
         if (window.SVGSVGElement && value.search(/(\.svg|\.svg?[?|#].*)$/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
             const svgsrc = value.split("#")[0];

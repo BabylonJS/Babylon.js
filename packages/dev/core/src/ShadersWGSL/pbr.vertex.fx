@@ -1,3 +1,5 @@
+#define PBR_VERTEX_SHADER
+
 #include<pbrUboDeclaration>
 
 #define CUSTOM_VERTEX_BEGIN
@@ -20,6 +22,7 @@ attribute color: vec4f;
 #endif
 
 #include<helperFunctions>
+#include<pbrBRDFFunctions>
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
 
@@ -172,7 +175,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT
+        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
             // Bend the normal towards the viewer based on the diffuse roughness
             var viewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - vertexOutputs.vPositionW);
             var NdotV: f32 = max(dot(vertexOutputs.vNormalW, viewDirectionW), 0.0);
