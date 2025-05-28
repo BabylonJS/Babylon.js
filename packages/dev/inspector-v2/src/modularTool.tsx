@@ -10,16 +10,19 @@ import type { IRootComponentService, ShellServiceOptions } from "./services/shel
 import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-
-import { Deferred } from "core/Misc/deferred";
 import { useTernaryDarkMode } from "usehooks-ts";
+
+import { Logger } from "core/Misc";
+import { Deferred } from "core/Misc/deferred";
+
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ServiceCatalog } from "./modularity/serviceCatalog";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { DarkTheme, LightTheme } from "./themes/babylonTheme";
+//import { DarkTheme, LightTheme } from "./themes/babylonTheme";
+import { webDarkTheme as DarkTheme, webLightTheme as LightTheme } from "@fluentui/react-components";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -138,7 +141,10 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 const uninstalledExtensions: IExtension[] = [];
                 const disabledExtensions: IExtension[] = [];
                 for (const requiredExtension of requiredExtensions) {
+                    // These could possibly be parallelized to speed things up, but it's more complex so let's wait and see if we need it.
+                    // eslint-disable-next-line no-await-in-loop
                     const query = await extensionManager.queryExtensionsAsync(requiredExtension);
+                    // eslint-disable-next-line no-await-in-loop
                     const extensions = await query.getExtensionsAsync(0, query.totalCount);
                     for (const extension of extensions) {
                         if (!extension.isInstalled) {
@@ -157,11 +163,15 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     setRequiredExtensionsDeferred(deferred);
                     if (await deferred.promise) {
                         for (const extension of uninstalledExtensions) {
+                            // This could possibly be parallelized to speed things up, but it's more complex so let's wait and see if we need it.
+                            // eslint-disable-next-line no-await-in-loop
                             await extension.installAsync();
                             disabledExtensions.push(extension);
                         }
 
                         for (const extension of disabledExtensions) {
+                            // This could possibly be parallelized to speed things up, but it's more complex so let's wait and see if we need it.
+                            // eslint-disable-next-line no-await-in-loop
                             await extension.enableAsync();
                         }
                     }
@@ -183,7 +193,13 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             const disposePromise = initializeExtensionManagerAsync();
 
             return () => {
-                disposePromise.then((dispose) => dispose());
+                disposePromise
+                    // eslint-disable-next-line github/no-then
+                    .then((dispose) => dispose())
+                    // eslint-disable-next-line github/no-then
+                    .catch((error) => {
+                        Logger.Error(`Failed to dispose of the modular tool: ${error}`);
+                    });
             };
         }, []);
 

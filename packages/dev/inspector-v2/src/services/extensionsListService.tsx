@@ -28,6 +28,9 @@ import {
 } from "@fluentui/react-components";
 import { AppsAddInRegular, DismissRegular } from "@fluentui/react-icons";
 import { memo, useCallback, useEffect, useState } from "react";
+
+import { Logger } from "core/Misc";
+
 import { TeachingMoment } from "../components/teachingMoment";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
@@ -177,8 +180,10 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
                         setExtensions(extensions);
                     };
 
-                    // TODO: handle errors
-                    populateExtensionsAsync();
+                    // eslint-disable-next-line github/no-then
+                    populateExtensionsAsync().catch((error) => {
+                        Logger.Warn(`Failed to populate extensions: ${error}`);
+                    });
                 }, [selectedTab]);
 
                 const teachingMoment = useTeachingMoment();

@@ -84,6 +84,8 @@ export class ServiceCatalog implements IServiceRegistry, IDisposable {
             const applicableServiceDefinitions = SortServiceDefinitions(serviceDefinitions);
             for (const container of this._serviceContainers) {
                 for (const serviceDefinition of applicableServiceDefinitions) {
+                    // We could possibly optimize this by allowing some parallel initialization of services, but this would be way more complex, so let's wait and see if it's needed.
+                    // eslint-disable-next-line no-await-in-loop
                     await container.addServiceAsync(serviceDefinition, abortSignal);
                     abortSignal?.throwIfAborted();
                 }
@@ -134,6 +136,8 @@ export class ServiceCatalog implements IServiceRegistry, IDisposable {
         const container = new ServiceContainer(friendlyName);
         try {
             for (const serviceDefinition of sortedServiceDefinitions) {
+                // We could possibly optimize this by allowing some parallel initialization of services, but this would be way more complex, so let's wait and see if it's needed.
+                // eslint-disable-next-line no-await-in-loop
                 await container.addServiceAsync(serviceDefinition, abortSignal);
                 abortSignal?.throwIfAborted();
             }
