@@ -566,7 +566,7 @@ export class Image extends Control {
 
         // Should abstract platform instead of using LastCreatedEngine
         const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
-        // If no engine, skip all other DOM operations. 
+        // If no engine, skip all other DOM operations.
         if (!engine) {
             return;
         }
