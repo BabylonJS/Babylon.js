@@ -10,7 +10,7 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { Animation } from "core/Animations/animation";
 import type { EasingFunction } from "core/Animations/easing";
-import type { Vector4 } from "core/Maths/math.vector";
+import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 
@@ -111,7 +111,12 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
 
     private _getPropertyValue(_target: O, _propertyName: string, context: FlowGraphContext): P | undefined {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        return accessorContainer.info.get(accessorContainer.object);
+        const type = accessorContainer.info.type;
+        const value = accessorContainer.info.get(accessorContainer.object);
+        if (type.startsWith("Color")) {
+            return FromColor(value as Color3 | Color4) as unknown as P;
+        }
+        return value as P | undefined;
     }
 
     private _getInterpolationAnimationPropertyInfo(
@@ -177,6 +182,15 @@ function ToColor(value: any, expectedValue: string) {
         return new Color4(value.x, value.y, value.z, value.w);
     }
     return value;
+}
+
+function FromColor(value: Color3 | Color4): Vector3 | Vector4 {
+    if (value instanceof Color3) {
+        return new Vector3(value.r, value.g, value.b);
+    } else if (value instanceof Color4) {
+        return new Vector4(value.r, value.g, value.b, value.a);
+    }
+    throw new Error("Invalid color type");
 }
 
 RegisterClass(FlowGraphBlockNames.JsonPointerParser, FlowGraphJsonPointerParserBlock);
