@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfFragmentShader";
-const shader = `
 var fontAtlas: texture_2d<f32>;
 var fontAtlasSampler: sampler;
 uniform uColor: vec4f;
@@ -40,7 +37,4 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let strokedFragColor = vec4<f32>(uniforms.uStrokeColor.rgb, border * uniforms.uStrokeColor.a);
 
     fragmentOutputs.color = mix(filledFragColor, strokedFragColor, border);
-}`;
-
-/** @internal */
-export const msdfFragmentShader = { name, shader };
+}

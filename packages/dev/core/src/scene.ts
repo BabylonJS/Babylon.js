@@ -4932,6 +4932,31 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * @internal
+     */
+    public _renderRenderTarget(renderTarget: RenderTargetTexture, activeCamera: Nullable<Camera>, useCameraPostProcess = false, dumpForDebug = false) {
+        this._intermediateRendering = true;
+        if (renderTarget._shouldRender()) {
+            this._renderId++;
+
+            this.activeCamera = activeCamera;
+
+            if (!this.activeCamera) {
+                throw new Error("Active camera not set");
+            }
+
+            // Viewport
+            this._engine.setViewport(this.activeCamera.viewport);
+
+            // Camera
+            this.updateTransformMatrix();
+
+            renderTarget.render(useCameraPostProcess, dumpForDebug);
+        }
+        this._intermediateRendering = false;
+    }
+
+    /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
@@ -5014,37 +5039,19 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
-            const engine = this.getEngine();
-
             // Customs render targets
             this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
 
             const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
             if (this.renderTargetsEnabled) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-                this._intermediateRendering = true;
                 for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     const renderTarget = this.customRenderTargets[customIndex];
-                    if (renderTarget._shouldRender()) {
-                        this._renderId++;
+                    const activeCamera = renderTarget.activeCamera || this.activeCamera;
 
-                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
-
-                        if (!this.activeCamera) {
-                            throw new Error("Active camera not set");
-                        }
-
-                        // Viewport
-                        engine.setViewport(this.activeCamera.viewport);
-
-                        // Camera
-                        this.updateTransformMatrix();
-
-                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
-                    }
+                    this._renderRenderTarget(renderTarget, activeCamera, currentActiveCamera !== activeCamera, this.dumpNextRenderTargets);
                 }
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-                this._intermediateRendering = false;
                 this._renderId++;
             }
 

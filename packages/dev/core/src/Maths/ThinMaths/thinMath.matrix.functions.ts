@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { DeepImmutable } from "core/types";
 import type { IMatrixLike } from "../math.like";
-import type { ThinMatrix } from "./thinMath.matrix";
 
 /** @internal */
 export class MatrixManagement {
@@ -9,7 +9,7 @@ export class MatrixManagement {
 }
 
 function SetMatrixData(
-    result: ThinMatrix,
+    result: IMatrixLike,
     m0: number,
     m1: number,
     m2: number,
@@ -52,7 +52,7 @@ function SetMatrixData(
  * Marks the given matrix as dirty
  * @param matrix defines the matrix to mark as dirty
  */
-export function MarkAsDirty(matrix: ThinMatrix): void {
+export function MarkAsDirty(matrix: IMatrixLike): void {
     matrix.updateFlag = MatrixManagement._UpdateFlagSeed++;
 }
 
@@ -60,7 +60,7 @@ export function MarkAsDirty(matrix: ThinMatrix): void {
  * Sets the given matrix to the identity matrix
  * @param result defines the target matrix
  */
-export function IdentityMatrixToRef(result: ThinMatrix): void {
+export function IdentityMatrixToRef(result: IMatrixLike): void {
     SetMatrixData(result, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
@@ -71,7 +71,7 @@ export function IdentityMatrixToRef(result: ThinMatrix): void {
  * @param z defines the z coordinate
  * @param result defines the target matrix
  */
-export function TranslationMatrixToRef(x: number, y: number, z: number, result: ThinMatrix): void {
+export function TranslationMatrixToRef(x: number, y: number, z: number, result: IMatrixLike): void {
     SetMatrixData(result, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0);
 }
 
@@ -82,7 +82,7 @@ export function TranslationMatrixToRef(x: number, y: number, z: number, result: 
  * @param z defines the scale factor on Z axis
  * @param result defines the target matrix
  */
-export function ScalingMatrixToRef(x: number, y: number, z: number, result: ThinMatrix): void {
+export function ScalingMatrixToRef(x: number, y: number, z: number, result: IMatrixLike): void {
     SetMatrixData(result, x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
@@ -93,7 +93,7 @@ export function ScalingMatrixToRef(x: number, y: number, z: number, result: Thin
  * @param output defines the target array
  * @param offset defines the offset in the target array where to store the result (0 by default)
  */
-export function MultiplyMatricesToArray(a: IMatrixLike, b: IMatrixLike, output: Float32Array | Array<number>, offset = 0): void {
+export function MultiplyMatricesToArray(a: DeepImmutable<IMatrixLike>, b: DeepImmutable<IMatrixLike>, output: Float32Array | Array<number>, offset = 0): void {
     const m = a.asArray();
     const otherM = b.asArray();
     const tm0 = m[0],
@@ -157,7 +157,7 @@ export function MultiplyMatricesToArray(a: IMatrixLike, b: IMatrixLike, output: 
  * @param result defines the target matrix
  * @param offset defines the offset in the target matrix where to store the result (0 by default)
  */
-export function MultiplyMatricesToRef(a: IMatrixLike, b: IMatrixLike, result: ThinMatrix, offset = 0): void {
+export function MultiplyMatricesToRef(a: DeepImmutable<IMatrixLike>, b: DeepImmutable<IMatrixLike>, result: IMatrixLike, offset = 0): void {
     MultiplyMatricesToArray(a, b, result.asArray(), offset);
     MarkAsDirty(result);
 }
@@ -167,7 +167,7 @@ export function MultiplyMatricesToRef(a: IMatrixLike, b: IMatrixLike, result: Th
  * @param matrix defines the source matrix
  * @param target defines the target matrix
  */
-export function CopyMatrixToRef(matrix: IMatrixLike, target: ThinMatrix) {
+export function CopyMatrixToRef(matrix: DeepImmutable<IMatrixLike>, target: IMatrixLike) {
     CopyMatrixToArray(matrix, target.asArray());
     MarkAsDirty(target);
 }
@@ -178,7 +178,7 @@ export function CopyMatrixToRef(matrix: IMatrixLike, target: ThinMatrix) {
  * @param array defines the target array
  * @param offset defines the offset in the target array where to start storing values
  */
-export function CopyMatrixToArray(matrix: IMatrixLike, array: Float32Array | Array<number>, offset: number = 0) {
+export function CopyMatrixToArray(matrix: DeepImmutable<IMatrixLike>, array: Float32Array | Array<number>, offset: number = 0) {
     const source = matrix.asArray();
     array[offset] = source[0];
     array[offset + 1] = source[1];
@@ -204,7 +204,7 @@ export function CopyMatrixToArray(matrix: IMatrixLike, array: Float32Array | Arr
  * @param target defines the target matrix
  * @returns true if the matrix was inverted successfully, false otherwise
  */
-export function InvertMatrixToRef(source: IMatrixLike, target: ThinMatrix) {
+export function InvertMatrixToRef(source: DeepImmutable<IMatrixLike>, target: IMatrixLike) {
     const result = InvertMatrixToArray(source, target.asArray());
 
     if (result) {
@@ -220,7 +220,7 @@ export function InvertMatrixToRef(source: IMatrixLike, target: ThinMatrix) {
  * @param target defines the target array
  * @returns true if the matrix was inverted successfully, false otherwise
  */
-export function InvertMatrixToArray(source: IMatrixLike, target: Float32Array | Array<number>) {
+export function InvertMatrixToArray(source: DeepImmutable<IMatrixLike>, target: Float32Array | Array<number>) {
     // the inverse of a matrix is the transpose of cofactor matrix divided by the determinant
     const m = source.asArray();
     const m00 = m[0],

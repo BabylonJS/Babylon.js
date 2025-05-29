@@ -1,2 +1,3 @@
-export * from "./htmlMesh";
-export * from "./msdfText";
+/* eslint-disable import/no-internal-modules */
+export * from "./htmlMesh/index";
+export * from "./msdfText/index";

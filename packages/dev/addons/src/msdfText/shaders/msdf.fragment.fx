@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-const name = "msdfFragmentShader";
-const shader = `
 #extension GL_OES_standard_derivatives : enable
 
 precision highp float;
@@ -23,8 +20,6 @@ void main(void)
     vec3 s = texture2D(fontAtlas, atlasUV).rgb;
     float sigDist = median(s) - 0.5 + thickness;
 
-    float afwidth = 1.4142135623730951 / 2.0;
-
     float alpha = clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0);
 
     float sigDistOutset = sigDist + uStrokeOutsetWidth * 0.5;
@@ -39,7 +34,4 @@ void main(void)
     vec4 strokedFragColor = vec4(uStrokeColor.rgb, border * uStrokeColor.a);
 
     gl_FragColor = mix(filledFragColor, strokedFragColor, border);
-}`;
-
-/** @internal */
-export const msdfFragmentShader = { name, shader };
+}

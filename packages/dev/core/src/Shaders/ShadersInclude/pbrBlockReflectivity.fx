@@ -129,7 +129,7 @@ reflectivityOutParams reflectivityBlock(
         // In glTF's material model, the F0 value is multiplied by the maximum component of the specular colour.
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
             {
-                vec3 reflectivityColor = mix(surfaceReflectivityColor, baseColor.rgb, outParams.metallic);
+                vec3 reflectivityColor = mix(dielectricF0 * surfaceReflectivityColor, baseColor.rgb, outParams.metallic);
                 outParams.reflectanceF0 = max(reflectivityColor.r, max(reflectivityColor.g, reflectivityColor.b));
             }
         #else
@@ -143,7 +143,7 @@ reflectivityOutParams reflectivityBlock(
 
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
             outParams.reflectanceF90 = vec3(outParams.specularWeight);
-            float f90Scale = 1.0f;
+            float f90Scale = 1.0;
         #else
             // Scale the reflectanceF90 by the IOR for values less than 1.5.
             // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5

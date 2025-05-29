@@ -48,7 +48,7 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     public async _initAsync(options: Partial<ISoundSourceOptions>): Promise<void> {
         if (options.outBus) {
             this.outBus = options.outBus;
-        } else {
+        } else if (options.outBusAutoDefault !== false) {
             await this.engine.isReadyPromise;
             this.outBus = this.engine.defaultMainBus;
         }

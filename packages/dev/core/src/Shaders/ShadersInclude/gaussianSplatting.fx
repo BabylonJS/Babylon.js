@@ -126,12 +126,11 @@ vec4 decompose(uint value)
     return components * vec4(2./255.) - vec4(1.);
 }
 
-vec3 computeSH(Splat splat, vec3 color, vec3 dir)
+vec3 computeSH(Splat splat, vec3 dir)
 {
     vec3 sh[16];
     
-    sh[0] = color;
-
+    sh[0] = vec3(0.,0.,0.);
 #if SH_DEGREE > 0
     vec4 sh00 = decompose(splat.sh0.x);
     vec4 sh01 = decompose(splat.sh0.y);
@@ -172,9 +171,9 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     return computeColorFromSHDegree(dir, sh);
 }
 #else
-vec3 computeSH(Splat splat, vec3 color, vec3 dir)
+vec3 computeSH(Splat splat, vec3 dir)
 {
-    return color;
+    return vec3(0.,0.,0.);
 }
 #endif
 

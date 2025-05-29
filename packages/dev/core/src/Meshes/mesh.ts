@@ -7,7 +7,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
 import type { Coroutine } from "../Misc/coroutine";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
-import type { Nullable, FloatArray, IndicesArray } from "../types";
+import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import { ScenePerformancePriority } from "../scene";
@@ -2972,7 +2972,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @returns the current mesh
      */
-    public bakeTransformIntoVertices(transform: Matrix): Mesh {
+    public bakeTransformIntoVertices(transform: DeepImmutable<Matrix>): Mesh {
         // Position
         if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
             return this;

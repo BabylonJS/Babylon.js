@@ -8,6 +8,7 @@
         "**/packages/dev/**/Shaders/**/*.ts": true,
         "**/packages/dev/**/shaders/**/*.ts": true,
         "**/packages/dev/**/ShadersWGSL/**/*.ts": true,
+        "**/packages/dev/**/shadersWGSL/**/*.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
         "**/*.compute.ts": true

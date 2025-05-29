@@ -1,4 +1,6 @@
-﻿#define CUSTOM_FRAGMENT_EXTENSION
+﻿#define PBR_FRAGMENT_SHADER
+
+#define CUSTOM_FRAGMENT_EXTENSION
 
 #if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
@@ -540,13 +542,17 @@ void main(void) {
             #endif
         #endif
 
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            vec3 vSpecularEnvironmentReflectance = vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)));
+        #endif
+
         subSurfaceOut = subSurfaceBlock(
             vSubSurfaceIntensity
             , vThicknessParam
             , vTintColor
             , normalW
         #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
-            , vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))
+            , vSpecularEnvironmentReflectance
         #else
             , baseSpecularEnvironmentReflectance
         #endif

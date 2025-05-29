@@ -7,6 +7,11 @@
             "referenceImage": "msdf.png"
         },
         {
+            "title": "MSDF Screen projected",
+            "playgroundId": "#6RLCWP#48",
+            "referenceImage": "msdf-projected.png"
+        },
+        {
             "title": "MSDF Billboard",
             "playgroundId": "#6RLCWP#23",
             "referenceImage": "msdf-billboard.png"
@@ -2456,6 +2461,18 @@
             "referenceImage": "glTFLoaderCapabilities.png"
         },
         {
+            "title": "glTF Loader Cameras RH",
+            "playgroundId": "#933H4X#11",
+            "replace": "//options//, useRightHandedSystem = true;",
+            "referenceImage": "glTFLoaderCameras.png"
+        },
+        {
+            "title": "glTF Loader Cameras LH",
+            "playgroundId": "#933H4X#11",
+            "replace": "//options//, useRightHandedSystem = false;",
+            "referenceImage": "glTFLoaderCameras.png"
+        },
+        {
             "title": "IBL Voxel Shadowing",
             "playgroundId": "#8R5SSE#628",
             "referenceImage": "voxelShadows.png",
@@ -2675,6 +2692,10 @@
         {
             "title": "F82 Specular Metal vs Weight",
             "playgroundId": "#GRQHVV#21"
+        },
+        {
+            "title": "Test code inlining",
+            "playgroundId": "#YG3BBF#51"
         }
     ]
 }

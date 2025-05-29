@@ -16,15 +16,15 @@ interface IAttractorGridComponent {
     onDelete: (attractor: Attractor) => void;
     removeImpostor: (attractor: Attractor) => void;
     addImpostor: (attractor: Attractor, index: number) => void;
-    onControl: (attractor: Attractor) => void;
-    isControlled: (attractor: Attractor) => void;
+    onControl: (attractor: Attractor, index: number) => void;
+    isControlled: (attractor: Attractor) => boolean;
 }
 
-export class AttractorGridComponent extends React.Component<IAttractorGridComponent, { strength: number; viewing: boolean }> {
+export class AttractorGridComponent extends React.Component<IAttractorGridComponent, { strength: number }> {
     constructor(props: IAttractorGridComponent) {
         super(props);
 
-        this.state = { strength: props.attractor.strength, viewing: false };
+        this.state = { strength: props.attractor.strength };
     }
 
     lock() {
@@ -54,24 +54,21 @@ export class AttractorGridComponent extends React.Component<IAttractorGridCompon
 
         if ((this.props.attractor as any)._impostor) {
             this.props.removeImpostor(this.props.attractor);
-            this.setState({ viewing: false });
+            this.forceUpdate();
             return;
         }
 
         this.props.addImpostor(this.props.attractor, this.props.lineIndex);
-
-        this.setState({ viewing: true });
+        this.forceUpdate();
     }
 
     onControl() {
-        if (!this.state.viewing) {
-            return;
-        }
-        this.props.onControl(this.props.attractor);
+        this.props.onControl(this.props.attractor, this.props.lineIndex);
     }
 
     override render() {
         const attractor = this.props.attractor;
+        const untypedAttractor = attractor as any;
 
         return (
             <div className="attractor-step">
@@ -88,10 +85,10 @@ export class AttractorGridComponent extends React.Component<IAttractorGridCompon
                         onChange={(evt) => this.updateStrength(parseFloat(evt.target.value))}
                     />
                 </div>
-                <div className={"attractor-control hoverIcon icon" + (this.state.viewing && this.props.isControlled(attractor) ? " active" : "")} onClick={() => this.onControl()}>
+                <div className={"attractor-control hoverIcon icon" + (this.props.isControlled(attractor) ? " active" : "")} onClick={() => this.onControl()}>
                     <FontAwesomeIcon icon={faArrowsAlt} />
                 </div>
-                <div className={"attractor-view hoverIcon icon" + (this.state.viewing ? " active" : "")} onClick={() => this.onView()}>
+                <div className={"attractor-view hoverIcon icon" + (untypedAttractor._impostor ? " active" : "")} onClick={() => this.onView()}>
                     <FontAwesomeIcon icon={faEye} />
                 </div>
                 <div className="attractor-delete hoverIcon icon" onClick={() => this.props.onDelete(attractor)}>

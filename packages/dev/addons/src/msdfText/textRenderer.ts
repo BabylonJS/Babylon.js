@@ -15,18 +15,17 @@ import {
     CopyMatrixToArray,
     CopyMatrixToRef,
     IdentityMatrixToRef,
-    InvertMatrixToRef,
     MultiplyMatricesToRef,
     ScalingMatrixToRef,
     TranslationMatrixToRef,
 } from "core/Maths/ThinMaths/thinMath.matrix.functions";
-import type { IColor4Like, IMatrixLike, IVector3Like } from "core/Maths";
+import type { IColor4Like, IMatrixLike } from "core/Maths/math.like";
 
 /**
  * Abstract Node class from Babylon.js
  */
 export interface INodeLike {
-    getWorldMatrix(): ThinMatrix;
+    getWorldMatrix(): IMatrixLike;
 }
 
 /**
@@ -66,7 +65,6 @@ export class TextRenderer implements IDisposable {
     private _finalMatrix = new ThinMatrix();
     private _lineMatrix = new ThinMatrix();
     private _parentWorldMatrix = new ThinMatrix();
-    private _storedTranslation: IVector3Like = { x: 0, y: 0, z: 0 };
 
     /**
      * Gets or sets the color of the text
@@ -107,10 +105,31 @@ export class TextRenderer implements IDisposable {
         this._parent = value;
     }
 
+    private _transformMatrix: IMatrixLike = new ThinMatrix();
+
+    /**
+     * Gets or sets the transform matrix of the text renderer
+     * It will be applied in that order:
+     * parent x transform x paragraph world
+     */
+    public get transformMatrix(): IMatrixLike {
+        return this._transformMatrix;
+    }
+
+    public set transformMatrix(value: IMatrixLike) {
+        this._transformMatrix = value;
+    }
+
     /**
      * Gets or sets if the text is billboarded
      */
     public isBillboard = false;
+
+    /**
+     * Gets or sets if the text is screen projected
+     * This will work only if the text is billboarded
+     */
+    public isBillboardScreenProjected = false;
 
     /**
      * Gets the number of characters in the text renderer
@@ -118,6 +137,12 @@ export class TextRenderer implements IDisposable {
     public get characterCount(): number {
         return this._charMatrices.length / 16;
     }
+
+    /**
+     * Gets or sets if the text renderer should ignore the depth buffer
+     * Default is false
+     */
+    public ignoreDepthBuffer = false;
 
     private constructor(engine: AbstractEngine, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL, font: FontAsset) {
         this._engine = engine;
@@ -174,7 +199,7 @@ export class TextRenderer implements IDisposable {
                 fragmentSource: fragment,
             },
             ["offsets", "world0", "world1", "world2", "world3", "uvs"],
-            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth"],
+            ["parentWorld", "view", "projection", "uColor", "thickness", "uStrokeColor", "uStrokeInsetWidth", "uStrokeOutsetWidth", "mode", "transform"],
             ["fontAtlas"],
             defines,
             undefined,
@@ -223,7 +248,7 @@ export class TextRenderer implements IDisposable {
             this._charUvs[charsUvsBase + i * 4 + 3] = g.char.height / texHeight;
 
             const x = g.x + g.char.xoffset;
-            const y = -(g.y + g.char.yoffset);
+            const y = 1.0 - (g.y + g.char.yoffset);
 
             ScalingMatrixToRef(g.char.width, g.char.height, 1.0, this._scalingMatrix);
             MultiplyMatricesToRef(this._offsetMatrix, this._scalingMatrix, this._baseMatrix);
@@ -260,43 +285,21 @@ export class TextRenderer implements IDisposable {
         engine.setState(false);
         engine.enableEffect(drawWrapper);
 
-        if (this.isBillboard) {
-            // We will only consider translation for parent to simplify computation
-            // Save parent translation
-            if (this._parent) {
-                const pwm = this._parent.getWorldMatrix().asArray();
-                this._storedTranslation.x = pwm[12];
-                this._storedTranslation.y = pwm[13];
-                this._storedTranslation.z = pwm[14];
-            } else {
-                this._storedTranslation.x = 0;
-                this._storedTranslation.y = 0;
-                this._storedTranslation.z = 0;
-            }
-            // Cancel camera rotation
-            const baseM = this._baseMatrix.asArray();
-            CopyMatrixToArray(viewMatrix, baseM);
-            baseM[12] = 0;
-            baseM[13] = 0;
-            baseM[14] = 0;
-            InvertMatrixToRef(this._baseMatrix, this._parentWorldMatrix);
-
-            // Restore translation
-            const pwm = this._parentWorldMatrix.asArray();
-            pwm[12] = this._storedTranslation.x;
-            pwm[13] = this._storedTranslation.y;
-            pwm[14] = this._storedTranslation.z;
-        } else {
-            if (this._parent) {
-                CopyMatrixToRef(this._parent.getWorldMatrix(), this._parentWorldMatrix);
-            } else {
-                IdentityMatrixToRef(this._parentWorldMatrix);
-            }
+        if (this.ignoreDepthBuffer) {
+            engine.setDepthBuffer(false);
         }
 
+        if (this._parent) {
+            CopyMatrixToRef(this._parent.getWorldMatrix(), this._parentWorldMatrix);
+        } else {
+            IdentityMatrixToRef(this._parentWorldMatrix);
+        }
+
+        effect.setInt("mode", this.isBillboard ? (this.isBillboardScreenProjected ? 2 : 1) : 0);
         effect.setMatrix("parentWorld", this._parentWorldMatrix);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
+        effect.setMatrix("transform", this.transformMatrix);
 
         // Texture
         effect.setTexture("fontAtlas", this._font.textures[0]);
@@ -334,6 +337,10 @@ export class TextRenderer implements IDisposable {
         engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, instanceCount);
         engine.unbindInstanceAttributes();
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        if (this.ignoreDepthBuffer) {
+            engine.setDepthBuffer(true);
+        }
     }
 
     /**
@@ -377,11 +384,11 @@ export class TextRenderer implements IDisposable {
         let fragment: string = "";
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
-            vertex = (await import("./webgpu/vertex")).msdfVertexShader.shader;
-            fragment = (await import("./webgpu/fragment")).msdfFragmentShader.shader;
+            vertex = (await import("./shadersWGSL/msdf.vertex")).msdfVertexShaderWGSL.shader;
+            fragment = (await import("./shadersWGSL/msdf.fragment")).msdfPixelShaderWGSL.shader;
         } else {
-            vertex = (await import("./webgl/vertex")).msdfVertexShader.shader;
-            fragment = (await import("./webgl/fragment")).msdfFragmentShader.shader;
+            vertex = (await import("./shaders/msdf.vertex")).msdfVertexShader.shader;
+            fragment = (await import("./shaders/msdf.fragment")).msdfPixelShader.shader;
         }
 
         const textRenderer = new TextRenderer(engine, shaderLanguage, font);

@@ -1,3 +1,4 @@
+import type { Color4 } from "core/Maths/math.color";
 import type { PostProcess } from "../PostProcesses/postProcess";
 
 /**
@@ -25,6 +26,10 @@ export interface PrePassEffectConfiguration {
      * Does the output of this prepass need to go through imageprocessing
      */
     needsImageProcessing?: boolean;
+    /**
+     * The clear color of the render targets. If not provided, defaults to (0, 0, 0, 0)
+     */
+    clearColor?: Color4;
     /**
      * Disposes the effect configuration
      */
