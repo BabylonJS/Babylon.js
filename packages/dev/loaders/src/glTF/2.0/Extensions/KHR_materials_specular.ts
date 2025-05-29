@@ -67,6 +67,8 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
+            // Handle the EXT_materials_specular_edge_color sub-extension
+            // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
             if (extension.extensions && extension.extensions.EXT_materials_specular_edge_color && babylonMaterial instanceof PBRMaterial) {
                 const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
                 if (specularEdgeColorExtension.specularEdgeColorEnabled) {
