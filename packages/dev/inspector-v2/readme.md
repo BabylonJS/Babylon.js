@@ -117,3 +117,316 @@ Options can be passed into `MakeModularTool` to control:
 - Whether or not dark/light mode toggle UI is exposed.
 - Default and minimum left/right pane widths.
 - Toolbar mode ("compact" means small toolbars at the top/bottom of the side panes, which is what Inspector V2 uses, and "full" means toolbars that span the full width of the "shell", which would be useful if other tools use `MakeModularTool`).
+
+## Patterns
+
+### Service and Component Lifetimes
+
+Services are long lived (basically the lifetime of the inspector itself). Services often add new React components to existing extensible UI. However, the components themselves may have much shorter lifetimes. For example, a component added to a side pane is mounted when the associated tab is selected, and unmounted when a different tab is selected. Given this, it's common for services to store the state, and each time a React component associated with the service is mounted it captures the service state and converts it to React state. `ObservableCollection`s are a common example of this:
+
+```tsx
+export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService], [IShellService]> = {
+    friendlyName: "Properties Editor",
+    produces: [PropertiesServiceIdentity],
+    consumes: [ShellServiceIdentity],
+    factory: (shellService) => {
+        // ObservableCollection is a helper class that is effectively an array + an observable.
+        const sectionsCollection = new ObservableCollection<PropertiesServiceSection>();
+        const sectionContentCollection = new ObservableCollection<PropertiesServiceSectionContent<unknown>>();
+
+        const registration = shellService.addSidePane({
+            ...
+            // This is the React component, which has a shorter lifetime than the service itself (e.g. only while the tab is selected).
+            content: () => {
+                // This translates the ObservableCollection to React state (an array, plus a re-render when the array changes).
+                const sections = useOrderedObservableCollection(sectionsCollection);
+                const sectionContent = useObservableCollection(sectionContentCollection);
+
+                return (
+                    // Render all the sections in some way.
+                    {sections.map((section) => {
+                        return <>{section.identity.description}</>
+                    })}
+                );
+            },
+        });
+
+        return {
+            // These functions just forward to the ObservableCollections.
+            addSection: (section) => sectionsCollection.add(section),
+            addSectionContent: (content) => sectionContentCollection.add(content as PropertiesServiceSectionContent<unknown>),
+            // The dispose does the typical teardown.
+            dispose: () => registration.dispose(),
+        };
+    },
+};
+```
+
+### Fluent
+
+The new Inspector UI design is aligned with the broader tooling UI overhaul, which is adopting Fluent. You can find docs for Fluent components here: https://react.fluentui.dev/
+
+### Common Components
+
+There are many common UX patterns used across the Babylon tools. These common UX patterns are made available through a set of shared React components built on top of Fluent. These are currently available from the shared-ui-components package in the Fluent folder.
+
+## Scenarios
+
+Following are short guides for adding new types of features/extensions to the Inspector.
+
+- [Side Panes](#side-panes)
+- [Toolbar Items](#toolbar-items)
+- [Scene Explorer](#scene-explorer)
+- [Properties Pane](#properties-pane)
+- [Static Services vs Dynamic Extensions](#static-services-vs-dynamic-extensions)
+
+### Side Panes
+
+Side panes appear on the left and right, and are tabbed (like scene explorer or the properties pane for example).
+
+#### ⭐ I want to add a new tab to the left or right panes
+
+Create a new `ServiceDefinition` that consumes the `IShellService` and calls `addSidePane`. For example:
+
+```tsx
+export const MySidePaneServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+    friendlyName: "My Side Pane",
+    consumes: [ShellServiceIdentity],
+    factory: (shellService) => {
+        const registration = shellService.addSidePane({
+            key: "My Side Pane",
+            title: "My Side Pane",
+            // This is a React component, but typically a Fluent icon component.
+            icon: BugRegular,
+            horizontalLocation: "right",
+            // Order is optional, and relative to other pane tabs.
+            order: 100,
+            suppressTeachingMoment: true,
+            // This is a React component (class or function).
+            content: () => {
+                return <>My Side Pane Content</>;
+            },
+        });
+
+        return {
+            dispose: () => registration.dispose(),
+        };
+    },
+};
+```
+
+Then add this `ServiceDefinition` as either a [static service or dynamic extension](#static-services-vs-dynamic-extensions).
+
+### Toolbar Items
+
+Toolbar items appear at the top and bottom, and items can be anchored to the left or right (like the extensions button for example).
+
+#### ⭐ I want to add a component (such as a button) to a toolbar
+
+Create a new `ServiceDefinition` that consumes the `IShellService` and calls `addToolbarItem`. For example:
+
+```tsx
+export const MyToolBarItemServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+    friendlyName: "My Toolbar Item",
+    consumes: [ShellServiceIdentity],
+    factory: (shellService) => {
+        const registration = shellService.addToolbarItem({
+            key: "My Toolbar Item",
+            horizontalLocation: "right",
+            verticalLocation: "top",
+            suppressTeachingMoment: true,
+            // Order is optional, and relative to other toolbar items.
+            order: 100,
+            // This is a React component (class or function).
+            component: () => {
+                return <>My Toolbar Item</>;
+            },
+        });
+
+        return {
+            dispose: () => registration.dispose(),
+        };
+    },
+};
+```
+
+Then add this `ServiceDefinition` as either a [static service or dynamic extension](#static-services-vs-dynamic-extensions).
+
+### Scene Explorer
+
+Scene explorer is a side pane extension, and itself is extensible in two ways: adding sections/groups, and adding commands to tree items.
+
+#### ⭐ I want to add a new section/group to scene explorer
+
+This would be similar to the Nodes or Materials section/group (along with all descendent nodes) in scene explorer.
+
+Create a new `ServiceDefinition` that consumes the `ISceneExplorerService` and calls `addSection`. For example:
+
+```tsx
+export const MaterialListServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+    friendlyName: "Material List",
+    consumes: [SceneExplorerServiceIdentity],
+    factory: (sceneExplorerService) => {
+        const sectionRegistration = sceneExplorerService.addSection({
+            displayName: "Materials",
+            order: 2,
+            getRootEntities: (scene) => scene.materials,
+            getEntityDisplayName: (material) => material.name,
+            // This is a React component, but typically a Fluent icon component.
+            entityIcon: ({ entity: material }) => <PaintBrushRegular />,
+            watch: (scene, onAdded, onRemoved) => {
+                // Watch for scene changes and call onAdded and onRemoved whenever a material is added or removed.
+                // Return a disposable that when disposed, does any necessary watch cleanup (such as removing observers).
+            },
+        });
+
+        return {
+            dispose: () => {
+                sectionRegistration.dispose();
+            },
+        };
+    },
+};
+```
+
+Then add this `ServiceDefinition` as either a [static service or dynamic extension](#static-services-vs-dynamic-extensions).
+
+#### ⭐ I want to add a new command to an entity in scene explorer
+
+This would be similar to the show/hide button that is shown to the right of a mesh tree item in scene explorer.
+
+Create a new `ServiceDefinition` that consumes the `ISceneExplorerService` and calls `addSection`. For example:
+
+```tsx
+export const MySceneExplorerCommandServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+    friendlyName: "My Scene Explorer Command",
+    consumes: [SceneExplorerServiceIdentity],
+    factory: (sceneExplorerService) => {
+        const visibilityCommandRegistration = sceneExplorerService.addCommand({
+            // Order is optional, and relative to other commands.
+            order: 0,
+            // The predicate determines whether the command applies to the given entity.
+            predicate: (entity: unknown) => entity instanceof AbstractMesh,
+            execute: (scene: Scene, mesh: AbstractMesh) => {
+                // Do something amazing!
+            },
+            displayName: "Do something amazing",
+            // This is a React component, but typically a Fluent icon component.
+            icon: ({ entity: mesh }) => <EyeRegular />,
+        });
+
+        return {
+            dispose: () => {
+                visibilityCommandRegistration.dispose();
+                sectionRegistration.dispose();
+            },
+        };
+    },
+};
+```
+
+Then add this `ServiceDefinition` as either a [static service or dynamic extension](#static-services-vs-dynamic-extensions).
+
+### Properties Pane
+
+The properties pane is a side pane extension, and itself is extensible in two ways: adding sections, or adding content to sections.
+
+#### ⭐ I want to add a new section to the properties pane
+
+This would be similar to the General or Transforms section in the properties pane.
+
+Create a new `ServiceDefinition` that consumes the `IPropertiesService` and calls `addSection`. For example:
+
+```tsx
+export const MyPropertiesPropertiesSectionIdentity = Symbol("My Properties");
+export const MyPropertiesSectionServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+    friendlyName: "My Properties Section",
+    consumes: [PropertiesServiceIdentity],
+    factory: (propertiesService) => {
+        const mySectionRegistration = propertiesService.addSection({
+            // Order is optional, and relative to other sections.
+            order: 100,
+            identity: MyPropertiesPropertiesSectionIdentity,
+        });
+
+        return {
+            dispose: () => {
+                mySectionRegistration.dispose();
+            },
+        };
+    },
+};
+```
+
+Then add this `ServiceDefinition` as either a [static service or dynamic extension](#static-services-vs-dynamic-extensions).
+
+#### ⭐ I want to add content to a properties pane section
+
+This would be adding additional content to a section such as General or Transform. You can decide which types of objects (e.g. Node, Material, etc.) your content applies to.
+
+Create a new `ServiceDefinition` that consumes the `IPropertiesService` and calls `addSectionContent`. For example:
+
+```tsx
+export const MyPropertiesContentServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+    friendlyName: "My Properties Content",
+    consumes: [PropertiesServiceIdentity],
+    factory: (propertiesService) => {
+        const contentRegistration = propertiesService.addSectionContent({
+            key: "My Properties",
+            // This predicate determines whether this content applies to the given entity.
+            predicate: (entity: unknown) => entity instanceof AbstractMesh,
+            // This is an array where each element represents a different section that we are adding content to.
+            content: [
+                // "GENERAL" section.
+                {
+                    section: GeneralPropertiesSectionIdentity,
+                    // Order is optional, and relative to other content in this section.
+                    order: 10,
+                    // This is a React component (class or function).
+                    component: ({entity: AbstractMesh}) => {
+                        return <>Some content for the General section</>;
+                    },
+                },
+                // "MY PROPERTIES" section.
+                {
+                    section: MyPropertiesPropertiesSectionIdentity,
+                    // Order is optional, and relative to other content in this section.
+                    order: 10,
+                    // This is a React component (class or function).
+                    component: ({entity: AbstractMesh}) => {
+                        return <>Some content for the My Properties section</>;
+                    },
+                },
+            ],
+        });
+
+        return {
+            dispose: () => {
+                contentRegistration.dispose();
+            },
+        };
+    },
+};
+```
+
+### Static Services vs Dynamic Extensions
+
+#### ⭐ I want my new feature/extension to always be active
+
+If you want your service to always be active (a new tab in a side pane that is always displayed, for example), then simply add your `ServiceDefinition` to the list passed into the `MakeModularTool` call inside [`inspector.tsx`](./src/inspector.tsx).
+
+#### ⭐ I want my new feature/extension to be explicitly enabled by the user in the extensions dialog before it is active
+
+If you want your service to be explicitly enabled by the user (a more niche feature that will not be as commonly used and would otherwise overwhelm the default UI, for example), then do the following:
+
+1. Have a file somewhere with a default export that contains your `ServiceDefinition` (or multiple `ServiceDefinitions` that make up an "extension"). For example:
+   ```ts
+   export default {
+     serviceDefinitions: [MyServiceDefinition1, MyServiceDefinition2],
+   } as const;
+   ```
+2. Add an entry for your new extension in [`builtInsExtensionFeed.ts`](./src/extensibility/builtInsExtensionFeed.ts). This includes:
+
+   - Define the metadata for the extension.
+   - Add the metadata to the extensions array.
+   - Add a block of code to `getExtensionModuleAsync` that dynamically imports your extension module (the file with the default export).
