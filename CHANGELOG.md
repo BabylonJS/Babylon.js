@@ -1,5 +1,17 @@
 # Changelog
 
+## 8.10.0
+
+### Core
+
+- SH support in NME GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16625](https://github.com/BabylonJS/Babylon.js/pull/16625))
+- Convert color objects to vectors when using json pointers - by [RaananW](https://github.com/RaananW) ([#16684](https://github.com/BabylonJS/Babylon.js/pull/16684))
+- Consider morph targets influence when creating mesh decal - by [HoferMarkus](https://github.com/HoferMarkus) ([#16683](https://github.com/BabylonJS/Babylon.js/pull/16683))
+
+### GUI
+
+- Allow Image source to be set without Canvas - by [jamessimo](https://github.com/jamessimo) ([#16665](https://github.com/BabylonJS/Babylon.js/pull/16665))
+
 ## 8.9.1
 
 ### Core

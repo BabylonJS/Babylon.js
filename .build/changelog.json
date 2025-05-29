@@ -1,6 +1,86 @@
 {
-    "fromTag": "8.9.0",
+    "fromTag": "8.9.1",
     "changelog": {
+        "8.10.0": [
+            {
+                "pr": "16625",
+                "title": "SH support in NME GS",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx"
+                ],
+                "tags": [
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16685",
+                "title": "WebGPU bind groups: Improve error messages",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16684",
+                "title": "Convert color objects to vectors when using json pointers",
+                "description": "glTF interactivity doesn't differentiate between color3 and vector3. As the math nodes all work with vector3 and there are no specific Color nodes (in interactivity) it is safe to convert any value received as color to a vector object, and converting it back to color when saving it in the babylon object.\nThe conversion from vector to color is already iplemented, the only thing missing was the vcolor to vector when reading values.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16683",
+                "title": "Consider morph targets influence when creating mesh decal",
+                "description": "see [Forum post](https://forum.babylonjs.com/t/mesh-decals-with-morph-targets/58682)",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16665",
+                "title": "Allow Image source to be set without Canvas",
+                "description": "Instead of throwing an error, now just skips DOM image operations and the image source will just be the passed in value. Needed for Domless environments. ",
+                "author": {
+                    "name": "jamessimo",
+                    "url": "https://github.com/jamessimo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            }
+        ],
         "8.9.1": [
             {
                 "pr": "16682",
