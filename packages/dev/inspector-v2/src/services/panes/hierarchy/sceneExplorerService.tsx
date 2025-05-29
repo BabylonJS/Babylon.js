@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Scene } from "core/index";
+import type { IDisposable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
@@ -22,6 +22,7 @@ import { ShellServiceIdentity } from "../../shellService";
 
 type EntityBase = Readonly<{
     uniqueId: number;
+    parent?: Nullable<EntityBase>;
 }>;
 
 export type SceneExplorerSection<T extends EntityBase> = Readonly<{
@@ -67,6 +68,7 @@ type TreeItemData =
           type: "entity";
           entity: EntityBase;
           depth: number;
+          parent: Nullable<TreeItemValue>;
           hasChildren: boolean;
           title: string;
           icon?: ComponentType<{ entity: EntityBase }>;
@@ -168,6 +170,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                     type: "entity",
                                     entity,
                                     depth,
+                                    parent: entity.parent?.uniqueId ?? section.displayName,
                                     hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
                                     title: section.getEntityDisplayName(entity),
                                     icon: section.entityIcon,
@@ -206,7 +209,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                             key={item.sectionName}
                                             value={item.sectionName}
                                             itemType={item.hasChildren ? "branch" : "leaf"}
-                                            aria-level={0}
+                                            parentValue={undefined}
+                                            aria-level={1}
                                             aria-setsize={1}
                                             aria-posinset={1}
                                         >
@@ -223,6 +227,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                             key={item.entity.uniqueId}
                                             value={item.entity.uniqueId}
                                             itemType={item.hasChildren ? "branch" : "leaf"}
+                                            parentValue={item.parent ?? undefined}
                                             aria-level={item.depth}
                                             aria-setsize={1}
                                             aria-posinset={1}
