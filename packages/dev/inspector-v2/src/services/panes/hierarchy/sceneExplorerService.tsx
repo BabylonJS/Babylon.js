@@ -1,22 +1,23 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Nullable, Scene } from "core/index";
+import type { IDisposable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { CubeTreeRegular } from "@fluentui/react-icons";
 
-import { Observable } from "core/Misc/observable";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { TraverseGraph } from "../../../misc/graphUtils";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SceneContextIdentity } from "../../sceneContext";
+import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
 
 type EntityBase = Readonly<{
@@ -54,8 +55,6 @@ export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
     addSection<T extends EntityBase>(section: SceneExplorerSection<T>): IDisposable;
     addCommand<T extends EntityBase>(provider: SceneExplorerEntityCommand<T>): IDisposable;
-    readonly selectedEntity: Nullable<unknown>;
-    readonly onSelectedEntityChanged: Observable<void>;
 }
 
 type TreeItemData =
@@ -89,22 +88,13 @@ const useStyles = makeStyles({
     },
 });
 
-export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerService], [ISceneContext, IShellService]> = {
+export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerService], [ISceneContext, IShellService, ISelectionService]> = {
     friendlyName: "Scene Explorer",
     produces: [SceneExplorerServiceIdentity],
-    consumes: [SceneContextIdentity, ShellServiceIdentity],
-    factory: (sceneContext, shellService) => {
+    consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity],
+    factory: (sceneContext, shellService, selectionService) => {
         const sectionsCollection = new ObservableCollection<SceneExplorerSection<EntityBase>>();
         const commandsCollection = new ObservableCollection<SceneExplorerEntityCommand<EntityBase>>();
-
-        let selectedEntityState: Nullable<unknown> = null;
-        const selectedEntityObservable = new Observable<void>();
-        const setSelectedItem = (item: Nullable<unknown>) => {
-            if (item !== selectedEntityState) {
-                selectedEntityState = item;
-                selectedEntityObservable.notifyObservers();
-            }
-        };
 
         // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
         const SceneExplorer: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
@@ -113,7 +103,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             const sections = useOrderedObservableCollection(sectionsCollection);
             const commands = useOrderedObservableCollection(commandsCollection);
 
-            const selectedItem = useObservableState(() => selectedEntityState, selectedEntityObservable);
+            const selectedItem = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
             const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
 
             const [sceneVersion, setSceneVersion] = useState(0);
@@ -139,7 +129,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                     }
 
                     if (item === selectedItem) {
-                        setSelectedItem(null);
+                        selectionService.selectedEntity = null;
                     }
                 };
 
@@ -236,7 +226,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                             aria-level={item.depth}
                                             aria-setsize={1}
                                             aria-posinset={1}
-                                            onClick={() => setSelectedItem(item.entity)}
+                                            onClick={() => (selectionService.selectedEntity = item.entity)}
                                         >
                                             <TreeItemLayout
                                                 iconBefore={item.icon ? <item.icon entity={item.entity} /> : null}
@@ -282,10 +272,6 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         return {
             addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<EntityBase>),
             addCommand: (command) => commandsCollection.add(command as SceneExplorerEntityCommand<EntityBase>),
-            get selectedEntity() {
-                return selectedEntityState;
-            },
-            onSelectedEntityChanged: selectedEntityObservable,
             dispose: () => registration.dispose(),
         };
     },

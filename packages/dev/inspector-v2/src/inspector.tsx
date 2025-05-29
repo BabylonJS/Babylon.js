@@ -23,7 +23,7 @@ import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
-import { SceneExplorerPropertyBindingServiceDefinition } from "./services/sceneExplorerPropertyBindingService";
+import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
@@ -186,8 +186,8 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Settings pane tab and related services.
             SettingsServiceDefinition,
 
-            // Bind the scene explorer selected entity to the properties pane.
-            SceneExplorerPropertyBindingServiceDefinition,
+            // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
+            SelectionServiceDefinition,
 
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),

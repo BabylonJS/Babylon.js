@@ -2,6 +2,7 @@
 import type { IDisposable, Nullable } from "core/index";
 
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, Body1Strong, makeStyles, Subtitle1, tokens } from "@fluentui/react-components";
@@ -11,6 +12,7 @@ import { useMemo, useState, type ComponentType } from "react";
 import { Observable } from "core/Misc/observable";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
+import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
 
 export type PropertiesServiceSection = Readonly<{
@@ -82,11 +84,6 @@ export interface IPropertiesService extends IService<typeof PropertiesServiceIde
      * @param content A description of the content to add.
      */
     addSectionContent<EntityT>(content: PropertiesServiceSectionContent<EntityT>): IDisposable;
-
-    /**
-     * Gets or sets the currently bound entity.
-     */
-    boundEntity: Nullable<unknown>;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -112,16 +109,13 @@ const useStyles = makeStyles({
     },
 });
 
-export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService], [IShellService]> = {
+export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService], [IShellService, ISelectionService]> = {
     friendlyName: "Properties Editor",
     produces: [PropertiesServiceIdentity],
-    consumes: [ShellServiceIdentity],
-    factory: (shellService) => {
+    consumes: [ShellServiceIdentity, SelectionServiceIdentity],
+    factory: (shellService, selectionService) => {
         const sectionsCollection = new ObservableCollection<PropertiesServiceSection>();
         const sectionContentCollection = new ObservableCollection<PropertiesServiceSectionContent<unknown>>();
-
-        let boundEntityState: Nullable<unknown> = null;
-        const boundEntityObservable = new Observable<Nullable<unknown>>();
 
         const registration = shellService.addSidePane({
             key: "Properties",
@@ -134,7 +128,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
 
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
-                const boundEntity = useObservableState(() => boundEntityState, boundEntityObservable);
+                const boundEntity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
                 const [version, setVersion] = useState(0);
 
                 const visibleSections = useMemo(() => {
@@ -213,15 +207,6 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
         return {
             addSection: (section) => sectionsCollection.add(section),
             addSectionContent: (content) => sectionContentCollection.add(content as PropertiesServiceSectionContent<unknown>),
-            get boundEntity() {
-                return boundEntityState;
-            },
-            set boundEntity(entity) {
-                if (boundEntityState !== entity) {
-                    boundEntityState = entity;
-                    boundEntityObservable.notifyObservers(entity);
-                }
-            },
             dispose: () => registration.dispose(),
         };
     },
