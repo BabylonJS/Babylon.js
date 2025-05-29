@@ -13,7 +13,7 @@ export const MaterialHierarchyServiceDefinition: ServiceDefinition<[], [ISceneEx
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {
         const sectionRegistration = sceneExplorerService.addSection({
-            name: "Materials",
+            displayName: "Materials",
             order: 2,
             getRootEntities: (scene) => scene.materials,
             getEntityDisplayName: (material) => material.name,

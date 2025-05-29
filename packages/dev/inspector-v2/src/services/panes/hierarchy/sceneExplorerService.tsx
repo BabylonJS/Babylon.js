@@ -24,8 +24,17 @@ type EntityBase = Readonly<{
 }>;
 
 export type SceneExplorerSection<T extends EntityBase> = Readonly<{
-    name: string;
+    /**
+     * The display name of the section (e.g. "Nodes", "Materials", etc.).
+     */
+    displayName: string;
+
+    /**
+     * An optional order for the section, relative to other sections.
+     * Defaults to 0.
+     */
     order?: number;
+
     getRootEntities: (scene: Scene) => readonly T[];
     getEntityChildren?: (entity: T) => readonly T[];
     getEntityDisplayName: (entity: T) => string;
@@ -149,11 +158,11 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                 for (const section of sections) {
                     visibleItems.push({
                         type: "section",
-                        sectionName: section.name,
+                        sectionName: section.displayName,
                         hasChildren: section.getRootEntities(scene).length > 0,
                     });
 
-                    if (openItems.has(section.name)) {
+                    if (openItems.has(section.displayName)) {
                         let depth = 1;
                         TraverseGraph(
                             section.getRootEntities(scene),

@@ -17,7 +17,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {
         const sectionRegistration = sceneExplorerService.addSection({
-            name: "Nodes",
+            displayName: "Nodes",
             order: 0,
             getRootEntities: (scene) => scene.rootNodes,
             getEntityChildren: (node) => node.getChildren(),

@@ -13,7 +13,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {
         const sectionRegistration = sceneExplorerService.addSection({
-            name: "Textures",
+            displayName: "Textures",
             order: 3,
             getRootEntities: (scene) => scene.textures,
             getEntityDisplayName: (texture) => texture.displayName || texture.name || `Unnamed Texture (${texture.uniqueId})`,
