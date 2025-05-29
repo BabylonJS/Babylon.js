@@ -7,11 +7,6 @@ export type ExtensionMetadata = {
     readonly name: string;
 
     /**
-     * The version of the extension.
-     */
-    readonly version: string;
-
-    /**
      * The description of the extension.
      */
     readonly description: string;
@@ -20,21 +15,6 @@ export type ExtensionMetadata = {
      * The keywords of the extension.
      */
     readonly keywords: readonly string[];
-
-    /**
-     * The author of the extension.
-     */
-    readonly author: string;
-
-    /**
-     * The license of the extension.
-     */
-    readonly license: string;
-
-    /**
-     * The dependencies that must exist at runtime for the extension to function.
-     */
-    readonly peerDependencies?: Readonly<Record<string, string>>;
 };
 
 export type ExtensionModule = {
@@ -84,30 +64,9 @@ export interface IExtensionFeed {
     queryExtensionsAsync(filter?: string): Promise<IExtensionMetadataQuery>;
 
     /**
-     * Fetches the metadata for a specific extension.
-     * @param name The name of the extension.
-     * @param version The version of the extension.
-     * @returns A promise that resolves to the extension metadata.
-     */
-    getExtensionMetadataAsync(name: string, version?: string): Promise<ExtensionMetadata | undefined>; // needed to install dependencies
-
-    /**
-     * Saves the extension to the client for future and offline access.
-     */
-    saveExtensionToClientAsync(name: string, version: string): Promise<void>;
-
-    /**
      * Gets the extension module for the specified extension.
      * @param name The name of the extension.
-     * @param version The version of the extension.
      * @returns A promise that resolves to the extension module.
      */
-    getExtensionModuleAsync(name: string, version: string): Promise<ExtensionModule | undefined>;
-
-    /**
-     * Removes the extension from the client.
-     * @param name The name of the extension.
-     * @param version The version of the extension.
-     */
-    removeExtensionFromClientAsync(name: string, version: string): Promise<void>;
+    getExtensionModuleAsync(name: string): Promise<ExtensionModule | undefined>;
 }

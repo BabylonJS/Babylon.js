@@ -133,13 +133,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 ]);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
-                const extensionManager = await ExtensionManager.CreateAsync(serviceCatalog, externalDependencies, extensionFeeds);
+                const extensionManager = await ExtensionManager.CreateAsync(serviceCatalog, extensionFeeds);
 
                 // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);
                 const requiredExtensions = queryParams.getAll("babylon.requiredExtension");
                 const uninstalledExtensions: IExtension[] = [];
-                const disabledExtensions: IExtension[] = [];
                 for (const requiredExtension of requiredExtensions) {
                     // These could possibly be parallelized to speed things up, but it's more complex so let's wait and see if we need it.
                     // eslint-disable-next-line no-await-in-loop
@@ -150,15 +149,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                         if (!extension.isInstalled) {
                             uninstalledExtensions.push(extension);
                         }
-                        if (!extension.isEnabled) {
-                            disabledExtensions.push(extension);
-                        }
                     }
                 }
 
                 // Check if any required extensions are uninstalled or disabled. If so, show a dialog to the user.
-                if (uninstalledExtensions.length > 0 || disabledExtensions.length > 0) {
-                    setRequiredExtensions(Array.from(new Set([...uninstalledExtensions, ...disabledExtensions])).map((extension) => extension.metadata.name));
+                if (uninstalledExtensions.length > 0) {
+                    setRequiredExtensions(uninstalledExtensions.map((extension) => extension.metadata.name));
                     const deferred = new Deferred<boolean>();
                     setRequiredExtensionsDeferred(deferred);
                     if (await deferred.promise) {
@@ -166,13 +162,6 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                             // This could possibly be parallelized to speed things up, but it's more complex so let's wait and see if we need it.
                             // eslint-disable-next-line no-await-in-loop
                             await extension.installAsync();
-                            disabledExtensions.push(extension);
-                        }
-
-                        for (const extension of disabledExtensions) {
-                            // This could possibly be parallelized to speed things up, but it's more complex so let's wait and see if we need it.
-                            // eslint-disable-next-line no-await-in-loop
-                            await extension.enableAsync();
                         }
                     }
                 }
