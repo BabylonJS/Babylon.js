@@ -7,7 +7,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
-
+import type { WebGPUEngine } from "../../Engines/webgpuEngine";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
@@ -888,7 +888,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             },
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
-        this._gbufferDebugPass.samples = (this.engine as any).currentSampleCount || 1;
+        if (this.engine.isWebGPU) {
+            this._gbufferDebugPass.samples = (this.engine as WebGPUEngine).currentSampleCount ?? 1;
+        }
         this._gbufferDebugPass.autoClear = false;
         this._gbufferDebugPass.onApplyObservable.add((effect) => {
             const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
