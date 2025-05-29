@@ -221,7 +221,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                             </TreeItemLayout>
                                         </FlatTreeItem>
                                     );
-                                } else if (item.type === "entity") {
+                                } else {
                                     return (
                                         <FlatTreeItem
                                             key={item.entity.uniqueId}

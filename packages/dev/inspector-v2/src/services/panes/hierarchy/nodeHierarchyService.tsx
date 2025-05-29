@@ -35,54 +35,54 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
                     <></>
                 ),
             watch: (scene, onAdded, onRemoved) => {
-                const observers: Observer<any>[] = [];
+                const observers: Observer<unknown>[] = [];
 
                 observers.push(
                     scene.onNewMeshAddedObservable.add((mesh) => {
                         onAdded(mesh);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onNewTransformNodeAddedObservable.add((node) => {
                         onAdded(node);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onNewCameraAddedObservable.add((camera) => {
                         onAdded(camera);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onNewLightAddedObservable.add((light) => {
                         onAdded(light);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onMeshRemovedObservable.add((mesh) => {
                         onRemoved(mesh);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onTransformNodeRemovedObservable.add((node) => {
                         onRemoved(node);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onCameraRemovedObservable.add((camera) => {
                         onRemoved(camera);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 observers.push(
                     scene.onLightRemovedObservable.add((light) => {
                         onRemoved(light);
-                    })
+                    }) as Observer<unknown>
                 );
 
                 return {

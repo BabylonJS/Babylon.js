@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Nullable } from "core/index";
+import type { IDisposable } from "core/index";
 
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
@@ -9,7 +9,6 @@ import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, Body1Strong,
 import { DocumentTextRegular } from "@fluentui/react-icons";
 import { useMemo, useState, type ComponentType } from "react";
 
-import { Observable } from "core/Misc/observable";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SelectionServiceIdentity } from "../../selectionService";
