@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
-import type { IServiceRegistry } from "../modularity/serviceCatalog";
+import type { ServiceContainer } from "../modularity/serviceCatalog";
 import type { IExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
 
 import { Logger } from "core/Misc/logger";
@@ -90,19 +90,19 @@ export class ExtensionManager implements IDisposable {
     private readonly _stateChangedHandlers = new Map<string, Set<() => void>>();
 
     private constructor(
-        private readonly _serviceRegistry: IServiceRegistry,
+        private readonly _serviceContainer: ServiceContainer,
         private readonly _feeds: readonly IExtensionFeed[]
     ) {}
 
     /**
      * Creates a new instance of the ExtensionManager.
      * This will automatically rehydrate previously installed and enabled extensions.
-     * @param serviceRegistry The service registry to use.
+     * @param serviceContainer The service container to use.
      * @param feeds The extension feeds to include.
      * @returns A promise that resolves to the new instance of the ExtensionManager.
      */
-    public static async CreateAsync(serviceRegistry: IServiceRegistry, feeds: readonly IExtensionFeed[]) {
-        const extensionManager = new ExtensionManager(serviceRegistry, feeds);
+    public static async CreateAsync(serviceContainer: ServiceContainer, feeds: readonly IExtensionFeed[]) {
+        const extensionManager = new ExtensionManager(serviceContainer, feeds);
 
         // Rehydrate installed extensions.
         const installedExtensionNames = JSON.parse(localStorage.getItem(InstalledExtensionsKey) ?? "[]") as string[];
@@ -199,7 +199,7 @@ export class ExtensionManager implements IDisposable {
     public dispose() {
         for (const installedExtension of this._installedExtensions.values()) {
             // eslint-disable-next-line github/no-then
-            this._disableAsync(installedExtension.metadata, false, false).catch((error) => {
+            this._disableAsync(installedExtension.metadata, false).catch((error) => {
                 Logger.Warn(`Failed to disable extension ${installedExtension.metadata.name}: ${error}`);
             });
         }
@@ -249,7 +249,7 @@ export class ExtensionManager implements IDisposable {
                 !isNestedStateChange && (installedExtension.isStateChanging = true);
 
                 // Disable the extension.
-                await this._disableAsync(metadata, true, true);
+                await this._disableAsync(metadata, true);
 
                 // Remove the extension from in memory.
                 this._installedExtensions.delete(metadata.name);
@@ -279,7 +279,7 @@ export class ExtensionManager implements IDisposable {
                 // Register the ServiceDefinitions.
                 let servicesRegistrationToken: Nullable<IDisposable> = null;
                 if (installedExtension.extensionModule.default.serviceDefinitions) {
-                    servicesRegistrationToken = await this._serviceRegistry.registerServicesAsync(...installedExtension.extensionModule.default.serviceDefinitions);
+                    servicesRegistrationToken = await this._serviceContainer.addServicesAsync(...installedExtension.extensionModule.default.serviceDefinitions);
                 }
 
                 // Create a registration token to for dispose.
@@ -294,7 +294,7 @@ export class ExtensionManager implements IDisposable {
         }
     }
 
-    private async _disableAsync(metadata: ExtensionMetadata, isNestedStateChange: boolean, permanent: boolean): Promise<void> {
+    private async _disableAsync(metadata: ExtensionMetadata, isNestedStateChange: boolean): Promise<void> {
         const installedExtension = this._installedExtensions.get(metadata.name);
         if (installedExtension && (isNestedStateChange || !installedExtension.isStateChanging)) {
             try {

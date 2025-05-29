@@ -10,10 +10,5 @@ export const ExtensionManagerContext = createContext<ExtensionManagerContext | u
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function useExtensionManager() {
-    const extensionManagerContext = useContext(ExtensionManagerContext);
-    if (!extensionManagerContext) {
-        throw new Error("ExtensionManagerContext is missing.");
-    }
-
-    return extensionManagerContext.extensionManager;
+    return useContext(ExtensionManagerContext)?.extensionManager;
 }

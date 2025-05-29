@@ -17,7 +17,7 @@ import { Deferred } from "core/Misc/deferred";
 
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
-import { ServiceCatalog } from "./modularity/serviceCatalog";
+import { ServiceContainer } from "./modularity/serviceCatalog";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
@@ -84,10 +84,13 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         // This is the main async initialization.
         useEffect(() => {
             const initializeExtensionManagerAsync = async () => {
-                const serviceCatalog = new ServiceCatalog();
+                const serviceContainer = new ServiceContainer("ModularToolContainer");
+
+                // Register the shell service (top level toolbar/side pane UI layout).
+                await serviceContainer.addServiceAsync(MakeShellServiceDefinition(options));
 
                 // Register a service that simply consumes the IRootComponentService and sets the root component as state so it can be rendered.
-                await serviceCatalog.registerServiceAsync<[], [IRootComponentService]>({
+                await serviceContainer.addServiceAsync<[], [IRootComponentService]>({
                     friendlyName: "Root Component Bootstrapper",
                     consumes: [RootComponentServiceIdentity],
                     factory: (rootComponentService) => {
@@ -99,21 +102,18 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     },
                 });
 
-                // Register the shell service (top level toolbar/side pane UI layout).
-                await serviceCatalog.registerServicesAsync(MakeShellServiceDefinition(options));
-
                 // Register the extension list service (for browsing/installing extensions) if extension feeds are provided.
                 if (extensionFeeds.length > 0) {
-                    await serviceCatalog.registerServicesAsync(ExtensionListServiceDefinition);
+                    await serviceContainer.addServiceAsync(ExtensionListServiceDefinition);
                 }
 
                 // Register the theme selector service (for selecting the theme) if theming is configured.
                 if (isThemeable) {
-                    await serviceCatalog.registerServicesAsync(ThemeSelectorServiceDefinition);
+                    await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
                 }
 
                 // Register all external services (that make up a unique tool).
-                await serviceCatalog.registerServicesAsync(...serviceDefinitions);
+                await serviceContainer.addServicesAsync(...serviceDefinitions);
 
                 // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
                 // TODO: Try to replace this with import maps.
@@ -133,7 +133,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 ]);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
-                const extensionManager = await ExtensionManager.CreateAsync(serviceCatalog, extensionFeeds);
+                const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds);
 
                 // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);
@@ -166,16 +166,13 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     }
                 }
 
-                // Instantiate a service container, which will in turn instantiate all the services (in order based on the dependency graph).
-                const serviceContainer = await serviceCatalog.createContainerAsync("ModularToolContainer");
-
                 // Set the contexts.
                 setExtensionManagerContext({ extensionManager });
 
                 return () => {
                     extensionManager.dispose();
                     serviceContainer.dispose();
-                    serviceCatalog.dispose();
+                    serviceContainer.dispose();
                 };
             };
 

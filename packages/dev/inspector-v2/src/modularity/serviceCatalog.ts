@@ -12,13 +12,6 @@ export type WeaklyTypedServiceDefinition = Omit<ServiceDefinition<IService<Contr
     factory: (...args: any) => ReturnType<ServiceDefinition<IService<ContractIdentity>[] | [], IService<ContractIdentity>[] | []>["factory"]>;
 };
 
-/**
- * A registry of all known services.
- */
-export interface IServiceRegistry {
-    registerServicesAsync(...args: WeaklyTypedServiceDefinition[] | [...serviceDefinitions: WeaklyTypedServiceDefinition[], abortSignal: AbortSignal]): Promise<IDisposable>;
-}
-
 function SortServiceDefinitions(serviceDefinitions: WeaklyTypedServiceDefinition[]) {
     const sortedServiceDefinitions: typeof serviceDefinitions = [];
     SortGraph(
@@ -36,59 +29,47 @@ function SortServiceDefinitions(serviceDefinitions: WeaklyTypedServiceDefinition
 }
 
 /**
- * The service catalog is used to register services and create service container instances.
+ * A service container manages the lifetimes of a set of services.
+ * It takes care of instantiating the services in the correct order based on their dependencies,
+ * passing dependencies through to services, and disposing of services when the container is disposed.
  */
-export class ServiceCatalog implements IServiceRegistry, IDisposable {
+export class ServiceContainer implements IDisposable {
     private _isDisposed = false;
-    private readonly _serviceDefinitions = new Set<WeaklyTypedServiceDefinition>();
-    private readonly _serviceContainers = new Set<ServiceContainer>();
+    private readonly _serviceDefinitions = new Map<ContractIdentity, WeaklyTypedServiceDefinition>();
+    private readonly _serviceDependents = new Map<WeaklyTypedServiceDefinition, Set<WeaklyTypedServiceDefinition>>();
+    private readonly _serviceInstances = new Map<WeaklyTypedServiceDefinition, (IService<symbol> & Partial<IDisposable>) | void>();
+
+    public constructor(private readonly _friendlyName: string) {}
 
     /**
-     * Registers a set of service definitions in the service catalog.
+     * Adds a set of service definitions in the service container.
      * The services are sorted based on their dependencies.
      * @param args The service definitions to register, and optionally an abort signal.
-     * @returns A disposable that will remove the service definition from the service catalog.
+     * @returns A disposable that will remove the service definition from the service container.
      */
-    public async registerServicesAsync(
+    public async addServicesAsync(
         ...args: WeaklyTypedServiceDefinition[] | [...serviceDefinitions: WeaklyTypedServiceDefinition[], abortSignal: AbortSignal]
     ): Promise<IDisposable> {
         if (this._isDisposed) {
-            throw new Error("ServiceCatalog is disposed.");
+            throw new Error("ServiceContainer is disposed.");
         }
 
         const abortSignal = args[args.length - 1] instanceof AbortSignal ? (args.pop() as AbortSignal) : undefined;
         const serviceDefinitions = args as WeaklyTypedServiceDefinition[];
 
-        const dispose = () => {
-            // Remove the service instances from any active containers.
-            const sortedServiceDefinitions = SortServiceDefinitions(serviceDefinitions);
-            for (const serviceDefinition of sortedServiceDefinitions.reverse()) {
-                for (const container of this._serviceContainers) {
-                    container.removeService(serviceDefinition);
-                }
-            }
+        const sortedServiceDefinitions = SortServiceDefinitions(serviceDefinitions);
 
-            // Remove the service definitions from the tag map.
-            for (const serviceDefinition of serviceDefinitions) {
-                this._serviceDefinitions.delete(serviceDefinition);
+        const dispose = () => {
+            for (const serviceDefinition of sortedServiceDefinitions.reverse()) {
+                this._removeService(serviceDefinition);
             }
         };
 
-        // Add the service definitions to the tag map.
-        for (const serviceDefinition of serviceDefinitions) {
-            this._serviceDefinitions.add(serviceDefinition);
-        }
-
-        // Add a service instance to any active containers.
         try {
-            const applicableServiceDefinitions = SortServiceDefinitions(serviceDefinitions);
-            for (const container of this._serviceContainers) {
-                for (const serviceDefinition of applicableServiceDefinitions) {
-                    // We could possibly optimize this by allowing some parallel initialization of services, but this would be way more complex, so let's wait and see if it's needed.
-                    // eslint-disable-next-line no-await-in-loop
-                    await container.addServiceAsync(serviceDefinition, abortSignal);
-                    abortSignal?.throwIfAborted();
-                }
+            for (const serviceDefinition of sortedServiceDefinitions) {
+                // We could possibly optimize this by allowing some parallel initialization of services, but this would be way more complex, so let's wait and see if it's needed.
+                // eslint-disable-next-line no-await-in-loop
+                await this._addServiceAsync(serviceDefinition, abortSignal);
             }
         } catch (error: unknown) {
             dispose();
@@ -101,86 +82,23 @@ export class ServiceCatalog implements IServiceRegistry, IDisposable {
     }
 
     /**
-     * Registers a service definition in the service catalog.
+     * Registers a service definition in the service container.
      * @param serviceDefinition The service definition to register.
      * @param abortSignal An optional abort signal.
-     * @returns A disposable that will remove the service definition from the service catalog.
+     * @returns A disposable that will remove the service definition from the service container.
      */
-    public async registerServiceAsync<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []>(
+    public async addServiceAsync<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []>(
         serviceDefinition: ServiceDefinition<Produces, Consumes>,
         abortSignal?: AbortSignal
     ): Promise<IDisposable> {
         if (abortSignal) {
-            return await this.registerServicesAsync(serviceDefinition, abortSignal);
+            return await this.addServicesAsync(serviceDefinition, abortSignal);
         } else {
-            return await this.registerServicesAsync(serviceDefinition);
+            return await this.addServicesAsync(serviceDefinition);
         }
     }
 
-    /**
-     * Creates a service container instance.
-     * All registered services will be instantiated in topological order based on the dependency graph.
-     * @param friendlyName A friendly name for the service container instance.
-     * @param abortSignal An optional abort signal.
-     * @returns A disposable that will tear down the service container instance.
-     */
-    public async createContainerAsync(friendlyName: string, abortSignal?: AbortSignal): Promise<IDisposable> {
-        if (this._isDisposed) {
-            throw new Error("ServiceCatalog is disposed.");
-        }
-
-        abortSignal?.throwIfAborted();
-
-        const sortedServiceDefinitions = SortServiceDefinitions(Array.from(this._serviceDefinitions));
-
-        const container = new ServiceContainer(friendlyName);
-        try {
-            for (const serviceDefinition of sortedServiceDefinitions) {
-                // We could possibly optimize this by allowing some parallel initialization of services, but this would be way more complex, so let's wait and see if it's needed.
-                // eslint-disable-next-line no-await-in-loop
-                await container.addServiceAsync(serviceDefinition, abortSignal);
-                abortSignal?.throwIfAborted();
-            }
-        } catch (error: unknown) {
-            container.dispose();
-            throw error;
-        }
-
-        this._serviceContainers.add(container);
-
-        return {
-            dispose: () => {
-                this._serviceContainers.delete(container);
-                container.dispose();
-            },
-        };
-    }
-
-    /**
-     * Disposes the service catalog and all container instances and all registered services.
-     */
-    public dispose() {
-        for (const container of this._serviceContainers) {
-            container.dispose();
-        }
-        this._serviceDefinitions.clear();
-        this._serviceContainers.clear();
-        this._isDisposed = true;
-    }
-}
-
-class ServiceContainer implements IDisposable {
-    private _isDisposed = false;
-    private readonly _serviceDefinitions = new Map<ContractIdentity, WeaklyTypedServiceDefinition>();
-    private readonly _serviceDependents = new Map<WeaklyTypedServiceDefinition, Set<WeaklyTypedServiceDefinition>>();
-    private readonly _serviceInstances = new Map<WeaklyTypedServiceDefinition, (IService<symbol> & Partial<IDisposable>) | void>();
-
-    public constructor(private readonly _friendlyName: string) {}
-
-    /**
-     * @internal
-     */
-    public async addServiceAsync(service: WeaklyTypedServiceDefinition, abortSignal?: AbortSignal) {
+    private async _addServiceAsync(service: WeaklyTypedServiceDefinition, abortSignal?: AbortSignal) {
         if (this._isDisposed) {
             throw new Error(`'${this._friendlyName}' container is disposed.`);
         }
@@ -219,10 +137,7 @@ class ServiceContainer implements IDisposable {
         this._serviceInstances.set(service, await service.factory(...dependencies, abortSignal));
     }
 
-    /**
-     * @internal
-     */
-    public removeService(service: WeaklyTypedServiceDefinition) {
+    private _removeService(service: WeaklyTypedServiceDefinition) {
         if (this._isDisposed) {
             throw new Error(`'${this._friendlyName}' container is disposed.`);
         }
@@ -259,8 +174,14 @@ class ServiceContainer implements IDisposable {
         });
     }
 
+    /**
+     * Disposes the service container and all contained services.
+     */
     public dispose() {
-        Array.from(this._serviceInstances.keys()).reverse().forEach(this.removeService.bind(this));
+        Array.from(this._serviceInstances.keys()).reverse().forEach(this._removeService.bind(this));
+        this._serviceInstances.clear();
+        this._serviceDependents.clear();
+        this._serviceDefinitions.clear();
         this._isDisposed = true;
     }
 }

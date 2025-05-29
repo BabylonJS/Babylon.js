@@ -60,6 +60,125 @@ export type ShellServiceOptions = {
     toolBarMode?: "full" | "compact";
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const useStyles = makeStyles({
+    mainView: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+    },
+    verticallyCentralContent: {
+        flexGrow: 1,
+        display: "flex",
+        overflow: "hidden",
+    },
+    barDiv: {
+        display: "flex",
+        flexDirection: "row",
+        flex: "0 0 auto",
+        backgroundColor: tokens.colorNeutralBackground1,
+    },
+    bar: {
+        display: "flex",
+        flex: "1",
+        height: "32px",
+        overflow: "hidden",
+        padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
+    },
+    barLeft: {
+        marginRight: "auto",
+        display: "flex",
+        flexDirection: "row",
+        columnGap: tokens.spacingHorizontalSNudge,
+    },
+    barRight: {
+        marginLeft: "auto",
+        display: "flex",
+        flexDirection: "row-reverse",
+        columnGap: tokens.spacingHorizontalSNudge,
+    },
+    barDivider: {
+        flex: "0 0 auto",
+    },
+    barItem: {
+        display: "flex",
+    },
+    paneTabListDiv: {
+        flex: "0 0 auto",
+        display: "flex",
+        columnGap: tokens.spacingHorizontalSNudge,
+    },
+    paneTabListDivLeft: {
+        flexDirection: "row-reverse",
+    },
+    paneTabListDivRight: {
+        flexDirection: "row",
+    },
+    paneCollapseButton: {
+        margin: `0 ${tokens.spacingHorizontalSNudge}`,
+    },
+    pane: {
+        backgroundColor: tokens.colorNeutralBackground2,
+        display: "flex",
+        alignItems: "stretch",
+        overflow: "hidden",
+    },
+    paneLeft: {
+        flexDirection: "row",
+    },
+    paneRight: {
+        flexDirection: "row-reverse",
+    },
+    paneContainer: {
+        display: "flex",
+        flexDirection: "column",
+        overflowX: "hidden",
+        overflowY: "hidden",
+    },
+    paneContainerTransitions: {
+        ...shorthands.transition("width", "0.3s", "0s", "ease-in-out"),
+    },
+    paneContent: {
+        display: "flex",
+        flexGrow: 1,
+        flexDirection: "column",
+        paddingTop: tokens.spacingVerticalS,
+        overflow: "hidden",
+    },
+    paneHeader: {
+        marginLeft: tokens.spacingHorizontalM,
+    },
+    headerDivider: {
+        flex: "0 0 auto",
+        marginTop: tokens.spacingVerticalM,
+    },
+    tab: {
+        paddingTop: tokens.spacingVerticalXS,
+        paddingBottom: tokens.spacingVerticalXS,
+        alignSelf: "center",
+    },
+    resizer: {
+        width: "8px",
+        cursor: "ew-resize",
+        zIndex: 1000,
+    },
+    resizerLeft: {
+        marginRight: "-8px",
+        transform: "translateX(-8px)",
+    },
+    resizerRight: {
+        marginLeft: "-8px",
+        transform: "translateX(8px)",
+    },
+    centralContent: {
+        position: "relative",
+        flexGrow: 1,
+        display: "flex",
+        overflow: "hidden",
+    },
+});
+
 export function MakeShellServiceDefinition({
     leftPaneDefaultWidth = 350,
     leftPaneMinWidth = 350,
@@ -71,124 +190,6 @@ export function MakeShellServiceDefinition({
         friendlyName: "MainView",
         produces: [ShellServiceIdentity, RootComponentServiceIdentity],
         factory: () => {
-            const useStyles = makeStyles({
-                mainView: {
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    overflow: "hidden",
-                },
-                verticallyCentralContent: {
-                    flexGrow: 1,
-                    display: "flex",
-                    overflow: "hidden",
-                },
-                barDiv: {
-                    display: "flex",
-                    flexDirection: "row",
-                    flex: "0 0 auto",
-                    backgroundColor: tokens.colorNeutralBackground1,
-                },
-                bar: {
-                    display: "flex",
-                    flex: "1",
-                    height: "32px",
-                    overflow: "hidden",
-                    padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
-                },
-                barLeft: {
-                    marginRight: "auto",
-                    display: "flex",
-                    flexDirection: "row",
-                    columnGap: tokens.spacingHorizontalSNudge,
-                },
-                barRight: {
-                    marginLeft: "auto",
-                    display: "flex",
-                    flexDirection: "row-reverse",
-                    columnGap: tokens.spacingHorizontalSNudge,
-                },
-                barDivider: {
-                    flex: "0 0 auto",
-                },
-                barItem: {
-                    display: "flex",
-                },
-                paneTabListDiv: {
-                    flex: "0 0 auto",
-                    display: "flex",
-                    columnGap: tokens.spacingHorizontalSNudge,
-                },
-                paneTabListDivLeft: {
-                    flexDirection: "row-reverse",
-                },
-                paneTabListDivRight: {
-                    flexDirection: "row",
-                },
-                paneCollapseButton: {
-                    margin: `0 ${tokens.spacingHorizontalSNudge}`,
-                },
-                pane: {
-                    backgroundColor: tokens.colorNeutralBackground2,
-                    display: "flex",
-                    alignItems: "stretch",
-                    overflow: "hidden",
-                },
-                paneLeft: {
-                    flexDirection: "row",
-                },
-                paneRight: {
-                    flexDirection: "row-reverse",
-                },
-                paneContainer: {
-                    display: "flex",
-                    flexDirection: "column",
-                    overflowX: "hidden",
-                    overflowY: "hidden",
-                },
-                paneContainerTransitions: {
-                    ...shorthands.transition("width", "0.3s", "0s", "ease-in-out"),
-                },
-                paneContent: {
-                    display: "flex",
-                    flexGrow: 1,
-                    flexDirection: "column",
-                    paddingTop: tokens.spacingVerticalS,
-                    overflow: "hidden",
-                },
-                paneHeader: {
-                    marginLeft: tokens.spacingHorizontalM,
-                },
-                headerDivider: {
-                    flex: "0 0 auto",
-                    marginTop: tokens.spacingVerticalM,
-                },
-                tab: {
-                    paddingTop: tokens.spacingVerticalXS,
-                    paddingBottom: tokens.spacingVerticalXS,
-                    alignSelf: "center",
-                },
-                resizer: {
-                    width: "8px",
-                    cursor: "ew-resize",
-                    zIndex: 1000,
-                },
-                resizerLeft: {
-                    marginRight: "-8px",
-                    transform: "translateX(-8px)",
-                },
-                resizerRight: {
-                    marginLeft: "-8px",
-                    transform: "translateX(8px)",
-                },
-                centralContent: {
-                    position: "relative",
-                    flexGrow: 1,
-                    display: "flex",
-                    overflow: "hidden",
-                },
-            });
-
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const BarItem: FunctionComponent<{
                 location: "top" | "bottom";

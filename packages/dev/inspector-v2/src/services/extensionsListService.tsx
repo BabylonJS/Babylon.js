@@ -154,17 +154,19 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
                 const [extensions, setExtensions] = useState<IExtension[]>([]);
 
                 useEffect(() => {
-                    const populateExtensionsAsync = async () => {
-                        const query = await extensionManager.queryExtensionsAsync(undefined, undefined, selectedTab === "installed");
-                        const extensions = await query.getExtensionsAsync(0, query.totalCount);
-                        setExtensions(extensions);
-                    };
+                    if (extensionManager) {
+                        const populateExtensionsAsync = async () => {
+                            const query = await extensionManager.queryExtensionsAsync(undefined, undefined, selectedTab === "installed");
+                            const extensions = await query.getExtensionsAsync(0, query.totalCount);
+                            setExtensions(extensions);
+                        };
 
-                    // eslint-disable-next-line github/no-then
-                    populateExtensionsAsync().catch((error) => {
-                        Logger.Warn(`Failed to populate extensions: ${error}`);
-                    });
-                }, [selectedTab]);
+                        // eslint-disable-next-line github/no-then
+                        populateExtensionsAsync().catch((error) => {
+                            Logger.Warn(`Failed to populate extensions: ${error}`);
+                        });
+                    }
+                }, [extensionManager, selectedTab]);
 
                 const teachingMoment = useTeachingMoment();
 
