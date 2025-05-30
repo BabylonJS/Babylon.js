@@ -1692,7 +1692,7 @@ export class Viewer implements IDisposable {
 
             updateMaterial();
 
-            pipeline.onShadowTextureReadyObservable.add(updateMaterial);
+            pipeline.onShadowTextureReadyObservable.addOnce(updateMaterial);
 
             const resizeObserver = this._engine.onResizeObservable.add(() => {
                 updateMaterial();
