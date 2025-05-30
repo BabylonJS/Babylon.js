@@ -96,28 +96,6 @@ export class TransformNode extends Node {
         }
         this._billboardMode = value;
         this._cache.useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
-        this._computeUseBillboardPath();
-    }
-
-    private _preserveParentRotationForBillboard = false;
-    /**
-     * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
-     * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
-     */
-    public get preserveParentRotationForBillboard() {
-        return this._preserveParentRotationForBillboard;
-    }
-
-    public set preserveParentRotationForBillboard(value: boolean) {
-        if (value === this._preserveParentRotationForBillboard) {
-            return;
-        }
-        this._preserveParentRotationForBillboard = value;
-        this._computeUseBillboardPath();
-    }
-
-    private _computeUseBillboardPath(): void {
-        this._cache.useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
     }
 
     /**
@@ -1084,7 +1062,7 @@ export class TransformNode extends Node {
      * @returns true if the world matrix computation needs the camera information to be computed
      */
     public isWorldMatrixCameraDependent(): boolean {
-        return (this._infiniteDistance && !this.parent) || (this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard);
+        return (this._infiniteDistance && !this.parent) || this._billboardMode !== TransformNode.BILLBOARDMODE_NONE;
     }
 
     /**
