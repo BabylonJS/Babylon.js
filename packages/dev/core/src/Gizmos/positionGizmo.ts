@@ -63,6 +63,19 @@ export interface IPositionGizmo extends IGizmo {
 }
 
 /**
+ * Options for each individual axis drag gizmo contained within PositionGizmo
+ */
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface AxisDragGizmoOptions {
+    /**
+     * Color to use for the axis drag gizmo
+     */
+    color?: Color3;
+    
+}
+
+/**
  * Additional options for the position gizmo
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -72,6 +85,31 @@ export interface PositionGizmoOptions {
      * @See Gizmo.additionalTransformNode for more detail
      */
     additionalTransformNode?: TransformNode;
+
+   /**
+     * Specific options for xGizmo
+     */
+    xOptions?: AxisDragGizmoOptions;
+
+    /**
+     * Specific options for yGizmo
+     */
+    yOptions?: AxisDragGizmoOptions;
+
+    /**
+     * Specific options for zGizmo
+     */
+    zOptions?: AxisDragGizmoOptions;
+
+     /**
+     * Color to use for the gizmo hover
+     */
+    hoverColor?: Color3;
+    
+    /**
+     * Color to use for when the gizmo is disabled
+     */
+    disableColor?: Color3;
 }
 
 /**
@@ -196,13 +234,13 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager, options?: PositionGizmoOptions) {
         super(gizmoLayer);
-        this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
-        this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
-        this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
+        this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), options?.xOptions?.color ?? Color3.Red().scale(0.5), gizmoLayer, this, thickness, options?.hoverColor, options?.disableColor);
+        this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), options?.yOptions?.color ?? Color3.Green().scale(0.5), gizmoLayer, this, thickness, options?.hoverColor, options?.disableColor);
+        this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), options?.zOptions?.color ?? Color3.Blue().scale(0.5), gizmoLayer, this, thickness, options?.hoverColor, options?.disableColor);
 
-        this.xPlaneGizmo = new PlaneDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), this.gizmoLayer, this);
-        this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), this.gizmoLayer, this);
-        this.zPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), this.gizmoLayer, this);
+        this.xPlaneGizmo = new PlaneDragGizmo(new Vector3(1, 0, 0), options?.xOptions?.color ?? Color3.Red().scale(0.5), this.gizmoLayer, this, options?.hoverColor, options?.disableColor);
+        this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), options?.yOptions?.color ?? Color3.Green().scale(0.5), this.gizmoLayer, this, options?.hoverColor, options?.disableColor);
+        this.zPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), options?.zOptions?.color ?? Color3.Blue().scale(0.5), this.gizmoLayer, this, options?.hoverColor, options?.disableColor);
 
         this.additionalTransformNode = options?.additionalTransformNode;
 
