@@ -1569,8 +1569,8 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = false;
         camera._babylonCamera = babylonCamera;
 
-        // Rotation by 180 as glTF has a different convention than Babylon.
-        babylonCamera.rotation.set(0, Math.PI, 0);
+        // glTF cameras look towards the local -Z axis.
+        babylonCamera.setTarget(new Vector3(0, 0, -1));
 
         switch (camera.type) {
             case CameraType.PERSPECTIVE: {
