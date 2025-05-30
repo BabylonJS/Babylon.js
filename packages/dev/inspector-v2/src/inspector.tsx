@@ -154,25 +154,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         // TODO
     }
 
-    const bottomToolbarTestServiceDefinition: ServiceDefinition<[], [IShellService]> = {
-        friendlyName: "Bottom Toolbar Test",
-        consumes: [ShellServiceIdentity],
-        factory: (shellService) => {
-            const registration = shellService.addToolbarItem({
-                key: "Bottom Toolbar Test",
-                horizontalLocation: "right",
-                verticalLocation: "bottom",
-                component: () => {
-                    return "test";
-                },
-            });
-
-            return {
-                dispose: () => registration.dispose(),
-            };
-        },
-    };
-
     const modularTool = MakeModularTool({
         containerElement: parentElement,
         serviceDefinitions: [
@@ -210,12 +191,10 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
-
-            bottomToolbarTestServiceDefinition,
         ],
         isThemeable: options.isThemeable ?? true,
         extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
-        toolBarMode: "compact",
+        toolbarMode: "compact",
     });
     disposeActions.push(() => modularTool.dispose());
 
