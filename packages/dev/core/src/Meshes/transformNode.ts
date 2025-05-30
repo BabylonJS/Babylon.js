@@ -1233,10 +1233,6 @@ export class TransformNode extends Node {
             // Cancel camera rotation
             TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
 
-            if (this._scene.useRightHandedSystem) {
-                TmpVectors.Matrix[1].multiplyToRef(ConvertRHSToLHS, TmpVectors.Matrix[1]);
-            }
-
             TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
             TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);
 
