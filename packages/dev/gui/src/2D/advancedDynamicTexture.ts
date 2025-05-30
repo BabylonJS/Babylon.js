@@ -727,6 +727,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this.adjustToEngineHardwareScalingLevel) {
             // force the renderScale to the engine's hardware scaling level
             this._renderScale = engine.getHardwareScalingLevel();
+            // calculate the max renderScale, based on the max texture size of engine.getCaps().maxTextureSize (enforced by some mobile devices)
+            this._renderScale =
+                1 / Math.max(this._renderScale, engine.getRenderWidth() / engine.getCaps().maxTextureSize, engine.getRenderHeight() / engine.getCaps().maxTextureSize);
         }
         const textureSize = this.getSize();
         let renderWidth = engine.getRenderWidth() * this._renderScale;
@@ -743,6 +746,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         if (textureSize.width !== renderWidth || textureSize.height !== renderHeight) {
             this.scaleTo(renderWidth, renderHeight);
+            if (this.adjustToEngineHardwareScalingLevel) {
+                const engineRenderScale = 1 / engine.getHardwareScalingLevel();
+                const scale = this._renderScale * engineRenderScale;
+                this._rootContainer.scaleX = scale;
+                this._rootContainer.scaleY = scale;
+                this._rootContainer.widthInPixels = renderWidth / scale;
+                this._rootContainer.heightInPixels = renderHeight / scale;
+            }
             this.markAsDirty();
             if (this._idealWidth || this._idealHeight) {
                 this._rootContainer._markAllAsDirty();
@@ -1499,7 +1510,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a promise that will resolve on success
      */
     public async parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
+        return await AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
     }
 
     /**
@@ -1530,7 +1541,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a promise that will resolve on success
      */
     public async parseFromURLAsync(url: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
+        return await AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
     }
 
     private static async _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
@@ -1538,7 +1549,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             throw new Error("No URL provided");
         }
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -1553,6 +1564,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         const serializationObject = JSON.parse(gui);
                         resolve(serializationObject);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load");
                     }
                 }

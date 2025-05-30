@@ -112,6 +112,8 @@ export class WebGPUBufferManager {
     private _getHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
         if (!destArray) {
             destArray = new Float32Array(dataLength);
+        } else {
+            dataLength = Math.min(dataLength, destArray.length);
         }
         const srcData = new Uint16Array(arrayBuffer);
         while (dataLength--) {
@@ -121,7 +123,7 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public readDataFromBuffer(
         gpuBuffer: GPUBuffer,
         size: number,
@@ -138,6 +140,7 @@ export class WebGPUBufferManager {
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
         const engineId = this._engine.uniqueId;
         return new Promise((resolve, reject) => {
+            // eslint-disable-next-line github/no-then
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(
                 () => {
                     const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
@@ -168,7 +171,7 @@ export class WebGPUBufferManager {
                             switch (floatFormat) {
                                 case 0: // byte format
                                     data = new Uint8Array(data.buffer);
-                                    (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                    (data as Uint8Array).set(new Uint8Array(copyArrayBuffer, 0, Math.min(data.byteLength, size)));
                                     break;
                                 case 1: // half float
                                     // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
@@ -176,7 +179,7 @@ export class WebGPUBufferManager {
                                     break;
                                 case 2: // float
                                     data = new Float32Array(data.buffer);
-                                    (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                    (data as Float32Array).set(new Float32Array(copyArrayBuffer, 0, data.byteLength / 4));
                                     break;
                             }
                         }
@@ -214,6 +217,7 @@ export class WebGPUBufferManager {
                         // The engine was disposed while waiting for the promise, or a context loss/restoration has occurred: don't reject
                         resolve(new Uint8Array());
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject(reason);
                     }
                 }

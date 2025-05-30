@@ -1867,6 +1867,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise containg the loaded meshes, particles, skeletons and animations
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public importMeshAsync(
         meshesNames: any,
         scene: Scene,
@@ -1956,8 +1957,8 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
-        return new Promise((resolve, reject) => {
+    public async loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
+        return await new Promise((resolve, reject) => {
             this._loadAsync(
                 scene,
                 data,

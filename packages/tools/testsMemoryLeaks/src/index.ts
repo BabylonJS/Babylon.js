@@ -51,6 +51,7 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
     return BrowserInteractionResultReader.from(config.workDir);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async function () {
     const conf = getGlobalConfig();
     const scenarios = Playgrounds.map((playground) => {
@@ -69,6 +70,7 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
                                     resolve();
                                 } else {
                                     if (att++ === 12) {
+                                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                         return reject();
                                     }
                                     setTimeout(checkScene, 500);
@@ -122,6 +124,7 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
     const promiseExecution = async () => {
         for (const promise of scenarios) {
             try {
+                // eslint-disable-next-line no-await-in-loop
                 const message = await promise();
                 console.log(message);
             } catch (error) {

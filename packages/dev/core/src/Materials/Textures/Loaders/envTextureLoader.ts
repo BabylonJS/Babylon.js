@@ -40,6 +40,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
 
             try {
                 UploadEnvSpherical(texture, info);
+                // eslint-disable-next-line github/no-then
                 UploadEnvLevelsAsync(texture, data, info).then(
                     () => {
                         texture.isReady = true;

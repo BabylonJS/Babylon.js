@@ -114,6 +114,7 @@ export class NodeMaterialBuildState {
      * Returns the processed, compiled shader code
      * @returns the raw shader code used by the engine
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public getProcessedShaderAsync(): Promise<string> {
         if (!this._builtCompilationString) {
             throw new Error("Shader not built yet.");
@@ -295,17 +296,20 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, define = "", force = false, annotation?: string) {
+    public _emit2DSampler(name: string, define = "", force = false, annotation?: string, unsignedSampler?: boolean, precision?: string) {
         if (this.samplers.indexOf(name) < 0 || force) {
             if (define) {
                 this._samplerDeclaration += `#if ${define}\n`;
             }
 
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                const unsignedSamplerPrefix = unsignedSampler ? "u" : "f";
                 this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
-                this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d<${unsignedSamplerPrefix}32>;\n`;
             } else {
-                this._samplerDeclaration += `uniform sampler2D ${name}; ${annotation ? annotation : ""}\n`;
+                const unsignedSamplerPrefix = unsignedSampler ? "u" : "";
+                const precisionDecl = precision ?? "";
+                this._samplerDeclaration += `uniform ${precisionDecl} ${unsignedSamplerPrefix}sampler2D ${name}; ${annotation ? annotation : ""}\n`;
             }
 
             if (define) {

@@ -45,7 +45,9 @@ fn computeHemisphericDiffuseLighting(info: preLightingInfo, lightColor: vec3f, g
 
 fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     var diffuseTerm: vec3f = vec3f(1.0 / PI);
-    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+        diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness));
+    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
         diffuseTerm = vec3f(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
     #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
         var clampedAlbedo: vec3f = clamp(info.surfaceAlbedo, vec3f(0.1), vec3f(1.0));
@@ -78,7 +80,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
         var diffuseTerm : vec3f = vec3f(1.0 / PI);
-        #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+        #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+        diffuseTerm = vec3f(diffuseBRDF_Burley(
+                    info.NdotL, info.NdotV, info.VdotH, info.roughness));
+        #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
         diffuseTerm = vec3f(diffuseBRDF_Burley(
                     info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
         #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
@@ -96,18 +101,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 #endif
 
 #ifdef SPECULARTERM
-    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f, ior: f32) -> vec3f {
+    fn computeSpecularLighting(info: preLightingInfo, N: vec3f, reflectance0: vec3f, fresnel: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
-
-        #ifdef METALLICWORKFLOW
-            // Scale the reflectance by the IOR for values less than 1.5
-            var f90Mod = clamp(2.0 * (ior - 1.0), 0.0, 1.0);
-        #else
-            var f90Mod = 1.0;
-        #endif
-        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90 * f90Mod);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);

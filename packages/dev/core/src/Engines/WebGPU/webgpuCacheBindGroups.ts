@@ -187,8 +187,9 @@ export class WebGPUCacheBindGroups {
                         entries[j].resource = this._cacheSampler.getSampler(sampler, false, bindingInfo.hashCode, sampler.label);
                     } else {
                         Logger.Error(
-                            `Sampler "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) =>
-                                key === "texture" || key === "sampler" ? "<no dump>" : value
+                            `Sampler "${name}" not found in the material context. Make sure you bound it. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(
+                                materialContext,
+                                (key: string, value: any) => (key === "texture" || key === "sampler" ? "<no dump>" : value)
                             )}`,
                             50
                         );
@@ -225,8 +226,9 @@ export class WebGPUCacheBindGroups {
                         entries[j].resource = entry.storageTexture ? hardwareTexture.viewForWriting! : hardwareTexture.view!;
                     } else {
                         Logger.Error(
-                            `Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) =>
-                                key === "texture" || key === "sampler" ? "<no dump>" : value
+                            `Texture "${name}" not found in the material context. Make sure you bound it (something like effect.setTexture("${name}", texture)). entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(
+                                materialContext,
+                                (key: string, value: any) => (key === "texture" || key === "sampler" ? "<no dump>" : value)
                             )}`,
                             50
                         );
@@ -260,8 +262,9 @@ export class WebGPUCacheBindGroups {
                         entries[j].resource = this._device.importExternalTexture({ source: externalTexture });
                     } else {
                         Logger.Error(
-                            `Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) =>
-                                key === "texture" || key === "sampler" ? "<no dump>" : value
+                            `External texture "${name}" not found in the material context. Make sure you bound it. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(
+                                materialContext,
+                                (key: string, value: any) => (key === "texture" || key === "sampler" ? "<no dump>" : value)
                             )}`,
                             50
                         );
@@ -274,7 +277,7 @@ export class WebGPUCacheBindGroups {
                         (entries[j].resource as GPUBufferBinding).size = dataBuffer.capacity;
                     } else {
                         Logger.Error(
-                            `Can't find buffer "${name}". entry=${JSON.stringify(entry)}, buffers=${JSON.stringify(drawContext.buffers)}, drawContext.uniqueId=${
+                            `Can't find buffer "${name}" in the draw context. Make sure you bound it. entry=${JSON.stringify(entry)}, buffers=${JSON.stringify(drawContext.buffers)}, drawContext.uniqueId=${
                                 drawContext.uniqueId
                             }`,
                             50

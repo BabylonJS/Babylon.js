@@ -45,7 +45,9 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
 
 vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     vec3 diffuseTerm = vec3(1.0 / PI);
-    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+        diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness));
+    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
         diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
     #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
         vec3 clampedAlbedo = clamp(info.surfaceAlbedo, vec3(0.1), vec3(1.0));
@@ -79,7 +81,9 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
     #ifndef SS_TRANSLUCENCY_LEGACY
         }
         vec3 diffuseTerm = vec3(1.0 / PI);
-        #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+        #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+            diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness));
+        #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
             diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
         #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
             vec3 clampedAlbedo = clamp(info.surfaceAlbedo, vec3(0.1), vec3(1.0));
@@ -94,16 +98,10 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 #endif
 
 #ifdef SPECULARTERM
-    vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor, float ior) {
+    vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 fresnel, float geometricRoughnessFactor, vec3 lightColor) {
         float NdotH = saturateEps(dot(N, info.H));
         float roughness = max(info.roughness, geometricRoughnessFactor);
         float alphaG = convertRoughnessToAverageSlope(roughness);
-
-        #ifdef METALLICWORKFLOW
-            // Scale the reflectance by the IOR for values less than 1.5
-            reflectance90 = clamp(reflectance90 * 2.0 * (ior - 1.0), 0.0, 1.0);
-        #endif
-        vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);

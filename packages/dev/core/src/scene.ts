@@ -2522,7 +2522,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns A promise that resolves when the scene is ready
      */
     public async whenReadyAsync(checkRenderTargets = false): Promise<void> {
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this.executeWhenReady(() => {
                 resolve();
             }, checkRenderTargets);
@@ -4932,6 +4932,31 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * @internal
+     */
+    public _renderRenderTarget(renderTarget: RenderTargetTexture, activeCamera: Nullable<Camera>, useCameraPostProcess = false, dumpForDebug = false) {
+        this._intermediateRendering = true;
+        if (renderTarget._shouldRender()) {
+            this._renderId++;
+
+            this.activeCamera = activeCamera;
+
+            if (!this.activeCamera) {
+                throw new Error("Active camera not set");
+            }
+
+            // Viewport
+            this._engine.setViewport(this.activeCamera.viewport);
+
+            // Camera
+            this.updateTransformMatrix();
+
+            renderTarget.render(useCameraPostProcess, dumpForDebug);
+        }
+        this._intermediateRendering = false;
+    }
+
+    /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
@@ -5014,37 +5039,19 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
-            const engine = this.getEngine();
-
             // Customs render targets
             this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
 
             const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
             if (this.renderTargetsEnabled) {
                 Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-                this._intermediateRendering = true;
                 for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
                     const renderTarget = this.customRenderTargets[customIndex];
-                    if (renderTarget._shouldRender()) {
-                        this._renderId++;
+                    const activeCamera = renderTarget.activeCamera || this.activeCamera;
 
-                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
-
-                        if (!this.activeCamera) {
-                            throw new Error("Active camera not set");
-                        }
-
-                        // Viewport
-                        engine.setViewport(this.activeCamera.viewport);
-
-                        // Camera
-                        this.updateTransformMatrix();
-
-                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
-                    }
+                    this._renderRenderTarget(renderTarget, activeCamera, currentActiveCamera !== activeCamera, this.dumpNextRenderTargets);
                 }
                 Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-                this._intermediateRendering = false;
                 this._renderId++;
             }
 
@@ -5845,7 +5852,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         useArrayBuffer?: boolean,
         onOpened?: (request: WebRequest) => void
     ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._loadFile(
                 fileOrUrl,
                 (data) => {
@@ -5855,6 +5862,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 useOfflineSupport,
                 useArrayBuffer,
                 (request, exception) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(exception);
                 },
                 onOpened
@@ -5892,7 +5900,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         useArrayBuffer?: boolean,
         onOpened?: (request: WebRequest) => void
     ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._requestFile(
                 url,
                 (data) => {
@@ -5931,7 +5939,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @internal
      */
     public async _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this._readFile(
                 file,
                 (data) => {

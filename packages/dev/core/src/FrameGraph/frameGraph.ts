@@ -10,6 +10,9 @@ import { Observable } from "core/Misc/observable";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 
+import "core/Engines/Extensions/engine.multiRender";
+import "core/Engines/WebGPU/Extensions/engine.multiRender";
+
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
@@ -229,7 +232,7 @@ export class FrameGraph {
      */
     public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();

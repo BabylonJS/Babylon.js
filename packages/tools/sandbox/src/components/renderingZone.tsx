@@ -1,3 +1,5 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 
@@ -67,7 +69,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     async initEngine() {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
-        const antialias = !this.props.globalState.commerceMode;
+        const antialias = true;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {
@@ -163,13 +165,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 const fileName = (filesToLoad[0] as any).correctName as string;
                 const fileExtension = GetFileExtension(fileName);
                 if (IsTextureAsset(fileExtension)) {
-                    return Promise.resolve(this.loadTextureAsset(`file:${fileName}`));
+                    return await Promise.resolve(this.loadTextureAsset(`file:${fileName}`));
                 }
             }
 
             this._engine.clearInternalTexturesCache();
 
-            return SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
+            return await SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
         };
 
         filesInput.monitorElementForDragNDrop(this._canvas);

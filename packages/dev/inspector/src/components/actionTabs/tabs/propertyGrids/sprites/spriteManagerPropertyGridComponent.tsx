@@ -93,9 +93,11 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
         SpriteManager.ParseFromSnippetAsync(snippedId, scene)
+            // eslint-disable-next-line github/no-then
             .then((newManager) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 alert("Unable to load your sprite manager: " + err);
             });
@@ -117,6 +119,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     }
                     this.forceUpdate();
                     if (navigator.clipboard) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         navigator.clipboard.writeText(spriteManager.snippetId);
                     }
 

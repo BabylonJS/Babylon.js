@@ -88,6 +88,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         const size = texture.getSize();
 
         if (!this._imageData) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             TextureHelper.GetTextureDataAsync(texture, size.width, size.height, 0, { R: true, G: true, B: true, A: true }, this.props.globalState).then((data) => {
                 this._imageData = data;
                 this.forceUpdate();

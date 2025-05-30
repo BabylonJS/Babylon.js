@@ -183,12 +183,19 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             ${state._declareLocalVar("vTintColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${refractionTintAtDistance});
             ${state._declareLocalVar("vSubSurfaceIntensity", NodeMaterialBlockConnectionPointTypes.Vector3)} = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
             ${state._declareLocalVar("dispersion", NodeMaterialBlockConnectionPointTypes.Float)} = ${dispersion};
+            #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                vec3 vSpecularEnvironmentReflectance = vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)));
+            #endif
             subSurfaceOut = subSurfaceBlock(
                 vSubSurfaceIntensity
                 , vThicknessParam
                 , vTintColor
                 , normalW
-                , specularEnvironmentReflectance
+            #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                , vSpecularEnvironmentReflectance
+            #else
+                , baseSpecularEnvironmentReflectance
+            #endif
             #ifdef SS_THICKNESSANDMASK_TEXTURE
                 , vec4${state.fSuffix}(0.)
             #endif
@@ -282,7 +289,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
             #endif
         #else
-            subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+            subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
         #endif\n`;
 
         return code;

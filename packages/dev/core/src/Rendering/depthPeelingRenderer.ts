@@ -631,7 +631,7 @@ export class DepthPeelingRenderer {
     }
 
     /**
-     * Disposes the depth peeling renderer and associated ressources
+     * Disposes the depth peeling renderer and associated resources
      */
     public dispose() {
         this._disposeTextures();

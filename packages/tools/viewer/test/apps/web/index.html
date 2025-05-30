@@ -136,7 +136,7 @@
         <div class="button-container">
             <button onclick="onOpenFile()">Open File</button>
             <button onclick="onToggleDOM()">Toggle DOM</button>
-            <button onclick="onToggleEngine()">Toggle Engine</button>
+            <button id="engine-button" onclick="onToggleEngine()">Toggle Engine</button>
             <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
@@ -147,11 +147,11 @@
             <button onClick="resetModel()">Reset Model</button>
             <div>
                 <span>Environment Intensity</span>
-                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" oninput="onEnvironmentIntensity()" />
+                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
             </div>
             <div>
                 <span>Rotate Environment</span>
-                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" oninput="onEnvironmentRotation()" />
+                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" value="0" oninput="onEnvironmentRotation()" />
             </div>
             <div>
                 <span>Environment Blur</span>
@@ -159,7 +159,15 @@
             </div>
             <div>
                 <span>Environment Visibility</span>
-                <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
+                <input type="checkbox" id="environmentVisibilityInput" oninput="onEnvironmentVisibility()" />
+            </div>
+            <div>
+                <span>Shadows Quality</span>
+                <select id="shadowQualityInput" checked oninput="onShadowQuality()">
+                    <option value="none">None</option>
+                    <option value="normal">Normal (shadow map)</option>
+                    <option value="high">High (environment shadow)</option>
+                </select>
             </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
@@ -182,6 +190,9 @@
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
                 viewerDetails.viewer.showDebugLogs = true;
+
+                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
+
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
@@ -284,6 +295,7 @@
             };
 
             globalThis.onToggleEngine = () => {
+                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine} engine`;
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             };
 
@@ -361,7 +373,12 @@
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { visible: checked };
+                checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+            };
+            globalThis.onShadowQuality = () => {
+                const value = document.querySelector("#shadowQualityInput").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.updateShadows({ quality: value });
             };
         </script>
     </body>

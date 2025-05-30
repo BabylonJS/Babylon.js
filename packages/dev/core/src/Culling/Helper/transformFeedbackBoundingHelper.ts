@@ -39,6 +39,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         if (!Array.isArray(meshes)) {
             meshes = [meshes];
@@ -208,6 +209,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
         if (!Array.isArray(meshes)) {
             meshes = [meshes];
@@ -230,6 +232,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public fetchResultsForMeshListAsync(): Promise<void> {
         this._meshListCounter = 0;
 

@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { Vector2 } from "core/Maths/math.vector";
+import type { IVector2Like } from "core/Maths";
 
 /** @internal */
 export type ParagraphOptions = {
@@ -10,7 +10,7 @@ export type ParagraphOptions = {
     tabSize: number;
     whiteSpace: /* 'normal' | 'nowrap' | 'pre' | 'pre-wrap' | */ "pre-line" /* | 'break-spaces'*/;
     textAlign: "left" | "right" | "center" /* | 'justify'*/;
-    translate: Vector2 | undefined;
+    translate: IVector2Like | undefined;
 };
 
 /** @internal */
@@ -21,5 +21,5 @@ export const DefaultParagraphOptions: ParagraphOptions = {
     tabSize: 4,
     whiteSpace: "pre-line",
     textAlign: "center",
-    translate: new Vector2(-0.5, -0.5),
+    translate: { x: -0.5, y: -0.5 },
 };

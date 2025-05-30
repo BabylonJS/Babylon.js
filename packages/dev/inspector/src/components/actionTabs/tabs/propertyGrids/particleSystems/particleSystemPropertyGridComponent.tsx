@@ -43,6 +43,7 @@ import { Color4LineComponent } from "shared-ui-components/lines/color4LineCompon
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { AttractorsGridComponent } from "./attractorsGridComponent";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -245,9 +246,11 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
         ParticleHelper.ParseFromSnippetAsync(snippedId, scene, isGpu)
+            // eslint-disable-next-line github/no-then
             .then((newSystem) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 alert("Unable to load your particle system: " + err);
             });
@@ -269,6 +272,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     }
                     this.forceUpdate();
                     if (navigator.clipboard) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         navigator.clipboard.writeText(system.snippetId);
                     }
 
@@ -430,6 +434,11 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
+                {system instanceof ParticleSystem && (
+                    <LineContainerComponent title="ATTRACTORS" closed={true} selection={this.props.globalState}>
+                        <AttractorsGridComponent globalState={this.props.globalState} host={system} lockObject={this.props.lockObject} />
+                    </LineContainerComponent>
+                )}
                 <LineContainerComponent title="EMITTER" closed={true} selection={this.props.globalState}>
                     <OptionsLine
                         label="Emitter"
@@ -592,6 +601,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="maxEmitPower"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+
                     <ValueGradientGridComponent
                         globalState={this.props.globalState}
                         gradients={system.getVelocityGradients()}
@@ -624,6 +634,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         codeRecorderPropertyName="getLimitVelocityGradients()"
                         lockObject={this.props.lockObject}
                     />
+                    {system.getLimitVelocityGradients() && system.getLimitVelocityGradients()!.length > 0 && (
+                        <FloatLineComponent
+                            lockObject={this.props.lockObject}
+                            label="Limit Velocity Damping"
+                            target={system}
+                            propertyName="limitVelocityDamping"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
                     <ValueGradientGridComponent
                         globalState={this.props.globalState}
                         gradients={system.getDragGradients()}

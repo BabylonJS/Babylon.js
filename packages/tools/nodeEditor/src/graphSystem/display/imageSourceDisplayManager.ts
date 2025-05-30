@@ -40,6 +40,7 @@ export class ImageSourceDisplayManager implements IDisplayManager {
         }
 
         if (imageSourceBlock.texture) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             TextureLineComponent.UpdatePreview(
                 this._previewCanvas,
                 imageSourceBlock.texture,

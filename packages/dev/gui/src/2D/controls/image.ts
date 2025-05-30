@@ -566,8 +566,9 @@ export class Image extends Control {
 
         // Should abstract platform instead of using LastCreatedEngine
         const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
+        // If no engine, skip all other DOM operations.
         if (!engine) {
-            throw new Error("Invalid engine. Unable to create a canvas.");
+            return;
         }
         if (value && Image.SourceImgCache.has(value)) {
             const cachedData = Image.SourceImgCache.get(value)!;
@@ -625,6 +626,11 @@ export class Image extends Control {
      * @returns the svg
      */
     private _svgCheck(value: string): string {
+        // Skip SVG processing if no window/document or SVG support
+        if (typeof window === "undefined" || typeof document === "undefined" || !window.SVGSVGElement) {
+            return value;
+        }
+
         if (window.SVGSVGElement && value.search(/(\.svg|\.svg?[?|#].*)$/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
             const svgsrc = value.split("#")[0];

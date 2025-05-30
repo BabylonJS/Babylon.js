@@ -274,7 +274,7 @@ export class PrePassRenderer {
     public renderTargets: PrePassRenderTarget[] = [];
 
     private readonly _clearColor = new Color4(0, 0, 0, 0);
-    private readonly _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
+    private readonly _clearDepthColor = new Color4(0, 0, 0, 1); //  // sets an invalid value by default - depth in the depth texture is view.z, so 0 is not possible because view.z can't be less than camera.minZ
 
     private _enabled: boolean = false;
 
@@ -634,6 +634,9 @@ export class PrePassRenderer {
         }
 
         this._effectConfigurations.push(cfg);
+        if (cfg.clearColor) {
+            this._clearColor.copyFrom(cfg.clearColor);
+        }
         return cfg;
     }
 

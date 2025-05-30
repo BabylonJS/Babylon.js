@@ -3,7 +3,7 @@ import { test, Page, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export type AudioContextType = "Realtime" | "Offline";
-export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "StaticSound" | "StreamingSound";
+export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "SoundSource" | "StaticSound" | "StreamingSound";
 export type SoundType = "StaticSound" | "StreamingSound";
 
 export const enum Channel {
@@ -52,7 +52,7 @@ declare global {
             audioNodeType: AudioNodeType,
             source: string | string[],
             options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions> | Partial<BABYLON.IAudioBusOptions>
-        ): Promise<{ sound: BABYLON.AbstractSound; outputNode: { spatial: BABYLON.AbstractSpatialAudio; stereo: BABYLON.AbstractStereoAudio; volume: number } }>;
+        ): Promise<{ sound: { play(): void; stop(): void }; outputNode: { spatial: BABYLON.AbstractSpatialAudio; stereo: BABYLON.AbstractStereoAudio; volume: number } }>;
         public static CreateAbstractSoundAsync(
             soundType: SoundType,
             source: string | string[],
@@ -64,6 +64,7 @@ declare global {
             options?: Partial<BABYLON.IWebAudioEngineOptions>
         ): Promise<BABYLON.AudioEngineV2>;
         public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
+        public static CreateSoundSourceAsync(source: string, options?: Partial<BABYLON.ISoundSourceOptions>): Promise<BABYLON.AbstractSoundSource>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
         public static GetPulseCountsAsync(): Promise<number[][]>;
         public static GetResultAsync(): Promise<AudioTestResult>;

@@ -1678,6 +1678,7 @@ export abstract class AbstractEngine {
                 this._loadFile(
                     url,
                     (data) => {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         callbackAsync(new Uint8Array(data as ArrayBuffer));
                     },
                     undefined,
@@ -1689,8 +1690,10 @@ export abstract class AbstractEngine {
                 );
             } else {
                 if (buffer instanceof ArrayBuffer) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     callbackAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     callbackAsync(buffer);
                 } else {
                     if (onError) {
@@ -1893,14 +1896,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.7.0";
+        return "babylonjs@8.10.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.7.0";
+        return "8.10.0";
     }
 
     /**

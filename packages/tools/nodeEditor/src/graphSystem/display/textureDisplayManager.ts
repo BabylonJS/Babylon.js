@@ -62,6 +62,7 @@ export class TextureDisplayManager implements IDisplayManager {
         }
 
         if (textureBlock.texture) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             TextureLineComponent.UpdatePreview(
                 this._previewCanvas,
                 textureBlock.texture,

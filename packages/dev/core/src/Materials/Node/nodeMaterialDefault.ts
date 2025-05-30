@@ -13,6 +13,7 @@ import { Texture } from "../Textures/texture";
 import { Tools } from "core/Misc/tools";
 import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
 import { Color4 } from "core/Maths/math.color";
+import { AddBlock } from "./Blocks/addBlock";
 
 /**
  * Clear the material and set it to a default state for gaussian splatting
@@ -56,13 +57,19 @@ export function SetToDefaultGaussianSplatting(nodeMaterial: NodeMaterial): void 
     view.connectTo(gs, { input: "view" });
     projection.connectTo(gs, { input: "projection" });
 
+    const addBlock = new AddBlock("Add SH");
+
     // from color to gaussian color
     const gaussian = new GaussianBlock("Gaussian");
     splatReader.connectTo(gaussian, { input: "splatColor", output: "splatColor" });
 
     // fragment and vertex outputs
     const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-    gaussian.connectTo(fragmentOutput);
+
+    gs.SH.connectTo(addBlock.left);
+    gaussian.rgb.connectTo(addBlock.right);
+    addBlock.output.connectTo(fragmentOutput.rgb);
+    gaussian.alpha.connectTo(fragmentOutput.a);
 
     const vertexOutput = new VertexOutputBlock("VertexOutput");
     gs.connectTo(vertexOutput);
