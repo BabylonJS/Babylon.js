@@ -111,6 +111,7 @@ import { StorageWriteBlock } from "core/Materials/Node/Blocks/storageWriteBlock"
 import { MatrixSplitterBlock } from "core/Materials/Node/Blocks/matrixSplitterBlock";
 import { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
 import { IridescenceBlock } from "core/Materials/Node/Blocks/PBR/iridescenceBlock";
+import { SmartFilterTextureBlock } from "core/Materials/Node/Blocks/Dual/smartFilterTextureBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -700,6 +701,8 @@ export class BlockTools {
                 return new GaussianBlock("Gaussian");
             case "SplatReaderBlock":
                 return new SplatReaderBlock("SplatReader");
+            case "SmartFilterTextureBlock":
+                return new SmartFilterTextureBlock("SmartFilterTexture");
         }
 
         return null;

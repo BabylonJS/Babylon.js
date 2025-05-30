@@ -34,6 +34,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ReflectionBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["RefractionBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["CurrentScreenBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["SmartFilterTextureBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTextureBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["TriPlanarBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["BiPlanarBlock"] = TextureDisplayManager;
