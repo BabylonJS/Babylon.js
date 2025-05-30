@@ -501,7 +501,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
                 delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassTextureBlock"), 1);
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.PostProcess:
