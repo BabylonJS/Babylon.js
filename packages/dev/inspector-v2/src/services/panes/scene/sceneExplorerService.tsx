@@ -37,25 +37,77 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      */
     order?: number;
 
+    /**
+     * A function that returns the root entities for this section.
+     */
     getRootEntities: (scene: Scene) => readonly T[];
+
+    /**
+     * An optional function that returns the children of a given entity.
+     */
     getEntityChildren?: (entity: T) => readonly T[];
+
+    /**
+     * A function that returns the display name for a given entity.
+     */
     getEntityDisplayName: (entity: T) => string;
+
+    /**
+     * An optional icon component to render for the entity.
+     */
     entityIcon?: ComponentType<{ entity: T }>;
+
+    /**
+     * A function that watches for changes in the scene and calls the provided callbacks when entities are added or removed.
+     */
     watch: (scene: Scene, onAdded: (entity: T) => void, onRemoved: (entity: T) => void) => IDisposable;
 }>;
 
 export type SceneExplorerEntityCommand<T extends EntityBase> = Readonly<{
-    order: number;
+    /**
+     * An optional order for the section, relative to other commands.
+     * Defaults to 0.
+     */
+    order?: number;
+
+    /**
+     * A predicate function that determines if the command is applicable to the given entity.
+     */
     predicate: (entity: unknown) => entity is T;
+
+    /**
+     * The function that executes the command on the given entity.
+     */
     execute: (scene: Scene, entity: T) => void;
+
+    /**
+     * The display name of the command (e.g. "Delete", "Rename", etc.).
+     */
     displayName: string;
+
+    /**
+     * An icon component to render for the command.
+     */
     icon: ComponentType<{ entity: T }>;
 }>;
 
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
+
+/**
+ * Provides a scene explorer pane that enables browsing the scene graph and executing commands on entities.
+ */
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
+    /**
+     * Adds a new section (e.g. "Nodes", "Materials", etc.) (this includes all descendants within the scene graph).
+     * @param section A description of the section to add.
+     */
     addSection<T extends EntityBase>(section: SceneExplorerSection<T>): IDisposable;
-    addCommand<T extends EntityBase>(provider: SceneExplorerEntityCommand<T>): IDisposable;
+
+    /**
+     * Adds a new command (e.g. "Delete", "Rename", etc.) that can be executed on entities in the scene explorer.
+     * @param command A description of the command to add.
+     */
+    addCommand<T extends EntityBase>(command: SceneExplorerEntityCommand<T>): IDisposable;
 }
 
 type TreeItemData =

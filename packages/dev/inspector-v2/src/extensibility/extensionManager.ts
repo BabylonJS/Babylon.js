@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
-import type { ServiceContainer } from "../modularity/serviceCatalog";
+import type { ServiceContainer } from "../modularity/serviceContainer";
 import type { IExtensionFeed, ExtensionMetadata, ExtensionModule } from "./extensionFeed";
 
 import { Logger } from "core/Misc/logger";

@@ -12,6 +12,9 @@ const CreationToolsExtensionMetadata = {
 
 const Extensions: readonly ExtensionMetadata[] = [CreationToolsExtensionMetadata];
 
+/**
+ * @internal
+ */
 export class BuiltInsExtensionFeed implements IExtensionFeed {
     public readonly name = "Built-ins";
 

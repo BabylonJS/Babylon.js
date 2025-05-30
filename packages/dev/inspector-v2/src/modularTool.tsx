@@ -4,7 +4,7 @@ import type { IDisposable } from "core/index";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
 import type { IExtension } from "./extensibility/extensionManager";
-import type { WeaklyTypedServiceDefinition } from "./modularity/serviceCatalog";
+import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
 
 import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
@@ -17,7 +17,7 @@ import { Deferred } from "core/Misc/deferred";
 
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
-import { ServiceContainer } from "./modularity/serviceCatalog";
+import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
@@ -114,23 +114,6 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
                 // Register all external services (that make up a unique tool).
                 await serviceContainer.addServicesAsync(...serviceDefinitions);
-
-                // Dynamically load entire modules for shared dependencies since we can't know what parts a dynamic extension might use.
-                // TODO: Try to replace this with import maps.
-                // TODO: Re-enable this when we want to support dynamic extensions.
-                const externalDependencies = new Map<string, unknown>([
-                    // // eslint-disable-next-line import/no-internal-modules
-                    // ["@babylonjs/inspector", await import("./index")],
-                    // ["@babylonjs/core", await import("@dev/core")],
-                    // ["@babylonjs/loaders", await import("@dev/loaders")],
-                    // ["@babylonjs/materials", await import("@dev/materials")],
-                    // // ["@babylonjs/viewer", await import("@tools/viewer")],
-                    // ["@fluentui/react-components", await import("@fluentui/react-components")],
-                    // ["@fluentui/react-icons", await import("@fluentui/react-icons")],
-                    // ["react", await import("react")],
-                    // ["react-dom", await import("react-dom")],
-                    // ["react/jsx-runtime", await import("react/jsx-runtime")],
-                ]);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
                 const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds);

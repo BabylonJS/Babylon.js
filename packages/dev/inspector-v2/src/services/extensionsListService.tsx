@@ -18,7 +18,6 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
-    Divider,
     makeStyles,
     Spinner,
     Tab,
@@ -88,8 +87,6 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
 
     const [canInstall, setCanInstall] = useState(false);
     const [canUninstall, setCanUninstall] = useState(false);
-    const [canEnable, setCanEnable] = useState(false);
-    const [canDisable, setCanDisable] = useState(false);
     const [isStateChanging, setIsStateChanging] = useState(false);
 
     useEffect(() => {
@@ -97,8 +94,6 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
         const updateState = () => {
             setCanInstall(!extension.isInstalled && !extension.isStateChanging);
             setCanUninstall(extension.isInstalled && !extension.isStateChanging);
-            setCanEnable(extension.isInstalled && !extension.isInstalled && !extension.isStateChanging);
-            setCanDisable(extension.isInstalled && !extension.isStateChanging);
             setIsStateChanging(extension.isStateChanging);
         };
 

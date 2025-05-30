@@ -1,4 +1,4 @@
-import type { WeaklyTypedServiceDefinition } from "../modularity/serviceCatalog";
+import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 
 export type ExtensionMetadata = {
     /**

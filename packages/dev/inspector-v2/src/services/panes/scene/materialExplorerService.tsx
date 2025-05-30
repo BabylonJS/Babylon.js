@@ -8,7 +8,7 @@ import { PaintBrushRegular } from "@fluentui/react-icons";
 
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const MaterialHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
     friendlyName: "Material Hierarchy",
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {

@@ -12,10 +12,10 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
-import { MaterialHierarchyServiceDefinition } from "./services/panes/hierarchy/materialHierarchyService";
-import { NodeHierarchyServiceDefinition } from "./services/panes/hierarchy/nodeHierarchyService";
-import { SceneExplorerServiceDefinition } from "./services/panes/hierarchy/sceneExplorerService";
-import { TextureHierarchyServiceDefinition } from "./services/panes/hierarchy/texturesHierarchyService";
+import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
+import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/common/commonPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mesh/meshPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
@@ -154,6 +154,25 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         // TODO
     }
 
+    const bottomToolbarTestServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+        friendlyName: "Bottom Toolbar Test",
+        consumes: [ShellServiceIdentity],
+        factory: (shellService) => {
+            const registration = shellService.addToolbarItem({
+                key: "Bottom Toolbar Test",
+                horizontalLocation: "right",
+                verticalLocation: "bottom",
+                component: () => {
+                    return "test";
+                },
+            });
+
+            return {
+                dispose: () => registration.dispose(),
+            };
+        },
+    };
+
     const modularTool = MakeModularTool({
         containerElement: parentElement,
         serviceDefinitions: [
@@ -166,7 +185,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
-            MaterialHierarchyServiceDefinition,
+            MaterialExplorerServiceDefinition,
             TextureHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
@@ -191,6 +210,8 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
+
+            bottomToolbarTestServiceDefinition,
         ],
         isThemeable: options.isThemeable ?? true,
         extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
