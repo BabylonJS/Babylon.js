@@ -255,7 +255,6 @@ export class TargetCamera extends Camera {
      * @param target Defines the new target as a Vector
      */
     public setTarget(target: Vector3): void {
-        // REVIEW: why is this here?
         this.upVector.normalize();
 
         this._initialFocalDistance = target.subtract(this.position).length();
