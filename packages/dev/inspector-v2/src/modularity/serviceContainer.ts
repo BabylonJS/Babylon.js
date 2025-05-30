@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
 
-import type { ContractIdentity, IService, ServiceDefinition } from "./serviceDefinition";
+import type { IService, ServiceDefinition } from "./serviceDefinition";
 
 import { SortGraph } from "../misc/graphUtils";
 
-export type WeaklyTypedServiceDefinition = Omit<ServiceDefinition<IService<ContractIdentity>[] | [], IService<ContractIdentity>[] | []>, "factory"> & {
+export type WeaklyTypedServiceDefinition = Omit<ServiceDefinition<IService<symbol>[] | [], IService<symbol>[] | []>, "factory"> & {
     /**
      * A factory function responsible for creating a service instance.
      */
-    factory: (...args: any) => ReturnType<ServiceDefinition<IService<ContractIdentity>[] | [], IService<ContractIdentity>[] | []>["factory"]>;
+    factory: (...args: any) => ReturnType<ServiceDefinition<IService<symbol>[] | [], IService<symbol>[] | []>["factory"]>;
 };
 
 function SortServiceDefinitions(serviceDefinitions: WeaklyTypedServiceDefinition[]) {
@@ -35,7 +35,7 @@ function SortServiceDefinitions(serviceDefinitions: WeaklyTypedServiceDefinition
  */
 export class ServiceContainer implements IDisposable {
     private _isDisposed = false;
-    private readonly _serviceDefinitions = new Map<ContractIdentity, WeaklyTypedServiceDefinition>();
+    private readonly _serviceDefinitions = new Map<symbol, WeaklyTypedServiceDefinition>();
     private readonly _serviceDependents = new Map<WeaklyTypedServiceDefinition, Set<WeaklyTypedServiceDefinition>>();
     private readonly _serviceInstances = new Map<WeaklyTypedServiceDefinition, (IService<symbol> & Partial<IDisposable>) | void>();
 
@@ -87,7 +87,7 @@ export class ServiceContainer implements IDisposable {
      * @param abortSignal An optional abort signal.
      * @returns A disposable that will remove the service definition from the service container.
      */
-    public async addServiceAsync<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []>(
+    public async addServiceAsync<Produces extends IService<symbol>[] = [], Consumes extends IService<symbol>[] = []>(
         serviceDefinition: ServiceDefinition<Produces, Consumes>,
         abortSignal?: AbortSignal
     ): Promise<IDisposable> {

@@ -10,23 +10,21 @@ export function ConstructorFactory<Class extends new (...args: any) => any>(cons
     return (...args: ConstructorParameters<Class>) => new constructor(...args);
 }
 
-export type ContractIdentity = symbol;
-
 // This allows us to map from a service contract back to a contract identity.
 const Contract = Symbol();
 /**
  * This interface must be implemented by all service contracts.
  */
-export interface IService<ServiceContractIdentity extends ContractIdentity> {
+export interface IService<ContractIdentity extends symbol> {
     /**
      * @internal
      */
-    readonly [Contract]?: ServiceContractIdentity;
+    readonly [Contract]?: ContractIdentity;
 }
 
-type ExtractContractIdentity<ServiceContract extends IService<ContractIdentity>> = ServiceContract extends IService<infer ContractIdentity> ? ContractIdentity : never;
+type ExtractContractIdentity<ServiceContract extends IService<symbol>> = ServiceContract extends IService<infer ContractIdentity> ? ContractIdentity : never;
 
-type ExtractContractIdentities<ServiceContracts extends IService<ContractIdentity>[]> = {
+type ExtractContractIdentities<ServiceContracts extends IService<symbol>[]> = {
     [Index in keyof ServiceContracts]: ExtractContractIdentity<ServiceContracts[Index]>;
 };
 
@@ -39,14 +37,14 @@ type MaybePromise<T> = T | Promise<T>;
  * Consumed services are passed as arguments to the factory function.
  * The returned value must implement all produced services.
  */
-export type ServiceFactory<Produces extends IService<ContractIdentity>[], Consumes extends IService<ContractIdentity>[]> = (
+export type ServiceFactory<Produces extends IService<symbol>[], Consumes extends IService<symbol>[]> = (
     ...dependencies: [...Consumes, abortSignal?: AbortSignal]
 ) => MaybePromise<Produces extends [] ? Partial<IDisposable> | void : Partial<IDisposable> & UnionToIntersection<Produces[number]>>;
 
 /**
  * Defines a service, which is a logical unit that consumes other services (dependencies), and optionally produces services that can be consumed by other services (dependents).
  */
-export type ServiceDefinition<Produces extends IService<ContractIdentity>[] = [], Consumes extends IService<ContractIdentity>[] = []> = {
+export type ServiceDefinition<Produces extends IService<symbol>[] = [], Consumes extends IService<symbol>[] = []> = {
     /**
      * A human readable name for the service to help with debugging.
      */
