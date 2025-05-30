@@ -533,7 +533,7 @@ export class InputBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state._emitUniformFromString(this._associatedVariableName, this.type, undefined, undefined, JSON.stringify(this.valueCallback?.() ?? this.value));
+            state._emitUniformFromString(this._associatedVariableName, this.type);
 
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
                 this._prefix = "uniforms.";

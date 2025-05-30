@@ -9,7 +9,6 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { Process } from "core/Engines/Processors/shaderProcessor";
 import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
-// import type { Nullable } from "core/types";
 
 /**
  * Class used to store node based material build state
@@ -614,7 +613,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false, currentValue?: string) {
+    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
         }

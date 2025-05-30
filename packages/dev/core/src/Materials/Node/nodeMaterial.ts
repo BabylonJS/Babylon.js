@@ -1277,9 +1277,6 @@ export class NodeMaterial extends PushMaterial {
         const defines = new NodeMaterialDefines();
 
         const dummyMesh = new Mesh(tempName + "PostProcess", this.getScene());
-        dummyMesh.reservedDataStore = {
-            hidden: true,
-        };
 
         let buildId = this._buildId;
 
