@@ -12,8 +12,6 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
 import { GetClass } from "../Misc/typeStore";
 
-const ConvertRHSToLHS = Matrix.Compose(Vector3.One(), Quaternion.FromEulerAngles(0, Math.PI, 0), Vector3.Zero());
-
 /**
  * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
@@ -1232,10 +1230,6 @@ export class TransformNode extends Node {
 
             // Cancel camera rotation
             TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
-
-            if (this._scene.useRightHandedSystem) {
-                TmpVectors.Matrix[1].multiplyToRef(ConvertRHSToLHS, TmpVectors.Matrix[1]);
-            }
 
             TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
             TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);

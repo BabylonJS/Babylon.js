@@ -21,6 +21,7 @@ import type { ImageProcessingConfiguration } from "../imageProcessingConfigurati
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
+import { SfeModeDefine } from "./Blocks/Dual/smartFilterTextureBlock";
 import { TransformBlock } from "./Blocks/transformBlock";
 import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
@@ -316,6 +317,7 @@ export class NodeMaterial extends PushMaterial {
             block.getClassName() === "ReflectionBlock" ||
             block.getClassName() === "RefractionBlock" ||
             block.getClassName() === "CurrentScreenBlock" ||
+            block.getClassName() === "SmartFilterTextureBlock" ||
             block.getClassName() === "ParticleTextureBlock" ||
             block.getClassName() === "ImageSourceBlock" ||
             block.getClassName() === "TriPlanarBlock" ||
@@ -1848,7 +1850,12 @@ export class NodeMaterial extends PushMaterial {
             this.build();
         }
 
-        return await this._fragmentCompilationState.getProcessedShaderAsync();
+        let processingDefines = "";
+        if (this.mode === NodeMaterialModes.SFE) {
+            processingDefines += `#define ${SfeModeDefine}\n`;
+        }
+
+        return await this._fragmentCompilationState.getProcessedShaderAsync(processingDefines);
     }
 
     /**

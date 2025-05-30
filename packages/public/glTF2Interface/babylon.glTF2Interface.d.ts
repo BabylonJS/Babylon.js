@@ -1127,6 +1127,21 @@ declare module BABYLON.GLTF2 {
         specularColorFactor?: number[];
         specularTexture?: ITextureInfo;
         specularColorTexture?: ITextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /**
+     * Interfaces from the EXT_materials_specular_edge_color extension
+     */
+
+    /** @internal */
+    interface IEXTMaterialsSpecularEdgeColor {
+        specularEdgeColorEnabled?: boolean;
     }
 
     /**

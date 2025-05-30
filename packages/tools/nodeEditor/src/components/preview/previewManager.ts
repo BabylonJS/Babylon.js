@@ -681,11 +681,11 @@ export class PreviewManager {
 
                     this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
 
-                    const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
+                    const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock) as Nullable<CurrentScreenBlock>;
                     if (currentScreen && this._postprocess) {
                         this._postprocess.externalTextureSamplerBinding = true;
                         this._postprocess.onApplyObservable.add((effect) => {
-                            effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
+                            effect.setTexture(currentScreen.samplerName, currentScreen.texture);
                         });
                     }
 
