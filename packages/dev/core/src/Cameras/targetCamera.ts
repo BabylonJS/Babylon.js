@@ -263,7 +263,7 @@ export class TargetCamera extends Camera {
             this.position.z += Epsilon;
         }
 
-        this._referencePoint.scaleInPlace(this._initialFocalDistance);
+        this._referencePoint.normalize().scaleInPlace(this._initialFocalDistance);
 
         if (this.getScene().useRightHandedSystem) {
             Matrix.LookAtRHToRef(this.position, target, Vector3.UpReadOnly, TmpMatrix);
