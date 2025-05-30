@@ -9,6 +9,7 @@ type CommonEntity = {
 
 export const CommonGeneralProperties: FunctionComponent<{ entity: CommonEntity }> = ({ entity: commonEntity }) => {
     return (
+        // TODO: Use the new Fluent property line shared components.
         <>
             {commonEntity.id !== undefined && <div key="EntityId">ID: {commonEntity.id}</div>}
             {commonEntity.name !== undefined && <div key="EntityName">Name: {commonEntity.name}</div>}

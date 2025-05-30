@@ -16,7 +16,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[], [IShellService]> =
             horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
-                return <></>;
+                return <>Not yet implemented.</>;
             },
         });
 

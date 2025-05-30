@@ -41,6 +41,7 @@ export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions 
 }
 
 function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>) {
+    // TODO: Lots more work to do to respect all the Inspector v1 options.
     options = {
         overlay: false,
         showExplorer: true,
@@ -89,14 +90,12 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     const canvasContainerChildren: ChildNode[] = [];
 
     canvasContainerChildren.push(...parentElement.childNodes);
-    // while (parentElement.childElementCount > 0) {
-    //     canvasContainerChildren.push(parentElement.removeChild(parentElement.childNodes[0]));
-    // }
 
     disposeActions.push(() => {
         canvasContainerChildren.forEach((child) => parentElement.appendChild(child));
     });
 
+    // This service is responsible for injecting the passed in canvas as the "central content" of the shell UI (the main area between the side panes and toolbars).
     const canvasInjectorServiceDefinition: ServiceDefinition<[], [IShellService]> = {
         friendlyName: "Canvas Injector",
         consumes: [ShellServiceIdentity],
@@ -134,6 +133,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         },
     };
 
+    // This service exposes the scene that was passed into Inspector through ISceneContext, which is used by other services that may be used in other contexts outside of Inspector.
     const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
         friendlyName: "Inspector Scene Context",
         produces: [SceneContextIdentity],

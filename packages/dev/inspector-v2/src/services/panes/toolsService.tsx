@@ -16,7 +16,7 @@ export const ToolsServiceDefinition: ServiceDefinition<[], [IShellService]> = {
             horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
-                return <></>;
+                return <>Not yet implemented.</>;
             },
         });
 

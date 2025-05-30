@@ -18,6 +18,7 @@ const useStyles = makeStyles({
     },
 });
 
+// TODO: This is just a placeholder for a dynamically installed extension that brings in asset creation tools (node materials, etc.).
 export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext]> = {
     friendlyName: "Creation Tools",
     consumes: [ShellServiceIdentity, SceneContextIdentity],
@@ -30,9 +31,8 @@ export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellServic
             content: () => {
                 const classes = useStyles();
 
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                // eslint-disable-next-line no-console
-                console.log(`Creation tools for ${scene}`);
 
                 return (
                     <>
