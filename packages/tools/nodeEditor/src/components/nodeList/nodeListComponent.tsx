@@ -198,6 +198,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StorageWriteBlock: "Block used to write to a loop storage variable",
         MatrixSplitterBlock: "Block used to split a matrix into Vector4",
         DebugBlock: "Block used to render intermediate debug values",
+        SmartFilterTextureBlock: "Block used to add a Smart Filter Effect (SFE) shader interface",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -464,7 +465,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleTextureMaskBlock",
                 "ParticleUVBlock",
             ],
-            SFE: ["ScreenUVBlock"],
+            SFE: ["ScreenUVBlock", "SmartFilterTextureBlock"],
             GaussianSplatting: ["GaussianSplattingBlock", "SplatIndexBlock", "SplatReaderBlock", "GaussianBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "IridescenceBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
@@ -500,6 +501,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
                 delete allBlocks["GaussianSplatting"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassTextureBlock"), 1);
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.PostProcess:
