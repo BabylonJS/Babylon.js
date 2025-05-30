@@ -1185,6 +1185,15 @@ export class TransformNode extends Node {
                 }
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
+            } else {
+                if (this._transformToBoneReferal) {
+                    const bone = this.parent as Bone;
+                    bone.getSkeleton().prepare();
+                    this._localMatrix.multiplyToRef(bone.getFinalMatrix(), TmpVectors.Matrix[6]);
+                    TmpVectors.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                } else {
+                    this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);
+                }
             }
             this._markSyncedWithParent();
         } else {
