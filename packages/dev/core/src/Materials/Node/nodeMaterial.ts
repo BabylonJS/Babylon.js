@@ -1850,11 +1850,7 @@ export class NodeMaterial extends PushMaterial {
             this.build();
         }
 
-        const nmeDefines = new NodeMaterialDefines();
-        const dummyMesh = new Mesh("Dummy", this.getScene());
-        this._processDefines(dummyMesh, nmeDefines);
-
-        let processingDefines = nmeDefines.toString();
+        let processingDefines = "";
         if (this.mode === NodeMaterialModes.SFE) {
             processingDefines += `#define ${SfeModeDefine}\n`;
         }
