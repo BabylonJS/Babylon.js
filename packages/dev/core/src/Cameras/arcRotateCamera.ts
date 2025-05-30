@@ -1394,7 +1394,7 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
             this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
         }
-        this._currentTarget = target;
+        this._currentTarget.copyFrom(target);
         return this._viewMatrix;
     }
 
