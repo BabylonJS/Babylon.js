@@ -103,7 +103,7 @@ const useStyles = makeStyles({
     panelDiv: {
         display: "flex",
         flexDirection: "column",
-                overflow: "hidden",
+        overflow: "hidden",
     },
 });
 
