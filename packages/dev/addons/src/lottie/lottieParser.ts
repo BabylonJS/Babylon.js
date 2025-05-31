@@ -14,11 +14,37 @@ import type {
     RawVectorKeyframe,
     RawVectorProperty,
 } from "./types/rawLottie";
-import type { LottieAnimation, LottieLayer, LottieSprite, ScalarKeyframe, ScalarProperty, Transform, Vector2Keyframe, Vector2Property } from "./types/processedLottie";
+import {
+    LayerUnsuportedType,
+    PropertyInvalidVector2Length,
+    ShapeAnimatedPathProperty,
+    ShapeUnsupportedChildType,
+    ShapeUnsupportedTopLevelType,
+    type LottieAnimation,
+    type LottieLayer,
+    type LottieSprite,
+    type ScalarKeyframe,
+    type ScalarProperty,
+    type Transform,
+    type Vector2Keyframe,
+    type Vector2Property,
+} from "./types/processedLottie";
 import { Color3, Vector2 } from "core/Maths";
 import { BezierCurveEase } from "core/Animations";
-import { MeshBuilder } from "core/Meshes";
-import { StandardMaterial } from "core/Materials";
+import { Mesh, MeshBuilder, TransformNode } from "core/Meshes";
+import { StandardMaterial, Texture } from "core/Materials";
+
+type Textures = {
+    copilot: Texture;
+    excel: Texture;
+    m365: Texture;
+    oneDrive: Texture;
+    oneNote: Texture;
+    outlook: Texture;
+    powerPoint: Texture;
+    swirl: Texture;
+    word: Texture;
+};
 
 /**
  * Class responsible for parsing lottie data
@@ -27,6 +53,7 @@ export class LottieParser {
     private _processedData: LottieAnimation;
     private _errors = new Array<string>();
     private _zIndex = 0;
+    private _textures: Textures | undefined;
 
     /**
      * Creates an instance of LottieParser.
@@ -59,37 +86,40 @@ export class LottieParser {
     /**
      * Processes the loaded Lottie data.
      * @param lottieAsJsonString - The lottie definition data as a string.
+     * @param textures - The textures to use for the lottie animation.
      */
-    public processLottieData(lottieAsJsonString: string): void {
+    public processLottieData(lottieAsJsonString: string, textures: Textures): void {
         const rawData = JSON.parse(lottieAsJsonString) as RawLottieAnimation;
+        this._textures = textures;
+
         this._processedData = {
             startFrame: rawData.ip,
             endFrame: rawData.op,
             frameRate: rawData.fr,
-            layers: [],
+            layers: new Map<number, LottieLayer>(),
         };
 
-        // For now we only support two levels in the layer hierarchy
-        // Process the top level layers (no parents)
+        // Create a map of all the layers by their index
         for (let i = 0; i < rawData.layers.length; i++) {
-            const layer = rawData.layers[i];
-            if (layer.parent === undefined) {
-                this._processLottieParentLayerData(i, layer);
-            }
+            this._processLottieLayer(rawData.layers[i]);
         }
 
-        // Now process the child layers and parent them
-        for (let i = 0; i < rawData.layers.length; i++) {
-            const layer = rawData.layers[i];
-            if (layer.parent !== undefined) {
-                this._processLottieChildLayerData(i, layer);
+        // Create parent-child relationships between layers to have the right transforms
+        for (const layer of this._processedData.layers.values()) {
+            if (layer.parentIndex === undefined) {
+                continue;
+            }
+
+            const parentLayer = this._processedData.layers.get(layer.parentIndex);
+            if (parentLayer) {
+                layer.node.parent = parentLayer.node; // Set the Babylon node parent
             }
         }
     }
 
-    private _processLottieParentLayerData(index: number, rawLayer: RawLottieLayer): void {
+    private _processLottieLayer(rawLayer: RawLottieLayer): void {
         if (rawLayer.ty !== 3 && rawLayer.ty !== 4) {
-            this._errors.push(`Layer ${rawLayer.ind} - ${rawLayer.nm} is not a null or shape layer`);
+            this._errors.push(`${LayerUnsuportedType} - Index: ${rawLayer.ind} Name: ${rawLayer.nm} Type: ${rawLayer.ty}`);
             return;
         }
 
@@ -101,10 +131,9 @@ export class LottieParser {
         const transform = this._processLottieTransform(rawLayer.ks);
 
         const newLayer: LottieLayer = {
-            name: rawLayer.nm ?? "No name", // DEBUGGING
-            parent: undefined,
-            index: rawLayer.ind,
-            children: [],
+            name: rawLayer.nm ?? "No name",
+            parentIndex: rawLayer.parent,
+            index: rawLayer.ind!,
             isVisible: true,
             inFrame: rawLayer.ip ?? 0,
             outFrame: rawLayer.op ?? 0,
@@ -112,101 +141,62 @@ export class LottieParser {
             timeStretch: rawLayer.sr ?? 1,
             autoOrient: rawLayer.ao === 1,
             transform: transform,
-            localAnchorPoint: transform.anchorPoint?.startValue ?? new Vector2(0, 0),
-            localPosition: transform.position?.startValue ?? new Vector2(0, 0),
-            localRotation: transform.rotation?.startValue ?? 0,
-            localScale: transform.scale?.startValue ?? new Vector2(1, 1),
-            localOpacity: transform.opacity?.startValue ?? 1,
-            sprites: undefined,
-            mesh: MeshBuilder.CreatePlane(`Layer - ${rawLayer.nm}`, { height: 100, width: 100 }), // DEBUGGING
+            node:
+                (rawLayer.shapes?.length ?? 0) === 0 ? new TransformNode(`Layer - ${rawLayer.nm}`) : MeshBuilder.CreatePlane(`Layer - ${rawLayer.nm}`, { height: 100, width: 100 }),
         };
 
-        newLayer.mesh.isVisible = false;
+        this._processedData.layers.set(newLayer.index, newLayer);
 
-        const material = new StandardMaterial("myMaterial");
-        material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
-        newLayer.mesh.material = material;
-
-        newLayer.mesh.position.x = transform.position?.startValue.x ?? 0;
-        newLayer.mesh.position.y = transform.position?.startValue.y ?? 0;
-        newLayer.mesh.position.z = this._zIndex;
+        newLayer.node.position.x = transform.position?.startValue.x ?? 0;
+        newLayer.node.position.y = transform.position?.startValue.y ?? 0;
+        newLayer.node.position.z = this._zIndex;
         this._zIndex += 0.1; // Increment zIndex for each layer
 
-        newLayer.mesh.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+        newLayer.node.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
 
-        newLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-        newLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+        newLayer.node.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        newLayer.node.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
-        newLayer.sprites = this._processLottieShapes(newLayer, rawLayer.shapes);
-        this._processedData.layers.push(newLayer);
-    }
+        if (newLayer.node instanceof Mesh) {
+            newLayer.node.isVisible = false;
 
-    private _processLottieChildLayerData(index: number, rawLayer: RawLottieLayer): void {
-        if (rawLayer.ty !== 3 && rawLayer.ty !== 4) {
-            this._errors.push(`Layer ${rawLayer.ind} - ${rawLayer.nm} is not a null or shape layer`);
-            return;
-        }
-
-        // Ignore invisible layers
-        if (rawLayer.ip === 1) {
-            return;
-        }
-
-        const transform = this._processLottieTransform(rawLayer.ks);
-
-        const parentLayer = this._findParent(rawLayer.parent!);
-        if (!parentLayer) {
-            this._errors.push(`Layer index ${rawLayer.ind} has a parent ${rawLayer.parent} that is not a top level layer Layer. This is not supported`);
-            return;
-        }
-
-        const newLayer: LottieLayer = {
-            name: rawLayer.nm ?? "No name", // DEBUGGING
-            parent: parentLayer,
-            isVisible: true,
-            inFrame: rawLayer.ip ?? 0,
-            outFrame: rawLayer.op ?? 0,
-            startTime: rawLayer.st ?? 0,
-            timeStretch: rawLayer.sr ?? 1,
-            autoOrient: rawLayer.ao === 1,
-            transform: transform,
-            localAnchorPoint: transform.anchorPoint?.startValue ?? new Vector2(0, 0),
-            localPosition: transform.position?.startValue ?? new Vector2(0, 0),
-            localRotation: transform.rotation?.startValue ?? 0,
-            localScale: transform.scale?.startValue ?? new Vector2(1, 1),
-            localOpacity: transform.opacity?.startValue ?? 1,
-            sprites: undefined,
-            mesh: MeshBuilder.CreatePlane(`Layer - ${rawLayer.nm}`, { height: 100, width: 100 }), // DEBUGGING
-        };
-
-        newLayer.mesh.isVisible = false;
-        newLayer.mesh.parent = parentLayer.mesh;
-
-        const material = new StandardMaterial("myMaterial");
-        material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
-        newLayer.mesh.material = material;
-
-        newLayer.mesh.position.x = transform.position?.startValue.x ?? 0;
-        newLayer.mesh.position.y = transform.position?.startValue.y ?? 0;
-        newLayer.mesh.position.z = this._zIndex;
-        this._zIndex += 0.1; // Increment zIndex for each layer
-
-        newLayer.mesh.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
-
-        newLayer.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-        newLayer.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
-
-        newLayer.sprites = this._processLottieShapes(newLayer, rawLayer.shapes);
-        // Add the child layer to the parent layer
-        parentLayer.children!.push(newLayer);
-    }
-
-    private _findParent(parentIndex: number): LottieLayer | undefined {
-        for (let i = 0; i < this._processedData.layers.length; i++) {
-            const layer = this._processedData.layers[i];
-            if (layer.index === parentIndex) {
-                return layer;
+            const material = new StandardMaterial("myMaterial");
+            const texture = this._mapTexture(rawLayer.nm);
+            if (texture) {
+                material.diffuseTexture = texture;
+            } else {
+                material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
             }
+
+            newLayer.node.material = material;
+        }
+
+        this._processLottieShapes(newLayer, rawLayer.shapes);
+    }
+
+    private _mapTexture(rawName: string | undefined): Texture | undefined {
+        if (rawName === undefined || !this._textures) {
+            return undefined;
+        }
+
+        if (rawName === "Copilot 01") {
+            return this._textures.copilot;
+        } else if (rawName === "Excel 2") {
+            return this._textures.excel;
+        } else if (rawName === "M_plate 2") {
+            return this._textures.m365;
+        } else if (rawName === "OneDrive 2") {
+            return this._textures.oneDrive;
+        } else if (rawName === "One") {
+            return this._textures.oneNote;
+        } else if (rawName === "Out") {
+            return this._textures.outlook;
+        } else if (rawName === "P") {
+            return this._textures.powerPoint;
+        } else if (rawName === "Harmon 2") {
+            return this._textures.swirl;
+        } else if (rawName === "Word 2") {
+            return this._textures.word;
         }
 
         return undefined;
@@ -224,12 +214,12 @@ export class LottieParser {
             }
 
             if (shape.ty === "gr") {
-                const sprite = this._processGroupShape(parent, shape as RawGroupShape);
+                const sprite = this._processGroupShape(shape as RawGroupShape);
                 if (sprite) {
                     sprites.push(sprite);
                 }
             } else {
-                this._errors.push(`Only groups (gr) are supported as top level shapes from a layer. Shape ${shape.nm} is of type ${shape.ty} instead`);
+                this._errors.push(`${ShapeUnsupportedTopLevelType} - Name: ${shape.nm} Type: ${shape.ty}`);
                 continue;
             }
         }
@@ -237,9 +227,8 @@ export class LottieParser {
         return sprites;
     }
 
-    private _processGroupShape(parent: LottieLayer | LottieSprite, group: RawGroupShape): LottieSprite | undefined {
+    private _processGroupShape(group: RawGroupShape): LottieSprite | undefined {
         if (!group.it) {
-            this._errors.push(`Group ${group.nm} has no shapes`);
             return undefined;
         }
 
@@ -248,44 +237,20 @@ export class LottieParser {
         }
 
         const sprite: LottieSprite = {
-            parent: parent,
             isVisible: true,
             transform: undefined,
             child: undefined,
-            localPosition: new Vector2(0, 0),
-            localRotation: 0,
-            localScale: new Vector2(1, 1),
-            mesh: MeshBuilder.CreatePlane(`Group - ${group.nm}`, { height: 100, width: 100 }),
         };
-
-        sprite.mesh.parent = parent.mesh;
-
-        // TESTING!
-        const material = new StandardMaterial("myMaterial");
-        material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
-        sprite.mesh.material = material;
 
         for (const shape of group.it) {
             if (shape.ty === "gr") {
-                sprite.child = this._processGroupShape(sprite, shape as RawGroupShape);
+                sprite.child = this._processGroupShape(shape as RawGroupShape);
             } else if (shape.ty === "tr") {
                 const transform = this._processLottieTransformShape(shape as RawTransformShape);
                 sprite.transform = transform;
-                sprite.localAnchorPoint = transform.anchorPoint?.startValue ?? new Vector2(0, 0);
-                sprite.localPosition = transform.position?.startValue ?? new Vector2(0, 0);
-                sprite.localRotation = transform.rotation?.startValue ?? 0;
-                sprite.localScale = transform.scale?.startValue ?? new Vector2(1, 1);
-                sprite.localOpacity = transform.opacity?.startValue ?? 1;
 
-                sprite.mesh.position.x = transform.position?.startValue.x ?? 0;
-                sprite.mesh.position.y = transform.position?.startValue.y ?? 0;
-                sprite.mesh.position.z = this._zIndex;
-                this._zIndex += 0.1; // Increment zIndex for each layer
-
-                sprite.mesh.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
-
-                sprite.mesh.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-                sprite.mesh.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+                // We do not support animated transforms
+                this._validateNonAnimatedTransform(sprite.transform);
             } else if (shape.ty === "sh") {
                 this._validatePathShape(shape as RawPathShape);
             } else if (shape.ty === "rc") {
@@ -295,7 +260,7 @@ export class LottieParser {
             } else if (shape.ty === "gf") {
                 this._validateGradientFillShape(shape as RawGradientFillShape);
             } else {
-                this._errors.push(`Shape ${shape.nm} is of type ${shape.ty} which is not supported`);
+                this._errors.push(`${ShapeUnsupportedChildType} - Name: ${shape.nm} Type: ${shape.ty}`);
             }
         }
 
@@ -368,7 +333,7 @@ export class LottieParser {
         }
 
         if (property.l !== undefined && property.l !== 2) {
-            this._errors.push(`Vector2 property has an invalid number of components. Expected 2, got ${property.l}`);
+            this._errors.push(`${PropertyInvalidVector2Length} - Length: ${property.l}`);
             return undefined;
         }
 
@@ -415,9 +380,34 @@ export class LottieParser {
         };
     }
 
+    private _validateNonAnimatedTransform(transform: Transform | undefined): void {
+        if (!transform) {
+            return;
+        }
+
+        if (transform.anchorPoint?.keyframes?.length ?? 0 > 0) {
+            this._errors.push(`Transform anchor point is animated which is not supported`);
+        }
+
+        if (transform.position?.keyframes?.length ?? 0 > 0) {
+            this._errors.push(`Transform position is animated which is not supported`);
+        }
+
+        if (transform.rotation?.keyframes?.length ?? 0 > 0) {
+            this._errors.push(`Transform rotation is animated which is not supported`);
+        }
+
+        if (transform.scale?.keyframes?.length ?? 0 > 0) {
+            this._errors.push(`Transform scale is animated which is not supported`);
+        }
+
+        if (transform.opacity?.keyframes?.length ?? 0 > 0) {
+            this._errors.push(`Transform opacity is animated which is not supported`);
+        }
+    }
     private _validatePathShape(shape: RawPathShape): void {
         if (shape.ks.a === 1) {
-            this._errors.push(`Path ${shape.nm} has an animated path which is not supported`);
+            this._errors.push(`${ShapeAnimatedPathProperty} - Name: ${shape.nm}`);
         }
     }
 

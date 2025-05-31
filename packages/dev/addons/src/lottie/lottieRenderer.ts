@@ -1,5 +1,6 @@
 import type { IDisposable } from "core/scene";
-import type { LottieAnimation, LottieLayer, LottieSprite } from "./types/processedLottie";
+import type { LottieAnimation, LottieLayer } from "./types/processedLottie";
+import { Mesh } from "core/Meshes";
 
 /**
  * Class responsible for rendering lottie animations.
@@ -31,22 +32,28 @@ export class LottieRenderer implements IDisposable {
         }
 
         // Update the visibility of the animation components
-        for (const layer of this._animation.layers) {
+        for (const layer of this._animation.layers.values()) {
             if (this._currentFrame < layer.inFrame || this._currentFrame > layer.outFrame) {
                 if (layer.isVisible) {
-                    this._hideLayer(layer);
+                    layer.isVisible = false;
+                    if (layer.node instanceof Mesh) {
+                        layer.node.isVisible = false; // Hide the node if the layer is not visible
+                    }
                 }
             }
 
             if (this._currentFrame >= layer.inFrame && this._currentFrame <= layer.outFrame) {
                 if (!layer.isVisible) {
-                    this._showLayer(layer);
+                    layer.isVisible = true;
+                    if (layer.node instanceof Mesh) {
+                        layer.node.isVisible = true; // Hide the node if the layer is not visible
+                    }
                 }
             }
         }
 
         // Update only visible elements of the animation
-        for (const layer of this._animation.layers) {
+        for (const layer of this._animation.layers.values()) {
             if (layer.isVisible === true) {
                 this._updateLayer(layer);
             }
@@ -55,95 +62,23 @@ export class LottieRenderer implements IDisposable {
         this._currentFrame++;
     }
 
-    private _hideLayer(layer: LottieLayer): void {
-        layer.isVisible = false;
-
-        if (layer.children) {
-            for (const child of layer.children) {
-                this._hideLayer(child);
-            }
-        }
-
-        if (layer.sprites) {
-            for (const sprite of layer.sprites) {
-                this._hideSprite(sprite);
-            }
-        }
-    }
-
-    private _showLayer(layer: LottieLayer): void {
-        layer.isVisible = true;
-
-        if (layer.children) {
-            for (const child of layer.children) {
-                this._showLayer(child);
-            }
-        }
-
-        if (layer.sprites) {
-            for (const sprite of layer.sprites) {
-                this._showSprite(sprite);
-            }
-        }
-    }
-
-    private _hideSprite(sprite: LottieSprite): void {
-        sprite.isVisible = false;
-        sprite.mesh.isVisible = false;
-
-        if (sprite.child) {
-            this._hideSprite(sprite.child);
-        }
-    }
-
-    private _showSprite(sprite: LottieSprite): void {
-        sprite.isVisible = true;
-        sprite.mesh.isVisible = true;
-
-        if (sprite.child) {
-            this._showSprite(sprite.child);
-        }
-    }
-
     private _updateLayer(layer: LottieLayer): void {
         this._updatePosition(layer);
         this._updateRotation(layer);
         this._updateScale(layer);
-
-        if (layer.children) {
-            for (const child of layer.children) {
-                this._updateLayer(child);
-            }
-        }
-
-        if (layer.sprites) {
-            for (const sprite of layer.sprites) {
-                this._updateSprite(sprite);
-            }
-        }
     }
 
-    private _updateSprite(sprite: LottieSprite): void {
-        this._updatePosition(sprite);
-        this._updateRotation(sprite);
-        this._updateScale(sprite);
-
-        if (sprite.child) {
-            this._updateSprite(sprite.child);
-        }
-    }
-
-    private _updatePosition(layer: LottieLayer | LottieSprite): void {
-        if (layer.transform) {
-            if (layer.transform.position?.keyframes !== undefined && layer.transform.position.keyframes.length > 0) {
+    private _updatePosition(element: LottieLayer): void {
+        if (element.transform) {
+            if (element.transform.position?.keyframes !== undefined && element.transform.position.keyframes.length > 0) {
                 // We have keyframes, so the position is animated
-                if (this._currentFrame < layer.transform.position.keyframes[0].time) {
+                if (this._currentFrame < element.transform.position.keyframes[0].time) {
                     return; // Animation not started yet
                 }
 
-                for (let i = 0; i < layer.transform.position.keyframes.length - 1; i++) {
-                    const currentFrame = layer.transform.position.keyframes[i];
-                    const nextFrame = layer.transform.position.keyframes[i + 1];
+                for (let i = 0; i < element.transform.position.keyframes.length - 1; i++) {
+                    const currentFrame = element.transform.position.keyframes[i];
+                    const nextFrame = element.transform.position.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
                     if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
@@ -160,11 +95,8 @@ export class LottieRenderer implements IDisposable {
                         const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
                         const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
 
-                        layer.localPosition.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
-                        layer.localPosition.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
-
-                        layer.mesh.position.x = layer.localPosition.x;
-                        layer.mesh.position.y = layer.localPosition.y;
+                        element.node.position.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
+                        element.node.position.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
 
                         break;
                     }
@@ -173,17 +105,17 @@ export class LottieRenderer implements IDisposable {
         }
     }
 
-    private _updateRotation(layer: LottieLayer | LottieSprite): void {
-        if (layer.transform) {
-            if (layer.transform.rotation?.keyframes !== undefined && layer.transform.rotation.keyframes.length > 0) {
+    private _updateRotation(element: LottieLayer): void {
+        if (element.transform) {
+            if (element.transform.rotation?.keyframes !== undefined && element.transform.rotation.keyframes.length > 0) {
                 // We have keyframes, so the scale is animated
-                if (this._currentFrame < layer.transform.rotation.keyframes[0].time) {
+                if (this._currentFrame < element.transform.rotation.keyframes[0].time) {
                     return; // Animation not started yet
                 }
 
-                for (let i = 0; i < layer.transform.rotation.keyframes.length - 1; i++) {
-                    const currentFrame = layer.transform.rotation.keyframes[i];
-                    const nextFrame = layer.transform.rotation.keyframes[i + 1];
+                for (let i = 0; i < element.transform.rotation.keyframes.length - 1; i++) {
+                    const currentFrame = element.transform.rotation.keyframes[i];
+                    const nextFrame = element.transform.rotation.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
                     if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
@@ -197,9 +129,7 @@ export class LottieRenderer implements IDisposable {
                         const gradient = (this._currentFrame - startTime) / (endTime - startTime);
                         const easeGradientFactor = currentFrame.easeFunction?.ease(gradient) ?? gradient;
 
-                        layer.localRotation = this._lerp(startValue, endValue, easeGradientFactor);
-
-                        layer.mesh.rotation.z = (layer.localRotation * Math.PI) / 180;
+                        element.node.rotation.z = (this._lerp(startValue, endValue, easeGradientFactor) * Math.PI) / 180;
 
                         break;
                     }
@@ -208,17 +138,17 @@ export class LottieRenderer implements IDisposable {
         }
     }
 
-    private _updateScale(layer: LottieLayer | LottieSprite): void {
-        if (layer.transform) {
-            if (layer.transform.scale?.keyframes !== undefined && layer.transform.scale.keyframes.length > 0) {
+    private _updateScale(element: LottieLayer): void {
+        if (element.transform) {
+            if (element.transform.scale?.keyframes !== undefined && element.transform.scale.keyframes.length > 0) {
                 // We have keyframes, so the scale is animated
-                if (this._currentFrame < layer.transform.scale.keyframes[0].time) {
+                if (this._currentFrame < element.transform.scale.keyframes[0].time) {
                     return; // Animation not started yet
                 }
 
-                for (let i = 0; i < layer.transform.scale.keyframes.length - 1; i++) {
-                    const currentFrame = layer.transform.scale.keyframes[i];
-                    const nextFrame = layer.transform.scale.keyframes[i + 1];
+                for (let i = 0; i < element.transform.scale.keyframes.length - 1; i++) {
+                    const currentFrame = element.transform.scale.keyframes[i];
+                    const nextFrame = element.transform.scale.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
                     if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
@@ -235,11 +165,8 @@ export class LottieRenderer implements IDisposable {
                         const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
                         const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
 
-                        layer.localScale.x = this._lerp(startValueX, endValueX, easeGradientFactorX) / 100;
-                        layer.localScale.y = this._lerp(startValueY, endValueY, easeGradientFactorY) / 100;
-
-                        layer.mesh.scaling.x = layer.localScale.x;
-                        layer.mesh.scaling.y = layer.localScale.y;
+                        element.node.scaling.x = this._lerp(startValueX, endValueX, easeGradientFactorX) / 100;
+                        element.node.scaling.y = this._lerp(startValueY, endValueY, easeGradientFactorY) / 100;
 
                         break;
                     }
