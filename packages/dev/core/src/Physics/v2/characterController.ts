@@ -192,6 +192,7 @@ export class PhysicsCharacterController {
     private _velocity: Vector3;
     private _lastVelocity: Vector3;
     private _shape: PhysicsShape;
+    private _ownShape: boolean;
     private _manifold: IContact[] = [];
     private _lastDisplacement: Vector3;
     private _contactAngleSensitivity = 10.0;
@@ -283,6 +284,7 @@ export class PhysicsCharacterController {
         const h = characterShapeOptions.capsuleHeight ?? 1.8;
         this._tmpVecs[0].set(0, h * 0.5 - r, 0);
         this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
+        this._ownShape = !characterShapeOptions.shape;
         this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(this._tmpVecs[0], this._tmpVecs[1], r, scene);
         this._lastInvDeltaTime = 1.0 / 60.0;
         this._lastDisplacement = Vector3.Zero();
@@ -306,7 +308,11 @@ export class PhysicsCharacterController {
      * Set shape used for collision
      */
     public set shape(value: PhysicsShape) {
+        if (this._ownShape) {
+            this._shape.dispose();
+        }
         this._shape = value;
+        this._ownShape = false;
     }
 
     /**
