@@ -1801,7 +1801,7 @@ export class Viewer implements IDisposable {
 
             const shadowMaterial = new BackgroundMaterial("shadowMapGroundMaterial", this._scene);
             shadowMaterial.shadowOnly = true;
-            shadowMaterial.primaryColor = new Color3(0, 0, 0);
+            shadowMaterial.primaryColor = Color3.Black();
 
             const ground = CreateDisc("shadowMapGround", { radius: groundSize, tessellation: 64 }, this._scene);
             ground.rotation.x = Math.PI / 2;
