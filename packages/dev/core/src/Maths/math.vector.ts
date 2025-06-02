@@ -641,9 +641,7 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns a new Vector2
      */
     public rotate(angle: number): Vector2 {
-        const result = new Vector2();
-        this.rotateToRef(angle, result);
-        return result;
+        return this.rotateToRef(angle, new Vector2());
     }
 
     /**

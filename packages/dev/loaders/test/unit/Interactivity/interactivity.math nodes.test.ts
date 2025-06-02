@@ -853,7 +853,7 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const expected = roundArray3(vector.applyRotationQuaternionInPlace(quaternion).asArray());
+        const expected = roundArray3(vector.applyRotationQuaternion(quaternion).asArray());
         const resultArray = roundArray3(logItem!.payload.value.asArray());
         expect(resultArray).toEqual(expected);
     });
