@@ -16,6 +16,7 @@ import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "../shaderLanguage";
 import { Observable } from "core/Misc/observable";
+import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -604,6 +605,11 @@ export class NodeMaterialBlock {
 
         const localBlockIsFragment = state._vertexState != null;
         const otherBlockWasGeneratedInVertexShader = block._buildTarget === NodeMaterialBlockTargets.Vertex && block.target !== NodeMaterialBlockTargets.VertexAndFragment;
+
+        if (block.isTeleportOut && (block as NodeMaterialTeleportOutBlock).entryPoint?.isConnectedToUniform) {
+            // In that case, we skip the context switch as the teleport out block is connected to a uniform
+            return;
+        }
 
         if (
             localBlockIsFragment &&
