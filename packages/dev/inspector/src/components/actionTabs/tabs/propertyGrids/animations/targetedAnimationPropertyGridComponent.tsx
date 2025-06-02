@@ -107,7 +107,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                         <TextLineComponent
                             label="Target"
                             value={targetedAnimation.target.name}
-                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)}
+                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation.target)}
                         />
                     )}
                     {this._animationCurveEditorContext && <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />}
