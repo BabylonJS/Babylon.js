@@ -188,6 +188,10 @@ export abstract class StaticSound extends AbstractSound {
         }
     }
 
+    /**
+     * Clones the sound.
+     * @param options Options for cloning the sound.
+     */
     public abstract cloneAsync(options?: Partial<IStaticSoundCloneOptions>): Promise<StaticSound>;
 
     /**
