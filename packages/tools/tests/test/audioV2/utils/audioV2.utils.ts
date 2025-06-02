@@ -63,6 +63,7 @@ declare global {
             duration?: number,
             options?: Partial<BABYLON.IWebAudioEngineOptions>
         ): Promise<BABYLON.AudioEngineV2>;
+        public static CreateBusAsync(options?: Partial<BABYLON.IAudioBusOptions>): Promise<BABYLON.AudioBus>;
         public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
         public static CreateSoundSourceAsync(source: string, options?: Partial<BABYLON.ISoundSourceOptions>): Promise<BABYLON.AbstractSoundSource>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
