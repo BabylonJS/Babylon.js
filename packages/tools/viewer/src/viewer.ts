@@ -1789,6 +1789,8 @@ export class Viewer implements IDisposable {
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
             generator.useBlurExponentialShadowMap = true;
+            generator.enableSoftTransparentShadow = true;
+            generator.bias = radius / 1000;
             generator.useKernelBlur = true;
             generator.blurKernel = 32;
 
