@@ -149,6 +149,10 @@ class AudioV2Test {
         return { sound, outputNode };
     }
 
+    static async CreateBusAsync(options = {}) {
+        return await BABYLON.CreateAudioBusAsync("", options);
+    }
+
     static async CreateSoundAsync(source, options = {}) {
         const sound = await BABYLON.CreateSoundAsync("", AudioV2Test.#ExpandSource(source), options);
         AudioV2Test.#AddSound(sound);
