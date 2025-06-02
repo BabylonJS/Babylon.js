@@ -1078,21 +1078,28 @@
             "referenceImage": "glTFSerializerCameraRightHand.png"
         },
         {
-            "title": "GLTF Serializer camera rotation animation, left-handed",
-            "playgroundId": "#3A00GJ#26",
-            "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
-            "referenceImage": "glTFSerializerCameraRotationAnimationLH.png"
+            "title": "GLTF Serializer camera rotation animation, RH -> LH",
+            "playgroundId": "#3A00GJ#38",
+            "replace": "//options//, roundtrip = true; srcRH = true; destRH = false;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
-            "title": "GLTF Serializer camera rotation animation, right-handed",
-            "playgroundId": "#3A00GJ#26",
-            "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
-            "referenceImage": "glTFSerializerCameraRotationAnimationRH.png"
+            "title": "GLTF Serializer camera rotation animation, RH -> RH",
+            "playgroundId": "#3A00GJ#38",
+            "replace": "//options//, roundtrip = true; srcRH = true; destRH = true;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
-            "title": "GLTF Serializer Rotation conversion, left-handed",
-            "playgroundId": "#UK7FLI#1",
-            "referenceImage": "glTFSerializerRotationConversionLH.png"
+            "title": "GLTF Serializer camera rotation animation, LH -> RH",
+            "playgroundId": "#3A00GJ#38",
+            "replace": "//options//, roundtrip = true; srcRH = false; destRH = true;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer camera rotation animation, LH -> LH",
+            "playgroundId": "#3A00GJ#38",
+            "replace": "//options//, roundtrip = true; srcRH = false; destRH = false;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
