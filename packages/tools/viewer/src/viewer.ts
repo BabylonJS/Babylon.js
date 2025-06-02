@@ -1445,7 +1445,7 @@ export class Viewer implements IDisposable {
                     if (index !== -1) {
                         this._loadedModelsBacking.splice(index, 1);
                         if (model === this._activeModel) {
-                            this._activeModelBacking = null;
+                            this._setActiveModel(null);
                         }
                     }
 
@@ -1541,18 +1541,16 @@ export class Viewer implements IDisposable {
         await this._updateShadowsLock.lockAsync(async () => {
             if (this._shadowQuality === "none") {
                 this._disposeShadows();
-            } else if (this._loadedModelsBacking.length > 0) {
+            } else {
                 // make sure there is an env light before creating shadows
                 if (!this._reflectionTexture) {
                     await this.loadEnvironment("auto", { lighting: true, skybox: false });
                 }
 
-                if (this._loadedModelsBacking.length > 0) {
-                    if (this._shadowQuality === "normal") {
-                        await this._updateShadowMap(abortController.signal);
-                    } else if (this._shadowQuality === "high") {
-                        await this._updateEnvShadow(abortController.signal);
-                    }
+                if (this._shadowQuality === "normal") {
+                    await this._updateShadowMap(abortController.signal);
+                } else if (this._shadowQuality === "high") {
+                    await this._updateEnvShadow(abortController.signal);
                 }
             }
         });
@@ -1622,8 +1620,11 @@ export class Viewer implements IDisposable {
         // cancel if the model is unloaded before the shadows are created
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
+        let high = this._shadowState.high;
+
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
+            high?.ground.setEnabled(false);
             this._log("No models loaded, cannot create shadows.");
             return;
         }
@@ -1647,7 +1648,6 @@ export class Viewer implements IDisposable {
         };
 
         this._snapshotHelper.disableSnapshotRendering();
-        let high = this._shadowState.high;
         if (!high) {
             const pipeline = new IblShadowsRenderPipeline(
                 "ibl shadows",
@@ -1738,7 +1738,6 @@ export class Viewer implements IDisposable {
         high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
             this._snapshotHelper.disableSnapshotRendering();
             updateMaterial();
-            high.ground.setEnabled(true);
             high.pipeline.toggleShadow(true);
             high.ground.setEnabled(true);
             this._snapshotHelper.enableSnapshotRendering();
@@ -1780,8 +1779,11 @@ export class Viewer implements IDisposable {
         // cancel if the model is unloaded before the shadows are created
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
+        let normal = this._shadowState.normal;
+
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
+            normal?.ground.setEnabled(false);
             this._log("No models loaded, cannot create shadows.");
             return;
         }
@@ -1802,7 +1804,6 @@ export class Viewer implements IDisposable {
         const groundSize = radius * groundFactor;
 
         const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
-        let normal = this._shadowState.normal;
         if (!normal) {
             const light = new SpotLight("spotLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
 
