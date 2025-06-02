@@ -16,7 +16,7 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { BufferManager } from "./bufferManager";
-import { GetAccessorElementCount, ConvertToRightHandedPosition, ConvertCameraRotationToGLTF, ConvertToRightHandedRotation } from "./glTFUtilities";
+import { GetAccessorElementCount, ConvertToRightHandedPosition, Rotate180Y, ConvertToRightHandedRotation } from "./glTFUtilities";
 
 /**
  * @internal
@@ -630,7 +630,7 @@ export class _GLTFAnimation {
                         if (convertToRightHanded) {
                             ConvertToRightHandedRotation(rotationQuaternion);
                             if (isCamera) {
-                                ConvertCameraRotationToGLTF(rotationQuaternion);
+                                Rotate180Y(rotationQuaternion);
                             }
                         }
 

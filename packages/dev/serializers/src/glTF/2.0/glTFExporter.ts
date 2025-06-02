@@ -19,7 +19,8 @@ import type {
 import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
 
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
-import { TmpVectors, Quaternion, Matrix } from "core/Maths/math.vector";
+import { TmpVectors, Quaternion } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { Buffer } from "core/Buffers/buffer";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -50,13 +51,13 @@ import {
     GetPrimitiveMode,
     IsNoopNode,
     IsTriangleFillMode,
-    IsParentAddedByImporter,
-    ConvertToRightHandedNode,
-    RotateNode180Y,
+    IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
     IndicesArrayToTypedArray,
     GetVertexBufferInfo,
+    CollapseChildIntoParent,
+    Rotate180Y,
 } from "./glTFUtilities";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
@@ -73,6 +74,7 @@ import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
+import { TargetCamera } from "core/Cameras";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -655,10 +657,10 @@ export class GLTFExporter {
             node.scale = babylonTransformNode.scaling.asArray();
         }
 
-        const rotationQuaternion = Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
-        if (babylonTransformNode.rotationQuaternion) {
-            rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
-        }
+        const rotationQuaternion =
+            babylonTransformNode.rotationQuaternion ||
+            Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
+
         if (!Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHanded) {
                 ConvertToRightHandedRotation(rotationQuaternion);
@@ -668,26 +670,24 @@ export class GLTFExporter {
         }
     }
 
-    private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean, parent: Nullable<Node>): void {
-        const translation = TmpVectors.Vector3[0];
-        const rotation = TmpVectors.Quaternion[0];
-
-        if (parent !== null) {
-            // Camera.getWorldMatrix returns global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
-            const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
-            const cameraWorldMatrix = babylonCamera.getWorldMatrix();
-            const cameraLocal = cameraWorldMatrix.multiply(parentWorldMatrix);
-            cameraLocal.decompose(undefined, rotation, translation);
-        } else {
-            babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
-        }
-
-        if (!translation.equalsToFloats(0, 0, 0)) {
+    private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHanded: boolean): void {
+        if (!babylonCamera.position.equalsToFloats(0, 0, 0)) {
+            const translation = TmpVectors.Vector3[0].copyFrom(babylonCamera.position);
+            if (convertToRightHanded) {
+                ConvertToRightHandedPosition(translation);
+            }
             node.translation = translation.asArray();
         }
 
-        if (!Quaternion.IsIdentity(rotation)) {
-            node.rotation = rotation.asArray();
+        const rotationQuaternion = babylonCamera.rotationQuaternion || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
+
+        if (convertToRightHanded) {
+            ConvertToRightHandedRotation(rotationQuaternion);
+            Rotate180Y(rotationQuaternion); // Left-handed cameras face Z+, but glTF cameras must face -Z.
+        }
+
+        if (!Quaternion.IsIdentity(rotationQuaternion)) {
+            node.rotation = rotationQuaternion.normalize().asArray();
         }
     }
 
@@ -1257,7 +1257,7 @@ export class GLTFExporter {
             }
         }
 
-        if (babylonNode instanceof Camera) {
+        if (babylonNode instanceof TargetCamera) {
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1265,22 +1265,20 @@ export class GLTFExporter {
                     this._nodesCameraMap.set(gltfCamera, []);
                 }
 
-                const parentBabylonNode = babylonNode.parent;
-                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded, parentBabylonNode);
+                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded);
 
-                // If a camera has a node that was added by the GLTF importer, we can just use the parent node transform as the "camera" transform.
-                if (parentBabylonNode && IsParentAddedByImporter(babylonNode, parentBabylonNode)) {
+                // If a parent node exists and can be collapsed, compose their transformations and mark the parent as the camera-containing node.
+                const parentBabylonNode = babylonNode.parent;
+                if (parentBabylonNode !== null && IsChildCollapsible(babylonNode, parentBabylonNode)) {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
-                    if (parentNodeIndex) {
+                    if (parentNodeIndex !== undefined) {
                         const parentNode = this._nodes[parentNodeIndex];
+                        CollapseChildIntoParent(node, parentNode, true);
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
-                        return null; // Skip exporting this node
+                        return null; // Skip exporting the original child node
                     }
                 }
-                if (state.convertToRightHanded) {
-                    ConvertToRightHandedNode(node);
-                    RotateNode180Y(node);
-                }
+
                 this._nodesCameraMap.get(gltfCamera)?.push(node);
             }
         }

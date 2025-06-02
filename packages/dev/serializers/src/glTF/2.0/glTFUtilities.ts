@@ -241,55 +241,36 @@ export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
     return value;
 }
 
-export function ConvertToRightHandedNode(value: INode) {
-    let translation = Vector3.FromArrayToRef(value.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
-    let rotation = Quaternion.FromArrayToRef(value.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-
-    translation = ConvertToRightHandedPosition(translation);
-    rotation = ConvertToRightHandedRotation(rotation);
-
-    if (translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
-        delete value.translation;
-    } else {
-        value.translation = translation.asArray();
-    }
-
-    if (Quaternion.IsIdentity(rotation)) {
-        delete value.rotation;
-    } else {
-        value.rotation = rotation.asArray();
-    }
-}
-
 /**
  * Pre-multiplies a 180-degree Y rotation to the quaternion, in order to match glTF's flipped forward direction for cameras.
  * @param rotation Target camera rotation.
  */
-export function ConvertCameraRotationToGLTF(rotation: Quaternion): void {
+export function Rotate180Y(rotation: Quaternion): void {
     // Simplified from: rotation * (0, 1, 0, 0).
     rotation.copyFromFloats(-rotation.z, rotation.w, rotation.x, -rotation.y);
-}
-
-export function RotateNode180Y(node: INode): void {
-    Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    ConvertCameraRotationToGLTF(TmpVectors.Quaternion[1]);
-    node.rotation = TmpVectors.Quaternion[1].asArray();
 }
 
 /**
  * Collapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
  * @param node Target parent node.
  * @param parentNode Original GLTF node (Light or Camera).
+ * @param ignoreScale Whether to ignore scaling of the nodes when collapsing.
  */
-export function CollapseParentNode(node: INode, parentNode: INode) {
+export function CollapseChildIntoParent(node: INode, parentNode: INode, ignoreScale: boolean = false): void {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const parentScale = Vector3.FromArrayToRef([1, 1, 1], 0, TmpVectors.Vector3[1]);
+    if (!ignoreScale && parentNode.scale) {
+        Vector3.FromArrayToRef(parentNode.scale, 0, parentScale);
+    }
     const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
 
     const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
     const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    const scale = Vector3.FromArrayToRef(node.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const scale = Vector3.FromArrayToRef([1, 1, 1], 0, TmpVectors.Vector3[3]);
+    if (!ignoreScale && node.scale) {
+        Vector3.FromArrayToRef(node.scale, 0, scale);
+    }
     const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[1]);
 
     parentMatrix.multiplyToRef(matrix, matrix);
@@ -315,12 +296,14 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
 }
 
 /**
- * Sometimes the GLTF Importer can add extra transform nodes (for lights and cameras). This checks if a parent node was added by the GLTF Importer. If so, it should be removed during serialization.
- * @param babylonNode Original GLTF node (Light or Camera).
+ * Checks whether a child node is safe to collapse into its parent node.
+ * This is useful for roundtrips, as the glTF Importer creates a parent node to
+ * store transformation information for lights and cameras.
+ * @param babylonNode Original GLTF node.
  * @param parentBabylonNode Target parent node.
- * @returns True if the parent node was added by the GLTF importer.
+ * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
+export function IsChildCollapsible(babylonNode: Node, parentBabylonNode: Node): boolean {
     return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 

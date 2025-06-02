@@ -9,7 +9,7 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseParentNode, IsParentAddedByImporter } from "../glTFUtilities";
+import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseChildIntoParent, IsChildCollapsible } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
 const DEFAULTS: Omit<IKHRLightsPunctual_Light, "type"> = {
@@ -155,12 +155,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
 
-            if (parentBabylonNode && IsParentAddedByImporter(babylonNode, parentBabylonNode)) {
+            if (parentBabylonNode && IsChildCollapsible(babylonNode, parentBabylonNode)) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
                     const parentNode = this._exporter._nodes[parentNodeIndex];
-                    CollapseParentNode(node, parentNode);
+                    CollapseChildIntoParent(node, parentNode);
                     parentNode.extensions ||= {};
                     parentNode.extensions[NAME] = lightReference;
 
