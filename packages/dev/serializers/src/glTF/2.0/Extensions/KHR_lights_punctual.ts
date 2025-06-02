@@ -75,7 +75,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      */
     public async postExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return await new Promise((resolve) => {
-            if (!(babylonNode instanceof ShadowLight)) {
+            if (!(babylonNode instanceof Light)) {
                 resolve(node);
                 return;
             }
@@ -88,7 +88,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                       : babylonNode.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
                         ? KHRLightsPunctual_LightType.SPOT
                         : null;
-            if (!lightType) {
+            if (!lightType || !(babylonNode instanceof ShadowLight)) {
                 Logger.Warn(`${context}: Light ${babylonNode.name} is not supported in ${NAME}`);
                 resolve(node);
                 return;
