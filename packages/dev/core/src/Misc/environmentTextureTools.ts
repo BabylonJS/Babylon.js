@@ -20,7 +20,7 @@ import type { Engine, WebGPUEngine } from "core/Engines";
 import "../Materials/Textures/baseTexture.polynomial";
 
 const DefaultEnvironmentTextureImageType = "image/png";
-const CurrentVersion = 3;
+const CurrentVersion = 2;
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
