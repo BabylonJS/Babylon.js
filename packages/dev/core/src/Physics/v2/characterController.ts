@@ -296,6 +296,20 @@ export class PhysicsCharacterController {
     }
 
     /**
+     * Get shape used for collision
+     */
+    public get shape() {
+        return this._shape;
+    }
+
+    /**
+     * Set shape used for collision
+     */
+    public set shape(value: PhysicsShape) {
+        this._shape = value;
+    }
+
+    /**
      * Character position
      * @returns Character position
      */
