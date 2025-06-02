@@ -5,7 +5,7 @@ import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphAction } from "core/FlowGraph/flowGraphLogger";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
-import { Vector3 } from "core/Maths/math.vector";
+import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
@@ -21,6 +21,14 @@ const typesAndLengths: {
     int: 1,
     float4x4: 16,
 };
+
+function round3(value: number): number {
+    return Math.round(value * 1000) / 1000;
+}
+
+function roundArray3(value: number[]): number[] {
+    return value.map((v) => round3(v));
+}
 
 /**
  * This test is for the interactivity nodes. Each nodes will have its own test, making sure it is working according to the specs.
@@ -67,11 +75,7 @@ describe("Interactivity math nodes", () => {
             ],
         };
 
-        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf, {
-            parent: {
-                targetFps: 60,
-            },
-        } as unknown as any);
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });
@@ -676,7 +680,7 @@ describe("Interactivity math nodes", () => {
                 const valArrays: number[][] = [];
                 const values: any = {};
                 for (let i = 0; i < testNode.inputs; i++) {
-                    const val = testScenarios.allRandom(length).map((v) => Math.round(v * 1000) / 1000);
+                    const val = roundArray3(testScenarios.allRandom(length));
                     const key = i === 0 ? "a" : i === 1 ? "b" : i === 2 ? "c" : "d";
                     values[key] = {
                         type: 0, // first position in the types array defined below
@@ -702,8 +706,8 @@ describe("Interactivity math nodes", () => {
                 for (let i = 0; i < resultArray.length || 0; i++) {
                     expect(resultArray[i]).not.toBeNaN();
                     // round to 3 decimals
-                    resultArray[i] = Math.round(resultArray[i] * 1000) / 1000;
-                    expected[i] = Math.round(expected[i] * 1000) / 1000;
+                    resultArray[i] = roundArray3(resultArray);
+                    expected[i] = roundArray3(expected);
                 }
 
                 expect(resultArray).toEqual(expected);
@@ -711,9 +715,9 @@ describe("Interactivity math nodes", () => {
         });
     });
 
-    it("should use math/rotate2d correctly - basic rotation", async () => {
+    it("should use math/rotate2D correctly - basic rotation", async () => {
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/rotate2d" }],
+            [{ op: "math/rotate2D" }],
             [
                 {
                     declaration: 0,
@@ -734,14 +738,14 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         expect(resultArray).toEqual([0, 1]);
     });
 
-    it("should use math/rotate2d correctly - random rotation", async () => {
+    it("should use math/rotate2D correctly - random rotation", async () => {
         const rotationAngleInRadians = Math.random() * Math.PI * 2;
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/rotate2d" }],
+            [{ op: "math/rotate2D" }],
             [
                 {
                     declaration: 0,
@@ -761,18 +765,16 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const expected = [Math.cos(rotationAngleInRadians) - Math.sin(rotationAngleInRadians), Math.sin(rotationAngleInRadians) + Math.cos(rotationAngleInRadians)].map(
-            (v: number) => Math.round(v * 1000) / 1000
-        );
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = roundArray3([Math.cos(rotationAngleInRadians) - Math.sin(rotationAngleInRadians), Math.sin(rotationAngleInRadians) + Math.cos(rotationAngleInRadians)]);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         expect(resultArray).toEqual(expected);
     });
 
-    it("should use math/rotate2d correctly - random rotation with random vector", async () => {
+    it("should use math/rotate2D correctly - random rotation with random vector", async () => {
         const rotationAngleInRadians = Math.random() * Math.PI * 2;
         const vector = [Math.random() * 100 - 50, Math.random() * 100 - 50];
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/rotate2d" }],
+            [{ op: "math/rotate2D" }],
             [
                 {
                     declaration: 0,
@@ -792,83 +794,67 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const expected = [
+        const expected = roundArray3([
             vector[0] * Math.cos(rotationAngleInRadians) - vector[1] * Math.sin(rotationAngleInRadians),
             vector[0] * Math.sin(rotationAngleInRadians) + vector[1] * Math.cos(rotationAngleInRadians),
-        ].map((v: number) => Math.round(v * 1000) / 1000);
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         expect(resultArray).toEqual(expected);
     });
 
-    it("should use math/rotate3d correctly - basic rotation", async () => {
+    it("should use math/rotate3D correctly - basic rotation", async () => {
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/rotate3d" }],
+            [{ op: "math/rotate3D" }],
             [
                 {
                     declaration: 0,
                     values: {
-                        // rotate around axis
-                        b: {
-                            type: 0,
-                            value: [1, 0, 0],
-                        },
-                        // vector to rotate
                         a: {
                             type: 0,
                             value: [1, 1, 1],
                         },
-                        // angle in radians
-                        c: {
+                        b: {
                             type: 1,
-                            value: [Math.PI / 2],
+                            value: Quaternion.FromEulerAngles(Math.PI / 2, 0, 0).asArray(),
                         },
                     },
                 },
             ],
-            [{ signature: "float3" }, { signature: "float" }]
+            [{ signature: "float3" }, { signature: "float4" }]
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         expect(resultArray).toEqual([1, -1, 1]);
     });
 
-    it("should use math/rotate3d correctly - random rotation and vector", async () => {
+    it("should use math/rotate3D correctly - random rotation and vector", async () => {
         const rotationAngleInRadians = Math.random() * Math.PI * 2;
-        const vector = [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50];
-        const axis = [0, 1, 0];
+        const quaternion = Quaternion.FromEulerAngles(rotationAngleInRadians, 0, 0);
+        const vector = new Vector3(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/rotate3d" }],
+            [{ op: "math/rotate3D" }],
             [
                 {
                     declaration: 0,
                     values: {
-                        b: {
-                            type: 0,
-                            value: axis,
-                        },
                         a: {
                             type: 0,
-                            value: vector,
+                            value: vector.asArray(),
                         },
-                        c: {
+                        b: {
                             type: 1,
-                            value: [rotationAngleInRadians],
+                            value: quaternion.asArray(),
                         },
                     },
                 },
             ],
-            [{ signature: "float3" }, { signature: "float" }]
+            [{ signature: "float3" }, { signature: "float4" }]
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const expected = [
-            vector[0] * Math.cos(rotationAngleInRadians) + vector[2] * Math.sin(rotationAngleInRadians),
-            vector[1],
-            -vector[0] * Math.sin(rotationAngleInRadians) + vector[2] * Math.cos(rotationAngleInRadians),
-        ].map((v: number) => Math.round(v * 1000) / 1000);
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = roundArray3(vector.applyRotationQuaternionInPlace(quaternion).asArray());
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         expect(resultArray).toEqual(expected);
     });
 
@@ -900,9 +886,9 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         // row-major matrix
-        const expected = [1 * randomMatrix[0] + 1 * randomMatrix[1], 1 * randomMatrix[2] + 1 * randomMatrix[3]].map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = roundArray3([1 * randomMatrix[0] + 1 * randomMatrix[1], 1 * randomMatrix[2] + 1 * randomMatrix[3]]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -932,13 +918,13 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         // row-major matrix!
-        const expected = [
+        const expected = roundArray3([
             1 * randomMatrix[0] + 1 * randomMatrix[1] + 1 * randomMatrix[2],
             1 * randomMatrix[3] + 1 * randomMatrix[4] + 1 * randomMatrix[5],
             1 * randomMatrix[6] + 1 * randomMatrix[7] + 1 * randomMatrix[8],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -968,13 +954,13 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([
             1 * randomMatrix[0] + 1 * randomMatrix[1] + 1 * randomMatrix[2] + 1 * randomMatrix[3],
             1 * randomMatrix[4] + 1 * randomMatrix[5] + 1 * randomMatrix[6] + 1 * randomMatrix[7],
             1 * randomMatrix[8] + 1 * randomMatrix[9] + 1 * randomMatrix[10] + 1 * randomMatrix[11],
             1 * randomMatrix[12] + 1 * randomMatrix[13] + 1 * randomMatrix[14] + 1 * randomMatrix[15],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -999,8 +985,8 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [randomMatrix[0], randomMatrix[2], randomMatrix[1], randomMatrix[3]].map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([randomMatrix[0], randomMatrix[2], randomMatrix[1], randomMatrix[3]]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1025,8 +1011,8 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([
             randomMatrix[0],
             randomMatrix[3],
             randomMatrix[6],
@@ -1036,7 +1022,7 @@ describe("Interactivity math nodes", () => {
             randomMatrix[2],
             randomMatrix[5],
             randomMatrix[8],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1062,8 +1048,8 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([
             randomMatrix[0],
             randomMatrix[4],
             randomMatrix[8],
@@ -1080,7 +1066,7 @@ describe("Interactivity math nodes", () => {
             randomMatrix[7],
             randomMatrix[11],
             randomMatrix[15],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1107,9 +1093,9 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const result = Math.round(logItem!.payload.value * 1000) / 1000;
+        const result = round3(logItem!.payload.value);
         // round the expected result
-        const expected = Math.round((randomMatrix[0] * randomMatrix[3] - randomMatrix[1] * randomMatrix[2]) * 1000) / 1000;
+        const expected = round3(randomMatrix[0] * randomMatrix[3] - randomMatrix[1] * randomMatrix[2]);
         expect(result).toEqual(expected);
     });
 
@@ -1134,13 +1120,13 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const result = Math.round(logItem!.payload.value * 1000) / 1000;
+        const result = round3(logItem!.payload.value);
         const expected =
             randomMatrix[0] * (randomMatrix[4] * randomMatrix[8] - randomMatrix[5] * randomMatrix[7]) -
             randomMatrix[3] * (randomMatrix[1] * randomMatrix[8] - randomMatrix[2] * randomMatrix[7]) +
             randomMatrix[6] * (randomMatrix[1] * randomMatrix[5] - randomMatrix[2] * randomMatrix[4]);
         // round the expected result
-        expect(result).toEqual(Math.round(expected * 1000) / 1000);
+        expect(result).toEqual(round3(expected));
     });
 
     it("should use math/determinant correctly - matrix4", async () => {
@@ -1164,7 +1150,7 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const result = Math.round(logItem!.payload.value * 1000) / 1000;
+        const result = round3(logItem!.payload.value);
         const m = randomMatrix;
         const m00 = m[0],
             m10 = m[1],
@@ -1183,13 +1169,14 @@ describe("Interactivity math nodes", () => {
             m23 = m[14],
             m33 = m[15];
 
-        const expected =
+        const expected = round3(
             m00 * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13)) -
-            m01 * (m10 * (m22 * m33 - m32 * m23) - m20 * (m12 * m33 - m32 * m13) + m30 * (m12 * m23 - m22 * m13)) +
-            m02 * (m10 * (m21 * m33 - m31 * m23) - m20 * (m11 * m33 - m31 * m13) + m30 * (m11 * m23 - m21 * m13)) -
-            m03 * (m10 * (m21 * m32 - m31 * m22) - m20 * (m11 * m32 - m31 * m12) + m30 * (m11 * m22 - m21 * m12));
+                m01 * (m10 * (m22 * m33 - m32 * m23) - m20 * (m12 * m33 - m32 * m13) + m30 * (m12 * m23 - m22 * m13)) +
+                m02 * (m10 * (m21 * m33 - m31 * m23) - m20 * (m11 * m33 - m31 * m13) + m30 * (m11 * m23 - m21 * m13)) -
+                m03 * (m10 * (m21 * m32 - m31 * m22) - m20 * (m11 * m32 - m31 * m12) + m30 * (m11 * m22 - m21 * m12))
+        );
         // round the expected result
-        expect(result).toEqual(Math.round(expected * 1000) / 1000);
+        expect(result).toEqual(expected);
     });
 
     // math/inverse
@@ -1215,9 +1202,9 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         const det = randomMatrix[0] * randomMatrix[3] - randomMatrix[1] * randomMatrix[2];
-        const expected = [randomMatrix[3] / det, -randomMatrix[1] / det, -randomMatrix[2] / det, randomMatrix[0] / det].map((v: number) => Math.round(v * 1000) / 1000);
+        const expected = roundArray3([randomMatrix[3] / det, -randomMatrix[1] / det, -randomMatrix[2] / det, randomMatrix[0] / det]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1242,7 +1229,7 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         const det =
             randomMatrix[0] * randomMatrix[4] * randomMatrix[8] +
             randomMatrix[1] * randomMatrix[5] * randomMatrix[6] +
@@ -1250,7 +1237,7 @@ describe("Interactivity math nodes", () => {
             randomMatrix[2] * randomMatrix[4] * randomMatrix[6] -
             randomMatrix[1] * randomMatrix[3] * randomMatrix[8] -
             randomMatrix[0] * randomMatrix[5] * randomMatrix[7];
-        const expected = [
+        const expected = roundArray3([
             (randomMatrix[4] * randomMatrix[8] - randomMatrix[5] * randomMatrix[7]) / det,
             (randomMatrix[2] * randomMatrix[7] - randomMatrix[1] * randomMatrix[8]) / det,
             (randomMatrix[1] * randomMatrix[5] - randomMatrix[2] * randomMatrix[4]) / det,
@@ -1260,7 +1247,7 @@ describe("Interactivity math nodes", () => {
             (randomMatrix[3] * randomMatrix[7] - randomMatrix[4] * randomMatrix[6]) / det,
             (randomMatrix[1] * randomMatrix[6] - randomMatrix[0] * randomMatrix[7]) / det,
             (randomMatrix[0] * randomMatrix[4] - randomMatrix[1] * randomMatrix[3]) / det,
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1294,14 +1281,14 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         // row major matrix
-        const expected = [
+        const expected = roundArray3([
             randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[2],
             randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[3],
             randomMatrix1[2] * randomMatrix2[0] + randomMatrix1[3] * randomMatrix2[2],
             randomMatrix1[2] * randomMatrix2[1] + randomMatrix1[3] * randomMatrix2[3],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1331,9 +1318,9 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         // round result to 3 decimals
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
         // row-major matrix
-        const expected = [
+        const expected = roundArray3([
             randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[3] + randomMatrix1[2] * randomMatrix2[6],
             randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[4] + randomMatrix1[2] * randomMatrix2[7],
             randomMatrix1[0] * randomMatrix2[2] + randomMatrix1[1] * randomMatrix2[5] + randomMatrix1[2] * randomMatrix2[8],
@@ -1343,13 +1330,13 @@ describe("Interactivity math nodes", () => {
             randomMatrix1[6] * randomMatrix2[0] + randomMatrix1[7] * randomMatrix2[3] + randomMatrix1[8] * randomMatrix2[6],
             randomMatrix1[6] * randomMatrix2[1] + randomMatrix1[7] * randomMatrix2[4] + randomMatrix1[8] * randomMatrix2[7],
             randomMatrix1[6] * randomMatrix2[2] + randomMatrix1[7] * randomMatrix2[5] + randomMatrix1[8] * randomMatrix2[8],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
     it("should use math/matmul correctly - matrix4", async () => {
-        const randomMatrix1 = Array.from({ length: 16 }, () => Math.random() - 0.5).map((v: number) => Math.round(v * 1000) / 1000);
-        const randomMatrix2 = Array.from({ length: 16 }, () => Math.random() - 0.5).map((v: number) => Math.round(v * 1000) / 1000);
+        const randomMatrix1 = Array.from({ length: 16 }, () => Math.random() - 0.5).map((v: number) => round3(v));
+        const randomMatrix2 = Array.from({ length: 16 }, () => Math.random() - 0.5).map((v: number) => round3(v));
         const graph = await generateSimpleNodeGraph(
             [{ op: "math/matmul" }],
             [
@@ -1372,8 +1359,8 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([
             randomMatrix1[0] * randomMatrix2[0] + randomMatrix1[1] * randomMatrix2[4] + randomMatrix1[2] * randomMatrix2[8] + randomMatrix1[3] * randomMatrix2[12],
             randomMatrix1[0] * randomMatrix2[1] + randomMatrix1[1] * randomMatrix2[5] + randomMatrix1[2] * randomMatrix2[9] + randomMatrix1[3] * randomMatrix2[13],
             randomMatrix1[0] * randomMatrix2[2] + randomMatrix1[1] * randomMatrix2[6] + randomMatrix1[2] * randomMatrix2[10] + randomMatrix1[3] * randomMatrix2[14],
@@ -1390,7 +1377,7 @@ describe("Interactivity math nodes", () => {
             randomMatrix1[12] * randomMatrix2[1] + randomMatrix1[13] * randomMatrix2[5] + randomMatrix1[14] * randomMatrix2[9] + randomMatrix1[15] * randomMatrix2[13],
             randomMatrix1[12] * randomMatrix2[2] + randomMatrix1[13] * randomMatrix2[6] + randomMatrix1[14] * randomMatrix2[10] + randomMatrix1[15] * randomMatrix2[14],
             randomMatrix1[12] * randomMatrix2[3] + randomMatrix1[13] * randomMatrix2[7] + randomMatrix1[14] * randomMatrix2[11] + randomMatrix1[15] * randomMatrix2[15],
-        ].map((v: number) => Math.round(v * 1000) / 1000);
+        ]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1421,8 +1408,8 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [randomValue, randomValue2].map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([randomValue, randomValue2]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1456,8 +1443,8 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [randomValue, randomValue2, randomValue3].map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([randomValue, randomValue2, randomValue3]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1496,8 +1483,8 @@ describe("Interactivity math nodes", () => {
         );
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
-        const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
-        const expected = [randomValue, randomValue2, randomValue3, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3([randomValue, randomValue2, randomValue3, randomValue4]);
         expect(resultArray).toEqual(expected);
     });
 
@@ -1705,9 +1692,9 @@ describe("Interactivity math nodes", () => {
     //     );
     //     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
     //     expect(logItem).toBeDefined();
-    //     const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+    //     const resultArray = roundArray3(logItem!.payload.value.asArray());
     //     // expected column to row major
-    //     const expected = [randomValue, randomValue3, randomValue2, randomValue4].map((v: number) => Math.round(v * 1000) / 1000);
+    //     const expected = roundArray3([randomValue, randomValue3, randomValue2, randomValue4]);
     //     expect(resultArray).toEqual(expected);
     // });
 
@@ -1770,11 +1757,9 @@ describe("Interactivity math nodes", () => {
     //     );
     //     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
     //     expect(logItem).toBeDefined();
-    //     const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+    //     const resultArray = roundArray3(logItem!.payload.value.asArray());
     //     // expected column to row major
-    //     const expected = [randomValue, randomValue3, randomValue6, randomValue2, randomValue5, randomValue8, randomValue4, randomValue7, randomValue9].map(
-    //         (v: number) => Math.round(v * 1000) / 1000
-    //     );
+    //     const expected = roundArray3([randomValue, randomValue3, randomValue6, randomValue2, randomValue5, randomValue8, randomValue4, randomValue7, randomValue9]);
     //     expect(resultArray).toEqual(expected);
     // });
 
@@ -1867,9 +1852,9 @@ describe("Interactivity math nodes", () => {
     //     );
     //     const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
     //     expect(logItem).toBeDefined();
-    //     const resultArray = logItem!.payload.value.asArray().map((v: number) => Math.round(v * 1000) / 1000);
+    //     const resultArray = roundArray3(logItem!.payload.value.asArray());
     //     // expected column to row major
-    //     const expected = [
+    //     const expected = roundArray3([
     //         randomValue1,
     //         randomValue5,
     //         randomValue9,
@@ -1886,7 +1871,7 @@ describe("Interactivity math nodes", () => {
     //         randomValue8,
     //         randomValue12,
     //         randomValue15,
-    //     ].map((v: number) => Math.round(v * 1000) / 1000);
+    //     ]);
     //     expect(resultArray).toEqual(expected);
     // });
 });

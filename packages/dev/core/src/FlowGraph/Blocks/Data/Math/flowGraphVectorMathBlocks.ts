@@ -1,11 +1,19 @@
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { RichTypeVector3, FlowGraphTypes, RichTypeNumber, RichTypeAny, RichTypeVector2, RichTypeMatrix, getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
+import {
+    RichTypeVector3,
+    FlowGraphTypes,
+    RichTypeNumber,
+    RichTypeAny,
+    RichTypeVector2,
+    RichTypeMatrix,
+    getRichTypeByFlowGraphType,
+    RichTypeQuaternion,
+} from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
+import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
 import { _GetClassNameOf } from "core/FlowGraph/utils";
@@ -114,7 +122,7 @@ RegisterClass(FlowGraphBlockNames.Cross, FlowGraphCrossBlock);
  */
 export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => Vector2.Transform(a, Matrix.RotationZ(b)), FlowGraphBlockNames.Rotate2D, config);
+        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => a.rotate(b), FlowGraphBlockNames.Rotate2D, config);
     }
 }
 RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
@@ -122,17 +130,9 @@ RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
 /**
  * 3D rotation block.
  */
-export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vector3, Vector3, number, Vector3> {
+export class FlowGraphRotate3DBlock extends FlowGraphBinaryOperationBlock<Vector3, Quaternion, Vector3> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(
-            RichTypeVector3,
-            RichTypeVector3,
-            RichTypeNumber,
-            RichTypeVector3,
-            (a, b, c) => Vector3.TransformCoordinates(a, Matrix.RotationAxis(b, c)),
-            FlowGraphBlockNames.Rotate3D,
-            config
-        );
+        super(RichTypeVector3, RichTypeQuaternion, RichTypeVector3, (a, b) => a.applyRotationQuaternion(b), FlowGraphBlockNames.Rotate3D, config);
     }
 }
 RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);

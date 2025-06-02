@@ -636,6 +636,17 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
     }
 
     /**
+     * Gets a new Vector2 rotated by the given angle
+     * @param angle defines the rotation angle
+     * @returns a new Vector2
+     */
+    public rotate(angle: number): Vector2 {
+        const result = new Vector2();
+        this.rotateToRef(angle, result);
+        return result;
+    }
+
+    /**
      * Rotate the current vector into a given result vector
      * Example Playground https://playground.babylonjs.com/#QYBWV4#49
      * @param angle defines the rotation angle
@@ -645,10 +656,8 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
     public rotateToRef<T extends IVector2Like>(angle: number, result: T): T {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        const x = cos * this.x - sin * this.y;
-        const y = sin * this.x + cos * this.y;
-        result.x = x;
-        result.y = y;
+        result.x = cos * this.x - sin * this.y;
+        result.y = sin * this.x + cos * this.y;
         return result;
     }
 
