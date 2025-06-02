@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "RH billboard",
+            "playgroundId": "#PDO1L6#1",
+            "referenceImage": "rh-billboard.png"
+        },
+        {
             "title": "MSDF",
             "playgroundId": "#6RLCWP#20",
             "referenceImage": "msdf.png"
