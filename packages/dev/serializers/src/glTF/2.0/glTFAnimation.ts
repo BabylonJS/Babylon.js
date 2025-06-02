@@ -629,9 +629,9 @@ export class _GLTFAnimation {
 
                         if (convertToRightHanded) {
                             ConvertToRightHandedRotation(rotationQuaternion);
-                        }
-                        if (isCamera) {
-                            ConvertCameraRotationToGLTF(rotationQuaternion);
+                            if (isCamera) {
+                                ConvertCameraRotationToGLTF(rotationQuaternion);
+                            }
                         }
 
                         rotationQuaternion.toArray(outputToWrite);
