@@ -203,7 +203,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
             #ifdef TEXTURELODSUPPORT
                 // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
+                reflectionLOD = reflectionLOD * log2(uniforms.vReflectionMicrosurfaceInfos.x) * uniforms.vReflectionMicrosurfaceInfos.y + uniforms.vReflectionMicrosurfaceInfos.z;
                 reflectionColor = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
             #else
                 var lodReflectionNormalized: f32 = saturate(reflectionLOD);

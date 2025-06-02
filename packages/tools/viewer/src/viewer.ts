@@ -202,18 +202,13 @@ function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTextu
     const originalBlockMaterialDirtyMechanism = scene.blockMaterialDirtyMechanism;
     scene.blockMaterialDirtyMechanism = true;
     try {
-        const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
-        const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+        const hdrSkybox = CreateBox("hdrSkyBox", { sideOrientation: Mesh.BACKSIDE }, scene);
+        const hdrSkyboxMaterial = new BackgroundMaterial("skyBox", scene);
         // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
         hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
-        hdrSkyboxMaterial.backFaceCulling = false;
         hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
-        if (hdrSkyboxMaterial.reflectionTexture) {
-            hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-        }
-        hdrSkyboxMaterial.microSurface = 1.0 - blur;
-        hdrSkyboxMaterial.disableLighting = true;
-        hdrSkyboxMaterial.twoSidedLighting = true;
+        reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        hdrSkyboxMaterial.reflectionBlur = blur;
         hdrSkybox.material = hdrSkyboxMaterial;
         hdrSkybox.isPickable = false;
         hdrSkybox.infiniteDistance = true;
@@ -1010,9 +1005,9 @@ export class Viewer implements IDisposable {
             this._skyboxBlur = value;
             if (this._skybox) {
                 const material = this._skybox.material;
-                if (material instanceof PBRMaterial) {
+                if (material instanceof BackgroundMaterial) {
                     this._snapshotHelper.disableSnapshotRendering();
-                    material.microSurface = 1.0 - this._skyboxBlur;
+                    material.reflectionBlur = this._skyboxBlur;
                     this._snapshotHelper.enableSnapshotRendering();
                     this._markSceneMutated();
                 }
@@ -1787,7 +1782,7 @@ export class Viewer implements IDisposable {
         const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
         let normal = this._shadowState.normal;
         if (!normal) {
-            const light = new SpotLight("spotLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
+            const light = new SpotLight("shadowLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
 
             const generator = new ShadowGenerator(size, light);
             generator.setDarkness(0.8);
