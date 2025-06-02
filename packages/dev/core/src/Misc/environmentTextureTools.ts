@@ -20,12 +20,12 @@ import type { Engine, WebGPUEngine } from "core/Engines";
 import "../Materials/Textures/baseTexture.polynomial";
 
 const DefaultEnvironmentTextureImageType = "image/png";
-const CurrentVersion = 2;
+const CurrentVersion = 3;
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
  */
-export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2;
+export type EnvironmentTextureInfo = EnvironmentTextureInfoV1 | EnvironmentTextureInfoV2 | EnvironmentTextureInfoV3;
 
 /**
  * v1 of EnvironmentTextureInfo
@@ -87,6 +87,38 @@ interface EnvironmentTextureInfoV2 {
     binaryDataPosition?: number;
 }
 
+interface EnvironmentTextureInfoV3 {
+    /**
+     * Version of the environment map
+     */
+    version: 3;
+
+    /**
+     * Width of image
+     */
+    width: number;
+
+    /**
+     * Irradiance information stored in the file.
+     */
+    irradiance: Nullable<EnvironmentTextureIrradianceInfoV2>;
+
+    /**
+     * Specular information stored in the file.
+     */
+    specular: EnvironmentTextureSpecularInfoV1;
+
+    /**
+     * The mime type used to encode the image data.
+     */
+    imageType: string;
+
+    /**
+     * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
+     */
+    binaryDataPosition?: number;
+}
+
 /**
  * Defines One Image in the file. It requires only the position in the file
  * as well as the length.
@@ -115,6 +147,26 @@ export interface EnvironmentTextureIrradianceTextureInfoV1 {
      * This contains all the images data needed to reconstruct the cubemap.
      */
     faces: Array<BufferImageData>;
+}
+
+/**
+ * Defines the diffuse data enclosed in the file.
+ * This corresponds to the version 1 of the data.
+ */
+export interface EnvironmentTextureIrradianceTextureInfoV2 {
+    /**
+     * Size of the texture faces.
+     */
+    size: number;
+    /**
+     * This contains all the images data needed to reconstruct the cubemap.
+     */
+    faces: Array<BufferImageData>;
+
+    /**
+     * The dominant direction of light in the environment texture.
+     */
+    dominantDirection?: Array<number>;
 }
 
 /**
@@ -153,6 +205,25 @@ interface EnvironmentTextureIrradianceInfoV1 {
 }
 
 /**
+ * Defines the required storage to save the environment irradiance information.
+ */
+interface EnvironmentTextureIrradianceInfoV2 {
+    x: Array<number>;
+    y: Array<number>;
+    z: Array<number>;
+
+    xx: Array<number>;
+    yy: Array<number>;
+    zz: Array<number>;
+
+    yz: Array<number>;
+    zx: Array<number>;
+    xy: Array<number>;
+
+    irradianceTexture?: EnvironmentTextureIrradianceTextureInfoV2 | undefined;
+}
+
+/**
  * Options for creating environment textures
  */
 export interface CreateEnvTextureOptions {
@@ -182,7 +253,7 @@ const MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
  * @param data The array buffer containing the .env bytes.
  * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
  */
-export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2> {
+export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV3> {
     const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
     let pos = 0;
 
@@ -219,17 +290,25 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
  * @returns environment file info in the latest supported version
  * @private
  */
-export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV2 {
+export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV3 {
     if (info.version > CurrentVersion) {
         throw new Error(`Unsupported babylon environment map version "${info.version}". Latest supported version is "${CurrentVersion}".`);
     }
 
-    if (info.version === 2) {
+    if (info.version === 3) {
         return info;
     }
 
-    // Migrate a v1 info to v2
-    info = { ...info, version: 2, imageType: DefaultEnvironmentTextureImageType };
+    if (info.irradiance && info.irradiance.irradianceTexture) {
+        const irradianceTexturev2 = { ...info.irradiance.irradianceTexture, dominantDirection: [0, 0, 1] };
+        info.irradiance.irradianceTexture = irradianceTexturev2 as EnvironmentTextureIrradianceTextureInfoV2;
+    }
+    // Migrate a v1 or v2 info to v3
+    if (info.version === 1) {
+        info = { ...info, version: 3, imageType: DefaultEnvironmentTextureImageType };
+    } else {
+        info = { ...info, version: 3 };
+    }
 
     return info;
 }
@@ -360,6 +439,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         info.irradiance.irradianceTexture = {
             size: irradianceTexture.getSize().width,
             faces: [],
+            dominantDirection: texture._dominantDirection?.asArray() || [0, 0, 1],
         };
 
         for (let face = 0; face < 6; face++) {
@@ -470,7 +550,7 @@ async function _GetTextureEncodedDataAsync(
  * @param texture defines the texture containing the polynomials
  * @returns the JSON representation of the spherical info
  */
-function CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
+function CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV2> {
     const polynmials = texture.sphericalPolynomial;
     if (polynmials == null) {
         return null;
