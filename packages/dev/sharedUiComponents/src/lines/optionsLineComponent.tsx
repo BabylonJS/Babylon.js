@@ -4,6 +4,9 @@ import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 import copyIcon from "../imgs/copy.svg";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { Dropdown } from "shared-ui-components/fluent/primitives/dropdown";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -103,20 +106,34 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
 
     // Copy to clipboard the code this option actually does
     // Example : material.sideOrientation = 1;
-    onCopyClick() {
+    onCopyClickStr() {
         if (this.props && this.props.target) {
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
             const value = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName];
             const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
-            copyCommandToClipboard(strCommand);
+            return strCommand;
         } else {
-            copyCommandToClipboard("undefined");
+            return "undefined";
         }
     }
 
-    override render() {
+    private renderFluent() {
+        return (
+            <PropertyLine label={this.props.label} onCopy={() => this.onCopyClickStr()}>
+                <Dropdown
+                    options={this.props.options}
+                    onSelect={(val: string) => {
+                        val !== undefined && this.updateValue(val);
+                    }}
+                    defaultValue={this.state.value}
+                />
+            </PropertyLine>
+        );
+    }
+
+    private renderOriginal() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -134,10 +151,13 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
                         })}
                     </select>
                 </div>
-                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                <div className="copy hoverIcon" onClick={() => copyCommandToClipboard(this.onCopyClickStr())} title="Copy to clipboard">
                     <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }
