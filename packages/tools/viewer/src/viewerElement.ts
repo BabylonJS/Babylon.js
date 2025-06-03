@@ -931,7 +931,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /** @internal */
     public override disconnectedCallback(): void {
         super.disconnectedCallback();
-        // this._tearDownViewer();
+        this._tearDownViewer();
     }
 
     /** @internal */
