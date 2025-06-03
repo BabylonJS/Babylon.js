@@ -987,6 +987,15 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Get the current shadow configuration.
+     */
+    public get shadowConfig(): Readonly<ShadowParams> {
+        return {
+            quality: this._shadowQuality,
+        };
+    }
+
+    /**
      * Update the shadow configuration.
      * @param value The new shadow configuration.
      */
