@@ -51,7 +51,7 @@ import {
     GetPrimitiveMode,
     IsNoopNode,
     IsTriangleFillMode,
-    AreCollapsible,
+    IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
     IndicesArrayToTypedArray,
@@ -1274,7 +1274,7 @@ export class GLTFExporter {
 
                 // If a parent node exists and can be collapsed, merge their transformations and mark the parent as the camera-containing node.
                 const parentBabylonNode = babylonNode.parent;
-                if (parentBabylonNode !== null && AreCollapsible(babylonNode, parentBabylonNode)) {
+                if (parentBabylonNode !== null && IsChildCollapsible(babylonNode, parentBabylonNode)) {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex !== undefined) {
                         const parentNode = this._nodes[parentNodeIndex];

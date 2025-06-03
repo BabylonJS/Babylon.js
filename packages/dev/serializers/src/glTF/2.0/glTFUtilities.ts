@@ -303,7 +303,7 @@ export function CollapseChildIntoParent(node: INode, parentNode: INode, ignoreSc
  * @param parentBabylonNode Target parent node.
  * @returns True if the two nodes can be merged, false otherwise.
  */
-export function AreCollapsible(babylonNode: Node, parentBabylonNode: Node): boolean {
+export function IsChildCollapsible(babylonNode: Node, parentBabylonNode: Node): boolean {
     return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 
