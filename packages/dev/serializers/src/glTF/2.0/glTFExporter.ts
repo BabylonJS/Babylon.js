@@ -78,7 +78,7 @@ import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { TargetCamera } from "core/Cameras";
+import { TargetCamera } from "core/Cameras/targetCamera";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index

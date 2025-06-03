@@ -10,8 +10,8 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
-import { Logger } from "core/Misc";
-import { TargetCamera } from "core/Cameras";
+import { Logger } from "core/Misc/logger";
+import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
 
 // Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
