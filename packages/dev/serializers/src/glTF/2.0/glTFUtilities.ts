@@ -13,12 +13,12 @@ import type { Node } from "core/node";
 import { Logger } from "core/Misc/logger";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
+import { Epsilon } from "core/Maths/math.constants";
 
 // Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
 const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // Default values for comparison.
-export const Epsilon = 1e-6;
 export const DefaultTranslation = Vector3.ZeroReadOnly;
 export const DefaultRotation = Quaternion.Identity();
 export const DefaultScale = Vector3.OneReadOnly;

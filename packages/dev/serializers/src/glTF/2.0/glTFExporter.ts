@@ -17,7 +17,6 @@ import type {
     ICamera,
 } from "babylonjs-gltf2interface";
 import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
-
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
 import type { Matrix } from "core/Maths/math.vector";
@@ -59,7 +58,6 @@ import {
     CollapseChildIntoParent,
     Rotate180Y,
     DefaultTranslation,
-    Epsilon,
     DefaultScale,
     DefaultRotation,
 } from "./glTFUtilities";
@@ -79,6 +77,7 @@ import { LinesMesh } from "core/Meshes/linesMesh";
 import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
+import { Epsilon } from "core/Maths/math.constants";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
