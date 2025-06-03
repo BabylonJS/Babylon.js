@@ -61,6 +61,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _engine: AbstractEngine;
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
+    private _restoreInspector = false;
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
@@ -117,6 +118,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 if (this._scene) {
                     if (this.props.globalState.isDebugLayerEnabled) {
                         this.props.globalState.hideDebugLayer();
+                        this._restoreInspector = true;
                     }
                 }
             },
@@ -307,7 +309,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.prepareLighting();
         this.handleErrors();
 
-        if (this.props.globalState.isDebugLayerEnabled) {
+        if (this._restoreInspector) {
+            this._restoreInspector = false;
             this.props.globalState.showDebugLayer();
         }
 
