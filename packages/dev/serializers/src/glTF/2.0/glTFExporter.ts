@@ -1278,7 +1278,7 @@ export class GLTFExporter {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex !== undefined) {
                         const parentNode = this._nodes[parentNodeIndex];
-                        CollapseChildIntoParent(node, parentNode, true);
+                        CollapseChildIntoParent(node, parentNode);
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
                         return null; // Skip exporting the original child node
                     }

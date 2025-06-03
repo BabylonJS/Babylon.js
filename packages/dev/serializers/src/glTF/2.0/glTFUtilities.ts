@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-jsdoc */
-
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { FloatArray, DataArray, IndicesArray } from "core/types";
@@ -11,6 +10,9 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
+import { Logger } from "core/Misc";
+import { TargetCamera } from "core/Cameras";
+import type { ShadowLight } from "core/Lights/shadowLight";
 
 // Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
 const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
@@ -19,6 +21,7 @@ const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion
 const Epsilon = 1e-6;
 const DefaultTranslation = Vector3.Zero();
 const DefaultScale = Vector3.One();
+const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1);
 
 /**
  * Get the information necessary for enumerating a vertex buffer.
@@ -251,30 +254,22 @@ export function Rotate180Y(rotation: Quaternion): void {
 }
 
 /**
- * Collapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
+ * Collapses GLTF parent and node into a single node, ignoring scaling.
+ * This is useful for removing nodes that were added by the GLTF importer.
  * @param node Original GLTF node (Light or Camera).
  * @param parentNode Target parent node.
- * @param ignoreScale Whether to ignore scaling of the nodes when collapsing.
  */
-export function CollapseChildIntoParent(node: INode, parentNode: INode, ignoreScale: boolean = false): void {
+export function CollapseChildIntoParent(node: INode, parentNode: INode): void {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-    const parentScale = Vector3.FromArrayToRef([1, 1, 1], 0, TmpVectors.Vector3[1]);
-    if (!ignoreScale && parentNode.scale) {
-        Vector3.FromArrayToRef(parentNode.scale, 0, parentScale);
-    }
-    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
+    const parentMatrix = Matrix.ComposeToRef(DefaultScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
 
     const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
     const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    const scale = Vector3.FromArrayToRef([1, 1, 1], 0, TmpVectors.Vector3[3]);
-    if (!ignoreScale && node.scale) {
-        Vector3.FromArrayToRef(node.scale, 0, scale);
-    }
-    const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[1]);
+    const matrix = Matrix.ComposeToRef(DefaultScale, rotation, translation, TmpVectors.Matrix[1]);
 
     parentMatrix.multiplyToRef(matrix, matrix);
-    matrix.decompose(parentScale, parentRotation, parentTranslation);
+    matrix.decompose(undefined, parentRotation, parentTranslation);
 
     if (parentTranslation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete parentNode.translation;
@@ -288,23 +283,40 @@ export function CollapseChildIntoParent(node: INode, parentNode: INode, ignoreSc
         parentNode.rotation = parentRotation.asArray();
     }
 
-    if (parentScale.equalsWithEpsilon(DefaultScale, Epsilon)) {
+    if (parentNode.scale) {
         delete parentNode.scale;
-    } else {
-        parentNode.scale = parentScale.asArray();
     }
 }
 
 /**
- * Checks whether a child node is candidate for collapsing with its parent node.
+ * Checks whether a camera or light node is candidate for collapsing with its parent node.
  * This is useful for roundtrips, as the glTF Importer parents a new node to
  * lights and cameras to store their original transformation information.
- * @param babylonNode Original GLTF node.
- * @param parentBabylonNode Target parent node.
+ * @param babylonNode Babylon light or camera node.
+ * @param parentBabylonNode Target Babylon parent node.
  * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsChildCollapsible(babylonNode: Node, parentBabylonNode: Node): boolean {
-    return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
+export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, parentBabylonNode: Node): boolean {
+    if (!(parentBabylonNode instanceof TransformNode)) {
+        return false;
+    }
+
+    // Verify child is the only descendant
+    const isOnlyDescendant = parentBabylonNode.getChildren().length === 1 && babylonNode.getChildren().length === 0 && babylonNode.parent === parentBabylonNode;
+    if (!isOnlyDescendant) {
+        return false;
+    }
+
+    // Verify parent has the expected scaling, determined by the node type and scene's coordinate system.
+    const scene = babylonNode.getScene();
+    const expectedScale = babylonNode instanceof TargetCamera && !scene.useRightHandedSystem ? DefaultLoaderCameraParentScaleLh : DefaultScale;
+
+    if (!parentBabylonNode.scaling.equalsWithEpsilon(expectedScale, Epsilon)) {
+        Logger.Warn(`Cannot collapse node ${babylonNode.name} into parent node ${parentBabylonNode.name} with modified scaling.`);
+        return false;
+    }
+
+    return true;
 }
 
 export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
