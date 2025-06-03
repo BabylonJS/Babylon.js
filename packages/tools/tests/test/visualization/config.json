@@ -2541,6 +2541,11 @@
             "errorRatio": 2
         },
         {
+            "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
+            "playgroundId": "#JWKDME#77",
+            "renderCount": 10
+        },
+        {
             "title": "FrameGraph nrge custom rendering",
             "playgroundId": "#1QCA2M#1",
             "errorRatio": 2
