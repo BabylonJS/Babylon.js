@@ -58,6 +58,10 @@ import {
     GetVertexBufferInfo,
     CollapseChildIntoParent,
     Rotate180Y,
+    DefaultTranslation,
+    Epsilon,
+    DefaultScale,
+    DefaultRotation,
 } from "./glTFUtilities";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
@@ -640,11 +644,11 @@ export class GLTFExporter {
     }
 
     private _setNodeTransformation(node: INode, babylonTransformNode: TransformNode, convertToRightHanded: boolean): void {
-        if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
+        if (!babylonTransformNode.getPivotPoint().equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             Tools.Warn("Pivot points are not supported in the glTF serializer");
         }
 
-        if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
+        if (!babylonTransformNode.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             const translation = TmpVectors.Vector3[0].copyFrom(babylonTransformNode.position);
             if (convertToRightHanded) {
                 ConvertToRightHandedPosition(translation);
@@ -653,7 +657,7 @@ export class GLTFExporter {
             node.translation = translation.asArray();
         }
 
-        if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
+        if (!babylonTransformNode.scaling.equalsWithEpsilon(DefaultScale, Epsilon)) {
             node.scale = babylonTransformNode.scaling.asArray();
         }
 
@@ -661,7 +665,7 @@ export class GLTFExporter {
             babylonTransformNode.rotationQuaternion ||
             Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
 
-        if (!Quaternion.IsIdentity(rotationQuaternion)) {
+        if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
             if (convertToRightHanded) {
                 ConvertToRightHandedRotation(rotationQuaternion);
             }
@@ -671,7 +675,7 @@ export class GLTFExporter {
     }
 
     private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHanded: boolean): void {
-        if (!babylonCamera.position.equalsToFloats(0, 0, 0)) {
+        if (!babylonCamera.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             const translation = TmpVectors.Vector3[0].copyFrom(babylonCamera.position);
             if (convertToRightHanded) {
                 ConvertToRightHandedPosition(translation);
@@ -692,7 +696,7 @@ export class GLTFExporter {
             Rotate180Y(rotationQuaternion);
         }
 
-        if (!Quaternion.IsIdentity(rotationQuaternion)) {
+        if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
             node.rotation = rotationQuaternion.asArray();
         }
     }
@@ -1472,7 +1476,7 @@ export class GLTFExporter {
                     const colorWhite = Color3.White();
                     const alpha = babylonLinesMesh.material?.alpha ?? 1;
                     const color = babylonLinesMesh.greasedLineMaterial?.color ?? colorWhite;
-                    if (!color.equals(colorWhite) || alpha < 1) {
+                    if (!color.equalsWithEpsilon(colorWhite, Epsilon) || alpha < 1) {
                         material.pbrMetallicRoughness = {
                             baseColorFactor: [...color.asArray(), alpha],
                         };
@@ -1488,7 +1492,7 @@ export class GLTFExporter {
 
                     const babylonLinesMesh = babylonMesh;
 
-                    if (!babylonLinesMesh.color.equals(Color3.White()) || babylonLinesMesh.alpha < 1) {
+                    if (!babylonLinesMesh.color.equalsWithEpsilon(Color3.White(), Epsilon) || babylonLinesMesh.alpha < 1) {
                         material.pbrMetallicRoughness = {
                             baseColorFactor: [...babylonLinesMesh.color.asArray(), babylonLinesMesh.alpha],
                         };

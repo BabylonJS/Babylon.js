@@ -18,9 +18,10 @@ import type { ShadowLight } from "core/Lights/shadowLight";
 const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // Default values for comparison.
-const Epsilon = 1e-6;
-const DefaultTranslation = Vector3.Zero();
-const DefaultScale = Vector3.One();
+export const Epsilon = 1e-6;
+export const DefaultTranslation = Vector3.ZeroReadOnly;
+export const DefaultRotation = Quaternion.Identity();
+export const DefaultScale = Vector3.OneReadOnly;
 const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1);
 
 /**
@@ -277,7 +278,7 @@ export function CollapseChildIntoParent(node: INode, parentNode: INode): void {
         parentNode.translation = parentTranslation.asArray();
     }
 
-    if (Quaternion.IsIdentity(parentRotation)) {
+    if (parentRotation.equalsWithEpsilon(DefaultRotation, Epsilon)) {
         delete parentNode.rotation;
     } else {
         parentNode.rotation = parentRotation.asArray();
@@ -327,12 +328,12 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     // Transform
     if (useRightHandedSystem) {
         const matrix = node.getWorldMatrix();
-        if (!matrix.isIdentity()) {
+        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
             return false;
         }
     } else {
         const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
-        if (!matrix.isIdentity()) {
+        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
             return false;
         }
     }
