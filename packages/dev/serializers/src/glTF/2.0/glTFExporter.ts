@@ -51,7 +51,7 @@ import {
     GetPrimitiveMode,
     IsNoopNode,
     IsTriangleFillMode,
-    IsChildCollapsible,
+    AreCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
     IndicesArrayToTypedArray,
@@ -692,7 +692,7 @@ export class GLTFExporter {
         }
 
         if (!Quaternion.IsIdentity(rotationQuaternion)) {
-            node.rotation = rotationQuaternion.normalize().asArray();
+            node.rotation = rotationQuaternion.asArray();
         }
     }
 
@@ -1272,9 +1272,9 @@ export class GLTFExporter {
 
                 this._setCameraTransformation(node, babylonNode, state.convertToRightHanded);
 
-                // If a parent node exists and can be collapsed, compose their transformations and mark the parent as the camera-containing node.
+                // If a parent node exists and can be collapsed, merge their transformations and mark the parent as the camera-containing node.
                 const parentBabylonNode = babylonNode.parent;
-                if (parentBabylonNode !== null && IsChildCollapsible(babylonNode, parentBabylonNode)) {
+                if (parentBabylonNode !== null && AreCollapsible(babylonNode, parentBabylonNode)) {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex !== undefined) {
                         const parentNode = this._nodes[parentNodeIndex];

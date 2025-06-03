@@ -252,8 +252,8 @@ export function Rotate180Y(rotation: Quaternion): void {
 
 /**
  * Collapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
- * @param node Target parent node.
- * @param parentNode Original GLTF node (Light or Camera).
+ * @param node Original GLTF node (Light or Camera).
+ * @param parentNode Target parent node.
  * @param ignoreScale Whether to ignore scaling of the nodes when collapsing.
  */
 export function CollapseChildIntoParent(node: INode, parentNode: INode, ignoreScale: boolean = false): void {
@@ -296,14 +296,14 @@ export function CollapseChildIntoParent(node: INode, parentNode: INode, ignoreSc
 }
 
 /**
- * Checks whether a child node is safe to collapse into its parent node.
- * This is useful for roundtrips, as the glTF Importer creates a parent node to
- * store transformation information for lights and cameras.
+ * Checks whether a child node is candidate for collapsing with its parent node.
+ * This is useful for roundtrips, as the glTF Importer parents a new node to
+ * lights and cameras to store their original transformation information.
  * @param babylonNode Original GLTF node.
  * @param parentBabylonNode Target parent node.
  * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsChildCollapsible(babylonNode: Node, parentBabylonNode: Node): boolean {
+export function AreCollapsible(babylonNode: Node, parentBabylonNode: Node): boolean {
     return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 
