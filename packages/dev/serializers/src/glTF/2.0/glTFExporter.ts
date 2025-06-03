@@ -685,8 +685,9 @@ export class GLTFExporter {
             ConvertToRightHandedRotation(rotationQuaternion);
         }
 
-        // All cameras in LH scenes inherently face Z+ by default (opposite of glTF's Z-),
-        // regardless of whether they were created in Babylon or imported from a glTF.
+        // Left-handed scenes have cameras that always face Z+ (opposite of glTF's Z-).
+        // Use scene coordinate system rather than convertToRightHanded, since some
+        // cameras may not need convertToRightHanded but still need correction to face Z-.
         if (!this._babylonScene.useRightHandedSystem) {
             Rotate180Y(rotationQuaternion);
         }
