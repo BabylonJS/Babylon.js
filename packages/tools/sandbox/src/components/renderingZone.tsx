@@ -115,10 +115,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             () => {
                 Tools.ClearLogCache();
                 if (this._scene) {
-                    this.props.globalState.isDebugLayerEnabled = this.props.globalState.currentScene.debugLayer.isVisible();
-
                     if (this.props.globalState.isDebugLayerEnabled) {
-                        this._scene.debugLayer.hide();
+                        this.props.globalState.hideDebugLayer();
                     }
                 }
             },

@@ -1,4 +1,4 @@
-import "@dev/inspector";
+// import { ShowInspector, HideInspector } from "@dev/inspector-v2";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
@@ -24,6 +24,8 @@ export class GlobalState {
     public skybox = true;
     public toneMapping?: number;
 
+    public readonly useNewUx = new URLSearchParams(window.location.search).has("newux");
+
     public reflector?: {
         hostname: string;
         port: number;
@@ -32,15 +34,33 @@ export class GlobalState {
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.currentScene.debugLayer.show();
+            if (!this.useNewUx) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.currentScene.debugLayer.show();
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                (async () => {
+                    const inspectorV2Module = await import("@dev/inspector-v2");
+                    inspectorV2Module.ShowInspector(this.currentScene);
+                })();
+                // ShowInspector(this.currentScene);
+            }
         }
     }
 
     public hideDebugLayer() {
         this.isDebugLayerEnabled = false;
         if (this.currentScene) {
-            this.currentScene.debugLayer.hide();
+            if (!this.useNewUx) {
+                this.currentScene.debugLayer.hide();
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                (async () => {
+                    const inspectorV2Module = await import("@dev/inspector-v2");
+                    inspectorV2Module.HideInspector();
+                })();
+                // HideInspector();
+            }
         }
     }
 }
