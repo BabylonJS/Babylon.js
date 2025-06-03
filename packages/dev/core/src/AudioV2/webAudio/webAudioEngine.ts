@@ -368,6 +368,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    // TODO: Refactor this so it can be used for `setValueCurveAtTime` calls, and call `cancelAndHoldAtTime` or `cancelScheduledValues`.
     public _setAudioParam(audioParam: AudioParam, value: number) {
         audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
