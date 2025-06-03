@@ -174,7 +174,7 @@ const HotSpotEntry: FunctionComponent<{
         return {
             transform: CSS.Transform.toString(dndTransform),
             transition: dndTransition,
-        };
+        } as const;
     }, [dndTransform, dndTransition]);
 
     const rootDivRef = useRef<HTMLDivElement>(null);
@@ -387,7 +387,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, []);
     // This is only needed because the select expects to "bind" to an object and a property.
     const outputFormatWrapper = useMemo(() => {
-        return { outputFormat };
+        return { outputFormat } as const;
     }, [outputFormat]);
 
     const lightingUrlConfig = useConfiguration(
@@ -464,7 +464,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
     // This is only needed because the color picker expects to "bind" to an object and a property.
     const clearColorWrapper = useMemo(() => {
-        return { clearColor: clearColorConfig.configuredState };
+        return { clearColor: clearColorConfig.configuredState } as const;
     }, [clearColorConfig.configuredState]);
 
     const shadowQualityConfig = useConfiguration(
@@ -478,7 +478,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
     // This is only needed because the select expects to "bind" to an object and a property.
     const shadowQualityWrapper = useMemo(() => {
-        return { shadowQuality: shadowQualityConfig.configuredState };
+        return { shadowQuality: shadowQualityConfig.configuredState } as const;
     }, [shadowQualityConfig.configuredState]);
 
     const cameraConfig = useConfiguration(
@@ -549,7 +549,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
     // This is only needed because the select expects to "bind" to an object and a property.
     const toneMappingWrapper = useMemo(() => {
-        return { toneMapping: toneMappingConfig.configuredState };
+        return { toneMapping: toneMappingConfig.configuredState } as const;
     }, [toneMappingConfig.configuredState]);
 
     const contrastConfig = useConfiguration(
