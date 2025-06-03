@@ -19,6 +19,7 @@ import type {
     Nullable,
     Observer,
     PickingInfo,
+    ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
     // eslint-disable-next-line import/no-internal-modules
@@ -32,10 +33,11 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
 import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -135,7 +137,7 @@ type ShadowState = {
     normal?: {
         generator: ShadowGenerator;
         ground: Mesh;
-        light: SpotLight;
+        light: ShadowLight;
         shouldRender: boolean;
     };
     high?: {
@@ -199,18 +201,13 @@ function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTextu
     const originalBlockMaterialDirtyMechanism = scene.blockMaterialDirtyMechanism;
     scene.blockMaterialDirtyMechanism = true;
     try {
-        const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
-        const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+        const hdrSkybox = CreateBox("hdrSkyBox", { sideOrientation: Mesh.BACKSIDE }, scene);
+        const hdrSkyboxMaterial = new BackgroundMaterial("skyBox", scene);
         // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
         hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
-        hdrSkyboxMaterial.backFaceCulling = false;
         hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
-        if (hdrSkyboxMaterial.reflectionTexture) {
-            hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-        }
-        hdrSkyboxMaterial.microSurface = 1.0 - blur;
-        hdrSkyboxMaterial.disableLighting = true;
-        hdrSkyboxMaterial.twoSidedLighting = true;
+        reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        hdrSkyboxMaterial.reflectionBlur = blur;
         hdrSkybox.material = hdrSkyboxMaterial;
         hdrSkybox.isPickable = false;
         hdrSkybox.infiniteDistance = true;
@@ -1007,9 +1004,9 @@ export class Viewer implements IDisposable {
             this._skyboxBlur = value;
             if (this._skybox) {
                 const material = this._skybox.material;
-                if (material instanceof PBRMaterial) {
+                if (material instanceof BackgroundMaterial) {
                     this._snapshotHelper.disableSnapshotRendering();
-                    material.microSurface = 1.0 - this._skyboxBlur;
+                    material.reflectionBlur = this._skyboxBlur;
                     this._snapshotHelper.enableSnapshotRendering();
                     this._markSceneMutated();
                 }
@@ -1764,16 +1761,11 @@ export class Viewer implements IDisposable {
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const [{ CreateDisc }, { ShadowOnlyMaterial }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
+        const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
-            import("materials/shadowOnly/shadowOnlyMaterial"),
             import("core/Materials/Textures/renderTargetTexture"),
             import("core/Lights/Shadows/shadowGenerator"),
             import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
-            // TODO: Why are these explicit imports needed, even though they are imported directly in shadowOnlyMaterial?
-            // Without these explicit imports, the shaders do not end up in the esm dist and we get a runtime error.
-            import("materials/shadowOnly/shadowOnly.vertex"),
-            import("materials/shadowOnly/shadowOnly.fragment"),
         ]);
 
         // cancel if the model is unloaded before the shadows are created
@@ -1805,13 +1797,15 @@ export class Viewer implements IDisposable {
 
         const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
         if (!normal) {
-            const light = new SpotLight("spotLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
+            const light = new SpotLight("shadowLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
 
             const generator = new ShadowGenerator(size, light);
             generator.setDarkness(0.8);
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
             generator.useBlurExponentialShadowMap = true;
+            generator.enableSoftTransparentShadow = true;
+            generator.bias = radius / 1000;
             generator.useKernelBlur = true;
             generator.blurKernel = 32;
 
@@ -1820,7 +1814,9 @@ export class Viewer implements IDisposable {
                 shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
             }
 
-            const shadowMaterial = new ShadowOnlyMaterial("shadowMapGroundMaterial", this._scene);
+            const shadowMaterial = new BackgroundMaterial("shadowMapGroundMaterial", this._scene);
+            shadowMaterial.shadowOnly = true;
+            shadowMaterial.primaryColor = Color3.Black();
 
             const ground = CreateDisc("shadowMapGround", { radius: groundSize, tessellation: 64 }, this._scene);
             ground.rotation.x = Math.PI / 2;
