@@ -1079,25 +1079,25 @@
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> LH",
-            "playgroundId": "#3A00GJ#41",
+            "playgroundId": "#3A00GJ#42",
             "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = false;",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> RH",
-            "playgroundId": "#3A00GJ#41",
+            "playgroundId": "#3A00GJ#42",
             "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = true;",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> RH",
-            "playgroundId": "#3A00GJ#41",
+            "playgroundId": "#3A00GJ#42",
             "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = true;",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> LH",
-            "playgroundId": "#3A00GJ#41",
+            "playgroundId": "#3A00GJ#42",
             "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = false;",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
