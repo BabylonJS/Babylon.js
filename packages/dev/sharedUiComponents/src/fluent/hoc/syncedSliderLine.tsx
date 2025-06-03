@@ -1,11 +1,20 @@
-import { IPropertyLineProps, PropertyLine } from "./propertyLine";
-import { SyncedSliderInput, SyncedSliderProps } from "../primitives/syncedSlider";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
+import { type SyncedSliderProps, SyncedSliderInput } from "../primitives/syncedSlider";
 
 type KeyOf<O> = string & keyof O;
-export type SyncedSliderLineProps<O, K extends KeyOf<O>> = Omit<IPropertyLineProps, "children"> &
+export type SyncedSliderLineProps<O, K extends KeyOf<O>> = Omit<PropertyLineProps, "children"> &
     Omit<SyncedSliderProps, "value" | "onChange"> & {
+        /**
+         * String key
+         */
         validKey: K;
+        /**
+         * Object where O[K] is a number
+         */
         obj: O;
+        /**
+         * Callback when either the slider or input value changes
+         */
         onChange?: (value: number) => void;
     };
 
@@ -14,12 +23,11 @@ export type SyncedSliderLineProps<O, K extends KeyOf<O>> = Omit<IPropertyLinePro
  * When value changes, updates the object with the new value and calls the onChange callback.
  *
  * Example usage looks like
- *    <SyncedSliderLine key="x" obj={vector} />
- *    <SyncedSliderLine key="r" obj={color} />
- * @param param0
+ *    \<SyncedSliderLine validKey="x" obj=\{vector\} /\>
+ *    \<SyncedSliderLine validKey="r" obj=\{color\} /\>
+ * @param props
  * @returns
  */
-
 export const SyncedSliderLine = <O extends Record<K, number>, K extends KeyOf<O>>(props: SyncedSliderLineProps<O, K>): React.ReactElement => {
     return (
         <PropertyLine {...props}>

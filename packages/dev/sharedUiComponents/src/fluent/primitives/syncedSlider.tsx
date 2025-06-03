@@ -1,6 +1,8 @@
-import { InputProps, makeStyles, Slider, SliderProps } from "@fluentui/react-components";
+import type { InputProps, SliderProps } from "@fluentui/react-components";
+import { makeStyles, Slider } from "@fluentui/react-components";
 import { Input } from "./input";
-import { FunctionComponent, useState } from "react";
+import type { FunctionComponent } from "react";
+import { useState } from "react";
 
 const useSyncedSliderStyles = makeStyles({
     syncedSlider: {
@@ -20,14 +22,20 @@ const useSyncedSliderStyles = makeStyles({
 });
 
 export type SyncedSliderProps = Omit<InputProps & SliderProps, "onChange" | "value"> & {
-    onChange: (value: number) => void; // Callback to notify parent of value change, override both of the slider/input handlers
-    value: number; // Controlled value for the slider and input
+    /**
+     * Callback to notify parent of value change, override both of the slider/input handlers
+     */
+    onChange: (value: number) => void;
+    /**
+     * Controlled value for the slider and input
+     */
+    value: number;
 };
 
 /**
  * Component which synchronizes a slider and an input field, allowing the user to change a value using either control
  * @param props
- * @returns
+ * @returns SyncedSlider component
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props: SyncedSliderProps) => {
     const styles = useSyncedSliderStyles();

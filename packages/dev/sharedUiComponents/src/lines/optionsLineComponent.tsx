@@ -119,7 +119,7 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
         }
     }
 
-    private renderFluent() {
+    private _renderFluent() {
         return (
             <PropertyLine label={this.props.label} onCopy={() => this.onCopyClickStr()}>
                 <Dropdown
@@ -133,7 +133,7 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
         );
     }
 
-    private renderOriginal() {
+    private _renderOriginal() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -158,6 +158,6 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
         );
     }
     override render() {
-        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this._renderFluent() : this._renderOriginal())}</ToolContext.Consumer>;
     }
 }

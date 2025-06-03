@@ -1,8 +1,8 @@
-// eslint-disable-next-line import/no-internal-modules
-import { type AbstractMesh } from "core/index";
+/* eslint-disable jsdoc/require-jsdoc */
 
 import type { FunctionComponent } from "react";
 import { ColorPropertyLine } from "../hoc/colorPropertyLine";
+import { type AbstractMesh } from "core/Meshes";
 
 export const MeshOutlineOverlayProperties: FunctionComponent<{ entity: AbstractMesh }> = ({ entity: mesh }) => {
     return (

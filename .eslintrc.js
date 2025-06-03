@@ -247,6 +247,10 @@ const rules = {
                         format: ["StrictPascalCase", "UPPER_CASE"],
                         modifiers: ["global"],
                         leadingUnderscore: "allow",
+                        filter: {
+                            regex: "^use",
+                            match: false,
+                        },
                     },
                     {
                         selector: "variable",

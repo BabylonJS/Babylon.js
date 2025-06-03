@@ -1,6 +1,7 @@
 import { Body1Strong, Button, InfoLabel, makeStyles, tokens } from "@fluentui/react-components";
 import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
-import { ComponentType, FunctionComponent, useState } from "react";
+import type { ComponentType, FunctionComponent } from "react";
+import { useState } from "react";
 import { copyCommandToClipboard } from "shared-ui-components/copyCommandToClipboard";
 
 const usePropertyLineStyle = makeStyles({
@@ -43,15 +44,37 @@ const usePropertyLineStyle = makeStyles({
     },
 });
 
-export interface IPropertyLineProps {
+export type PropertyLineProps = {
+    /**
+     * The content to display inside the property line.
+     */
     children: React.ReactNode;
-    label: string; // The name of the property to display in the propetryline
-    description?: string; // if passed, the property line label will have a tooltip with this description
-    onCopy?: () => string; // Optional function returning a string to copy to clipboard
-    renderExpandedContent?: ComponentType; // If supplied, the propertyline will render an 'expand' icon which when clicked renders this component within the property line
-}
+    /**
+     * The name of the property to display in the property line.
+     */
+    label: string;
+    /**
+     * Optional description for the property, shown on hover of the info icon
+     */
+    description?: string;
+    /**
+     * Optional function returning a string to copy to clipboard.
+     */
+    onCopy?: () => string;
+    /**
+     * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
+     */
+    renderExpandedContent?: ComponentType;
+};
 
-export const PropertyLine: FunctionComponent<IPropertyLineProps> = (props: IPropertyLineProps) => {
+/**
+ * A reusable component that renders a property line with a label and child content, and an optional description, copy button, and expandable section.
+ *
+ * @param props - The properties for the PropertyLine component.
+ * @returns A React element representing the property line.
+ *
+ */
+export const PropertyLine: FunctionComponent<PropertyLineProps> = (props: PropertyLineProps) => {
     const styles = usePropertyLineStyle();
     const [expanded, setExpanded] = useState(false);
 

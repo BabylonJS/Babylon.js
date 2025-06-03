@@ -1,5 +1,6 @@
-import { Textarea as FluentTextarea, TextareaProps as FluentTextareaProps, makeStyles } from "@fluentui/react-components";
-import { FunctionComponent } from "react";
+import type { TextareaProps as FluentTextareaProps } from "@fluentui/react-components";
+import { Textarea as FluentTextarea, makeStyles } from "@fluentui/react-components";
+import type { FunctionComponent } from "react";
 
 const useInputStyles = makeStyles({
     textarea: {},

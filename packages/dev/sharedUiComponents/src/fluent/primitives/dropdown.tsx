@@ -1,5 +1,5 @@
 import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
-import { IInspectableOptions } from "core/Misc";
+import type { IInspectableOptions } from "core/Misc";
 
 const useDropdownStyles = makeStyles({
     dropdownOption: {
@@ -9,7 +9,14 @@ const useDropdownStyles = makeStyles({
     optionsLine: {},
 });
 
-export const Dropdown = (props: { options: IInspectableOptions[]; onSelect: (o: string) => void; defaultValue: string | number }) => {
+type DropdownProps = { options: IInspectableOptions[]; onSelect: (o: string) => void; defaultValue: string | number };
+
+/**
+ * Renders a fluent UI dropdown with a calback for selection and a required default value
+ * @param props
+ * @returns dropdown component
+ */
+export const Dropdown = (props: DropdownProps) => {
     const styles = useDropdownStyles();
     return (
         <FluentDropdown

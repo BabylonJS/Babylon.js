@@ -1,5 +1,5 @@
-import { Input as FluentInput, InputProps as FluentInputProps, makeStyles } from "@fluentui/react-components";
-import { FunctionComponent, useEffect, useState } from "react";
+import { Input as FluentInput, type InputProps as FluentInputProps, makeStyles } from "@fluentui/react-components";
+import { type FunctionComponent, useEffect, useState } from "react";
 
 const useInputStyles = makeStyles({
     text: {

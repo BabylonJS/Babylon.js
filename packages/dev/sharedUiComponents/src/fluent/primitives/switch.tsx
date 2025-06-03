@@ -17,6 +17,8 @@ const useSwitchStyles = makeStyles({
 
 /**
  * This is a primitive fluent boolean switch component whose only knowledge is the shared styling across all tools
+ * @param props
+ * @returns Switch component
  */
 export const Switch: FunctionComponent<FluentSwitchProps> = (props: FluentSwitchProps) => {
     const classes = useSwitchStyles();

@@ -1,12 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
-import { Vector3, Vector4 } from "core/index";
+import { type Vector3, Vector4 } from "core/index";
 
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { SyncedSliderLine } from "./syncedSliderLine";
-import { FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
 
-type IVectorPropertyLineProps = {
+type VectorPropertyLineProps = {
     vector: Vector3 | Vector4;
     label: string;
     min?: number;
@@ -14,10 +14,14 @@ type IVectorPropertyLineProps = {
 };
 
 /**
- * Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
+ *  Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
  * The expanded section contains a slider/input box for each component of the vector (x, y, z, w)
+ * @param props
+ * @returns
  */
-export const VectorPropertyLine: FunctionComponent<IVectorPropertyLineProps> = ({ vector, label, min, max }) => {
+export const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps> = (props: VectorPropertyLineProps) => {
+    const { min, max, vector, label } = props;
+
     const renderXYZExpand = (vector: Vector3 | Vector4) => {
         return (
             <>
