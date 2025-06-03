@@ -31,8 +31,10 @@ import {
 } from "./types/processedLottie";
 import { Color3, Vector2 } from "core/Maths";
 import { BezierCurveEase } from "core/Animations";
-import { Mesh, MeshBuilder, TransformNode } from "core/Meshes";
-import { StandardMaterial, Texture } from "core/Materials";
+import { type Mesh, MeshBuilder, TransformNode } from "core/Meshes";
+import { StandardMaterial, type Texture } from "core/Materials";
+
+const BaseSize = 35; // Base size for the plane mesh, can be adjusted as needed
 
 type Textures = {
     copilot: Texture;
@@ -46,6 +48,18 @@ type Textures = {
     word: Texture;
 };
 
+type Scaling = {
+    copilot: number;
+    excel: number;
+    m365: number;
+    oneDrive: number;
+    oneNote: number;
+    outlook: number;
+    powerPoint: number;
+    swirl: number;
+    word: number;
+};
+
 /**
  * Class responsible for parsing lottie data
  */
@@ -54,6 +68,7 @@ export class LottieParser {
     private _errors = new Array<string>();
     private _zIndex = 0;
     private _textures: Textures | undefined;
+    private _scales: Scaling | undefined;
 
     /**
      * Creates an instance of LottieParser.
@@ -87,10 +102,13 @@ export class LottieParser {
      * Processes the loaded Lottie data.
      * @param lottieAsJsonString - The lottie definition data as a string.
      * @param textures - The textures to use for the lottie animation.
+     * @param scales - The scaling factors for each texture.
      */
-    public processLottieData(lottieAsJsonString: string, textures: Textures): void {
-        const rawData = JSON.parse(lottieAsJsonString) as RawLottieAnimation;
+    public processLottieData(lottieAsJsonString: string, textures: Textures, scales: Scaling): void {
+        this._errors.length = 0; // Clear previous errors
         this._textures = textures;
+        this._scales = scales;
+        const rawData = JSON.parse(lottieAsJsonString) as RawLottieAnimation;
 
         this._processedData = {
             startFrame: rawData.ip,
@@ -112,7 +130,7 @@ export class LottieParser {
 
             const parentLayer = this._processedData.layers.get(layer.parentIndex);
             if (parentLayer) {
-                layer.node.parent = parentLayer.node; // Set the Babylon node parent
+                layer.node!.parent = parentLayer.node!; // Set the Babylon node parent
             }
         }
     }
@@ -134,18 +152,49 @@ export class LottieParser {
             name: rawLayer.nm ?? "No name",
             parentIndex: rawLayer.parent,
             index: rawLayer.ind!,
-            isVisible: true,
+            isVisible: false,
             inFrame: rawLayer.ip ?? 0,
             outFrame: rawLayer.op ?? 0,
             startTime: rawLayer.st ?? 0,
             timeStretch: rawLayer.sr ?? 1,
             autoOrient: rawLayer.ao === 1,
             transform: transform,
-            node:
-                (rawLayer.shapes?.length ?? 0) === 0 ? new TransformNode(`Layer - ${rawLayer.nm}`) : MeshBuilder.CreatePlane(`Layer - ${rawLayer.nm}`, { height: 100, width: 100 }),
         };
 
         this._processedData.layers.set(newLayer.index, newLayer);
+
+        if ((rawLayer.shapes?.length ?? 0) !== 0) {
+            const scale = this._mapScale(newLayer.name);
+
+            let mesh: Mesh | undefined = undefined;
+            if (newLayer.name === "M_plate 2") {
+                mesh = MeshBuilder.CreatePlane(`Sprite - ${rawLayer.nm}`, { height: (BaseSize * scale) / 2, width: BaseSize * scale });
+            } else {
+                mesh = MeshBuilder.CreatePlane(`Sprite - ${rawLayer.nm}`, { size: BaseSize * scale });
+            }
+            mesh.isVisible = false;
+
+            const material = new StandardMaterial("myMaterial");
+            const texture = this._mapTexture(rawLayer.nm);
+
+            if (texture) {
+                material.diffuseTexture = texture;
+            } else {
+                material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
+            }
+
+            mesh.material = material;
+
+            const anchorNode = new TransformNode(`Anchor - ${rawLayer.nm}`);
+            anchorNode.position.x = transform.anchorPoint?.startValue.x ?? 0;
+            anchorNode.position.y = transform.anchorPoint?.startValue.y ?? 0;
+            anchorNode.position.z = this._zIndex;
+            mesh.parent = anchorNode;
+
+            newLayer.node = anchorNode;
+        } else {
+            newLayer.node = new TransformNode(`Layer - ${rawLayer.nm}`);
+        }
 
         newLayer.node.position.x = transform.position?.startValue.x ?? 0;
         newLayer.node.position.y = transform.position?.startValue.y ?? 0;
@@ -156,20 +205,6 @@ export class LottieParser {
 
         newLayer.node.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
         newLayer.node.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
-
-        if (newLayer.node instanceof Mesh) {
-            newLayer.node.isVisible = false;
-
-            const material = new StandardMaterial("myMaterial");
-            const texture = this._mapTexture(rawLayer.nm);
-            if (texture) {
-                material.diffuseTexture = texture;
-            } else {
-                material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
-            }
-
-            newLayer.node.material = material;
-        }
 
         this._processLottieShapes(newLayer, rawLayer.shapes);
     }
@@ -200,6 +235,30 @@ export class LottieParser {
         }
 
         return undefined;
+    }
+
+    private _mapScale(layerName: string): number {
+        if (layerName === "Copilot 01") {
+            return this._scales?.copilot ?? 1;
+        } else if (layerName === "Excel 2") {
+            return this._scales?.excel ?? 1;
+        } else if (layerName === "M_plate 2") {
+            return this._scales?.m365 ?? 1;
+        } else if (layerName === "OneDrive 2") {
+            return this._scales?.oneDrive ?? 1;
+        } else if (layerName === "One") {
+            return this._scales?.oneNote ?? 1;
+        } else if (layerName === "Out") {
+            return this._scales?.outlook ?? 1;
+        } else if (layerName === "P") {
+            return this._scales?.powerPoint ?? 1;
+        } else if (layerName === "Harmon 2") {
+            return this._scales?.swirl ?? 1;
+        } else if (layerName === "Word 2") {
+            return this._scales?.word ?? 1;
+        }
+
+        return 1;
     }
 
     private _processLottieShapes(parent: LottieLayer, shapes: RawGraphicElement[] | undefined): LottieSprite[] | undefined {

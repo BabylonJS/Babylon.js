@@ -30,7 +30,7 @@ export type LottieLayer = {
     autoOrient: boolean; // Whether the layer auto-orients to its path
     isVisible: boolean; // Whether this layer is visible
     transform: Transform; // Initial transform properties and animations of the layer
-    node: TransformNode; // Sprite to render, it will contain the current transformed values
+    node?: TransformNode; // Sprite to render, it will contain the current transformed values
 };
 
 export type LottieSprite = {
