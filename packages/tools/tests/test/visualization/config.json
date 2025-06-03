@@ -1078,6 +1078,11 @@
             "referenceImage": "glTFSerializerCameraRightHand.png"
         },
         {
+            "title": "GLTF Serializer Rotation conversion, left-handed",
+            "playgroundId": "#UK7FLI#1",
+            "referenceImage": "glTFSerializerRotationConversionLH.png"
+        },
+        {
             "title": "GLTF Serializer camera rotation animation, RH -> LH",
             "playgroundId": "#3A00GJ#42",
             "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = false;",
