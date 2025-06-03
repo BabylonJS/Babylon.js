@@ -19,9 +19,9 @@ import { Epsilon } from "core/Maths/math.constants";
 const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // Default values for comparison.
-export const DefaultTranslation = Vector3.ZeroReadOnly;
+export const DefaultTranslation = Vector3.Zero();
 export const DefaultRotation = Quaternion.Identity();
-export const DefaultScale = Vector3.OneReadOnly;
+export const DefaultScale = Vector3.One();
 const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1);
 
 /**
