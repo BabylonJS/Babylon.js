@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-jsdoc */
-
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { FloatArray, DataArray, IndicesArray } from "core/types";
@@ -11,14 +10,19 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
+import { Logger } from "core/Misc/logger";
+import { TargetCamera } from "core/Cameras/targetCamera";
+import type { ShadowLight } from "core/Lights/shadowLight";
+import { Epsilon } from "core/Maths/math.constants";
 
 // Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
 const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // Default values for comparison.
-const Epsilon = 1e-6;
-const DefaultTranslation = Vector3.Zero();
-const DefaultScale = Vector3.One();
+export const DefaultTranslation = Vector3.Zero();
+export const DefaultRotation = Quaternion.Identity();
+export const DefaultScale = Vector3.One();
+const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1);
 
 /**
  * Get the information necessary for enumerating a vertex buffer.
@@ -241,59 +245,32 @@ export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
     return value;
 }
 
-export function ConvertToRightHandedNode(value: INode) {
-    let translation = Vector3.FromArrayToRef(value.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
-    let rotation = Quaternion.FromArrayToRef(value.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-
-    translation = ConvertToRightHandedPosition(translation);
-    rotation = ConvertToRightHandedRotation(rotation);
-
-    if (translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
-        delete value.translation;
-    } else {
-        value.translation = translation.asArray();
-    }
-
-    if (Quaternion.IsIdentity(rotation)) {
-        delete value.rotation;
-    } else {
-        value.rotation = rotation.asArray();
-    }
-}
-
 /**
  * Pre-multiplies a 180-degree Y rotation to the quaternion, in order to match glTF's flipped forward direction for cameras.
  * @param rotation Target camera rotation.
  */
-export function ConvertCameraRotationToGLTF(rotation: Quaternion): void {
+export function Rotate180Y(rotation: Quaternion): void {
     // Simplified from: rotation * (0, 1, 0, 0).
     rotation.copyFromFloats(-rotation.z, rotation.w, rotation.x, -rotation.y);
 }
 
-export function RotateNode180Y(node: INode): void {
-    Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    ConvertCameraRotationToGLTF(TmpVectors.Quaternion[1]);
-    node.rotation = TmpVectors.Quaternion[1].asArray();
-}
-
 /**
- * Collapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
- * @param node Target parent node.
- * @param parentNode Original GLTF node (Light or Camera).
+ * Collapses GLTF parent and node into a single node, ignoring scaling.
+ * This is useful for removing nodes that were added by the GLTF importer.
+ * @param node Original GLTF node (Light or Camera).
+ * @param parentNode Target parent node.
  */
-export function CollapseParentNode(node: INode, parentNode: INode) {
+export function CollapseChildIntoParent(node: INode, parentNode: INode): void {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
-    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
+    const parentMatrix = Matrix.ComposeToRef(DefaultScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
 
     const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
     const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    const scale = Vector3.FromArrayToRef(node.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
-    const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[1]);
+    const matrix = Matrix.ComposeToRef(DefaultScale, rotation, translation, TmpVectors.Matrix[1]);
 
     parentMatrix.multiplyToRef(matrix, matrix);
-    matrix.decompose(parentScale, parentRotation, parentTranslation);
+    matrix.decompose(undefined, parentRotation, parentTranslation);
 
     if (parentTranslation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete parentNode.translation;
@@ -301,27 +278,46 @@ export function CollapseParentNode(node: INode, parentNode: INode) {
         parentNode.translation = parentTranslation.asArray();
     }
 
-    if (Quaternion.IsIdentity(parentRotation)) {
+    if (parentRotation.equalsWithEpsilon(DefaultRotation, Epsilon)) {
         delete parentNode.rotation;
     } else {
         parentNode.rotation = parentRotation.asArray();
     }
 
-    if (parentScale.equalsWithEpsilon(DefaultScale, Epsilon)) {
+    if (parentNode.scale) {
         delete parentNode.scale;
-    } else {
-        parentNode.scale = parentScale.asArray();
     }
 }
 
 /**
- * Sometimes the GLTF Importer can add extra transform nodes (for lights and cameras). This checks if a parent node was added by the GLTF Importer. If so, it should be removed during serialization.
- * @param babylonNode Original GLTF node (Light or Camera).
- * @param parentBabylonNode Target parent node.
- * @returns True if the parent node was added by the GLTF importer.
+ * Checks whether a camera or light node is candidate for collapsing with its parent node.
+ * This is useful for roundtrips, as the glTF Importer parents a new node to
+ * lights and cameras to store their original transformation information.
+ * @param babylonNode Babylon light or camera node.
+ * @param parentBabylonNode Target Babylon parent node.
+ * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
-    return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
+export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, parentBabylonNode: Node): boolean {
+    if (!(parentBabylonNode instanceof TransformNode)) {
+        return false;
+    }
+
+    // Verify child is the only descendant
+    const isOnlyDescendant = parentBabylonNode.getChildren().length === 1 && babylonNode.getChildren().length === 0 && babylonNode.parent === parentBabylonNode;
+    if (!isOnlyDescendant) {
+        return false;
+    }
+
+    // Verify parent has the expected scaling, determined by the node type and scene's coordinate system.
+    const scene = babylonNode.getScene();
+    const expectedScale = babylonNode instanceof TargetCamera && !scene.useRightHandedSystem ? DefaultLoaderCameraParentScaleLh : DefaultScale;
+
+    if (!parentBabylonNode.scaling.equalsWithEpsilon(expectedScale, Epsilon)) {
+        Logger.Warn(`Cannot collapse node ${babylonNode.name} into parent node ${parentBabylonNode.name} with modified scaling.`);
+        return false;
+    }
+
+    return true;
 }
 
 export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
@@ -332,12 +328,12 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     // Transform
     if (useRightHandedSystem) {
         const matrix = node.getWorldMatrix();
-        if (!matrix.isIdentity()) {
+        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
             return false;
         }
     } else {
         const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
-        if (!matrix.isIdentity()) {
+        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
             return false;
         }
     }
