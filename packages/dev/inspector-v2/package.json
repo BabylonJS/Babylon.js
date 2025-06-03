@@ -1,0 +1,26 @@
+{
+    "name": "@dev/inspector-v2",
+    "version": "1.0.0",
+    "types": "dist/index",
+    "main": "dist/index",
+    "module": "dist/index",
+    "private": true,
+    "sideEffects": true,
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "test": "jest -c ../../../jest.config.ts",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
+        "compile": "tsc -b tsconfig.build.json",
+        "watch": "tsc -b tsconfig.build.json -w",
+        "watch:dev": "npm run watch"
+    },
+        "devDependencies": {
+        "@dev/core": "1.0.0",
+        "@dev/loaders": "1.0.0",
+        "@fluentui/react-components": "^9.62.0",
+        "@fluentui/react-icons": "^2.0.271",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "usehooks-ts": "^3.1.1"
+    }
+}
