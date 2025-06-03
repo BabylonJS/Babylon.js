@@ -22,7 +22,6 @@ import { ShellServiceIdentity } from "../../shellService";
 
 type EntityBase = Readonly<{
     uniqueId: number;
-    parent?: Nullable<EntityBase>;
 }>;
 
 export type SceneExplorerSection<T extends EntityBase> = Readonly<{
@@ -198,6 +197,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
 
             const visibleItems = useMemo(() => {
                 const visibleItems: TreeItemData[] = [];
+                const entityParents = new Map<EntityBase, EntityBase>();
 
                 for (const section of sections) {
                     visibleItems.push({
@@ -212,6 +212,10 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                             section.getRootEntities(scene),
                             (entity) => {
                                 if (openItems.has(entity.uniqueId) && section.getEntityChildren) {
+                                    const children = section.getEntityChildren(entity);
+                                    for (const child of children) {
+                                        entityParents.set(child, entity);
+                                    }
                                     return section.getEntityChildren(entity);
                                 }
                                 return null;
@@ -222,7 +226,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                     type: "entity",
                                     entity,
                                     depth,
-                                    parent: entity.parent?.uniqueId ?? section.displayName,
+                                    parent: entityParents.get(entity)?.uniqueId ?? section.displayName,
                                     hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
                                     title: section.getEntityDisplayName(entity),
                                     icon: section.entityIcon,
