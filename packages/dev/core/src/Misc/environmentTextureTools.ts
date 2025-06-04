@@ -365,7 +365,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         info.irradiance.irradianceTexture = {
             size: irradianceTexture.getSize().width,
             faces: [],
-            dominantDirection: texture._dominantDirection?.asArray() || [0, 0, 1],
+            dominantDirection: texture._dominantDirection?.asArray(),
         };
 
         for (let face = 0; face < 6; face++) {
