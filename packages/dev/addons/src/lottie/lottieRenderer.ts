@@ -36,17 +36,8 @@ export class LottieRenderer implements IDisposable {
             if (this._currentFrame < layer.inFrame || this._currentFrame > layer.outFrame) {
                 if (layer.isVisible) {
                     layer.isVisible = false;
-                    if (layer.node instanceof Mesh) {
-                        layer.node.isVisible = false; // Hide the node if the layer is not visible
-                    }
-
-                    const children = layer.node?.getChildTransformNodes();
-                    if (children) {
-                        for (const child of children) {
-                            if (child instanceof Mesh) {
-                                child.isVisible = false; // Hide the node if the layer is not visible
-                            }
-                        }
+                    if (layer.nodeAnchor instanceof Mesh) {
+                        layer.nodeAnchor.isVisible = false; // Hide the node if the layer is not visible
                     }
                 }
             }
@@ -54,17 +45,8 @@ export class LottieRenderer implements IDisposable {
             if (this._currentFrame >= layer.inFrame && this._currentFrame <= layer.outFrame) {
                 if (!layer.isVisible) {
                     layer.isVisible = true;
-                    if (layer.node instanceof Mesh) {
-                        layer.node.isVisible = true; // Hide the node if the layer is not visible
-                    }
-
-                    const children = layer.node?.getChildTransformNodes();
-                    if (children) {
-                        for (const child of children) {
-                            if (child instanceof Mesh) {
-                                child.isVisible = true; // Hide the node if the layer is not visible
-                            }
-                        }
+                    if (layer.nodeAnchor instanceof Mesh) {
+                        layer.nodeAnchor.isVisible = true; // Hide the node if the layer is not visible
                     }
                 }
             }
@@ -72,9 +54,7 @@ export class LottieRenderer implements IDisposable {
 
         // Update only visible elements of the animation
         for (const layer of this._animation.layers.values()) {
-            if (layer.isVisible === true) {
-                this._updateLayer(layer);
-            }
+            this._updateLayer(layer);
         }
 
         this._currentFrame++;
@@ -113,8 +93,8 @@ export class LottieRenderer implements IDisposable {
                         const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
                         const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
 
-                        element.node!.position.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
-                        element.node!.position.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
+                        element.nodeTrs!.position.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
+                        element.nodeTrs!.position.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
 
                         break;
                     }
@@ -147,7 +127,7 @@ export class LottieRenderer implements IDisposable {
                         const gradient = (this._currentFrame - startTime) / (endTime - startTime);
                         const easeGradientFactor = currentFrame.easeFunction?.ease(gradient) ?? gradient;
 
-                        element.node!.rotation.z = (this._lerp(startValue, endValue, easeGradientFactor) * Math.PI) / 180;
+                        element.nodeTrs!.rotation.z = (this._lerp(startValue, endValue, easeGradientFactor) * Math.PI) / 180;
 
                         break;
                     }
@@ -183,8 +163,8 @@ export class LottieRenderer implements IDisposable {
                         const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
                         const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
 
-                        element.node!.scaling.x = this._lerp(startValueX, endValueX, easeGradientFactorX) / 100;
-                        element.node!.scaling.y = this._lerp(startValueY, endValueY, easeGradientFactorY) / 100;
+                        element.nodeTrs!.scaling.x = this._lerp(startValueX, endValueX, easeGradientFactorX) / 100;
+                        element.nodeTrs!.scaling.y = this._lerp(startValueY, endValueY, easeGradientFactorY) / 100;
 
                         break;
                     }
