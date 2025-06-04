@@ -35,7 +35,7 @@ import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -1003,19 +1003,40 @@ export class Viewer implements IDisposable {
         }
     }
 
+    private _lightGizmo: Nullable<LightGizmo> = null;
     /**
      * Setup the scene for auto lighting.
      */
     public async autoLighting(): Promise<void> {
-        await Promise.all([import("core/Rendering/iblCdfGeneratorSceneComponent")]);
         console.log("Auto lighting code start", this._scene.iblCdfGenerator);
+        const [{}, { LightGizmo }] = await Promise.all([import("core/Rendering/iblCdfGeneratorSceneComponent"), import("core/Gizmos/lightGizmo")]);
+
+        if (this._light) {
+            this._light.dispose();
+            console.log("Auto lighting code step 1", this._light, "light disposed");
+        }
+
+        if (!this._lightGizmo) {
+            this._lightGizmo = new LightGizmo();
+        }
+
         if (!this._scene.iblCdfGenerator) {
             this._scene.enableIblCdfGenerator();
         }
-        console.log("Auto lighting code step 1", this._scene.iblCdfGenerator);
+        console.log("Auto lighting code step 2", this._scene.iblCdfGenerator);
+
         if (this._scene.iblCdfGenerator) {
+            await this._scene.iblCdfGenerator.renderWhenReady();
             const dir = await this._scene.iblCdfGenerator.findDominantDirection();
-            console.log("Auto lighting code step 2", dir);
+            console.log("Auto lighting code step 3", dir);
+            this._light = new HemisphericLight("autoLight", dir, this._scene);
+
+            this._light.diffuse = new Color3(1, 0, 0); // for debugging
+            this._light.specular = new Color3(0, 1, 0); // for debugging
+            this._lightGizmo.light = this._light;
+
+            this._markSceneMutated();
+            console.log("Auto lighting code step 4", this._light, "light created");
         }
     }
 
