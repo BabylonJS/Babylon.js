@@ -9,6 +9,7 @@ import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
 import { Logger } from "core/Misc/logger";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /** @internal */
 export const SfeModeDefine = "USE_SFE_FRAMEWORK";
@@ -45,6 +46,10 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
 
         if (state.sharedData.nodeMaterial.mode !== NodeMaterialModes.SFE) {
             Logger.Error("SmartFilterTextureBlock: Should not be used outside of SFE mode.");
+        }
+
+        if (state.sharedData.nodeMaterial.shaderLanguage !== ShaderLanguage.GLSL) {
+            Logger.Error("SmartFilterTextureBlock: WebGPU is not supported by SFE mode.");
         }
 
         // Tell FragmentOutputBlock ahead of time to store the final color in a temp variable
