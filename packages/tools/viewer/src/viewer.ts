@@ -1003,6 +1003,22 @@ export class Viewer implements IDisposable {
         }
     }
 
+    /**
+     * Setup the scene for auto lighting.
+     */
+    public async autoLighting(): Promise<void> {
+        await Promise.all([import("core/Rendering/iblCdfGeneratorSceneComponent")]);
+        console.log("Auto lighting code start", this._scene.iblCdfGenerator);
+        if (!this._scene.iblCdfGenerator) {
+            this._scene.enableIblCdfGenerator();
+        }
+        console.log("Auto lighting code step 1", this._scene.iblCdfGenerator);
+        if (this._scene.iblCdfGenerator) {
+            const dir = await this._scene.iblCdfGenerator.findDominantDirection();
+            console.log("Auto lighting code step 2", dir);
+        }
+    }
+
     private _changeSkyboxBlur(value: number) {
         if (value !== this._skyboxBlur) {
             this._skyboxBlur = value;
