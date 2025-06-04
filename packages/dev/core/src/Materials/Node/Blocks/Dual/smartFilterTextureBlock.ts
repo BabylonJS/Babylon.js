@@ -68,8 +68,8 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         }
 
         // Annotate uniforms of InputBlocks and bindable blocks with their current values
-        if (!state.sharedData.getUniformAnnotation) {
-            state.sharedData.getUniformAnnotation = (name: string) => {
+        if (!state.sharedData.formatConfig.getUniformAnnotation) {
+            state.sharedData.formatConfig.getUniformAnnotation = (name: string) => {
                 for (const block of state.sharedData.nodeMaterial.attachedBlocks) {
                     if (block instanceof InputBlock && block.isUniform && block.associatedVariableName === name) {
                         return this._generateInputBlockAnnotation(block);
@@ -81,6 +81,18 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
                 return "";
             };
         }
+
+        // Do our best to clean up variable names, as they will be used as display names.
+        state.sharedData.formatConfig.formatVariablename = (n: string) => {
+            let name = n;
+
+            const hasUnderscoredPrefix = name.length > 1 && name[1] === "_";
+            if (hasUnderscoredPrefix) {
+                name = name.substring(2);
+            }
+
+            return name.replace(/[^a-zA-Z]+/g, "");
+        };
     }
 
     private _generateInputBlockAnnotation(inputBlock: InputBlock): string {

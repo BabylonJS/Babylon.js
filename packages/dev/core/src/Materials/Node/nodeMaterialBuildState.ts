@@ -240,7 +240,7 @@ export class NodeMaterialBuildState {
      * @internal
      */
     public _getFreeVariableName(prefix: string): string {
-        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+        prefix = this.sharedData.formatConfig.formatVariablename(prefix);
 
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
@@ -630,8 +630,8 @@ export class NodeMaterialBuildState {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        if (this.sharedData.getUniformAnnotation) {
-            this._uniformDeclaration += this.sharedData.getUniformAnnotation(name);
+        if (this.sharedData.formatConfig.getUniformAnnotation) {
+            this._uniformDeclaration += this.sharedData.formatConfig.getUniformAnnotation(name);
         }
         const shaderType = this._getShaderType(type);
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
