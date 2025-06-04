@@ -517,7 +517,7 @@ export class InputBlock extends NodeMaterialBlock {
         // Uniforms
         if (this.isUniform) {
             if (!this._associatedVariableName) {
-                this._associatedVariableName = state._getFreeVariableName("u_" + this.name);
+                this._associatedVariableName = state._getFreeVariableName(this.name);
             }
 
             if (this.isConstant) {
