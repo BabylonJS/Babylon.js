@@ -1,3 +1,4 @@
+import "@dev/inspector";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
