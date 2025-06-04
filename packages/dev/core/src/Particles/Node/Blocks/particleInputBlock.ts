@@ -72,6 +72,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
 
         this._type = type;
         this._isInput = true;
+        this._storedValue = null;
 
         this.setDefaultValue();
 

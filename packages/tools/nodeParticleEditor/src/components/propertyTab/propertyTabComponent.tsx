@@ -73,13 +73,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
 
-        this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
+        this._onBuiltObserver = this.props.globalState.onBuildRequiredObservable.add(() => {
             this.forceUpdate();
         });
     }
 
     override componentWillUnmount() {
-        this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
+        this.props.globalState.onBuildRequiredObservable.remove(this._onBuiltObserver);
     }
 
     processInputBlockUpdate() {
@@ -258,7 +258,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         const dataToSend = {
             payload: JSON.stringify({
-                nodeGeometry: json,
+                nodeParticle: json,
             }),
             name: "",
             description: "",
@@ -295,7 +295,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div id="propertyTab">
                     <div id="header">
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div id="title">NODE GEOMETRY EDITOR</div>
+                        <div id="title">NODE PARTICLE EDITOR</div>
                     </div>
                     {this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}
                 </div>

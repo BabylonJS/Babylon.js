@@ -1,3 +1,4 @@
+import { ParticleTextureSourceBlock } from "core/Particles";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
@@ -8,7 +9,9 @@ export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
             case "SystemBlock":
-                return new SystemBlock("Ease");
+                return new SystemBlock("System");
+            case "TextureBlock":
+                return new ParticleTextureSourceBlock("Texture");
         }
 
         return null;

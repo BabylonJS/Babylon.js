@@ -4,11 +4,24 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import type { Nullable } from "core/types";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to get a system of particles
  */
 export class SystemBlock extends NodeParticleBlock {
+    /**
+     * @internal
+     */
+    public _particleSystem: Nullable<ParticleSystem> = null;
+
+    /**
+     * Gets or sets the epsilon value used for comparison
+     */
+    @editableInPropertyPage("Capacity", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0, max: 10000 })
+    public capacity = 1000;
+
     /**
      * Create a new SystemBlock
      * @param name defines the block name
@@ -18,8 +31,8 @@ export class SystemBlock extends NodeParticleBlock {
 
         this._isSystem = true;
 
-        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
-        this.registerInput("capacity", NodeParticleBlockConnectionPointTypes.Int, true, 10);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle, true);
+        this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -38,9 +51,9 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the capacity input component
+     * Gets the texture input component
      */
-    public get capacity(): NodeParticleConnectionPoint {
+    public get texture(): NodeParticleConnectionPoint {
         return this._inputs[1];
     }
 
@@ -50,17 +63,20 @@ export class SystemBlock extends NodeParticleBlock {
      * @returns the built particle system
      */
     public async createSystemAsync(state: NodeParticleBuildState): Promise<ParticleSystem> {
-        const capacity = this.capacity.getConnectedValue(state);
-        const system = new ParticleSystem(this.name, capacity, state.scene);
+        const system = new ParticleSystem(this.name, this.capacity, state.scene);
 
         state.system = system;
+        this._particleSystem = system;
 
-        if (this.particle.isConnected) {
-            // Process the tree
-            await this.particle._ownerBlock.buildAsync(state);
-        }
+        await this.buildAsync(state);
+
+        system.particleTexture = this.texture.getConnectedValue(state);
 
         return system;
+    }
+
+    public override dispose(): void {
+        this._particleSystem = null;
     }
 }
 

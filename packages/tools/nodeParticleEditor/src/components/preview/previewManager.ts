@@ -8,25 +8,28 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Color3 } from "core/Maths/math.color";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
-import type { NodeParticleBlock } from "core/Particles";
+import type { ParticleSystemSet } from "core/Particles";
+import { LogEntry } from "../log/logComponent";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
-    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeParticleBlock>>>;
+    private _onBuildObserver: Nullable<Observer<void>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _camera: ArcRotateCamera;
     private _globalState: GlobalState;
+    private _particleSystemSet: ParticleSystemSet;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeParticleSystemSet = globalState.nodeParticleSet;
         this._globalState = globalState;
 
-        this._nodeParticleSystemSet.onBuildObservable.add(() => {
+        this._onBuildObserver = globalState.onBuildRequiredObservable.add(() => {
             this._refreshPreview();
         });
-        this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
+
+        globalState.stateManager.onUpdateRequiredObservable.add(() => {
             this._refreshPreview();
         });
 
@@ -58,22 +61,29 @@ export class PreviewManager {
         });
     }
 
-    private _prepareScene() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._updatePreviewAsync();
-    }
-
     private _refreshPreview() {
         SceneLoaderFlags.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
-        this._prepareScene();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._updatePreviewAsync();
     }
 
     private async _updatePreviewAsync() {
         try {
-            await this._nodeParticleSystemSet.buildAsync(this._scene);
+            if (this._particleSystemSet) {
+                this._particleSystemSet.dispose();
+            }
+
+            try {
+                this._particleSystemSet = await this._nodeParticleSystemSet.buildAsync(this._scene);
+                this._particleSystemSet.start();
+                this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node Particle System Set build successful", false));
+            } catch (err) {
+                this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+            }
+
             this._globalState.onIsLoadingChanged.notifyObservers(false);
         } catch (err) {
             // Ignore the error
@@ -82,8 +92,12 @@ export class PreviewManager {
     }
 
     public dispose() {
-        this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        this._globalState.onBuildRequiredObservable.remove(this._onBuildObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
+
+        if (this._particleSystemSet) {
+            this._particleSystemSet.dispose();
+        }
 
         if (this._nodeParticleSystemSet) {
             this._nodeParticleSystemSet.dispose();

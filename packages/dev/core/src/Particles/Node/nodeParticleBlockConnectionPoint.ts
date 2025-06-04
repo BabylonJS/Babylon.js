@@ -3,6 +3,7 @@ import { Observable } from "../../Misc/observable";
 import type { NodeParticleBlock } from "./nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleBuildState } from "./nodeParticleBuildState";
+import type { ParticleInputBlock } from "./Blocks/particleInputBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points
@@ -145,9 +146,9 @@ export class NodeParticleConnectionPoint {
      */
     public get type(): NodeParticleBlockConnectionPointTypes {
         if (this._type === NodeParticleBlockConnectionPointTypes.AutoDetect) {
-            // if (this._ownerBlock.isInput) {
-            //     return (this._ownerBlock as GeometryInputBlock).type;
-            // }
+            if (this._ownerBlock.isInput) {
+                return (this._ownerBlock as ParticleInputBlock).type;
+            }
 
             if (this._connectedPoint) {
                 return this._connectedPoint.type;

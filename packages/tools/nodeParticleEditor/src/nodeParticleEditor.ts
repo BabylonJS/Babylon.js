@@ -61,6 +61,7 @@ export class NodeParticleEditor {
         globalState.nodeParticleSet = options.nodeParticleSet;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
+        globalState.hostScene = options.hostScene;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
@@ -79,7 +80,7 @@ export class NodeParticleEditor {
             options.customLoadObservable.add((data) => {
                 SerializationTools.Deserialize(data, globalState);
                 globalState.onResetRequiredObservable.notifyObservers(false);
-                globalState.onBuiltObservable.notifyObservers();
+                globalState.onBuildRequiredObservable.notifyObservers();
             });
         }
 

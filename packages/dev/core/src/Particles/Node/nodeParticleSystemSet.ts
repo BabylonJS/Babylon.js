@@ -12,9 +12,11 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import type { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 
 /**
  * Defines a set of particle systems defined as a node graph.
+ * @experimental This API is experimental and may change in future releases.
  */
 export class NodeParticleSystemSet {
     private _systemBlocks: SystemBlock[] = [];
@@ -138,6 +140,8 @@ export class NodeParticleSystemSet {
 
         await Promise.all(systemPromises);
 
+        this.onBuildObservable.notifyObservers(this);
+
         return output;
     }
 
@@ -159,6 +163,11 @@ export class NodeParticleSystemSet {
 
         // Main system
         const system = new SystemBlock("Particle system");
+
+        // Texture
+        const textureBlock = new ParticleTextureSourceBlock("Texture");
+        textureBlock.texture.connectTo(system.texture);
+        textureBlock.url = "https://assets.babylonjs.com/textures/flare.png";
 
         this._systemBlocks.push(system);
     }
@@ -202,6 +211,10 @@ export class NodeParticleSystemSet {
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
+
+                if (block.isSystem) {
+                    this._systemBlocks.push(block as SystemBlock);
+                }
             }
         }
 

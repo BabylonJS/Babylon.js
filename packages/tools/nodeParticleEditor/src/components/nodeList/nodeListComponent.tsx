@@ -28,6 +28,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         Vector3: "Input block set to a Vector3 value",
         Vector4: "Input block set to a Vector4 value",
         Int: "Input block set to a integer value",
+        TextureBlock: "Provide a texture",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -112,7 +113,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int", "TextureBlock"],
             System_Nodes: ["SystemBlock"],
         };
 

@@ -31,7 +31,7 @@
     }
 
     .diagram-container {
-        background: #5f655b;
+        background: #5b5c65;
         width: 100%;
         height: 100%;
 
@@ -62,13 +62,13 @@
         cursor: pointer;
 
         &:hover {
-            background: rgb(51, 183, 102);
+            background: rgb(51, 128, 183);
             color: white;
             opacity: 0.8;
         }
 
         &.selected {
-            background: rgb(51, 183, 102);
+            background: rgb(51, 183, 183);
             color: white;
         }
 
@@ -80,7 +80,7 @@
 
     .npe-preview-part {
         display: grid;
-        grid-template-rows: 40px 1fr 40px;
+        grid-template-rows: 40px 1fr;
     }
 
     #preview-mesh-bar {
@@ -185,89 +185,6 @@
         select {
             background-color: #a3a3a3;
             color: #333333;
-        }
-    }
-
-    #preview-config-bar {
-        background-color: #555555;
-        display: grid;
-        grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px;
-        color: white;
-        align-items: center;
-        font-size: 18px;
-
-        &.extended {
-            grid-template-columns: 1fr;
-        }
-
-        .listLine {
-            padding-left: 5px;
-            height: 30px;
-            display: grid;
-            grid-template-columns: 1fr auto;
-
-            .label {
-                grid-column: 1;
-                display: flex;
-                align-items: center;
-                font-size: 14px;
-            }
-
-            .options {
-                grid-column: 2;
-
-                display: flex;
-                align-items: center;
-                margin-right: 5px;
-
-                select {
-                    width: 115px;
-                }
-            }
-        }
-
-        .button {
-            width: 40px;
-            grid-row: 1;
-            height: 40px;
-            transform-origin: 50% 50%;
-
-            &:hover {
-                background: #3f3461;
-            }
-
-            &.selected {
-                background: #9379e6;
-            }
-
-            &:active {
-                transform: scale(0.9);
-            }
-
-            img {
-                height: auto;
-                width: 100%;
-            }
-
-            &.mat-normals {
-                grid-column: 3;
-            }
-
-            &.mat-texture {
-                grid-column: 4;
-            }
-
-            &.mat-cap {
-                grid-column: 5;
-            }
-
-            &.vertex-color {
-                grid-column: 6;
-            }
-
-            &.wireframe {
-                grid-column: 7;
-            }
         }
     }
 

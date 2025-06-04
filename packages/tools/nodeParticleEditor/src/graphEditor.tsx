@@ -4,7 +4,7 @@ import type { GlobalState } from "./globalState";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
-import { LogComponent, LogEntry } from "./components/log/logComponent";
+import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { Nullable } from "core/types";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
@@ -202,23 +202,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.stateManager.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeParticleSet) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.buildParticleSystemSetAsync();
+                this.buildParticleSystemSet();
             }
         });
 
         this.props.globalState.onResetRequiredObservable.add((isDefault) => {
             if (isDefault) {
                 if (this.props.globalState.nodeParticleSet) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    this.buildParticleSystemSetAsync();
+                    this.buildParticleSystemSet();
                 }
                 this.build(true);
             } else {
                 this.build();
                 if (this.props.globalState.nodeParticleSet) {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    this.buildParticleSystemSetAsync();
+                    this.buildParticleSystemSet();
                 }
             }
         });
@@ -283,21 +280,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.zoomToFit();
     }
 
-    async buildParticleSystemSetAsync() {
+    buildParticleSystemSet() {
         if (!this.props.globalState.nodeParticleSet) {
             return;
         }
 
-        try {
-            await this.props.globalState.nodeParticleSet.buildAsync(this.props.globalState.hostScene);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node Particle System Set build successful", false));
-        } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
-        }
+        this.props.globalState.onBuildRequiredObservable.notifyObservers();
 
         SerializationTools.UpdateLocations(this.props.globalState.nodeParticleSet, this.props.globalState);
-
-        this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
     build(ignoreEditorData = false) {

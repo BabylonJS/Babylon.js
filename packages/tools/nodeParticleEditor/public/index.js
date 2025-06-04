@@ -222,7 +222,7 @@ checkBabylonVersionAsync().then(() => {
             let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
             scene = new BABYLON.Scene(engine);
 
-            nodeParticleSet = new BABYLON.NodeParticleSet("node");
+            nodeParticleSet = new BABYLON.NodeParticleSystemSet("System set");
             nodeParticleSet.setToDefault();
             nodeParticleSet.buildAsync(scene).then(() => {
                 showEditor();

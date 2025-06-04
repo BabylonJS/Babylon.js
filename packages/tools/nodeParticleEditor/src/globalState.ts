@@ -23,7 +23,7 @@ export class GlobalState {
     hostDocument: Document;
     hostWindow: Window;
     stateManager: StateManager;
-    onBuiltObservable = new Observable<void>();
+    onBuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
     onClearUndoStack = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
