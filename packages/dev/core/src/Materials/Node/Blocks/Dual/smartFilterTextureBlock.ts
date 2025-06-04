@@ -8,6 +8,7 @@ import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
+import { Logger } from "core/Misc/logger";
 
 /** @internal */
 export const SfeModeDefine = "USE_SFE_FRAMEWORK";
@@ -43,7 +44,7 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         super.initialize(state);
 
         if (state.sharedData.nodeMaterial.mode !== NodeMaterialModes.SFE) {
-            throw new Error("SmartFilterTextureBlock: Can only be used in SFE mode.");
+            Logger.Error("SmartFilterTextureBlock: Should not be used outside of SFE mode.");
         }
 
         // Tell FragmentOutputBlock ahead of time to store the final color in a temp variable
@@ -79,7 +80,8 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         // NOTE: In the future, when we move to vertex shaders, update this to check for the nearest vec2 varying output.
         const screenUv = state.sharedData.nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "postprocess_uv");
         if (!screenUv || !screenUv.isAnAncestorOf(this)) {
-            throw new Error("SmartFilterTextureBlock: 'postprocess_uv' attribute from ScreenUVBlock is required.");
+            Logger.Error("SmartFilterTextureBlock: 'postprocess_uv' attribute from ScreenUVBlock is required.");
+            return "";
         }
         return screenUv.associatedVariableName;
     }
