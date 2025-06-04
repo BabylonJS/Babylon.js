@@ -92,9 +92,9 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
 
     /**
      * Builds the block
-     * @param _state defines the current build state
+     * @param state defines the current build state
      */
-    public override async _buildAsync(_state: NodeParticleBuildState) {
+    public override async _buildAsync(state: NodeParticleBuildState) {
         if (this._sourceTexture) {
             this.texture._storedValue = this._sourceTexture;
             return;
@@ -106,11 +106,11 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         }
 
         if (this._textureDataUrl) {
-            this.texture._storedValue = new Texture(this._textureDataUrl, _state.scene);
+            this.texture._storedValue = new Texture(this._textureDataUrl, state.scene);
             return;
         }
 
-        this.texture._storedValue = new Texture(this._url, _state.scene);
+        this.texture._storedValue = new Texture(this._url, state.scene);
     }
 
     public override serialize(): any {

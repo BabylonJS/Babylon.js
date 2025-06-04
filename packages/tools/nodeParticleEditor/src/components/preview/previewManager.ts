@@ -10,6 +10,8 @@ import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import type { ParticleSystemSet } from "core/Particles";
 import { LogEntry } from "../log/logComponent";
+import { GridMaterial } from "materials/grid/gridMaterial";
+import { MeshBuilder } from "core/Meshes";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -59,6 +61,19 @@ export class PreviewManager {
             this._engine.resize();
             this._scene.render();
         });
+
+        const groundMaterial = new GridMaterial("groundMaterial", this._scene);
+        groundMaterial.majorUnitFrequency = 2;
+        groundMaterial.minorUnitVisibility = 0.1;
+        groundMaterial.gridRatio = 0.5;
+        groundMaterial.backFaceCulling = false;
+        groundMaterial.mainColor = new Color3(1, 1, 1);
+        groundMaterial.lineColor = new Color3(1.0, 1.0, 1.0);
+        groundMaterial.lineColor = new Color3(1.0, 1.0, 1.0);
+        groundMaterial.opacity = 0.5;
+
+        const ground = MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, this._scene);
+        ground.material = groundMaterial;
     }
 
     private _refreshPreview() {

@@ -1,0 +1,80 @@
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleBlock } from "../../nodeParticleBlock";
+import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
+
+/**
+ * Block used to provide a flow of particles emitted from a sphere shape.
+ */
+export class SphereEmitterBlock extends NodeParticleBlock {
+    /**
+     * Create a new SphereEmitterBlock
+     * @param name defines the block name
+     */
+    public constructor(name: string) {
+        super(name);
+
+        this.registerInput("radius", NodeParticleBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
+        this.registerInput("directionRandomizer", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0, 1);
+        this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public override getClassName() {
+        return "SphereEmitterBlock";
+    }
+
+    /**
+     * Gets the direction1 input component
+     */
+    public get radius(): NodeParticleConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the direction2 input component
+     */
+    public get radiusRange(): NodeParticleConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
+     * Gets the minEmitBox input component
+     */
+    public get directionRandomizer(): NodeParticleConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the particle output component
+     */
+    public get particle(): NodeParticleConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
+     * Builds the block
+     */
+    public override async _buildAsync() {
+        this.particle._storedFunction = (state) => {
+            const system = new ParticleSystem(this.name, state.capacity, state.scene);
+            const sphereEmitter = new SphereParticleEmitter();
+
+            sphereEmitter.radius = this.radius.getConnectedValue(state);
+            sphereEmitter.radiusRange = this.radiusRange.getConnectedValue(state);
+            sphereEmitter.directionRandomizer = this.directionRandomizer.getConnectedValue(state);
+
+            system.particleEmitterType = sphereEmitter;
+
+            return system;
+        };
+    }
+}
+
+RegisterClass("BABYLON.SphereEmitterBlock", SphereEmitterBlock);

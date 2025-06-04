@@ -13,6 +13,7 @@ import { Tools } from "core/Misc/tools";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import type { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
+import { BoxEmitterBlock } from "./Blocks/Emitters/boxEmitterBlock";
 
 /**
  * Defines a set of particle systems defined as a node graph.
@@ -163,6 +164,10 @@ export class NodeParticleSystemSet {
 
         // Main system
         const system = new SystemBlock("Particle system");
+
+        // Emitter
+        const emitterBlock = new BoxEmitterBlock("Box emitter");
+        emitterBlock.particle.connectTo(system.particle);
 
         // Texture
         const textureBlock = new ParticleTextureSourceBlock("Texture");

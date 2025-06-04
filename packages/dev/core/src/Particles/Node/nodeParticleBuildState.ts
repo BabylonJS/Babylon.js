@@ -1,5 +1,4 @@
 import type { Scene } from "core/scene";
-import type { ParticleSystem } from "../particleSystem";
 import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
 
 /**
@@ -7,9 +6,9 @@ import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionP
  */
 export class NodeParticleBuildState {
     /**
-     * Gets the current particle system being built
+     * Gets the capactity of the particle system to build
      */
-    public system: ParticleSystem;
+    public capacity: number;
 
     /**
      * Gets the scene where the particle system is built

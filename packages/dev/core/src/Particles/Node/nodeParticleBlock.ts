@@ -249,7 +249,7 @@ export class NodeParticleBlock {
 
             const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                buildPromises.push(block._buildAsync(state));
+                buildPromises.push(block.buildAsync(state));
             }
         }
         if (buildPromises.length > 0) {

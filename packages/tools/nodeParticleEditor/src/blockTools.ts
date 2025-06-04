@@ -1,4 +1,6 @@
-import { ParticleTextureSourceBlock } from "core/Particles";
+import { BoxEmitterBlock } from "core/Particles/Node/Blocks/Emitters/boxEmitterBlock";
+import { SphereEmitterBlock } from "core/Particles/Node/Blocks/Emitters/sphereEmitterBlock";
+import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
@@ -12,6 +14,10 @@ export class BlockTools {
                 return new SystemBlock("System");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
+            case "BoxEmitterBlock":
+                return new BoxEmitterBlock("Box emitter");
+            case "SphereEmitterBlock":
+                return new SphereEmitterBlock("Sphere emitter");
         }
 
         return null;

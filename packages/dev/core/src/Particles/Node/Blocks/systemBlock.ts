@@ -1,4 +1,4 @@
-import { ParticleSystem } from "core/Particles/particleSystem";
+import type { ParticleSystem } from "core/Particles/particleSystem";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
@@ -31,7 +31,7 @@ export class SystemBlock extends NodeParticleBlock {
 
         this._isSystem = true;
 
-        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle, true);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
     }
 
@@ -63,16 +63,14 @@ export class SystemBlock extends NodeParticleBlock {
      * @returns the built particle system
      */
     public async createSystemAsync(state: NodeParticleBuildState): Promise<ParticleSystem> {
-        const system = new ParticleSystem(this.name, this.capacity, state.scene);
-
-        state.system = system;
-        this._particleSystem = system;
+        state.capacity = this.capacity;
 
         await this.buildAsync(state);
 
-        system.particleTexture = this.texture.getConnectedValue(state);
+        this._particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
+        this._particleSystem.particleTexture = this.texture.getConnectedValue(state);
 
-        return system;
+        return this._particleSystem;
     }
 
     public override dispose(): void {
