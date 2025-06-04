@@ -16,6 +16,13 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     private _scene: Scene;
 
     /**
+     * Name of the variable in the shader that holds the screen size
+     */
+    public get associatedVariableName(): string {
+        return this._varName;
+    }
+
+    /**
      * Creates a new ScreenSizeBlock
      * @param name defines the block name
      */

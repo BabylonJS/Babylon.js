@@ -99,6 +99,14 @@ export class NodeMaterialBuildStateSharedData {
     public animatedInputs: InputBlock[] = [];
 
     /**
+     * Configurations used to format the generated code
+     */
+    public formatConfig = {
+        getUniformAnnotation: null as Nullable<(name: string) => string>,
+        formatVariablename: (name: string) => name.replace(/[^a-zA-Z_]+/g, ""),
+    };
+
+    /**
      * Build Id used to avoid multiple recompilations
      */
     public buildId: number;
