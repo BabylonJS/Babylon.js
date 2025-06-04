@@ -1,4 +1,3 @@
-// import { ShowInspector, HideInspector } from "@dev/inspector-v2";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
@@ -24,7 +23,7 @@ export class GlobalState {
     public skybox = true;
     public toneMapping?: number;
 
-    public readonly useNewUx = new URLSearchParams(window.location.search).has("newux");
+    public readonly inspectorV2ModulePromise = new URLSearchParams(window.location.search).has("newux") ? import("@dev/inspector-v2") : null;
 
     public reflector?: {
         hostname: string;
@@ -34,16 +33,16 @@ export class GlobalState {
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
-            if (!this.useNewUx) {
+            if (!this.inspectorV2ModulePromise) {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.currentScene.debugLayer.show();
             } else {
+                const inspectorV2ModulePromise = this.inspectorV2ModulePromise;
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 (async () => {
-                    const inspectorV2Module = await import("@dev/inspector-v2");
+                    const inspectorV2Module = await inspectorV2ModulePromise;
                     inspectorV2Module.ShowInspector(this.currentScene);
                 })();
-                // ShowInspector(this.currentScene);
             }
         }
     }
@@ -51,15 +50,15 @@ export class GlobalState {
     public hideDebugLayer() {
         this.isDebugLayerEnabled = false;
         if (this.currentScene) {
-            if (!this.useNewUx) {
+            if (!this.inspectorV2ModulePromise) {
                 this.currentScene.debugLayer.hide();
             } else {
+                const inspectorV2ModulePromise = this.inspectorV2ModulePromise;
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 (async () => {
-                    const inspectorV2Module = await import("@dev/inspector-v2");
+                    const inspectorV2Module = await inspectorV2ModulePromise;
                     inspectorV2Module.HideInspector();
                 })();
-                // HideInspector();
             }
         }
     }
