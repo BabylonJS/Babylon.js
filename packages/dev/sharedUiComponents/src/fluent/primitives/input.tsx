@@ -17,12 +17,12 @@ const useInputStyles = makeStyles({
  * @param props
  * @returns
  */
-export const Input: FunctionComponent<FluentInputProps> = (props: FluentInputProps) => {
+export const Input: FunctionComponent<FluentInputProps> = (props) => {
     const styles = useInputStyles();
-    const [value, setValue] = useState(props.value || "");
+    const [value, setValue] = useState(props.value ?? "");
 
     useEffect(() => {
-        setValue(props.value || ""); // Update local state when props.value changes
+        setValue(props.value ?? ""); // Update local state when props.value changes
     }, [props.value]);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>, data: any) => {

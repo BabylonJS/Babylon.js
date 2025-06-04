@@ -1,7 +1,7 @@
-import type { InputProps, SliderProps } from "@fluentui/react-components";
+import type { InputProps, SliderOnChangeData, SliderProps } from "@fluentui/react-components";
 import { makeStyles, Slider } from "@fluentui/react-components";
 import { Input } from "./input";
-import type { FunctionComponent } from "react";
+import type { ChangeEvent, FunctionComponent } from "react";
 import { useState } from "react";
 
 const useSyncedSliderStyles = makeStyles({
@@ -37,15 +37,15 @@ export type SyncedSliderProps = Omit<InputProps & SliderProps, "onChange" | "val
  * @param props
  * @returns SyncedSlider component
  */
-export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props: SyncedSliderProps) => {
+export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
     const styles = useSyncedSliderStyles();
     const [value, setValue] = useState<number>(props.value);
-    const handleSliderChange = (_: any, data: { value: number }) => {
+    const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
         setValue(data.value);
         props.onChange(data.value); // Notify parent
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         const newValue = Number(e.target.value);
         if (!isNaN(newValue)) {
             setValue(newValue);

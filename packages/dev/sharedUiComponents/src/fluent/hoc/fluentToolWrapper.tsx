@@ -12,12 +12,7 @@ export type ToolHostProps = {
     customTheme?: Theme;
 };
 
-export const ToolContext = createContext<{
-    /**
-     * Let's individual tool's enable fluent by wrapping their root in a ToolContext.Provider settings useFluent to true
-     */
-    useFluent: boolean;
-}>({ useFluent: false });
+export const ToolContext = createContext({ useFluent: false as boolean } as const);
 
 /**
  * For tools which are ready to move over the fluent, wrap the root of the tool (or the panel which you want fluentized) with this component
@@ -25,9 +20,10 @@ export const ToolContext = createContext<{
  * @param props
  * @returns
  */
-export const FluentToolWrapper: FunctionComponent<ToolHostProps> = (props: ToolHostProps) => {
-    const url = window.location.href;
-    const enableFluent = /[?&]newUX=(1|true)/.test(url); // Super forgiving approach, checks for newUX before/after the hash to enable quick dev loop
+export const FluentToolWrapper: FunctionComponent<ToolHostProps> = (props) => {
+    const url = new URL(window.location.href);
+    const enableFluent = url.searchParams.get("newUX") || url.hash.includes("newUX");
+
     return enableFluent ? (
         <FluentProvider theme={props.customTheme || webDarkTheme}>
             <ToolContext.Provider value={{ useFluent: true }}>{props.children}</ToolContext.Provider>

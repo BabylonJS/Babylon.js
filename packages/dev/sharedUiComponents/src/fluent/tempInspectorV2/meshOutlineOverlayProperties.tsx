@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-jsdoc */
-
 import type { FunctionComponent } from "react";
 import { ColorPropertyLine } from "../hoc/colorPropertyLine";
 import { type AbstractMesh } from "core/Meshes";

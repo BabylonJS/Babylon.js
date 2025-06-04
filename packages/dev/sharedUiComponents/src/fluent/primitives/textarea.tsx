@@ -11,7 +11,7 @@ const useInputStyles = makeStyles({
  * @param props
  * @returns
  */
-export const Textarea: FunctionComponent<FluentTextareaProps> = (props: FluentTextareaProps) => {
+export const Textarea: FunctionComponent<FluentTextareaProps> = (props) => {
     const styles = useInputStyles();
     const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>, data: any) => {
         event.stopPropagation(); // Prevent event propagation

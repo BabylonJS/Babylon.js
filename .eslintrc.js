@@ -247,10 +247,6 @@ const rules = {
                         format: ["StrictPascalCase", "UPPER_CASE"],
                         modifiers: ["global"],
                         leadingUnderscore: "allow",
-                        filter: {
-                            regex: "^use",
-                            match: false,
-                        },
                     },
                     {
                         selector: "variable",
@@ -417,6 +413,16 @@ const rules = {
                         filter: {
                             // you can expand this regex to add more allowed names
                             regex: allowedNonStrictAbbreviations,
+                            match: true,
+                        },
+                    },
+                    {
+                        // Exception for hooks which start with 'use'
+                        selector: "variable",
+                        format: ["strictCamelCase"],
+                        modifiers: ["global"],
+                        filter: {
+                            regex: "^use",
                             match: true,
                         },
                     },

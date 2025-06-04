@@ -1,40 +1,42 @@
 // eslint-disable-next-line import/no-internal-modules
 import { type Vector3, Vector4 } from "core/index";
 
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { type PropertyLineProps, PropertyLine, SplitPropertyLineProps } from "./propertyLine";
 import { SyncedSliderLine } from "./syncedSliderLine";
 import { type FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
 
-type VectorPropertyLineProps = {
+type VectorSliderProps = {
     vector: Vector3 | Vector4;
-    label: string;
     min?: number;
     max?: number;
+    step?: number;
+};
+
+const VectorSliders: FunctionComponent<VectorSliderProps> = (props) => {
+    const { vector, ...sliderProps } = props;
+
+    return (
+        <>
+            <SyncedSliderLine label="X" validKey="x" obj={vector} {...sliderProps} />
+            <SyncedSliderLine label="Y" validKey="y" obj={vector} {...sliderProps} />
+            <SyncedSliderLine label="Z" validKey="z" obj={vector} {...sliderProps} />
+            {vector instanceof Vector4 && <SyncedSliderLine label="W" validKey="w" obj={vector} {...sliderProps} />}
+        </>
+    );
 };
 
 /**
- *  Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
+ * Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
  * The expanded section contains a slider/input box for each component of the vector (x, y, z, w)
  * @param props
  * @returns
  */
-export const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps> = (props: VectorPropertyLineProps) => {
-    const { min, max, vector, label } = props;
-
-    const renderXYZExpand = (vector: Vector3 | Vector4) => {
-        return (
-            <>
-                <SyncedSliderLine label="X" validKey="x" obj={vector} min={min} max={max} />
-                <SyncedSliderLine label="Y" validKey="y" obj={vector} min={min} max={max} />
-                <SyncedSliderLine label="Z" validKey="z" obj={vector} min={min} max={max} />
-                {vector instanceof Vector4 && <SyncedSliderLine label="W" validKey="w" obj={vector} min={min} max={max} />}
-            </>
-        );
-    };
+export const VectorPropertyLine: FunctionComponent<VectorSliderProps & PropertyLineProps> = (props) => {
+    const [property, vector] = SplitPropertyLineProps(props);
     return (
-        <PropertyLine label={label} renderExpandedContent={() => renderXYZExpand(vector)}>
-            <Body1>{vector.toString()}</Body1>
+        <PropertyLine {...property} expandedContent={<VectorSliders {...vector} />}>
+            <Body1>{vector.vector.toString()}</Body1>
         </PropertyLine>
     );
 };

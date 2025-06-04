@@ -1,8 +1,7 @@
-import { type PropertyLineProps, PropertyLine } from "./propertyLine";
+import { type PropertyLineProps, PropertyLine, SplitPropertyLineProps } from "./propertyLine";
 import { type SyncedSliderProps, SyncedSliderInput } from "../primitives/syncedSlider";
 
-type KeyOf<O> = string & keyof O;
-export type SyncedSliderLineProps<O, K extends KeyOf<O>> = Omit<PropertyLineProps, "children"> &
+export type SyncedSliderLineProps<O, K> = PropertyLineProps &
     Omit<SyncedSliderProps, "value" | "onChange"> & {
         /**
          * String key
@@ -28,11 +27,12 @@ export type SyncedSliderLineProps<O, K extends KeyOf<O>> = Omit<PropertyLineProp
  * @param props
  * @returns
  */
-export const SyncedSliderLine = <O extends Record<K, number>, K extends KeyOf<O>>(props: SyncedSliderLineProps<O, K>): React.ReactElement => {
+export const SyncedSliderLine = <O extends Record<K, number>, K extends string>(props: SyncedSliderLineProps<O, K>): React.ReactElement => {
+    const [property, slider] = SplitPropertyLineProps(props);
     return (
-        <PropertyLine {...props}>
+        <PropertyLine {...property}>
             <SyncedSliderInput
-                {...props}
+                {...slider}
                 value={props.obj[props.validKey]}
                 onChange={(val) => {
                     props.obj[props.validKey] = val as O[K];

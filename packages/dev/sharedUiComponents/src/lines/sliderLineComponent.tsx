@@ -149,6 +149,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 obj={this.state}
                 validKey={"value"}
                 onChange={(val) => this.onChange(val)}
+                step={this.props.step}
                 min={this.props.minimum}
                 max={this.props.maximum}
             />
