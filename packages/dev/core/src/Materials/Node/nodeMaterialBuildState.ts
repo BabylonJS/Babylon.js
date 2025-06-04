@@ -630,6 +630,9 @@ export class NodeMaterialBuildState {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
+        if (this.sharedData.getUniformAnnotation) {
+            this._uniformDeclaration += this.sharedData.getUniformAnnotation(name);
+        }
         const shaderType = this._getShaderType(type);
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
             this._uniformDeclaration += `uniform ${name}: ${shaderType};\n`;

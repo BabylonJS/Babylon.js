@@ -7,6 +7,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
+import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
 
 /** @internal */
 export const SfeModeDefine = "USE_SFE_FRAMEWORK";
@@ -33,6 +34,7 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
     public override getClassName() {
         return "SmartFilterTextureBlock";
     }
+
     /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
@@ -48,6 +50,28 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state._customOutputName = "outColor";
         }
+
+        // Annotate uniforms of InputBlocks and bindable blocks with their current values
+        state.sharedData.getUniformAnnotation = (name: string) => {
+            for (const block of state.sharedData.nodeMaterial.attachedBlocks) {
+                if (block instanceof InputBlock && block.isUniform && block.associatedVariableName === name) {
+                    return this._generateInputBlockAnnotation(block);
+                }
+                if (block instanceof ScreenSizeBlock && block.associatedVariableName === name) {
+                    return this._generateScreenSizeBlockAnnotation();
+                }
+            }
+            return "";
+        };
+    }
+
+    private _generateInputBlockAnnotation(inputBlock: InputBlock): string {
+        const value = inputBlock.valueCallback ? inputBlock.valueCallback() : inputBlock.value;
+        return `// { "default": ${JSON.stringify(value)} }\n`;
+    }
+
+    private _generateScreenSizeBlockAnnotation(): string {
+        return `// { "autoBind": "outputResolution" }\n`;
     }
 
     protected override _getMainUvName(state: NodeMaterialBuildState): string {

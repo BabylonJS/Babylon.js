@@ -99,6 +99,11 @@ export class NodeMaterialBuildStateSharedData {
     public animatedInputs: InputBlock[] = [];
 
     /**
+     * Callback to add comments to uniform declarations
+     */
+    public getUniformAnnotation: Nullable<(name: string) => string> = null;
+
+    /**
      * Build Id used to avoid multiple recompilations
      */
     public buildId: number;
