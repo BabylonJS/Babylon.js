@@ -1,4 +1,5 @@
 import { BoxEmitterBlock } from "core/Particles/Node/Blocks/Emitters/boxEmitterBlock";
+import { PointEmitterBlock } from "core/Particles/Node/Blocks/Emitters/pointEmitterBlock";
 import { SphereEmitterBlock } from "core/Particles/Node/Blocks/Emitters/sphereEmitterBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
@@ -18,6 +19,8 @@ export class BlockTools {
                 return new BoxEmitterBlock("Box emitter");
             case "SphereEmitterBlock":
                 return new SphereEmitterBlock("Sphere emitter");
+            case "PointEmitterBlock":
+                return new PointEmitterBlock("point emitter");
         }
 
         return null;

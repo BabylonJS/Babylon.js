@@ -31,6 +31,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TextureBlock: "Provide a texture",
         BoxEmitterBlock: "Emit particles from a box shape",
         SphereEmitterBlock: "Emit particles from a sphere shape",
+        PointEmitterBlock: "Emit particles from a point",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -115,7 +116,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Emitters: ["BoxEmitterBlock", "SphereEmitterBlock"],
+            Emitters: ["BoxEmitterBlock", "SphereEmitterBlock", "PointEmitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int", "TextureBlock"],
             System_Nodes: ["SystemBlock"],
         };

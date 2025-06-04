@@ -30,6 +30,7 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import type { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import type { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -68,8 +69,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this._graphCanvas.createNodeFromObject(
             dataToAppend instanceof NodeParticleBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend,
             (block: NodeParticleBlock) => {
-                if (this.props.globalState.nodeParticleSet.attachedBlocks.indexOf(block) === -1) {
-                    this.props.globalState.nodeParticleSet.attachedBlocks.push(block);
+                const set = this.props.globalState.nodeParticleSet;
+                if (set.attachedBlocks.indexOf(block) === -1) {
+                    set.attachedBlocks.push(block);
+                }
+
+                if (block.isSystem && set.systemBlocks.indexOf(block as SystemBlock) === -1) {
+                    // If the block is a system block, we need to add it to the particle set
+                    set.systemBlocks.push(block as SystemBlock);
                 }
             },
             recursion
