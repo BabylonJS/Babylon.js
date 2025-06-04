@@ -127,8 +127,7 @@
                         </svg>
                     </div>
                 </babylon-viewer-annotation>
-                <babylon-viewer-annotation hotspot="thruster">
-                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="thruster"> </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="poi"></babylon-viewer-annotation>
             </babylon-viewer>
         </div>
@@ -145,6 +144,7 @@
             <button onClick="onResumeRendering()">Resume Rendering</button>
             <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <button onClick="resetModel()">Reset Model</button>
+            <button onClick="autoLighting()">Auto Lighting</button>
             <div>
                 <span>Environment Intensity</span>
                 <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
@@ -353,6 +353,11 @@
             globalThis.resetModel = () => {
                 console.log("reset model");
                 viewerElement.viewerDetails.viewer.resetModel();
+            };
+
+            globalThis.autoLighting = () => {
+                console.log("auto lighting");
+                viewerElement.viewerDetails.viewer.autoLighting();
             };
 
             globalThis.onEnvironmentIntensity = () => {
