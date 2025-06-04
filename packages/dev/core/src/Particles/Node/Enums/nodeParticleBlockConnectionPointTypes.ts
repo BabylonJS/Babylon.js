@@ -18,6 +18,10 @@ export enum NodeParticleBlockConnectionPointTypes {
     Particle = 0x0040,
     /** Texture */
     Texture = 0x0080,
+    /** Color3 */
+    Color3 = 0x0100,
+    /** Color4 */
+    Color4 = 0x0200,
     /** Detect type based on connection */
     AutoDetect = 0x0400,
     /** Output type that will be defined by input type */

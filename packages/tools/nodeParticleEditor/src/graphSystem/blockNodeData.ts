@@ -50,7 +50,7 @@ export class BlockNodeData implements INodeData {
     }
 
     public get executionTime() {
-        return this.data.buildExecutionTime;
+        return -1; // Not applicable for particle blocks
     }
 
     public getPortByName(name: string) {

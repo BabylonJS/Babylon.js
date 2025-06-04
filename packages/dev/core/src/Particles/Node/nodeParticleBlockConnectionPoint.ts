@@ -65,32 +65,6 @@ export class NodeParticleConnectionPoint {
         return this._direction;
     }
 
-    /** @internal */
-    public _callCount = 0;
-
-    /** @internal */
-    public _executionCount = 0;
-
-    /** @internal */
-    public _resetCounters() {
-        this._callCount = 0;
-        this._executionCount = 0;
-    }
-
-    /**
-     * Gets the number of times this point was called
-     */
-    public get callCount() {
-        return this._callCount;
-    }
-
-    /**
-     * Gets the number of times this point was executed
-     */
-    public get executionCount() {
-        return this._executionCount;
-    }
-
     /**
      * Gets or sets the additional types supported by this connection point
      */
@@ -282,16 +256,10 @@ export class NodeParticleConnectionPoint {
     public getConnectedValue(state: NodeParticleBuildState) {
         if (this.isConnected) {
             if (this._connectedPoint?._storedFunction) {
-                this._connectedPoint._callCount++;
-                this._connectedPoint._executionCount++;
                 return this._connectedPoint._storedFunction(state);
             }
-            this._connectedPoint!._callCount++;
-            this._connectedPoint!._executionCount = 1;
             return this._connectedPoint!._storedValue;
         }
-        this._callCount++;
-        this._executionCount = 1;
         return this.value;
     }
 

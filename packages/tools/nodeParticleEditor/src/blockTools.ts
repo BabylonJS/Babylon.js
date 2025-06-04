@@ -2,6 +2,7 @@ import { BoxEmitterBlock } from "core/Particles/Node/Blocks/Emitters/boxEmitterB
 import { PointEmitterBlock } from "core/Particles/Node/Blocks/Emitters/pointEmitterBlock";
 import { SphereEmitterBlock } from "core/Particles/Node/Blocks/Emitters/sphereEmitterBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import { RandomRangeBlock } from "core/Particles/Node/Blocks/randomRangeBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
@@ -21,6 +22,8 @@ export class BlockTools {
                 return new SphereEmitterBlock("Sphere emitter");
             case "PointEmitterBlock":
                 return new PointEmitterBlock("point emitter");
+            case "RandomRangeBlock":
+                return new RandomRangeBlock("Random range");
         }
 
         return null;
@@ -39,9 +42,11 @@ export class BlockTools {
                 color = "#16bcb1";
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector3:
+            case NodeParticleBlockConnectionPointTypes.Color3:
                 color = "#b786cb";
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector4:
+            case NodeParticleBlockConnectionPointTypes.Color4:
                 color = "#be5126";
                 break;
             case NodeParticleBlockConnectionPointTypes.Matrix:
@@ -70,6 +75,10 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Vector3;
             case "Vector4":
                 return NodeParticleBlockConnectionPointTypes.Vector4;
+            case "Color3":
+                return NodeParticleBlockConnectionPointTypes.Color3;
+            case "Color4":
+                return NodeParticleBlockConnectionPointTypes.Color4;
             case "Matrix":
                 return NodeParticleBlockConnectionPointTypes.Matrix;
         }
@@ -89,6 +98,10 @@ export class BlockTools {
                 return "Vector3";
             case NodeParticleBlockConnectionPointTypes.Vector4:
                 return "Vector4";
+            case NodeParticleBlockConnectionPointTypes.Color3:
+                return "Color3";
+            case NodeParticleBlockConnectionPointTypes.Color4:
+                return "Color4";
             case NodeParticleBlockConnectionPointTypes.Matrix:
                 return "Matrix";
         }

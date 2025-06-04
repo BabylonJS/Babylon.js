@@ -4,7 +4,6 @@ import { NodeParticleConnectionPoint, NodeParticleConnectionPointDirection } fro
 import type { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleBuildState } from "./nodeParticleBuildState";
 import { Logger } from "core/Misc/logger";
-import { PrecisionDate } from "core/Misc/precisionDate";
 import { Observable } from "core/Misc/observable";
 import { GetClass } from "core/Misc/typeStore";
 
@@ -26,15 +25,6 @@ export class NodeParticleBlock {
     public _inputs = new Array<NodeParticleConnectionPoint>();
     /** @internal */
     public _outputs = new Array<NodeParticleConnectionPoint>();
-
-    private _buildExecutionTime: number = 0;
-
-    /**
-     * Gets the time spent to build this block (in ms)
-     */
-    public get buildExecutionTime() {
-        return this._buildExecutionTime;
-    }
 
     /**
      * Gets an observable raised when the block is built
@@ -168,6 +158,16 @@ export class NodeParticleBlock {
         return null;
     }
 
+    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
+        if (looseCoupling) {
+            this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
+        } else {
+            this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+            this._inputs[inputIndex0]._isMainLinkSource = true;
+        }
+        this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
+    }
+
     /**
      * Register a new input. Must be called inside a block constructor
      * @param name defines the connection point name
@@ -228,10 +228,6 @@ export class NodeParticleBlock {
             if (!this._outputs.some((o) => o.hasEndpoints)) {
                 return false;
             }
-
-            for (const o of this.outputs) {
-                o._resetCounters();
-            }
         }
 
         this._buildId = state.buildId;
@@ -261,9 +257,7 @@ export class NodeParticleBlock {
             Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
-        const now = PrecisionDate.Now;
         await this._buildAsync(state);
-        this._buildExecutionTime = PrecisionDate.Now - now;
 
         this.onBuildObservable.notifyObservers(this);
 

@@ -11,6 +11,9 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { Color3PropertyTabComponent } from "./properties/color3PropertyTabComponent";
+import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
+import { Color4PropertyTabComponent } from "./properties/color4PropertyTabComponent";
 
 interface IInputsPropertyTabComponentProps {
     globalState: GlobalState;
@@ -95,6 +98,50 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                         propertyName="value"
                         onChange={() => this.processInputBlockUpdate()}
                     />
+                );
+            case NodeParticleBlockConnectionPointTypes.Color3:
+                return (
+                    <>
+                        <Color3PropertyTabComponent lockObject={this.props.lockObject} globalState={this.props.globalState} inputBlock={block} />
+                        <CheckBoxLineComponent
+                            label="Convert to gamma space"
+                            propertyName="convertToGammaSpace"
+                            target={block}
+                            onValueChanged={() => {
+                                this.processInputBlockUpdate();
+                            }}
+                        />
+                        <CheckBoxLineComponent
+                            label="Convert to linear space"
+                            propertyName="convertToLinearSpace"
+                            target={block}
+                            onValueChanged={() => {
+                                this.processInputBlockUpdate();
+                            }}
+                        />
+                    </>
+                );
+            case NodeParticleBlockConnectionPointTypes.Color4:
+                return (
+                    <>
+                        <Color4PropertyTabComponent lockObject={this.props.lockObject} globalState={this.props.globalState} inputBlock={block} />
+                        <CheckBoxLineComponent
+                            label="Convert to gamma space"
+                            propertyName="convertToGammaSpace"
+                            target={block}
+                            onValueChanged={() => {
+                                this.processInputBlockUpdate();
+                            }}
+                        />
+                        <CheckBoxLineComponent
+                            label="Convert to linear space"
+                            propertyName="convertToLinearSpace"
+                            target={block}
+                            onValueChanged={() => {
+                                this.processInputBlockUpdate();
+                            }}
+                        />
+                    </>
                 );
         }
         return null;

@@ -1,15 +1,15 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import { ParticleSystem } from "core/Particles/particleSystem";
 import { Vector3 } from "core/Maths/math.vector";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
+import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { BaseEmitterBlock } from "./baseEmitterBlock";
 
 /**
  * Block used to provide a flow of particles emitted from a point.
  */
-export class PointEmitterBlock extends NodeParticleBlock {
+export class PointEmitterBlock extends BaseEmitterBlock {
     /**
      * Create a new PointEmitterBlock
      * @param name defines the block name
@@ -19,7 +19,6 @@ export class PointEmitterBlock extends NodeParticleBlock {
 
         this.registerInput("direction1", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
         this.registerInput("direction2", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
-        this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
     /**
@@ -34,38 +33,30 @@ export class PointEmitterBlock extends NodeParticleBlock {
      * Gets the direction1 input component
      */
     public get direction1(): NodeParticleConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[this._inputOffset];
     }
 
     /**
      * Gets the direction2 input component
      */
     public get direction2(): NodeParticleConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the particle output component
-     */
-    public get particle(): NodeParticleConnectionPoint {
-        return this._outputs[0];
+        return this._inputs[this._inputOffset + 1];
     }
 
     /**
      * Builds the block
+     * @param state defines the build state
      */
-    public override async _buildAsync() {
-        this.particle._storedFunction = (state) => {
-            const system = new ParticleSystem(this.name, state.capacity, state.scene);
-            const pointEmitter = new PointParticleEmitter();
+    public override async _buildAsync(state: NodeParticleBuildState) {
+        const system = this._prepare(state);
+        const pointEmitter = new PointParticleEmitter();
 
-            pointEmitter.direction1 = this.direction1.getConnectedValue(state) as Vector3;
-            pointEmitter.direction2 = this.direction2.getConnectedValue(state) as Vector3;
+        pointEmitter.direction1 = this.direction1.getConnectedValue(state) as Vector3;
+        pointEmitter.direction2 = this.direction2.getConnectedValue(state) as Vector3;
 
-            system.particleEmitterType = pointEmitter;
+        system.particleEmitterType = pointEmitter;
 
-            return system;
-        };
+        this.particle._storedValue = system;
     }
 }
 

@@ -209,11 +209,6 @@
         padding-right: 5px;
         cursor: col-resize;
 
-        &.standalone {
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
             -webkit-appearance: none;

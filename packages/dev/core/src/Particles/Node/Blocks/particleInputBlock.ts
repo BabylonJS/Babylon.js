@@ -5,6 +5,8 @@ import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { NodeParticleContextualSources } from "../Enums/nodeParticleContextualSources";
 
 /**
  * Block used to expose an input value
@@ -52,6 +54,12 @@ export class ParticleInputBlock extends NodeParticleBlock {
                     case "Vector4":
                         this._type = NodeParticleBlockConnectionPointTypes.Vector4;
                         return this._type;
+                    case "Color3":
+                        this._type = NodeParticleBlockConnectionPointTypes.Color3;
+                        return this._type;
+                    case "Color4":
+                        this._type = NodeParticleBlockConnectionPointTypes.Color4;
+                        return this._type;
                     case "Matrix":
                         this._type = NodeParticleBlockConnectionPointTypes.Matrix;
                         return this._type;
@@ -60,6 +68,43 @@ export class ParticleInputBlock extends NodeParticleBlock {
         }
 
         return this._type;
+    }
+
+    private _contextualSource = NodeParticleContextualSources.None;
+    /**
+     * Gets a boolean indicating that the current connection point is a contextual value
+     */
+    public get isContextual(): boolean {
+        return this._contextualSource !== NodeParticleContextualSources.None;
+    }
+
+    /**
+     * Gets or sets the current contextual value
+     */
+    public get contextualValue(): NodeParticleContextualSources {
+        return this._contextualSource;
+    }
+
+    public set contextualValue(value: NodeParticleContextualSources) {
+        this._contextualSource = value;
+
+        switch (value) {
+            case NodeParticleContextualSources.Position:
+            case NodeParticleContextualSources.Direction:
+                this._type = NodeParticleBlockConnectionPointTypes.Vector3;
+                break;
+            case NodeParticleContextualSources.Color:
+                this._type = NodeParticleBlockConnectionPointTypes.Color4;
+                break;
+            case NodeParticleContextualSources.Age:
+            case NodeParticleContextualSources.Lifetime:
+                this._type = NodeParticleBlockConnectionPointTypes.Float;
+                break;
+        }
+
+        if (this.output) {
+            this.output.type = this._type;
+        }
     }
 
     /**
@@ -144,6 +189,12 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector4:
                 this.value = Vector4.Zero();
+                break;
+            case NodeParticleBlockConnectionPointTypes.Color3:
+                this.value = Color3.White();
+                break;
+            case NodeParticleBlockConnectionPointTypes.Color4:
+                this.value = new Color4(1, 1, 1, 1);
                 break;
             case NodeParticleBlockConnectionPointTypes.Matrix:
                 this.value = Matrix.Identity();

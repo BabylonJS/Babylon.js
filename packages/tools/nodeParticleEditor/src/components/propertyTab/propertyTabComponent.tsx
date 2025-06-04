@@ -23,16 +23,10 @@ import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "core/Particles";
 
 interface IPropertyTabComponentProps {
@@ -84,79 +78,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     processInputBlockUpdate() {
         this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
-    }
-
-    renderInputBlock(block: ParticleInputBlock) {
-        switch (block.type) {
-            case NodeParticleBlockConnectionPointTypes.Int:
-            case NodeParticleBlockConnectionPointTypes.Float: {
-                const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
-                const isInteger = block.type === NodeParticleBlockConnectionPointTypes.Int;
-                return (
-                    <div key={block.uniqueId}>
-                        {cantDisplaySlider && (
-                            <FloatLineComponent
-                                lockObject={this.props.lockObject}
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                isInteger={isInteger}
-                                propertyName="value"
-                                onChange={() => this.processInputBlockUpdate()}
-                            />
-                        )}
-                        {!cantDisplaySlider && (
-                            <SliderLineComponent
-                                lockObject={this.props.lockObject}
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                step={isInteger ? 1 : Math.abs(block.max - block.min) / 100.0}
-                                decimalCount={isInteger ? 0 : 2}
-                                minimum={block.min}
-                                maximum={block.max}
-                                onChange={() => this.processInputBlockUpdate()}
-                            />
-                        )}
-                    </div>
-                );
-            }
-            case NodeParticleBlockConnectionPointTypes.Vector2:
-                return (
-                    <Vector2LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate()}
-                    />
-                );
-            case NodeParticleBlockConnectionPointTypes.Vector3:
-                return (
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate()}
-                    />
-                );
-            case NodeParticleBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate()}
-                    />
-                );
-        }
-        return null;
     }
 
     load(file: File) {

@@ -13,19 +13,21 @@ import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
-import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
-import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent";
+import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
+import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    private _onValueChangedObserver: Nullable<Observer<GeometryInputBlock>>;
+    private _onValueChangedObserver: Nullable<Observer<ParticleInputBlock>>;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
     override componentDidMount() {
-        const inputBlock = this.props.nodeData.data as GeometryInputBlock;
+        const inputBlock = this.props.nodeData.data as ParticleInputBlock;
         this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
@@ -33,7 +35,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     override componentWillUnmount() {
-        const inputBlock = this.props.nodeData.data as GeometryInputBlock;
+        const inputBlock = this.props.nodeData.data as ParticleInputBlock;
         if (this._onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
             this._onValueChangedObserver = null;
@@ -41,12 +43,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     renderValue(globalState: GlobalState) {
-        const inputBlock = this.props.nodeData.data as GeometryInputBlock;
+        const inputBlock = this.props.nodeData.data as ParticleInputBlock;
         switch (inputBlock.type) {
-            case NodeGeometryBlockConnectionPointTypes.Int:
-            case NodeGeometryBlockConnectionPointTypes.Float: {
+            case NodeParticleBlockConnectionPointTypes.Int:
+            case NodeParticleBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
-                const isIntger = inputBlock.type === NodeGeometryBlockConnectionPointTypes.Int;
+                const isIntger = inputBlock.type === NodeParticleBlockConnectionPointTypes.Int;
                 return (
                     <>
                         <FloatLineComponent
@@ -94,72 +96,95 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     </>
                 );
             }
-            case NodeGeometryBlockConnectionPointTypes.Vector2:
+            case NodeParticleBlockConnectionPointTypes.Vector2:
                 return <Vector2PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
-            case NodeGeometryBlockConnectionPointTypes.Vector3:
+            case NodeParticleBlockConnectionPointTypes.Vector3:
                 return <Vector3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
-            case NodeGeometryBlockConnectionPointTypes.Vector4:
+            case NodeParticleBlockConnectionPointTypes.Vector4:
                 return <Vector4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
+            case NodeParticleBlockConnectionPointTypes.Color3:
+                return (
+                    <>
+                        <Color3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
+                        <CheckBoxLineComponent
+                            label="Convert to gamma space"
+                            propertyName="convertToGammaSpace"
+                            target={inputBlock}
+                            onValueChanged={() => {
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                            }}
+                        />
+                        <CheckBoxLineComponent
+                            label="Convert to linear space"
+                            propertyName="convertToLinearSpace"
+                            target={inputBlock}
+                            onValueChanged={() => {
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                            }}
+                        />
+                    </>
+                );
+            case NodeParticleBlockConnectionPointTypes.Color4:
+                return (
+                    <>
+                        <Color4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
+                        <CheckBoxLineComponent
+                            label="Convert to gamma space"
+                            propertyName="convertToGammaSpace"
+                            target={inputBlock}
+                            onValueChanged={() => {
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                            }}
+                        />
+                        <CheckBoxLineComponent
+                            label="Convert to linear space"
+                            propertyName="convertToLinearSpace"
+                            target={inputBlock}
+                            onValueChanged={() => {
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                            }}
+                        />
+                    </>
+                );
         }
 
         return null;
     }
 
     setDefaultValue() {
-        const inputBlock = this.props.nodeData.data as GeometryInputBlock;
+        const inputBlock = this.props.nodeData.data as ParticleInputBlock;
         inputBlock.setDefaultValue();
     }
 
     override render() {
-        const inputBlock = this.props.nodeData.data as GeometryInputBlock;
+        const inputBlock = this.props.nodeData.data as ParticleInputBlock;
 
-        let contextualSourcesOptions: { label: string; value: NodeGeometryContextualSources }[] = [{ label: "None", value: NodeGeometryContextualSources.None }];
+        let contextualSourcesOptions: { label: string; value: NodeParticleContextualSources }[] = [{ label: "None", value: NodeParticleContextualSources.None }];
 
         switch (inputBlock.type) {
-            case NodeGeometryBlockConnectionPointTypes.Float:
-            case NodeGeometryBlockConnectionPointTypes.Int:
+            case NodeParticleBlockConnectionPointTypes.Float:
                 contextualSourcesOptions = [
-                    { label: "Vertex ID", value: NodeGeometryContextualSources.VertexID },
-                    { label: "Face ID", value: NodeGeometryContextualSources.FaceID },
-                    { label: "Loop ID", value: NodeGeometryContextualSources.LoopID },
-                    { label: "Instance ID", value: NodeGeometryContextualSources.InstanceID },
-                    { label: "Geometry ID", value: NodeGeometryContextualSources.GeometryID },
-                    { label: "Collection ID", value: NodeGeometryContextualSources.CollectionID },
+                    { label: "Age", value: NodeParticleContextualSources.Age },
+                    { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
                 ];
                 break;
-            case NodeGeometryBlockConnectionPointTypes.Vector2:
+            case NodeParticleBlockConnectionPointTypes.Vector3:
                 contextualSourcesOptions = [
-                    { label: "UV1s", value: NodeGeometryContextualSources.UV },
-                    { label: "UV2s", value: NodeGeometryContextualSources.UV2 },
-                    { label: "UV3s", value: NodeGeometryContextualSources.UV3 },
-                    { label: "UV4s", value: NodeGeometryContextualSources.UV4 },
-                    { label: "UV5s", value: NodeGeometryContextualSources.UV5 },
-                    { label: "UV6s", value: NodeGeometryContextualSources.UV6 },
+                    { label: "Position", value: NodeParticleContextualSources.Position },
+                    { label: "Direction", value: NodeParticleContextualSources.Direction },
                 ];
                 break;
-            case NodeGeometryBlockConnectionPointTypes.Vector3:
-                contextualSourcesOptions = [
-                    { label: "Positions", value: NodeGeometryContextualSources.Positions },
-                    { label: "Normals", value: NodeGeometryContextualSources.Normals },
-                    { label: "LatticeID", value: NodeGeometryContextualSources.LatticeID },
-                    { label: "LatticeControl", value: NodeGeometryContextualSources.LatticeControl },
-                ];
-                break;
-            case NodeGeometryBlockConnectionPointTypes.Vector4:
-                contextualSourcesOptions = [
-                    { label: "Tangents", value: NodeGeometryContextualSources.Tangents },
-                    { label: "Colors", value: NodeGeometryContextualSources.Colors },
-                ];
+            case NodeParticleBlockConnectionPointTypes.Color4:
+                contextualSourcesOptions = [{ label: "Color", value: NodeParticleContextualSources.Color }];
                 break;
         }
 
         const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (contextualSourcesOptions.length > 0) {
-            modeOptions.push({ label: "Contextual value (Integer)", value: NodeGeometryBlockConnectionPointTypes.Int });
-            modeOptions.push({ label: "Contextual value (Vector2)", value: NodeGeometryBlockConnectionPointTypes.Vector2 });
-            modeOptions.push({ label: "Contextual value (Vector3)", value: NodeGeometryBlockConnectionPointTypes.Vector3 });
-            modeOptions.push({ label: "Contextual value (Vector4)", value: NodeGeometryBlockConnectionPointTypes.Vector4 });
+            modeOptions.push({ label: "Contextual value (Float)", value: NodeParticleBlockConnectionPointTypes.Float });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: NodeParticleBlockConnectionPointTypes.Vector3 });
+            modeOptions.push({ label: "Contextual value (Color4)", value: NodeParticleBlockConnectionPointTypes.Color4 });
         }
 
         return (
@@ -185,17 +210,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     break;
                                 default:
                                     switch (value) {
-                                        case NodeGeometryBlockConnectionPointTypes.Int:
-                                            inputBlock.contextualValue = NodeGeometryContextualSources.VertexID;
+                                        case NodeParticleBlockConnectionPointTypes.Float:
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Age;
                                             break;
-                                        case NodeGeometryBlockConnectionPointTypes.Vector2:
-                                            inputBlock.contextualValue = NodeGeometryContextualSources.UV;
+                                        case NodeParticleBlockConnectionPointTypes.Vector3:
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Position;
                                             break;
-                                        case NodeGeometryBlockConnectionPointTypes.Vector3:
-                                            inputBlock.contextualValue = NodeGeometryContextualSources.Positions;
-                                            break;
-                                        case NodeGeometryBlockConnectionPointTypes.Vector4:
-                                            inputBlock.contextualValue = NodeGeometryContextualSources.Colors;
+                                        case NodeParticleBlockConnectionPointTypes.Color4:
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Color;
                                             break;
                                     }
                                     break;

@@ -23,6 +23,12 @@ export class SystemBlock extends NodeParticleBlock {
     public capacity = 1000;
 
     /**
+     * Gets or sets the epsilon value used for comparison
+     */
+    @editableInPropertyPage("Emit rate", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public emitRate = 10;
+
+    /**
      * Create a new SystemBlock
      * @param name defines the block name
      */
@@ -75,6 +81,22 @@ export class SystemBlock extends NodeParticleBlock {
 
     public override dispose(): void {
         this._particleSystem = null;
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.capacity = this.capacity;
+        serializationObject.emitRate = this.emitRate;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.capacity = serializationObject.capacity;
+        this.emitRate = serializationObject.emitRate;
     }
 }
 

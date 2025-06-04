@@ -27,11 +27,14 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         Vector2: "Input block set to a Vector2 value",
         Vector3: "Input block set to a Vector3 value",
         Vector4: "Input block set to a Vector4 value",
+        Color3: "Input block set to a Color3 value",
+        Color4: "Input block set to a Color4 value",
         Int: "Input block set to a integer value",
         TextureBlock: "Provide a texture",
         BoxEmitterBlock: "Emit particles from a box shape",
         SphereEmitterBlock: "Emit particles from a sphere shape",
         PointEmitterBlock: "Emit particles from a point",
+        RandomRangeBlock: "Generate a random value between two inputs",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -117,7 +120,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
             Emitters: ["BoxEmitterBlock", "SphereEmitterBlock", "PointEmitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int", "TextureBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int", "TextureBlock", "Color3", "Color4"],
+            Misc: ["RandomRangeBlock"],
             System_Nodes: ["SystemBlock"],
         };
 

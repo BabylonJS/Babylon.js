@@ -112,7 +112,6 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                         throttlePropertyChangedNotification={true}
                     />
-                    {<TextLineComponent label="Build execution time" value={`${block.buildExecutionTime.toFixed(2)} ms`} />}
                 </LineContainerComponent>
                 {nonConnectedInputs.filter(
                     (p) => projectedProperties.indexOf(p.type) === -1 && (!p._defaultConnectionPointType || projectedProperties.indexOf(p._defaultConnectionPointType) !== -1)
@@ -123,17 +122,6 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         })}
                     </LineContainerComponent>
                 )}
-                <LineContainerComponent title="DEBUG INFOS">
-                    {block.outputs.map((output) => {
-                        return (
-                            <>
-                                <TextLineComponent label={(output.displayName || output.name) + ":"} ignoreValue={true} additionalClass="bold" />
-                                <TextLineComponent label="> Call count" value={output.callCount.toString()} />
-                                <TextLineComponent label="> Execution count" value={output.executionCount.toString()} />
-                            </>
-                        );
-                    })}
-                </LineContainerComponent>
             </>
         );
     }

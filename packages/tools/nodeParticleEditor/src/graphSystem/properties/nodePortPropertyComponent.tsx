@@ -60,7 +60,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
             <div id="propertyTab">
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">NODE GEOMETRY EDITOR</div>
+                    <div id="title">NODE PARTICLE EDITOR</div>
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">{info}</LineContainerComponent>

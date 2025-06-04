@@ -244,7 +244,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     protected _sizeGradientProcessing: _IExecutionQueueItem;
     protected _remapGradientProcessing: _IExecutionQueueItem;
 
-    private _lifeTimeCreation: _IExecutionQueueItem;
+    /** @internal */
+    public _lifeTimeCreation: _IExecutionQueueItem;
     private _positionCreation: _IExecutionQueueItem;
     private _isLocalCreation: _IExecutionQueueItem;
     private _directionCreation: _IExecutionQueueItem;
@@ -255,7 +256,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _velocityCreation: _IExecutionQueueItem;
     private _limitVelocityCreation: _IExecutionQueueItem;
     private _dragCreation: _IExecutionQueueItem;
-    private _colorCreation: _IExecutionQueueItem;
+    /** @internal */
+    public _colorCreation: _IExecutionQueueItem;
     private _sheetCreation: _IExecutionQueueItem;
     private _rampCreation: _IExecutionQueueItem;
     private _noiseCreation: _IExecutionQueueItem;
