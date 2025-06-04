@@ -20,7 +20,6 @@ export const MeshGeneralProperties: FunctionComponent<{
                         { value: 2, label: "Two" },
                     ]}
                     onSelect={() => {}}
-                    defaultValue={1}
                 />
             </PropertyLine>
         </>

@@ -127,7 +127,7 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
                     onSelect={(val: string) => {
                         val !== undefined && this.updateValue(val);
                     }}
-                    defaultValue={this.props.options.find((o) => o.value === this.state.value || o.selected) || this.props.options[0]}
+                    defaultValue={this.props.options.find((o) => o.value === this.state.value || o.selected)}
                 />
             </PropertyLine>
         );

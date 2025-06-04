@@ -20,7 +20,7 @@ export type DropdownOption = {
     value: string | number;
 };
 
-type DropdownProps = { options: readonly DropdownOption[]; onSelect: (o: string) => void; defaultValue: DropdownOption };
+type DropdownProps = { options: readonly DropdownOption[]; onSelect: (o: string) => void; defaultValue?: DropdownOption };
 
 /**
  * Renders a fluent UI dropdown with a calback for selection and a required default value
@@ -35,7 +35,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
             onOptionSelect={(evt, data) => {
                 data.optionValue != undefined && props.onSelect(data.optionValue);
             }}
-            defaultValue={props.defaultValue.label}
+            defaultValue={props.defaultValue?.label}
             defaultSelectedOptions={props.defaultValue && [props.defaultValue.value.toString()]}
         >
             {props.options.map((option: DropdownOption, i: number) => (
