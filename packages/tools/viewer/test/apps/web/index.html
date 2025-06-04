@@ -377,7 +377,11 @@
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
-                checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+                checked ? viewer.loadEnvironment("https://assets.babylonjs.com/environments/ulmerMuenster.env", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+                checked ? (viewer.environmentConfig = { intensity: 0.4, blur: 0 }) : null;
+
+                // https://assets.babylonjs.com/environments/sanGiuseppeBridge.env
+                // https://assets.babylonjs.com/environments/ulmerMuenster.env
             };
             globalThis.onShadowQuality = () => {
                 const value = document.querySelector("#shadowQualityInput").value;
