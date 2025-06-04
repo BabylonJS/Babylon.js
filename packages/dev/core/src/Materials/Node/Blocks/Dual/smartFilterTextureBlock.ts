@@ -10,6 +10,8 @@ import type { NodeMaterial } from "../../nodeMaterial";
 import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import type { Scene } from "core/scene";
 
 /** @internal */
 export const SfeModeDefine = "USE_SFE_FRAMEWORK";
@@ -17,16 +19,22 @@ export const SfeModeDefine = "USE_SFE_FRAMEWORK";
 /**
  * Base block used for creating Smart Filter shader blocks for the SFE framework.
  * This block extends the functionality of CurrentScreenBlock, as both are used
- * to represent composition against an arbitrary texture and work similarly.
+ * to represent arbitrary 2D textures to compose, and work similarly.
  */
 export class SmartFilterTextureBlock extends CurrentScreenBlock {
+    /**
+     * A boolean indicating whether this block should be the main input for the SFE pipeline.
+     * If true, it can be used in SFE for auto-disabling.
+     */
+    @editableInPropertyPage("Is Main Input", PropertyTypeForEdition.Boolean, undefined, { notifiers: { rebuild: true } })
+    public isMainInput: boolean = false;
+
     /**
      * Create a new SmartFilterTextureBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
-        this._samplerName = "sfeInput";
     }
 
     /**
@@ -44,6 +52,8 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
     public override initialize(state: NodeMaterialBuildState) {
         super.initialize(state);
 
+        this._samplerName = state._getFreeVariableName(this.name);
+
         if (state.sharedData.nodeMaterial.mode !== NodeMaterialModes.SFE) {
             Logger.Error("SmartFilterTextureBlock: Should not be used outside of SFE mode.");
         }
@@ -53,22 +63,24 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         }
 
         // Tell FragmentOutputBlock ahead of time to store the final color in a temp variable
-        if (state.target === NodeMaterialBlockTargets.Fragment) {
+        if (!state._customOutputName && state.target === NodeMaterialBlockTargets.Fragment) {
             state._customOutputName = "outColor";
         }
 
         // Annotate uniforms of InputBlocks and bindable blocks with their current values
-        state.sharedData.getUniformAnnotation = (name: string) => {
-            for (const block of state.sharedData.nodeMaterial.attachedBlocks) {
-                if (block instanceof InputBlock && block.isUniform && block.associatedVariableName === name) {
-                    return this._generateInputBlockAnnotation(block);
+        if (!state.sharedData.getUniformAnnotation) {
+            state.sharedData.getUniformAnnotation = (name: string) => {
+                for (const block of state.sharedData.nodeMaterial.attachedBlocks) {
+                    if (block instanceof InputBlock && block.isUniform && block.associatedVariableName === name) {
+                        return this._generateInputBlockAnnotation(block);
+                    }
+                    if (block instanceof ScreenSizeBlock && block.associatedVariableName === name) {
+                        return this._generateScreenSizeBlockAnnotation();
+                    }
                 }
-                if (block instanceof ScreenSizeBlock && block.associatedVariableName === name) {
-                    return this._generateScreenSizeBlockAnnotation();
-                }
-            }
-            return "";
-        };
+                return "";
+            };
+        }
     }
 
     private _generateInputBlockAnnotation(inputBlock: InputBlock): string {
@@ -95,8 +107,10 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             // Wrap the varying in a define, as it won't be needed in SFE.
             state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, SfeModeDefine, true);
+
             // Append `// main` to denote this as the main input texture to composite
-            state._emit2DSampler(this._samplerName, undefined, undefined, "// main");
+            const annotation = this.isMainInput ? "// main" : undefined;
+            state._emit2DSampler(this._samplerName, undefined, undefined, annotation);
         }
     }
 
@@ -141,6 +155,17 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         }
 
         return this;
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+        serializationObject.isMainInput = this.isMainInput;
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+        this.isMainInput = serializationObject.isMainInput;
     }
 }
 
