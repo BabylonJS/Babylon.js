@@ -5,6 +5,7 @@ import { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { _IExecutionQueueItem } from "core/Particles/Queue/executionQueue";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { _RemoveFromQueue } from "core/Particles/Queue/executionQueue";
 import type { Particle } from "core/Particles/particle";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
@@ -14,7 +15,7 @@ import { Color4 } from "core/Maths";
  * @internal
  */
 export abstract class BaseEmitterBlock extends NodeParticleBlock {
-    protected readonly _inputOffset = 4;
+    protected readonly _inputOffset = 3;
 
     /**
      * Create a new BaseEmitterBlock
@@ -26,7 +27,6 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
         this.registerInput("emitPower", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(1, 1, 1, 1));
-        this.registerInput("deadColor", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(1, 1, 1, 1));
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -60,13 +60,6 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the deadColor input component
-     */
-    public get deadColor(): NodeParticleConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
      * Gets the particle output component
      */
     public get particle(): NodeParticleConnectionPoint {
@@ -77,22 +70,16 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
      * @internal
      */
     protected _prepare(state: NodeParticleBuildState) {
-        const system = new ParticleSystem(this.name, state.capacity, state.scene);
+        const system = new ParticleSystem(this.name, state.capacity, state.scene, null, false, undefined, true);
 
-        _RemoveFromQueue(system._lifeTimeCreation);
-
+        // Creation
         system._lifeTimeCreation.process = (particle: Particle, system: ThinParticleSystem) => {
             particle.lifeTime = this.lifeTime.getConnectedValue(state);
             system._emitPower = this.emitPower.getConnectedValue(state);
         };
 
-        system._colorCreation.process = (particle: Particle, system: ThinParticleSystem) => {
+        system._colorCreation.process = (particle: Particle) => {
             particle.color.copyFrom(this.color.getConnectedValue(state));
-
-            const colorDead = this.deadColor.getConnectedValue(state);
-
-            colorDead.subtractToRef(particle.color, system._colorDiff);
-            system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
         };
 
         return system;

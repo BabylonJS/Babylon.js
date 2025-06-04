@@ -230,7 +230,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _rampGradientsTexture: Nullable<RawTexture>;
     private _useRampGradients = false;
 
-    protected _updateQueueStart: Nullable<_IExecutionQueueItem> = null;
+    /** @internal */
+    public _updateQueueStart: Nullable<_IExecutionQueueItem> = null;
     protected _colorProcessing: _IExecutionQueueItem;
     protected _angularSpeedGradientProcessing: _IExecutionQueueItem;
     protected _angularSpeedProcessing: _IExecutionQueueItem;
@@ -513,6 +514,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * @param customEffect a custom effect used to change the way particles are rendered by default
      * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
      * @param epsilon Offset used to render the particles
+     * @param noUpdateQueue If true, the particle system will start with an empty update queue
      */
     constructor(
         name: string,
@@ -520,7 +522,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         sceneOrEngine: Scene | AbstractEngine,
         customEffect: Nullable<Effect> = null,
         isAnimationSheetEnabled: boolean = false,
-        epsilon: number = 0.01
+        epsilon: number = 0.01,
+        noUpdateQueue: boolean = false
     ) {
         super(name);
 
@@ -597,42 +600,44 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._createQueueStart = this._lifeTimeCreation;
 
         // Processing queue
-        this._colorProcessing = {
-            process: _ProcessColor,
-            previousItem: null,
-            nextItem: null,
-        };
+        if (!noUpdateQueue) {
+            this._colorProcessing = {
+                process: _ProcessColor,
+                previousItem: null,
+                nextItem: null,
+            };
 
-        this._angularSpeedProcessing = {
-            process: _ProcessAngularSpeed,
-            previousItem: null,
-            nextItem: null,
-        };
-        _ConnectAfter(this._angularSpeedProcessing, this._colorProcessing);
+            this._angularSpeedProcessing = {
+                process: _ProcessAngularSpeed,
+                previousItem: null,
+                nextItem: null,
+            };
+            _ConnectAfter(this._angularSpeedProcessing, this._colorProcessing);
 
-        this._directionProcessing = {
-            process: _ProcessDirection,
-            previousItem: null,
-            nextItem: null,
-        };
-        _ConnectAfter(this._directionProcessing, this._angularSpeedProcessing);
+            this._directionProcessing = {
+                process: _ProcessDirection,
+                previousItem: null,
+                nextItem: null,
+            };
+            _ConnectAfter(this._directionProcessing, this._angularSpeedProcessing);
 
-        this._positionProcessing = {
-            process: _ProcessPosition,
-            previousItem: null,
-            nextItem: null,
-        };
-        _ConnectAfter(this._positionProcessing, this._directionProcessing);
+            this._positionProcessing = {
+                process: _ProcessPosition,
+                previousItem: null,
+                nextItem: null,
+            };
+            _ConnectAfter(this._positionProcessing, this._directionProcessing);
 
-        this._gravityProcessing = {
-            process: _ProcessGravity,
-            previousItem: null,
-            nextItem: null,
-        };
+            this._gravityProcessing = {
+                process: _ProcessGravity,
+                previousItem: null,
+                nextItem: null,
+            };
 
-        _ConnectAfter(this._gravityProcessing, this._positionProcessing);
+            _ConnectAfter(this._gravityProcessing, this._positionProcessing);
 
-        this._updateQueueStart = this._colorProcessing;
+            this._updateQueueStart = this._colorProcessing;
+        }
 
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 

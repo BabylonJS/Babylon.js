@@ -10,7 +10,7 @@ import { Vector2, Vector3, Vector4 } from "core/Maths";
  */
 export class RandomRangeBlock extends NodeParticleBlock {
     /**
-     * Create a new SystemBlock
+     * Create a new RandomRangeBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

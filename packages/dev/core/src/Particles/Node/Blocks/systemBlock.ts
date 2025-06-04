@@ -6,6 +6,7 @@ import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnection
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 
 /**
  * Block used to get a system of particles
@@ -15,6 +16,22 @@ export class SystemBlock extends NodeParticleBlock {
      * @internal
      */
     public _particleSystem: Nullable<ParticleSystem> = null;
+
+    /**
+     * Gets or sets the blend mode for the particle system
+     */
+    @editableInPropertyPage("Blend mode", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "OneOne", value: BaseParticleSystem.BLENDMODE_ONEONE },
+            { label: "Standard", value: BaseParticleSystem.BLENDMODE_STANDARD },
+            { label: "Add", value: BaseParticleSystem.BLENDMODE_ADD },
+            { label: "Multiply", value: BaseParticleSystem.BLENDMODE_MULTIPLY },
+            { label: "MultiplyAdd", value: BaseParticleSystem.BLENDMODE_MULTIPLYADD },
+        ],
+    })
+    public blendMode = BaseParticleSystem.BLENDMODE_ONEONE;
 
     /**
      * Gets or sets the epsilon value used for comparison
@@ -75,6 +92,7 @@ export class SystemBlock extends NodeParticleBlock {
 
         this._particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
         this._particleSystem.particleTexture = this.texture.getConnectedValue(state);
+        this._particleSystem.blendMode = this.blendMode;
 
         return this._particleSystem;
     }
@@ -88,6 +106,7 @@ export class SystemBlock extends NodeParticleBlock {
 
         serializationObject.capacity = this.capacity;
         serializationObject.emitRate = this.emitRate;
+        serializationObject.blendMode = this.blendMode;
 
         return serializationObject;
     }
@@ -97,6 +116,10 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.capacity = serializationObject.capacity;
         this.emitRate = serializationObject.emitRate;
+
+        if (serializationObject.blendMode !== undefined) {
+            this.blendMode = serializationObject.blendMode;
+        }
     }
 }
 

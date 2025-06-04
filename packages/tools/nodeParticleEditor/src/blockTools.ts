@@ -1,10 +1,17 @@
 import { BoxEmitterBlock } from "core/Particles/Node/Blocks/Emitters/boxEmitterBlock";
 import { PointEmitterBlock } from "core/Particles/Node/Blocks/Emitters/pointEmitterBlock";
 import { SphereEmitterBlock } from "core/Particles/Node/Blocks/Emitters/sphereEmitterBlock";
+import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 import { RandomRangeBlock } from "core/Particles/Node/Blocks/randomRangeBlock";
+import { UpdateDirectionBlock } from "core/Particles/Node/Blocks/Update/updateDirectionBlock";
+import { UpdatePositionBlock } from "core/Particles/Node/Blocks/Update/updatePositionBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
+import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/Node/Blocks/particleMathBlock";
+import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
+import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 
 /**
  * Static class for BlockTools
@@ -12,6 +19,14 @@ import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "LerpBlock":
+                return new ParticleLerpBlock("Lerp");
+            case "UpdatePositionBlock":
+                return new UpdatePositionBlock("Update position");
+            case "UpdateDirectionBlock":
+                return new UpdateDirectionBlock("Update direction");
+            case "UpdateColorBlock":
+                return new UpdateColorBlock("Update color");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -24,6 +39,66 @@ export class BlockTools {
                 return new PointEmitterBlock("point emitter");
             case "RandomRangeBlock":
                 return new RandomRangeBlock("Random range");
+            case "PositionBlock": {
+                const block = new ParticleInputBlock("Position");
+                block.contextualValue = NodeParticleContextualSources.Position;
+                return block;
+            }
+            case "DirectionBlock": {
+                const block = new ParticleInputBlock("Direction");
+                block.contextualValue = NodeParticleContextualSources.Direction;
+                return block;
+            }
+            case "ScaledDirectionBlock": {
+                const block = new ParticleInputBlock("Scaled direction");
+                block.contextualValue = NodeParticleContextualSources.ScaledDirection;
+                return block;
+            }
+            case "ColorBlock": {
+                const block = new ParticleInputBlock("Color");
+                block.contextualValue = NodeParticleContextualSources.Color;
+                return block;
+            }
+            case "AgeBlock": {
+                const block = new ParticleInputBlock("Age");
+                block.contextualValue = NodeParticleContextualSources.Age;
+                return block;
+            }
+            case "LifetimeBlock": {
+                const block = new ParticleInputBlock("Lifetime");
+                block.contextualValue = NodeParticleContextualSources.Lifetime;
+                return block;
+            }
+            case "AddBlock": {
+                const block = new ParticleMathBlock("Add");
+                block.operation = ParticleMathBlockOperations.Add;
+                return block;
+            }
+            case "SubtractBlock": {
+                const block = new ParticleMathBlock("Subtract");
+                block.operation = ParticleMathBlockOperations.Subtract;
+                return block;
+            }
+            case "MultiplyBlock": {
+                const block = new ParticleMathBlock("Multiply");
+                block.operation = ParticleMathBlockOperations.Multiply;
+                return block;
+            }
+            case "DivideBlock": {
+                const block = new ParticleMathBlock("Divide");
+                block.operation = ParticleMathBlockOperations.Divide;
+                return block;
+            }
+            case "MinBlock": {
+                const block = new ParticleMathBlock("Min");
+                block.operation = ParticleMathBlockOperations.Min;
+                return block;
+            }
+            case "MaxBlock": {
+                const block = new ParticleMathBlock("Max");
+                block.operation = ParticleMathBlockOperations.Max;
+                return block;
+            }
         }
 
         return null;

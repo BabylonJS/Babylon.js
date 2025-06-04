@@ -91,6 +91,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
         switch (value) {
             case NodeParticleContextualSources.Position:
             case NodeParticleContextualSources.Direction:
+            case NodeParticleContextualSources.ScaledDirection:
                 this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                 break;
             case NodeParticleContextualSources.Color:
@@ -205,8 +206,15 @@ export class ParticleInputBlock extends NodeParticleBlock {
     public override async _buildAsync(state: NodeParticleBuildState) {
         await super._buildAsync(state);
 
-        this.output._storedFunction = null;
-        this.output._storedValue = this.value;
+        if (this.isContextual) {
+            this.output._storedValue = null;
+            this.output._storedFunction = (state) => {
+                return state.getContextualValue(this._contextualSource);
+            };
+        } else {
+            this.output._storedFunction = null;
+            this.output._storedValue = this.value;
+        }
     }
 
     public override dispose() {
@@ -219,12 +227,13 @@ export class ParticleInputBlock extends NodeParticleBlock {
         const serializationObject = super.serialize();
 
         serializationObject.type = this.type;
+        serializationObject.contextualValue = this.contextualValue;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
         serializationObject.groupInInspector = this.groupInInspector;
         serializationObject.displayInInspector = this.displayInInspector;
 
-        if (this._storedValue !== null) {
+        if (this._storedValue !== null && !this.isContextual) {
             if (this._storedValue.asArray) {
                 serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
                 serializationObject.value = this._storedValue.asArray();
@@ -241,6 +250,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
 
         this._type = serializationObject.type;
+        this.contextualValue = serializationObject.contextualValue;
 
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;

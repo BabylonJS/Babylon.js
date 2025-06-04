@@ -11,9 +11,11 @@ import { WebRequest } from "core/Misc/webRequest";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { AbstractEngine } from "core/Engines/abstractEngine";
-import type { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { BoxEmitterBlock } from "./Blocks/Emitters/boxEmitterBlock";
+import { ParticleMathBlock, ParticleMathBlockOperations, UpdatePositionBlock } from "./Blocks";
+import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 
 /**
  * Defines a set of particle systems defined as a node graph.
@@ -130,8 +132,8 @@ export class NodeParticleSystemSet {
         }
 
         // Build the blocks
+        const state = new NodeParticleBuildState();
         const systemPromises = this._systemBlocks.map(async (block) => {
-            const state = new NodeParticleBuildState();
             state.buildId = this._buildId++;
             state.scene = scene;
 
@@ -140,6 +142,9 @@ export class NodeParticleSystemSet {
         });
 
         await Promise.all(systemPromises);
+
+        // Errors
+        state.emitErrors();
 
         this.onBuildObservable.notifyObservers(this);
 
@@ -165,9 +170,26 @@ export class NodeParticleSystemSet {
         // Main system
         const system = new SystemBlock("Particle system");
 
+        // Update position
+        const updatePositionBlock = new UpdatePositionBlock("Update position");
+        updatePositionBlock.output.connectTo(system.particle);
+
+        // Contextual inputs
+        const positionBlock = new ParticleInputBlock("Position");
+        positionBlock.contextualValue = NodeParticleContextualSources.Position;
+        const directionBlock = new ParticleInputBlock("Scaled direction");
+        directionBlock.contextualValue = NodeParticleContextualSources.ScaledDirection;
+
+        // Add
+        const addBlock = new ParticleMathBlock("Add");
+        addBlock.operation = ParticleMathBlockOperations.Add;
+        positionBlock.output.connectTo(addBlock.left);
+        directionBlock.output.connectTo(addBlock.right);
+        addBlock.output.connectTo(updatePositionBlock.position);
+
         // Emitter
         const emitterBlock = new BoxEmitterBlock("Box emitter");
-        emitterBlock.particle.connectTo(system.particle);
+        emitterBlock.particle.connectTo(updatePositionBlock.input);
 
         // Texture
         const textureBlock = new ParticleTextureSourceBlock("Texture");

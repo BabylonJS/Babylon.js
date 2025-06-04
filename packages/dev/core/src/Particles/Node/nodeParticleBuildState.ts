@@ -1,5 +1,12 @@
 import type { Scene } from "core/scene";
 import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
+import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
+import type { Particle } from "../particle";
+import type { Nullable } from "core/types";
+import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths";
+import type { ThinParticleSystem } from "../thinParticleSystem";
 
 /**
  * Class used to store node based geometry build state
@@ -23,4 +30,89 @@ export class NodeParticleBuildState {
 
     /** Gets or sets a boolean indicating that verbose mode is on */
     public verbose: boolean;
+
+    /**
+     * Gets or sets the particle context for contextual data
+     */
+    public particleContext: Nullable<Particle> = null;
+
+    /**
+     * Gets or sets the system context for contextual data
+     */
+    public systemContext: Nullable<ThinParticleSystem> = null;
+
+    /**
+     * Emits errors if any
+     */
+    public emitErrors() {
+        let errorMessage = "";
+
+        for (const notConnectedInput of this.notConnectedNonOptionalInputs) {
+            errorMessage += `input ${notConnectedInput.name} from block ${
+                notConnectedInput.ownerBlock.name
+            }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\n`;
+        }
+
+        if (errorMessage) {
+            // eslint-disable-next-line no-throw-literal
+            throw "Build of Node Particle System Set failed:\n" + errorMessage;
+        }
+    }
+
+    /**
+     * Adapt a value to a target type
+     * @param source defines the value to adapt
+     * @param targetType defines the target type
+     * @returns the adapted value
+     */
+    adapt(source: NodeParticleConnectionPoint, targetType: NodeParticleBlockConnectionPointTypes) {
+        const value = source.getConnectedValue(this) || 0;
+
+        if (source.type === targetType) {
+            return value;
+        }
+
+        switch (targetType) {
+            case NodeParticleBlockConnectionPointTypes.Vector2:
+                return new Vector2(value, value);
+            case NodeParticleBlockConnectionPointTypes.Vector3:
+                return new Vector3(value, value, value);
+            case NodeParticleBlockConnectionPointTypes.Vector4:
+                return new Vector4(value, value, value, value);
+            case NodeParticleBlockConnectionPointTypes.Color3:
+                return new Color3(value, value, value);
+            case NodeParticleBlockConnectionPointTypes.Color4:
+                return new Color4(value, value, value, value);
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the value associated with a contextual source
+     * @param source Source of the contextual value
+     * @returns the value associated with the source
+     */
+    public getContextualValue(source: NodeParticleContextualSources) {
+        if (!this.particleContext || !this.systemContext) {
+            return null;
+        }
+
+        switch (source) {
+            case NodeParticleContextualSources.Position:
+                return this.particleContext.position;
+            case NodeParticleContextualSources.Direction:
+                return this.particleContext.direction;
+            case NodeParticleContextualSources.ScaledDirection:
+                return this.particleContext.direction.scale(this.systemContext._directionScale);
+            case NodeParticleContextualSources.Color:
+                return this.particleContext.color;
+            case NodeParticleContextualSources.Age:
+                return this.particleContext.age;
+            case NodeParticleContextualSources.Lifetime:
+                return this.particleContext.lifeTime;
+        }
+
+        return null;
+    }
 }

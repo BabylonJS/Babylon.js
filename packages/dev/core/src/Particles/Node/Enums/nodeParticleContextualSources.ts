@@ -15,4 +15,6 @@ export enum NodeParticleContextualSources {
     Lifetime = 0x0004,
     /** Color */
     Color = 0x0005,
+    /** ScaledDirection */
+    ScaledDirection = 0x0006,
 }
