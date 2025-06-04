@@ -13,9 +13,9 @@ import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
 export const SfeModeDefine = "USE_SFE_FRAMEWORK";
 
 /**
- * Base block used for compositing an input SFE texture.
- * This block extends the functionality of CurrentScreenBlock
- * so that it can be used in the SFE framework.
+ * Base block used for creating Smart Filter shader blocks for the SFE framework.
+ * This block extends the functionality of CurrentScreenBlock, as both are used
+ * to represent composition against an arbitrary texture and work similarly.
  */
 export class SmartFilterTextureBlock extends CurrentScreenBlock {
     /**
@@ -111,7 +111,7 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             // Add the header JSON for the SFE block
             if (!state._injectAtTop) {
-                state._injectAtTop = `// { "smartFilterBlockType": "${state.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Test" }`;
+                state._injectAtTop = `// { "smartFilterBlockType": "${state.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Exports" }`;
             }
 
             // Convert the main fragment function into a helper function, to later be inserted in an SFE pipeline.
