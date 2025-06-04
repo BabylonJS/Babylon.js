@@ -22,6 +22,7 @@ import type {
     ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
+    LightGizmo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
@@ -32,6 +33,7 @@ import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { PointLight } from "core/Lights/pointLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -780,7 +782,7 @@ export class Viewer implements IDisposable {
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
     private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
-    private _light: Nullable<HemisphericLight> = null;
+    private _light: Nullable<HemisphericLight | PointLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;
@@ -1034,7 +1036,7 @@ export class Viewer implements IDisposable {
             await this._scene.iblCdfGenerator.renderWhenReady();
             const dir = await this._scene.iblCdfGenerator.findDominantDirection();
             console.log("Auto lighting code step 3", dir);
-            this._light = new HemisphericLight("autoLight", dir, this._scene);
+            this._light = new PointLight("autoLight", dir, this._scene);
 
             this._light.diffuse = new Color3(1, 0, 0); // for debugging
             this._light.specular = new Color3(0, 1, 0); // for debugging
