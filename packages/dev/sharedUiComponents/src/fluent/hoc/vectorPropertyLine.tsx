@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import { type Vector3, Vector4 } from "core/index";
 
-import { type PropertyLineProps, PropertyLine, SplitPropertyLineProps } from "./propertyLine";
+import { type PropertyLineProps, PropertyLine } from "./propertyLine";
 import { SyncedSliderLine } from "./syncedSliderLine";
 import { type FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
@@ -15,7 +15,6 @@ type VectorSliderProps = {
 
 const VectorSliders: FunctionComponent<VectorSliderProps> = (props) => {
     const { vector, ...sliderProps } = props;
-
     return (
         <>
             <SyncedSliderLine label="X" validKey="x" obj={vector} {...sliderProps} />
@@ -33,10 +32,9 @@ const VectorSliders: FunctionComponent<VectorSliderProps> = (props) => {
  * @returns
  */
 export const VectorPropertyLine: FunctionComponent<VectorSliderProps & PropertyLineProps> = (props) => {
-    const [property, vector] = SplitPropertyLineProps(props);
     return (
-        <PropertyLine {...property} expandedContent={<VectorSliders {...vector} />}>
-            <Body1>{vector.vector.toString()}</Body1>
+        <PropertyLine {...props} expandedContent={<VectorSliders {...props} />}>
+            <Body1>{props.vector.toString()}</Body1>
         </PropertyLine>
     );
 };

@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import { type Color3, Color4 } from "core/index";
 
-import { type PropertyLineProps, PropertyLine, SplitPropertyLineProps } from "shared-ui-components/fluent/hoc/propertyLine";
+import { type PropertyLineProps, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { SyncedSliderLine } from "./syncedSliderLine";
 import type { FunctionComponent } from "react";
 
@@ -27,9 +27,8 @@ const ColorSliders: FunctionComponent<ColorSliderProps> = (props) => {
  * @returns Component wrapping a colorPicker component (coming soon) with a property line
  */
 export const ColorPropertyLine: FunctionComponent<ColorSliderProps & PropertyLineProps> = (props) => {
-    const [property, component] = SplitPropertyLineProps(props);
     return (
-        <PropertyLine {...property} expandedContent={<ColorSliders {...component} />}>
+        <PropertyLine {...props} expandedContent={<ColorSliders {...props} />}>
             {
                 props.color.toString()
                 // Will replace with colorPicker in future PR

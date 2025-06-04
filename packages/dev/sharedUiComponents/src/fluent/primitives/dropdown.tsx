@@ -28,10 +28,10 @@ type DropdownProps = { options: readonly DropdownOption[]; onSelect: (o: string)
  * @returns dropdown component
  */
 export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
-    const styles = useDropdownStyles();
+    const classes = useDropdownStyles();
     return (
         <FluentDropdown
-            className={styles.dropdownOption}
+            className={classes.dropdownOption}
             onOptionSelect={(evt, data) => {
                 data.optionValue != undefined && props.onSelect(data.optionValue);
             }}
@@ -39,7 +39,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
             defaultSelectedOptions={props.defaultValue && [props.defaultValue.value.toString()]}
         >
             {props.options.map((option: DropdownOption, i: number) => (
-                <Option className={styles.optionsLine} key={option.label + i} value={option.value.toString()} disabled={false}>
+                <Option className={classes.optionsLine} key={option.label + i} value={option.value.toString()} disabled={false}>
                     {option.label}
                 </Option>
             ))}

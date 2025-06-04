@@ -18,7 +18,7 @@ const useInputStyles = makeStyles({
  * @returns
  */
 export const Input: FunctionComponent<FluentInputProps> = (props) => {
-    const styles = useInputStyles();
+    const classes = useInputStyles();
     const [value, setValue] = useState(props.value ?? "");
 
     useEffect(() => {
@@ -40,5 +40,5 @@ export const Input: FunctionComponent<FluentInputProps> = (props) => {
         }
     };
 
-    return <FluentInput {...props} value={value} className={props.type === "number" ? styles.float : styles.text} onChange={handleChange} onKeyDown={handleKeyDown} />;
+    return <FluentInput {...props} value={value} className={props.type === "number" ? classes.float : classes.text} onChange={handleChange} onKeyDown={handleKeyDown} />;
 };

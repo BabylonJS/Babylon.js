@@ -12,7 +12,7 @@ const useInputStyles = makeStyles({
  * @returns
  */
 export const Textarea: FunctionComponent<FluentTextareaProps> = (props) => {
-    const styles = useInputStyles();
+    const classes = useInputStyles();
     const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>, data: any) => {
         event.stopPropagation(); // Prevent event propagation
         if (props.onChange) {
@@ -27,5 +27,5 @@ export const Textarea: FunctionComponent<FluentTextareaProps> = (props) => {
         }
     };
 
-    return <FluentTextarea {...props} className={styles.textarea} onChange={handleChange} onKeyDown={handleKeyDown} />;
+    return <FluentTextarea {...props} className={classes.textarea} onChange={handleChange} onKeyDown={handleKeyDown} />;
 };

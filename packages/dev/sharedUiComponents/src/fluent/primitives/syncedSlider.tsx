@@ -38,7 +38,7 @@ export type SyncedSliderProps = Omit<InputProps & SliderProps, "onChange" | "val
  * @returns SyncedSlider component
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
-    const styles = useSyncedSliderStyles();
+    const classes = useSyncedSliderStyles();
     const [value, setValue] = useState<number>(props.value);
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
         setValue(data.value);
@@ -54,8 +54,8 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     };
 
     return (
-        <div className={styles.syncedSlider}>
-            <Slider {...props} className={styles.slider} value={value} onChange={handleSliderChange} />
+        <div className={classes.syncedSlider}>
+            <Slider {...props} className={classes.slider} value={value} onChange={handleSliderChange} />
             <Input {...props} type="number" value={value.toString()} onChange={handleInputChange} />
         </div>
     );
