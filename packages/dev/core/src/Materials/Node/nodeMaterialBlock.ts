@@ -549,7 +549,7 @@ export class NodeMaterialBlock {
      * @param defines defines the material defines to update
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
+    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
         // Do nothing
     }
 

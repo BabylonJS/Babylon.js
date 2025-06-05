@@ -253,12 +253,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public override replaceRepeatableContent(
-        vertexShaderState: NodeMaterialBuildState,
-        fragmentShaderState: NodeMaterialBuildState,
-        mesh: AbstractMesh,
-        defines: NodeMaterialDefines
-    ) {
+    public override replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
         const position = this.position;
         const normal = this.normal;
         const tangent = this.tangent;
