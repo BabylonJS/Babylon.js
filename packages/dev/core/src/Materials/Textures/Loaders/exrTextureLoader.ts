@@ -5,7 +5,6 @@ import { GetExrHeader } from "./EXR/exrLoader.header";
 import { CreateDecoderAsync, ScanData } from "./EXR/exrLoader.decoder";
 import { ExrLoaderGlobalConfiguration, EXROutputType } from "./EXR/exrLoader.configuration";
 import { Logger } from "core/Misc/logger";
-import { Constants } from "core/Engines/constants";
 
 /**
  * Inspired by https://github.com/sciecode/three.js/blob/dev/examples/jsm/loaders/EXRLoader.js
