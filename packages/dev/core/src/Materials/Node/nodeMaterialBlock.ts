@@ -520,9 +520,9 @@ export class NodeMaterialBlock {
 
     /**
      * Update defines for shader compilation
-     * @param mesh defines the mesh to be rendered
-     * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param nodeMaterial defines the node material requesting the update
+     * @param mesh defines the mesh to be rendered
      * @param useInstances specifies that instances should be used
      * @param subMesh defines which submesh to render
      */
