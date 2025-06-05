@@ -527,7 +527,7 @@ export class NodeMaterialBlock {
      * @param subMesh defines which submesh to render
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
+    public prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh, useInstances: boolean = false, subMesh?: SubMesh) {
         // Do nothing
     }
 

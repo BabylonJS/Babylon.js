@@ -151,8 +151,8 @@ export class BonesBlock extends NodeMaterialBlock {
         BindBonesParameters(mesh, effect);
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (!defines._areAttributesDirty) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!defines._areAttributesDirty || !mesh) {
             return;
         }
         PrepareDefinesForBones(mesh, defines);

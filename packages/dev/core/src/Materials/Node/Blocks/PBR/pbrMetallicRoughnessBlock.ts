@@ -717,7 +717,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         // General
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);

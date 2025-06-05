@@ -6,7 +6,6 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
 import type { Effect } from "../../../effect";
@@ -199,7 +198,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
         const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
