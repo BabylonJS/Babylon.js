@@ -4,6 +4,9 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
+// If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
+const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
+
 export class GlobalState {
     public currentScene: Scene;
     public onSceneLoaded = new Observable<{ scene: Scene; filename: string }>();
@@ -24,9 +27,6 @@ export class GlobalState {
     public skybox = true;
     public toneMapping?: number;
 
-    // If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
-    public readonly inspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
-
     public reflector?: {
         hostname: string;
         port: number;
@@ -35,11 +35,11 @@ export class GlobalState {
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
-            if (!this.inspectorV2ModulePromise) {
+            if (!InspectorV2ModulePromise) {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.currentScene.debugLayer.show();
             } else {
-                const inspectorV2ModulePromise = this.inspectorV2ModulePromise;
+                const inspectorV2ModulePromise = InspectorV2ModulePromise;
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 (async () => {
                     const inspectorV2Module = await inspectorV2ModulePromise;
@@ -52,10 +52,10 @@ export class GlobalState {
     public hideDebugLayer() {
         this.isDebugLayerEnabled = false;
         if (this.currentScene) {
-            if (!this.inspectorV2ModulePromise) {
+            if (!InspectorV2ModulePromise) {
                 this.currentScene.debugLayer.hide();
             } else {
-                const inspectorV2ModulePromise = this.inspectorV2ModulePromise;
+                const inspectorV2ModulePromise = InspectorV2ModulePromise;
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 (async () => {
                     const inspectorV2Module = await inspectorV2ModulePromise;
