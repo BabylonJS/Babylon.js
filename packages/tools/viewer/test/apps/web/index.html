@@ -144,7 +144,6 @@
             <button onClick="onResumeRendering()">Resume Rendering</button>
             <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <button onClick="resetModel()">Reset Model</button>
-            <button onClick="autoLighting()">Auto Lighting</button>
             <button onclick="nextEnv()">Next Environment</button>
             <div>
                 <span>Environment Intensity</span>
@@ -357,10 +356,6 @@
                 viewerElement.viewerDetails.viewer.resetModel();
             };
 
-            globalThis.autoLighting = () => {
-                viewerElement.viewerDetails.viewer.autoLighting();
-            };
-
             const envs = [
                 "https://assets.babylonjs.com/environments/sanGiuseppeBridge.env",
                 "https://assets.babylonjs.com/environments/ulmerMuenster.env",
@@ -376,10 +371,8 @@
                 const nextEnv = envs[(currentEnv + 1) % envs.length];
                 console.log(`Loading environment: ${nextEnv}`);
                 await viewer.loadEnvironment(nextEnv, { skybox: true });
-                viewer.environmentConfig = { intensity: 0.4, blur: 0 };
+                viewer.environmentConfig = { blur: 0 };
                 currentEnv += 1;
-
-                autoLighting();
             };
 
             globalThis.onEnvironmentIntensity = () => {
