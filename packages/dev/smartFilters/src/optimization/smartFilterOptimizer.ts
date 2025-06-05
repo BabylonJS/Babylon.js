@@ -16,7 +16,7 @@ import { DisableableShaderBlock, BlockDisableStrategy } from "../blockFoundation
 import { textureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions.js";
 
 const GetDefineRegEx = /^\S*#define\s+(\w+).*$/; // Matches a #define statement line, capturing its decorated or undecorated name
-const showDebugData = false;
+const ShowDebugData = false;
 
 /**
  * @internal
@@ -694,7 +694,7 @@ export class SmartFilterOptimizer {
 
         // Builds and sets the final shader code
         code = codeFunctions + code;
-        if (showDebugData) {
+        if (ShowDebugData) {
             code = code.replace(/^ {16}/gm, "");
             code = code!.replace(/\r/g, "");
             code = code!.replace(/\n(\n)*/g, "\n");

@@ -15,7 +15,7 @@ import { GetBlockOutputTextureSize } from "../utils/textureUtils.js";
 /**
  * @internal
  */
-interface RefCountedTexture {
+interface IRefCountedTexture {
     /**
      * The texture.
      */
@@ -32,7 +32,7 @@ interface RefCountedTexture {
  */
 export class RenderTargetGenerator {
     private _optimize: boolean;
-    private _renderTargetPool: Map<string, Set<RefCountedTexture>>;
+    private _renderTargetPool: Map<string, Set<IRefCountedTexture>>;
     private _textureOptionsHashCache = new Map<ShaderBlock, string>();
 
     private _numTargetsCreated;
@@ -65,7 +65,7 @@ export class RenderTargetGenerator {
                 return;
             }
 
-            let refCountedTexture: Nullable<RefCountedTexture> = null;
+            let refCountedTexture: Nullable<IRefCountedTexture> = null;
             const textureOptionsHash = this._getTextureOptionsHash(block);
 
             // We assign a texture to the output of the block only if this is not the last block in the chain,
@@ -107,7 +107,7 @@ export class RenderTargetGenerator {
         this._textureOptionsHashCache.clear();
     }
 
-    private _findAvailableTexture(textureOptionsHash: string): Nullable<RefCountedTexture> {
+    private _findAvailableTexture(textureOptionsHash: string): Nullable<IRefCountedTexture> {
         const refCountedTextures = this._renderTargetPool.get(textureOptionsHash);
         if (!refCountedTextures) {
             return null;
@@ -122,7 +122,7 @@ export class RenderTargetGenerator {
         return null;
     }
 
-    private _getTexture(runtime: InternalSmartFilterRuntime, textureOptions: OutputTextureOptions, textureOptionsHash: string, smartFilter: SmartFilter): RefCountedTexture {
+    private _getTexture(runtime: InternalSmartFilterRuntime, textureOptions: OutputTextureOptions, textureOptionsHash: string, smartFilter: SmartFilter): IRefCountedTexture {
         if (!this._optimize) {
             this._numTargetsCreated++;
             return {
