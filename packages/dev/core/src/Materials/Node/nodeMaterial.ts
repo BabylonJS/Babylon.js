@@ -1639,7 +1639,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared defines
         for (const b of this._sharedData.blocksWithDefines) {
-            b.initializeDefines(mesh, this, defines, useInstances);
+            b.initializeDefines(defines);
         }
 
         for (const b of this._sharedData.blocksWithDefines) {

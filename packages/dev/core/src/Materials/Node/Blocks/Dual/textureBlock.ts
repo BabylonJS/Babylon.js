@@ -350,7 +350,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public override initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override initializeDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
