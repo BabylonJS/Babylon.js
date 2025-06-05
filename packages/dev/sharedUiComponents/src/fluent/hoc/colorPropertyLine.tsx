@@ -1,9 +1,11 @@
-// eslint-disable-next-line import/no-internal-modules
-import { type Color3, Color4 } from "core/index";
-
-import { type PropertyLineProps, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
-import { SyncedSliderLine } from "./syncedSliderLine";
 import type { FunctionComponent } from "react";
+
+import type { PropertyLineProps } from "./propertyLine";
+import { PropertyLine } from "./propertyLine";
+import { SyncedSliderLine } from "./syncedSliderLine";
+
+import type { Color3 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 
 type ColorSliderProps = {
     color: Color3 | Color4;
@@ -12,10 +14,10 @@ type ColorSliderProps = {
 const ColorSliders: FunctionComponent<ColorSliderProps> = (props) => {
     return (
         <>
-            <SyncedSliderLine label="R" validKey="r" obj={props.color} min={0} max={255} />
-            <SyncedSliderLine label="G" validKey="g" obj={props.color} min={0} max={255} />
-            <SyncedSliderLine label="B" validKey="b" obj={props.color} min={0} max={255} />
-            {props.color instanceof Color4 && <SyncedSliderLine label="A" validKey="a" obj={props.color} min={0} max={1} />}
+            <SyncedSliderLine label="R" propertyKey="r" target={props.color} min={0} max={255} />
+            <SyncedSliderLine label="G" propertyKey="g" target={props.color} min={0} max={255} />
+            <SyncedSliderLine label="B" propertyKey="b" target={props.color} min={0} max={255} />
+            {props.color instanceof Color4 && <SyncedSliderLine label="A" propertyKey="a" target={props.color} min={0} max={1} />}
         </>
     );
 };

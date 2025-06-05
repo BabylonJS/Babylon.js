@@ -207,7 +207,7 @@ const rules = {
                 "github/no-then": "error",
                 // rest of the rules
                 "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-                "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
+                "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: true, fixStyle: "separate-type-imports" }],
                 "@typescript-eslint/no-this-alias": "error",
                 "no-restricted-syntax": [
                     "error",

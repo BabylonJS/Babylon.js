@@ -1,9 +1,11 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type { FunctionComponent } from "react";
+
 import { PropertyLine } from "../hoc/propertyLine";
 import { Switch } from "../primitives/switch";
 import { Dropdown } from "../primitives/dropdown";
-import { type AbstractMesh } from "core/Meshes";
+
+import type { AbstractMesh } from "core/Meshes";
 
 export const MeshGeneralProperties: FunctionComponent<{
     entity: AbstractMesh;

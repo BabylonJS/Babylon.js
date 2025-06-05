@@ -38,8 +38,8 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
             defaultValue={props.defaultValue?.label}
             defaultSelectedOptions={props.defaultValue && [props.defaultValue.value.toString()]}
         >
-            {props.options.map((option: DropdownOption, i: number) => (
-                <Option className={classes.optionsLine} key={option.label + i} value={option.value.toString()} disabled={false}>
+            {props.options.map((option: DropdownOption) => (
+                <Option className={classes.optionsLine} key={option.label} value={option.value.toString()} disabled={false}>
                     {option.label}
                 </Option>
             ))}

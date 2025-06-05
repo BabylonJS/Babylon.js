@@ -1,10 +1,13 @@
-// eslint-disable-next-line import/no-internal-modules
-import { type Vector3, Vector4 } from "core/index";
+import type { FunctionComponent } from "react";
 
-import { type PropertyLineProps, PropertyLine } from "./propertyLine";
-import { SyncedSliderLine } from "./syncedSliderLine";
-import { type FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
+import { PropertyLine } from "./propertyLine";
+import type { PropertyLineProps } from "./propertyLine";
+
+import { SyncedSliderLine } from "./syncedSliderLine";
+
+import { Vector4 } from "core/Maths/math.vector";
+import type { Vector3 } from "core/Maths/math.vector";
 
 type VectorSliderProps = {
     vector: Vector3 | Vector4;
@@ -17,10 +20,10 @@ const VectorSliders: FunctionComponent<VectorSliderProps> = (props) => {
     const { vector, ...sliderProps } = props;
     return (
         <>
-            <SyncedSliderLine label="X" validKey="x" obj={vector} {...sliderProps} />
-            <SyncedSliderLine label="Y" validKey="y" obj={vector} {...sliderProps} />
-            <SyncedSliderLine label="Z" validKey="z" obj={vector} {...sliderProps} />
-            {vector instanceof Vector4 && <SyncedSliderLine label="W" validKey="w" obj={vector} {...sliderProps} />}
+            <SyncedSliderLine label="X" propertyKey="x" target={vector} {...sliderProps} />
+            <SyncedSliderLine label="Y" propertyKey="y" target={vector} {...sliderProps} />
+            <SyncedSliderLine label="Z" propertyKey="z" target={vector} {...sliderProps} />
+            {vector instanceof Vector4 && <SyncedSliderLine label="W" propertyKey="w" target={vector} {...sliderProps} />}
         </>
     );
 };

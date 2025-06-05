@@ -1,16 +1,18 @@
-import { type PropertyLineProps, PropertyLine } from "./propertyLine";
-import { type SyncedSliderProps, SyncedSliderInput } from "../primitives/syncedSlider";
+import { PropertyLine } from "./propertyLine";
+import type { PropertyLineProps } from "./propertyLine";
+import { SyncedSliderInput } from "../primitives/syncedSlider";
+import type { SyncedSliderProps } from "../primitives/syncedSlider";
 
 export type SyncedSliderLineProps<O, K> = PropertyLineProps &
     Omit<SyncedSliderProps, "value" | "onChange"> & {
         /**
          * String key
          */
-        validKey: K;
+        propertyKey: K;
         /**
-         * Object where O[K] is a number
+         * target where O[K] is a number
          */
-        obj: O;
+        target: O;
         /**
          * Callback when either the slider or input value changes
          */
@@ -22,8 +24,8 @@ export type SyncedSliderLineProps<O, K> = PropertyLineProps &
  * When value changes, updates the object with the new value and calls the onChange callback.
  *
  * Example usage looks like
- *    \<SyncedSliderLine validKey="x" obj=\{vector\} /\>
- *    \<SyncedSliderLine validKey="r" obj=\{color\} /\>
+ *    \<SyncedSliderLine propertyKey="x" target=\{vector\} /\>
+ *    \<SyncedSliderLine propertyKey="r" target=\{color\} /\>
  * @param props
  * @returns
  */
@@ -32,9 +34,9 @@ export const SyncedSliderLine = <O extends Record<K, number>, K extends Property
         <PropertyLine {...props}>
             <SyncedSliderInput
                 {...props}
-                value={props.obj[props.validKey]}
+                value={props.target[props.propertyKey]}
                 onChange={(val) => {
-                    props.obj[props.validKey] = val as O[K];
+                    props.target[props.propertyKey] = val as O[K];
                     props.onChange?.(val);
                 }}
             />
