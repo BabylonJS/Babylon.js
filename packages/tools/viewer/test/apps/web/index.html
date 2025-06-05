@@ -80,7 +80,7 @@
         <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div id="viewerContainer" style="width: 100vw; height: 100vh">
             <babylon-viewer
-                source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+                source="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/WaterBottle/glTF-Binary/WaterBottle.glb"
                 animation-speed="1.5"
                 selected-animation="1"
                 camera-orbit="auto auto auto"
@@ -145,6 +145,7 @@
             <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <button onClick="resetModel()">Reset Model</button>
             <button onClick="autoLighting()">Auto Lighting</button>
+            <button onclick="nextEnv()">Next Environment</button>
             <div>
                 <span>Environment Intensity</span>
                 <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
@@ -213,6 +214,7 @@
                 // }, 16);
 
                 await new Promise((resolve) => setTimeout(resolve, 2000));
+                nextEnv();
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // viewerElement.source = "https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/flightHelmet.glb"
                 //viewerElement.environment = "";
@@ -359,6 +361,27 @@
                 viewerElement.viewerDetails.viewer.autoLighting();
             };
 
+            const envs = [
+                "https://assets.babylonjs.com/environments/sanGiuseppeBridge.env",
+                "https://assets.babylonjs.com/environments/ulmerMuenster.env",
+                "https://cdn.substance3d.com/v2/files/public/studio-white.env",
+                "https://cdn.substance3d.com/v2/files/public/Atelier1K.env",
+                "https://cdn.substance3d.com/v2/files/public/Exterior1K.env",
+                "https://playground.babylonjs.com/textures/room.hdr",
+            ];
+            let currentEnv = 0;
+
+            globalThis.nextEnv = async () => {
+                const viewer = viewerElement.viewerDetails.viewer;
+                const nextEnv = envs[(currentEnv + 1) % envs.length];
+                console.log(`Loading environment: ${nextEnv}`);
+                await viewer.loadEnvironment(nextEnv, { skybox: true });
+                viewer.environmentConfig = { intensity: 0.4, blur: 0 };
+                currentEnv += 1;
+
+                autoLighting();
+            };
+
             globalThis.onEnvironmentIntensity = () => {
                 const value = document.querySelector("#environmentIntensityInput").value;
                 const viewer = viewerElement.viewerDetails.viewer;
@@ -377,11 +400,7 @@
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
-                checked ? viewer.loadEnvironment("https://assets.babylonjs.com/environments/ulmerMuenster.env", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
-                checked ? (viewer.environmentConfig = { intensity: 0.4, blur: 0 }) : null;
-
-                // https://assets.babylonjs.com/environments/sanGiuseppeBridge.env
-                // https://assets.babylonjs.com/environments/ulmerMuenster.env
+                checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
             };
             globalThis.onShadowQuality = () => {
                 const value = document.querySelector("#shadowQualityInput").value;

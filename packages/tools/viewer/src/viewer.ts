@@ -33,7 +33,7 @@ import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { PointLight } from "core/Lights/pointLight";
+import { DirectionalLight } from "core/Lights/directionalLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -782,7 +782,7 @@ export class Viewer implements IDisposable {
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
     private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
-    private _light: Nullable<HemisphericLight | PointLight> = null;
+    private _light: Nullable<HemisphericLight | DirectionalLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;
@@ -1033,10 +1033,13 @@ export class Viewer implements IDisposable {
         console.log("Auto lighting code step 2", this._scene.iblCdfGenerator);
 
         if (this._scene.iblCdfGenerator) {
+            this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
             await this._scene.iblCdfGenerator.renderWhenReady();
             const dir = await this._scene.iblCdfGenerator.findDominantDirection();
+
             console.log("Auto lighting code step 3", dir);
-            this._light = new PointLight("autoLight", dir, this._scene);
+            this._light = new DirectionalLight("dominant_light", dir.negate(), this._scene);
+            this._light.intensity = 1.5;
 
             this._light.diffuse = new Color3(1, 0, 0); // for debugging
             this._light.specular = new Color3(0, 1, 0); // for debugging
