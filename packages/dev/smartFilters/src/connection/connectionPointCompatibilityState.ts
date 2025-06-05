@@ -17,7 +17,7 @@ export enum ConnectionPointCompatibilityState {
  * @param state - Defines the compatibility state
  * @returns the message associated with a compatibility state.
  */
-export function getCompatibilityIssueMessage(state: ConnectionPointCompatibilityState): string {
+export function GetCompatibilityIssueMessage(state: ConnectionPointCompatibilityState): string {
     switch (state) {
         case ConnectionPointCompatibilityState.TypeIncompatible:
             return "Cannot connect two different connection types";

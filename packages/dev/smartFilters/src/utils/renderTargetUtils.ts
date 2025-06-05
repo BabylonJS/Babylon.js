@@ -1,4 +1,4 @@
-import { createCommand } from "../command/command.js";
+import { CreateCommand } from "../command/command.js";
 import type { BaseBlock } from "../blockFoundation/baseBlock.js";
 import type { ShaderRuntime } from "../runtime/shaderRuntime";
 import type { InternalSmartFilterRuntime } from "../runtime/smartFilterRuntime";
@@ -16,13 +16,13 @@ export function RegisterFinalRenderCommand(outputBlock: OutputBlock, runtime: In
     const commandOwnerBlockType = commandOwner.blockType;
     if (outputBlock.renderTargetWrapper) {
         runtime.registerCommand(
-            createCommand(`${commandOwnerBlockType}.renderToFinalTexture`, commandOwner, () => {
+            CreateCommand(`${commandOwnerBlockType}.renderToFinalTexture`, commandOwner, () => {
                 shaderBlockRuntime.renderToTargetWrapper(outputBlock);
             })
         );
     } else {
         runtime.registerCommand(
-            createCommand(`${commandOwnerBlockType}.renderToCanvas`, commandOwner, () => {
+            CreateCommand(`${commandOwnerBlockType}.renderToCanvas`, commandOwner, () => {
                 shaderBlockRuntime.renderToCanvas();
             })
         );

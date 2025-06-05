@@ -73,7 +73,7 @@ export abstract class AggregateBlock extends BaseBlock {
         // Must be done after the inputs and outputs were merged at our level, or the internal aggregate block may not be wired up to anything
         for (const aggregateOutput of this._aggregatedOutputs) {
             const internalConnectionPoint = aggregateOutput[0];
-            internalConnectionPoint.ownerBlock.visit({}, (block: BaseBlock, _extraData: Object) => {
+            internalConnectionPoint.ownerBlock.visit({}, (block: BaseBlock, _extraData: object) => {
                 if (block instanceof AggregateBlock) {
                     block._mergeIntoSmartFilter(mergedAggregateBlocks);
                 }

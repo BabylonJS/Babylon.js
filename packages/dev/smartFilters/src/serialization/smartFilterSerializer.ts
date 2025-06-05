@@ -1,6 +1,6 @@
 import type { SmartFilter } from "../smartFilter";
 import type { BaseBlock } from "../blockFoundation/baseBlock";
-import { inputBlockSerializer } from "../blockFoundation/inputBlock.serializer.js";
+import { InputBlockSerializer } from "../blockFoundation/inputBlock.serializer.js";
 import type { ConnectionPoint } from "../connection/connectionPoint";
 import { DefaultBlockSerializer } from "./v1/defaultBlockSerializer.js";
 import { OutputBlock } from "../blockFoundation/outputBlock.js";
@@ -34,7 +34,7 @@ export class SmartFilterSerializer {
      * @param additionalBlockSerializers - An array of block serializers to use, beyond those for the core blocks
      */
     public constructor(blocksUsingDefaultSerialization: string[], additionalBlockSerializers: IBlockSerializerV1[]) {
-        this._blockSerializers.set(inputBlockSerializer.blockType, inputBlockSerializer.serialize);
+        this._blockSerializers.set(InputBlockSerializer.blockType, InputBlockSerializer.serialize);
         this._blockSerializers.set(OutputBlock.ClassName, DefaultBlockSerializer);
         blocksUsingDefaultSerialization.forEach((block) => {
             this._blockSerializers.set(block, DefaultBlockSerializer);

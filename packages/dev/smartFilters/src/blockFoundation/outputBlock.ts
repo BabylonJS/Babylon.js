@@ -12,7 +12,7 @@ import type { ShaderProgram } from "../utils/shaderCodeUtils";
 /**
  * The shader program for the block.
  */
-export const shaderProgram: ShaderProgram = {
+const BlockShaderProgram: ShaderProgram = {
     vertex: undefined,
     fragment: {
         uniform: `
@@ -37,7 +37,7 @@ export const shaderProgram: ShaderProgram = {
  * The uniform names for this shader, to be used in the shader binding so
  * that the names are always in sync.
  */
-const uniforms = {
+const Uniforms = {
     input: "input",
 };
 
@@ -77,7 +77,7 @@ export class OutputBlock extends BaseBlock {
      * Prepares all blocks for runtime by traversing the graph.
      */
     public override prepareForRuntime(): void {
-        this.visit({}, (block: BaseBlock, _extraData: Object) => {
+        this.visit({}, (block: BaseBlock, _extraData: object) => {
             if (block !== this) {
                 block.prepareForRuntime();
             }
@@ -88,7 +88,7 @@ export class OutputBlock extends BaseBlock {
      * Propagates the runtime data for all graph blocks.
      */
     public override propagateRuntimeData(): void {
-        this.visit({}, (block: BaseBlock, _extraData: Object) => {
+        this.visit({}, (block: BaseBlock, _extraData: object) => {
             if (block !== this) {
                 block.propagateRuntimeData();
             }
@@ -107,7 +107,7 @@ export class OutputBlock extends BaseBlock {
         if (this.input.connectedTo?.ownerBlock.isInput && this.input.runtimeData) {
             const runtime = initializationData.runtime;
 
-            const shaderBlockRuntime = new ShaderRuntime(runtime.effectRenderer, shaderProgram, new OutputShaderBinding(this.input.runtimeData));
+            const shaderBlockRuntime = new ShaderRuntime(runtime.effectRenderer, BlockShaderProgram, new OutputShaderBinding(this.input.runtimeData));
             initializationData.initializationPromises.push(shaderBlockRuntime.onReadyAsync);
             runtime.registerResource(shaderBlockRuntime);
 
@@ -139,6 +139,6 @@ class OutputShaderBinding extends ShaderBinding {
      * @internal
      */
     public override bind(effect: Effect): void {
-        effect.setTexture(this.getRemappedName(uniforms.input), this._inputTexture.value);
+        effect.setTexture(this.getRemappedName(Uniforms.input), this._inputTexture.value);
     }
 }

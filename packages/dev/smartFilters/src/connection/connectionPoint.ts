@@ -1,5 +1,5 @@
 import type { Nullable } from "publishedBabylonCore/types";
-import { ConnectionPointCompatibilityState, getCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
+import { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
 import { ConnectionPointDirection } from "./connectionPointDirection.js";
 import type { BaseBlock } from "../blockFoundation/baseBlock.js";
 import type { ConnectionPointType, ConnectionPointValue } from "./connectionPointType";
@@ -152,7 +152,7 @@ export class ConnectionPoint<U extends ConnectionPointType = ConnectionPointType
         // Check compatibility
         const compatibility = this.checkCompatibilityState(other);
         if (compatibility !== ConnectionPointCompatibilityState.Compatible) {
-            throw getCompatibilityIssueMessage(compatibility);
+            throw GetCompatibilityIssueMessage(compatibility);
         }
 
         // Adds the connection point to the list of endpoints

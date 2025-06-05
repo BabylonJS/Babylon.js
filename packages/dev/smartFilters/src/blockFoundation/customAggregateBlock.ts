@@ -18,6 +18,7 @@ export class CustomAggregateBlock extends AggregateBlock {
      * @param smartFilterDeserializer - The deserializer to use
      * @returns A promise that resolves to the new CustomAggregateBlock
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async Create(
         smartFilter: SmartFilter,
         engine: ThinEngine,

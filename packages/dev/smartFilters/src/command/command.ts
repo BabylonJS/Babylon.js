@@ -50,7 +50,7 @@ export type Command = {
  * @param action - The action to execute when the command is executed
  * @returns The new command
  */
-export function createCommand(name: string, owner: ICommandOwner, action: CommandAction): Command {
+export function CreateCommand(name: string, owner: ICommandOwner, action: CommandAction): Command {
     return {
         name,
         owner,

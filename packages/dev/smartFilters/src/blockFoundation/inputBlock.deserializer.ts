@@ -10,29 +10,19 @@ import type { ISerializedBlockV1 } from "../serialization/v1/smartFilterSerializ
  * @param serializedBlock - The serialized block data
  * @returns A deserialized InputBlock
  */
-export function inputBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlockV1) {
+export function InputBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlockV1) {
     const blockData = serializedBlock.data as SerializedInputBlockData;
     let inputBlock;
 
     switch (blockData.inputType) {
         case ConnectionPointType.Boolean:
             {
-                inputBlock = new InputBlock(
-                    smartFilter,
-                    serializedBlock.name,
-                    ConnectionPointType.Boolean,
-                    blockData.value
-                );
+                inputBlock = new InputBlock(smartFilter, serializedBlock.name, ConnectionPointType.Boolean, blockData.value);
             }
             break;
         case ConnectionPointType.Float:
             {
-                inputBlock = new InputBlock(
-                    smartFilter,
-                    serializedBlock.name,
-                    ConnectionPointType.Float,
-                    blockData.value
-                );
+                inputBlock = new InputBlock(smartFilter, serializedBlock.name, ConnectionPointType.Float, blockData.value);
                 inputBlock.editorData = {
                     animationType: blockData.animationType,
                     valueDeltaPerMs: blockData.valueDeltaPerMs,
@@ -58,32 +48,17 @@ export function inputBlockDeserializer(smartFilter: SmartFilter, serializedBlock
             break;
         case ConnectionPointType.Color3:
             {
-                inputBlock = new InputBlock(
-                    smartFilter,
-                    serializedBlock.name,
-                    ConnectionPointType.Color3,
-                    blockData.value
-                );
+                inputBlock = new InputBlock(smartFilter, serializedBlock.name, ConnectionPointType.Color3, blockData.value);
             }
             break;
         case ConnectionPointType.Color4:
             {
-                inputBlock = new InputBlock(
-                    smartFilter,
-                    serializedBlock.name,
-                    ConnectionPointType.Color4,
-                    blockData.value
-                );
+                inputBlock = new InputBlock(smartFilter, serializedBlock.name, ConnectionPointType.Color4, blockData.value);
             }
             break;
         case ConnectionPointType.Vector2:
             {
-                inputBlock = new InputBlock(
-                    smartFilter,
-                    serializedBlock.name,
-                    ConnectionPointType.Vector2,
-                    blockData.value
-                );
+                inputBlock = new InputBlock(smartFilter, serializedBlock.name, ConnectionPointType.Vector2, blockData.value);
             }
             break;
     }

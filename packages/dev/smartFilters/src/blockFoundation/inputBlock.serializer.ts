@@ -18,20 +18,20 @@ import type { IBlockSerializerV1 } from "../serialization/v1/smartFilterSerializ
  * @param inputBlock - The InputBlock to serialize
  * @returns Serialized data for the InputBlock
  */
-function serializeInputBlockData(inputBlock: InputBlockBase): SerializedInputBlockData {
+function SerializeInputBlockData(inputBlock: InputBlockBase): SerializedInputBlockData {
     switch (inputBlock.type) {
         case ConnectionPointType.Texture:
-            return serializeTextureInputBlock(inputBlock as InputBlock<ConnectionPointType.Texture>);
+            return SerializeTextureInputBlock(inputBlock as InputBlock<ConnectionPointType.Texture>);
         case ConnectionPointType.Boolean:
-            return serializeBooleanInputBlock(inputBlock as InputBlock<ConnectionPointType.Boolean>);
+            return SerializeBooleanInputBlock(inputBlock as InputBlock<ConnectionPointType.Boolean>);
         case ConnectionPointType.Float:
-            return serializeFloatInputBlock(inputBlock as InputBlock<ConnectionPointType.Float>);
+            return SerializeFloatInputBlock(inputBlock as InputBlock<ConnectionPointType.Float>);
         case ConnectionPointType.Color3:
-            return serializeColor3InputBlock(inputBlock as InputBlock<ConnectionPointType.Color3>);
+            return SerializeColor3InputBlock(inputBlock as InputBlock<ConnectionPointType.Color3>);
         case ConnectionPointType.Color4:
-            return serializeColor4InputBlock(inputBlock as InputBlock<ConnectionPointType.Color4>);
+            return SerializeColor4InputBlock(inputBlock as InputBlock<ConnectionPointType.Color4>);
         case ConnectionPointType.Vector2:
-            return serializeVector2InputBlock(inputBlock as InputBlock<ConnectionPointType.Vector2>);
+            return SerializeVector2InputBlock(inputBlock as InputBlock<ConnectionPointType.Vector2>);
     }
 }
 
@@ -40,7 +40,7 @@ function serializeInputBlockData(inputBlock: InputBlockBase): SerializedInputBlo
  * @param inputBlock - The Texture InputBlock to serialize
  * @returns The serialized data for the InputBlock
  */
-function serializeTextureInputBlock(inputBlock: InputBlock<ConnectionPointType.Texture>): TextureInputBlockData {
+function SerializeTextureInputBlock(inputBlock: InputBlock<ConnectionPointType.Texture>): TextureInputBlockData {
     const internalTexture = inputBlock.runtimeValue.value?.getInternalTexture();
     const forcedExtension = internalTexture?._extension ?? null;
 
@@ -65,7 +65,7 @@ function serializeTextureInputBlock(inputBlock: InputBlock<ConnectionPointType.T
  * @param inputBlock - The Boolean InputBlock to serialize
  * @returns The serialized data for the InputBlock
  */
-function serializeBooleanInputBlock(inputBlock: InputBlock<ConnectionPointType.Boolean>): BooleanInputBlockData {
+function SerializeBooleanInputBlock(inputBlock: InputBlock<ConnectionPointType.Boolean>): BooleanInputBlockData {
     return {
         inputType: ConnectionPointType.Boolean,
         value: inputBlock.runtimeValue.value,
@@ -78,7 +78,7 @@ function serializeBooleanInputBlock(inputBlock: InputBlock<ConnectionPointType.B
  * @param inputBlock - The Float InputBlock to serialize
  * @returns The serialized data for the InputBlock
  */
-function serializeFloatInputBlock(inputBlock: InputBlock<ConnectionPointType.Float>): FloatInputBlockData {
+function SerializeFloatInputBlock(inputBlock: InputBlock<ConnectionPointType.Float>): FloatInputBlockData {
     return {
         inputType: ConnectionPointType.Float,
         value: inputBlock.runtimeValue.value,
@@ -95,7 +95,7 @@ function serializeFloatInputBlock(inputBlock: InputBlock<ConnectionPointType.Flo
  * @param inputBlock - The Color3 InputBlock to serialize
  * @returns The serialized data for the InputBlock
  */
-function serializeColor3InputBlock(inputBlock: InputBlock<ConnectionPointType.Color3>): Color3InputBlockData {
+function SerializeColor3InputBlock(inputBlock: InputBlock<ConnectionPointType.Color3>): Color3InputBlockData {
     return {
         inputType: ConnectionPointType.Color3,
         value: inputBlock.runtimeValue.value,
@@ -108,7 +108,7 @@ function serializeColor3InputBlock(inputBlock: InputBlock<ConnectionPointType.Co
  * @param inputBlock - The Color4 InputBlock to serialize
  * @returns The serialized data for the InputBlock
  */
-function serializeColor4InputBlock(inputBlock: InputBlock<ConnectionPointType.Color4>): Color4InputBlockData {
+function SerializeColor4InputBlock(inputBlock: InputBlock<ConnectionPointType.Color4>): Color4InputBlockData {
     return {
         inputType: ConnectionPointType.Color4,
         value: inputBlock.runtimeValue.value,
@@ -121,7 +121,7 @@ function serializeColor4InputBlock(inputBlock: InputBlock<ConnectionPointType.Co
  * @param inputBlock - The Vector2 InputBlock to serialize
  * @returns The serialized data for the InputBlock
  */
-function serializeVector2InputBlock(inputBlock: InputBlock<ConnectionPointType.Vector2>): Vector2InputBlockData {
+function SerializeVector2InputBlock(inputBlock: InputBlock<ConnectionPointType.Vector2>): Vector2InputBlockData {
     return {
         inputType: ConnectionPointType.Vector2,
         value: inputBlock.runtimeValue.value,
@@ -132,7 +132,7 @@ function serializeVector2InputBlock(inputBlock: InputBlock<ConnectionPointType.V
 /**
  * The V1 serializer for an InputBlock
  */
-export const inputBlockSerializer: IBlockSerializerV1 = {
+export const InputBlockSerializer: IBlockSerializerV1 = {
     blockType: InputBlockBase.ClassName,
     serialize: (block: BaseBlock) => {
         if (block.blockType !== InputBlockBase.ClassName) {
@@ -144,7 +144,7 @@ export const inputBlockSerializer: IBlockSerializerV1 = {
             blockType: InputBlockBase.ClassName,
             namespace: null,
             comments: block.comments,
-            data: serializeInputBlockData(block as unknown as InputBlockBase),
+            data: SerializeInputBlockData(block as unknown as InputBlockBase),
         };
     },
 };

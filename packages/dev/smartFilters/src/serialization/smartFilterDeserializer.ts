@@ -1,7 +1,7 @@
 import type { BaseBlock } from "../blockFoundation/baseBlock";
 import type { SerializedSmartFilter } from "./serializedSmartFilter.js";
 import { SmartFilter } from "../smartFilter.js";
-import { inputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer.js";
+import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer.js";
 import { OutputBlock } from "../blockFoundation/outputBlock.js";
 import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine";
 import { InputBlock } from "../blockFoundation/inputBlock.js";
@@ -146,7 +146,7 @@ export class SmartFilterDeserializer {
                         newBlock = await this._customInputBlockDeserializer(smartFilter, serializedBlock, engine);
                     }
                     if (newBlock === null) {
-                        newBlock = inputBlockDeserializer(smartFilter, serializedBlock);
+                        newBlock = InputBlockDeserializer(smartFilter, serializedBlock);
                     }
                 }
                 break;

@@ -13,7 +13,7 @@ import type { Nullable } from "publishedBabylonCore/types";
  * @param value - The value to check
  * @returns true if the value is a strong ref, otherwise false
  */
-function isRuntimeData<U extends ConnectionPointType>(value: ConnectionPointValue<U> | RuntimeData<U>): value is RuntimeData<U> {
+function IsRuntimeData<U extends ConnectionPointType>(value: ConnectionPointValue<U> | RuntimeData<U>): value is RuntimeData<U> {
     return value && (value as RuntimeData<ConnectionPointType>).value !== undefined;
 }
 
@@ -22,7 +22,7 @@ function isRuntimeData<U extends ConnectionPointType>(value: ConnectionPointValu
  * @param block - The block to check
  * @returns true if the block is a texture input block, otherwise false
  */
-export function isTextureInputBlock(block: BaseBlock): block is InputBlock<ConnectionPointType.Texture> {
+export function IsTextureInputBlock(block: BaseBlock): block is InputBlock<ConnectionPointType.Texture> {
     return (block as InputBlock<ConnectionPointType.Texture>).type === ConnectionPointType.Texture;
 }
 
@@ -31,7 +31,7 @@ export function isTextureInputBlock(block: BaseBlock): block is InputBlock<Conne
  * @param block - The block to check
  * @returns true if the block is a disableable block, otherwise false
  */
-export function isDisableableShaderBlock(block: BaseBlock): block is DisableableShaderBlock {
+export function IsDisableableShaderBlock(block: BaseBlock): block is DisableableShaderBlock {
     return (block as DisableableShaderBlock).disabled !== undefined;
 }
 
@@ -162,10 +162,10 @@ export class InputBlock<U extends ConnectionPointType, V = unknown> extends Inpu
         this.type = type;
 
         // Creates the output connection point
-        this.output = this._registerOutputWithDefault("output", type, isRuntimeData(initialValue) ? initialValue : CreateStrongRef(initialValue));
+        this.output = this._registerOutputWithDefault("output", type, IsRuntimeData(initialValue) ? initialValue : CreateStrongRef(initialValue));
 
         // Creates a strong reference to the initial value in case a reference has not been provided
-        if (isRuntimeData(initialValue)) {
+        if (IsRuntimeData(initialValue)) {
             this.runtimeValue = initialValue;
         } else {
             this.runtimeValue = CreateStrongRef(initialValue);

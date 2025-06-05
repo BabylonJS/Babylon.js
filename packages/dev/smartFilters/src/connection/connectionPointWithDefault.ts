@@ -6,9 +6,7 @@ import type { ConnectionPointType } from "./connectionPointType";
 /**
  * A ConnectionPoint whose runtimeData is never null - if not hooked up to a connection, it will use a default value.
  */
-export class ConnectionPointWithDefault<
-    U extends ConnectionPointType = ConnectionPointType,
-> extends ConnectionPoint<U> {
+export class ConnectionPointWithDefault<U extends ConnectionPointType = ConnectionPointType> extends ConnectionPoint<U> {
     /**
      * The runtime data for this ConnectionPoint - it will never be null - if not hooked up to a connection, it will use the default value.
      */
@@ -22,13 +20,7 @@ export class ConnectionPointWithDefault<
      * @param direction - The direction of the connection point
      * @param runtimeData - The runtimeData to use for this connection point if no connection is made
      */
-    constructor(
-        name: string,
-        ownerBlock: BaseBlock,
-        type: U,
-        direction: ConnectionPointDirection,
-        runtimeData: RuntimeData<U>
-    ) {
+    constructor(name: string, ownerBlock: BaseBlock, type: U, direction: ConnectionPointDirection, runtimeData: RuntimeData<U>) {
         super(name, ownerBlock, type, direction, runtimeData);
         this.runtimeData = runtimeData;
     }

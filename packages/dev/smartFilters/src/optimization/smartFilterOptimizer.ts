@@ -8,12 +8,12 @@ import type { BaseBlock } from "../blockFoundation/baseBlock";
 import { SmartFilter } from "../smartFilter.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
-import { isTextureInputBlock } from "../blockFoundation/inputBlock.js";
+import { IsTextureInputBlock } from "../blockFoundation/inputBlock.js";
 import { OptimizedShaderBlock } from "./optimizedShaderBlock.js";
 import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { DependencyGraph } from "./dependencyGraph.js";
 import { DisableableShaderBlock, BlockDisableStrategy } from "../blockFoundation/disableableShaderBlock.js";
-import { textureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions.js";
+import { TextureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions.js";
 
 const GetDefineRegEx = /^\S*#define\s+(\w+).*$/; // Matches a #define statement line, capturing its decorated or undecorated name
 const ShowDebugData = false;
@@ -133,7 +133,7 @@ export class SmartFilterOptimizer {
         let newSmartFilter: Nullable<SmartFilter> = null;
 
         this._sourceSmartFilter._workWithAggregateFreeGraph(() => {
-            if (this._sourceSmartFilter.output.connectedTo && !isTextureInputBlock(this._sourceSmartFilter.output.connectedTo.ownerBlock)) {
+            if (this._sourceSmartFilter.output.connectedTo && !IsTextureInputBlock(this._sourceSmartFilter.output.connectedTo.ownerBlock)) {
                 const connectionsToReconnect: [ConnectionPoint, ConnectionPoint][] = [];
 
                 if (this._options.removeDisabledBlocks) {
@@ -147,7 +147,7 @@ export class SmartFilterOptimizer {
                 newSmartFilter = new SmartFilter(this._sourceSmartFilter.name + " - optimized");
 
                 // We must recheck isTextureInputBlock because all shader blocks may have been disconnected by the previous code
-                if (!isTextureInputBlock(this._sourceSmartFilter.output.connectedTo.ownerBlock)) {
+                if (!IsTextureInputBlock(this._sourceSmartFilter.output.connectedTo.ownerBlock)) {
                     // Make sure all the connections in the graph have a runtimeData associated to them
                     // Note that the value of the runtimeData may not be set yet, we just need the objects to be created and propagated correctly
                     this._sourceSmartFilter.output.ownerBlock.prepareForRuntime();
@@ -444,7 +444,7 @@ export class SmartFilterOptimizer {
                 return false;
             }
 
-            if (!textureOptionsMatch(block.outputTextureOptions, this._currentOutputTextureOptions)) {
+            if (!TextureOptionsMatch(block.outputTextureOptions, this._currentOutputTextureOptions)) {
                 return false;
             }
         }
@@ -536,7 +536,7 @@ export class SmartFilterOptimizer {
 
                 const parentBlock = input.connectedTo.ownerBlock;
 
-                if (isTextureInputBlock(parentBlock)) {
+                if (IsTextureInputBlock(parentBlock)) {
                     // input is connected to an InputBlock of type "Texture": we must directly sample a texture
                     code = this._processSampleTexture(block, code, samplerName, samplers, parentBlock);
                 } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock)) {

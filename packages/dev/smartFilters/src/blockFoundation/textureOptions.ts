@@ -49,7 +49,7 @@ export type OutputTextureOptions = {
  * @param b - The second OutputTextureOptions
  * @returns True if the two options match, false otherwise
  */
-export function textureOptionsMatch(a: OutputTextureOptions | undefined, b: OutputTextureOptions | undefined): boolean {
+export function TextureOptionsMatch(a: OutputTextureOptions | undefined, b: OutputTextureOptions | undefined): boolean {
     if (a === undefined || b === undefined) {
         return false;
     }

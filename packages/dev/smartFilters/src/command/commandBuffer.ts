@@ -9,7 +9,7 @@ export type CommandsVisitor = (command: Command) => void;
  * @see CommandsVisitor used to execute the commands of a @see CommandBuffer.
  * @param command - The command to execute.
  */
-function executeCommandsVisitor(command: Command) {
+function ExecuteCommandsVisitor(command: Command) {
     command.action();
 }
 
@@ -59,7 +59,7 @@ export class CommandBuffer {
      * Execute all the commands in the command buffer.
      */
     public execute() {
-        this.visitCommands(executeCommandsVisitor);
+        this.visitCommands(ExecuteCommandsVisitor);
     }
 
     /**

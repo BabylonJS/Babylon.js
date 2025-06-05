@@ -7,7 +7,7 @@ import type { ShaderBinding } from "../runtime/shaderRuntime";
 import type { ConnectionPoint } from "../connection/connectionPoint";
 import { ShaderRuntime } from "../runtime/shaderRuntime.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
-import { createCommand } from "../command/command.js";
+import { CreateCommand } from "../command/command.js";
 import { UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import { BaseBlock } from "./baseBlock.js";
@@ -145,7 +145,7 @@ export abstract class ShaderBlock extends BaseBlock {
             }
 
             runtime.registerCommand(
-                createCommand(`${this.blockType}.render`, this, () => {
+                CreateCommand(`${this.blockType}.render`, this, () => {
                     shaderBlockRuntime.renderToTargetTexture(renderTargetTexture);
                 })
             );
