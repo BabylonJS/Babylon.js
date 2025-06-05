@@ -15,7 +15,8 @@ import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock"
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
 import { ParticleGradientEntryBlock } from "core/Particles/Node/Blocks/particleGradientEntryBlock";
 import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
-import { ParticleConverterBlock } from "core/Particles";
+import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
+import { CustomEmitterBlock } from "core/Particles/Node/Blocks/Emitters/customEmitterBlock";
 
 /**
  * Static class for BlockTools
@@ -48,7 +49,9 @@ export class BlockTools {
             case "SphereEmitterBlock":
                 return new SphereEmitterBlock("Sphere emitter");
             case "PointEmitterBlock":
-                return new PointEmitterBlock("point emitter");
+                return new PointEmitterBlock("Point emitter");
+            case "CustomEmitterBlock":
+                return new CustomEmitterBlock("Custom emitter");
             case "RandomRangeBlock":
                 return new RandomRangeBlock("Random range");
             case "PositionBlock": {

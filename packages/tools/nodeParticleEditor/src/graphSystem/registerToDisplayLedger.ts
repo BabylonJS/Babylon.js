@@ -10,6 +10,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleTextureSourceBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["BoxEmitterBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["PointEmitterBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["CustomEmitterBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SphereEmitterBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["UpdatePositionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;
