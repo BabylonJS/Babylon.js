@@ -110,6 +110,18 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Load the texture data from a Float32Array
+     * @param data defines the data to load
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     */
+    public loadTextureFromData(data: Float32Array, width: number, height: number) {
+        this._data = data;
+        this._width = width;
+        this._height = height;
+    }
+
+    /**
      * Load the texture data
      * @param imageFile defines the file to load data from
      * @returns a promise fulfilled when image data is loaded
