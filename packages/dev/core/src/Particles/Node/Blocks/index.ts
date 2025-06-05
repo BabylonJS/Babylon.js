@@ -14,3 +14,4 @@ export * from "./particleGradientEntryBlock";
 export * from "./particleGradientBlock";
 export * from "./particleConverterBlock";
 export * from "./particleTrigonometryBlock";
+export * from "./particleRandomBlock";
