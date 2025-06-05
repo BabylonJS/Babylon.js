@@ -53,7 +53,6 @@ module.exports = (env) => {
             rules: webpackTools.getRules(),
         },
         plugins: [],
-        // mode: "production",
     };
     return commonConfig;
 };
