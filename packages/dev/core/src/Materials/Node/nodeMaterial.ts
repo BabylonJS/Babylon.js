@@ -1829,7 +1829,10 @@ export class NodeMaterial extends PushMaterial {
             this.build();
         }
 
-        let processingDefines = "";
+        const defines = new NodeMaterialDefines();
+        this._processDefines(defines);
+
+        let processingDefines = defines.toString();
         if (this.mode === NodeMaterialModes.SFE) {
             processingDefines += `#define ${SfeModeDefine}\n`;
         }
