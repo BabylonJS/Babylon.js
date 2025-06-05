@@ -94,6 +94,14 @@ export class NodeParticleBlock {
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
+    protected _inputRename(name: string) {
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        return name;
+    }
+
     /**
      * Checks if the current block is an ancestor of a given block
      * @param block defines the potential descendant block to check

@@ -3,6 +3,7 @@ import { DisplayLedger } from "shared-ui-components/nodeGraphSystem/displayLedge
 import { TextureDisplayManager } from "./display/textureDisplayManager";
 import { EmitterDisplayManager } from "./display/emitterDisplayManager";
 import { UpdateDisplayManager } from "./display/updateDisplayManager";
+import { SystemDisplayManager } from "./display/systemDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
@@ -14,4 +15,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateColorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
 };

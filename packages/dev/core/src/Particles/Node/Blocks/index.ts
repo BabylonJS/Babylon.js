@@ -12,3 +12,4 @@ export * from "./Update/updateScaleBlock";
 export * from "./Emitters/index";
 export * from "./particleGradientEntryBlock";
 export * from "./particleGradientBlock";
+export * from "./particleConverterBlock";

@@ -22,6 +22,8 @@ export class ParticleGradientBlock extends NodeParticleBlock {
         this.registerInput("entry0", NodeParticleBlockConnectionPointTypes.AutoDetect);
         this.registerInput("entry1", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("entry2", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("entry3", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("entry4", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[1];
@@ -39,15 +41,17 @@ export class ParticleGradientBlock extends NodeParticleBlock {
             return type;
         };
 
-        this._linkConnectionTypes(1, 2);
-        this._linkConnectionTypes(1, 3);
-
         this._inputs[1].addExcludedConnectionPointFromAllowedTypes(
             NodeParticleBlockConnectionPointTypes.FloatGradient |
                 NodeParticleBlockConnectionPointTypes.Vector2Gradient |
                 NodeParticleBlockConnectionPointTypes.Vector3Gradient |
                 NodeParticleBlockConnectionPointTypes.Color4Gradient
         );
+
+        this._linkConnectionTypes(1, 2);
+        this._linkConnectionTypes(1, 3);
+        this._linkConnectionTypes(1, 4);
+        this._linkConnectionTypes(1, 5);
     }
 
     /**

@@ -54,6 +54,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         LerpBlock: "Interpolate between two values",
         GradientEntryBlock: "A gradient entry block used to define a value at a specific age",
         GradientBlock: "A gradient block used to define a gradient of values over the lifetime of a particle",
+        ConverterBlock: "Convert between different types of values, such as Color4, Vector2, Vector3, and Float",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -143,7 +144,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Updates: ["UpdateDirectionBlock", "UpdatePositionBlock", "UpdateColorBlock", "UpdateScaleBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "SubtractBlock"],
             Interpolation: ["LerpBlock", "GradientEntryBlock", "GradientBlock"],
-            Misc: ["RandomRangeBlock"],
+            Misc: ["RandomRangeBlock", "ConverterBlock"],
             System_Nodes: ["SystemBlock"],
             Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock", "ScaleBlock", "AgeGradientBlock"],
         };
