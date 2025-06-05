@@ -1,11 +1,11 @@
 import { Observable } from "../../../Misc/observable";
 import { GetClass, RegisterClass } from "../../../Misc/typeStore";
-import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "../../../Maths/math.vector";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { NodeParticleContextualSources } from "../Enums/nodeParticleContextualSources";
 
 /**

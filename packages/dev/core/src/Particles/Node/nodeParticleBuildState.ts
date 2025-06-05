@@ -4,9 +4,9 @@ import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSou
 import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import type { ThinParticleSystem } from "../thinParticleSystem";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 
 /**
  * Class used to store node based geometry build state

@@ -51,26 +51,7 @@ export class ParticleGradientBlock extends NodeParticleBlock {
     }
 
     public override _build() {
-        this.output._storedFunction = (state) => {
-            state.gradientIndex = this.gradient.getConnectedValue(state);
-
-            for (let i = this._inputs.length - 1; i > 0; i--) {
-                const entry = this._inputs[i];
-                const value = entry.getConnectedValue(state);
-
-                if (value !== null) {
-                    if (i !== this._inputs.length - 1) {
-                        const nextGradient = this._inputs[i + 1];
-                        state.nextGradientIndex = this._inputs[i + 1];
-                    } else {
-                        state.nextGradientIndex = 0;
-                        state.nextGradientValue = null;
-                    }
-                    const scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
-                    return value;
-                }
-            }
-
+        this.output._storedFunction = (_state) => {
             return 0;
         };
     }

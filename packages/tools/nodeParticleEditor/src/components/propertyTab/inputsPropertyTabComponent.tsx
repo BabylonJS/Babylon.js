@@ -5,13 +5,11 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import "./propertyTab.scss";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
-import { Color3PropertyTabComponent } from "./properties/color3PropertyTabComponent";
 import { Color4PropertyTabComponent } from "./properties/color4PropertyTabComponent";
 
 interface IInputsPropertyTabComponentProps {

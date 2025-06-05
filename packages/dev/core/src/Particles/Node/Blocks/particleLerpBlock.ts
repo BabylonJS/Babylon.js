@@ -1,9 +1,9 @@
 import { RegisterClass } from "../../../Misc/typeStore";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 /**
  * Block used to lerp between 2 values
  */

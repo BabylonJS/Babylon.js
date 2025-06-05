@@ -1,12 +1,12 @@
 import { RegisterClass } from "../../../Misc/typeStore";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { Observer } from "core/Misc/observable";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 
 /**
  * Operations supported by the Math block

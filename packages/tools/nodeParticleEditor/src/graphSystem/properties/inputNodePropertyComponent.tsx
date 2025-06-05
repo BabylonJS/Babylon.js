@@ -3,7 +3,6 @@ import type { GlobalState } from "../../globalState";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
 import { Vector3PropertyTabComponent } from "../../components/propertyTab/properties/vector3PropertyTabComponent";
-import { Vector4PropertyTabComponent } from "../../components/propertyTab/properties/vector4PropertyTabComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -15,7 +14,6 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 
