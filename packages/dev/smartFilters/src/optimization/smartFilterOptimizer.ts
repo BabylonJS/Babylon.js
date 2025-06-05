@@ -1,5 +1,5 @@
-import type { Nullable } from "publishedBabylonCore/types";
-import { Logger } from "publishedBabylonCore/Misc/logger.js";
+import type { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger.js";
 
 import type { ConnectionPoint } from "../connection/connectionPoint";
 import type { ShaderBinding } from "../runtime/shaderRuntime";

@@ -3,11 +3,11 @@ import type { SerializedSmartFilter } from "./serializedSmartFilter.js";
 import { SmartFilter } from "../smartFilter.js";
 import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer.js";
 import { OutputBlock } from "../blockFoundation/outputBlock.js";
-import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine";
+import type { ThinEngine } from "core/Engines/thinEngine";
 import { InputBlock } from "../blockFoundation/inputBlock.js";
 import type { ISerializedBlockV1, ISerializedConnectionV1, OptionalBlockDeserializerV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types";
 import { UniqueIdGenerator } from "../utils/uniqueIdGenerator.js";
-import type { Nullable } from "publishedBabylonCore/types";
+import type { Nullable } from "core/types";
 
 /**
  * A function that creates a block instance of the given class block type, or return null if it cannot.

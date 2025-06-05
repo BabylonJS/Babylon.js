@@ -4,7 +4,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { Nullable } from "publishedBabylonCore/types";
+import type { Nullable } from "core/types";
 import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType";
 import type { ShaderProgram } from "../../utils/shaderCodeUtils";
 

@@ -1,6 +1,6 @@
-import type { ThinTexture } from "publishedBabylonCore/Materials/Textures/thinTexture";
-import type { IColor3Like, IColor4Like, IVector2Like } from "publishedBabylonCore/Maths/math.like";
-import type { Nullable } from "publishedBabylonCore/types";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import type { IColor3Like, IColor4Like, IVector2Like } from "core/Maths/math.like";
+import type { Nullable } from "core/types";
 
 /**
  * Defines the type of a connection point.

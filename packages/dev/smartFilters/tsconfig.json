@@ -1,11 +1,9 @@
 {
     "extends": "../../../tsconfig.json",
 
-    "references": [
-        {
-            "path": "../core/tsconfig.build.json"
+    "compilerOptions": {
+        "paths": {
+            "core/*": ["node_modules/core/*"]
         }
-    ],
-
-    "compilerOptions": {}
+    }
 }

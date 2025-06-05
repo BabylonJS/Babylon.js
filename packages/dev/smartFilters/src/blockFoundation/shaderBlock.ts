@@ -1,5 +1,5 @@
-import type { ThinRenderTargetTexture } from "publishedBabylonCore/Materials/Textures/thinRenderTargetTexture";
-import "publishedBabylonCore/Engines/Extensions/engine.renderTarget.js";
+import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
+import "core/Engines/Extensions/engine.renderTarget.js";
 
 import type { InitializationData, SmartFilter } from "../smartFilter";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
@@ -13,7 +13,7 @@ import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import { BaseBlock } from "./baseBlock.js";
 import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions.js";
 import { EditableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
-import type { Nullable } from "publishedBabylonCore/types";
+import type { Nullable } from "core/types";
 
 const OutputTexturePropertiesGroupName = "OUTPUT TEXTURE PROPERTIES";
 

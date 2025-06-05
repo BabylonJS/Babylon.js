@@ -23,6 +23,6 @@
         "./dist/utils/buildTools/**"
     ],
     "devDependencies": {
-        "publishedBabylonCore": "npm:@babylonjs/core@8.0.1"
+        "core": "npm:@babylonjs/core@8.0.1"
     }
 }

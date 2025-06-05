@@ -1,4 +1,4 @@
-import { Logger } from "publishedBabylonCore/Misc/logger.js";
+import { Logger } from "core/Misc/logger.js";
 
 /**
  * Implementation of a dependency graph.

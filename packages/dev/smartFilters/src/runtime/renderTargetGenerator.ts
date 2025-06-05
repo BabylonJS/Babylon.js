@@ -1,7 +1,7 @@
-import type { ThinTexture } from "publishedBabylonCore/Materials/Textures/thinTexture";
-import type { Nullable } from "publishedBabylonCore/types";
-import { ThinRenderTargetTexture } from "publishedBabylonCore/Materials/Textures/thinRenderTargetTexture.js";
-import type { RenderTargetCreationOptions } from "publishedBabylonCore/Materials/Textures/textureCreationOptions";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import type { Nullable } from "core/types";
+import { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
 
 import type { BaseBlock } from "../blockFoundation/baseBlock";
 import type { InitializationData, SmartFilter } from "../smartFilter";

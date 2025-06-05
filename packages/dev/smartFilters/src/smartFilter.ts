@@ -1,5 +1,5 @@
-import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine";
-import type { Nullable } from "publishedBabylonCore/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Nullable } from "core/types";
 import type { SmartFilterRuntime } from "./runtime/smartFilterRuntime";
 import type { BaseBlock } from "./blockFoundation/baseBlock";
 import type { ConnectionPointType } from "./connection/connectionPointType";
@@ -11,7 +11,7 @@ import { AggregateBlock } from "./blockFoundation/aggregateBlock.js";
 import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { IDisposable } from "./IDisposable";
 import { ShaderBlock } from "./blockFoundation/shaderBlock.js";
-import type { ThinRenderTargetTexture } from "publishedBabylonCore/Materials/Textures/thinRenderTargetTexture";
+import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
 import { GetBlockOutputTextureSize } from "./utils/textureUtils.js";
 
 /**

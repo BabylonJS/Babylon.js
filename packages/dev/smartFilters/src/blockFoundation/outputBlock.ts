@@ -2,11 +2,11 @@ import type { InitializationData, SmartFilter } from "../smartFilter";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { BaseBlock } from "./baseBlock.js";
 import { ShaderBinding, ShaderRuntime } from "../runtime/shaderRuntime.js";
-import type { Nullable } from "publishedBabylonCore/types";
-import type { RenderTargetWrapper } from "publishedBabylonCore/Engines/renderTargetWrapper";
+import type { Nullable } from "core/types";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import type { RuntimeData } from "../connection/connectionPoint";
-import type { Effect } from "publishedBabylonCore/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
 
 /**

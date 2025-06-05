@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { Logger } from "publishedBabylonCore/Misc/logger.js";
+import { Logger } from "core/Misc/logger.js";
 import { ParseFragmentShader, type FragmentShaderInfo } from "./shaderConverter.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -1,6 +1,6 @@
-import { ThinTexture } from "publishedBabylonCore/Materials/Textures/thinTexture.js";
-import { type ThinEngine } from "publishedBabylonCore/Engines/thinEngine.js";
-import type { Nullable } from "publishedBabylonCore/types";
+import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
+import { type ThinEngine } from "core/Engines/thinEngine.js";
+import type { Nullable } from "core/types";
 
 /**
  * Helper that takes in a URL to an image and returns a ThinTexture

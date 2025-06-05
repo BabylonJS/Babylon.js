@@ -1,5 +1,5 @@
-import { EffectRenderer } from "publishedBabylonCore/Materials/effectRenderer.js";
-import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine";
+import { EffectRenderer } from "core/Materials/effectRenderer.js";
+import type { ThinEngine } from "core/Engines/thinEngine";
 import { CommandBuffer } from "../command/commandBuffer.js";
 import type { IDisposable } from "../IDisposable";
 import type { Command } from "../command/command";

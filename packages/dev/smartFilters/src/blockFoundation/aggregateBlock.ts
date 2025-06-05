@@ -1,4 +1,4 @@
-import type { Nullable } from "publishedBabylonCore/types";
+import type { Nullable } from "core/types";
 import type { ConnectionPoint, RuntimeData } from "../connection/connectionPoint";
 import type { ConnectionPointType } from "../connection/connectionPointType";
 

@@ -1,7 +1,7 @@
-import type { TextureSize } from "publishedBabylonCore/Materials/Textures/textureCreationOptions";
+import type { TextureSize } from "core/Materials/Textures/textureCreationOptions";
 import type { OutputTextureOptions } from "../blockFoundation/textureOptions";
 import type { SmartFilter } from "../smartFilter";
-import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
 /**
  * Determines the output texture size for a given shader block

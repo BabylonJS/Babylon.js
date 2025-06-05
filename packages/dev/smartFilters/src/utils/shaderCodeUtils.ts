@@ -1,4 +1,4 @@
-import type { Effect } from "publishedBabylonCore/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 import type { ShaderCode } from "./buildTools/shaderCode.types";
 
 /**

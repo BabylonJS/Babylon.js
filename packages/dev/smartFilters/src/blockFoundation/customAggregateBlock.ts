@@ -1,9 +1,9 @@
-import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 import type { SmartFilterDeserializer, SerializedBlockDefinition } from "../serialization/index.js";
 import type { SmartFilter } from "../smartFilter.js";
 import { AggregateBlock } from "./aggregateBlock.js";
 import type { BaseBlock } from "./baseBlock.js";
-import type { Nullable } from "publishedBabylonCore/types.js";
+import type { Nullable } from "core/types.js";
 
 /**
  * Loads a serialized Smart Filter into a block which can be used in another SmartFilter.

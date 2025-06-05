@@ -1,5 +1,5 @@
-import type { Effect } from "publishedBabylonCore/Materials/effect";
-import type { Nullable } from "publishedBabylonCore/types";
+import type { Effect } from "core/Materials/effect";
+import type { Nullable } from "core/types";
 
 import type { SmartFilter } from "../smartFilter";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";

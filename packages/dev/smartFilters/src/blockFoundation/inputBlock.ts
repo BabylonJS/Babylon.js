@@ -6,7 +6,7 @@ import type { DisableableShaderBlock } from "./disableableShaderBlock";
 import { BaseBlock } from "./baseBlock.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
-import type { Nullable } from "publishedBabylonCore/types";
+import type { Nullable } from "core/types";
 
 /**
  * Type predicate to check if value is a strong ref or a direct value

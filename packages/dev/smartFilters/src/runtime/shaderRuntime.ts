@@ -1,9 +1,9 @@
-import type { EffectRenderer } from "publishedBabylonCore/Materials/effectRenderer";
-import type { RenderTargetWrapper } from "publishedBabylonCore/Engines/renderTargetWrapper";
-import type { AbstractEngine } from "publishedBabylonCore/Engines/abstractEngine";
-import type { Effect } from "publishedBabylonCore/Materials/effect";
-import { EffectWrapper } from "publishedBabylonCore/Materials/effectRenderer.js";
-import type { ThinRenderTargetTexture } from "publishedBabylonCore/Materials/Textures/thinRenderTargetTexture";
+import type { EffectRenderer } from "core/Materials/effectRenderer";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { Effect } from "core/Materials/effect";
+import { EffectWrapper } from "core/Materials/effectRenderer.js";
+import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
 
 import type { IDisposable } from "../IDisposable";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";

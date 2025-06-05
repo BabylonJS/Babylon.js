@@ -66,7 +66,7 @@ const FileTemplate = `/* eslint-disable prettier/prettier */
 // to the block. This file will get overwritten when the build
 // is run or during a watch when the .glsl file is updated.
 
-import type { Effect } from "publishedBabylonCore/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 
 import {
     ${SHADER_BINDING_EXTENDS},

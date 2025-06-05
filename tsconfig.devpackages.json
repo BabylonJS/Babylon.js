@@ -54,6 +54,9 @@
         },
         {
             "path": "packages/tools/ktx2Decoder/tsconfig.build.json"
+        },
+        {
+            "path": "packages/dev/smartFilters/tsconfig.build.json"
         }
     ],
     "include": []

@@ -1,5 +1,5 @@
-import type { Nullable } from "publishedBabylonCore/types";
-import { Logger } from "publishedBabylonCore/Misc/logger.js";
+import type { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger.js";
 import type { ShaderCode, ShaderFunction } from "./shaderCode.types";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
 import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";

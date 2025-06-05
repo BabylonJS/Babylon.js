@@ -1,4 +1,4 @@
-import type { Observable } from "publishedBabylonCore/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the node editor
