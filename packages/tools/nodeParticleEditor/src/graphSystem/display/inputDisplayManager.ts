@@ -1,4 +1,4 @@
-import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import type { Vector2, Vector3 } from "core/Maths/math.vector";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
@@ -6,7 +6,7 @@ import * as styles from "./inputDisplayManager.module.scss";
 import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
-import type { Color3 } from "core/Maths/math.color";
+import type { Color4 } from "core/Maths/math.color";
 
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(nodeData: INodeData) {
@@ -36,10 +36,9 @@ export class InputDisplayManager implements IDisplayManager {
         const inputBlock = nodeData.data as ParticleInputBlock;
 
         switch (inputBlock.type) {
-            case NodeParticleBlockConnectionPointTypes.Color3:
             case NodeParticleBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
-                    color = (inputBlock.value as Color3).toHexString();
+                    color = inputBlock.value.toHexString();
                     break;
                 }
             }
@@ -100,9 +99,9 @@ export class InputDisplayManager implements IDisplayManager {
                     value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                     break;
                 }
-                case NodeParticleBlockConnectionPointTypes.Vector4: {
-                    const vec4Value = inputBlock.value as Vector4;
-                    value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                case NodeParticleBlockConnectionPointTypes.Color4: {
+                    const col4Value = inputBlock.value as Color4;
+                    value = `(${col4Value.r.toFixed(2)}, ${col4Value.g.toFixed(2)}, ${col4Value.b.toFixed(2)}, ${col4Value.a.toFixed(2)})`;
                     break;
                 }
             }

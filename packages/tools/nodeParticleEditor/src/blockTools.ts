@@ -136,10 +136,8 @@ export class BlockTools {
                 color = "#16bcb1";
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector3:
-            case NodeParticleBlockConnectionPointTypes.Color3:
                 color = "#b786cb";
                 break;
-            case NodeParticleBlockConnectionPointTypes.Vector4:
             case NodeParticleBlockConnectionPointTypes.Color4:
                 color = "#be5126";
                 break;
@@ -167,10 +165,6 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Vector2;
             case "Vector3":
                 return NodeParticleBlockConnectionPointTypes.Vector3;
-            case "Vector4":
-                return NodeParticleBlockConnectionPointTypes.Vector4;
-            case "Color3":
-                return NodeParticleBlockConnectionPointTypes.Color3;
             case "Color4":
                 return NodeParticleBlockConnectionPointTypes.Color4;
             case "Matrix":
@@ -190,10 +184,6 @@ export class BlockTools {
                 return "Vector2";
             case NodeParticleBlockConnectionPointTypes.Vector3:
                 return "Vector3";
-            case NodeParticleBlockConnectionPointTypes.Vector4:
-                return "Vector4";
-            case NodeParticleBlockConnectionPointTypes.Color3:
-                return "Color3";
             case NodeParticleBlockConnectionPointTypes.Color4:
                 return "Color4";
             case NodeParticleBlockConnectionPointTypes.Matrix:

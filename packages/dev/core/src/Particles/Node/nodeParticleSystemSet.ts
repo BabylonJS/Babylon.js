@@ -14,8 +14,9 @@ import { AbstractEngine } from "core/Engines/abstractEngine";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { BoxEmitterBlock } from "./Blocks/Emitters/boxEmitterBlock";
-import { ParticleMathBlock, ParticleMathBlockOperations, UpdatePositionBlock } from "./Blocks";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
+import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
+import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
 
 /**
  * Defines a set of particle systems defined as a node graph.

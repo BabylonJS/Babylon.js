@@ -3,7 +3,7 @@ import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import { Color3, Color4 } from "core/Maths";
+import { Color3, Color4 } from "core/Maths/math.color";
 /**
  * Block used to lerp between 2 values
  */
@@ -89,12 +89,6 @@ export class ParticleLerpBlock extends NodeParticleBlock {
                 }
                 case NodeParticleBlockConnectionPointTypes.Vector3: {
                     return new Vector3(func(gradient, left.x, right.x), func(gradient, left.y, right.y), func(gradient, left.z, right.z));
-                }
-                case NodeParticleBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func(gradient, left.x, right.x), func(gradient, left.y, right.y), func(gradient, left.z, right.z), func(gradient, left.w, right.w));
-                }
-                case NodeParticleBlockConnectionPointTypes.Color3: {
-                    return new Color3(func(gradient, left.r, right.r), func(gradient, left.g, right.g), func(gradient, left.b, right.b));
                 }
                 case NodeParticleBlockConnectionPointTypes.Color4: {
                     return new Color4(func(gradient, left.r, right.r), func(gradient, left.g, right.g), func(gradient, left.b, right.b), func(gradient, left.a, right.a));

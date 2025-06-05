@@ -100,10 +100,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 return <Vector2PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeParticleBlockConnectionPointTypes.Vector3:
                 return <Vector3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
-            case NodeParticleBlockConnectionPointTypes.Vector4:
-                return <Vector4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
-            case NodeParticleBlockConnectionPointTypes.Color3:
-                return <Color3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeParticleBlockConnectionPointTypes.Color4:
                 return <Color4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
         }

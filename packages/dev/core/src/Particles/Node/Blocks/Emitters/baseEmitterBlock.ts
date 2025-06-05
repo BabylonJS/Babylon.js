@@ -9,7 +9,8 @@ import type { _IExecutionQueueItem } from "core/Particles/Queue/executionQueue";
 import { _RemoveFromQueue } from "core/Particles/Queue/executionQueue";
 import type { Particle } from "core/Particles/particle";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import { Color4, Vector2 } from "core/Maths";
+import { Color4 } from "core/Maths/math.color";
+import { Vector2 } from "core/Maths/math.vector";
 
 /**
  * @internal

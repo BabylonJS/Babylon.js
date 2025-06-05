@@ -87,19 +87,6 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                         onChange={() => this.processInputBlockUpdate()}
                     />
                 );
-            case NodeParticleBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate()}
-                    />
-                );
-            case NodeParticleBlockConnectionPointTypes.Color3:
-                return <Color3PropertyTabComponent lockObject={this.props.lockObject} globalState={this.props.globalState} inputBlock={block} />;
             case NodeParticleBlockConnectionPointTypes.Color4:
                 return <Color4PropertyTabComponent lockObject={this.props.lockObject} globalState={this.props.globalState} inputBlock={block} />;
         }

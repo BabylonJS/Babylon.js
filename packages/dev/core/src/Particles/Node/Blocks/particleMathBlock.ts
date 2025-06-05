@@ -214,21 +214,6 @@ export class ParticleMathBlock extends NodeParticleBlock {
                             };
                             break;
                         }
-                        case NodeParticleBlockConnectionPointTypes.Vector4: {
-                            func = (state) => {
-                                return Vector4.Minimize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
-                            };
-                            break;
-                        }
-                        case NodeParticleBlockConnectionPointTypes.Color3: {
-                            func = (state) => {
-                                const other = vector.getConnectedValue(state);
-                                const { r, g, b } = state.adapt(scalar, vector.type);
-
-                                return new Color3(Math.min(other.r, r), Math.min(other.g, g), Math.min(other.b, b));
-                            };
-                            break;
-                        }
                         case NodeParticleBlockConnectionPointTypes.Color4: {
                             func = (state) => {
                                 const other = vector.getConnectedValue(state);
@@ -260,21 +245,6 @@ export class ParticleMathBlock extends NodeParticleBlock {
                         case NodeParticleBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
                                 return Vector3.Maximize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
-                            };
-                            break;
-                        }
-                        case NodeParticleBlockConnectionPointTypes.Vector4: {
-                            func = (state) => {
-                                return Vector4.Maximize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
-                            };
-                            break;
-                        }
-                        case NodeParticleBlockConnectionPointTypes.Color3: {
-                            func = (state) => {
-                                const other = vector.getConnectedValue(state);
-                                const { r, g, b } = state.adapt(scalar, vector.type);
-
-                                return new Color3(Math.max(other.r, r), Math.min(other.g, g), Math.min(other.b, b));
                             };
                             break;
                         }
@@ -336,8 +306,6 @@ export class ParticleMathBlock extends NodeParticleBlock {
                         first.acceptedConnectionPointTypes.push(
                             NodeParticleBlockConnectionPointTypes.Vector2,
                             NodeParticleBlockConnectionPointTypes.Vector3,
-                            NodeParticleBlockConnectionPointTypes.Vector4,
-                            NodeParticleBlockConnectionPointTypes.Color3,
                             NodeParticleBlockConnectionPointTypes.Color4
                         );
                     }

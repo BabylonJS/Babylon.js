@@ -1,9 +1,10 @@
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Vector2, Vector3, Vector4 } from "core/Maths";
+import { Color4 } from "core/Maths/math.color";
 
 /**
  * Block used to pick a value randomly from a range
@@ -82,12 +83,12 @@ export class RandomRangeBlock extends NodeParticleBlock {
                         Math.random() * (maxValue.y - minValue.y) + minValue.y,
                         Math.random() * (maxValue.z - minValue.z) + minValue.z
                     );
-                case NodeParticleBlockConnectionPointTypes.Vector4:
-                    return new Vector4(
-                        Math.random() * (maxValue.x - minValue.x) + minValue.x,
-                        Math.random() * (maxValue.y - minValue.y) + minValue.y,
-                        Math.random() * (maxValue.z - minValue.z) + minValue.z,
-                        Math.random() * (maxValue.w - minValue.w) + minValue.w
+                case NodeParticleBlockConnectionPointTypes.Color4:
+                    return new Color4(
+                        Math.random() * (maxValue.r - minValue.r) + minValue.r,
+                        Math.random() * (maxValue.g - minValue.g) + minValue.g,
+                        Math.random() * (maxValue.b - minValue.b) + minValue.b,
+                        Math.random() * (maxValue.a - minValue.a) + minValue.a
                     );
             }
         };

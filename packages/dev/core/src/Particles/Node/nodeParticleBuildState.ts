@@ -5,9 +5,8 @@ import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { Color3, Color4 } from "core/Maths";
 import type { ThinParticleSystem } from "../thinParticleSystem";
-import { ParticleGradientEntryBlock } from "./Blocks/particleGradientEntryBlock";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 /**
  * Class used to store node based geometry build state
@@ -91,10 +90,6 @@ export class NodeParticleBuildState {
                 return new Vector2(value, value);
             case NodeParticleBlockConnectionPointTypes.Vector3:
                 return new Vector3(value, value, value);
-            case NodeParticleBlockConnectionPointTypes.Vector4:
-                return new Vector4(value, value, value, value);
-            case NodeParticleBlockConnectionPointTypes.Color3:
-                return new Color3(value, value, value);
             case NodeParticleBlockConnectionPointTypes.Color4:
                 return new Color4(value, value, value, value);
         }

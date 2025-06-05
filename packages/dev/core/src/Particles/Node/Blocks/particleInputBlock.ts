@@ -51,12 +51,6 @@ export class ParticleInputBlock extends NodeParticleBlock {
                     case "Vector3":
                         this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                         return this._type;
-                    case "Vector4":
-                        this._type = NodeParticleBlockConnectionPointTypes.Vector4;
-                        return this._type;
-                    case "Color3":
-                        this._type = NodeParticleBlockConnectionPointTypes.Color3;
-                        return this._type;
                     case "Color4":
                         this._type = NodeParticleBlockConnectionPointTypes.Color4;
                         return this._type;
@@ -191,12 +185,6 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector3:
                 this.value = Vector3.Zero();
-                break;
-            case NodeParticleBlockConnectionPointTypes.Vector4:
-                this.value = Vector4.Zero();
-                break;
-            case NodeParticleBlockConnectionPointTypes.Color3:
-                this.value = Color3.White();
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
                 this.value = new Color4(1, 1, 1, 1);
