@@ -55,6 +55,9 @@ export class NodeParticleConnectionPoint {
     public _typeConnectionSource: Nullable<NodeParticleConnectionPoint> = null;
 
     /** @internal */
+    public _typeConnectionSourceTranslation: Nullable<(source: NodeParticleBlockConnectionPointTypes) => NodeParticleBlockConnectionPointTypes> = null;
+
+    /** @internal */
     public _defaultConnectionPointType: Nullable<NodeParticleBlockConnectionPointTypes> = null;
 
     /** @internal */
@@ -146,6 +149,9 @@ export class NodeParticleConnectionPoint {
             if (this._typeConnectionSource) {
                 if (!this._typeConnectionSource.isConnected && this._defaultConnectionPointType) {
                     return this._defaultConnectionPointType;
+                }
+                if (this._typeConnectionSourceTranslation) {
+                    return this._typeConnectionSourceTranslation(this._typeConnectionSource.type);
                 }
                 return this._typeConnectionSource.type;
             } else if (this._defaultConnectionPointType) {

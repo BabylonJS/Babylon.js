@@ -28,6 +28,10 @@ export class RandomRangeBlock extends NodeParticleBlock {
             NodeParticleBlockConnectionPointTypes.Matrix,
             NodeParticleBlockConnectionPointTypes.Particle,
             NodeParticleBlockConnectionPointTypes.Texture,
+            NodeParticleBlockConnectionPointTypes.FloatGradient,
+            NodeParticleBlockConnectionPointTypes.Color4Gradient,
+            NodeParticleBlockConnectionPointTypes.Vector2Gradient,
+            NodeParticleBlockConnectionPointTypes.Vector3Gradient,
         ] as const;
 
         this.min.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);

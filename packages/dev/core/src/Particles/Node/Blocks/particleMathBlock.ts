@@ -67,6 +67,10 @@ export class ParticleMathBlock extends NodeParticleBlock {
             NodeParticleBlockConnectionPointTypes.Matrix,
             NodeParticleBlockConnectionPointTypes.Particle,
             NodeParticleBlockConnectionPointTypes.Texture,
+            NodeParticleBlockConnectionPointTypes.FloatGradient,
+            NodeParticleBlockConnectionPointTypes.Color4Gradient,
+            NodeParticleBlockConnectionPointTypes.Vector2Gradient,
+            NodeParticleBlockConnectionPointTypes.Vector3Gradient,
         ] as const;
 
         this.left.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);

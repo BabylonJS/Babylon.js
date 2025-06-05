@@ -130,15 +130,19 @@ export class BlockTools {
                 color = "#51b0e5";
                 break;
             case NodeParticleBlockConnectionPointTypes.Float:
+            case NodeParticleBlockConnectionPointTypes.FloatGradient:
                 color = "#cb9e27";
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector2:
+            case NodeParticleBlockConnectionPointTypes.Vector2Gradient:
                 color = "#16bcb1";
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector3:
+            case NodeParticleBlockConnectionPointTypes.Vector3Gradient:
                 color = "#b786cb";
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
+            case NodeParticleBlockConnectionPointTypes.Color4Gradient:
                 color = "#be5126";
                 break;
             case NodeParticleBlockConnectionPointTypes.Matrix:

@@ -23,9 +23,13 @@ export class ParticleLerpBlock extends NodeParticleBlock {
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
 
-        this._inputs[0].excludedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Matrix);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Particle);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Texture);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeParticleBlockConnectionPointTypes.Float |
+                NodeParticleBlockConnectionPointTypes.Int |
+                NodeParticleBlockConnectionPointTypes.Vector2 |
+                NodeParticleBlockConnectionPointTypes.Vector3 |
+                NodeParticleBlockConnectionPointTypes.Color4
+        );
     }
 
     /**
