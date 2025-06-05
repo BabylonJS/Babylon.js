@@ -40,8 +40,7 @@
         "compile": "tsc -b tsconfig.build.json"
     },
     "devDependencies": {
-        "@dev/build-tools": "^1.0.0",
-        "@lts/core": "^1.0.0"
+        "@dev/build-tools": "^1.0.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^8.0.1"
