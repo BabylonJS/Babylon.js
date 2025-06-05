@@ -11,7 +11,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Light } from "../../../../Lights/light";
 import { PointLight } from "../../../../Lights/pointLight";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { ShadowGenerator } from "../../../../Lights/Shadows/shadowGenerator";
 import type { ShadowLight } from "../../../../Lights";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -163,7 +162,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areLightsDirty && !this._forcePrepareDefines) {
             return;
         }

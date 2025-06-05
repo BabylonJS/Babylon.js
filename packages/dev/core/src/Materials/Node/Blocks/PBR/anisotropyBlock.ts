@@ -5,7 +5,6 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -212,9 +211,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return code;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("ANISOTROPIC", true);
         defines.setValue("ANISOTROPIC_TEXTURE", false, true);
         defines.setValue("ANISOTROPIC_LEGACY", !this.roughness.isConnected);

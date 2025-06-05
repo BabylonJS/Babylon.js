@@ -7,8 +7,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
 import type { ReflectionBlock } from "./reflectionBlock";
 import type { Scene } from "../../../../scene";
 import type { Nullable } from "../../../../types";
@@ -100,9 +99,7 @@ export class SheenBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("SHEEN", true);
         defines.setValue("SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("SHEEN_LINKWITHALBEDO", this.linkSheenWithAlbedo, true);
