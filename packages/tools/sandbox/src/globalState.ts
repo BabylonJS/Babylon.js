@@ -39,10 +39,9 @@ export class GlobalState {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.currentScene.debugLayer.show();
             } else {
-                const inspectorV2ModulePromise = InspectorV2ModulePromise;
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 (async () => {
-                    const inspectorV2Module = await inspectorV2ModulePromise;
+                    const inspectorV2Module = await InspectorV2ModulePromise;
                     inspectorV2Module.ShowInspector(this.currentScene);
                 })();
             }
@@ -55,10 +54,9 @@ export class GlobalState {
             if (!InspectorV2ModulePromise) {
                 this.currentScene.debugLayer.hide();
             } else {
-                const inspectorV2ModulePromise = InspectorV2ModulePromise;
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 (async () => {
-                    const inspectorV2Module = await inspectorV2ModulePromise;
+                    const inspectorV2Module = await InspectorV2ModulePromise;
                     inspectorV2Module.HideInspector();
                 })();
             }
