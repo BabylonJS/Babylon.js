@@ -533,9 +533,7 @@ export class InputBlock extends NodeMaterialBlock {
                 return;
             }
 
-            // SFE: Mark the current value of the uniform as its default value.
-            const annotation = state.isSFEMode ? `// { "default": ${JSON.stringify(this.valueCallback?.() ?? this.value)} }` : undefined;
-            state._emitUniformFromString(this._associatedVariableName, this.type, undefined, undefined, annotation);
+            state._emitUniformFromString(this._associatedVariableName, this.type);
 
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
                 this._prefix = "uniforms.";

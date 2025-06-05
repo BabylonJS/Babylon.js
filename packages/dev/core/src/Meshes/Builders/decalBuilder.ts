@@ -67,11 +67,12 @@ export function CreateDecal(
     options: { position?: Vector3; normal?: Vector3; size?: Vector3; angle?: number; captureUVS?: boolean; cullBackFaces?: boolean; localMode?: boolean }
 ): Mesh {
     const hasSkeleton = !!sourceMesh.skeleton;
+    const hasMorphTargets = !!sourceMesh.morphTargetManager?.numTargets;
     const useLocalComputation = options.localMode || hasSkeleton;
 
     const indices = <IndicesArray>sourceMesh.getIndices();
-    const positions = hasSkeleton ? sourceMesh.getPositionData(true, true) : sourceMesh.getVerticesData(VertexBuffer.PositionKind);
-    const normals = hasSkeleton ? sourceMesh.getNormalsData(true, true) : sourceMesh.getVerticesData(VertexBuffer.NormalKind);
+    const positions = hasSkeleton || hasMorphTargets ? sourceMesh.getPositionData(true, true) : sourceMesh.getVerticesData(VertexBuffer.PositionKind);
+    const normals = hasSkeleton || hasMorphTargets ? sourceMesh.getNormalsData(true, true) : sourceMesh.getVerticesData(VertexBuffer.NormalKind);
     const localPositions = useLocalComputation ? (hasSkeleton ? sourceMesh.getVerticesData(VertexBuffer.PositionKind) : positions) : null;
     const localNormals = useLocalComputation ? (hasSkeleton ? sourceMesh.getVerticesData(VertexBuffer.NormalKind) : normals) : null;
     const uvs = sourceMesh.getVerticesData(VertexBuffer.UVKind);

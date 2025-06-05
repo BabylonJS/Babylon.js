@@ -457,8 +457,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/normalize": getSimpleInputMapping(FlowGraphBlockNames.Normalize),
     "math/dot": getSimpleInputMapping(FlowGraphBlockNames.Dot, ["a", "b"]),
     "math/cross": getSimpleInputMapping(FlowGraphBlockNames.Cross, ["a", "b"]),
-    "math/rotate2d": getSimpleInputMapping(FlowGraphBlockNames.Rotate2D, ["a", "b"]),
-    "math/rotate3d": getSimpleInputMapping(FlowGraphBlockNames.Rotate3D, ["a", "b", "c"]),
+    "math/rotate2D": getSimpleInputMapping(FlowGraphBlockNames.Rotate2D, ["a", "b"]),
+    "math/rotate3D": getSimpleInputMapping(FlowGraphBlockNames.Rotate3D, ["a", "b"]),
     "math/transform": {
         // glTF transform is vectorN with matrixN
         blocks: [FlowGraphBlockNames.TransformVector],
@@ -1431,9 +1431,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
-                // 60 is a const from the glTF loader
-                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._loader.parent.targetFps] },
-                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._loader.parent.targetFps] },
+                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
+                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
             },
         },
         outputs: {
@@ -1507,7 +1506,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
-                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._loader.parent.targetFps] },
+                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
             },
         },
         outputs: {
@@ -1722,8 +1721,8 @@ export function getAllSupportedNativeNodeTypes(): string[] {
    - Normalize (`math/normalize`) FlowGraphBlockNames.Normalize
    - Dot Product (`math/dot`) FlowGraphBlockNames.Dot
    - Cross Product (`math/cross`) FlowGraphBlockNames.Cross
-   - Rotate 2D (`math/rotate2d`) FlowGraphBlockNames.Rotate2D
-   - Rotate 3D (`math/rotate3d`) FlowGraphBlockNames.Rotate3D
+   - Rotate 2D (`math/rotate2D`) FlowGraphBlockNames.Rotate2D
+   - Rotate 3D (`math/rotate3D`) FlowGraphBlockNames.Rotate3D
    - Transform (`math/transform`) FlowGraphBlockNames.TransformVector
 9. **Matrix Nodes**
    - Transpose (`math/transpose`) FlowGraphBlockNames.Transpose

@@ -111,11 +111,11 @@ fn decompose(value: u32) -> vec4f
     return components * vec4f(2./255.) - vec4f(1.);
 }
 
-fn computeSH(splat: Splat, color: vec3f, dir: vec3f) -> vec3f
+fn computeSH(splat: Splat, dir: vec3f) -> vec3f
 {
     var sh: array<vec3<f32>, 16>;
     
-    sh[0] = color;
+    sh[0] = vec3f(0., 0., 0.);
 
 #if SH_DEGREE > 0
     let sh00: vec4f = decompose(splat.sh0.x);

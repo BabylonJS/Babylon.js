@@ -17,9 +17,9 @@ import type {
     ICamera,
 } from "babylonjs-gltf2interface";
 import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
-
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
-import { TmpVectors, Quaternion, Matrix } from "core/Maths/math.vector";
+import { TmpVectors, Quaternion } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { Buffer } from "core/Buffers/buffer";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -50,13 +50,16 @@ import {
     GetPrimitiveMode,
     IsNoopNode,
     IsTriangleFillMode,
-    IsParentAddedByImporter,
-    ConvertToRightHandedNode,
-    RotateNode180Y,
+    IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
     IndicesArrayToTypedArray,
     GetVertexBufferInfo,
+    CollapseChildIntoParent,
+    Rotate180Y,
+    DefaultTranslation,
+    DefaultScale,
+    DefaultRotation,
 } from "./glTFUtilities";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
@@ -73,6 +76,8 @@ import type { IMorphTargetData } from "./glTFMorphTargetsUtilities";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh";
 import { Color3, Color4 } from "core/Maths/math.color";
+import { TargetCamera } from "core/Cameras/targetCamera";
+import { Epsilon } from "core/Maths/math.constants";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -638,11 +643,11 @@ export class GLTFExporter {
     }
 
     private _setNodeTransformation(node: INode, babylonTransformNode: TransformNode, convertToRightHanded: boolean): void {
-        if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
+        if (!babylonTransformNode.getPivotPoint().equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             Tools.Warn("Pivot points are not supported in the glTF serializer");
         }
 
-        if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
+        if (!babylonTransformNode.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             const translation = TmpVectors.Vector3[0].copyFrom(babylonTransformNode.position);
             if (convertToRightHanded) {
                 ConvertToRightHandedPosition(translation);
@@ -651,15 +656,15 @@ export class GLTFExporter {
             node.translation = translation.asArray();
         }
 
-        if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
+        if (!babylonTransformNode.scaling.equalsWithEpsilon(DefaultScale, Epsilon)) {
             node.scale = babylonTransformNode.scaling.asArray();
         }
 
-        const rotationQuaternion = Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
-        if (babylonTransformNode.rotationQuaternion) {
-            rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
-        }
-        if (!Quaternion.IsIdentity(rotationQuaternion)) {
+        const rotationQuaternion =
+            babylonTransformNode.rotationQuaternion ||
+            Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
+
+        if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
             if (convertToRightHanded) {
                 ConvertToRightHandedRotation(rotationQuaternion);
             }
@@ -668,26 +673,30 @@ export class GLTFExporter {
         }
     }
 
-    private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean, parent: Nullable<Node>): void {
-        const translation = TmpVectors.Vector3[0];
-        const rotation = TmpVectors.Quaternion[0];
-
-        if (parent !== null) {
-            // Camera.getWorldMatrix returns global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
-            const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
-            const cameraWorldMatrix = babylonCamera.getWorldMatrix();
-            const cameraLocal = cameraWorldMatrix.multiply(parentWorldMatrix);
-            cameraLocal.decompose(undefined, rotation, translation);
-        } else {
-            babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
-        }
-
-        if (!translation.equalsToFloats(0, 0, 0)) {
+    private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHanded: boolean): void {
+        if (!babylonCamera.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
+            const translation = TmpVectors.Vector3[0].copyFrom(babylonCamera.position);
+            if (convertToRightHanded) {
+                ConvertToRightHandedPosition(translation);
+            }
             node.translation = translation.asArray();
         }
 
-        if (!Quaternion.IsIdentity(rotation)) {
-            node.rotation = rotation.asArray();
+        const rotationQuaternion = babylonCamera.rotationQuaternion || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
+
+        if (convertToRightHanded) {
+            ConvertToRightHandedRotation(rotationQuaternion);
+        }
+
+        // Left-handed scenes have cameras that always face Z+ (opposite of glTF's Z-).
+        // Use scene coordinate system rather than convertToRightHanded, since some
+        // cameras may not need convertToRightHanded but still need correction to face Z-.
+        if (!this._babylonScene.useRightHandedSystem) {
+            Rotate180Y(rotationQuaternion);
+        }
+
+        if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
+            node.rotation = rotationQuaternion.asArray();
         }
     }
 
@@ -1257,7 +1266,7 @@ export class GLTFExporter {
             }
         }
 
-        if (babylonNode instanceof Camera) {
+        if (babylonNode instanceof TargetCamera) {
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1265,22 +1274,20 @@ export class GLTFExporter {
                     this._nodesCameraMap.set(gltfCamera, []);
                 }
 
-                const parentBabylonNode = babylonNode.parent;
-                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded, parentBabylonNode);
+                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded);
 
-                // If a camera has a node that was added by the GLTF importer, we can just use the parent node transform as the "camera" transform.
-                if (parentBabylonNode && IsParentAddedByImporter(babylonNode, parentBabylonNode)) {
+                // If a parent node exists and can be collapsed, merge their transformations and mark the parent as the camera-containing node.
+                const parentBabylonNode = babylonNode.parent;
+                if (parentBabylonNode !== null && IsChildCollapsible(babylonNode, parentBabylonNode)) {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
-                    if (parentNodeIndex) {
+                    if (parentNodeIndex !== undefined) {
                         const parentNode = this._nodes[parentNodeIndex];
+                        CollapseChildIntoParent(node, parentNode);
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
-                        return null; // Skip exporting this node
+                        return null; // Skip exporting the original child node
                     }
                 }
-                if (state.convertToRightHanded) {
-                    ConvertToRightHandedNode(node);
-                    RotateNode180Y(node);
-                }
+
                 this._nodesCameraMap.get(gltfCamera)?.push(node);
             }
         }
@@ -1468,7 +1475,7 @@ export class GLTFExporter {
                     const colorWhite = Color3.White();
                     const alpha = babylonLinesMesh.material?.alpha ?? 1;
                     const color = babylonLinesMesh.greasedLineMaterial?.color ?? colorWhite;
-                    if (!color.equals(colorWhite) || alpha < 1) {
+                    if (!color.equalsWithEpsilon(colorWhite, Epsilon) || alpha < 1) {
                         material.pbrMetallicRoughness = {
                             baseColorFactor: [...color.asArray(), alpha],
                         };
@@ -1484,7 +1491,7 @@ export class GLTFExporter {
 
                     const babylonLinesMesh = babylonMesh;
 
-                    if (!babylonLinesMesh.color.equals(Color3.White()) || babylonLinesMesh.alpha < 1) {
+                    if (!babylonLinesMesh.color.equalsWithEpsilon(Color3.White(), Epsilon) || babylonLinesMesh.alpha < 1) {
                         material.pbrMetallicRoughness = {
                             baseColorFactor: [...babylonLinesMesh.color.asArray(), babylonLinesMesh.alpha],
                         };

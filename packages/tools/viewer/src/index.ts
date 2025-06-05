@@ -5,6 +5,7 @@ export type {
     LoadModelOptions,
     Model,
     PostProcessing,
+    ShadowQuality,
     ToneMapping,
     ViewerDetails,
     ViewerHotSpotQuery,

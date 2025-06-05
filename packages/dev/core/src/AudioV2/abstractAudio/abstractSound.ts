@@ -4,7 +4,6 @@ import { SoundState } from "../soundState";
 import { AudioNodeType } from "./abstractAudioNode";
 import type { _AbstractSoundInstance } from "./abstractSoundInstance";
 import { AbstractSoundSource, type ISoundSourceOptions } from "./abstractSoundSource";
-import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { IVolumeAudioOptions } from "./subNodes/volumeAudioSubNode";
 
@@ -35,14 +34,7 @@ export interface IAbstractSoundPlayOptionsBase {
 /**
  * Options for creating a sound.
  */
-export interface IAbstractSoundOptions extends IAbstractSoundOptionsBase, IAbstractSoundPlayOptions, ISoundSourceOptions {
-    /**
-     * The output bus for the sound. Defaults to `null`.
-     * - If not set or `null`, the sound is automatically connected to the audio engine's default main bus.
-     * @see {@link AudioEngineV2.defaultMainBus}
-     */
-    outBus: Nullable<PrimaryAudioBus>;
-}
+export interface IAbstractSoundOptions extends IAbstractSoundOptionsBase, IAbstractSoundPlayOptions, ISoundSourceOptions {}
 
 /**
  * Options for playing a sound.

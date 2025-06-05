@@ -1,8 +1,8 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
-import type { IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions, IStaticSoundStoredOptions } from "../abstractAudio/staticSound";
+import type { IStaticSoundCloneOptions, IStaticSoundOptions, IStaticSoundPlayOptions, IStaticSoundStopOptions, IStaticSoundStoredOptions } from "../abstractAudio/staticSound";
 import { StaticSound } from "../abstractAudio/staticSound";
-import type { IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuffer";
+import type { IStaticSoundBufferCloneOptions, IStaticSoundBufferOptions } from "../abstractAudio/staticSoundBuffer";
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
 import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
@@ -74,7 +74,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
         if (options.outBus) {
             this.outBus = options.outBus;
-        } else {
+        } else if (options.outBusAutoDefault !== false) {
             await this.engine.isReadyPromise;
             this.outBus = this.engine.defaultMainBus;
         }
@@ -118,6 +118,15 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     /** @internal */
     public override get stereo(): _StereoAudio {
         return this._stereo ?? (this._stereo = new _StereoAudio(this._subGraph));
+    }
+
+    /** @internal */
+    public override async cloneAsync(options: Nullable<Partial<IStaticSoundCloneOptions>> = null): Promise<StaticSound> {
+        const clone = await this.engine.createSoundAsync(this.name, options?.cloneBuffer ? this.buffer.clone() : this.buffer, this._options);
+
+        clone.outBus = options?.outBus ? options.outBus : this.outBus;
+
+        return clone;
     }
 
     /** @internal */
@@ -236,6 +245,25 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     /** @internal */
     public get sampleRate(): number {
         return this._audioBuffer.sampleRate;
+    }
+
+    /** @internal */
+    public override clone(options: Nullable<Partial<IStaticSoundBufferCloneOptions>> = null): StaticSoundBuffer {
+        const audioBuffer = new AudioBuffer({
+            length: this._audioBuffer.length,
+            numberOfChannels: this._audioBuffer.numberOfChannels,
+            sampleRate: this._audioBuffer.sampleRate,
+        });
+
+        for (let i = 0; i < this._audioBuffer.numberOfChannels; i++) {
+            audioBuffer.copyToChannel(this._audioBuffer.getChannelData(i), i);
+        }
+
+        const buffer = new _WebAudioStaticSoundBuffer(this.engine);
+        buffer._audioBuffer = audioBuffer;
+        buffer.name = options?.name ? options.name : this.name;
+
+        return buffer;
     }
 
     private async _initFromArrayBufferAsync(arrayBuffer: ArrayBuffer): Promise<void> {

@@ -199,7 +199,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 "invViewport",
                 "dataTextureSize",
                 "focal",
-                "vEyePosition",
+                "eyePosition",
                 "kernelSize",
             ];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
@@ -293,10 +293,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
-
-        // vEyePosition doesn't get automatially bound on MacOS with Chromium for no apparent reason.
-        // Binding it manually here instead. Remove next line when SH rendering is fine on that platform.
-        scene.bindEyePosition(effect);
+        scene.bindEyePosition(effect, "eyePosition", true);
 
         if (gsMesh.covariancesATexture) {
             const textureSize = gsMesh.covariancesATexture.getSize();
