@@ -1656,7 +1656,7 @@ export class NodeMaterial extends PushMaterial {
             this._fragmentCompilationState.compilationString = this._fragmentCompilationState._builtCompilationString;
 
             for (const b of this._sharedData.repeatableContentBlocks) {
-                b.replaceRepeatableContent(this._vertexCompilationState, mesh, defines);
+                b.replaceRepeatableContent(this._vertexCompilationState, defines, mesh);
             }
 
             // Uniforms

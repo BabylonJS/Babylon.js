@@ -544,12 +544,11 @@ export class NodeMaterialBlock {
     /**
      * Function called when a block is declared as repeatable content generator
      * @param vertexShaderState defines the current compilation state for the vertex shader
-     * @param fragmentShaderState defines the current compilation state for the fragment shader
-     * @param mesh defines the mesh to be rendered
      * @param defines defines the material defines to update
+     * @param mesh defines the mesh to be rendered
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
+    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, defines: NodeMaterialDefines, mesh?: AbstractMesh) {
         // Do nothing
     }
 
