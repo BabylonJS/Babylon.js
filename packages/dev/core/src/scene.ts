@@ -80,7 +80,7 @@ import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { MultiMaterial } from "./Materials/multiMaterial";
 import type { Effect } from "./Materials/effect";
 import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
-import type { Mesh } from "./Meshes/mesh";
+import { Mesh } from "./Meshes/mesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
@@ -4323,12 +4323,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         // Determine mesh candidates
-        const meshes = this.getActiveMeshCandidates();
+        const meshes = this.getActiveMeshCandidates().data;
+
+        // Move meshes with LOD levels to the front of the list for priority processing
+        meshes.sort((a, b) => ((a as Mesh).hasLODLevels ? -1 : (b as Mesh).hasLODLevels ? 1 : 0));
 
         // Check each mesh
         const len = meshes.length;
+        const skippedLODMeshes = [];
         for (let i = 0; i < len; i++) {
-            const mesh = meshes.data[i];
+            const mesh = meshes[i];
             let currentLOD = mesh._internalAbstractMeshDataInfo._currentLOD.get(this.activeCamera);
             if (currentLOD) {
                 currentLOD[1] = -1;
@@ -4355,6 +4359,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+
             currentLOD[0] = meshToRender;
             currentLOD[1] = this._frameId;
             if (meshToRender === undefined || meshToRender === null) {
@@ -4364,6 +4369,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
                 meshToRender.computeWorldMatrix();
+            }
+
+            // If the mesh has LOD levels, add its LOD levels that are not the current LOD to the skipped list
+            const lodLevelMeshes = (mesh as Mesh).hasLODLevels
+                ? (mesh as Mesh)
+                      .getLODLevels()
+                      .map((level) => level.mesh as Mesh)
+                      .concat(mesh as Mesh)
+                : [];
+            for (let levelIndex = 0; levelIndex < lodLevelMeshes.length; levelIndex++) {
+                const levelMesh = lodLevelMeshes[levelIndex];
+                if (levelMesh !== meshToRender) {
+                    skippedLODMeshes.push(levelMesh);
+                }
+            }
+
+            // Skip meshes that are not the current LOD level
+            if (meshToRender.parent instanceof Mesh && skippedLODMeshes.includes(meshToRender.parent as Mesh)) {
+                skippedLODMeshes.push(meshToRender);
+                continue;
             }
 
             mesh._preActivate();

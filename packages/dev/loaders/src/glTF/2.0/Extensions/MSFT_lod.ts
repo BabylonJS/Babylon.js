@@ -4,7 +4,7 @@ import { Observable } from "core/Misc/observable";
 import { Deferred } from "core/Misc/deferred";
 import type { Material } from "core/Materials/material";
 import type { TransformNode } from "core/Meshes/transformNode";
-import type { Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -174,6 +174,86 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /**
+     * Converts a TransformNode to a Mesh, preserving its properties and parent-child relationships
+     * @param node The TransformNode to convert
+     * @returns The converted Mesh
+     */
+    private _convertTransformNodeToMesh(node: TransformNode): Mesh {
+        const mesh = new Mesh(node.name, node.getScene());
+
+        mesh.parent = node.parent;
+
+        // Copy transform properties
+        mesh.position = node.position.clone();
+        mesh.rotation = node.rotation.clone();
+        mesh.scaling = node.scaling.clone();
+
+        // Copy metadata
+        mesh.metadata = node.metadata;
+
+        // Move all children from TransformNode to the new Mesh
+        const children = node.getChildren();
+        for (const child of children) {
+            child.parent = mesh;
+        }
+
+        // Dispose the original TransformNode
+        node.dispose();
+
+        return mesh;
+    }
+
+    /**
+     * Sets up screen coverage LOD levels for the given meshes
+     * @param transformNodes Array of nodes to set up as LOD levels
+     * @param screenCoverages Screen coverage values from metadata
+     * @returns The LOD0 mesh with all LOD levels configured
+     */
+    private _setupScreenCoverageLOD(transformNodes: Nullable<TransformNode>[], screenCoverages: number[]): Mesh {
+        const lod0 = transformNodes[transformNodes.length - 1];
+        if (!lod0) {
+            throw new Error("LOD0 node is missing");
+        }
+
+        // Convert lod0 to Mesh if it's a TransformNode
+        let lod0Mesh: Mesh;
+        if (lod0 instanceof Mesh) {
+            lod0Mesh = lod0;
+        } else {
+            lod0Mesh = this._convertTransformNodeToMesh(lod0);
+            transformNodes[transformNodes.length - 1] = lod0Mesh;
+        }
+
+        screenCoverages.reverse();
+        lod0Mesh.useLODScreenCoverage = true;
+
+        for (let i = 0; i < transformNodes.length - 1; i++) {
+            const node = transformNodes[i];
+            if (!node) {
+                continue;
+            }
+
+            let meshToAdd: Mesh;
+
+            if (node instanceof Mesh) {
+                meshToAdd = node;
+            } else {
+                meshToAdd = this._convertTransformNodeToMesh(node);
+                transformNodes[i] = meshToAdd;
+            }
+
+            lod0Mesh.addLODLevel(screenCoverages[i + 1], meshToAdd);
+        }
+
+        if (screenCoverages[0] > 0) {
+            // Adding empty LOD
+            lod0Mesh.addLODLevel(screenCoverages[0], null);
+        }
+
+        return lod0Mesh;
+    }
+
+    /**
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
@@ -183,6 +263,11 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
             const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
             this._loader.logOpen(`${extensionContext}`);
+            const transformNodes: Nullable<TransformNode>[] = [];
+
+            for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
+                transformNodes.push(null);
+            }
 
             for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                 const nodeLOD = nodeLODs[indexLOD];
@@ -192,24 +277,45 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                 }
 
-                const assignWrap = (babylonTransformNode: TransformNode) => {
+                const _assign = (babylonTransformNode: TransformNode, index: number): void => {
                     assign(babylonTransformNode);
                     babylonTransformNode.setEnabled(false);
-                };
+                    transformNodes[index] = babylonTransformNode;
 
-                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, assignWrap).then((babylonMesh) => {
-                    if (indexLOD !== 0) {
-                        // TODO: should not rely on _babylonTransformNode
-                        const previousNodeLOD = nodeLODs[indexLOD - 1];
-                        if (previousNodeLOD._babylonTransformNode) {
-                            this._disposeTransformNode(previousNodeLOD._babylonTransformNode);
-                            delete previousNodeLOD._babylonTransformNode;
+                    let fullArray = true;
+                    for (let i = 0; i < transformNodes.length; i++) {
+                        if (!transformNodes[i]) {
+                            fullArray = false;
                         }
                     }
 
-                    babylonMesh.setEnabled(true);
-                    return babylonMesh;
-                });
+                    const lod0 = transformNodes[transformNodes.length - 1];
+                    if (fullArray && lod0) {
+                        const screenCoverages = lod0.metadata?.gltf?.extras?.MSFT_screencoverage as number[] | undefined;
+                        if (screenCoverages?.length) {
+                            this._setupScreenCoverageLOD(transformNodes, screenCoverages);
+                        }
+                    }
+                };
+
+                const promise = this._loader
+                    .loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, (node: TransformNode) => _assign(node, indexLOD))
+                    .then((babylonMesh) => {
+                        const lastNodeLOD = nodeLODs[nodeLODs.length - 1];
+                        const screenCoverages = lastNodeLOD._babylonTransformNode?.metadata?.gltf?.extras?.MSFT_screencoverage as number[] | undefined;
+
+                        if (indexLOD !== 0 && !screenCoverages) {
+                            // TODO: should not rely on _babylonTransformNode
+                            const previousNodeLOD = nodeLODs[indexLOD - 1];
+                            if (previousNodeLOD._babylonTransformNode) {
+                                this._disposeTransformNode(previousNodeLOD._babylonTransformNode);
+                                delete previousNodeLOD._babylonTransformNode;
+                            }
+                        }
+
+                        babylonMesh.setEnabled(true);
+                        return babylonMesh;
+                    });
 
                 this._nodePromiseLODs[indexLOD] = this._nodePromiseLODs[indexLOD] || [];
 
