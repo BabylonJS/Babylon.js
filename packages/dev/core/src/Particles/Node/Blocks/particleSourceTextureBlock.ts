@@ -5,6 +5,7 @@ import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to provide a texture for particles in a particle system
@@ -17,6 +18,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     /**
      * Indicates if the texture data should be serialized as a base64 string.
      */
+    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public serializedCachedData: boolean = false;
 
     /**
