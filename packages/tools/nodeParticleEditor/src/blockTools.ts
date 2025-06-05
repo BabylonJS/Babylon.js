@@ -17,6 +17,7 @@ import { ParticleGradientEntryBlock } from "core/Particles/Node/Blocks/particleG
 import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
 import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
 import { CustomEmitterBlock } from "core/Particles/Node/Blocks/Emitters/customEmitterBlock";
+import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "core/Particles/Node/Blocks/particleTrigonometryBlock";
 
 /**
  * Static class for BlockTools
@@ -122,6 +123,111 @@ export class BlockTools {
             case "MaxBlock": {
                 const block = new ParticleMathBlock("Max");
                 block.operation = ParticleMathBlockOperations.Max;
+                return block;
+            }
+            case "ToDegreesBlock": {
+                const block = new ParticleTrigonometryBlock("To degrees");
+                block.operation = ParticleTrigonometryBlockOperations.ToDegrees;
+                return block;
+            }
+            case "ToRadiansBlock": {
+                const block = new ParticleTrigonometryBlock("To radians");
+                block.operation = ParticleTrigonometryBlockOperations.ToRadians;
+                return block;
+            }
+            case "AbsBlock": {
+                const block = new ParticleTrigonometryBlock("Abs");
+                block.operation = ParticleTrigonometryBlockOperations.Abs;
+                return block;
+            }
+            case "ArcCosBlock": {
+                const block = new ParticleTrigonometryBlock("ArcCos");
+                block.operation = ParticleTrigonometryBlockOperations.ArcCos;
+                return block;
+            }
+            case "ArcSinBlock": {
+                const block = new ParticleTrigonometryBlock("ArcSin");
+                block.operation = ParticleTrigonometryBlockOperations.ArcSin;
+                return block;
+            }
+            case "ArcTanBlock": {
+                const block = new ParticleTrigonometryBlock("ArcTan");
+                block.operation = ParticleTrigonometryBlockOperations.ArcTan;
+                return block;
+            }
+            case "CosBlock": {
+                const block = new ParticleTrigonometryBlock("Cos");
+                block.operation = ParticleTrigonometryBlockOperations.Cos;
+                return block;
+            }
+            case "ExpBlock": {
+                const block = new ParticleTrigonometryBlock("Exp");
+                block.operation = ParticleTrigonometryBlockOperations.Exp;
+                return block;
+            }
+            case "Exp2Block": {
+                const block = new ParticleTrigonometryBlock("Exp2");
+                block.operation = ParticleTrigonometryBlockOperations.Exp2;
+                return block;
+            }
+            case "LogBlock": {
+                const block = new ParticleTrigonometryBlock("Log");
+                block.operation = ParticleTrigonometryBlockOperations.Log;
+                return block;
+            }
+            case "SinBlock": {
+                const block = new ParticleTrigonometryBlock("Sin");
+                block.operation = ParticleTrigonometryBlockOperations.Sin;
+                return block;
+            }
+            case "SignBlock": {
+                const block = new ParticleTrigonometryBlock("Sign");
+                block.operation = ParticleTrigonometryBlockOperations.Sign;
+                return block;
+            }
+            case "TanBlock": {
+                const block = new ParticleTrigonometryBlock("Tan");
+                block.operation = ParticleTrigonometryBlockOperations.Tan;
+                return block;
+            }
+            case "SqrtBlock": {
+                const block = new ParticleTrigonometryBlock("Sqrt");
+                block.operation = ParticleTrigonometryBlockOperations.Sqrt;
+                return block;
+            }
+            case "NegateBlock": {
+                const block = new ParticleTrigonometryBlock("Negate");
+                block.operation = ParticleTrigonometryBlockOperations.Negate;
+                return block;
+            }
+            case "OneMinusBlock": {
+                const block = new ParticleTrigonometryBlock("OneMinus");
+                block.operation = ParticleTrigonometryBlockOperations.OneMinus;
+                return block;
+            }
+            case "ReciprocalBlock": {
+                const block = new ParticleTrigonometryBlock("Reciprocal");
+                block.operation = ParticleTrigonometryBlockOperations.Reciprocal;
+                return block;
+            }
+            case "RoundBlock": {
+                const block = new ParticleTrigonometryBlock("Round");
+                block.operation = ParticleTrigonometryBlockOperations.Round;
+                return block;
+            }
+            case "FloorBlock": {
+                const block = new ParticleTrigonometryBlock("Floor");
+                block.operation = ParticleTrigonometryBlockOperations.Floor;
+                return block;
+            }
+            case "FractBlock": {
+                const block = new ParticleTrigonometryBlock("Fract");
+                block.operation = ParticleTrigonometryBlockOperations.Fract;
+                return block;
+            }
+            case "CeilingBlock": {
+                const block = new ParticleTrigonometryBlock("Ceiling");
+                block.operation = ParticleTrigonometryBlockOperations.Ceiling;
                 return block;
             }
         }
