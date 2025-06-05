@@ -38,8 +38,6 @@ export class ParticleGradientEntryBlock extends NodeParticleBlock {
             return type;
         };
 
-        this._linkConnectionTypes(0, 1);
-
         this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
             NodeParticleBlockConnectionPointTypes.Float |
                 NodeParticleBlockConnectionPointTypes.Vector2 |
