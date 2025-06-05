@@ -22,7 +22,6 @@ import type {
     ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
-    LightGizmo,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
@@ -39,7 +38,7 @@ import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -139,7 +138,7 @@ type ShadowState = {
     normal?: {
         generator: ShadowGenerator;
         ground: Mesh;
-        light: ShadowLight;
+        light: DirectionalLight;
         shouldRender: boolean;
     };
     high?: {
@@ -1010,46 +1009,6 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private _lightGizmo: Nullable<LightGizmo> = null;
-    /**
-     * Setup the scene for auto lighting.
-     */
-    public async autoLighting(): Promise<void> {
-        console.log("Auto lighting code start", this._scene.iblCdfGenerator);
-        const [{}, { LightGizmo }] = await Promise.all([import("core/Rendering/iblCdfGeneratorSceneComponent"), import("core/Gizmos/lightGizmo")]);
-
-        if (this._light) {
-            this._light.dispose();
-            console.log("Auto lighting code step 1", this._light, "light disposed");
-        }
-
-        if (!this._lightGizmo) {
-            this._lightGizmo = new LightGizmo();
-        }
-
-        if (!this._scene.iblCdfGenerator) {
-            this._scene.enableIblCdfGenerator();
-        }
-        console.log("Auto lighting code step 2", this._scene.iblCdfGenerator);
-
-        if (this._scene.iblCdfGenerator) {
-            this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
-            await this._scene.iblCdfGenerator.renderWhenReady();
-            const dir = await this._scene.iblCdfGenerator.findDominantDirection();
-
-            console.log("Auto lighting code step 3", dir);
-            this._light = new DirectionalLight("dominant_light", dir.negate(), this._scene);
-            this._light.intensity = 1.5;
-
-            this._light.diffuse = new Color3(1, 0, 0); // for debugging
-            this._light.specular = new Color3(0, 1, 0); // for debugging
-            this._lightGizmo.light = this._light;
-
-            this._markSceneMutated();
-            console.log("Auto lighting code step 4", this._light, "light created");
-        }
-    }
-
     private _changeSkyboxBlur(value: number) {
         if (value !== this._skyboxBlur) {
             this._skyboxBlur = value;
@@ -1810,6 +1769,23 @@ export class Viewer implements IDisposable {
         this._markSceneMutated();
     }
 
+    // TODO to update when every time an env is loaded
+    private async _getIblDominantDirection(): Promise<Nullable<Vector3>> {
+        await import("core/Rendering/iblCdfGeneratorSceneComponent");
+
+        if (!this._scene.iblCdfGenerator) {
+            this._scene.enableIblCdfGenerator();
+        }
+
+        if (this._scene.iblCdfGenerator) {
+            this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
+            await this._scene.iblCdfGenerator.renderWhenReady();
+            return await this._scene.iblCdfGenerator.findDominantDirection();
+        }
+
+        return null;
+    }
+
     private async _updateShadowMap(abortSignal?: AbortSignal) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
@@ -1832,8 +1808,6 @@ export class Viewer implements IDisposable {
         }
 
         const radius = Vector3.FromArray(worldBounds.size).length();
-        const x = Math.cos(this._reflectionsRotation);
-        const z = Math.sin(this._reflectionsRotation);
 
         if (this._shadowQuality !== "normal") {
             return;
@@ -1846,9 +1820,36 @@ export class Viewer implements IDisposable {
         const groundFactor = 20;
         const groundSize = radius * groundFactor;
 
-        const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
+        let iblDominantLightDirection: Nullable<Vector3> = null;
+        try {
+            iblDominantLightDirection = await this._getIblDominantDirection();
+        } catch (error) {
+            console.warn("Failed to get IBL dominant direction, using default.", error);
+        }
+
+        if (!iblDominantLightDirection) {
+            const x = Math.cos(this._reflectionsRotation);
+            const z = Math.sin(this._reflectionsRotation);
+            iblDominantLightDirection = new Vector3(x, 1, z);
+        }
+
+        const normalizedIblDirection = iblDominantLightDirection.normalize();
+        const lightPosition = normalizedIblDirection.scale(radius * positionFactor);
+        let lightTargetDirection = normalizedIblDirection.negate();
+
+        // ensure the light is not too flat
+        if (lightTargetDirection.y > 0) {
+            console.log("test", lightTargetDirection);
+            lightTargetDirection.y *= -1;
+        }
+        if (lightTargetDirection.y > -0.01) {
+            console.log("test B", lightTargetDirection);
+            lightTargetDirection.y *= 10;
+        }
+
+        let normal = this._shadowState.normal;
         if (!normal) {
-            const light = new SpotLight("shadowLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
+            const light = new DirectionalLight("shadowMapDirectionalLight", lightTargetDirection, this._scene);
 
             const generator = new ShadowGenerator(size, light);
             generator.setDarkness(0.8);
@@ -1891,7 +1892,7 @@ export class Viewer implements IDisposable {
             });
         }
 
-        normal.light.position = position;
+        normal.light.position = lightPosition;
 
         for (const model of this._loadedModelsBacking) {
             // Add all root meshes to the shadow generator.
