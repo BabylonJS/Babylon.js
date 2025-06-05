@@ -103,7 +103,7 @@ export class PreviewManager {
             try {
                 const particleSystemSet = await this._nodeParticleSystemSet.buildAsync(this._scene);
                 if (callId !== this._callId) {
-                    // If the callId has changed, we ignore this result
+                    // If the callId has changed, we ignore this result because that function was called again
                     particleSystemSet.dispose();
                     return;
                 }

@@ -144,7 +144,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Interpolatin: ["LerpBlock"],
             Misc: ["RandomRangeBlock"],
             System_Nodes: ["SystemBlock"],
-            Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock"],
+            Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock", "ScaleBlock"],
         };
 
         // Create node menu
