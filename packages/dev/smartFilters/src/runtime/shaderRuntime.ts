@@ -9,7 +9,7 @@ import type { IDisposable } from "../IDisposable";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
 import { createStrongRef, type StrongRef } from "./strongRef.js";
 import type { IDisableableBlock } from "../blockFoundation/disableableShaderBlock";
-import { decorateSymbol, DisableUniform, getShaderCreateOptions } from "../utils/shaderCodeUtils.js";
+import { DecorateSymbol, DisableUniform, GetShaderCreateOptions } from "../utils/shaderCodeUtils.js";
 import type { OutputBlock } from "../blockFoundation/outputBlock";
 
 /**
@@ -33,7 +33,7 @@ export abstract class ShaderBinding {
      * @returns The remapped variable name
      */
     public getRemappedName(variableName: string) {
-        variableName = decorateSymbol(variableName);
+        variableName = DecorateSymbol(variableName);
         return this._remappedShaderVariables[variableName] ?? variableName;
     }
 
@@ -105,7 +105,7 @@ export class ShaderRuntime implements IDisposable {
         this._shaderBinding = shaderBinding;
         this._effectWrapper = new EffectWrapper({
             engine: this._engine,
-            ...getShaderCreateOptions(shaderProgram),
+            ...GetShaderCreateOptions(shaderProgram),
         });
 
         // Wraps the effect readiness in a promise to expose it as a public property.

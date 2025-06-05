@@ -10,7 +10,7 @@ import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
 import { isTextureInputBlock } from "../blockFoundation/inputBlock.js";
 import { OptimizedShaderBlock } from "./optimizedShaderBlock.js";
-import { AutoDisableMainInputColorName, decorateChar, decorateSymbol, getShaderFragmentCode, undecorateSymbol } from "../utils/shaderCodeUtils.js";
+import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { DependencyGraph } from "./dependencyGraph.js";
 import { DisableableShaderBlock, BlockDisableStrategy } from "../blockFoundation/disableableShaderBlock.js";
 import { textureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions.js";
@@ -253,7 +253,7 @@ export class SmartFilterOptimizer {
                 newDefName = existingRemapped.remappedName;
             } else {
                 // Add the new define to the remapped symbols list
-                newDefName = decorateSymbol(this._makeSymbolUnique(undecorateSymbol(defName)));
+                newDefName = DecorateSymbol(this._makeSymbolUnique(UndecorateSymbol(defName)));
 
                 this._remappedSymbols.push({
                     type: "define",
@@ -289,9 +289,9 @@ export class SmartFilterOptimizer {
                 continue;
             }
 
-            funcName = undecorateSymbol(funcName);
+            funcName = UndecorateSymbol(funcName);
 
-            const regexFindCurName = new RegExp(decorateSymbol(funcName), "g");
+            const regexFindCurName = new RegExp(DecorateSymbol(funcName), "g");
 
             const existingFunctionExactOverload = this._remappedSymbols.find(
                 (s) => s.type === "function" && s.name === funcName && s.params === func.params && s.owners[0] && s.owners[0].blockType === block.blockType
@@ -300,7 +300,7 @@ export class SmartFilterOptimizer {
             const existingFunction = this._remappedSymbols.find((s) => s.type === "function" && s.name === funcName && s.owners[0] && s.owners[0].blockType === block.blockType);
 
             // Get or create the remapped name, ignoring the parameter list
-            const newVarName = existingFunction?.remappedName ?? decorateSymbol(this._makeSymbolUnique(funcName));
+            const newVarName = existingFunction?.remappedName ?? DecorateSymbol(this._makeSymbolUnique(funcName));
 
             // If the function name, regardless of params, wasn't found, add the rename mapping to our list
             if (!existingFunction) {
@@ -344,7 +344,7 @@ export class SmartFilterOptimizer {
             return [code, []];
         }
 
-        let rex = `${varDecl}\\s+(\\S+)\\s+${decorateChar}(\\w+)${decorateChar}\\s*`;
+        let rex = `${varDecl}\\s+(\\S+)\\s+${DecorateChar}(\\w+)${DecorateChar}\\s*`;
         if (hasValue) {
             rex += "=\\s*(.+);";
         } else {
@@ -364,7 +364,7 @@ export class SmartFilterOptimizer {
             let newVarName: Nullable<string> = null;
 
             if (varType === "sampler2D") {
-                samplerList.push(decorateSymbol(varName));
+                samplerList.push(DecorateSymbol(varName));
             } else {
                 const existingRemapped = this._remappedSymbols.find((s) => s.type === varDecl && s.name === varName && s.owners[0] && s.owners[0].blockType === block.blockType);
                 if (existingRemapped && singleInstance) {
@@ -373,7 +373,7 @@ export class SmartFilterOptimizer {
                         existingRemapped.owners.push(block);
                     }
                 } else {
-                    newVarName = decorateSymbol(this._makeSymbolUnique(varName));
+                    newVarName = DecorateSymbol(this._makeSymbolUnique(varName));
 
                     this._remappedSymbols.push({
                         type: varDecl,
@@ -387,7 +387,7 @@ export class SmartFilterOptimizer {
             }
 
             if (newVarName) {
-                code = code.replace(new RegExp(decorateSymbol(varName), "g"), newVarName);
+                code = code.replace(new RegExp(DecorateSymbol(varName), "g"), newVarName);
             }
 
             match = rx.exec(declarations);
@@ -397,7 +397,7 @@ export class SmartFilterOptimizer {
     }
 
     private _processSampleTexture(block: ShaderBlock, code: string, sampler: string, samplers: string[], inputTextureBlock?: InputBlock<ConnectionPointType.Texture>): string {
-        const rx = new RegExp(`sampleTexture\\s*\\(\\s*${decorateChar}${sampler}${decorateChar}\\s*,\\s*(.*?)\\s*\\)`);
+        const rx = new RegExp(`sampleTexture\\s*\\(\\s*${DecorateChar}${sampler}${DecorateChar}\\s*,\\s*(.*?)\\s*\\)`);
 
         let newSamplerName = sampler;
 
@@ -406,7 +406,7 @@ export class SmartFilterOptimizer {
             // The texture is shared by multiple blocks. We must reuse the same sampler name
             newSamplerName = existingRemapped.remappedName;
         } else {
-            newSamplerName = decorateSymbol(this._makeSymbolUnique(newSamplerName));
+            newSamplerName = DecorateSymbol(this._makeSymbolUnique(newSamplerName));
 
             this._remappedSymbols.push({
                 type: "sampler",
@@ -469,7 +469,7 @@ export class SmartFilterOptimizer {
             }
 
             // We get the shader code of the main function only
-            let code = getShaderFragmentCode(shaderProgram, true);
+            let code = GetShaderFragmentCode(shaderProgram, true);
 
             this._vertexShaderCode = this._vertexShaderCode ?? shaderProgram.vertex;
 
@@ -479,8 +479,8 @@ export class SmartFilterOptimizer {
             let newShaderFuncName = this._blockToMainFunctionName.get(block);
 
             if (!newShaderFuncName) {
-                newShaderFuncName = undecorateSymbol(shaderFuncName);
-                newShaderFuncName = decorateSymbol(this._makeSymbolUnique(newShaderFuncName));
+                newShaderFuncName = UndecorateSymbol(shaderFuncName);
+                newShaderFuncName = DecorateSymbol(this._makeSymbolUnique(newShaderFuncName));
 
                 this._blockToMainFunctionName.set(block, newShaderFuncName);
                 this._dependencyGraph.addElement(newShaderFuncName);
@@ -515,7 +515,7 @@ export class SmartFilterOptimizer {
 
             // Processes the texture inputs
             for (const sampler of samplerList) {
-                const samplerName = undecorateSymbol(sampler);
+                const samplerName = UndecorateSymbol(sampler);
 
                 const input = block.findInput(samplerName);
                 if (!input) {
@@ -686,7 +686,7 @@ export class SmartFilterOptimizer {
                 switch (s.type) {
                     case "uniform":
                     case "sampler":
-                        shaderBinding.addShaderVariableRemapping(decorateSymbol(s.name), s.remappedName);
+                        shaderBinding.addShaderVariableRemapping(DecorateSymbol(s.name), s.remappedName);
                         break;
                 }
             }
@@ -751,7 +751,7 @@ export class SmartFilterOptimizer {
                 isFirstMatch = false;
                 return match;
             }
-            return decorateSymbol(AutoDisableMainInputColorName);
+            return DecorateSymbol(AutoDisableMainInputColorName);
         });
     }
 }

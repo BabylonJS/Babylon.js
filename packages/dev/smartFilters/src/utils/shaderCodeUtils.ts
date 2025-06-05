@@ -5,7 +5,7 @@ import type { ShaderCode } from "./buildTools/shaderCode.types";
  * The shader code decorator.
  * Used to decorate the names of uniform, function and const variables for easier parsing.
  */
-export const decorateChar = "_";
+export const DecorateChar = "_";
 
 /**
  * Describes a shader program.
@@ -68,11 +68,11 @@ export const DisableUniform = "disabled";
  * Injects the disable uniform and adds a check for it at the beginning of the main function
  * @param shaderProgram - The shader program to inject the disable feature into
  */
-export function injectAutoSampleDisableCode(shaderProgram: ShaderProgram) {
+export function InjectAutoSampleDisableCode(shaderProgram: ShaderProgram) {
     const shaderFragment = shaderProgram.fragment;
 
     // Inject the disable uniform
-    shaderFragment.uniform += `\nuniform bool ${decorateSymbol(DisableUniform)};`;
+    shaderFragment.uniform += `\nuniform bool ${DecorateSymbol(DisableUniform)};`;
 
     // Find the main function
     const mainFunction = shaderFragment.functions.find((f) => f.name === shaderFragment.mainFunctionName);
@@ -86,11 +86,11 @@ export function injectAutoSampleDisableCode(shaderProgram: ShaderProgram) {
     }
 
     // Inject the code
-    const autoDisableVariableName = decorateSymbol(AutoDisableMainInputColorName);
+    const autoDisableVariableName = DecorateSymbol(AutoDisableMainInputColorName);
     mainFunction.code = mainFunction.code.replace(
         "{",
         `{\n    vec4 ${autoDisableVariableName} = texture2D(${shaderFragment.mainInputTexture}, vUV);\n
-                if (${decorateSymbol(DisableUniform)}) return ${autoDisableVariableName};\n`
+                if (${DecorateSymbol(DisableUniform)}) return ${autoDisableVariableName};\n`
     );
 }
 
@@ -100,7 +100,7 @@ export function injectAutoSampleDisableCode(shaderProgram: ShaderProgram) {
  * @param mainCodeOnly - If true, only the main function code will be returned.
  * @returns The shader fragment code.
  */
-export function getShaderFragmentCode(shaderProgram: ShaderProgram, mainCodeOnly = false): string {
+export function GetShaderFragmentCode(shaderProgram: ShaderProgram, mainCodeOnly = false): string {
     const shaderFragment = shaderProgram.fragment;
 
     const declarations = (shaderFragment.const ?? "") + "\n" + shaderFragment.uniform + "\n" + (shaderFragment.uniformSingle ?? "") + "\n";
@@ -127,10 +127,10 @@ export function getShaderFragmentCode(shaderProgram: ShaderProgram, mainCodeOnly
  * @param shaderProgram - The shader program to build the create options from.
  * @returns The shader creation options.
  */
-export function getShaderCreateOptions(shaderProgram: ShaderProgram): ShaderCreationOptions {
+export function GetShaderCreateOptions(shaderProgram: ShaderProgram): ShaderCreationOptions {
     const shaderFragment = shaderProgram.fragment;
 
-    let code = getShaderFragmentCode(shaderProgram);
+    let code = GetShaderFragmentCode(shaderProgram);
 
     const uniforms = shaderFragment.uniform + "\n" + (shaderFragment.uniformSingle ?? "");
     const uniformNames = [];
@@ -174,8 +174,8 @@ export function getShaderCreateOptions(shaderProgram: ShaderProgram): ShaderCrea
  * @param symbol - The symbol to decorate.
  * @returns The decorated symbol.
  */
-export function decorateSymbol(symbol: string): string {
-    return decorateChar + symbol + decorateChar;
+export function DecorateSymbol(symbol: string): string {
+    return DecorateChar + symbol + DecorateChar;
 }
 
 /**
@@ -183,8 +183,8 @@ export function decorateSymbol(symbol: string): string {
  * @param symbol - The symbol to undecorate.
  * @returns The undecorated symbol. Throws an error if the symbol is not decorated.
  */
-export function undecorateSymbol(symbol: string): string {
-    if (symbol.charAt(0) !== decorateChar || symbol.charAt(symbol.length - 1) !== decorateChar) {
+export function UndecorateSymbol(symbol: string): string {
+    if (symbol.charAt(0) !== DecorateChar || symbol.charAt(symbol.length - 1) !== DecorateChar) {
         throw new Error(`undecorateSymbol: Invalid symbol name "${symbol}"`);
     }
 

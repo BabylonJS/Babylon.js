@@ -8,7 +8,7 @@ import type { ConnectionPoint } from "../connection/connectionPoint";
 import { ShaderRuntime } from "../runtime/shaderRuntime.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { createCommand } from "../command/command.js";
-import { undecorateSymbol } from "../utils/shaderCodeUtils.js";
+import { UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { registerFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import { BaseBlock } from "./baseBlock.js";
 import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions.js";
@@ -99,7 +99,7 @@ export abstract class ShaderBlock extends BaseBlock {
             throw `The block named "${this.name}" does not have a main input texture defined!`;
         }
 
-        const mainInputTexture = this.findInput(undecorateSymbol(mainInputTextureName));
+        const mainInputTexture = this.findInput(UndecorateSymbol(mainInputTextureName));
         if (!mainInputTexture || !mainInputTexture.connectedTo) {
             throw `The main input texture "${mainInputTextureName}" of block named "${this.name}" is not connected!`;
         }

@@ -4,7 +4,7 @@ import type { ConnectionPoint } from "../connection/connectionPoint.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { createStrongRef } from "../runtime/strongRef.js";
 import { ShaderBlock } from "./shaderBlock.js";
-import { injectAutoSampleDisableCode } from "../utils/shaderCodeUtils.js";
+import { InjectAutoSampleDisableCode } from "../utils/shaderCodeUtils.js";
 
 /**
  * The interface that describes the disableable block.
@@ -83,7 +83,7 @@ export abstract class DisableableShaderBlock extends ShaderBlock implements IDis
             const shaderProgram = this.getShaderProgram();
             switch (this.blockDisableStrategy) {
                 case BlockDisableStrategy.AutoSample:
-                    injectAutoSampleDisableCode(shaderProgram);
+                    InjectAutoSampleDisableCode(shaderProgram);
                     break;
             }
         }
