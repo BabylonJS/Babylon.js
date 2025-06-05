@@ -13,7 +13,7 @@ import type { Nullable } from "publishedBabylonCore/types";
  * @param forcedExtension - defines the extension to use to pick the right loader
  * @returns A ThinTexture of the image
  */
-export function createImageTexture(
+export function CreateImageTexture(
     engine: ThinEngine,
     url: string,
     flipY: Nullable<boolean> = null,

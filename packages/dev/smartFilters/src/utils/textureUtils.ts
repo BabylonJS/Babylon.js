@@ -10,7 +10,7 @@ import type { ThinEngine } from "publishedBabylonCore/Engines/thinEngine";
  * @param textureOptions - The texture options to use
  * @returns - The output texture size
  */
-export function getBlockOutputTextureSize(smartFilter: SmartFilter, engine: ThinEngine, textureOptions: OutputTextureOptions): TextureSize {
+export function GetBlockOutputTextureSize(smartFilter: SmartFilter, engine: ThinEngine, textureOptions: OutputTextureOptions): TextureSize {
     let outputWidth: number;
     let outputHeight: number;
     const renderTargetWrapper = smartFilter.outputBlock.renderTargetWrapper;

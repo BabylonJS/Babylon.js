@@ -10,7 +10,7 @@ import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
 import { createStrongRef } from "./strongRef.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import type { OutputTextureOptions } from "../blockFoundation/textureOptions";
-import { getBlockOutputTextureSize } from "../utils/textureUtils.js";
+import { GetBlockOutputTextureSize } from "../utils/textureUtils.js";
 
 /**
  * @internal
@@ -191,7 +191,7 @@ export class RenderTargetGenerator {
         };
 
         // Get the smartFilter output size - either from the output block's renderTargetTexture or the engine's render size
-        const size = getBlockOutputTextureSize(smartFilter, engine, textureOptions);
+        const size = GetBlockOutputTextureSize(smartFilter, engine, textureOptions);
 
         // Creates frame buffers for effects
         const finalRenderTarget = new ThinRenderTargetTexture(engine, size, setup);

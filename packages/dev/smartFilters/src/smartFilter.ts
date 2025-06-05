@@ -12,7 +12,7 @@ import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSyste
 import type { IDisposable } from "./IDisposable";
 import { ShaderBlock } from "./blockFoundation/shaderBlock.js";
 import type { ThinRenderTargetTexture } from "publishedBabylonCore/Materials/Textures/thinRenderTargetTexture";
-import { getBlockOutputTextureSize } from "./utils/textureUtils.js";
+import { GetBlockOutputTextureSize } from "./utils/textureUtils.js";
 
 /**
  * How long to wait for shader compilation and texture loading to complete before erroring out.
@@ -220,7 +220,7 @@ export class SmartFilter {
                 }
 
                 if (block.output.runtimeData?.value) {
-                    const size = getBlockOutputTextureSize(this, engine, block.outputTextureOptions);
+                    const size = GetBlockOutputTextureSize(this, engine, block.outputTextureOptions);
                     (block.output.runtimeData.value as ThinRenderTargetTexture).resize(size);
                 }
             });
