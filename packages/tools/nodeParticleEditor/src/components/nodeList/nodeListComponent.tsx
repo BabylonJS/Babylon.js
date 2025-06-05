@@ -78,6 +78,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         RoundBlock: "Trigonometry block set to Round",
         FloorBlock: "Trigonometry block set to Floor",
         CeilingBlock: "Trigonometry block set to Ceiling",
+        RandomBlock: "Generate a random value",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -198,7 +199,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FractBlock",
             ],
             Interpolation: ["LerpBlock", "GradientEntryBlock", "GradientBlock"],
-            Misc: ["RandomRangeBlock", "ConverterBlock"],
+            Misc: ["RandomRangeBlock", "ConverterBlock", "RandomBlock"],
             System_Nodes: ["SystemBlock"],
             Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock", "ScaleBlock", "AgeGradientBlock"],
         };

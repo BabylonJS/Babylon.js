@@ -43,8 +43,8 @@ export class ParticleRandomBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("min", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("max", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("min", NodeParticleBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("max", NodeParticleBlockConnectionPointTypes.AutoDetect);
 
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
 

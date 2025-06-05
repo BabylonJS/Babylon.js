@@ -18,6 +18,7 @@ import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradie
 import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
 import { CustomEmitterBlock } from "core/Particles/Node/Blocks/Emitters/customEmitterBlock";
 import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "core/Particles/Node/Blocks/particleTrigonometryBlock";
+import { ParticleRandomBlock } from "core/Particles/Node/Blocks/particleRandomBlock";
 
 /**
  * Static class for BlockTools
@@ -229,6 +230,9 @@ export class BlockTools {
                 const block = new ParticleTrigonometryBlock("Ceiling");
                 block.operation = ParticleTrigonometryBlockOperations.Ceiling;
                 return block;
+            }
+            case "RandomBlock": {
+                return new ParticleRandomBlock("Random");
             }
         }
 

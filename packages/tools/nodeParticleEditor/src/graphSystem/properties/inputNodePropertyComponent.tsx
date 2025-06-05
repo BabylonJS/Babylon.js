@@ -28,7 +28,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const inputBlock = this.props.nodeData.data as ParticleInputBlock;
         this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
-            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
         });
     }
 
@@ -87,6 +86,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 minimum={Math.min(inputBlock.min, inputBlock.max)}
                                 maximum={inputBlock.max}
                                 onChange={() => {
+                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                                     this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                 }}
                             />
