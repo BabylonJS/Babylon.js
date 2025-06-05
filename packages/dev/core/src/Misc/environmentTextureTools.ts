@@ -115,6 +115,11 @@ export interface EnvironmentTextureIrradianceTextureInfoV1 {
      * This contains all the images data needed to reconstruct the cubemap.
      */
     faces: Array<BufferImageData>;
+
+    /**
+     * The dominant direction of light in the environment texture.
+     */
+    dominantDirection?: Array<number>;
 }
 
 /**
@@ -360,6 +365,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         info.irradiance.irradianceTexture = {
             size: irradianceTexture.getSize().width,
             faces: [],
+            dominantDirection: texture._dominantDirection?.asArray(),
         };
 
         for (let face = 0; face < 6; face++) {
