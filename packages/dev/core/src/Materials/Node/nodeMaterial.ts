@@ -1689,7 +1689,7 @@ export class NodeMaterial extends PushMaterial {
             const fallbacks = new EffectFallbacks();
 
             for (const b of this._sharedData.blocksWithFallbacks) {
-                b.provideFallbacks(mesh, fallbacks);
+                b.provideFallbacks(fallbacks, mesh);
             }
 
             result = {

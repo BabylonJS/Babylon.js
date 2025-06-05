@@ -141,7 +141,7 @@ export class BonesBlock extends NodeMaterialBlock {
         }
     }
 
-    public override provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+    public override provideFallbacks(fallbacks: EffectFallbacks, mesh?: AbstractMesh) {
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             fallbacks.addCPUSkinningFallback(0, mesh);
         }

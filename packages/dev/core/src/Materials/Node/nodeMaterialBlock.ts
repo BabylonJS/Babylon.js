@@ -501,11 +501,11 @@ export class NodeMaterialBlock {
 
     /**
      * Add potential fallbacks if shader compilation fails
-     * @param mesh defines the mesh to be rendered
      * @param fallbacks defines the current prioritized list of fallbacks
+     * @param mesh defines the mesh to be rendered
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+    public provideFallbacks(fallbacks: EffectFallbacks, mesh?: AbstractMesh) {
         // Do nothing
     }
 
