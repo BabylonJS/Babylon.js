@@ -43,11 +43,7 @@ export abstract class DisableableShaderBlock extends ShaderBlock implements IDis
     /**
      * The disabled connection point of the block.
      */
-    public readonly disabled = this._registerOptionalInput(
-        "disabled",
-        ConnectionPointType.Boolean,
-        createStrongRef(false)
-    );
+    public readonly disabled = this._registerOptionalInput("disabled", ConnectionPointType.Boolean, createStrongRef(false));
 
     /**
      * The strategy to use for making this block disableable.
@@ -75,12 +71,7 @@ export abstract class DisableableShaderBlock extends ShaderBlock implements IDis
      * @param disableOptimization - Defines if the block should not be optimized (default: false)
      * @param disableStrategy - Defines the strategy to use for making this block disableable (default: BlockDisableStrategy.AutoSample)
      */
-    constructor(
-        smartFilter: SmartFilter,
-        name: string,
-        disableOptimization = false,
-        disableStrategy = BlockDisableStrategy.AutoSample
-    ) {
+    constructor(smartFilter: SmartFilter, name: string, disableOptimization = false, disableStrategy = BlockDisableStrategy.AutoSample) {
         super(smartFilter, name, disableOptimization);
         this.blockDisableStrategy = disableStrategy;
 

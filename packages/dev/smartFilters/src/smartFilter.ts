@@ -194,6 +194,7 @@ export class SmartFilter {
         // Wait for all the blocks to be initialized
         if (initializationData.initializationPromises.length > 0) {
             const timeoutPromise = new Promise((resolve) => setTimeout(resolve, InitializationTimeout, true));
+            // eslint-disable-next-line github/no-then
             const initializationPromises = Promise.all(initializationData.initializationPromises).then(() => false);
             const timedOut = await Promise.race([initializationPromises, timeoutPromise]);
             if (timedOut) {
@@ -235,7 +236,7 @@ export class SmartFilter {
         const mergedAggregateBlocks: AggregateBlock[] = [];
 
         // Merge all aggregate blocks
-        this.outputBlock.visit({}, (block: BaseBlock, _extraData: Object) => {
+        this.outputBlock.visit({}, (block: BaseBlock, _extraData: object) => {
             if (block instanceof AggregateBlock) {
                 block._mergeIntoSmartFilter(mergedAggregateBlocks);
             }

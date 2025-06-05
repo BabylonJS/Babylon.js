@@ -22,7 +22,7 @@ export type BlockVisitor<T extends object> = (block: BaseBlock, extraData: T) =>
  * It enforces common behavior for all smart filter blocks.
  */
 export abstract class BaseBlock implements ICommandOwner {
-    protected static _alreadyVisitedBlocks = new Set<BaseBlock>();
+    protected static _AlreadyVisitedBlocks = new Set<BaseBlock>();
 
     /**
      * The class name of the block.
@@ -177,7 +177,7 @@ export abstract class BaseBlock implements ICommandOwner {
      */
     public visit<T extends object>(extraData: T, callback: BlockVisitor<T>, alreadyVisitedBlocks?: Set<BaseBlock>): void {
         if (!alreadyVisitedBlocks) {
-            alreadyVisitedBlocks = BaseBlock._alreadyVisitedBlocks;
+            alreadyVisitedBlocks = BaseBlock._AlreadyVisitedBlocks;
             alreadyVisitedBlocks.clear();
         }
 
@@ -244,6 +244,7 @@ export abstract class BaseBlock implements ICommandOwner {
                                 resolve();
                             });
                             internalTexture.onErrorObservable.add((error) => {
+                                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                 reject(error);
                             });
                         });

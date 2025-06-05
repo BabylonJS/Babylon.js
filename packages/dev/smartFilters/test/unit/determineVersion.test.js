@@ -1,9 +1,4 @@
-import {
-    determineVersion,
-    removePrereleaseFlags,
-    getNpmVersion,
-    compareVersions,
-} from "../../src/utils/buildTools/determineVersion.ts";
+import { determineVersion, removePrereleaseFlags, getNpmVersion, compareVersions } from "../../src/utils/buildTools/determineVersion.ts";
 
 describe("versionUp", () => {
     beforeAll(() => {
@@ -193,11 +188,8 @@ describe("versionUp", () => {
                 version2: "1.0.0-alpha",
                 expectedResult: 1,
             },
-        ])(
-            "when version1 is $version1 and version2 is $version2, it should return $expectedResult",
-            ({ version1, version2, expectedResult }) => {
-                expect(compareVersions(version1, version2)).toBe(expectedResult);
-            }
-        );
+        ])("when version1 is $version1 and version2 is $version2, it should return $expectedResult", ({ version1, version2, expectedResult }) => {
+            expect(compareVersions(version1, version2)).toBe(expectedResult);
+        });
     });
 });

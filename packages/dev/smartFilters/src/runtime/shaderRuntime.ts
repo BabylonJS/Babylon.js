@@ -115,6 +115,7 @@ export class ShaderRuntime implements IDisposable {
             });
 
             this._effectWrapper.effect.onErrorObservable.addOnce((error) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(error);
             });
         });

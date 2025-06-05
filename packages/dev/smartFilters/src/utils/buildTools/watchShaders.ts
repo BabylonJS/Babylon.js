@@ -10,10 +10,10 @@ import { watch } from "chokidar";
 import { extname } from "path";
 import { convertShader } from "./convertShaders.js";
 
-const externalArguments = process.argv.slice(2);
-if (externalArguments.length >= 2 && externalArguments[0] && externalArguments[1]) {
-    const shaderPath = externalArguments[0];
-    const importPath = externalArguments[1];
+const ExternalArguments = process.argv.slice(2);
+if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {
+    const shaderPath = ExternalArguments[0];
+    const importPath = ExternalArguments[1];
 
     watch(shaderPath).on("all", (event, file) => {
         // Only process file changes and added files
