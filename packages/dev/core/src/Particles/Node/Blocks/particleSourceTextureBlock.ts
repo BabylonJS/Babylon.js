@@ -94,7 +94,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      * Builds the block
      * @param state defines the current build state
      */
-    public override async _buildAsync(state: NodeParticleBuildState) {
+    public override _build(state: NodeParticleBuildState) {
         if (this._sourceTexture) {
             this.texture._storedValue = this._sourceTexture;
             return;

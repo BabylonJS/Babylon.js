@@ -17,4 +17,6 @@ export enum NodeParticleContextualSources {
     Color = 0x0005,
     /** ScaledDirection */
     ScaledDirection = 0x0006,
+    /** Scale */
+    Scale = 0x0007,
 }

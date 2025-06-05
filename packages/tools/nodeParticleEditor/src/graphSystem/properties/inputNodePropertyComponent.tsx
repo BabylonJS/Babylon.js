@@ -168,6 +168,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
                 ];
                 break;
+            case NodeParticleBlockConnectionPointTypes.Vector2:
+                contextualSourcesOptions = [{ label: "Scale", value: NodeParticleContextualSources.Scale }];
+                break;
             case NodeParticleBlockConnectionPointTypes.Vector3:
                 contextualSourcesOptions = [
                     { label: "Position", value: NodeParticleContextualSources.Position },
@@ -184,6 +187,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         if (contextualSourcesOptions.length > 0) {
             modeOptions.push({ label: "Contextual value (Float)", value: NodeParticleBlockConnectionPointTypes.Float });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: NodeParticleBlockConnectionPointTypes.Vector2 });
             modeOptions.push({ label: "Contextual value (Vector3)", value: NodeParticleBlockConnectionPointTypes.Vector3 });
             modeOptions.push({ label: "Contextual value (Color4)", value: NodeParticleBlockConnectionPointTypes.Color4 });
         }
@@ -213,6 +217,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     switch (value) {
                                         case NodeParticleBlockConnectionPointTypes.Float:
                                             inputBlock.contextualValue = NodeParticleContextualSources.Age;
+                                            break;
+                                        case NodeParticleBlockConnectionPointTypes.Vector2:
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Scale;
                                             break;
                                         case NodeParticleBlockConnectionPointTypes.Vector3:
                                             inputBlock.contextualValue = NodeParticleContextualSources.Position;

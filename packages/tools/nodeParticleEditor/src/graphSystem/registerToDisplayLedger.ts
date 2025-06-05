@@ -13,4 +13,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdatePositionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateColorBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
 };

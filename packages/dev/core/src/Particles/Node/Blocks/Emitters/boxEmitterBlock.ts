@@ -63,7 +63,7 @@ export class BoxEmitterBlock extends BaseEmitterBlock {
      * Builds the block
      * @param state defines the build state
      */
-    public override async _buildAsync(state: NodeParticleBuildState) {
+    public override _build(state: NodeParticleBuildState) {
         const system = this._prepare(state);
         const boxEmitter = new BoxParticleEmitter();
 

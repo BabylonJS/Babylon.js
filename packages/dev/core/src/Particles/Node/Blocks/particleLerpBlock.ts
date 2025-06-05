@@ -64,7 +64,7 @@ export class ParticleLerpBlock extends NodeParticleBlock {
         return this._outputs[0];
     }
 
-    public override async _buildAsync() {
+    public override _build() {
         if (!this.left.isConnected || !this.right.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;

@@ -111,6 +111,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.age;
             case NodeParticleContextualSources.Lifetime:
                 return this.particleContext.lifeTime;
+            case NodeParticleContextualSources.Scale:
+                return this.particleContext.scale;
         }
 
         return null;

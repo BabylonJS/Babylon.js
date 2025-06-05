@@ -57,7 +57,7 @@ export class UpdateColorBlock extends NodeParticleBlock {
      * Builds the block
      * @param state defines the current build state
      */
-    public override async _buildAsync(state: NodeParticleBuildState) {
+    public override _build(state: NodeParticleBuildState) {
         const system = this.input.getConnectedValue(state) as ThinParticleSystem;
 
         const processColor = (particle: Particle) => {

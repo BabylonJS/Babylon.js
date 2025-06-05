@@ -80,7 +80,7 @@
 
     .npe-preview-part {
         display: grid;
-        grid-template-rows: 40px 1fr;
+        grid-template-rows: 40px 1fr 30px;
     }
 
     #preview-mesh-bar {
@@ -186,6 +186,13 @@
             background-color: #a3a3a3;
             color: #333333;
         }
+    }
+
+    #preview-config-bar {
+        display: grid;
+        color: white;
+        align-content: center;
+        justify-content: center;
     }
 
     #preview {

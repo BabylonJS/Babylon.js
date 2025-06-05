@@ -12,6 +12,7 @@ import type { ParticleSystemSet } from "core/Particles";
 import { LogEntry } from "../log/logComponent";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { MeshBuilder } from "core/Meshes";
+import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -22,6 +23,7 @@ export class PreviewManager {
     private _camera: ArcRotateCamera;
     private _globalState: GlobalState;
     private _particleSystemSet: ParticleSystemSet;
+    private _callId: number = 0;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeParticleSystemSet = globalState.nodeParticleSet;
@@ -31,7 +33,7 @@ export class PreviewManager {
             this._refreshPreview();
         });
 
-        globalState.stateManager.onUpdateRequiredObservable.add(() => {
+        globalState.stateManager.onRebuildRequiredObservable.add(() => {
             this._refreshPreview();
         });
 
@@ -57,9 +59,14 @@ export class PreviewManager {
 
         this._refreshPreview();
 
+        const sceneInstrumentation = new SceneInstrumentation(this._scene);
+        sceneInstrumentation.captureParticlesRenderTime = true;
+
+        const reportDiv = document.getElementById("preview-config-bar")!;
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
+            reportDiv.innerText = "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms";
         });
 
         const groundMaterial = new GridMaterial("groundMaterial", this._scene);
@@ -87,12 +94,20 @@ export class PreviewManager {
 
     private async _updatePreviewAsync() {
         try {
+            this._callId++;
+            const callId = this._callId;
             if (this._particleSystemSet) {
                 this._particleSystemSet.dispose();
             }
 
             try {
-                this._particleSystemSet = await this._nodeParticleSystemSet.buildAsync(this._scene);
+                const particleSystemSet = await this._nodeParticleSystemSet.buildAsync(this._scene);
+                if (callId !== this._callId) {
+                    // If the callId has changed, we ignore this result
+                    particleSystemSet.dispose();
+                    return;
+                }
+                this._particleSystemSet = particleSystemSet;
                 this._particleSystemSet.start();
                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node Particle System Set build successful", false));
             } catch (err) {

@@ -89,6 +89,9 @@ export class ParticleInputBlock extends NodeParticleBlock {
         this._contextualSource = value;
 
         switch (value) {
+            case NodeParticleContextualSources.Scale:
+                this._type = NodeParticleBlockConnectionPointTypes.Vector2;
+                break;
             case NodeParticleContextualSources.Position:
             case NodeParticleContextualSources.Direction:
             case NodeParticleContextualSources.ScaledDirection:
@@ -203,8 +206,8 @@ export class ParticleInputBlock extends NodeParticleBlock {
         }
     }
 
-    public override async _buildAsync(state: NodeParticleBuildState) {
-        await super._buildAsync(state);
+    public override _build(state: NodeParticleBuildState) {
+        super._build(state);
 
         if (this.isContextual) {
             this.output._storedValue = null;

@@ -1,26 +1,26 @@
-import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { Particle } from "core/Particles/particle";
-import type { Vector3 } from "core/Maths/math.vector";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
+import type { Vector2 } from "core/Maths/math.vector";
 
 /**
- * Block used to update the direction of a particle
+ * Block used to update the scale of a particle
  */
-export class UpdateDirectionBlock extends NodeParticleBlock {
+export class UpdateScaleBlock extends NodeParticleBlock {
     /**
-     * Create a new UpdateDirectionBlock
+     * Create a new UpdateScaleBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
         this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
-        this.registerInput("direction", NodeParticleBlockConnectionPointTypes.Vector3);
+        this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -32,9 +32,9 @@ export class UpdateDirectionBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the direction input component
+     * Gets the scale input component
      */
-    public get direction(): NodeParticleConnectionPoint {
+    public get scale(): NodeParticleConnectionPoint {
         return this._inputs[1];
     }
 
@@ -50,7 +50,7 @@ export class UpdateDirectionBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "UpdateDirectionBlock";
+        return "UpdateScaleBlock";
     }
 
     /**
@@ -60,26 +60,26 @@ export class UpdateDirectionBlock extends NodeParticleBlock {
     public override _build(state: NodeParticleBuildState) {
         const system = this.input.getConnectedValue(state) as ThinParticleSystem;
 
-        const processDirection = (particle: Particle) => {
+        const processScale = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
-            particle.direction.copyFrom(this.direction.getConnectedValue(state) as Vector3);
+            particle.scale.copyFrom(this.scale.getConnectedValue(state) as Vector2);
         };
 
-        const directionProcessing = {
-            process: processDirection,
+        const scaleProcessing = {
+            process: processScale,
             previousItem: null,
             nextItem: null,
         };
 
         if (system._updateQueueStart) {
-            _ConnectAtTheEnd(directionProcessing, system._updateQueueStart);
+            _ConnectAtTheEnd(scaleProcessing, system._updateQueueStart);
         } else {
-            system._updateQueueStart = directionProcessing;
+            system._updateQueueStart = scaleProcessing;
         }
 
         this.output._storedValue = system;
     }
 }
 
-RegisterClass("BABYLON.UpdateDirectionBlock", UpdateDirectionBlock);
+RegisterClass("BABYLON.UpdateScaleBlock", UpdateScaleBlock);

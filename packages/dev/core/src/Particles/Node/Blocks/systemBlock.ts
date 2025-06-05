@@ -85,13 +85,14 @@ export class SystemBlock extends NodeParticleBlock {
      * @param state defines the building state
      * @returns the built particle system
      */
-    public async createSystemAsync(state: NodeParticleBuildState): Promise<ParticleSystem> {
+    public createSystem(state: NodeParticleBuildState): ParticleSystem {
         state.capacity = this.capacity;
 
-        await this.buildAsync(state);
+        this.build(state);
 
         this._particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
         this._particleSystem.particleTexture = this.texture.getConnectedValue(state);
+        this._particleSystem.emitRate = this.emitRate;
         this._particleSystem.blendMode = this.blendMode;
 
         return this._particleSystem;

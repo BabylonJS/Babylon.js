@@ -212,14 +212,14 @@ export class NodeParticleBlock {
      * Builds the block. Must be implemented by derived classes.
      * @param _state defines the current build state
      */
-    public async _buildAsync(_state: NodeParticleBuildState) {}
+    public _build(_state: NodeParticleBuildState) {}
 
     /**
      * Builds the block
      * @param state defines the current build state
-     * @returns a promise that resolves when the block is built
+     * @returns the built block
      */
-    public async buildAsync(state: NodeParticleBuildState) {
+    public build(state: NodeParticleBuildState) {
         if (this._buildId === state.buildId) {
             return true;
         }
@@ -233,7 +233,6 @@ export class NodeParticleBlock {
         this._buildId = state.buildId;
 
         // Check if "parent" blocks are compiled
-        const buildPromises: Promise<any>[] = [];
         for (const input of this._inputs) {
             if (!input.connectedPoint) {
                 if (!input.isOptional) {
@@ -245,11 +244,8 @@ export class NodeParticleBlock {
 
             const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                buildPromises.push(block.buildAsync(state));
+                block.build(state);
             }
-        }
-        if (buildPromises.length > 0) {
-            await Promise.all(buildPromises);
         }
 
         // Logs
@@ -257,7 +253,7 @@ export class NodeParticleBlock {
             Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
-        await this._buildAsync(state);
+        this._build(state);
 
         this.onBuildObservable.notifyObservers(this);
 

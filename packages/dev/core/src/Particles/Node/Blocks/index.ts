@@ -8,4 +8,5 @@ export * from "./particleLerpBlock";
 export * from "./Update/updateDirectionBlock";
 export * from "./Update/updatePositionBlock";
 export * from "./Update/updateColorBlock";
+export * from "./Update/updateScaleBlock";
 export * from "./Emitters/index";

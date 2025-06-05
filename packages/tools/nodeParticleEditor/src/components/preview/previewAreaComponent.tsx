@@ -49,6 +49,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                     <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                 </div>
+                <div id="preview-config-bar"></div>
             </>
         );
     }

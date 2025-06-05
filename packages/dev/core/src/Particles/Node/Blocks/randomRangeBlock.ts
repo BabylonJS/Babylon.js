@@ -65,7 +65,7 @@ export class RandomRangeBlock extends NodeParticleBlock {
     /**
      * Builds the block
      */
-    public override async _buildAsync() {
+    public override _build() {
         this.output._storedFunction = (state: NodeParticleBuildState) => {
             const minValue = this.min.getConnectedValue(state);
             const maxValue = this.max.getConnectedValue(state);

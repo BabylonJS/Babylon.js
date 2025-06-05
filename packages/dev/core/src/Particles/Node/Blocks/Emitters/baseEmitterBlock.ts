@@ -9,13 +9,13 @@ import type { _IExecutionQueueItem } from "core/Particles/Queue/executionQueue";
 import { _RemoveFromQueue } from "core/Particles/Queue/executionQueue";
 import type { Particle } from "core/Particles/particle";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import { Color4 } from "core/Maths";
+import { Color4, Vector2 } from "core/Maths";
 
 /**
  * @internal
  */
 export abstract class BaseEmitterBlock extends NodeParticleBlock {
-    protected readonly _inputOffset = 3;
+    protected readonly _inputOffset = 4;
 
     /**
      * Create a new BaseEmitterBlock
@@ -27,6 +27,7 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
         this.registerInput("emitPower", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(1, 1, 1, 1));
+        this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -60,6 +61,13 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the scale input component
+     */
+    public get scale(): NodeParticleConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
      * Gets the particle output component
      */
     public get particle(): NodeParticleConnectionPoint {
@@ -80,6 +88,11 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
 
         system._colorCreation.process = (particle: Particle) => {
             particle.color.copyFrom(this.color.getConnectedValue(state));
+        };
+
+        system._sizeCreation.process = (particle: Particle) => {
+            particle.size = 1;
+            particle.scale.copyFrom(this.scale.getConnectedValue(state));
         };
 
         return system;

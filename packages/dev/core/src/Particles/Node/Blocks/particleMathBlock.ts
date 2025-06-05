@@ -111,7 +111,7 @@ export class ParticleMathBlock extends NodeParticleBlock {
         return this._outputs[0];
     }
 
-    public override async _buildAsync(state: NodeParticleBuildState) {
+    public override _build(state: NodeParticleBuildState) {
         let func: (state: NodeParticleBuildState) => any;
         const left = this.left;
         const right = this.right;

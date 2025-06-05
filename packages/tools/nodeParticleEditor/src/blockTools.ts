@@ -12,6 +12,7 @@ import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodePar
 import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/Node/Blocks/particleMathBlock";
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
+import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
 
 /**
  * Static class for BlockTools
@@ -27,6 +28,8 @@ export class BlockTools {
                 return new UpdateDirectionBlock("Update direction");
             case "UpdateColorBlock":
                 return new UpdateColorBlock("Update color");
+            case "UpdateScaleBlock":
+                return new UpdateScaleBlock("Update scale");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -52,6 +55,11 @@ export class BlockTools {
             case "ScaledDirectionBlock": {
                 const block = new ParticleInputBlock("Scaled direction");
                 block.contextualValue = NodeParticleContextualSources.ScaledDirection;
+                return block;
+            }
+            case "ScaleBlock": {
+                const block = new ParticleInputBlock("Scale");
+                block.contextualValue = NodeParticleContextualSources.Scale;
                 return block;
             }
             case "ColorBlock": {

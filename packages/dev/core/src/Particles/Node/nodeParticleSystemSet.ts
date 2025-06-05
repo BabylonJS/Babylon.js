@@ -121,34 +121,37 @@ export class NodeParticleSystemSet {
     /**
      * Builds the particle system set from the defined blocks.
      * @param scene defines the hosting scene
+     * @param verbose defines whether to log detailed information during the build process (false by default)
      * @returns a promise that resolves to the built particle system set
      */
-    public async buildAsync(scene: Scene): Promise<ParticleSystemSet> {
-        const output = new ParticleSystemSet();
+    public async buildAsync(scene: Scene, verbose = false): Promise<ParticleSystemSet> {
+        return await new Promise<ParticleSystemSet>((resolve) => {
+            const output = new ParticleSystemSet();
 
-        // Initialize all blocks
-        for (const block of this._systemBlocks) {
-            this._initializeBlock(block);
-        }
+            // Initialize all blocks
+            for (const block of this._systemBlocks) {
+                this._initializeBlock(block);
+            }
 
-        // Build the blocks
-        const state = new NodeParticleBuildState();
-        const systemPromises = this._systemBlocks.map(async (block) => {
-            state.buildId = this._buildId++;
-            state.scene = scene;
+            // Build the blocks
+            for (const block of this.systemBlocks) {
+                const state = new NodeParticleBuildState();
+                state.buildId = this._buildId++;
+                state.scene = scene;
+                state.verbose = verbose;
 
-            const system = await block.createSystemAsync(state);
-            output.systems.push(system);
+                const system = block.createSystem(state);
+
+                // Errors
+                state.emitErrors();
+
+                output.systems.push(system);
+            }
+
+            this.onBuildObservable.notifyObservers(this);
+
+            resolve(output);
         });
-
-        await Promise.all(systemPromises);
-
-        // Errors
-        state.emitErrors();
-
-        this.onBuildObservable.notifyObservers(this);
-
-        return output;
     }
 
     /**
