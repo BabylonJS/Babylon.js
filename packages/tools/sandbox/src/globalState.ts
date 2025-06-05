@@ -24,8 +24,8 @@ export class GlobalState {
     public skybox = true;
     public toneMapping?: number;
 
-    // If the "newux" query parameter is present, preload (asynchronously) the new inspector v2 module.
-    public readonly inspectorV2ModulePromise = new URLSearchParams(window.location.search).has("newux") ? import("@dev/inspector-v2") : null;
+    // If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
+    public readonly inspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
 
     public reflector?: {
         hostname: string;

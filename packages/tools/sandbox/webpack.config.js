@@ -19,6 +19,7 @@ module.exports = (env) => {
             extensions: [".js", ".ts", ".tsx"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "inspector-v2": path.resolve("../../dev/inspector-v2/dist"),
             },
         },
         externals: [
@@ -52,6 +53,7 @@ module.exports = (env) => {
             rules: webpackTools.getRules(),
         },
         plugins: [],
+        // mode: "production",
     };
     return commonConfig;
 };
