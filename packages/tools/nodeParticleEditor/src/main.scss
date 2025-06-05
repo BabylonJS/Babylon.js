@@ -191,8 +191,24 @@
     #preview-config-bar {
         display: grid;
         color: white;
-        align-content: center;
-        justify-content: center;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+
+        .left {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .right {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
     }
 
     #preview {

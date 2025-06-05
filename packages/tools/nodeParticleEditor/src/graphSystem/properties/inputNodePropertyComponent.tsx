@@ -103,49 +103,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeParticleBlockConnectionPointTypes.Vector4:
                 return <Vector4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeParticleBlockConnectionPointTypes.Color3:
-                return (
-                    <>
-                        <Color3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
-                        <CheckBoxLineComponent
-                            label="Convert to gamma space"
-                            propertyName="convertToGammaSpace"
-                            target={inputBlock}
-                            onValueChanged={() => {
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                            }}
-                        />
-                        <CheckBoxLineComponent
-                            label="Convert to linear space"
-                            propertyName="convertToLinearSpace"
-                            target={inputBlock}
-                            onValueChanged={() => {
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                            }}
-                        />
-                    </>
-                );
+                return <Color3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeParticleBlockConnectionPointTypes.Color4:
-                return (
-                    <>
-                        <Color4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
-                        <CheckBoxLineComponent
-                            label="Convert to gamma space"
-                            propertyName="convertToGammaSpace"
-                            target={inputBlock}
-                            onValueChanged={() => {
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                            }}
-                        />
-                        <CheckBoxLineComponent
-                            label="Convert to linear space"
-                            propertyName="convertToLinearSpace"
-                            target={inputBlock}
-                            onValueChanged={() => {
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                            }}
-                        />
-                    </>
-                );
+                return <Color4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
         }
 
         return null;
@@ -166,6 +126,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 contextualSourcesOptions = [
                     { label: "Age", value: NodeParticleContextualSources.Age },
                     { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
+                    { label: "Age gradient", value: NodeParticleContextualSources.AgeGradient },
                 ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector2:

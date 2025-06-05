@@ -2348,27 +2348,27 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._rampGradientsTexture = null;
         }
 
-        // this._onDispose(disposeAttachedSubEmitters, disposeEndSubEmitters);
+        this._onDispose(disposeAttachedSubEmitters, disposeEndSubEmitters);
 
-        // if (this._onBeforeDrawParticlesObservable) {
-        //     this._onBeforeDrawParticlesObservable.clear();
-        // }
+        if (this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable.clear();
+        }
 
         // Remove from scene
-        // if (this._scene) {
-        //     const index = this._scene.particleSystems.indexOf(this);
-        //     if (index > -1) {
-        //         this._scene.particleSystems.splice(index, 1);
-        //     }
+        if (this._scene) {
+            const index = this._scene.particleSystems.indexOf(this);
+            if (index > -1) {
+                this._scene.particleSystems.splice(index, 1);
+            }
 
-        //     this._scene._activeParticleSystems.dispose();
-        // }
+            this._scene._activeParticleSystems.dispose();
+        }
 
         // Callback
-        // this.onDisposeObservable.notifyObservers(this);
-        // this.onDisposeObservable.clear();
-        // this.onStoppedObservable.clear();
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
+        this.onStoppedObservable.clear();
 
-        //  this.reset();
+        this.reset();
     }
 }

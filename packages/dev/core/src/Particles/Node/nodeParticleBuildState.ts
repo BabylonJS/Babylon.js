@@ -7,6 +7,7 @@ import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlock
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths";
 import type { ThinParticleSystem } from "../thinParticleSystem";
+import { ParticleGradientEntryBlock } from "./Blocks/particleGradientEntryBlock";
 
 /**
  * Class used to store node based geometry build state
@@ -40,6 +41,19 @@ export class NodeParticleBuildState {
      * Gets or sets the system context for contextual data
      */
     public systemContext: Nullable<ThinParticleSystem> = null;
+
+    /**
+     * Gets or sets the index of the gradient to use
+     */
+    public gradientIndex: number = 0;
+    /**
+     * Gets or sets next gradient in line
+     */
+    public nextGradientIndex: number = 0;
+    /**
+     * Gets or sets the next gradient value
+     */
+    public nextGradientValue: any;
 
     /**
      * Emits errors if any
@@ -113,6 +127,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.lifeTime;
             case NodeParticleContextualSources.Scale:
                 return this.particleContext.scale;
+            case NodeParticleContextualSources.AgeGradient:
+                return this.particleContext.age / this.particleContext.lifeTime;
         }
 
         return null;

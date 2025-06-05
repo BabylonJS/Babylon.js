@@ -102,6 +102,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 break;
             case NodeParticleContextualSources.Age:
             case NodeParticleContextualSources.Lifetime:
+            case NodeParticleContextualSources.AgeGradient:
                 this._type = NodeParticleBlockConnectionPointTypes.Float;
                 break;
         }

@@ -52,7 +52,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         AgeBlock: "Contextual block to get the age of a particle",
         LifetimeBlock: "Contextual block to get the lifetime of a particle",
         ScaleBlock: "Contextual block to get the scale of a particle",
+        AgeGradientBlock: "Contextual block to get the age gradient of a particle ie. the age divided by the lifetime",
         LerpBlock: "Interpolate between two values",
+        GradientEntryBlock: "A gradient entry block used to define a value at a specific age",
+        GradientBlock: "A gradient block used to define a gradient of values over the lifetime of a particle",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -141,10 +144,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int", "TextureBlock", "Color3", "Color4"],
             Updates: ["UpdateDirectionBlock", "UpdatePositionBlock", "UpdateColorBlock", "UpdateScaleBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "SubtractBlock"],
-            Interpolatin: ["LerpBlock"],
+            Interpolation: ["LerpBlock", "GradientEntryBlock", "GradientBlock"],
             Misc: ["RandomRangeBlock"],
             System_Nodes: ["SystemBlock"],
-            Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock", "ScaleBlock"],
+            Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock", "ScaleBlock", "AgeGradientBlock"],
         };
 
         // Create node menu

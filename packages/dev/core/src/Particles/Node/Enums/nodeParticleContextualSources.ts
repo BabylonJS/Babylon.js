@@ -19,4 +19,6 @@ export enum NodeParticleContextualSources {
     ScaledDirection = 0x0006,
     /** Scale */
     Scale = 0x0007,
+    /** AgeGradient */
+    AgeGradient = 0x0008,
 }

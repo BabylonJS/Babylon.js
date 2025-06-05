@@ -75,6 +75,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.Lifetime:
                     value = "Lifetime";
                     break;
+                case NodeParticleContextualSources.AgeGradient:
+                    value = "Age gradient";
+                    break;
                 case NodeParticleContextualSources.Color:
                     value = "Color";
                     break;

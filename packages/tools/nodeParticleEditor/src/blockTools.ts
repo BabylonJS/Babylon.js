@@ -13,6 +13,8 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/N
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
+import { ParticleGradientEntryBlock } from "core/Particles/Node/Blocks/particleGradientEntryBlock";
+import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
 
 /**
  * Static class for BlockTools
@@ -20,6 +22,10 @@ import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleB
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "GradientBlock":
+                return new ParticleGradientBlock("Gradient");
+            case "GradientEntryBlock":
+                return new ParticleGradientEntryBlock("Gradient entry");
             case "LerpBlock":
                 return new ParticleLerpBlock("Lerp");
             case "UpdatePositionBlock":
@@ -75,6 +81,11 @@ export class BlockTools {
             case "LifetimeBlock": {
                 const block = new ParticleInputBlock("Lifetime");
                 block.contextualValue = NodeParticleContextualSources.Lifetime;
+                return block;
+            }
+            case "AgeGradientBlock": {
+                const block = new ParticleInputBlock("Age gradient");
+                block.contextualValue = NodeParticleContextualSources.AgeGradient;
                 return block;
             }
             case "AddBlock": {

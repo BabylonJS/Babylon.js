@@ -13,6 +13,7 @@ import { LogEntry } from "../log/logComponent";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { MeshBuilder } from "core/Meshes";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
+import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -29,7 +30,7 @@ export class PreviewManager {
         this._nodeParticleSystemSet = globalState.nodeParticleSet;
         this._globalState = globalState;
 
-        this._onBuildObserver = globalState.onBuildRequiredObservable.add(() => {
+        globalState.onBuildRequiredObservable.add(() => {
             this._refreshPreview();
         });
 
@@ -62,11 +63,18 @@ export class PreviewManager {
         const sceneInstrumentation = new SceneInstrumentation(this._scene);
         sceneInstrumentation.captureParticlesRenderTime = true;
 
-        const reportDiv = document.getElementById("preview-config-bar")!;
+        const root = document.getElementById("preview-config-bar")!;
+        const reportLeftDiv = root.children[0] as HTMLDivElement;
+        const reportRightDiv = root.children[1] as HTMLDivElement;
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
-            reportDiv.innerText = "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms";
+            let totalParticleCount = 0;
+            (this._scene.particleSystems as ThinParticleSystem[]).forEach((ps) => {
+                totalParticleCount += ps.particles.length;
+            });
+            reportLeftDiv.innerText = "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms";
+            reportRightDiv.innerText = "Total particles: " + totalParticleCount;
         });
 
         const groundMaterial = new GridMaterial("groundMaterial", this._scene);
