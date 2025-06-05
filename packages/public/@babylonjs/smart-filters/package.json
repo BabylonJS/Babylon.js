@@ -37,7 +37,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
-        "compile": "tsc -b tsconfig.build.json"
+        "compile": "tsc -b tsconfig.build.json && node dist/utils/buildTools/recordVersionNumber.js"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0"
