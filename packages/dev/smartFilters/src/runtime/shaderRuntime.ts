@@ -7,7 +7,7 @@ import type { ThinRenderTargetTexture } from "publishedBabylonCore/Materials/Tex
 
 import type { IDisposable } from "../IDisposable";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
-import { createStrongRef, type StrongRef } from "./strongRef.js";
+import { CreateStrongRef, type StrongRef } from "./strongRef.js";
 import type { IDisableableBlock } from "../blockFoundation/disableableShaderBlock";
 import { DecorateSymbol, DisableUniform, GetShaderCreateOptions } from "../utils/shaderCodeUtils.js";
 import type { OutputBlock } from "../blockFoundation/outputBlock";
@@ -59,7 +59,7 @@ export abstract class DisableableShaderBinding extends ShaderBinding {
      */
     constructor(parentBlock: IDisableableBlock) {
         super();
-        this._disabled = parentBlock.disabled?.runtimeData || createStrongRef(false);
+        this._disabled = parentBlock.disabled?.runtimeData || CreateStrongRef(false);
     }
 
     /**

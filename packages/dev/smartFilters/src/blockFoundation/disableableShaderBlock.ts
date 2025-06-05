@@ -2,7 +2,7 @@ import type { SmartFilter } from "../smartFilter.js";
 import type { ConnectionPoint } from "../connection/connectionPoint.js";
 
 import { ConnectionPointType } from "../connection/connectionPointType.js";
-import { createStrongRef } from "../runtime/strongRef.js";
+import { CreateStrongRef } from "../runtime/strongRef.js";
 import { ShaderBlock } from "./shaderBlock.js";
 import { InjectAutoSampleDisableCode } from "../utils/shaderCodeUtils.js";
 
@@ -43,7 +43,7 @@ export abstract class DisableableShaderBlock extends ShaderBlock implements IDis
     /**
      * The disabled connection point of the block.
      */
-    public readonly disabled = this._registerOptionalInput("disabled", ConnectionPointType.Boolean, createStrongRef(false));
+    public readonly disabled = this._registerOptionalInput("disabled", ConnectionPointType.Boolean, CreateStrongRef(false));
 
     /**
      * The strategy to use for making this block disableable.

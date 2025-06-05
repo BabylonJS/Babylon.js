@@ -8,7 +8,7 @@
 
 import { watch } from "chokidar";
 import { extname } from "path";
-import { convertShader } from "./convertShaders.js";
+import { ConvertShader } from "./convertShaders.js";
 
 const ExternalArguments = process.argv.slice(2);
 if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {
@@ -31,7 +31,7 @@ if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1
         // Wrap in try-catch to prevent the watcher from crashing
         // if the new shader changes are invalid
         try {
-            convertShader(file, importPath);
+            ConvertShader(file, importPath);
             console.log(`Successfully updated shader ${file}`);
         } catch (error) {
             console.error(`Failed to convert shader ${file}: ${error}`);

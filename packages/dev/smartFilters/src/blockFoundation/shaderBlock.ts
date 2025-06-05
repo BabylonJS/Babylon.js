@@ -9,10 +9,10 @@ import { ShaderRuntime } from "../runtime/shaderRuntime.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { createCommand } from "../command/command.js";
 import { UndecorateSymbol } from "../utils/shaderCodeUtils.js";
-import { registerFinalRenderCommand } from "../utils/renderTargetUtils.js";
+import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import { BaseBlock } from "./baseBlock.js";
 import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions.js";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
+import { EditableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
 import type { Nullable } from "publishedBabylonCore/types";
 
 const OutputTexturePropertiesGroupName = "OUTPUT TEXTURE PROPERTIES";
@@ -50,13 +50,13 @@ export abstract class ShaderBlock extends BaseBlock {
     /**
      * The options used when creating the texture this block outputs to
      */
-    @editableInPropertyPage("Ratio", PropertyTypeForEdition.Float, OutputTexturePropertiesGroupName, {
+    @EditableInPropertyPage("Ratio", PropertyTypeForEdition.Float, OutputTexturePropertiesGroupName, {
         min: 0.1,
         max: 10.0,
         notifiers: { rebuild: true },
         subPropertyName: "ratio",
     })
-    @editableInPropertyPage("Format", PropertyTypeForEdition.List, OutputTexturePropertiesGroupName, {
+    @EditableInPropertyPage("Format", PropertyTypeForEdition.List, OutputTexturePropertiesGroupName, {
         notifiers: { rebuild: true },
         subPropertyName: "format",
         options: [
@@ -65,7 +65,7 @@ export abstract class ShaderBlock extends BaseBlock {
             { label: "RGBA", value: TextureFormat.RGBA },
         ],
     })
-    @editableInPropertyPage("Type", PropertyTypeForEdition.List, OutputTexturePropertiesGroupName, {
+    @EditableInPropertyPage("Type", PropertyTypeForEdition.List, OutputTexturePropertiesGroupName, {
         notifiers: { rebuild: true },
         subPropertyName: "type",
         options: [
@@ -137,7 +137,7 @@ export abstract class ShaderBlock extends BaseBlock {
         runtime.registerResource(shaderBlockRuntime);
 
         if (finalOutput) {
-            registerFinalRenderCommand(initializationData.outputBlock, runtime, this, shaderBlockRuntime);
+            RegisterFinalRenderCommand(initializationData.outputBlock, runtime, this, shaderBlockRuntime);
         } else {
             const renderTargetTexture = this.output.runtimeData?.value as Nullable<ThinRenderTargetTexture>;
             if (!renderTargetTexture) {

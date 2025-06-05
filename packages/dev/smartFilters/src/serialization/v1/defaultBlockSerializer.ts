@@ -7,7 +7,7 @@ import type { ISerializedBlockV1, SerializeBlockV1 } from "./smartFilterSerializ
  * @param block - The block to serialize
  * @returns The serialized block
  */
-export const defaultBlockSerializer: SerializeBlockV1 = (block: BaseBlock): ISerializedBlockV1 => {
+export const DefaultBlockSerializer: SerializeBlockV1 = (block: BaseBlock): ISerializedBlockV1 => {
     return {
         name: block.name,
         uniqueId: block.uniqueId,

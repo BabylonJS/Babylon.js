@@ -12,12 +12,7 @@ import type { OutputBlock } from "../blockFoundation/outputBlock.js";
  * @param commandOwner - The owner of the command.
  * @param shaderBlockRuntime - The shader block runtime to use.
  */
-export function registerFinalRenderCommand(
-    outputBlock: OutputBlock,
-    runtime: InternalSmartFilterRuntime,
-    commandOwner: BaseBlock,
-    shaderBlockRuntime: ShaderRuntime
-): void {
+export function RegisterFinalRenderCommand(outputBlock: OutputBlock, runtime: InternalSmartFilterRuntime, commandOwner: BaseBlock, shaderBlockRuntime: ShaderRuntime): void {
     const commandOwnerBlockType = commandOwner.blockType;
     if (outputBlock.renderTargetWrapper) {
         runtime.registerCommand(

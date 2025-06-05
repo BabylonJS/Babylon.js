@@ -1,5 +1,5 @@
 import { ConnectionPointType } from "../connection/connectionPointType.js";
-import { hasGlslHeader, parseFragmentShader } from "../utils/buildTools/shaderConverter.js";
+import { HasGlslHeader, ParseFragmentShader } from "../utils/buildTools/shaderConverter.js";
 import type { SerializedBlockDefinition } from "./serializedBlockDefinition.js";
 import type { SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
 import type { InputAutoBindV1, SerializedInputConnectionPointV1 } from "./v1/shaderBlockSerialization.types.js";
@@ -16,9 +16,9 @@ import type { InputAutoBindV1, SerializedInputConnectionPointV1 } from "./v1/sha
  * @param serializedData - The serialized data
  * @returns The serialized block definition
  */
-export function importCustomBlockDefinition(serializedData: string): SerializedBlockDefinition {
-    if (hasGlslHeader(serializedData)) {
-        return importAnnotatedGlsl(serializedData);
+export function ImportCustomBlockDefinition(serializedData: string): SerializedBlockDefinition {
+    if (HasGlslHeader(serializedData)) {
+        return ImportAnnotatedGlsl(serializedData);
     } else {
         // Assume this is a serialized JSON object
         const blockDefinition = JSON.parse(serializedData);
@@ -50,8 +50,8 @@ export function importCustomBlockDefinition(serializedData: string): SerializedB
  * @param fragmentShader - The contents of the .glsl fragment shader file
  * @returns The serialized block definition
  */
-function importAnnotatedGlsl(fragmentShader: string): SerializedShaderBlockDefinition {
-    const fragmentShaderInfo = parseFragmentShader(fragmentShader);
+function ImportAnnotatedGlsl(fragmentShader: string): SerializedShaderBlockDefinition {
+    const fragmentShaderInfo = ParseFragmentShader(fragmentShader);
 
     if (!fragmentShaderInfo.blockType) {
         throw new Error("blockType must be defined");

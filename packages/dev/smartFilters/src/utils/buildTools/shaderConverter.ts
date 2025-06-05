@@ -95,8 +95,8 @@ export type FragmentShaderInfo = {
  * @param fragmentShader - The fragment shader to process
  * @returns The processed fragment shader
  */
-export function parseFragmentShader(fragmentShader: string): FragmentShaderInfo {
-    const { header, fragmentShaderWithoutHeader } = readHeader(fragmentShader);
+export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo {
+    const { header, fragmentShaderWithoutHeader } = ReadHeader(fragmentShader);
     fragmentShader = fragmentShaderWithoutHeader;
     const blockType = header?.[SmartFilterBlockTypeKey] || undefined;
     const namespace = header?.namespace || null;
@@ -164,7 +164,7 @@ export function parseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         }
     }
 
-    const fragmentShaderWithNoFunctionBodies = removeFunctionBodies(fragmentShader);
+    const fragmentShaderWithNoFunctionBodies = RemoveFunctionBodies(fragmentShader);
 
     // Collect uniform, const, and function names which need to be decorated
     // eslint-disable-next-line prettier/prettier
@@ -209,7 +209,7 @@ export function parseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     const mainInputTexture = mainInputs[0];
 
     // Extract all the functions
-    const { extractedFunctions, mainFunctionName } = extractFunctions(fragmentShaderWithRenamedSymbols);
+    const { extractedFunctions, mainFunctionName } = ExtractFunctions(fragmentShaderWithRenamedSymbols);
 
     const shaderCode: ShaderCode = {
         uniform: finalUniforms.join("\n"),
@@ -238,7 +238,7 @@ export function parseFragmentShader(fragmentShader: string): FragmentShaderInfo 
  * @param fragment - The shader code to process
  * @returns A list of functions
  */
-function extractFunctions(fragment: string): {
+function ExtractFunctions(fragment: string): {
     /**
      * The extracted functions
      */
@@ -322,7 +322,7 @@ function extractFunctions(fragment: string): {
  * @param input - The shader code to process
  * @returns The shader code with all function bodies removed
  */
-function removeFunctionBodies(input: string): string {
+function RemoveFunctionBodies(input: string): string {
     let output: string = "";
     let depth: number = 0;
 
@@ -386,7 +386,7 @@ type GlslHeader = {
  * @param fragmentShader - The shader code to read
  * @returns - The GlslHeader if found, otherwise null
  */
-function readHeader(fragmentShader: string): {
+function ReadHeader(fragmentShader: string): {
     /**
      * The glsl header, or null if there wasn't one
      */
@@ -400,7 +400,7 @@ function readHeader(fragmentShader: string): {
     const singleLineHeaderMatch = new RegExp(/^\n*\s*\/\/\s*(\{.*\})/g).exec(fragmentShader);
     if (singleLineHeaderMatch && singleLineHeaderMatch[1]) {
         return {
-            header: parseHeader(singleLineHeaderMatch[1].trim()),
+            header: ParseHeader(singleLineHeaderMatch[1].trim()),
             fragmentShaderWithoutHeader: fragmentShader.replace(singleLineHeaderMatch[0], ""),
         };
     }
@@ -408,7 +408,7 @@ function readHeader(fragmentShader: string): {
     const multiLineHeaderMatch = new RegExp(/^\n*\s*\/\*\s*(\{.*\})\s*\*\//gs).exec(fragmentShader);
     if (multiLineHeaderMatch && multiLineHeaderMatch[1]) {
         return {
-            header: parseHeader(multiLineHeaderMatch[1].trim()),
+            header: ParseHeader(multiLineHeaderMatch[1].trim()),
             fragmentShaderWithoutHeader: fragmentShader.replace(multiLineHeaderMatch[0], ""),
         };
     }
@@ -424,7 +424,7 @@ function readHeader(fragmentShader: string): {
  * @param header - The header string to parse
  * @returns - The GlslHeader if the header is valid, otherwise null
  */
-function parseHeader(header: string): Nullable<GlslHeader> {
+function ParseHeader(header: string): Nullable<GlslHeader> {
     const parsedObject = JSON.parse(header);
 
     if (!parsedObject || typeof parsedObject !== "object") {
@@ -461,6 +461,6 @@ function parseHeader(header: string): Nullable<GlslHeader> {
  * @param fragmentShader - The fragment shader to check
  * @returns True if the fragment shader has the GLSL header
  */
-export function hasGlslHeader(fragmentShader: string): boolean {
+export function HasGlslHeader(fragmentShader: string): boolean {
     return fragmentShader.indexOf(SmartFilterBlockTypeKey) !== -1;
 }

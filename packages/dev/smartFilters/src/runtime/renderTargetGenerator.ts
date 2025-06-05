@@ -7,7 +7,7 @@ import type { BaseBlock } from "../blockFoundation/baseBlock";
 import type { InitializationData, SmartFilter } from "../smartFilter";
 import type { InternalSmartFilterRuntime } from "./smartFilterRuntime";
 import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
-import { createStrongRef } from "./strongRef.js";
+import { CreateStrongRef } from "./strongRef.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import type { OutputTextureOptions } from "../blockFoundation/textureOptions";
 import { GetBlockOutputTextureSize } from "../utils/textureUtils.js";
@@ -74,7 +74,7 @@ export class RenderTargetGenerator {
                 refCountedTexture = this._getTexture(initializationData.runtime, block.outputTextureOptions, textureOptionsHash, smartFilter);
 
                 if (!block.output.runtimeData) {
-                    const runtimeOutput = createStrongRef(refCountedTexture.texture);
+                    const runtimeOutput = CreateStrongRef(refCountedTexture.texture);
                     block.output.runtimeData = runtimeOutput;
                 } else {
                     block.output.runtimeData.value = refCountedTexture.texture;

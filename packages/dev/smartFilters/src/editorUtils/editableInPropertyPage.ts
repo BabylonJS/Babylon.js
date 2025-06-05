@@ -81,7 +81,7 @@ export interface IPropertyDescriptionForEdition {
  * @param options - the options of the property
  * @returns the decorator
  */
-export function editableInPropertyPage(
+export function EditableInPropertyPage(
     displayName: string,
     propertyType: PropertyTypeForEdition = PropertyTypeForEdition.Boolean,
     groupName: string = "PROPERTIES",

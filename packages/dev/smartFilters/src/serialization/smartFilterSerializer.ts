@@ -2,15 +2,9 @@ import type { SmartFilter } from "../smartFilter";
 import type { BaseBlock } from "../blockFoundation/baseBlock";
 import { inputBlockSerializer } from "../blockFoundation/inputBlock.serializer.js";
 import type { ConnectionPoint } from "../connection/connectionPoint";
-import { defaultBlockSerializer } from "./v1/defaultBlockSerializer.js";
+import { DefaultBlockSerializer } from "./v1/defaultBlockSerializer.js";
 import { OutputBlock } from "../blockFoundation/outputBlock.js";
-import type {
-    IBlockSerializerV1,
-    ISerializedBlockV1,
-    ISerializedConnectionV1,
-    SerializeBlockV1,
-    SerializedSmartFilterV1,
-} from "./v1/smartFilterSerialization.types";
+import type { IBlockSerializerV1, ISerializedBlockV1, ISerializedConnectionV1, SerializeBlockV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types";
 import { CustomShaderBlock } from "../blockFoundation/customShaderBlock.js";
 import { CustomAggregateBlock } from "../blockFoundation/customAggregateBlock.js";
 
@@ -20,12 +14,9 @@ import { CustomAggregateBlock } from "../blockFoundation/customAggregateBlock.js
  * @param b - The second connection point to compare
  * @returns True if the connection points are equivalent, false otherwise
  */
-function serializedConnectionPointsEqual(a: ISerializedConnectionV1, b: ISerializedConnectionV1): boolean {
+function SerializedConnectionPointsEqual(a: ISerializedConnectionV1, b: ISerializedConnectionV1): boolean {
     return (
-        a.inputBlock === b.inputBlock &&
-        a.inputConnectionPoint === b.inputConnectionPoint &&
-        a.outputBlock === b.outputBlock &&
-        a.outputConnectionPoint === b.outputConnectionPoint
+        a.inputBlock === b.inputBlock && a.inputConnectionPoint === b.inputConnectionPoint && a.outputBlock === b.outputBlock && a.outputConnectionPoint === b.outputConnectionPoint
     );
 }
 
@@ -44,13 +35,11 @@ export class SmartFilterSerializer {
      */
     public constructor(blocksUsingDefaultSerialization: string[], additionalBlockSerializers: IBlockSerializerV1[]) {
         this._blockSerializers.set(inputBlockSerializer.blockType, inputBlockSerializer.serialize);
-        this._blockSerializers.set(OutputBlock.ClassName, defaultBlockSerializer);
+        this._blockSerializers.set(OutputBlock.ClassName, DefaultBlockSerializer);
         blocksUsingDefaultSerialization.forEach((block) => {
-            this._blockSerializers.set(block, defaultBlockSerializer);
+            this._blockSerializers.set(block, DefaultBlockSerializer);
         });
-        additionalBlockSerializers.forEach((serializer) =>
-            this._blockSerializers.set(serializer.blockType, serializer.serialize)
-        );
+        additionalBlockSerializers.forEach((serializer) => this._blockSerializers.set(serializer.blockType, serializer.serialize));
     }
 
     /**
@@ -66,7 +55,7 @@ export class SmartFilterSerializer {
             const blockClassName = block.getClassName();
             const serializeFn =
                 blockClassName === CustomShaderBlock.ClassName || blockClassName === CustomAggregateBlock.ClassName
-                    ? defaultBlockSerializer
+                    ? DefaultBlockSerializer
                     : this._blockSerializers.get(block.blockType);
             if (!serializeFn) {
                 throw new Error(`No serializer was provided for a block of type ${block.blockType}`);
@@ -83,7 +72,7 @@ export class SmartFilterSerializer {
                         outputBlock: connectedTo.ownerBlock.uniqueId,
                         outputConnectionPoint: connectedTo.name,
                     };
-                    if (!connections.find((other) => serializedConnectionPointsEqual(newConnection, other))) {
+                    if (!connections.find((other) => SerializedConnectionPointsEqual(newConnection, other))) {
                         connections.push(newConnection);
                     }
                 }
@@ -98,7 +87,7 @@ export class SmartFilterSerializer {
                         outputBlock: block.uniqueId,
                         outputConnectionPoint: output.name,
                     };
-                    if (!connections.find((other) => serializedConnectionPointsEqual(newConnection, other))) {
+                    if (!connections.find((other) => SerializedConnectionPointsEqual(newConnection, other))) {
                         connections.push(newConnection);
                     }
                 });

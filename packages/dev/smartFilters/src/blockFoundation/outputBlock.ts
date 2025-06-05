@@ -4,7 +4,7 @@ import { BaseBlock } from "./baseBlock.js";
 import { ShaderBinding, ShaderRuntime } from "../runtime/shaderRuntime.js";
 import type { Nullable } from "publishedBabylonCore/types";
 import type { RenderTargetWrapper } from "publishedBabylonCore/Engines/renderTargetWrapper";
-import { registerFinalRenderCommand } from "../utils/renderTargetUtils.js";
+import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import type { RuntimeData } from "../connection/connectionPoint";
 import type { Effect } from "publishedBabylonCore/Materials/effect";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
@@ -111,7 +111,7 @@ export class OutputBlock extends BaseBlock {
             initializationData.initializationPromises.push(shaderBlockRuntime.onReadyAsync);
             runtime.registerResource(shaderBlockRuntime);
 
-            registerFinalRenderCommand(this, runtime, this, shaderBlockRuntime);
+            RegisterFinalRenderCommand(this, runtime, this, shaderBlockRuntime);
 
             super.generateCommandsAndGatherInitPromises(initializationData, finalOutput);
         }

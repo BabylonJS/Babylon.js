@@ -1,7 +1,7 @@
 import type { Effect } from "publishedBabylonCore/Materials/effect";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
-import { createStrongRef } from "../runtime/strongRef.js";
+import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
 import type { SerializedInputConnectionPointV1 } from "../serialization/v1/shaderBlockSerialization.types.js";
 import type { SmartFilter } from "../smartFilter.js";
@@ -188,7 +188,7 @@ export class CustomShaderBlock extends ShaderBlock {
         } else {
             // If not auto bound, register as an input connection point
             if (connectionPoint.defaultValue !== undefined) {
-                this._registerOptionalInput(connectionPoint.name, connectionPoint.type, createStrongRef(connectionPoint.defaultValue));
+                this._registerOptionalInput(connectionPoint.name, connectionPoint.type, CreateStrongRef(connectionPoint.defaultValue));
             } else {
                 this._registerInput(connectionPoint.name, connectionPoint.type);
             }

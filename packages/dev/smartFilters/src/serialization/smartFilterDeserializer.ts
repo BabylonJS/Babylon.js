@@ -44,6 +44,7 @@ export class SmartFilterDeserializer {
      * @param smartFilterJson - The JSON object to deserialize
      * @returns A promise that resolves to the deserialized SmartFilter
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async deserialize(engine: ThinEngine, smartFilterJson: any): Promise<SmartFilter> {
         const serializedSmartFilter: SerializedSmartFilter = smartFilterJson;
 
@@ -54,11 +55,11 @@ export class SmartFilterDeserializer {
 
         switch (serializedSmartFilter.formatVersion) {
             case 1:
-                return await this._deserializeV1(engine, serializedSmartFilter);
+                return await this._deserializeV1Async(engine, serializedSmartFilter);
         }
     }
 
-    private async _deserializeV1(engine: ThinEngine, serializedSmartFilter: SerializedSmartFilterV1): Promise<SmartFilter> {
+    private async _deserializeV1Async(engine: ThinEngine, serializedSmartFilter: SerializedSmartFilterV1): Promise<SmartFilter> {
         const smartFilter = new SmartFilter(serializedSmartFilter.name, serializedSmartFilter.namespace);
         const blockIdMap = new Map<number, BaseBlock>();
 
@@ -73,7 +74,9 @@ export class SmartFilterDeserializer {
         const blockDeserializationWork: Promise<void>[] = [];
         const blockDefinitionsWhichCouldNotBeDeserialized: string[] = [];
         serializedSmartFilter.blocks.forEach((serializedBlock: ISerializedBlockV1) => {
-            blockDeserializationWork.push(this._deserializeBlockV1(smartFilter, serializedBlock, engine, blockDefinitionsWhichCouldNotBeDeserialized, blockIdMap, blockNameMap));
+            blockDeserializationWork.push(
+                this._deserializeBlockV1Async(smartFilter, serializedBlock, engine, blockDefinitionsWhichCouldNotBeDeserialized, blockIdMap, blockNameMap)
+            );
         });
         await Promise.all(blockDeserializationWork);
 
@@ -114,7 +117,7 @@ export class SmartFilterDeserializer {
         return smartFilter;
     }
 
-    private async _deserializeBlockV1(
+    private async _deserializeBlockV1Async(
         smartFilter: SmartFilter,
         serializedBlock: ISerializedBlockV1,
         engine: ThinEngine,

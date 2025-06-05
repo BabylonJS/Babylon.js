@@ -1,11 +1,14 @@
 import * as fs from "fs";
 import { Logger } from "publishedBabylonCore/Misc/logger.js";
-import { parseFragmentShader, type FragmentShaderInfo } from "./shaderConverter.js";
+import { ParseFragmentShader, type FragmentShaderInfo } from "./shaderConverter.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const TYPE_IMPORT_PATH = "@TYPE_IMPORT_PATH@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const VERTEX_SHADER = "@VERTEX_SHADER@";
 const UNIFORMS = "@UNIFORMS@";
 const CONSTS_VALUE = "@CONSTS@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CONSTS_PROPERTY = "@CONSTS_PROPERTY@";
 const MAIN_INPUT_NAME = "@MAIN_INPUT_NAME@";
 const MAIN_FUNCTION_NAME = "@MAIN_FUNCTION_NAME@";
@@ -66,8 +69,8 @@ const UniformNameLinePrefix = "    ";
  * @param fragmentShaderPath - The path to the fragment file for the shader
  * @param importPath - The path to import the ShaderProgram type from
  */
-export function convertGlslIntoShaderProgram(fragmentShaderPath: string, importPath: string): void {
-    const { shaderProgramCode } = extractShaderProgramFromGlsl(fragmentShaderPath, importPath, true, true);
+export function ConvertGlslIntoShaderProgram(fragmentShaderPath: string, importPath: string): void {
+    const { shaderProgramCode } = ExtractShaderProgramFromGlsl(fragmentShaderPath, importPath, true, true);
     const shaderFile = fragmentShaderPath.replace(".glsl", ".ts");
     fs.writeFileSync(shaderFile, shaderProgramCode);
 }
@@ -80,7 +83,7 @@ export function convertGlslIntoShaderProgram(fragmentShaderPath: string, importP
  * @param includeImports - Whether to include the imports in the output
  * @returns The string to write to the .ts file
  */
-export function extractShaderProgramFromGlsl(
+export function ExtractShaderProgramFromGlsl(
     fragmentShaderPath: string,
     importPath: string,
     exportObjects: boolean,
@@ -116,7 +119,7 @@ export function extractShaderProgramFromGlsl(
 
     // Read the fragment shader
     const fragmentShader = fs.readFileSync(fragmentShaderPath, "utf8");
-    const fragmentShaderInfo = parseFragmentShader(fragmentShader);
+    const fragmentShaderInfo = ParseFragmentShader(fragmentShader);
 
     // Generate the shader program code
     const functionsSection: string[] = [];
@@ -124,21 +127,21 @@ export function extractShaderProgramFromGlsl(
         functionsSection.push(
             FunctionTemplate.replace(FUNCTION_NAME, shaderFunction.name)
                 .replace(FUNCTION_PARAMS, shaderFunction.params || "")
-                .replace(FUNCTION_CODE, addLinePrefixes(shaderFunction.code, CodeLinePrefix))
+                .replace(FUNCTION_CODE, AddLinePrefixes(shaderFunction.code, CodeLinePrefix))
         );
     }
     const imports = includeImports ? ImportTemplate.replace(TYPE_IMPORT_PATH, importPath) : "";
     const finalContents = ShaderTemplate.replace(VERTEX_SHADER, vertexShader ? `\`${vertexShader}\`` : "undefined")
         .replace(IMPORTS, imports)
-        .replace(UNIFORMS, "\n" + addLinePrefixes(fragmentShaderInfo.shaderCode.uniform || "", UniformLinePrefix))
+        .replace(UNIFORMS, "\n" + AddLinePrefixes(fragmentShaderInfo.shaderCode.uniform || "", UniformLinePrefix))
         .replace(MAIN_FUNCTION_NAME, fragmentShaderInfo.shaderCode.mainFunctionName)
         .replace(MAIN_INPUT_NAME, fragmentShaderInfo.shaderCode.mainInputTexture || "")
         .replace(
             CONSTS_PROPERTY,
-            fragmentShaderInfo.shaderCode.const ? ConstsTemplate.replace(CONSTS_VALUE, addLinePrefixes(fragmentShaderInfo.shaderCode.const, ConstLinePrefix)) : ""
+            fragmentShaderInfo.shaderCode.const ? ConstsTemplate.replace(CONSTS_VALUE, AddLinePrefixes(fragmentShaderInfo.shaderCode.const, ConstLinePrefix)) : ""
         )
         .replace(FUNCTIONS, functionsSection.join(""))
-        .replace(UNIFORM_NAMES, addLinePrefixes(fragmentShaderInfo.uniforms.map((u) => `${u.name}: "${u.name}",`).join("\n"), UniformNameLinePrefix))
+        .replace(UNIFORM_NAMES, AddLinePrefixes(fragmentShaderInfo.uniforms.map((u) => `${u.name}: "${u.name}",`).join("\n"), UniformNameLinePrefix))
         .replace(new RegExp(EXPORT, "g"), exportObjects ? "export " : "");
 
     return {
@@ -153,7 +156,7 @@ export function extractShaderProgramFromGlsl(
  * @param prefix - The prefix to add to each line
  * @returns The input with each line prefixed
  */
-function addLinePrefixes(input: string, prefix: string): string {
+function AddLinePrefixes(input: string, prefix: string): string {
     return input
         .split("\n")
         .map((line) => prefix + line)

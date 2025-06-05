@@ -4,7 +4,7 @@ import type { RuntimeData } from "../connection/connectionPoint";
 import type { ConnectionPointWithDefault } from "../connection/connectionPointWithDefault";
 import type { DisableableShaderBlock } from "./disableableShaderBlock";
 import { BaseBlock } from "./baseBlock.js";
-import { createStrongRef } from "../runtime/strongRef.js";
+import { CreateStrongRef } from "../runtime/strongRef.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import type { Nullable } from "publishedBabylonCore/types";
 
@@ -162,13 +162,13 @@ export class InputBlock<U extends ConnectionPointType, V = unknown> extends Inpu
         this.type = type;
 
         // Creates the output connection point
-        this.output = this._registerOutputWithDefault("output", type, isRuntimeData(initialValue) ? initialValue : createStrongRef(initialValue));
+        this.output = this._registerOutputWithDefault("output", type, isRuntimeData(initialValue) ? initialValue : CreateStrongRef(initialValue));
 
         // Creates a strong reference to the initial value in case a reference has not been provided
         if (isRuntimeData(initialValue)) {
             this.runtimeValue = initialValue;
         } else {
-            this.runtimeValue = createStrongRef(initialValue);
+            this.runtimeValue = CreateStrongRef(initialValue);
         }
     }
 }

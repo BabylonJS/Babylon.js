@@ -1,12 +1,14 @@
 import * as fs from "fs";
-import { extractShaderProgramFromGlsl } from "./convertGlslIntoShaderProgram.js";
+import { ExtractShaderProgramFromGlsl } from "./convertGlslIntoShaderProgram.js";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
 import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const EXTRA_IMPORTS = "@EXTRA_IMPORTS@";
 const SHADER_PROGRAM = "@SHADER_PROGRAM@";
 const BLOCK_NAME = "@BLOCK_NAME@";
 const NAMESPACE = "@NAMESPACE@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SHADER_BINDING_PRIVATE_VARIABLES = "@SHADER_BINDING_PRIVATE_VARIABLES@";
 const CAMEL_CASE_UNIFORM = "@CAMEL_CASE_UNIFORM@";
 const CONNECTION_POINT_TYPE = "@CONNECTION_POINT_TYPE@";
@@ -18,7 +20,9 @@ const SHADER_BINDING_SUPER_PARAMS = "@SHADER_BINDING_SUPER_PARAMS@";
 const SHADER_BINDING_CTOR = "@SHADER_BINDING_CTOR@";
 const SHADER_BINDING_BIND = "@SHADER_BINDING_BIND@";
 const SHADER_BLOCK_EXTENDS = "@SHADER_BLOCK_EXTENDS@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BLOCK_INPUT_PROPERTIES = "@BLOCK_INPUT_PROPERTIES@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const BLOCK_DISABLE_OPTIMIZATION = "@BLOCK_DISABLE_OPTIMIZATION@";
 const BLOCK_DISABLE_STRATEGY = "@BLOCK_DISABLE_STRATEGY@";
 const BLOCK_GET_SHADER_BINDING_VARS = "@BLOCK_SHADER_BINDING_BIND_VARS@";
@@ -145,10 +149,10 @@ ${BLOCK_GET_SHADER_BINDING_VARS}
  * @param fragmentShaderPath - The path to the fragment file for the shader
  * @param importPath - The path to import the ShaderProgram type from
  */
-export function convertGlslIntoBlock(fragmentShaderPath: string, importPath: string): void {
+export function ConvertGlslIntoBlock(fragmentShaderPath: string, importPath: string): void {
     const extraImports: string[] = [];
 
-    const { shaderProgramCode, fragmentShaderInfo } = extractShaderProgramFromGlsl(fragmentShaderPath, importPath, false, false);
+    const { shaderProgramCode, fragmentShaderInfo } = ExtractShaderProgramFromGlsl(fragmentShaderPath, importPath, false, false);
 
     // Validation
     if (!fragmentShaderInfo.blockType) {
@@ -160,7 +164,7 @@ export function convertGlslIntoBlock(fragmentShaderPath: string, importPath: str
         .map((uniform) => {
             return uniform.properties?.autoBind
                 ? null
-                : ShaderBindingPrivateVariablesTemplate.replace(CAMEL_CASE_UNIFORM, uniform.name).replace(CONNECTION_POINT_TYPE, getConnectionPointTypeString(uniform.type));
+                : ShaderBindingPrivateVariablesTemplate.replace(CAMEL_CASE_UNIFORM, uniform.name).replace(CONNECTION_POINT_TYPE, GetConnectionPointTypeString(uniform.type));
         })
         .filter((line) => line !== null);
 
@@ -176,7 +180,7 @@ export function convertGlslIntoBlock(fragmentShaderPath: string, importPath: str
         .map((uniform) => {
             return uniform.properties?.autoBind
                 ? null
-                : ShaderBindingCtorParams.replace(CAMEL_CASE_UNIFORM, uniform.name).replace(CONNECTION_POINT_TYPE, getConnectionPointTypeString(uniform.type));
+                : ShaderBindingCtorParams.replace(CAMEL_CASE_UNIFORM, uniform.name).replace(CONNECTION_POINT_TYPE, GetConnectionPointTypeString(uniform.type));
         })
         .filter((param) => param !== null);
 
@@ -191,7 +195,7 @@ export function convertGlslIntoBlock(fragmentShaderPath: string, importPath: str
     let needWidthHeightParams = false;
     const shaderBindingBind = fragmentShaderInfo.uniforms.map((uniform) => {
         let effectValue: string;
-        let effectSetter = getEffectSetter(uniform.type);
+        let effectSetter = GetEffectSetter(uniform.type);
 
         switch (uniform.properties?.autoBind) {
             case "outputResolution":
@@ -234,10 +238,10 @@ export function convertGlslIntoBlock(fragmentShaderPath: string, importPath: str
                     extraImports.push("    createStrongRef");
                 }
                 return BlockInputOptionalProperty.replace(new RegExp(CAMEL_CASE_UNIFORM, "g"), uniform.name)
-                    .replace(CONNECTION_POINT_TYPE, getConnectionPointTypeString(uniform.type))
+                    .replace(CONNECTION_POINT_TYPE, GetConnectionPointTypeString(uniform.type))
                     .replace(CONNECTION_POINT_DEFAULT_VALUE, uniform.properties.default);
             } else {
-                return BlockInputProperty.replace(new RegExp(CAMEL_CASE_UNIFORM, "g"), uniform.name).replace(CONNECTION_POINT_TYPE, getConnectionPointTypeString(uniform.type));
+                return BlockInputProperty.replace(new RegExp(CAMEL_CASE_UNIFORM, "g"), uniform.name).replace(CONNECTION_POINT_TYPE, GetConnectionPointTypeString(uniform.type));
             }
         })
         .filter((property) => property !== null);
@@ -318,7 +322,7 @@ export function convertGlslIntoBlock(fragmentShaderPath: string, importPath: str
  * @param type - The connection point type
  * @returns - The string representation of the connection point type
  */
-function getConnectionPointTypeString(type: ConnectionPointType): string {
+function GetConnectionPointTypeString(type: ConnectionPointType): string {
     switch (type) {
         case ConnectionPointType.Float:
             return "Float";
@@ -340,7 +344,7 @@ function getConnectionPointTypeString(type: ConnectionPointType): string {
  * @param type - The connection point type
  * @returns - The effect setter for the connection point type
  */
-function getEffectSetter(type: ConnectionPointType): string {
+function GetEffectSetter(type: ConnectionPointType): string {
     switch (type) {
         case ConnectionPointType.Float:
             return "setFloat";
