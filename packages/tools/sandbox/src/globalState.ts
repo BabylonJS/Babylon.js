@@ -4,6 +4,9 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
+// If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
+const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
+
 export class GlobalState {
     public currentScene: Scene;
     public onSceneLoaded = new Observable<{ scene: Scene; filename: string }>();
@@ -32,15 +35,31 @@ export class GlobalState {
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.currentScene.debugLayer.show();
+            if (!InspectorV2ModulePromise) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.currentScene.debugLayer.show();
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                (async () => {
+                    const inspectorV2Module = await InspectorV2ModulePromise;
+                    inspectorV2Module.ShowInspector(this.currentScene);
+                })();
+            }
         }
     }
 
     public hideDebugLayer() {
         this.isDebugLayerEnabled = false;
         if (this.currentScene) {
-            this.currentScene.debugLayer.hide();
+            if (!InspectorV2ModulePromise) {
+                this.currentScene.debugLayer.hide();
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                (async () => {
+                    const inspectorV2Module = await InspectorV2ModulePromise;
+                    inspectorV2Module.HideInspector();
+                })();
+            }
         }
     }
 }
