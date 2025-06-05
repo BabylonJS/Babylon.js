@@ -104,7 +104,7 @@
             // Specular contribution
             #ifdef SPECULARTERM
                 #if AREALIGHT{X}
-                    info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb);
+                    info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
                 #else
                     // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
                     // usual Schlick lobe.
