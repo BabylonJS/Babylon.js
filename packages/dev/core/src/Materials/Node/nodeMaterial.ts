@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
-import { Mesh } from "../../Meshes/mesh";
+import type { Mesh } from "../../Meshes/mesh";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
