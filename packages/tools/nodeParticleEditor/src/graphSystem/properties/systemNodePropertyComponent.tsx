@@ -32,17 +32,49 @@ export class SystemPropertyTabComponent extends React.Component<IPropertyCompone
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 {particleSystem && (
-                    <LineContainerComponent title="STATISTICS">
-                        <TextLineComponent label="Particle count" value={particleSystem.particles.length.toString()} />
-                        <TextLineComponent label="Is started" value={particleSystem.isStarted() ? "Yes" : "No"} />
-                        <TextLineComponent label="Is alive" value={particleSystem.isAlive() ? "Yes" : "No"} />
-                        <ButtonLineComponent
-                            label="Refreh"
-                            onClick={() => {
-                                this.forceUpdate();
-                            }}
-                        />
-                    </LineContainerComponent>
+                    <>
+                        <LineContainerComponent title="CONTROLS">
+                            {particleSystem.isStarted() && !particleSystem.isStopping() && (
+                                <ButtonLineComponent
+                                    label={!particleSystem.paused ? "Pause" : "Resume"}
+                                    onClick={() => {
+                                        particleSystem.paused = !particleSystem.paused;
+                                        this.forceUpdate();
+                                    }}
+                                />
+                            )}
+                            {particleSystem.isStarted() && !particleSystem.isStopping() && (
+                                <ButtonLineComponent
+                                    label="Stop"
+                                    onClick={() => {
+                                        particleSystem.stop();
+                                        this.forceUpdate();
+                                    }}
+                                />
+                            )}
+                            {!particleSystem.isStarted() ||
+                                (particleSystem.isStopping() && (
+                                    <ButtonLineComponent
+                                        label="Start"
+                                        onClick={() => {
+                                            particleSystem.start();
+                                            this.forceUpdate();
+                                        }}
+                                    />
+                                ))}
+                        </LineContainerComponent>
+                        <LineContainerComponent title="STATISTICS">
+                            <TextLineComponent label="Particle count" value={particleSystem.particles.length.toString()} />
+                            <TextLineComponent label="Is started" value={particleSystem.isStarted() ? "Yes" : "No"} />
+                            <TextLineComponent label="Is alive" value={particleSystem.isAlive() ? "Yes" : "No"} />
+                            <ButtonLineComponent
+                                label="Refreh"
+                                onClick={() => {
+                                    this.forceUpdate();
+                                }}
+                            />
+                        </LineContainerComponent>
+                    </>
                 )}
             </div>
         );

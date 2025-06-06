@@ -1985,11 +1985,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /**
+     * Gets or sets a boolean indicating that the particle system is paused (no animation will be done).
+     */
+    public paused = false;
+
+    /**
      * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
      * @param preWarmOnly will prevent the system from updating the vertex buffer (default is false)
      */
     public animate(preWarmOnly = false): void {
-        if (!this._started) {
+        if (!this._started || this.paused) {
             return;
         }
 
