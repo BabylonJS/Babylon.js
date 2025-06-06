@@ -30,7 +30,6 @@ import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { SpotLight } from "core/Lights/spotLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -1769,7 +1768,6 @@ export class Viewer implements IDisposable {
         this._markSceneMutated();
     }
 
-    // TODO to update when every time an env is loaded
     private async _getIblDominantDirection(): Promise<Nullable<Vector3>> {
         await import("core/Rendering/iblCdfGeneratorSceneComponent");
 
@@ -1820,20 +1818,20 @@ export class Viewer implements IDisposable {
         const groundFactor = 20;
         const groundSize = radius * groundFactor;
 
-        let iblDominantLightDirection: Nullable<Vector3> = null;
+        let iblDominantDirection: Nullable<Vector3> = null;
         try {
-            iblDominantLightDirection = await this._getIblDominantDirection();
+            iblDominantDirection = await this._getIblDominantDirection();
         } catch (error) {
-            console.warn("Failed to get IBL dominant direction, using default.", error);
+            this._log("Failed to get IBL dominant direction, using default.");
         }
 
-        if (!iblDominantLightDirection) {
+        if (!iblDominantDirection) {
             const x = Math.cos(this._reflectionsRotation);
             const z = Math.sin(this._reflectionsRotation);
-            iblDominantLightDirection = new Vector3(x, 1, z);
+            iblDominantDirection = new Vector3(x, 1, z);
         }
 
-        const normalizedIblDirection = iblDominantLightDirection.normalize();
+        const normalizedIblDirection = iblDominantDirection.normalize();
         const lightPosition = normalizedIblDirection.scale(radius * positionFactor);
         let lightTargetDirection = normalizedIblDirection.negate();
 
@@ -1893,6 +1891,7 @@ export class Viewer implements IDisposable {
         }
 
         normal.light.position = lightPosition;
+        normal.light.direction = lightTargetDirection;
 
         for (const model of this._loadedModelsBacking) {
             // Add all root meshes to the shadow generator.
