@@ -3,13 +3,12 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import type { Observer } from "./observable";
-import { Observable } from "./observable";
 import type { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import { ThinMinMaxReducer, ThinMinMaxReducerPostProcess } from "./thinMinMaxReducer";
 
 import "../Shaders/minmaxRedux.fragment";
 import "../ShadersWGSL/minmaxRedux.fragment";
@@ -24,11 +23,14 @@ export class MinMaxReducer {
     /**
      * Observable triggered when the computation has been performed
      */
-    public onAfterReductionPerformed = new Observable<{ min: number; max: number }>();
+    public get onAfterReductionPerformed() {
+        return this._thinMinMaxReducer.onAfterReductionPerformed;
+    }
 
     protected _camera: Camera;
+    protected _thinMinMaxReducer: ThinMinMaxReducer;
     protected _sourceTexture: Nullable<RenderTargetTexture>;
-    protected _reductionSteps: Nullable<Array<PostProcess>>;
+    protected _reductionSteps: Array<PostProcess>;
     protected _postProcessManager: PostProcessManager;
     protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
     protected _forceFullscreenViewport = true;
@@ -41,6 +43,8 @@ export class MinMaxReducer {
     constructor(camera: Camera) {
         this._camera = camera;
         this._postProcessManager = new PostProcessManager(camera.getScene());
+        this._thinMinMaxReducer = new ThinMinMaxReducer(camera.getScene());
+        this._reductionSteps = [];
 
         this._onContextRestoredObserver = camera.getEngine().onContextRestoredObservable.add(() => {
             this._postProcessManager._rebuild();
@@ -70,110 +74,47 @@ export class MinMaxReducer {
             return;
         }
 
-        this.dispose(false);
+        this._thinMinMaxReducer.depthRedux = depthRedux;
+
+        this.deactivate();
 
         this._sourceTexture = sourceTexture;
-        this._reductionSteps = [];
         this._forceFullscreenViewport = forceFullscreenViewport;
 
-        const scene = this._camera.getScene();
+        if (this._thinMinMaxReducer.setTextureDimensions(sourceTexture.getRenderWidth(), sourceTexture.getRenderHeight())) {
+            this._disposePostProcesses();
 
-        // create the first step
-        const reductionInitial = new PostProcess(
-            "Initial reduction phase",
-            "minmaxRedux", // shader
-            ["texSize"],
-            ["sourceTexture"], // textures
-            1.0, // options
-            null, // camera
-            Constants.TEXTURE_NEAREST_NEAREST, // sampling
-            scene.getEngine(), // engine
-            false, // reusable
-            "#define INITIAL" + (depthRedux ? "\n#define DEPTH_REDUX" : ""), // defines
-            type,
-            undefined,
-            undefined,
-            undefined,
-            Constants.TEXTUREFORMAT_RG,
-            scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
-        );
+            const reductionSteps = this._thinMinMaxReducer.reductionSteps;
 
-        reductionInitial.autoClear = false;
-        reductionInitial.forceFullscreenViewport = forceFullscreenViewport;
+            for (let i = 0; i < reductionSteps.length; ++i) {
+                const reductionStep = reductionSteps[i];
 
-        let w = this._sourceTexture.getRenderWidth(),
-            h = this._sourceTexture.getRenderHeight();
+                const postProcess = new PostProcess(reductionStep.name, ThinMinMaxReducerPostProcess.FragmentUrl, {
+                    effectWrapper: reductionStep,
+                    samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
+                    engine: this._camera.getScene().getEngine(),
+                    textureType: type,
+                    textureFormat: Constants.TEXTUREFORMAT_RG,
+                    size: { width: reductionStep.textureWidth, height: reductionStep.textureHeight },
+                });
 
-        reductionInitial.onApply = ((w: number, h: number) => {
-            return (effect: Effect) => {
-                effect.setTexture("sourceTexture", this._sourceTexture);
-                effect.setFloat2("texSize", w, h);
-            };
-        })(w, h);
+                this._reductionSteps.push(postProcess);
 
-        this._reductionSteps.push(reductionInitial);
+                postProcess.autoClear = false;
+                postProcess.forceFullscreenViewport = forceFullscreenViewport;
 
-        let index = 1;
+                if (i === 0) {
+                    postProcess.externalTextureSamplerBinding = true;
+                    postProcess.onApplyObservable.add((effect: Effect) => {
+                        effect.setTexture("textureSampler", this._sourceTexture);
+                    });
+                }
 
-        // create the additional steps
-        while (w > 1 || h > 1) {
-            w = Math.max(Math.round(w / 2), 1);
-            h = Math.max(Math.round(h / 2), 1);
-
-            const reduction = new PostProcess(
-                "Reduction phase " + index,
-                "minmaxRedux", // shader
-                ["texSize"],
-                null,
-                { width: w, height: h }, // options
-                null, // camera
-                Constants.TEXTURE_NEAREST_NEAREST, // sampling
-                scene.getEngine(), // engine
-                false, // reusable
-                "#define " + (w == 1 && h == 1 ? "LAST" : w == 1 || h == 1 ? "ONEBEFORELAST" : "MAIN"), // defines
-                type,
-                undefined,
-                undefined,
-                undefined,
-                Constants.TEXTUREFORMAT_RG,
-                scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
-            );
-
-            reduction.autoClear = false;
-            reduction.forceFullscreenViewport = forceFullscreenViewport;
-
-            reduction.onApply = ((w: number, h: number) => {
-                return (effect: Effect) => {
-                    if (w == 1 || h == 1) {
-                        effect.setInt2("texSize", w, h);
-                    } else {
-                        effect.setFloat2("texSize", w, h);
-                    }
-                };
-            })(w, h);
-
-            this._reductionSteps.push(reduction);
-
-            index++;
-
-            if (w == 1 && h == 1) {
-                const func = (w: number, h: number, reduction: PostProcess) => {
-                    const buffer = new Float32Array(4 * w * h),
-                        minmax = { min: 0, max: 0 };
-                    return () => {
-                        // Note that we should normally await the call to _readTexturePixels!
-                        // But because WebGL does the read synchronously, we know the values will be updated without waiting for the promise to be resolved, which will let us get the updated values
-                        // in the current frame, whereas in WebGPU, the read is asynchronous and we should normally wait for the promise to be resolved to get the updated values.
-                        // However, it's safe to avoid waiting for the promise to be resolved in WebGPU as well, because we will simply use the current values until "buffer" is updated later on.
-                        // Note that it means we can suffer some rendering artifacts in WebGPU because we may use previous min/max values for the current frame.
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        scene.getEngine()._readTexturePixels(reduction.inputTexture.texture!, w, h, -1, 0, buffer, false);
-                        minmax.min = buffer[0];
-                        minmax.max = buffer[1];
-                        this.onAfterReductionPerformed.notifyObservers(minmax);
-                    };
-                };
-                reduction.onAfterRenderObservable.add(func(w, h, reduction));
+                if (i === reductionSteps.length - 1) {
+                    this._reductionSteps[i - 1].onAfterRenderObservable.add(() => {
+                        this._thinMinMaxReducer.readMinMax(postProcess.inputTexture.texture!);
+                    });
+                }
             }
         }
     }
@@ -215,8 +156,16 @@ export class MinMaxReducer {
             const engine = this._camera.getScene().getEngine();
             engine._debugPushGroup?.(`min max reduction`, 1);
             this._reductionSteps![0].activate(this._camera);
-            this._postProcessManager.directRender(this._reductionSteps!, this._reductionSteps![0].inputTexture, this._forceFullscreenViewport);
-            engine.unBindFramebuffer(this._reductionSteps![0].inputTexture, false);
+            this._postProcessManager.directRender(
+                this._reductionSteps!,
+                this._reductionSteps![0].inputTexture,
+                this._forceFullscreenViewport,
+                0,
+                0,
+                true,
+                this._reductionSteps.length - 1
+            );
+            engine.unBindFramebuffer(this._reductionSteps![this._reductionSteps.length - 1].inputTexture, false);
             engine._debugPopGroup?.(1);
         });
 
@@ -241,28 +190,30 @@ export class MinMaxReducer {
      * @param disposeAll true to dispose all the resources. You should always call this function with true as the parameter (or without any parameter as it is the default one). This flag is meant to be used internally.
      */
     public dispose(disposeAll = true): void {
-        if (disposeAll) {
-            this.onAfterReductionPerformed.clear();
-
-            if (this._onContextRestoredObserver) {
-                this._camera.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
-                this._onContextRestoredObserver = null;
-            }
+        if (!disposeAll) {
+            return;
         }
 
-        this.deactivate();
+        this.onAfterReductionPerformed.clear();
 
-        if (this._reductionSteps) {
-            for (let i = 0; i < this._reductionSteps.length; ++i) {
-                this._reductionSteps[i].dispose();
-            }
-            this._reductionSteps = null;
+        if (this._onContextRestoredObserver) {
+            this._camera.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._onContextRestoredObserver = null;
         }
 
-        if (this._postProcessManager && disposeAll) {
-            this._postProcessManager.dispose();
-        }
+        this._disposePostProcesses();
 
+        this._postProcessManager.dispose();
+        this._postProcessManager = undefined as any;
+        this._thinMinMaxReducer.dispose();
+        this._thinMinMaxReducer = undefined as any;
         this._sourceTexture = null;
+    }
+
+    private _disposePostProcesses() {
+        for (let i = 0; i < this._reductionSteps.length; ++i) {
+            this._reductionSteps[i].dispose();
+        }
+        this._reductionSteps.length = 0;
     }
 }

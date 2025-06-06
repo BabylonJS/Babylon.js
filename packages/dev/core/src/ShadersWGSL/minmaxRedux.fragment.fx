@@ -3,17 +3,16 @@ varying vUV: vec2f;
 var textureSampler: texture_2d<f32>;
 
 #if defined(INITIAL)
-var sourceTexture: texture_2d<f32>;
 uniform texSize: vec2f;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
     let coord = vec2i(fragmentInputs.vUV * (uniforms.texSize - 1.0));
 
-    let f1 = textureLoad(sourceTexture, coord, 0).r;
-    let f2 = textureLoad(sourceTexture, coord + vec2i(1, 0), 0).r;
-    let f3 = textureLoad(sourceTexture, coord + vec2i(1, 1), 0).r;
-    let f4 = textureLoad(sourceTexture, coord + vec2i(0, 1), 0).r;
+    let f1 = textureLoad(textureSampler, coord, 0).r;
+    let f2 = textureLoad(textureSampler, coord + vec2i(1, 0), 0).r;
+    let f3 = textureLoad(textureSampler, coord + vec2i(1, 1), 0).r;
+    let f4 = textureLoad(textureSampler, coord + vec2i(0, 1), 0).r;
 
     let minz = min(min(min(f1, f2), f3), f4);
     #ifdef DEPTH_REDUX
@@ -44,20 +43,19 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 }
 
 #elif defined(ONEBEFORELAST)
-uniform texSize: vec2f;
+uniform texSize: vec2i;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    let coord = vec2i(fragmentInputs.vUV * vec2(uniforms.texSize - 1));
-    let iTexSize = vec2i(uniforms.texSize);
+    let coord = vec2i(fragmentInputs.vUV * vec2f(uniforms.texSize - 1));
 
-    let f1 = textureLoad(textureSampler, coord % iTexSize, 0).rg;
-    let f2 = textureLoad(textureSampler, (coord + vec2i(1, 0)) % iTexSize, 0).rg;
-    let f3 = textureLoad(textureSampler, (coord + vec2i(1, 1)) % iTexSize, 0).rg;
-    let f4 = textureLoad(textureSampler, (coord + vec2i(0, 1)) % iTexSize, 0).rg;
+    let f1 = textureLoad(textureSampler, coord % uniforms.texSize, 0).rg;
+    let f2 = textureLoad(textureSampler, (coord + vec2i(1, 0)) % uniforms.texSize, 0).rg;
+    let f3 = textureLoad(textureSampler, (coord + vec2i(1, 1)) % uniforms.texSize, 0).rg;
+    let f4 = textureLoad(textureSampler, (coord + vec2i(0, 1)) % uniforms.texSize, 0).rg;
 
-    let minz = min(f1.x, f2.x);
-    let maxz = max(f1.y, f2.y);
+    let minz = min(min(min(f1.x, f2.x), f3.x), f4.x);
+    let maxz = max(max(max(f1.y, f2.y), f3.y), f4.y);
 
     fragmentOutputs.color = vec4(minz, maxz, 0., 0.);
 }
