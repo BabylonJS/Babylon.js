@@ -4,7 +4,7 @@ import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnect
 import { Vector3 } from "core/Maths/math.vector";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { BaseEmitterBlock } from "./baseEmitterBlock";
-import { CustomParticleEmitter } from "core/Particles/EmitterTypes";
+import { CustomParticleEmitter } from "core/Particles/EmitterTypes/customParticleEmitter";
 
 /**
  * Block used to provide a flow of particles emitted from a custom position.
