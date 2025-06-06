@@ -12,6 +12,7 @@ import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/st
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -368,9 +369,14 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    // TODO: Refactor this so it can be used for `setValueCurveAtTime` calls, and call `cancelAndHoldAtTime` or `cancelScheduledValues`.
-    public _setAudioParam(audioParam: AudioParam, value: number) {
-        audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
+    public _setAudioParam(audioParam: AudioParam, value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null) {
+        const startTime = this.currentTime;
+        const duration = typeof options?.duration === "number" ? options.duration : this.parameterRampDuration;
+
+        audioParam.cancelScheduledValues(startTime);
+
+        // TODO: Handle non-linear ramps.
+        audioParam.setValueCurveAtTime([audioParam.value, value], startTime, duration);
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {

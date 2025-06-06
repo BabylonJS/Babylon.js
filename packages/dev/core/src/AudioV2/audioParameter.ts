@@ -25,8 +25,9 @@ export const enum AudioParamRampShape {
  */
 export interface IAudioParameterRampOptions {
     /**
-     * The duration of the ramp in seconds. Defaults to 1 second.
+     * The duration of the ramp in seconds. Defaults to the audio engine's `parameterRampDuration` setting.
      * - Ignored if the `endTime` option is set.
+     * - @see {@link AudioEngineV2.parameterRampDuration}
      */
     duration: number;
     /**
