@@ -7,11 +7,11 @@
     "private": true,
     "sideEffects": true,
     "scripts": {
-        "start": "webpack serve --mode development",
         "build": "npm run clean && npm run compile",
         "test": "jest -c ../../../jest.config.ts",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
+        "serve": "webpack serve --mode development",
         "watch": "tsc -b tsconfig.build.json -w",
         "watch:dev": "npm run watch"
     },
