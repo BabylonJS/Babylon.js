@@ -12,7 +12,7 @@ import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/st
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
-import type { IAudioParameterRampOptions } from "../audioParameter";
+import { AudioParamRampShape, type IAudioParameterRampOptions } from "../audioParameter";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -69,6 +69,44 @@ const FormatMimeTypes: { [key: string]: string } = {
     wav: "audio/wav",
     webm: 'audio/webm; codecs="vorbis"',
 };
+
+// TODO: Maybe use easing curve instead? See file://./../../Animations/easing.ts.
+const CurveLength = 100;
+let NormalizedExponentialCurve: Nullable<Float32Array> = null;
+let NormalizedLogarithmicCurve: Nullable<Float32Array> = null;
+
+function GetNormalizedExponentialCurve(): Float32Array {
+    if (!NormalizedExponentialCurve) {
+        NormalizedExponentialCurve = new Float32Array(CurveLength);
+
+        for (let i = 0; i < CurveLength; i++) {
+            const t = i / (CurveLength - 1);
+            NormalizedExponentialCurve[i] = Math.pow(t, 4);
+        }
+    }
+
+    return NormalizedExponentialCurve;
+};
+
+function GetNormalizedLogarithmicCurve(): Float32Array {
+    if (!NormalizedLogarithmicCurve) {
+        NormalizedLogarithmicCurve = new Float32Array(CurveLength);
+
+        for (let i = 0; i < CurveLength; i++) {
+            NormalizedLogarithmicCurve[i] = Math.log(1 + i) / Math.log(CurveLength);
+        }
+    }
+
+    return NormalizedLogarithmicCurve;
+};
+
+function GetScaledCurve(normalizedCurve: Float32Array, min: number, max: number): Float32Array {
+  const scaled = new Float32Array(baseCurve.length);
+  for (let i = 0; i < baseCurve.length; i++) {
+    scaled[i] = min + (max - min) * baseCurve[i];
+  }
+  return scaled;
+}
 
 /** @internal */
 export class _WebAudioEngine extends AudioEngineV2 {
@@ -373,10 +411,29 @@ export class _WebAudioEngine extends AudioEngineV2 {
         const startTime = this.currentTime;
         const duration = typeof options?.duration === "number" ? options.duration : this.parameterRampDuration;
 
-        audioParam.cancelScheduledValues(startTime);
+        const linearCurve: number[] = [audioParam.value, value];
 
-        // TODO: Handle non-linear ramps.
-        audioParam.setValueCurveAtTime([audioParam.value, value], startTime, duration);
+        const exponentialCurve: number[] = 
+        const logarithmicCurve: number[] = [];
+
+        const shape = options && options.shape !== undefined ? options.shape : AudioParamRampShape.Logarithmic;
+        const shapeCurve =
+            options?.shapeCurve && typeof options.shapeCurve[Symbol.iterator] === "function"
+                ? options.shapeCurve
+                : shape === AudioParamRampShape.Linear
+                  ? linearCurve
+                  : shape === AudioParamRampShape.Exponential
+                    ? exponentialCurve
+                    : shape === AudioParamRampShape.Logarithmic
+                      ? logarithmicCurve
+                      : null;
+
+        if (shapeCurve) {
+            audioParam.cancelScheduledValues(startTime);
+            audioParam.setValueCurveAtTime(shapeCurve, startTime, duration);
+        } else {
+            audioParam.setValueAtTime(value, startTime);
+        }
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {
