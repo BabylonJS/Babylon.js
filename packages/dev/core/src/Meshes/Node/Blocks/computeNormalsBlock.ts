@@ -64,54 +64,66 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
                     normals[i] = 0;
                 }
 
-                // Helper to read a vector from positions
-                const getVec = (i: number): [number, number, number] => {
-                    const idx = i * 3;
-                    return [positions[idx], positions[idx + 1], positions[idx + 2]];
-                };
+                const faceNormals: number[] = [];
 
-                // Loop over each triangle
                 for (let i = 0; i < indices.length; i += 3) {
                     const i0 = indices[i];
                     const i1 = indices[i + 1];
                     const i2 = indices[i + 2];
 
-                    const [x0, y0, z0] = getVec(i0);
-                    const [x1, y1, z1] = getVec(i1);
-                    const [x2, y2, z2] = getVec(i2);
+                    const x0 = positions[i0 * 3],
+                        y0 = positions[i0 * 3 + 1],
+                        z0 = positions[i0 * 3 + 2];
+                    const x1 = positions[i1 * 3],
+                        y1 = positions[i1 * 3 + 1],
+                        z1 = positions[i1 * 3 + 2];
+                    const x2 = positions[i2 * 3],
+                        y2 = positions[i2 * 3 + 1],
+                        z2 = positions[i2 * 3 + 2];
 
-                    const vx = x1 - x0;
-                    const vy = y1 - y0;
-                    const vz = z1 - z0;
+                    const ux = x1 - x0,
+                        uy = y1 - y0,
+                        uz = z1 - z0;
+                    const vx = x2 - x0,
+                        vy = y2 - y0,
+                        vz = z2 - z0;
 
-                    const ux = x2 - x0;
-                    const uy = y2 - y0;
-                    const uz = z2 - z0;
+                    // Cross product
+                    const nx = uz * vy - uy * vz;
+                    const ny = ux * vz - uz * vx;
+                    const nz = uy * vx - ux * vy;
 
-                    // Cross product: u × v
-                    const nx = uy * vz - uz * vy;
-                    const ny = uz * vx - ux * vz;
-                    const nz = ux * vy - uy * vx;
+                    // Normalize
+                    const length = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+                    faceNormals.push(nx / length, ny / length, nz / length);
+                }
 
-                    // Add the face normal to each vertex normal
-                    for (const idx of [i0, i1, i2]) {
-                        normals[idx * 3] += nx;
-                        normals[idx * 3 + 1] += ny;
-                        normals[idx * 3 + 2] += nz;
+                const vertexCount = positions.length / 3;
+
+                for (let i = 0; i < indices.length; i += 3) {
+                    const faceIndex = i / 3;
+                    const fnx = faceNormals[faceIndex * 3];
+                    const fny = faceNormals[faceIndex * 3 + 1];
+                    const fnz = faceNormals[faceIndex * 3 + 2];
+
+                    for (let j = 0; j < 3; j++) {
+                        const vi = indices[i + j];
+                        normals[vi * 3] += fnx;
+                        normals[vi * 3 + 1] += fny;
+                        normals[vi * 3 + 2] += fnz;
                     }
                 }
 
-                // Normalize normals
-                for (let i = 0; i < numVertices; i++) {
+                // Normalize vertex normals
+                for (let i = 0; i < vertexCount; i++) {
                     const x = normals[i * 3];
                     const y = normals[i * 3 + 1];
                     const z = normals[i * 3 + 2];
+                    const len = Math.sqrt(x * x + y * y + z * z) || 1;
 
-                    const length = Math.sqrt(x * x + y * y + z * z) || 1;
-
-                    normals[i * 3] = x / length;
-                    normals[i * 3 + 1] = y / length;
-                    normals[i * 3 + 2] = z / length;
+                    normals[i * 3] = x / len;
+                    normals[i * 3 + 1] = y / len;
+                    normals[i * 3 + 2] = z / len;
                 }
             }
 
