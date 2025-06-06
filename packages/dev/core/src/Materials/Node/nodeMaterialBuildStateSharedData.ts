@@ -142,7 +142,7 @@ export class NodeMaterialBuildStateSharedData {
         emitVertex: false,
         emitFragment: false,
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>(),
-        customErrors: new Set<string>(),
+        customErrors: new Array<string>(),
     };
 
     /**
@@ -192,7 +192,9 @@ export class NodeMaterialBuildStateSharedData {
      * @param message defines the error message to push
      */
     public raiseBuildError(message: string) {
-        this.checks.customErrors.add(message);
+        if (this.checks.customErrors.indexOf(message) !== -1) {
+            this.checks.customErrors.push(message);
+        }
     }
 
     /**
