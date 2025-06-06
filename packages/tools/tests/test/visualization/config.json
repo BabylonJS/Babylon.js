@@ -1048,13 +1048,13 @@
         },
         {
             "title": "GLTF Serializer KHR punctual light, left-handed",
-            "playgroundId": "#FLXW8B#25",
+            "playgroundId": "#FLXW8B#27",
             "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
             "referenceImage": "glTFSerializerKHRPunctualLightLH.png"
         },
         {
             "title": "GLTF Serializer KHR punctual light, right-handed",
-            "playgroundId": "#FLXW8B#25",
+            "playgroundId": "#FLXW8B#27",
             "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
             "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
         },
