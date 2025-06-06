@@ -142,7 +142,6 @@
 .booleanContainer {
     height: 20px;
     display: flex;
-    margin-left: 4px;
     cursor: default;
     width: fit-content;
 
@@ -188,6 +187,7 @@
     margin-bottom: 5px;
     height: 20px;
     cursor: default;
+    padding-left: 6px;
 
     input[type="number"] {
         grid-row: 1;
@@ -207,11 +207,6 @@
         text-align: end;
         padding-right: 5px;
         cursor: col-resize;
-
-        &.standalone {
-            margin-left: 10px;
-            margin-right: 10px;
-        }
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -264,8 +259,8 @@
     grid-row: 1;
     grid-column: 1;
     position: relative;
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 2px;
     background-color: rgba(0, 0, 0, 0.5);

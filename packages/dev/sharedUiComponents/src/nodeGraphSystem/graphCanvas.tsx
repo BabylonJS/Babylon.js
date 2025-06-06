@@ -604,6 +604,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
 
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+
         return newNodes;
     }
 

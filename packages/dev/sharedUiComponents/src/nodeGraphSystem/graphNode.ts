@@ -351,7 +351,10 @@ export class GraphNode {
         if (this._displayManager) {
             this._header.innerHTML = this._displayManager.getHeaderText(this.content);
             this._displayManager.updatePreviewContent(this.content, this._content);
-            this._visual.style.background = this._displayManager.getBackgroundColor(this.content);
+            const backgroundColor = this._displayManager.getBackgroundColor(this.content);
+            if (backgroundColor) {
+                this._visual.style.background = backgroundColor;
+            }
             const additionalClass = this._displayManager.getHeaderClass(this.content);
             this._header.classList.value = localStyles.header;
             this._headerContainer.classList.value = localStyles["header-container"];

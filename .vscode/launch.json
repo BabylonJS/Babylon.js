@@ -240,6 +240,20 @@
             "preLaunchTask": "Node Render Graph Editor Serve (Dev)"
         },
         {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Node Particle Editor development (Edge)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Node Particle Editor Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Node Particle Editor development (Chrome)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Node Particle Editor Serve (Dev)"
+        },
+        {
             /*
             Launch the playground to be use to test changes in dev packages
             */

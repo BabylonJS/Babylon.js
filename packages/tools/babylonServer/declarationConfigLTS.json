@@ -60,6 +60,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@tools/node-particle-editor"],
+        "devPackageName": "node-particle-editor",
+        "filename": "node-particle-editor.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@tools/gui-editor"],
         "devPackageName": "gui-editor",
         "filename": "gui-editor.d.ts",

@@ -1,0 +1,25 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "composite": true,
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "serializers/*": ["dev/serializers/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "node-particle-editor/*": ["tools/nodeParticleEditor/src/*"]
+        }
+    },
+
+    "references": [
+        {
+            "path": "../../dev/core/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"]
+}
