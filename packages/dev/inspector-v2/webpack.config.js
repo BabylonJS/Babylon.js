@@ -14,7 +14,7 @@ module.exports = (env) => {
                 enableHotReload: true,
             },
             {
-                static: ["public"],
+                static: ["test/app"],
                 port: process.env.INSPECTOR_TEST_PORT || 9001,
             }
         ),
