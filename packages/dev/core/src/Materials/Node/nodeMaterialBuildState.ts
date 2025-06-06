@@ -9,7 +9,7 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { Process } from "core/Engines/Processors/shaderProcessor";
 import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to store node based material build state
