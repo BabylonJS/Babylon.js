@@ -70,42 +70,56 @@ const FormatMimeTypes: { [key: string]: string } = {
     webm: 'audio/webm; codecs="vorbis"',
 };
 
-// TODO: Maybe use easing curve instead? See file://./../../Animations/easing.ts.
-const CurveLength = 100;
-let NormalizedExponentialCurve: Nullable<Float32Array> = null;
-let NormalizedLogarithmicCurve: Nullable<Float32Array> = null;
+const CurveLength = 1000;
 
-function GetNormalizedExponentialCurve(): Float32Array {
-    if (!NormalizedExponentialCurve) {
-        NormalizedExponentialCurve = new Float32Array(CurveLength);
+// let NormalizedExponentialInCurve: Nullable<Float32Array> = null;
+
+let NormalizedLogarithmicInCurve: Nullable<Float32Array> = null;
+let NormalizedLogarithmicOutCurve: Nullable<Float32Array> = null;
+
+let TempCurve: Float32Array | null = null;
+
+// y = 0 -> 1
+// function GetNormalizedExponentialInCurve(): Float32Array {}
+
+// y = 0 -> 1
+function GetNormalizedLogarithmicInCurve(): Float32Array {
+    if (!NormalizedLogarithmicInCurve) {
+        NormalizedLogarithmicInCurve = new Float32Array(CurveLength);
 
         for (let i = 0; i < CurveLength; i++) {
-            const t = i / (CurveLength - 1);
-            NormalizedExponentialCurve[i] = Math.pow(t, 4);
+            const x = i / CurveLength - 1;
+            NormalizedLogarithmicInCurve[i] = 2 * (1 - Math.pow(0.5, 2 * x));
         }
     }
 
-    return NormalizedExponentialCurve;
-};
+    return NormalizedLogarithmicInCurve;
+}
 
-function GetNormalizedLogarithmicCurve(): Float32Array {
-    if (!NormalizedLogarithmicCurve) {
-        NormalizedLogarithmicCurve = new Float32Array(CurveLength);
+// y = 1 -> 0
+function GetNormalizedLogarithmicOutCurve(): Float32Array {
+    if (!NormalizedLogarithmicOutCurve) {
+        NormalizedLogarithmicOutCurve = new Float32Array(CurveLength);
 
         for (let i = 0; i < CurveLength; i++) {
-            NormalizedLogarithmicCurve[i] = Math.log(1 + i) / Math.log(CurveLength);
+            const x = (CurveLength - 1 - i) / (CurveLength - 1);
+            NormalizedLogarithmicOutCurve[i] = 2 * (1 - Math.pow(0.5, 2 * x));
         }
     }
 
-    return NormalizedLogarithmicCurve;
-};
+    return NormalizedLogarithmicOutCurve;
+}
 
 function GetScaledCurve(normalizedCurve: Float32Array, min: number, max: number): Float32Array {
-  const scaled = new Float32Array(baseCurve.length);
-  for (let i = 0; i < baseCurve.length; i++) {
-    scaled[i] = min + (max - min) * baseCurve[i];
-  }
-  return scaled;
+    if (!TempCurve) {
+        TempCurve = new Float32Array(CurveLength);
+    }
+
+    for (let i = 0; i < normalizedCurve.length; i++) {
+        TempCurve[i] = min + (max - min) * normalizedCurve[i];
+    }
+
+    return TempCurve;
 }
 
 /** @internal */
@@ -408,12 +422,18 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public _setAudioParam(audioParam: AudioParam, value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null) {
+        if (audioParam.value === value) {
+            return;
+        }
+
+        const isUp = value > audioParam.value;
+
         const startTime = this.currentTime;
         const duration = typeof options?.duration === "number" ? options.duration : this.parameterRampDuration;
 
         const linearCurve: number[] = [audioParam.value, value];
 
-        const exponentialCurve: number[] = 
+        const exponentialCurve: number[] = [];
         const logarithmicCurve: number[] = [];
 
         const shape = options && options.shape !== undefined ? options.shape : AudioParamRampShape.Logarithmic;
