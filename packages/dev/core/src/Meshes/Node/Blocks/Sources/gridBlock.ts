@@ -6,6 +6,7 @@ import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { CreateGroundVertexData } from "../../../Builders/groundBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
+import { VertexData } from "core/Meshes/mesh.vertexData";
 
 /**
  * Defines a block used to generate grid geometry data
@@ -107,8 +108,54 @@ export class GridBlock extends NodeGeometryBlock {
             options.subdivisionsX = this.subdivisionsX.getConnectedValue(state);
             options.subdivisionsY = this.subdivisionsY.getConnectedValue(state);
 
+            const vertexData = new VertexData();
+
+            const positions: number[] = [];
+            const indices: number[] = [];
+            const uvs: number[] = [];
+
+            const rows = options.subdivisions! + 1;
+            const cols = options.subdivisions! + 1;
+
+            const halfWidth = options.width! / 2;
+            const halfHeight = options.height! / 2;
+
+            for (let row = 0; row < rows; row++) {
+                const v = row / options.subdivisions!;
+                const z = v * options.height! - halfHeight;
+
+                for (let col = 0; col < cols; col++) {
+                    const u = col / options.subdivisions!;
+                    const x = u * options.width! - halfWidth;
+
+                    positions.push(x, 0, z);
+                    uvs.push(u, v);
+                }
+            }
+
+            for (let row = 0; row < options.subdivisions!; row++) {
+                for (let col = 0; col < options.subdivisions!; col++) {
+                    const i0 = row * cols + col;
+                    const i1 = i0 + 1;
+                    const i2 = i0 + cols;
+                    const i3 = i2 + 1;
+
+                    // Triangle 1
+                    indices.push(i0, i1, i2);
+
+                    // Triangle 2
+                    indices.push(i1, i3, i2);
+                }
+            }
+
             // Append vertex data from the plane builder
-            return CreateGroundVertexData(options);
+            // return CreateGroundVertexData(options);
+
+            vertexData.positions = positions;
+            vertexData.indices = indices;
+            vertexData.uvs = uvs;
+
+            return vertexData;
         };
 
         if (this.evaluateContext) {
