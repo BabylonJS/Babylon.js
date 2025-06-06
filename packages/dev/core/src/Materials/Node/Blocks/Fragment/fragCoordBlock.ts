@@ -102,8 +102,7 @@ export class FragCoordBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            // eslint-disable-next-line no-throw-literal
-            throw "FragCoordBlock must only be used in a fragment shader";
+            state.sharedData.raiseBuildError("FragCoordBlock must only be used in a fragment shader");
         }
 
         state.compilationString += this.writeOutputs(state);

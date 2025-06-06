@@ -784,8 +784,8 @@ export class NodeMaterial extends PushMaterial {
 
                 for (const other of this.attachedBlocks) {
                     if (other.getClassName() === className) {
-                        // eslint-disable-next-line no-throw-literal
-                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                        this._sharedData.raiseBuildError(`Cannot have multiple blocks of type ${className} in the same NodeMaterial`);
+                        return;
                     }
                 }
             }
@@ -915,13 +915,15 @@ export class NodeMaterial extends PushMaterial {
         const allowEmptyVertexProgram = this._mode === NodeMaterialModes.Particle || this._mode === NodeMaterialModes.SFE;
 
         if (this._vertexOutputNodes.length === 0 && !allowEmptyVertexProgram) {
-            // eslint-disable-next-line no-throw-literal
-            throw "You must define at least one vertexOutputNode";
+            this.onBuildErrorObservable.notifyObservers("You must define at least one vertexOutputNode");
+            this._buildIsInProgress = false;
+            return;
         }
 
         if (this._fragmentOutputNodes.length === 0) {
-            // eslint-disable-next-line no-throw-literal
-            throw "You must define at least one fragmentOutputNode";
+            this.onBuildErrorObservable.notifyObservers("You must define at least one fragmentOutputNode");
+            this._buildIsInProgress = false;
+            return;
         }
 
         // Compilation state
@@ -1021,9 +1023,6 @@ export class NodeMaterial extends PushMaterial {
             this._buildId = NodeMaterial._BuildIdGenerator++;
         }
 
-        // Errors
-        const noError = this._sharedData.emitErrors(this.onBuildErrorObservable);
-
         if (verbose) {
             Logger.Log("Vertex shader:");
             Logger.Log(this._vertexCompilationState.compilationString);
@@ -1031,10 +1030,13 @@ export class NodeMaterial extends PushMaterial {
             Logger.Log(this._fragmentCompilationState.compilationString);
         }
 
+        // Errors
+        const noError = this._sharedData.emitErrors();
+
         this._buildIsInProgress = false;
-        this._buildWasSuccessful = true;
         if (noError) {
             this.onBuildObservable.notifyObservers(this);
+            this._buildWasSuccessful = true;
         }
 
         // Wipe defines
