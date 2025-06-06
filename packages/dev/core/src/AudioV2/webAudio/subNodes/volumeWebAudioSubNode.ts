@@ -49,14 +49,8 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
     }
 
     /** @internal */
-    public override setVolume(volume: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
-        const startTime = this.engine.currentTime;
-        const duration = typeof options?.duration === "number" ? options.duration : 1;
-
-        this.node.gain.cancelScheduledValues(startTime);
-
-        // TODO: Handle non-linear ramps.
-        this.node.gain.setValueCurveAtTime([this.node.gain.value, volume], startTime, duration);
+    public override setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
+        this.engine._setAudioParam(this.node.gain, value, options);
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
