@@ -5,6 +5,7 @@ import { EmitterDisplayManager } from "./display/emitterDisplayManager";
 import { UpdateDisplayManager } from "./display/updateDisplayManager";
 import { SystemDisplayManager } from "./display/systemDisplayManager";
 import { DebugDisplayManager } from "./display/debugDisplayManager";
+import { ElbowDisplayManager } from "./display/elbowDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
@@ -19,4 +20,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
+    DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;
 };

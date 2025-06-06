@@ -16,3 +16,4 @@ export * from "./particleConverterBlock";
 export * from "./particleTrigonometryBlock";
 export * from "./particleRandomBlock";
 export * from "./particleDebugBlock";
+export * from "./particleElbowBlock";

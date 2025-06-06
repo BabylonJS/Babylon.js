@@ -80,6 +80,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         CeilingBlock: "Trigonometry block set to Ceiling",
         RandomBlock: "Generate a random value",
         DebugBlock: "Debug block used to output values of connection ports",
+        ElbowBlock: "Passthrough block mostly used to organize your graph",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -200,7 +201,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FractBlock",
             ],
             Interpolation: ["LerpBlock", "GradientEntryBlock", "GradientBlock"],
-            Misc: ["RandomRangeBlock", "ConverterBlock", "RandomBlock", "DebugBlock"],
+            Misc: ["RandomRangeBlock", "ConverterBlock", "RandomBlock", "DebugBlock", "ElbowBlock"],
             System_Nodes: ["SystemBlock"],
             Contextual: ["PositionBlock", "DirectionBlock", "ScaledDirectionBlock", "ColorBlock", "AgeBlock", "LifetimeBlock", "ScaleBlock", "AgeGradientBlock"],
         };
