@@ -6,7 +6,6 @@ import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { CreateGroundVertexData } from "../../../Builders/groundBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
-import { VertexData } from "core/Meshes/mesh.vertexData";
 
 /**
  * Defines a block used to generate grid geometry data
