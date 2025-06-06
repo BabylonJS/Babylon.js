@@ -78,7 +78,7 @@ export class ThinMinMaxReducer {
         this._recreatePostProcesses();
     }
 
-    protected _scene: Scene;
+    protected readonly _scene: Scene;
 
     private _textureWidth = 0;
     private _textureHeight = 0;

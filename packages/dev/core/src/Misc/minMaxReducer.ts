@@ -27,14 +27,14 @@ export class MinMaxReducer {
         return this._thinMinMaxReducer.onAfterReductionPerformed;
     }
 
-    protected _camera: Camera;
-    protected _thinMinMaxReducer: ThinMinMaxReducer;
+    protected readonly _camera: Camera;
+    protected readonly _thinMinMaxReducer: ThinMinMaxReducer;
     protected _sourceTexture: Nullable<RenderTargetTexture>;
-    protected _reductionSteps: Array<PostProcess>;
-    protected _postProcessManager: PostProcessManager;
-    protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
+    protected readonly _reductionSteps: Array<PostProcess>;
+    protected readonly _postProcessManager: PostProcessManager;
+    protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>> = null;
     protected _forceFullscreenViewport = true;
-    protected _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
+    protected readonly _onContextRestoredObserver: Observer<AbstractEngine>;
 
     /**
      * Creates a min/max reducer
@@ -196,17 +196,15 @@ export class MinMaxReducer {
 
         this.onAfterReductionPerformed.clear();
 
-        if (this._onContextRestoredObserver) {
-            this._camera.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
-            this._onContextRestoredObserver = null;
-        }
+        this._camera.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+        (this._onContextRestoredObserver as any) = undefined;
 
         this._disposePostProcesses();
 
         this._postProcessManager.dispose();
-        this._postProcessManager = undefined as any;
+        (this._postProcessManager as any) = undefined as any;
         this._thinMinMaxReducer.dispose();
-        this._thinMinMaxReducer = undefined as any;
+        (this._thinMinMaxReducer as any) = undefined;
         this._sourceTexture = null;
     }
 

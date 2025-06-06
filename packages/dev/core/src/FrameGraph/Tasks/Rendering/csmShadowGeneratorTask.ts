@@ -198,7 +198,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         }
     }
 
-    protected _thinMinMaxReducer: ThinMinMaxReducer;
+    protected readonly _thinMinMaxReducer: ThinMinMaxReducer;
 
     /**
      * Creates a new shadow generator task.
