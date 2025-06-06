@@ -26,7 +26,7 @@ export const enum AudioParamRampShape {
 export interface IAudioParamRampOptions {
     /**
      * The duration of the ramp in seconds. Defaults to 1 second.
-     * - Ignored if `endTime` is set.
+     * - Ignored if the `endTime` option is set.
      */
     duration: number;
     /**
@@ -35,15 +35,11 @@ export interface IAudioParamRampOptions {
     endTime: number;
     /**
      * The shape of the ramp used to smoothly transition the parameter's value. Defaults to `AudioParamRampShape.Logarithmic`.
-     * - Ignored if `shapeCurve` is set.
+     * - Ignored if the `shapeCurve` option is set.
      */
     shape: AudioParamRampShape;
     /**
      * An array of floating-point numbers representing the value curve the audio parameter will change through along the specified duration.
      */
     shapeCurve: Array<number>;
-    /**
-     * The start time of the ramp in seconds. Defaults to the current time.
-     */
-    startTime: number;
 }

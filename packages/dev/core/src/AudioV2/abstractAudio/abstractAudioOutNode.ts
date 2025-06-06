@@ -66,7 +66,7 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
      * @param volume The volume to set.
      * @param options Options for ramping the volume over time.
      */
-    public setVolume(volume: number, options?: Nullable<Partial<IAudioParamRampOptions>>): void {
+    public setVolume(volume: number, options: Nullable<Partial<IAudioParamRampOptions>> = null): void {
         // The volume subnode is created on initialization and should always exist.
         const node = _GetVolumeAudioSubNode(this._subGraph);
         if (!node) {
