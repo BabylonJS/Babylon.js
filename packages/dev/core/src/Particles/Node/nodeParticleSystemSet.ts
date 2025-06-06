@@ -17,6 +17,8 @@ import { BoxEmitterBlock } from "./Blocks/Emitters/boxEmitterBlock";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
+import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 
 /**
  * Defines a set of particle systems defined as a node graph.
@@ -250,18 +252,18 @@ export class NodeParticleSystemSet {
         }
 
         // Reconnect teleportation
-        // for (const block of this.attachedBlocks) {
-        //     if (block.isTeleportOut) {
-        //         const teleportOut = block as TeleportOutBlock;
-        //         const id = teleportOut._tempEntryPointUniqueId;
-        //         if (id) {
-        //             const source = map[id] as TeleportInBlock;
-        //             if (source) {
-        //                 source.attachToEndpoint(teleportOut);
-        //             }
-        //         }
-        //     }
-        // }
+        for (const block of this.attachedBlocks) {
+            if (block.isTeleportOut) {
+                const teleportOut = block as ParticleTeleportOutBlock;
+                const id = teleportOut._tempEntryPointUniqueId;
+                if (id) {
+                    const source = map[id] as ParticleTeleportInBlock;
+                    if (source) {
+                        source.attachToEndpoint(teleportOut);
+                    }
+                }
+            }
+        }
 
         // Connections - Starts with input blocks only (except if in "merge" mode where we scan all blocks)
         for (let blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {

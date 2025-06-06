@@ -21,6 +21,8 @@ import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "
 import { ParticleRandomBlock } from "core/Particles/Node/Blocks/particleRandomBlock";
 import { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
 import { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBlock";
+import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
+import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 
 /**
  * Static class for BlockTools
@@ -28,6 +30,10 @@ import { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBloc
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "TeleportInBlock":
+                return new ParticleTeleportInBlock("Teleport In");
+            case "TeleportOutBlock":
+                return new ParticleTeleportOutBlock("Teleport Out");
             case "ElbowBlock":
                 return new ParticleElbowBlock("");
             case "DebugBlock":

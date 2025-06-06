@@ -17,3 +17,5 @@ export * from "./particleTrigonometryBlock";
 export * from "./particleRandomBlock";
 export * from "./particleDebugBlock";
 export * from "./particleElbowBlock";
+export * from "./Teleport/particleTeleportInBlock";
+export * from "./Teleport/particleTeleportOutBlock";

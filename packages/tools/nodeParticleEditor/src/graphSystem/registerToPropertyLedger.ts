@@ -4,6 +4,7 @@ import { InputPropertyTabComponent } from "./properties/inputNodePropertyCompone
 import { SystemPropertyTabComponent } from "./properties/systemNodePropertyComponent";
 import { TextureSourcePropertyTabComponent } from "./properties/textureSourceNodePropertyComponent";
 import { DebugPropertyTabComponent } from "./properties/debugNodePropertyComponent";
+import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
@@ -11,4 +12,5 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["SystemBlock"] = SystemPropertyTabComponent;
     PropertyLedger.RegisteredControls["ParticleTextureSourceBlock"] = TextureSourcePropertyTabComponent;
     PropertyLedger.RegisteredControls["ParticleDebugBlock"] = DebugPropertyTabComponent;
+    PropertyLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutPropertyTabComponent;
 };

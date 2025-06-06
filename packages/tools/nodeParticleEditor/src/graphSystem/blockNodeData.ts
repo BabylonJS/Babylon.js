@@ -6,6 +6,8 @@ import * as styles from "./blockNodeData.module.scss";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import type { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
+import type { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -88,7 +90,12 @@ export class BlockNodeData implements INodeData {
         iconDiv.classList.add(styles.hidden);
     }
 
-    public get invisibleEndpoints(): null {
+    public get invisibleEndpoints(): ParticleTeleportOutBlock[] | null {
+        if (this.data.isTeleportIn) {
+            const teleportIn = this.data as ParticleTeleportInBlock;
+            return teleportIn.endpoints;
+        }
+
         return null;
     }
 

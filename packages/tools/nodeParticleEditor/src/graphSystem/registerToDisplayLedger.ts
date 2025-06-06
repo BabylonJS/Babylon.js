@@ -6,6 +6,8 @@ import { UpdateDisplayManager } from "./display/updateDisplayManager";
 import { SystemDisplayManager } from "./display/systemDisplayManager";
 import { DebugDisplayManager } from "./display/debugDisplayManager";
 import { ElbowDisplayManager } from "./display/elbowDisplayManager";
+import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
+import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
@@ -21,4 +23,6 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;
+    DisplayLedger.RegisteredControls["ParticleTeleportInBlock"] = TeleportInDisplayManager;
+    DisplayLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutDisplayManager;
 };

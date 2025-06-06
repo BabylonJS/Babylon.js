@@ -16,6 +16,8 @@ export class NodeParticleBlock {
     protected _isInput = false;
     protected _isSystem = false;
     protected _isDebug = false;
+    protected _isTeleportOut = false;
+    protected _isTeleportIn = false;
 
     /**
      * Gets or sets the unique id of the node
@@ -31,6 +33,20 @@ export class NodeParticleBlock {
      * Gets an observable raised when the block is built
      */
     public onBuildObservable = new Observable<NodeParticleBlock>();
+
+    /**
+     * Gets a boolean indicating if this block is a teleport out
+     */
+    public get isTeleportOut(): boolean {
+        return this._isTeleportOut;
+    }
+
+    /**
+     * Gets a boolean indicating if this block is a teleport in
+     */
+    public get isTeleportIn(): boolean {
+        return this._isTeleportIn;
+    }
 
     /**
      * Gets a boolean indicating that this block is a system block
@@ -230,6 +246,10 @@ export class NodeParticleBlock {
      */
     public _build(_state: NodeParticleBuildState) {}
 
+    protected _customBuildStep(_state: NodeParticleBuildState): void {
+        // Must be implemented by children
+    }
+
     /**
      * Builds the block
      * @param state defines the current build state
@@ -263,6 +283,8 @@ export class NodeParticleBlock {
                 block.build(state);
             }
         }
+
+        this._customBuildStep(state);
 
         // Logs
         if (state.verbose) {
