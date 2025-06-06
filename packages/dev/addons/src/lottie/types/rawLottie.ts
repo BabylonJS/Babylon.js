@@ -110,8 +110,8 @@ export type RawGradientProperty = {
 };
 
 export type RawKeyFrameEasing = {
-    x: number[]; // Time component: 0 means start time of the keyframe, 1 means time of the next keyframe.
-    y: number[]; // Value interpolation component: 0 means start value of the keyframe, 1 means value at the next keyframe.
+    x: number | number[]; // Time component: 0 means start time of the keyframe, 1 means time of the next keyframe.
+    y: number | number[]; // Value interpolation component: 0 means start value of the keyframe, 1 means value at the next keyframe.
 };
 
 export type RawBezier = {

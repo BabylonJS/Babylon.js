@@ -11,12 +11,15 @@ export const ShapeUnsupportedChildType =
 export const ShapeAnimatedPathProperty = "Animated path properties are not supported.";
 export const PropertyInvalidVector2Length = "Vector2 property must have exactly 2 values.";
 
+export type VectorType = "Scale" | "Position" | "AnchorPoint";
+
 /* eslint-disable jsdoc/require-jsdoc */
 export type LottieAnimation = {
     startFrame: number; // Frame number where the animation starts
     endFrame: number; // Frame number where the animation ends
     frameRate: number; // Frame rate of the animation
     layers: Map<number, LottieLayer>; // Array of layers in the animation, in top-down z order
+    size: Vector2; // Size of the animation in pixels
 };
 
 export type LottieLayer = {

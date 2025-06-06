@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { IDisposable } from "core/scene";
 import type { LottieAnimation, LottieLayer } from "./types/processedLottie";
 import { Mesh } from "core/Meshes";
@@ -64,6 +65,7 @@ export class LottieRenderer implements IDisposable {
         this._updatePosition(layer);
         this._updateRotation(layer);
         this._updateScale(layer);
+        this._updateAnchor(layer);
     }
 
     private _updatePosition(element: LottieLayer): void {
@@ -165,6 +167,61 @@ export class LottieRenderer implements IDisposable {
 
                         element.nodeTrs!.scaling.x = this._lerp(startValueX, endValueX, easeGradientFactorX) / 100;
                         element.nodeTrs!.scaling.y = this._lerp(startValueY, endValueY, easeGradientFactorY) / 100;
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private _updateAnchor(element: LottieLayer): void {
+        if (element.transform) {
+            if (element.transform.anchorPoint?.keyframes !== undefined && element.transform.anchorPoint.keyframes.length > 0) {
+                // We have keyframes, so the position is animated
+                if (this._currentFrame < element.transform.anchorPoint.keyframes[0].time) {
+                    return; // Animation not started yet
+                }
+
+                for (let i = 0; i < element.transform.anchorPoint.keyframes.length - 1; i++) {
+                    const currentFrame = element.transform.anchorPoint.keyframes[i];
+                    const nextFrame = element.transform.anchorPoint.keyframes[i + 1];
+
+                    // Find the right keyframe we are currently in
+                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
+                        const startTime = currentFrame.time;
+                        const startValueX = currentFrame.value.x;
+                        const startValueY = currentFrame.value.y;
+
+                        const endTime = nextFrame.time;
+                        const endValueX = nextFrame.value.x;
+                        const endValueY = nextFrame.value.y;
+
+                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
+                        const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
+                        const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
+
+                        const lerpX = this._lerp(startValueX, endValueX, easeGradientFactorX);
+                        const lerpY = this._lerp(startValueY, endValueY, easeGradientFactorY);
+
+                        element.nodeAnchor!.position.x = lerpX;
+                        element.nodeAnchor!.position.y = lerpY;
+
+                        // Debugging output
+                        console.log("---------------------------");
+                        console.log("Current frame:", this._currentFrame);
+                        console.log("Start time:", startTime);
+                        console.log("End time:", endTime);
+                        console.log("Start value X:", startValueX);
+                        console.log("Start value Y:", startValueY);
+                        console.log("End value X:", endValueX);
+                        console.log("End value Y:", endValueY);
+                        console.log("Gradient:", gradient);
+                        console.log("Ease gradient factor X:", easeGradientFactorX);
+                        console.log("Ease gradient factor Y:", easeGradientFactorY);
+                        console.log("LerpX:", lerpX);
+                        console.log("LerpY:", lerpY);
 
                         break;
                     }

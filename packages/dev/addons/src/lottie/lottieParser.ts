@@ -20,6 +20,7 @@ import {
     ShapeAnimatedPathProperty,
     ShapeUnsupportedChildType,
     ShapeUnsupportedTopLevelType,
+    type VectorType,
     type LottieAnimation,
     type LottieLayer,
     type LottieSprite,
@@ -29,7 +30,7 @@ import {
     type Vector2Keyframe,
     type Vector2Property,
 } from "./types/processedLottie";
-import { Color3, Vector2 } from "core/Maths";
+import { Color3, Vector2, Vector3 } from "core/Maths";
 import { BezierCurveEase } from "core/Animations";
 import { MeshBuilder, TransformNode } from "core/Meshes";
 import { StandardMaterial, type Texture } from "core/Materials";
@@ -69,14 +70,15 @@ export class LottieParser {
     public printProcessingReport(): void {
         if (this._errors.length === 0) {
             console.log("LottieParser: No errors found. Processed lottie object:");
-            console.log(this._processedData);
-            return;
         }
 
         console.log("LottieParser errors:");
         for (const error of this._errors) {
             console.log(error);
         }
+
+        console.log("Processed data:");
+        console.log(this._processedData);
     }
 
     /**
@@ -94,7 +96,12 @@ export class LottieParser {
             endFrame: rawData.op,
             frameRate: rawData.fr,
             layers: new Map<number, LottieLayer>(),
+            size: new Vector2(rawData.w, rawData.h),
         };
+
+        // Bounds of the animation for testing
+        const background = MeshBuilder.CreatePlane(`Animation bounds`, { height: rawData.h, width: rawData.w });
+        background.position = new Vector3(rawData.w / 2, -rawData.h / 2, 0.1); // Position the background slightly behind the layers
 
         // Create a map of all the layers by their index
         for (let i = 0; i < rawData.layers.length; i++) {
@@ -147,7 +154,7 @@ export class LottieParser {
         newLayer.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
         newLayer.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
         newLayer.nodeTrs.position.z = this._zIndex;
-        this._zIndex += 0.1; // Increment zIndex for each layer
+        this._zIndex -= 0.1; // Increment zIndex for each layer
 
         newLayer.nodeTrs.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
 
@@ -172,8 +179,8 @@ export class LottieParser {
             mesh.material = material;
 
             newLayer.nodeAnchor = mesh;
-            newLayer.nodeAnchor.position.x = (transform.anchorPoint?.startValue.x ?? 0) + (BaseSize * scale) / 2; // Center the anchor on the plane
-            newLayer.nodeAnchor.position.y = (transform.anchorPoint?.startValue.y ?? 0) + (BaseSize * scale) / 2; // Center the anchor on the plane
+            newLayer.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
+            newLayer.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
             newLayer.nodeAnchor.position.z = 0; // Anchor position is always at z=0
         } else {
             newLayer.nodeAnchor = new TransformNode(`Anchor - ${rawLayer.nm}`);
@@ -280,9 +287,9 @@ export class LottieParser {
         return {
             opacity: this._fromLottieScalarToBabylonScalar(transform.o),
             rotation: this._fromLottieScalarToBabylonScalar(transform.r),
-            scale: this._fromLottieVector2ToBabylonVector2(transform.s),
-            position: this._fromLottieVector2ToBabylonVector2(transform.p),
-            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a),
+            scale: this._fromLottieVector2ToBabylonVector2(transform.s, "Scale"),
+            position: this._fromLottieVector2ToBabylonVector2(transform.p, "Position"),
+            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a, "AnchorPoint"),
         };
     }
 
@@ -290,9 +297,9 @@ export class LottieParser {
         return {
             opacity: this._fromLottieScalarToBabylonScalar(transform.o),
             rotation: this._fromLottieScalarToBabylonScalar(transform.r),
-            scale: this._fromLottieVector2ToBabylonVector2(transform.s),
-            position: this._fromLottieVector2ToBabylonVector2(transform.p),
-            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a),
+            scale: this._fromLottieVector2ToBabylonVector2(transform.s, "Scale"),
+            position: this._fromLottieVector2ToBabylonVector2(transform.p, "Position"),
+            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a, "AnchorPoint"),
         };
     }
 
@@ -312,8 +319,24 @@ export class LottieParser {
         let i = 0;
         for (i = 0; i < rawKeyFrames.length; i++) {
             let easeFunction: BezierCurveEase | undefined = undefined;
-            if (rawKeyFrames[i].i !== undefined && rawKeyFrames[i].o !== undefined) {
-                easeFunction = new BezierCurveEase(rawKeyFrames[i].i!.x[0], rawKeyFrames[i].i!.y[0], rawKeyFrames[i].o!.x[0], rawKeyFrames[i].o!.y[0]);
+            if (rawKeyFrames[i].o !== undefined && rawKeyFrames[i].i !== undefined) {
+                if (Array.isArray(rawKeyFrames[i].o!.x)) {
+                    // Value is an array
+                    easeFunction = new BezierCurveEase(
+                        (rawKeyFrames[i].o!.x as number[])[0],
+                        (rawKeyFrames[i].o!.y as number[])[0],
+                        (rawKeyFrames[i].i!.x as number[])[0],
+                        (rawKeyFrames[i].i!.y as number[])[0]
+                    );
+                } else {
+                    // Value is a number
+                    easeFunction = new BezierCurveEase(
+                        rawKeyFrames[i].o!.x as number,
+                        rawKeyFrames[i].o!.y as number,
+                        rawKeyFrames[i].i!.x as number,
+                        rawKeyFrames[i].i!.y as number
+                    );
+                }
             }
 
             keyframes.push({
@@ -336,7 +359,7 @@ export class LottieParser {
         };
     }
 
-    private _fromLottieVector2ToBabylonVector2(property: RawVectorProperty | undefined): Vector2Property | undefined {
+    private _fromLottieVector2ToBabylonVector2(property: RawVectorProperty | undefined, vectorType: VectorType): Vector2Property | undefined {
         if (!property) {
             return undefined;
         }
@@ -349,7 +372,7 @@ export class LottieParser {
         if (property.a === 0) {
             const values = property.k as number[];
             return {
-                startValue: new Vector2(values[0], values[1]),
+                startValue: this._calculateFinalVector(values[0], values[1], vectorType),
             };
         }
 
@@ -358,17 +381,49 @@ export class LottieParser {
         let i = 0;
         for (i = 0; i < rawKeyFrames.length; i++) {
             let easeFunction1: BezierCurveEase | undefined = undefined;
-            if (rawKeyFrames[i].i !== undefined && rawKeyFrames[i].o !== undefined) {
-                easeFunction1 = new BezierCurveEase(rawKeyFrames[i].i!.x[0], rawKeyFrames[i].i!.y[0], rawKeyFrames[i].o!.x[0], rawKeyFrames[i].o!.y[0]);
+            if (rawKeyFrames[i].o !== undefined && rawKeyFrames[i].i !== undefined) {
+                if (Array.isArray(rawKeyFrames[i].o!.x)) {
+                    // Value is an array
+                    easeFunction1 = new BezierCurveEase(
+                        (rawKeyFrames[i].o!.x as number[])[0],
+                        (rawKeyFrames[i].o!.y as number[])[0],
+                        (rawKeyFrames[i].i!.x as number[])[0],
+                        (rawKeyFrames[i].i!.y as number[])[0]
+                    );
+                } else {
+                    // Value is a number
+                    easeFunction1 = new BezierCurveEase(
+                        rawKeyFrames[i].o!.x as number,
+                        rawKeyFrames[i].o!.y as number,
+                        rawKeyFrames[i].i!.x as number,
+                        rawKeyFrames[i].i!.y as number
+                    );
+                }
             }
 
             let easeFunction2: BezierCurveEase | undefined = undefined;
-            if (rawKeyFrames[i].i !== undefined && rawKeyFrames[i].o !== undefined) {
-                easeFunction2 = new BezierCurveEase(rawKeyFrames[i].i!.x[1], rawKeyFrames[i].i!.y[1], rawKeyFrames[i].o!.x[1], rawKeyFrames[i].o!.y[1]);
+            if (rawKeyFrames[i].o !== undefined && rawKeyFrames[i].i !== undefined) {
+                if (Array.isArray(rawKeyFrames[i].o!.x)) {
+                    // Value is an array
+                    easeFunction2 = new BezierCurveEase(
+                        (rawKeyFrames[i].o!.x as number[])[1],
+                        (rawKeyFrames[i].o!.y as number[])[1],
+                        (rawKeyFrames[i].i!.x as number[])[1],
+                        (rawKeyFrames[i].i!.y as number[])[1]
+                    );
+                } else {
+                    // Value is a number
+                    easeFunction2 = new BezierCurveEase(
+                        rawKeyFrames[i].o!.x as number,
+                        rawKeyFrames[i].o!.y as number,
+                        rawKeyFrames[i].i!.x as number,
+                        rawKeyFrames[i].i!.y as number
+                    );
+                }
             }
 
             keyframes.push({
-                value: new Vector2(rawKeyFrames[i].s[0], rawKeyFrames[i].s[1]),
+                value: this._calculateFinalVector(rawKeyFrames[i].s[0], rawKeyFrames[i].s[1], vectorType),
                 time: rawKeyFrames[i].t,
                 easeFunction1,
                 easeFunction2,
@@ -376,17 +431,30 @@ export class LottieParser {
         }
 
         // DEBUGGING - Add one extra keyframe at the end to make sure the animation reaches the end value
-        keyframes.push({
-            value: new Vector2(rawKeyFrames[i - 1].s[0], rawKeyFrames[i - 1].s[1]),
-            time: rawKeyFrames[i - 1].t + 1,
-            easeFunction1: keyframes[i - 2].easeFunction1,
-            easeFunction2: keyframes[i - 2].easeFunction2,
-        });
+        // keyframes.push({
+        //     value: this._calculateFinalVector(rawKeyFrames[i - 1].s[0], rawKeyFrames[i - 1].s[1], vectorType),
+        //     time: rawKeyFrames[i - 1].t + 1,
+        //     easeFunction1: keyframes[i - 2].easeFunction1,
+        //     easeFunction2: keyframes[i - 2].easeFunction2,
+        // });
 
         return {
-            startValue: new Vector2(rawKeyFrames[0].s[0], rawKeyFrames[0].s[1]),
+            startValue: this._calculateFinalVector(rawKeyFrames[0].s[0], rawKeyFrames[0].s[1], vectorType),
             keyframes: keyframes,
         };
+    }
+    private _calculateFinalVector(x: number, y: number, vectorType: string) {
+        const result = new Vector2(x, y);
+
+        if (vectorType === "Position") {
+            // Lottie uses a different coordinate system for position, so we need to invert the Y value
+            result.y = -result.y;
+        } else if (vectorType === "AnchorPoint") {
+            // Lottie uses a different coordinate system for anchor point, so we need to invert the X value
+            result.x = -result.x;
+        }
+
+        return result;
     }
 
     private _validateNonAnimatedTransform(transform: Transform | undefined): void {
