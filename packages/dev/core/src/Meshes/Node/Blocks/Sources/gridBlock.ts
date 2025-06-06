@@ -106,6 +106,7 @@ export class GridBlock extends NodeGeometryBlock {
             options.subdivisions = this.subdivisions.getConnectedValue(state);
             options.subdivisionsX = this.subdivisionsX.getConnectedValue(state);
             options.subdivisionsY = this.subdivisionsY.getConnectedValue(state);
+
             // Append vertex data from the plane builder
             return CreateGroundVertexData(options);
         };

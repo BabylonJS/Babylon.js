@@ -54,6 +54,7 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
             if (!vertexData.normals) {
                 vertexData.normals = [];
             }
+
             VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
 
             return vertexData;
