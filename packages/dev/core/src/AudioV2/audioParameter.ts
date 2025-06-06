@@ -23,7 +23,7 @@ export const enum AudioParamRampShape {
 /**
  * Options for ramping an audio parameter's value over time.
  */
-export interface IAudioParamRampOptions {
+export interface IAudioParameterRampOptions {
     /**
      * The duration of the ramp in seconds. Defaults to 1 second.
      * - Ignored if the `endTime` option is set.

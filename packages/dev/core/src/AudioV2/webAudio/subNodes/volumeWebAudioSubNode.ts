@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../types";
 import { _VolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import type { IAudioParamRampOptions } from "../../audioParam";
+import type { IAudioParameterRampOptions } from "../../audioParameter";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSubNode } from "../webAudioNode";
 
@@ -49,7 +49,7 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
     }
 
     /** @internal */
-    public override setVolume(volume: number, options: Nullable<Partial<IAudioParamRampOptions>> = null): void {
+    public override setVolume(volume: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
         const startTime = this.engine.currentTime;
         const duration = typeof options?.duration === "number" ? options.duration : 1;
 
