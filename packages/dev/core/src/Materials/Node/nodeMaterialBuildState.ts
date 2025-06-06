@@ -113,7 +113,8 @@ export class NodeMaterialBuildState {
      */
     public async getProcessedShaderAsync(defines: string): Promise<string> {
         if (!this._builtCompilationString) {
-            Logger.Warn("getProcessedShaderAsync: Shader not built yet.");
+            Logger.Error("getProcessedShaderAsync: Shader not built yet.");
+            return "";
         }
 
         const engine = this.sharedData.nodeMaterial.getScene().getEngine();

@@ -89,6 +89,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
             state.sharedData.raiseBuildError("ScreenSizeBlock must only be used in a fragment shader");
+            return this;
         }
 
         state.sharedData.bindableBlocks.push(this);

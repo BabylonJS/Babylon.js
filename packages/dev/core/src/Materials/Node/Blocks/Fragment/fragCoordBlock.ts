@@ -103,6 +103,7 @@ export class FragCoordBlock extends NodeMaterialBlock {
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
             state.sharedData.raiseBuildError("FragCoordBlock must only be used in a fragment shader");
+            return this;
         }
 
         state.compilationString += this.writeOutputs(state);
