@@ -9,6 +9,7 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { Process } from "core/Engines/Processors/shaderProcessor";
 import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to store node based material build state
@@ -112,7 +113,8 @@ export class NodeMaterialBuildState {
      */
     public async getProcessedShaderAsync(defines: string): Promise<string> {
         if (!this._builtCompilationString) {
-            throw new Error("Shader not built yet.");
+            Logger.Error("getProcessedShaderAsync: Shader not built yet.");
+            return "";
         }
 
         const engine = this.sharedData.nodeMaterial.getScene().getEngine();

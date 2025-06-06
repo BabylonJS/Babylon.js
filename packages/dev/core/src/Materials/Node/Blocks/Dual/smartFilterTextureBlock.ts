@@ -8,7 +8,6 @@ import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
-import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
@@ -55,11 +54,11 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         this._samplerName = state._getFreeVariableName(this.name);
 
         if (state.sharedData.nodeMaterial.mode !== NodeMaterialModes.SFE) {
-            Logger.Error("SmartFilterTextureBlock: Should not be used outside of SFE mode.");
+            state.sharedData.raiseBuildError("SmartFilterTextureBlock should not be used outside of SFE mode.");
         }
 
         if (state.sharedData.nodeMaterial.shaderLanguage !== ShaderLanguage.GLSL) {
-            Logger.Error("SmartFilterTextureBlock: WebGPU is not supported by SFE mode.");
+            state.sharedData.raiseBuildError("WebGPU is not supported by SmartFilterTextureBlock.");
         }
 
         // Tell FragmentOutputBlock ahead of time to store the final color in a temp variable
@@ -109,7 +108,7 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         // NOTE: In the future, when we move to vertex shaders, update this to check for the nearest vec2 varying output.
         const screenUv = state.sharedData.nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "postprocess_uv");
         if (!screenUv || !screenUv.isAnAncestorOf(this)) {
-            Logger.Error("SmartFilterTextureBlock: 'postprocess_uv' attribute from ScreenUVBlock is required.");
+            state.sharedData.raiseBuildError("SmartFilterTextureBlock: 'postprocess_uv' attribute from ScreenUVBlock is required.");
             return "";
         }
         return screenUv.associatedVariableName;

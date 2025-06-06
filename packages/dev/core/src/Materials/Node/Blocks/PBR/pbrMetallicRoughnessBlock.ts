@@ -1492,7 +1492,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                         state.compilationString += `#endif\n`;
                     }
                 } else {
-                    Logger.Error(`There's no remapping for the ${output.name} end point! No code generated`);
+                    state.sharedData.raiseBuildError(`There's no remapping for the ${output.name} end point! No code generated`);
                 }
             }
         }
