@@ -417,6 +417,16 @@ const rules = {
                         },
                     },
                     {
+                        // Exception for hooks which start with 'use'
+                        selector: "variable",
+                        format: ["strictCamelCase"],
+                        modifiers: ["global"],
+                        filter: {
+                            regex: "^use",
+                            match: true,
+                        },
+                    },
+                    {
                         selector: "variable",
                         format: ["PascalCase"],
                         modifiers: ["global"],
