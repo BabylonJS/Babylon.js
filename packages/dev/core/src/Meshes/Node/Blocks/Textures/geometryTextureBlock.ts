@@ -116,9 +116,54 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param height defines the height of the texture
      */
     public loadTextureFromData(data: Float32Array, width: number, height: number) {
-        this._data = data;
         this._width = width;
         this._height = height;
+
+        const output = new Float32Array(data.length);
+        const channels = 4;
+
+        const getIndex = (x: number, y: number) => (y * width + x) * channels;
+
+        const boxSize = 1; // 3x3 box kernel
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let r = 0,
+                    g = 0,
+                    b = 0,
+                    a = 0;
+                let count = 0;
+
+                // Box kernel
+                for (let dy = -boxSize; dy <= boxSize; dy++) {
+                    const ny = y + dy;
+                    if (ny < 0 || ny >= height) {
+                        continue;
+                    }
+
+                    for (let dx = -boxSize; dx <= boxSize; dx++) {
+                        const nx = x + dx;
+                        if (nx < 0 || nx >= width) {
+                            continue;
+                        }
+
+                        const idx = getIndex(nx, ny);
+                        r += data[idx];
+                        g += data[idx + 1];
+                        b += data[idx + 2];
+                        a += data[idx + 3];
+                        count++;
+                    }
+                }
+
+                const iOut = getIndex(x, y);
+                output[iOut] = r / count;
+                output[iOut + 1] = g / count;
+                output[iOut + 2] = b / count;
+                output[iOut + 3] = a / count;
+            }
+        }
+        this._data = output;
     }
 
     /**
