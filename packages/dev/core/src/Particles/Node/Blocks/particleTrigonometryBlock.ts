@@ -6,7 +6,7 @@ import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Color4 } from "core/Maths";
+import { Color4 } from "core/Maths/math.color";
 
 /**
  * Operations supported by the Trigonometry block

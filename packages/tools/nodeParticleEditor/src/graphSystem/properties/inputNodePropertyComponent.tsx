@@ -16,6 +16,7 @@ import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums
 import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<ParticleInputBlock>>;
@@ -114,6 +115,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const inputBlock = this.props.nodeData.data as ParticleInputBlock;
 
         let contextualSourcesOptions: { label: string; value: NodeParticleContextualSources }[] = [{ label: "None", value: NodeParticleContextualSources.None }];
+        let systemSourcesOptions: { label: string; value: NodeParticleSystemSources }[] = [{ label: "None", value: NodeParticleSystemSources.None }];
 
         switch (inputBlock.type) {
             case NodeParticleBlockConnectionPointTypes.Float:
@@ -122,6 +124,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
                     { label: "Age gradient", value: NodeParticleContextualSources.AgeGradient },
                 ];
+                systemSourcesOptions = [{ label: "Time", value: NodeParticleSystemSources.Time }];
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector2:
                 contextualSourcesOptions = [{ label: "Scale", value: NodeParticleContextualSources.Scale }];
@@ -141,10 +144,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (contextualSourcesOptions.length > 0) {
-            modeOptions.push({ label: "Contextual value (Float)", value: NodeParticleBlockConnectionPointTypes.Float });
-            modeOptions.push({ label: "Contextual value (Vector2)", value: NodeParticleBlockConnectionPointTypes.Vector2 });
-            modeOptions.push({ label: "Contextual value (Vector3)", value: NodeParticleBlockConnectionPointTypes.Vector3 });
-            modeOptions.push({ label: "Contextual value (Color4)", value: NodeParticleBlockConnectionPointTypes.Color4 });
+            modeOptions.push({ label: "Contextual value (Float)", value: 1 });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: 2 });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: 3 });
+            modeOptions.push({ label: "Contextual value (Color4)", value: 4 });
+        }
+
+        if (systemSourcesOptions.length > 0) {
+            modeOptions.push({ label: "System value (Float)", value: 5 });
         }
 
         return (
@@ -157,7 +164,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         target={inputBlock}
                         noDirectUpdate={true}
                         extractValue={() => {
-                            if (inputBlock.isContextual) {
+                            if (inputBlock.isContextual || inputBlock.isSystemSource) {
                                 return inputBlock.type;
                             }
 
@@ -170,17 +177,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     break;
                                 default:
                                     switch (value) {
-                                        case NodeParticleBlockConnectionPointTypes.Float:
+                                        case 1:
                                             inputBlock.contextualValue = NodeParticleContextualSources.Age;
                                             break;
-                                        case NodeParticleBlockConnectionPointTypes.Vector2:
+                                        case 2:
                                             inputBlock.contextualValue = NodeParticleContextualSources.Scale;
                                             break;
-                                        case NodeParticleBlockConnectionPointTypes.Vector3:
+                                        case 3:
                                             inputBlock.contextualValue = NodeParticleContextualSources.Position;
                                             break;
-                                        case NodeParticleBlockConnectionPointTypes.Color4:
+                                        case 4:
                                             inputBlock.contextualValue = NodeParticleContextualSources.Color;
+                                            break;
+                                        case 5:
+                                            inputBlock.systemSource = NodeParticleSystemSources.Time;
                                             break;
                                     }
                                     break;
@@ -191,7 +201,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }}
                         propertyName={""}
                     />
-                    {!inputBlock.isContextual && this.renderValue(this.props.stateManager.data as GlobalState)}
+                    {!inputBlock.isContextual && !inputBlock.isSystemSource && this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isContextual && (
                         <OptionsLine
                             label="Contextual value"
@@ -207,10 +217,27 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             }}
                         />
                     )}
-                    {!inputBlock.isContextual && (
+                    {inputBlock.isSystemSource && (
+                        <OptionsLine
+                            label="System value"
+                            options={systemSourcesOptions}
+                            target={inputBlock}
+                            propertyName="systemSource"
+                            onSelect={(value: any) => {
+                                inputBlock.systemSource = value;
+                                this.forceUpdate();
+
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                            }}
+                        />
+                    )}
+                    {!inputBlock.isContextual && !inputBlock.isSystemSource && (
                         <CheckBoxLineComponent label="Display in the Inspector" target={inputBlock} propertyName={"displayInInspector"}></CheckBoxLineComponent>
                     )}
-                    {!inputBlock.isContextual && <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>}
+                    {!inputBlock.isContextual && !inputBlock.isSystemSource && (
+                        <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
+                    )}
                 </LineContainerComponent>
             </div>
         );

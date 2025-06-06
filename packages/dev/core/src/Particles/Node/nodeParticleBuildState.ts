@@ -7,6 +7,7 @@ import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlock
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import type { ThinParticleSystem } from "../thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
+import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 
 /**
  * Class used to store node based geometry build state
@@ -124,6 +125,24 @@ export class NodeParticleBuildState {
                 return this.particleContext.scale;
             case NodeParticleContextualSources.AgeGradient:
                 return this.particleContext.age / this.particleContext.lifeTime;
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the value associated with a system source
+     * @param source Source of the system value
+     * @returns the value associated with the source
+     */
+    public getSystemValue(source: NodeParticleSystemSources) {
+        if (!this.particleContext || !this.systemContext) {
+            return null;
+        }
+
+        switch (source) {
+            case NodeParticleSystemSources.Time:
+                return this.systemContext._actualFrame;
         }
 
         return null;

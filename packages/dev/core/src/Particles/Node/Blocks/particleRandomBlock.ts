@@ -12,17 +12,19 @@ import { Color4 } from "core/Maths/math.color";
  * Locks supported by the random block
  */
 export enum ParticleRandomBlockLocks {
+    /** None */
+    None = 0,
     /** PerParticle */
-    PerParticle = 0,
+    PerParticle = 1,
     /** PerSystem */
-    PerSystem = 1,
+    PerSystem = 2,
 }
 
 /**
  * Block used to get a random number
  */
 export class ParticleRandomBlock extends NodeParticleBlock {
-    private _currentLockId = -1;
+    private _currentLockId = -2;
     /**
      * Gets or sets a value indicating if that block will lock its value for a specific event
      */
@@ -30,6 +32,7 @@ export class ParticleRandomBlock extends NodeParticleBlock {
         notifiers: { rebuild: true },
         embedded: true,
         options: [
+            { label: "None", value: ParticleRandomBlockLocks.None },
             { label: "Per particle", value: ParticleRandomBlockLocks.PerParticle },
             { label: "Per system", value: ParticleRandomBlockLocks.PerSystem },
         ],
@@ -98,7 +101,7 @@ export class ParticleRandomBlock extends NodeParticleBlock {
 
     public override _build() {
         let func: Nullable<(state: NodeParticleBuildState) => any> = null;
-        this._currentLockId = -1;
+        this._currentLockId = -2;
 
         switch (this.min.type) {
             case NodeParticleBlockConnectionPointTypes.Int:
@@ -146,7 +149,7 @@ export class ParticleRandomBlock extends NodeParticleBlock {
 
             switch (this.lockMode) {
                 case ParticleRandomBlockLocks.PerParticle:
-                    lockId = -1; // No lock for per particle
+                    lockId = state.particleContext?.id || -1;
                     break;
                 case ParticleRandomBlockLocks.PerSystem:
                     lockId = state.buildId || 0;
@@ -154,7 +157,9 @@ export class ParticleRandomBlock extends NodeParticleBlock {
             }
 
             if (this._currentLockId !== lockId) {
-                this._currentLockId = lockId;
+                if (this.lockMode !== ParticleRandomBlockLocks.None) {
+                    this._currentLockId = lockId;
+                }
                 this.output._storedValue = func!(state);
             }
             return this.output._storedValue;

@@ -15,6 +15,7 @@ export class NodeParticleBlock {
     private _buildId: number;
     protected _isInput = false;
     protected _isSystem = false;
+    protected _isDebug = false;
 
     /**
      * Gets or sets the unique id of the node
@@ -43,6 +44,13 @@ export class NodeParticleBlock {
      */
     public get isInput(): boolean {
         return this._isInput;
+    }
+
+    /**
+     * Gets a boolean indicating if this block is a debug block
+     */
+    public get isDebug(): boolean {
+        return this._isDebug;
     }
 
     /**
@@ -233,7 +241,7 @@ export class NodeParticleBlock {
         }
 
         if (this._outputs.length > 0) {
-            if (!this._outputs.some((o) => o.hasEndpoints)) {
+            if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug) {
                 return false;
             }
         }

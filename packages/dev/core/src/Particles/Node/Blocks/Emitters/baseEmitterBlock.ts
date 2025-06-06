@@ -83,15 +83,18 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
 
         // Creation
         system._lifeTimeCreation.process = (particle: Particle, system: ThinParticleSystem) => {
+            state.particleContext = particle;
             particle.lifeTime = this.lifeTime.getConnectedValue(state);
             system._emitPower = this.emitPower.getConnectedValue(state);
         };
 
         system._colorCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
             particle.color.copyFrom(this.color.getConnectedValue(state));
         };
 
         system._sizeCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
             particle.size = 1;
             particle.scale.copyFrom(this.scale.getConnectedValue(state));
         };

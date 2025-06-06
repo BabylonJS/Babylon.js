@@ -4,6 +4,7 @@ import { TextureDisplayManager } from "./display/textureDisplayManager";
 import { EmitterDisplayManager } from "./display/emitterDisplayManager";
 import { UpdateDisplayManager } from "./display/updateDisplayManager";
 import { SystemDisplayManager } from "./display/systemDisplayManager";
+import { DebugDisplayManager } from "./display/debugDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
@@ -17,4 +18,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateColorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
+    DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
 };

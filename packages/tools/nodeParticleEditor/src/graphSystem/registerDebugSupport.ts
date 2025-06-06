@@ -1,18 +1,34 @@
-import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export const RegisterDebugSupport = (stateManager: StateManager) => {
     stateManager.isDebugConnectionAllowed = (a, b) => {
-        const pointA = a.portData.data as NodeGeometryConnectionPoint;
-        const pointB = b.portData.data as NodeGeometryConnectionPoint;
+        const pointA = a.portData.data as NodeParticleConnectionPoint;
+        const pointB = b.portData.data as NodeParticleConnectionPoint;
 
-        if (pointA.type === NodeGeometryBlockConnectionPointTypes.Geometry || pointB.type === NodeGeometryBlockConnectionPointTypes.Geometry) {
-            return false; // We do not support debug on geometries
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.Particle || pointB.type === NodeParticleBlockConnectionPointTypes.Particle) {
+            return false; // We do not support debug on particle data
         }
 
-        if (pointA.type === NodeGeometryBlockConnectionPointTypes.Texture || pointB.type === NodeGeometryBlockConnectionPointTypes.Texture) {
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.Texture || pointB.type === NodeParticleBlockConnectionPointTypes.Texture) {
             return false; // We do not support debug on texture data
+        }
+
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.FloatGradient || pointB.type === NodeParticleBlockConnectionPointTypes.FloatGradient) {
+            return false; // We do not support debug on gradient data
+        }
+
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.Vector2Gradient || pointB.type === NodeParticleBlockConnectionPointTypes.Vector2Gradient) {
+            return false; // We do not support debug on gradient data
+        }
+
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.Vector3Gradient || pointB.type === NodeParticleBlockConnectionPointTypes.Vector3Gradient) {
+            return false; // We do not support debug on gradient data
+        }
+
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.Color4Gradient || pointB.type === NodeParticleBlockConnectionPointTypes.Color4Gradient) {
+            return false; // We do not support debug on gradient data
         }
 
         return true;

@@ -19,6 +19,7 @@ import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConve
 import { CustomEmitterBlock } from "core/Particles/Node/Blocks/Emitters/customEmitterBlock";
 import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "core/Particles/Node/Blocks/particleTrigonometryBlock";
 import { ParticleRandomBlock } from "core/Particles/Node/Blocks/particleRandomBlock";
+import { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
 
 /**
  * Static class for BlockTools
@@ -26,6 +27,8 @@ import { ParticleRandomBlock } from "core/Particles/Node/Blocks/particleRandomBl
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "DebugBlock":
+                return new ParticleDebugBlock("Debug");
             case "ConverterBlock":
                 return new ParticleConverterBlock("Converter");
             case "GradientBlock":

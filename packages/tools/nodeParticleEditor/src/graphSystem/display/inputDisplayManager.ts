@@ -7,6 +7,7 @@ import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInpu
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 import type { Color4 } from "core/Maths/math.color";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(nodeData: INodeData) {
@@ -14,6 +15,8 @@ export class InputDisplayManager implements IDisplayManager {
 
         if (inputBlock.isContextual) {
             return styles["contextual"];
+        } else if (inputBlock.isSystemSource) {
+            return styles["system"];
         }
 
         return "";
@@ -54,7 +57,13 @@ export class InputDisplayManager implements IDisplayManager {
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         let value = "";
         const inputBlock = nodeData.data as ParticleInputBlock;
-        if (inputBlock.isContextual) {
+        if (inputBlock.isSystemSource) {
+            switch (inputBlock.systemSource) {
+                case NodeParticleSystemSources.Time:
+                    value = "Time";
+                    break;
+            }
+        } else if (inputBlock.isContextual) {
             switch (inputBlock.contextualValue) {
                 case NodeParticleContextualSources.Position:
                     value = "Position";

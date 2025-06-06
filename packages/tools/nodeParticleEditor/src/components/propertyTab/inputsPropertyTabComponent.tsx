@@ -95,7 +95,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
         return (
             <LineContainerComponent title="INPUTS">
                 {this.props.inputs.map((ib) => {
-                    if (ib.isContextual || !ib.name || !ib.displayInInspector) {
+                    if (ib.isSystemSource || ib.isContextual || !ib.name || !ib.displayInInspector) {
                         return null;
                     }
                     return this.renderInputBlock(ib);

@@ -5,4 +5,5 @@ export * from "./nodeParticleBlockConnectionPoint";
 export * from "./nodeParticleBuildState";
 export * from "./Enums/nodeParticleBlockConnectionPointTypes";
 export * from "./Enums/nodeParticleContextualSources";
+export * from "./Enums/nodeParticleSystemSources";
 export * from "./Blocks/index";

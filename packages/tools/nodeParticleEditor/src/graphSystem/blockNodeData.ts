@@ -68,6 +68,12 @@ export class BlockNodeData implements INodeData {
         return null;
     }
 
+    public isConnectedToOutput() {
+        const block = this.data;
+
+        return block.isDebug || block.isAnAncestorOfType("SystemBlock");
+    }
+
     public dispose() {
         this.data.dispose();
         this.data.onBuildObservable.remove(this._onBuildObserver);

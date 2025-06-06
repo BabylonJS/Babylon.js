@@ -7,6 +7,7 @@ import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnection
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Color4 } from "core/Maths/math.color";
 import { NodeParticleContextualSources } from "../Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "../Enums/nodeParticleSystemSources";
 
 /**
  * Block used to expose an input value
@@ -64,6 +65,42 @@ export class ParticleInputBlock extends NodeParticleBlock {
         return this._type;
     }
 
+    /** @internal */
+    private _systemSource: NodeParticleSystemSources = NodeParticleSystemSources.None;
+
+    /**
+     * Gets a boolean indicating that the current connection point is a system source
+     */
+    public get isSystemSource(): boolean {
+        return this._contextualSource === NodeParticleContextualSources.None && this._systemSource !== NodeParticleSystemSources.None;
+    }
+
+    /**
+     * Gets or sets the system source used by this input block
+     */
+    public get systemSource(): NodeParticleSystemSources {
+        return this._systemSource;
+    }
+
+    public set systemSource(value: NodeParticleSystemSources) {
+        this._systemSource = value;
+
+        if (value !== NodeParticleSystemSources.None) {
+            this._contextualSource = NodeParticleContextualSources.None;
+            this._type = NodeParticleBlockConnectionPointTypes.Float;
+
+            switch (value) {
+                case NodeParticleSystemSources.Time:
+                    this._type = NodeParticleBlockConnectionPointTypes.Float;
+                    break;
+            }
+
+            if (this.output) {
+                this.output.type = this._type;
+            }
+        }
+    }
+
     private _contextualSource = NodeParticleContextualSources.None;
     /**
      * Gets a boolean indicating that the current connection point is a contextual value
@@ -82,27 +119,31 @@ export class ParticleInputBlock extends NodeParticleBlock {
     public set contextualValue(value: NodeParticleContextualSources) {
         this._contextualSource = value;
 
-        switch (value) {
-            case NodeParticleContextualSources.Scale:
-                this._type = NodeParticleBlockConnectionPointTypes.Vector2;
-                break;
-            case NodeParticleContextualSources.Position:
-            case NodeParticleContextualSources.Direction:
-            case NodeParticleContextualSources.ScaledDirection:
-                this._type = NodeParticleBlockConnectionPointTypes.Vector3;
-                break;
-            case NodeParticleContextualSources.Color:
-                this._type = NodeParticleBlockConnectionPointTypes.Color4;
-                break;
-            case NodeParticleContextualSources.Age:
-            case NodeParticleContextualSources.Lifetime:
-            case NodeParticleContextualSources.AgeGradient:
-                this._type = NodeParticleBlockConnectionPointTypes.Float;
-                break;
-        }
+        if (value !== NodeParticleContextualSources.None) {
+            this._systemSource = NodeParticleSystemSources.None;
 
-        if (this.output) {
-            this.output.type = this._type;
+            switch (value) {
+                case NodeParticleContextualSources.Scale:
+                    this._type = NodeParticleBlockConnectionPointTypes.Vector2;
+                    break;
+                case NodeParticleContextualSources.Position:
+                case NodeParticleContextualSources.Direction:
+                case NodeParticleContextualSources.ScaledDirection:
+                    this._type = NodeParticleBlockConnectionPointTypes.Vector3;
+                    break;
+                case NodeParticleContextualSources.Color:
+                    this._type = NodeParticleBlockConnectionPointTypes.Color4;
+                    break;
+                case NodeParticleContextualSources.Age:
+                case NodeParticleContextualSources.Lifetime:
+                case NodeParticleContextualSources.AgeGradient:
+                    this._type = NodeParticleBlockConnectionPointTypes.Float;
+                    break;
+            }
+
+            if (this.output) {
+                this.output.type = this._type;
+            }
         }
     }
 
@@ -198,7 +239,12 @@ export class ParticleInputBlock extends NodeParticleBlock {
     public override _build(state: NodeParticleBuildState) {
         super._build(state);
 
-        if (this.isContextual) {
+        if (this.isSystemSource) {
+            this.output._storedValue = null;
+            this.output._storedFunction = (state) => {
+                return state.getSystemValue(this._systemSource);
+            };
+        } else if (this.isContextual) {
             this.output._storedValue = null;
             this.output._storedFunction = (state) => {
                 return state.getContextualValue(this._contextualSource);
@@ -220,12 +266,13 @@ export class ParticleInputBlock extends NodeParticleBlock {
 
         serializationObject.type = this.type;
         serializationObject.contextualValue = this.contextualValue;
+        serializationObject.systemSource = this.systemSource;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
         serializationObject.groupInInspector = this.groupInInspector;
         serializationObject.displayInInspector = this.displayInInspector;
 
-        if (this._storedValue !== null && !this.isContextual) {
+        if (this._storedValue !== null && !this.isContextual && !this.isSystemSource) {
             if (this._storedValue.asArray) {
                 serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
                 serializationObject.value = this._storedValue.asArray();
@@ -243,6 +290,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
 
         this._type = serializationObject.type;
         this.contextualValue = serializationObject.contextualValue;
+        this.systemSource = serializationObject.systemSource || NodeParticleSystemSources.None;
 
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;

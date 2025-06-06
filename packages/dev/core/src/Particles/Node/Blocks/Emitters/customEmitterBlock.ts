@@ -52,11 +52,13 @@ export class CustomEmitterBlock extends BaseEmitterBlock {
         const customEmitter = new CustomParticleEmitter();
 
         customEmitter.particlePositionGenerator = (index, particle, outPosition) => {
+            state.particleContext = particle;
             const position = this.position.getConnectedValue(state);
             outPosition.copyFrom(position);
         };
 
         customEmitter.particleDirectionGenerator = (index, particle, outDestination) => {
+            state.particleContext = particle;
             const direction = this.direction.getConnectedValue(state);
             outDestination.copyFrom(direction);
         };
