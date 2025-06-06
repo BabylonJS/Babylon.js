@@ -34,7 +34,7 @@ export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
     }
 
     /** @internal */
-    public abstract setVolume(volume: number, options?: Nullable<Partial<IAudioParameterRampOptions>>): void;
+    public abstract setVolume(value: number, options?: Nullable<Partial<IAudioParameterRampOptions>>): void;
 }
 
 /** @internal */
