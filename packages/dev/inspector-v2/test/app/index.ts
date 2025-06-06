@@ -32,7 +32,7 @@ function createCamera() {
 }
 
 (async () => {
-    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/alien.glb", scene);
+    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
     createCamera();
 
