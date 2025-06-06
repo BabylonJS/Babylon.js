@@ -6,7 +6,6 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
-import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 /**
  * Block used to load texture data
  */
@@ -18,7 +17,6 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     /**
      * Gets or sets a boolean indicating that this block should serialize its cached data
      */
-    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public serializedCachedData = false;
 
     /**
