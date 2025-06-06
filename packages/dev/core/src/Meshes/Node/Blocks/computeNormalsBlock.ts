@@ -3,7 +3,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { Vector3 } from "core/Maths/math.vector";
 /**
  * Block used to recompute normals for a geometry
  */

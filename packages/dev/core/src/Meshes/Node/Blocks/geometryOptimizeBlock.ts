@@ -125,8 +125,9 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeo
                 const y = vertexData.positions[index + 1];
                 const z = vertexData.positions[index + 2];
 
-                const u = vertexData.uvs ? vertexData.uvs[index] : 0;
-                const v = vertexData.uvs ? vertexData.uvs[index + 1] : 0;
+                const uvIndex = (index / 3) * 2;
+                const u = vertexData.uvs ? vertexData.uvs[uvIndex] : 0;
+                const v = vertexData.uvs ? vertexData.uvs[uvIndex + 1] : 0;
 
                 // check if we already have it
                 let found = false;
@@ -150,7 +151,9 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeo
             }
             const newVertexData = new VertexData();
             newVertexData.positions = newPositions;
-            newVertexData.uvs = newUVs;
+            if (vertexData.uvs) {
+                newVertexData.uvs = newUVs;
+            }
             const indices: number[] = vertexData.indices.map((index: number) => newIndicesMap[index]);
             const newIndices: number[] = [];
 
