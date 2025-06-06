@@ -18,6 +18,12 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
     public clampCoordinates = true;
 
     /**
+     * Gets or sets a boolean indicating if coordinates should be clamped between 0 and 1
+     */
+    @editableInPropertyPage("Interpolation", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public interpolation = true;
+
+    /**
      * Creates a new GeometryTextureFetchBlock
      * @param name defines the block name
      */
@@ -110,6 +116,11 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         return new Vector4(a.x * (1 - t) + b.x * t, a.y * (1 - t) + b.y * t, a.z * (1 - t) + b.z * t, a.w * (1 - t) + b.w * t);
     }
 
+    private _getPixel(ix: number, iy: number, data: Float32Array, width: number): Vector4 {
+        const i = (iy * width + ix) * 4;
+        return new Vector4(data[i], data[i + 1], data[i + 2], data[i + 3]);
+    }
+
     protected override _buildBlock() {
         const func = (state: NodeGeometryBuildState) => {
             const textureData = this.texture.getConnectedValue(state) as INodeGeometryTextureData;
@@ -130,33 +141,32 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
             const data = textureData.data;
 
             // Convert UV to texel space
-            const fx = u * (width - 1);
-            const fy = v * (height - 1);
+            const x = u * (width - 1);
+            const y = v * (height - 1);
 
-            const x0 = Math.floor(fx);
-            const y0 = Math.floor(fy);
-            const x1 = Math.min(x0 + 1, width - 1);
-            const y1 = Math.min(y0 + 1, height - 1);
+            if (this.interpolation) {
+                const x0 = Math.floor(x);
+                const y0 = Math.floor(y);
+                const x1 = Math.min(x0 + 1, width - 1);
+                const y1 = Math.min(y0 + 1, height - 1);
 
-            const tx = fx - x0;
-            const ty = fy - y0;
+                const dx = x - x0;
+                const dy = y - y0;
 
-            function getPixel(ix: number, iy: number): Vector4 {
-                const i = (iy * width + ix) * 4;
-                return new Vector4(data[i], data[i + 1], data[i + 2], data[i + 3]);
+                const c00 = this._getPixel(x0, y0, data, width);
+                const c10 = this._getPixel(x1, y0, data, width);
+                const c01 = this._getPixel(x0, y1, data, width);
+                const c11 = this._getPixel(x1, y1, data, width);
+
+                // Interpolate horizontally
+                const top = this._lerp(c00, c10, dx);
+                const bottom = this._lerp(c01, c11, dx);
+
+                // Interpolate vertically
+                return this._lerp(top, bottom, dy);
             }
 
-            const c00 = getPixel(x0, y0);
-            const c10 = getPixel(x1, y0);
-            const c01 = getPixel(x0, y1);
-            const c11 = getPixel(x1, y1);
-
-            // Interpolate horizontally
-            const top = this._lerp(c00, c10, tx);
-            const bottom = this._lerp(c01, c11, tx);
-
-            // Interpolate vertically
-            return this._lerp(top, bottom, ty);
+            return this._getPixel(Math.floor(x), Math.floor(y), data, width);
         };
 
         this.rgba._storedFunction = (state) => {
@@ -202,6 +212,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         const serializationObject = super.serialize();
 
         serializationObject.clampCoordinates = this.clampCoordinates;
+        serializationObject.interpolation = this.interpolation;
 
         return serializationObject;
     }
@@ -210,6 +221,9 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         super._deserialize(serializationObject);
 
         this.clampCoordinates = serializationObject.clampCoordinates;
+        if (serializationObject.clampCoordinates === undefined) {
+            this.interpolation = serializationObject.interpolation;
+        }
     }
 }
 

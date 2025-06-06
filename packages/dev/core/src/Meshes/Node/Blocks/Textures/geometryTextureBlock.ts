@@ -90,96 +90,6 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
                 this._data = floatArray;
                 this._width = img.width;
                 this._height = img.height;
-
-                // const scale = 2;
-                // const newWidth = this._width * scale;
-                // const newHeight = this._height * scale;
-                // const output = new Float32Array(newWidth * newHeight * 4);
-
-                // const getPixel = (x: number, y: number): number[] => {
-                //     x = Math.min(this._width - 1, Math.max(0, x));
-                //     y = Math.min(this._height - 1, Math.max(0, y));
-                //     const index = (y * this._width + x) * 4;
-                //     return [floatArray[index], floatArray[index + 1], floatArray[index + 2], floatArray[index + 3]];
-                // };
-
-                // for (let y = 0; y < newHeight; y++) {
-                //     for (let x = 0; x < newWidth; x++) {
-                //         const gx = x / scale;
-                //         const gy = y / scale;
-
-                //         const x0 = Math.floor(gx);
-                //         const y0 = Math.floor(gy);
-                //         const x1 = x0 + 1;
-                //         const y1 = y0 + 1;
-
-                //         const dx = gx - x0;
-                //         const dy = gy - y0;
-
-                //         const c00 = getPixel(x0, y0);
-                //         const c10 = getPixel(x1, y0);
-                //         const c01 = getPixel(x0, y1);
-                //         const c11 = getPixel(x1, y1);
-
-                //         const outIndex = (y * newWidth + x) * 4;
-
-                //         for (let i = 0; i < 4; i++) {
-                //             const top = c00[i] * (1 - dx) + c10[i] * dx;
-                //             const bottom = c01[i] * (1 - dx) + c11[i] * dx;
-                //             output[outIndex + i] = top * (1 - dy) + bottom * dy;
-                //         }
-                //     }
-                // }
-
-                //  return output;
-
-                //const channels = 4;
-
-                // const getIndex = (x: number, y: number) => (y * this._width + x) * channels;
-
-                // const boxSize = 8; // box kernel
-
-                // for (let y = 0; y < this._height; y++) {
-                //     for (let x = 0; x < this._width; x++) {
-                //         let r = 0,
-                //             g = 0,
-                //             b = 0,
-                //             a = 0;
-                //         let count = 0;
-
-                //         // Box kernel
-                //         for (let dy = -boxSize; dy <= boxSize; dy++) {
-                //             const ny = y + dy;
-                //             if (ny < 0 || ny >= this._height) {
-                //                 continue;
-                //             }
-
-                //             for (let dx = -boxSize; dx <= boxSize; dx++) {
-                //                 const nx = x + dx;
-                //                 if (nx < 0 || nx >= this._width) {
-                //                     continue;
-                //                 }
-
-                //                 const idx = getIndex(nx, ny);
-                //                 r += floatArray[idx];
-                //                 g += floatArray[idx + 1];
-                //                 b += floatArray[idx + 2];
-                //                 a += floatArray[idx + 3];
-                //                 count++;
-                //             }
-                //         }
-
-                //         const iOut = getIndex(x, y);
-                //         output[iOut] = r / count;
-                //         output[iOut + 1] = g / count;
-                //         output[iOut + 2] = b / count;
-                //         output[iOut + 3] = a / count;
-                //     }
-                // }
-                // this._data = output;
-                // this._width = newWidth;
-                // this._height = newHeight;
-
                 resolve();
             };
 
@@ -206,48 +116,9 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param height defines the height of the texture
      */
     public loadTextureFromData(data: Float32Array, width: number, height: number) {
-        const scale = 4;
-        const kernelSize = 8; // box kernel size
-        const newWidth = width * scale;
-        const newHeight = height * scale;
-        const output = new Float32Array(newWidth * newHeight * 4);
-
-        const halfKernel = Math.floor(kernelSize / 2);
-
-        const getPixel = (x: number, y: number): number[] => {
-            x = Math.min(width - 1, Math.max(0, x));
-            y = Math.min(height - 1, Math.max(0, y));
-            const index = (y * width + x) * 4;
-            return [data[index], data[index + 1], data[index + 2], data[index + 3]];
-        };
-
-        for (let y = 0; y < newHeight; y++) {
-            for (let x = 0; x < newWidth; x++) {
-                const gx = Math.floor(x / scale);
-                const gy = Math.floor(y / scale);
-
-                const accum = [0, 0, 0, 0];
-                let count = 0;
-
-                for (let ky = -halfKernel; ky <= halfKernel; ky++) {
-                    for (let kx = -halfKernel; kx <= halfKernel; kx++) {
-                        const pixel = getPixel(gx + kx, gy + ky);
-                        for (let i = 0; i < 4; i++) {
-                            accum[i] += pixel[i];
-                        }
-                        count++;
-                    }
-                }
-
-                const outIndex = (y * newWidth + x) * 4;
-                for (let i = 0; i < 4; i++) {
-                    output[outIndex + i] = accum[i] / count;
-                }
-            }
-        }
-        this._data = output;
-        this._width = newWidth;
-        this._height = newHeight;
+        this._data = data;
+        this._width = width;
+        this._height = height;
     }
 
     /**
