@@ -64,7 +64,7 @@
         "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",
         "build:source:lts": "npx nx run-many --target=compile --projects=@lts/core,@lts/gui,@lts/loaders,@lts/materials,@lts/post-processes,@lts/procedural-textures,@lts/serializers --parallel=1",
-        "build:umd": "npm run build:umd:core && npm run build:umd:others",
+        "build:umd": "npm run build:umd:core",
         "build:umd:core": "nx run-many --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures",
         "build:umd:others": "nx run-many --target=build --parallel --maxParallel=6 --projects=babylonjs-inspector,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-accessibility,babylonjs-addons",
         "build:es6": "npm run build:es6:core && npm run build:es6:others",
