@@ -62,33 +62,6 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
     }
 
     /**
-     * Fades the audio output volume to the given target volume over the given duration.
-     * @param options Options for ramping the volume over time.
-     * @param targetVolume the target volume to fade in to. Defaults to the current `volume` property's value.
-     */
-    public fadeIn(options: Nullable<Partial<IAudioParamRampOptions>> = null, targetVolume: number = this.volume): void {
-        if (typeof targetVolume !== "number") {
-            targetVolume = this.volume;
-        }
-
-        if (targetVolume <= 0) {
-            return;
-        }
-
-        this.volume = 0;
-
-        this.setVolume(targetVolume, options);
-    }
-
-    /**
-     * Fades the audio output volume to zero over a specified duration.
-     * @param options Options for ramping the volume over time.
-     */
-    public fadeOut(options: Nullable<Partial<IAudioParamRampOptions>> = null): void {
-        this.setVolume(0, options);
-    }
-
-    /**
      * Sets the audio output volume with optional ramping.
      * @param volume The volume to set.
      * @param options Options for ramping the volume over time.
