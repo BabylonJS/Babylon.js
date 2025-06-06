@@ -8,12 +8,12 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Color3 } from "core/Maths/math.color";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
-import type { ParticleSystemSet } from "core/Particles";
 import { LogEntry } from "../log/logComponent";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { MeshBuilder } from "core/Meshes";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;

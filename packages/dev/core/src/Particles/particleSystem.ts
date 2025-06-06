@@ -92,6 +92,14 @@ export class ParticleSystem extends ThinParticleSystem {
         return particleEmitter;
     }
 
+    /**
+     * Gets or sets a function indicating if the particle system can start.
+     * @returns true if the particle system can start, false otherwise.
+     */
+    public canStart = () => {
+        return true;
+    };
+
     /** Flow map */
     private _flowMap: Nullable<FlowMap> = null;
     private _flowMapUpdate: Nullable<_IExecutionQueueItem> = null;
@@ -176,6 +184,13 @@ export class ParticleSystem extends ThinParticleSystem {
         if (this._attractors.length === 0) {
             _RemoveFromQueue(this._attractorUpdate!);
         }
+    }
+
+    public override start(delay = this.startDelay): void {
+        if (!this.canStart()) {
+            return;
+        }
+        super.start(delay);
     }
 
     /**

@@ -62,6 +62,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleSystemSources.Time:
                     value = "Time";
                     break;
+                case NodeParticleSystemSources.Delta:
+                    value = "Delta";
+                    break;
             }
         } else if (inputBlock.isContextual) {
             switch (inputBlock.contextualValue) {
@@ -82,6 +85,9 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeParticleContextualSources.Lifetime:
                     value = "Lifetime";
+                    break;
+                case NodeParticleContextualSources.Angle:
+                    value = "Angle";
                     break;
                 case NodeParticleContextualSources.AgeGradient:
                     value = "Age gradient";

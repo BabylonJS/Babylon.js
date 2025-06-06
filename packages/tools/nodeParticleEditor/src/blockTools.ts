@@ -23,6 +23,8 @@ import { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBloc
 import { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBlock";
 import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
 import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
+import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 /**
  * Static class for BlockTools
@@ -54,6 +56,8 @@ export class BlockTools {
                 return new UpdateColorBlock("Update color");
             case "UpdateScaleBlock":
                 return new UpdateScaleBlock("Update scale");
+            case "UpdateAngleBlock":
+                return new UpdateAngleBlock("Update angle");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -103,9 +107,24 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.Lifetime;
                 return block;
             }
+            case "AngleBlock": {
+                const block = new ParticleInputBlock("Angle");
+                block.contextualValue = NodeParticleContextualSources.Angle;
+                return block;
+            }
             case "AgeGradientBlock": {
                 const block = new ParticleInputBlock("Age gradient");
                 block.contextualValue = NodeParticleContextualSources.AgeGradient;
+                return block;
+            }
+            case "TimeBlock": {
+                const block = new ParticleInputBlock("Time");
+                block.systemSource = NodeParticleSystemSources.Time;
+                return block;
+            }
+            case "DeltaBlock": {
+                const block = new ParticleInputBlock("Delta");
+                block.systemSource = NodeParticleSystemSources.Delta;
                 return block;
             }
             case "AddBlock": {

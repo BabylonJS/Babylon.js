@@ -3,7 +3,7 @@ import type { IDisplayManager, VisualContentDescription } from "shared-ui-compon
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./debugDisplayManager.module.scss";
 import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
-import type { ParticleDebugBlock } from "core/Particles";
+import type { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
 
 export class DebugDisplayManager implements IDisplayManager {
     public getHeaderClass() {

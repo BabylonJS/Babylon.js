@@ -20,6 +20,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateColorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateAngleBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;

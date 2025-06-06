@@ -5,7 +5,6 @@ import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import type { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 
 export class TextureDisplayManager implements IDisplayManager {
-    private _previewCanvas: HTMLCanvasElement;
     private _previewImage: HTMLImageElement;
 
     public getHeaderClass() {
@@ -27,7 +26,7 @@ export class TextureDisplayManager implements IDisplayManager {
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         const block = nodeData.data as ParticleTextureSourceBlock;
 
-        if (!this._previewCanvas) {
+        if (!this._previewImage) {
             contentArea.classList.add(localStyles["texture-block"]);
 
             this._previewImage = contentArea.ownerDocument.createElement("img");

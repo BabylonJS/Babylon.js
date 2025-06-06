@@ -123,8 +123,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Age", value: NodeParticleContextualSources.Age },
                     { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
                     { label: "Age gradient", value: NodeParticleContextualSources.AgeGradient },
+                    { label: "Angle", value: NodeParticleContextualSources.Angle },
                 ];
-                systemSourcesOptions = [{ label: "Time", value: NodeParticleSystemSources.Time }];
+                systemSourcesOptions = [
+                    { label: "Time", value: NodeParticleSystemSources.Time },
+                    { label: "Delta", value: NodeParticleSystemSources.Delta },
+                ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector2:
                 contextualSourcesOptions = [{ label: "Scale", value: NodeParticleContextualSources.Scale }];

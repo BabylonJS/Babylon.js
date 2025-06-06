@@ -10,7 +10,7 @@ import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Color4 } from "core/Maths/math.color";
 import type { Scene } from "core/scene";
 import { CreatePopup } from "shared-ui-components/popupHelper";
-import type { NodeParticleSystemSet } from "core/Particles";
+import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 
 /**
  * Interface used to specify creation options for the node editor

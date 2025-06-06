@@ -16,7 +16,7 @@ import { Vector2 } from "core/Maths/math.vector";
  * @internal
  */
 export abstract class BaseEmitterBlock extends NodeParticleBlock {
-    protected readonly _inputOffset = 4;
+    protected readonly _inputOffset = 5;
 
     /**
      * Create a new BaseEmitterBlock
@@ -29,6 +29,7 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
         this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(1, 1, 1, 1));
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
+        this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -69,6 +70,13 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the angle input component
+     */
+    public get angle(): NodeParticleConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
      * Gets the particle output component
      */
     public get particle(): NodeParticleConnectionPoint {
@@ -97,6 +105,11 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
             state.particleContext = particle;
             particle.size = 1;
             particle.scale.copyFrom(this.scale.getConnectedValue(state));
+        };
+
+        system._angleCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
+            particle.angle = this.angle.getConnectedValue(state);
         };
 
         return system;

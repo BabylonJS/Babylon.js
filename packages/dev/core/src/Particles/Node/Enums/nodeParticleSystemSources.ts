@@ -6,4 +6,6 @@ export enum NodeParticleSystemSources {
     None = 0,
     /** Time */
     Time = 1,
+    /** Delta time */
+    Delta = 2,
 }

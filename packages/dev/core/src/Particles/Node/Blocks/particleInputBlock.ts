@@ -91,6 +91,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
 
             switch (value) {
                 case NodeParticleSystemSources.Time:
+                case NodeParticleSystemSources.Delta:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
             }
@@ -136,6 +137,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                     break;
                 case NodeParticleContextualSources.Age:
                 case NodeParticleContextualSources.Lifetime:
+                case NodeParticleContextualSources.Angle:
                 case NodeParticleContextualSources.AgeGradient:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;

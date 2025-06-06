@@ -3,7 +3,7 @@ import type { IDisplayManager, VisualContentDescription } from "shared-ui-compon
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "./elbowDisplayManager.module.scss";
 import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
-import type { ParticleElbowBlock } from "core/Particles";
+import type { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBlock";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass() {

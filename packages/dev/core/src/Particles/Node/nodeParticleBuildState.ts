@@ -121,6 +121,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.age;
             case NodeParticleContextualSources.Lifetime:
                 return this.particleContext.lifeTime;
+            case NodeParticleContextualSources.Angle:
+                return this.particleContext.angle;
             case NodeParticleContextualSources.Scale:
                 return this.particleContext.scale;
             case NodeParticleContextualSources.AgeGradient:
@@ -143,6 +145,8 @@ export class NodeParticleBuildState {
         switch (source) {
             case NodeParticleSystemSources.Time:
                 return this.systemContext._actualFrame;
+            case NodeParticleSystemSources.Delta:
+                return this.systemContext._scaledUpdateSpeed;
         }
 
         return null;
