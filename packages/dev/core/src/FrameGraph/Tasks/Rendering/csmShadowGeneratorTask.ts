@@ -26,8 +26,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
     /**
      * The depth texture used by the autoCalcDepthBounds feature (optional if autoCalcDepthBounds is set to false)
      * This texture is used to compute the min/max depth bounds of the scene to setup the cascaded shadow generator.
-     * Warning: Do not connect a texture if you are not using the autoCalcDepthBounds feature, as connecting a texture
-     *   will result in additional rendering, even if autoCalcDepthBounds is false!
+     * Warning: Do not set a texture if you are not using the autoCalcDepthBounds feature, to avoid generating a depth texture that will not be used.
      */
     public depthTexture?: FrameGraphTextureHandle;
 
@@ -166,6 +165,12 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
 
         if (!value) {
             this._shadowGenerator?.setMinMaxDistance(0, 1);
+        }
+
+        // All passes but the last one are related to min/max reduction and should be enabled/disabled depending on autoCalcDepthBounds value
+        const passes = this.passes;
+        for (let i = 0; i < passes.length - 1; ++i) {
+            passes[i].disabled = !value;
         }
     }
 
