@@ -41,6 +41,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:

@@ -36,6 +36,7 @@ uniform vSpecularColor: vec4f;
 uniform vEmissiveColor: vec3f;
 uniform vDiffuseColor: vec4f;
 uniform vAmbientColor: vec3f;
+uniform cameraInfo: vec4f;
 
 #define ADDITIONAL_UBO_DECLARATION
 

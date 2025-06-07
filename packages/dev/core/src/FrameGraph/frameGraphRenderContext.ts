@@ -38,12 +38,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /** @internal */
-    constructor(
-        private readonly _engine: AbstractEngine,
-        private readonly _textureManager: FrameGraphTextureManager,
-        private readonly _scene: Scene
-    ) {
-        super();
+    constructor(engine: AbstractEngine, textureManager: FrameGraphTextureManager, scene: Scene) {
+        super(engine, textureManager, scene);
         this._effectRenderer = new EffectRenderer(this._engine);
         this._copyTexture = new CopyTextureToTexture(this._engine);
     }

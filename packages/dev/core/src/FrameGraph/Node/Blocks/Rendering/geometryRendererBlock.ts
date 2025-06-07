@@ -39,6 +39,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
+        this.registerOutput("geomNormViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth);
         this.registerOutput("geomScreenDepth", NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
         this.registerOutput("geomViewNormal", NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
         this.registerOutput("geomWorldNormal", NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal);
@@ -177,6 +178,13 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     @editableInPropertyPage("View depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
     public viewDepthType = Constants.TEXTURETYPE_FLOAT;
 
+    // Normalized view depth
+    @editableInPropertyPage("Normalized view depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    public normalizedViewDepthFormat = Constants.TEXTUREFORMAT_RED;
+
+    @editableInPropertyPage("Normalized view depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    public normalizedViewDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
+
     // Screen depth
     @editableInPropertyPage("Screen depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public screenDepthFormat = Constants.TEXTUREFORMAT_RED;
@@ -284,66 +292,73 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /**
+     * Gets the geometry normalized view depth component
+     */
+    public get geomNormViewDepth(): NodeRenderGraphConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
      * Gets the geometry screen depth component
      */
     public get geomScreenDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[3];
     }
 
     /**
      * Gets the geometry view normal component
      */
     public get geomViewNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[3];
+        return this._outputs[4];
     }
 
     /**
      * Gets the world geometry normal component
      */
     public get geomWorldNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[4];
+        return this._outputs[5];
     }
 
     /**
      * Gets the geometry local position component
      */
     public get geomLocalPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[5];
+        return this._outputs[6];
     }
 
     /**
      * Gets the geometry world position component
      */
     public get geomWorldPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[6];
+        return this._outputs[7];
     }
 
     /**
      * Gets the geometry albedo component
      */
     public get geomAlbedo(): NodeRenderGraphConnectionPoint {
-        return this._outputs[7];
+        return this._outputs[8];
     }
 
     /**
      * Gets the geometry reflectivity component
      */
     public get geomReflectivity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[8];
+        return this._outputs[9];
     }
 
     /**
      * Gets the geometry velocity component
      */
     public get geomVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[9];
+        return this._outputs[10];
     }
 
     /**
      * Gets the geometry linear velocity component
      */
     public get geomLinearVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[10];
+        return this._outputs[11];
     }
 
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
@@ -351,6 +366,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         const textureActivation = [
             this.geomViewDepth.isConnected,
+            this.geomNormViewDepth.isConnected,
             this.geomScreenDepth.isConnected,
             this.geomViewNormal.isConnected,
             this.geomWorldNormal.isConnected,
@@ -368,6 +384,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;
+        this.geomNormViewDepth.value = this._frameGraphTask.geometryNormViewDepthTexture;
         this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTexture;
         this.geomViewNormal.value = this._frameGraphTask.geometryViewNormalTexture;
         this.geomWorldNormal.value = this._frameGraphTask.geometryWorldNormalTexture;
@@ -386,6 +403,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         const textureFormats = [
             this.viewDepthFormat,
+            this.normalizedViewDepthFormat,
             this.screenDepthFormat,
             this.viewNormalFormat,
             this.worldNormalFormat,
@@ -398,6 +416,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         ];
         const textureTypes = [
             this.viewDepthType,
+            this.normalizedViewDepthType,
             this.screenDepthType,
             this.viewNormalType,
             this.worldNormalType,
@@ -410,6 +429,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         ];
         const bufferTypes = [
             Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_NORMAL_TEXTURE_TYPE,
             Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
@@ -441,6 +461,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.dontRenderWhenMaterialDepthWriteIsDisabled = ${this.dontRenderWhenMaterialDepthWriteIsDisabled};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
+        codes.push(`${this._codeVariableName}.normalizedViewDepthFormat = ${this.normalizedViewDepthFormat};`);
+        codes.push(`${this._codeVariableName}.normalizedViewDepthType = ${this.normalizedViewDepthType};`);
         codes.push(`${this._codeVariableName}.screenDepthFormat = ${this.screenDepthFormat};`);
         codes.push(`${this._codeVariableName}.screenDepthType = ${this.screenDepthType};`);
         codes.push(`${this._codeVariableName}.localPositionFormat = ${this.localPositionFormat};`);
@@ -471,6 +493,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
+        serializationObject.normalizedViewDepthFormat = this.normalizedViewDepthFormat;
+        serializationObject.normalizedViewDepthType = this.normalizedViewDepthType;
         serializationObject.screenDepthFormat = this.screenDepthFormat;
         serializationObject.screenDepthType = this.screenDepthType;
         serializationObject.localPositionFormat = this.localPositionFormat;
@@ -501,6 +525,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.dontRenderWhenMaterialDepthWriteIsDisabled = serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
+        this.normalizedViewDepthFormat = serializationObject.normalizedViewDepthFormat ?? Constants.TEXTUREFORMAT_RED;
+        this.normalizedViewDepthType = serializationObject.normalizedViewDepthType ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
         this.screenDepthFormat = serializationObject.screenDepthFormat;
         this.screenDepthType = serializationObject.screenDepthType;
         this.localPositionFormat = serializationObject.localPositionFormat;

@@ -134,6 +134,12 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     public readonly geometryViewDepthTexture: FrameGraphTextureHandle;
 
     /**
+     * The normalized depth (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * The normalization is (d - near) / (far - near), where d is the depth value in view space and near and far are the near and far planes of the camera.
+     */
+    public readonly geometryNormViewDepthTexture: FrameGraphTextureHandle;
+
+    /**
      * The depth (in screen space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryScreenDepthTexture: FrameGraphTextureHandle;
@@ -244,6 +250,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.geometryNormViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryScreenDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewNormalTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryWorldNormalTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -333,6 +340,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             switch (geometryDescription.type) {
                 case Constants.PREPASS_DEPTH_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryViewDepthTexture, handle);
+                    break;
+                case Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryNormViewDepthTexture, handle);
                     break;
                 case Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryScreenDepthTexture, handle);

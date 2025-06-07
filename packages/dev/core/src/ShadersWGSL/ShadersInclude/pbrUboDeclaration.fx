@@ -64,6 +64,8 @@ uniform vSphericalXY: vec3f;
 uniform vSphericalYZ: vec3f;
 uniform vSphericalZX: vec3f;
 
+uniform cameraInfo: vec4f;
+
 #define ADDITIONAL_UBO_DECLARATION
 
 

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, AbstractEngine, FrameGraphTextureHandle, Camera } from "core/index";
+import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 
@@ -291,20 +291,14 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         return !!this._shadowGenerator && !!this._shadowGenerator.getShadowMap()?.isReadyForRendering();
     }
 
-    private _engine: AbstractEngine;
-    private _scene: Scene;
-
     /**
      * Creates a new shadow generator task.
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
-     * @param scene The scene to create the shadow generator for.
+     * @param _scene The scene to create the shadow generator for.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph, _scene: Scene) {
         super(name, frameGraph);
-
-        this._engine = scene.getEngine();
-        this._scene = scene;
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
@@ -326,7 +320,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addPass(this.name);
 
-        pass.setExecuteFunc((_context) => {
+        pass.setExecuteFunc((context) => {
             if (!this.light.isEnabled() || !this.light.shadowEnabled) {
                 return;
             }
@@ -336,20 +330,7 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             shadowMap.renderList = this.objectList.meshes;
             shadowMap.particleSystemList = this.objectList.particleSystems;
 
-            const currentRenderTarget = this._engine._currentRenderTarget;
-
-            this._scene.incrementRenderId();
-            this._scene.resetCachedMaterial();
-
-            shadowMap.render();
-
-            if (this._engine._currentRenderTarget !== currentRenderTarget) {
-                if (!currentRenderTarget) {
-                    this._engine.restoreDefaultFramebuffer();
-                } else {
-                    this._engine.bindFramebuffer(currentRenderTarget);
-                }
-            }
+            context.renderUnmanaged(shadowMap);
         });
 
         const passDisabled = this._frameGraph.addPass(this.name + "_disabled", true);

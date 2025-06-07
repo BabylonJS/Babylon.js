@@ -161,6 +161,13 @@ export class MaterialHelperGeometryRendering {
             define: "PREPASS_ALBEDO",
             defineIndex: "PREPASS_ALBEDO_INDEX",
         },
+        {
+            type: Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE,
+            name: "NormalizedViewDepth",
+            clearType: GeometryRenderingTextureClearType.One,
+            define: "PREPASS_NORMALIZED_VIEW_DEPTH",
+            defineIndex: "PREPASS_NORMALIZED_VIEW_DEPTH_INDEX",
+        },
     ];
 
     private static _Configurations: { [renderPassId: number]: GeometryRenderingConfiguration } = {};

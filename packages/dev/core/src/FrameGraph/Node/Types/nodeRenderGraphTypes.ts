@@ -66,6 +66,8 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureLocalPosition = 0x00004000,
     /** Linear velocity geometry texture */
     TextureLinearVelocity = 0x00008000,
+    /** Normalied depth (in view space) geometry texture */
+    TextureNormalizedViewDepth = 0x00010000,
 
     /** Bit field for all textures but back buffer depth/stencil */
     TextureAllButBackBufferDepthStencil = 0x000ffffb,

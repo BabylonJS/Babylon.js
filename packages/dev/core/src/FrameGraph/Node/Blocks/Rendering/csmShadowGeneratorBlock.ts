@@ -1,9 +1,11 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph } from "core/index";
+import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, FrameGraphTextureHandle, NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCascadedShadowGeneratorTask } from "../../../Tasks/Rendering/csmShadowGeneratorTask";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
+import { DepthTextureType } from "core/Misc/thinMinMaxReducer";
 
 /**
  * Block that generates shadows through a shadow generator
@@ -26,6 +28,16 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
      */
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
+
+        this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+
+        this.geomDepth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth |
+                NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth |
+                NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth
+        );
+
+        this._finalizeInputOutputRegistering();
 
         this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph, scene);
     }
@@ -132,6 +144,33 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
      */
     public override getClassName() {
         return "NodeRenderGraphCascadedShadowGeneratorBlock";
+    }
+
+    /**
+     * Gets the geometry (view / normalized view) depth component
+     */
+    public get geomDepth(): NodeRenderGraphConnectionPoint {
+        return this._inputs[3];
+    }
+
+    protected override _buildBlock(state: NodeRenderGraphBuildState) {
+        super._buildBlock(state);
+
+        this._frameGraphTask.depthTexture = this.geomDepth.connectedPoint?.value as FrameGraphTextureHandle;
+
+        if (this.geomDepth.connectedPoint) {
+            switch (this.geomDepth.connectedPoint.type) {
+                case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
+                    this._frameGraphTask.depthTextureType = DepthTextureType.ScreenDepth;
+                    break;
+                case NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth:
+                    this._frameGraphTask.depthTextureType = DepthTextureType.NormalizedViewDepth;
+                    break;
+                case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
+                    this._frameGraphTask.depthTextureType = DepthTextureType.ViewDepth;
+                    break;
+            }
+        }
     }
 
     protected override _dumpPropertiesCode() {
