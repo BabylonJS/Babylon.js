@@ -14,10 +14,27 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let f3 = textureLoad(textureSampler, coord + vec2i(1, 1), 0).r;
     let f4 = textureLoad(textureSampler, coord + vec2i(0, 1), 0).r;
 
-    let minz = min(min(min(f1, f2), f3), f4);
-    #ifdef DEPTH_REDUX
-        let maxz = max(max(max(sign(1.0 - f1) * f1, sign(1.0 - f2) * f2), sign(1.0 - f3) * f3), sign(1.0 - f4) * f4);
+     #ifdef DEPTH_REDUX
+        #ifdef VIEW_DEPTH
+            // depth is camera view depth, ranging from near to far clip planes.
+            // 0 is the clear depth value, so we must not consider it when calculating min depth.
+            var minz = 3.4e38;
+
+            if (f1 != 0.0) { minz = f1; }
+            if (f2 != 0.0) { minz = min(minz, f2); }
+            if (f3 != 0.0) { minz = min(minz, f3); }
+            if (f4 != 0.0) { minz = min(minz, f4); }
+
+            let maxz = max(max(max(f1, f2), f3), f4);
+        #else
+            // depth is either normalized view depth or screen space depth, ranging from 0 to 1
+            let minz = min(min(min(f1, f2), f3), f4);
+
+            // 1 is the clear depth value, so we must not consider it, hence sign(1.0 - f) * f which will result in 0 if f is 1.0
+            let maxz = max(max(max(sign(1.0 - f1) * f1, sign(1.0 - f2) * f2), sign(1.0 - f3) * f3), sign(1.0 - f4) * f4);
+        #endif
     #else
+        let minz = min(min(min(f1, f2), f3), f4);
         let maxz = max(max(max(f1, f2), f3), f4);
     #endif
 

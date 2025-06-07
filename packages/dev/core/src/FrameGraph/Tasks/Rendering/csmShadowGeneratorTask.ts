@@ -3,7 +3,7 @@ import type { FrameGraphTextureHandle, FrameGraph, Scene } from "core/index";
 import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";
 import { DirectionalLight } from "../../../Lights/directionalLight";
-import { ThinMinMaxReducer } from "../../../Misc/thinMinMaxReducer";
+import { DepthTextureType, ThinMinMaxReducer } from "../../../Misc/thinMinMaxReducer";
 import { FrameGraphPostProcessTask } from "../PostProcesses/postProcessTask";
 import { Constants } from "../../../Engines/constants";
 import { textureSizeIsObject } from "../../../Materials/Textures/textureCreationOptions";
@@ -30,6 +30,11 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
      *   will result in additional rendering, even if autoCalcDepthBounds is false!
      */
     public depthTexture?: FrameGraphTextureHandle;
+
+    /**
+     * The type of the depth texture used by the autoCalcDepthBounds feature.
+     */
+    public depthTextureType: DepthTextureType = DepthTextureType.NormalizedViewDepth;
 
     private _numCascades = CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
     /**
@@ -216,12 +221,40 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
                 return;
             }
 
+            const camera = this.camera;
+
             let min = minmax.min,
                 max = minmax.max;
+
             if (min >= max) {
                 min = 0;
                 max = 1;
+            } else if (camera && this.depthTextureType !== DepthTextureType.NormalizedViewDepth) {
+                if (this.depthTextureType === DepthTextureType.ScreenDepth) {
+                    const engine = this._frameGraph.engine;
+                    const projectionMatrix = camera.getProjectionMatrix();
+                    const p2z = projectionMatrix.m[10];
+                    const p3z = projectionMatrix.m[14];
+
+                    if (!engine.isNDCHalfZRange) {
+                        // Convert to NDC depth
+                        min = min * 2 - 1;
+                        max = max * 2 - 1;
+                    }
+
+                    // Convert to view depth
+                    min = p3z / (min - p2z);
+                    max = p3z / (max - p2z);
+                }
+
+                // Convert to normalized view depth
+                const zNear = camera.minZ;
+                const zFar = camera.maxZ;
+
+                min = (min - zNear) / (zFar - zNear);
+                max = (max - zNear) / (zFar - zNear);
             }
+
             if (min !== this._shadowGenerator.minDistance || max !== this._shadowGenerator.maxDistance) {
                 this._shadowGenerator.setMinMaxDistance(min, max);
             }
@@ -273,7 +306,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
             depthTextureCreationOptions.options.formats = [Constants.TEXTUREFORMAT_RG];
             depthTextureCreationOptions.options.samples = 1;
 
-            this._thinMinMaxReducer.setTextureDimensions(width, height);
+            this._thinMinMaxReducer.setTextureDimensions(width, height, this.depthTextureType);
 
             const reductionSteps = this._thinMinMaxReducer.reductionSteps;
 

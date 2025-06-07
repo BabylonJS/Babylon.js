@@ -7,6 +7,15 @@ import { Engine } from "core/Engines/engine";
 /**
  * @internal
  */
+export const enum DepthTextureType {
+    NormalizedViewDepth = 0,
+    ViewDepth = 1,
+    ScreenDepth = 2,
+}
+
+/**
+ * @internal
+ */
 export class ThinMinMaxReducerPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "minmaxRedux";
 
@@ -51,7 +60,8 @@ export class ThinMinMaxReducerPostProcess extends EffectWrapper {
     }
 }
 
-const Buffer = new Float32Array(4 * 1 * 1);
+const BufferFloat = new Float32Array(4 * 1 * 1);
+const BufferUint8 = new Uint8Array(4 * 1 * 1);
 const MinMax = { min: 0, max: 0 };
 
 /**
@@ -63,6 +73,7 @@ export class ThinMinMaxReducer {
     public readonly reductionSteps: Array<ThinMinMaxReducerPostProcess>;
 
     private _depthRedux: boolean;
+    private _depthTextureType: DepthTextureType;
 
     public get depthRedux() {
         return this._depthRedux;
@@ -97,13 +108,14 @@ export class ThinMinMaxReducer {
         this.reductionSteps = [];
     }
 
-    public setTextureDimensions(width: number, height: number) {
-        if (width === this._textureWidth && height === this._textureHeight) {
+    public setTextureDimensions(width: number, height: number, depthTextureType: DepthTextureType = DepthTextureType.NormalizedViewDepth) {
+        if (width === this._textureWidth && height === this._textureHeight && depthTextureType === this._depthTextureType) {
             return false;
         }
 
         this._textureWidth = width;
         this._textureHeight = height;
+        this._depthTextureType = depthTextureType;
 
         this._recreatePostProcesses();
 
@@ -116,11 +128,19 @@ export class ThinMinMaxReducer {
         // in the current frame, whereas in WebGPU, the read is asynchronous and we should normally wait for the promise to be resolved to get the updated values.
         // However, it's safe to avoid waiting for the promise to be resolved in WebGPU as well, because we will simply use the current values until "buffer" is updated later on.
         // Note that it means we can suffer some rendering artifacts in WebGPU because we may use previous min/max values for the current frame.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._scene.getEngine()._readTexturePixels(texture, 1, 1, -1, 0, Buffer, false);
+        const isFloat = texture.type === Engine.TEXTURETYPE_FLOAT || texture.type === Engine.TEXTURETYPE_HALF_FLOAT;
+        const buffer = isFloat ? BufferFloat : BufferUint8;
 
-        MinMax.min = Buffer[0];
-        MinMax.max = Buffer[1];
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._scene.getEngine()._readTexturePixels(texture, 1, 1, -1, 0, buffer, false);
+
+        MinMax.min = buffer[0];
+        MinMax.max = buffer[1];
+
+        if (!isFloat) {
+            MinMax.min = MinMax.min / 255.0;
+            MinMax.max = MinMax.max / 255.0;
+        }
 
         if (MinMax.min >= MinMax.max) {
             MinMax.min = 0;
@@ -154,7 +174,7 @@ export class ThinMinMaxReducer {
         const reductionInitial = new ThinMinMaxReducerPostProcess(
             "Initial reduction phase",
             scene.getEngine(),
-            "#define INITIAL" + (this._depthRedux ? "\n#define DEPTH_REDUX" : "")
+            "#define INITIAL" + (this._depthRedux ? "\n#define DEPTH_REDUX" : "") + (this._depthTextureType === DepthTextureType.ViewDepth ? "\n#define VIEW_DEPTH" : "")
         );
 
         reductionInitial.textureWidth = w;
