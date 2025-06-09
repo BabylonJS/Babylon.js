@@ -251,6 +251,8 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
 
 /**
  * Adjusts the light's target direction to ensure it's not too flat and points downwards.
+ * @param targetDirection The target direction of the light.
+ * @returns The adjusted target direction of the light.
  */
 function adjustLightTargetDirection(targetDirection: Vector3): Vector3 {
     const lightSteepnessThreshold = -0.01; // threshold to trigger steepness adjustment
@@ -1793,6 +1795,7 @@ export class Viewer implements IDisposable {
     /**
      * Retrieves the dominant light direction from the IBL.
      * Then populates populates this._cachedDominantDirection with the result.
+     * @return The IBL dominant direction, or null.
      */
     private async _computeIblDominantDirection(): Promise<Nullable<Vector3>> {
         await import("core/Rendering/iblCdfGeneratorSceneComponent");
@@ -1813,6 +1816,7 @@ export class Viewer implements IDisposable {
 
     /**
      * Calculates the effective light source direction considering IBL and manual rotation.
+     * @return The effective light source direction.
      */
     private _getEffectiveLightSourceDirection(): Vector3 {
         let effectiveSourceDir: Vector3;
