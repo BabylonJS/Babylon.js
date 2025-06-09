@@ -10,6 +10,7 @@ export * from "./Update/updatePositionBlock";
 export * from "./Update/updateColorBlock";
 export * from "./Update/updateScaleBlock";
 export * from "./Update/updateAngleBlock";
+export * from "./Update/basicUpdateBlock";
 export * from "./Emitters/index";
 export * from "./particleGradientEntryBlock";
 export * from "./particleGradientBlock";

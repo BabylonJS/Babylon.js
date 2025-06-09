@@ -87,6 +87,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TeleportOutBlock: "Endpoint for a TeleportInBlock.",
         TimeBlock: "Block used to get the current time in ms",
         DeltaBlock: "Block used to get the delta value for animations",
+        BasicUpdateBlock: "Block used to update the position of a particle with a basic update (eg. direction * delta)",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -173,7 +174,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Custom_Frames: customFrameNames,
             Emitters: ["BoxEmitterBlock", "SphereEmitterBlock", "PointEmitterBlock", "CustomEmitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Int", "TextureBlock", "Color4"],
-            Updates: ["UpdateDirectionBlock", "UpdatePositionBlock", "UpdateColorBlock", "UpdateScaleBlock", "UpdateAngleBlock"],
+            Updates: ["UpdateDirectionBlock", "UpdatePositionBlock", "UpdateColorBlock", "UpdateScaleBlock", "UpdateAngleBlock", "BasicUpdateBlock"],
             Math__Standard: [
                 "AddBlock",
                 "DivideBlock",

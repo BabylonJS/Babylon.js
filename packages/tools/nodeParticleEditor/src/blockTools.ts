@@ -25,6 +25,7 @@ import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/par
 import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
+import { BasicUpdateBlock } from "core/Particles/Node/Blocks/Update/basicUpdateBlock";
 
 /**
  * Static class for BlockTools
@@ -32,6 +33,8 @@ import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticl
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "BasicUpdateBlock":
+                return new BasicUpdateBlock("Basic update");
             case "TeleportInBlock":
                 return new ParticleTeleportInBlock("Teleport In");
             case "TeleportOutBlock":

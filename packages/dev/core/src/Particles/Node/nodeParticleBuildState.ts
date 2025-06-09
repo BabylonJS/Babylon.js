@@ -114,7 +114,8 @@ export class NodeParticleBuildState {
             case NodeParticleContextualSources.Direction:
                 return this.particleContext.direction;
             case NodeParticleContextualSources.ScaledDirection:
-                return this.particleContext.direction.scale(this.systemContext._directionScale);
+                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
+                return this.systemContext._scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
             case NodeParticleContextualSources.Age:
