@@ -128,6 +128,12 @@ export class NodeParticleBuildState {
                 return this.particleContext.scale;
             case NodeParticleContextualSources.AgeGradient:
                 return this.particleContext.age / this.particleContext.lifeTime;
+            case NodeParticleContextualSources.SpriteCellEnd:
+                return this.systemContext.endSpriteCellID;
+            case NodeParticleContextualSources.SpriteCellIndex:
+                return this.particleContext.cellIndex;
+            case NodeParticleContextualSources.SpriteCellStart:
+                return this.systemContext.startSpriteCellID;
         }
 
         return null;

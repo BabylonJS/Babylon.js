@@ -19,10 +19,13 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["CustomEmitterBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SphereEmitterBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["CylinderEmitterBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["SetupSpriteSheetBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["UpdatePositionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateColorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["BasicUpdateSpriteBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSpriteCellIndexBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateAngleBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["BasicUpdateBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;

@@ -388,6 +388,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         } else {
             _RemoveFromQueue(this._sheetCreation);
         }
+
+        this._reset();
     }
 
     /**
@@ -700,7 +702,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     currentQueueItem = currentQueueItem.nextItem;
                 }
 
-                if (this._isAnimationSheetEnabled) {
+                if (this._isAnimationSheetEnabled && !noUpdateQueue) {
                     particle.updateCellIndex();
                 }
 

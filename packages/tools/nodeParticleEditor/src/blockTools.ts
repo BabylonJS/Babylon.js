@@ -29,6 +29,9 @@ import { BasicUpdateBlock } from "core/Particles/Node/Blocks/Update/basicUpdateB
 import { BasicConditionBlock } from "core/Particles/Node/Blocks/Conditions/basicConditionBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
 import { CylinderEmitterBlock } from "core/Particles/Node/Blocks/Emitters/cylinderEmitterBlock";
+import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setupSpriteSheetBlock";
+import { BasicUpdateSpriteBlock } from "core/Particles/Node/Blocks/Update/basicUpdateSpriteBlock";
+import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 
 /**
  * Static class for BlockTools
@@ -36,6 +39,12 @@ import { CylinderEmitterBlock } from "core/Particles/Node/Blocks/Emitters/cylind
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "UpdateSpriteCellIndexBlock":
+                return new UpdateSpriteCellIndexBlock("Update sprite cell index");
+            case "BasicUpdateSpriteBlock":
+                return new BasicUpdateSpriteBlock("Basic update sprite");
+            case "SetupSpriteSheetBlock":
+                return new SetupSpriteSheetBlock("Setup sprite sheet");
             case "TriggerBlock":
                 return new ParticleTriggerBlock("Trigger");
             case "BasicConditionBlock":
@@ -127,6 +136,21 @@ export class BlockTools {
             case "AgeGradientBlock": {
                 const block = new ParticleInputBlock("Age gradient");
                 block.contextualValue = NodeParticleContextualSources.AgeGradient;
+                return block;
+            }
+            case "SpriteCellEndBlock": {
+                const block = new ParticleInputBlock("Sprite cell end");
+                block.contextualValue = NodeParticleContextualSources.SpriteCellEnd;
+                return block;
+            }
+            case "SpriteCellIndexBlock": {
+                const block = new ParticleInputBlock("Sprite cell index");
+                block.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
+                return block;
+            }
+            case "SpriteCellStartBlock": {
+                const block = new ParticleInputBlock("Sprite cell start");
+                block.contextualValue = NodeParticleContextualSources.SpriteCellStart;
                 return block;
             }
             case "TimeBlock": {

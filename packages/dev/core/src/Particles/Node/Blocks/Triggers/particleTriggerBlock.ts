@@ -8,12 +8,14 @@ import type { Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import type { SystemBlock } from "../systemBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import type { ParticleSystem } from "core/Particles/particleSystem";
 
 /**
  * Block used to trigger a particle system based on a condition.
  */
 export class ParticleTriggerBlock extends NodeParticleBlock {
     private _triggerCount = 0;
+    private _trackedSubSystems: ParticleSystem[] = [];
 
     /**
      * Gets or sets the emit rate
@@ -92,9 +94,15 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
                         clone.canStart = () => true; // Allow the cloned system to start
                         clone.emitter = particle.position.clone(); // Set the emitter to the particle's position
                         clone.disposeOnStop = true; // Clean up the system when it stops
+                        this._trackedSubSystems.push(clone);
                         clone.start();
                         clone.onDisposeObservable.addOnce(() => {
                             this._triggerCount--;
+                            // Remove the system from tracked subsystems
+                            const index = this._trackedSubSystems.indexOf(clone);
+                            if (index !== -1) {
+                                this._trackedSubSystems.splice(index, 1);
+                            }
                         });
 
                         system.onDisposeObservable.addOnce(() => {
@@ -135,6 +143,18 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
         if (serializationObject.limit !== undefined) {
             this.limit = serializationObject.limit;
         }
+    }
+
+    public override dispose(): void {
+        super.dispose();
+        this._triggerCount = 0;
+
+        const trackedSubSystems = this._trackedSubSystems.slice();
+        for (const subSystem of trackedSubSystems) {
+            subSystem.dispose();
+        }
+
+        this._trackedSubSystems = [];
     }
 }
 

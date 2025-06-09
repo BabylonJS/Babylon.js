@@ -23,6 +23,7 @@ import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleport
 /**
  * Defines a set of particle systems defined as a node graph.
  * @experimental This API is experimental and may change in future releases.
+ * #N6SK7N
  */
 export class NodeParticleSystemSet {
     private _systemBlocks: SystemBlock[] = [];

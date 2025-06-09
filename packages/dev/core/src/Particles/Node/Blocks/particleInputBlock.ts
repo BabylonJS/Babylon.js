@@ -141,6 +141,11 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.AgeGradient:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
+                case NodeParticleContextualSources.SpriteCellEnd:
+                case NodeParticleContextualSources.SpriteCellStart:
+                case NodeParticleContextualSources.SpriteCellIndex:
+                    this._type = NodeParticleBlockConnectionPointTypes.Int;
+                    break;
             }
 
             if (this.output) {

@@ -52,6 +52,12 @@ export class SystemBlock extends NodeParticleBlock {
     public targetStopDuration = 0;
 
     /**
+     * Gets or sets the target stop duration for the particle system
+     */
+    @editableInPropertyPage("Delay start(ms)", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public startDelay = 0;
+
+    /**
      * Gets or sets a boolean indicating if the system should not start automatically
      */
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
@@ -117,6 +123,7 @@ export class SystemBlock extends NodeParticleBlock {
         this._particleSystem.name = this.name;
         this._particleSystem._nodeGenerated = true;
         this._particleSystem._targetStopDuration = this.targetStopDuration;
+        this._particleSystem.startDelay = this.startDelay;
 
         this.system._storedValue = this;
 
@@ -139,6 +146,7 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.blendMode = this.blendMode;
         serializationObject.doNoStart = this.doNoStart;
         serializationObject.targetStopDuration = this.targetStopDuration;
+        serializationObject.startDelay = this.startDelay;
 
         return serializationObject;
     }
@@ -156,6 +164,10 @@ export class SystemBlock extends NodeParticleBlock {
 
         if (serializationObject.targetStopDuration !== undefined) {
             this.targetStopDuration = serializationObject.targetStopDuration;
+        }
+
+        if (serializationObject.targetStopDuration !== undefined) {
+            this.startDelay = serializationObject.startDelay;
         }
     }
 }

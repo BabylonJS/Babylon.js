@@ -95,6 +95,15 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.Color:
                     value = "Color";
                     break;
+                case NodeParticleContextualSources.SpriteCellEnd:
+                    value = "Sprite Cell End";
+                    break;
+                case NodeParticleContextualSources.SpriteCellIndex:
+                    value = "Sprite Cell Index";
+                    break;
+                case NodeParticleContextualSources.SpriteCellStart:
+                    value = "Sprite Cell Start";
+                    break;
             }
         } else {
             switch (inputBlock.type) {

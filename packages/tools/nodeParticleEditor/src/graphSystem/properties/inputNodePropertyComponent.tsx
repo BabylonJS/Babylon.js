@@ -130,6 +130,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Delta", value: NodeParticleSystemSources.Delta },
                 ];
                 break;
+            case NodeParticleBlockConnectionPointTypes.Int:
+                contextualSourcesOptions = [{ label: "Sprite cell index", value: NodeParticleContextualSources.SpriteCellIndex }];
+                contextualSourcesOptions = [{ label: "Sprite cell start", value: NodeParticleContextualSources.SpriteCellStart }];
+                contextualSourcesOptions = [{ label: "Sprite cell end", value: NodeParticleContextualSources.SpriteCellEnd }];
+                break;
             case NodeParticleBlockConnectionPointTypes.Vector2:
                 contextualSourcesOptions = [{ label: "Scale", value: NodeParticleContextualSources.Scale }];
                 break;
@@ -149,13 +154,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         if (contextualSourcesOptions.length > 0) {
             modeOptions.push({ label: "Contextual value (Float)", value: 1 });
-            modeOptions.push({ label: "Contextual value (Vector2)", value: 2 });
-            modeOptions.push({ label: "Contextual value (Vector3)", value: 3 });
-            modeOptions.push({ label: "Contextual value (Color4)", value: 4 });
+            modeOptions.push({ label: "Contextual value (int)", value: 2 });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: 3 });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: 4 });
+            modeOptions.push({ label: "Contextual value (Color4)", value: 5 });
         }
 
         if (systemSourcesOptions.length > 0) {
-            modeOptions.push({ label: "System value (Float)", value: 5 });
+            modeOptions.push({ label: "System value (Float)", value: 6 });
         }
 
         return (
@@ -185,15 +191,18 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                             inputBlock.contextualValue = NodeParticleContextualSources.Age;
                                             break;
                                         case 2:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Scale;
+                                            inputBlock.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
                                             break;
                                         case 3:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Position;
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Scale;
                                             break;
                                         case 4:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Color;
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Position;
                                             break;
                                         case 5:
+                                            inputBlock.contextualValue = NodeParticleContextualSources.Color;
+                                            break;
+                                        case 6:
                                             inputBlock.systemSource = NodeParticleSystemSources.Time;
                                             break;
                                     }

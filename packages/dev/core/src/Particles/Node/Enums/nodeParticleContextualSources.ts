@@ -23,4 +23,10 @@ export enum NodeParticleContextualSources {
     AgeGradient = 0x0008,
     /** Angle */
     Angle = 0x0009,
+    /** SpriteCellIndex */
+    SpriteCellIndex = 0x0010,
+    /** SpriteCellStart */
+    SpriteCellStart = 0x0011,
+    /** SpriteCellEnd */
+    SpriteCellEnd = 0x0012,
 }
