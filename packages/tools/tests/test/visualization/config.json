@@ -1841,6 +1841,10 @@
             "referenceImage": "gltfMSFTLOD.png"
         },
         {
+            "title": "GLTF ext MSFT_LOD for multi material mesh",
+            "playgroundId": "#SVEUE4#1"
+        },
+        {
             "title": "Reverse depth buffer and shadows",
             "renderCount": 10,
             "playgroundId": "#WL4Q8J#20",
