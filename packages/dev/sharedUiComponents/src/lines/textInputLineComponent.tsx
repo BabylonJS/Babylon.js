@@ -1,4 +1,5 @@
-import * as React from "react";
+import type { ReactNode, KeyboardEvent } from "react";
+import { Component } from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
@@ -26,7 +27,7 @@ export interface ITextInputLineComponentProps {
     min?: number;
     max?: number;
     placeholder?: string;
-    unit?: React.ReactNode;
+    unit?: ReactNode;
     validator?: (value: string) => boolean;
     multilines?: boolean;
     throttlePropertyChangedNotification?: boolean;
@@ -36,7 +37,7 @@ export interface ITextInputLineComponentProps {
 
 let ThrottleTimerId = -1;
 
-export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
+export class TextInputLineComponent extends Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
 
     constructor(props: ITextInputLineComponentProps) {
@@ -178,7 +179,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this.updateValue((currentValue + amount).toFixed(2));
     }
 
-    onKeyDown(event: React.KeyboardEvent) {
+    onKeyDown(event: KeyboardEvent) {
         if (!this.props.disabled && this.props.arrows) {
             if (event.key === "ArrowUp") {
                 this.incrementValue(1);
