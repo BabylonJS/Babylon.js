@@ -1,14 +1,9 @@
-import type { ReactNode, KeyboardEvent } from "react";
-import { Component } from "react";
+import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
-import { PropertyLine } from "../fluent/hoc/propertyLine";
-import { Textarea } from "../fluent/primitives/textarea";
-import { Input } from "../fluent/primitives/input";
-import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
 
 export interface ITextInputLineComponentProps {
     label?: string;
@@ -31,7 +26,7 @@ export interface ITextInputLineComponentProps {
     min?: number;
     max?: number;
     placeholder?: string;
-    unit?: ReactNode;
+    unit?: React.ReactNode;
     validator?: (value: string) => boolean;
     multilines?: boolean;
     throttlePropertyChangedNotification?: boolean;
@@ -41,7 +36,7 @@ export interface ITextInputLineComponentProps {
 
 let ThrottleTimerId = -1;
 
-export class TextInputLineComponent extends Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
+export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
 
     constructor(props: ITextInputLineComponentProps) {
@@ -183,7 +178,7 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         this.updateValue((currentValue + amount).toFixed(2));
     }
 
-    onKeyDown(event: KeyboardEvent) {
+    onKeyDown(event: React.KeyboardEvent) {
         if (!this.props.disabled && this.props.arrows) {
             if (event.key === "ArrowUp") {
                 this.incrementValue(1);
@@ -196,46 +191,7 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         }
     }
 
-    renderFluent() {
-        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
-        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
-        const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
-        return (
-            <PropertyLine label={this.props.label || ""}>
-                {this.props.multilines ? (
-                    <Textarea
-                        value={this.state.value}
-                        onChange={(evt) => this.updateValue(evt.target.value)}
-                        onKeyDown={(evt) => {
-                            if (evt.keyCode !== 13) {
-                                return;
-                            }
-                            this.updateValue(this.state.value);
-                        }}
-                        onBlur={(evt) => {
-                            this.updateValue(evt.target.value, evt.target.value);
-                        }}
-                        disabled={this.props.disabled}
-                    />
-                ) : (
-                    <Input
-                        value={value}
-                        onBlur={(evt) => {
-                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "", evt.target.value);
-                        }}
-                        onChange={(evt) => this.updateValue(evt.target.value)}
-                        onKeyDown={(evt) => this.onKeyDown(evt)}
-                        placeholder={placeholder}
-                        type={this.props.numeric ? "number" : "text"}
-                        step={step}
-                        disabled={this.props.disabled}
-                    />
-                )}
-            </PropertyLine>
-        );
-    }
-
-    renderOriginal() {
+    override render() {
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
@@ -308,8 +264,5 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
                 {this.props.unit}
             </div>
         );
-    }
-    override render() {
-        return <ConditionallyUseFluent fluent={this.renderFluent} original={this.renderOriginal} />;
     }
 }
