@@ -20,6 +20,7 @@ export type RawLottieLayer = {
     ty: RawLayerType; // Layer type (0: precomp, 1: solid, 2: image, 3: null, 4: shape, 5: text)
     nm?: string; // Human readable name
     parent?: number; // Must be the ind property of another layer
+    hd?: boolean; // Hidden
     sr?: number; // Time Stretch
     ao?: number; // Auto-Orient (0: false, 1: true), if 1, the layer will rotate itself to match its animated position path
     ip?: number; // Frame when the layer becomes visible

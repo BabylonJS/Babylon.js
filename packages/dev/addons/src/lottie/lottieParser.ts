@@ -22,8 +22,7 @@ import {
     ShapeUnsupportedTopLevelType,
     type VectorType,
     type LottieAnimation,
-    type LottieLayer,
-    type LottieSprite,
+    type LottieNode,
     type ScalarKeyframe,
     type ScalarProperty,
     type Transform,
@@ -49,6 +48,7 @@ type SpriteData = {
 export class LottieParser {
     private _processedData: LottieAnimation;
     private _errors = new Array<string>();
+    private _childIndex = 1000;
     private _zIndex = 0;
     private _spritesData: Map<string, SpriteData> | undefined = undefined;
 
@@ -95,7 +95,7 @@ export class LottieParser {
             startFrame: rawData.ip,
             endFrame: rawData.op,
             frameRate: rawData.fr,
-            layers: new Map<number, LottieLayer>(),
+            nodes: new Map<number, LottieNode>(),
             size: new Vector2(rawData.w, rawData.h),
         };
 
@@ -103,42 +103,37 @@ export class LottieParser {
         const background = MeshBuilder.CreatePlane(`Animation bounds`, { height: rawData.h, width: rawData.w });
         background.position = new Vector3(rawData.w / 2, -rawData.h / 2, 0.1); // Position the background slightly behind the layers
 
-        // Create a map of all the layers by their index
+        // Create a map of all the layers by their order in the original json file
         for (let i = 0; i < rawData.layers.length; i++) {
-            this._processLottieLayer(rawData.layers[i]);
+            this._processRawLottieLayer(rawData.layers[i]);
         }
 
         // Create parent-child relationships between layers to have the right transforms
-        for (const layer of this._processedData.layers.values()) {
+        for (const layer of this._processedData.nodes.values()) {
             if (layer.parentIndex === undefined) {
                 continue;
             }
 
-            const parentLayer = this._processedData.layers.get(layer.parentIndex);
+            const parentLayer = this._processedData.nodes.get(layer.parentIndex);
             if (parentLayer) {
                 layer.nodeTrs!.parent = parentLayer.nodeAnchor!; // Set the Babylon node parent
             }
         }
     }
 
-    private _processLottieLayer(rawLayer: RawLottieLayer): void {
+    private _processRawLottieLayer(rawLayer: RawLottieLayer): void {
         if (rawLayer.ty !== 3 && rawLayer.ty !== 4) {
             this._errors.push(`${LayerUnsuportedType} - Index: ${rawLayer.ind} Name: ${rawLayer.nm} Type: ${rawLayer.ty}`);
             return;
         }
 
-        // Ignore invisible layers
-        if (rawLayer.ip === 1) {
-            return;
-        }
+        const transform = this._processRawLottieTransform(rawLayer.ks);
 
-        const transform = this._processLottieTransform(rawLayer.ks);
-
-        const newLayer: LottieLayer = {
+        const newNode: LottieNode = {
             name: rawLayer.nm ?? "No name",
             parentIndex: rawLayer.parent,
             index: rawLayer.ind!,
-            isVisible: false,
+            isHidden: rawLayer.hd ?? false,
             inFrame: rawLayer.ip ?? 0,
             outFrame: rawLayer.op ?? 0,
             startTime: rawLayer.st ?? 0,
@@ -147,126 +142,61 @@ export class LottieParser {
             transform: transform,
         };
 
-        this._processedData.layers.set(newLayer.index, newLayer);
+        newNode.nodeTrs = new TransformNode(`TRS - ${rawLayer.nm}`);
 
-        newLayer.nodeTrs = new TransformNode(`TRS - ${rawLayer.nm}`);
+        newNode.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
+        newNode.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
+        newNode.nodeTrs.position.z = this._zIndex;
+        this._zIndex -= 0.1; // Decrement zIndex for each layer
 
-        newLayer.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
-        newLayer.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
-        newLayer.nodeTrs.position.z = this._zIndex;
-        this._zIndex -= 0.1; // Increment zIndex for each layer
+        newNode.nodeTrs.rotation.z = -((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
 
-        newLayer.nodeTrs.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+        newNode.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
-        newLayer.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-        newLayer.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+        newNode.nodeAnchor = new TransformNode(`Anchor - ${rawLayer.nm}`);
+        newNode.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
+        newNode.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
+        newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
 
-        if ((rawLayer.shapes?.length ?? 0) !== 0) {
-            const size = this._mapSize(newLayer.name);
-            const scale = this._mapScale(newLayer.name);
-            const mesh = MeshBuilder.CreatePlane(`Anchor with Sprite - ${rawLayer.nm}`, { height: size.y * scale, width: size.x * scale });
+        newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
 
-            mesh.isVisible = false;
+        this._processedData.nodes.set(newNode.index, newNode);
 
-            const material = new StandardMaterial("myMaterial");
-            const texture = this._mapTexture(newLayer.name);
-            if (texture) {
-                material.diffuseTexture = texture;
-            } else {
-                material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
-            }
-
-            mesh.material = material;
-
-            newLayer.nodeAnchor = mesh;
-            newLayer.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
-            newLayer.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
-            newLayer.nodeAnchor.position.z = 0; // Anchor position is always at z=0
-        } else {
-            newLayer.nodeAnchor = new TransformNode(`Anchor - ${rawLayer.nm}`);
-            newLayer.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
-            newLayer.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
-            newLayer.nodeAnchor.position.z = 0; // Anchor position is always at z=0
+        if (rawLayer.shapes && rawLayer.shapes.length > 0) {
+            this._processRawLottieShapes(newNode, rawLayer.shapes);
         }
-
-        newLayer.nodeAnchor.parent = newLayer.nodeTrs; // Set the anchor as a child of the TRS node
-
-        this._processLottieShapes(newLayer, rawLayer.shapes);
     }
 
-    private _mapSize(layerName: string): Vector2 {
-        if (!this._spritesData) {
-            return new Vector2(BaseSize, BaseSize);
-        }
-
-        return this._spritesData.get(layerName)?.size ?? new Vector2(BaseSize, BaseSize);
-    }
-
-    private _mapScale(layerName: string): number {
-        if (!this._spritesData) {
-            return 1;
-        }
-
-        return this._spritesData.get(layerName)?.scaling ?? 1;
-    }
-
-    private _mapTexture(layerName: string): Texture | undefined {
-        if (!this._spritesData) {
-            return undefined;
-        }
-
-        return this._spritesData.get(layerName)?.texture;
-    }
-
-    private _processLottieShapes(parent: LottieLayer, shapes: RawGraphicElement[] | undefined): LottieSprite[] | undefined {
-        if (!shapes) {
-            return undefined;
-        }
-
-        const sprites = new Array<LottieSprite>();
+    private _processRawLottieShapes(parent: LottieNode, shapes: RawGraphicElement[]): void {
         for (const shape of shapes) {
             if (shape.hd === true) {
                 continue; // Ignore hidden shapes
             }
 
             if (shape.ty === "gr") {
-                const sprite = this._processGroupShape(shape as RawGroupShape);
-                if (sprite) {
-                    sprites.push(sprite);
-                }
+                this._processGroupShape(parent, shape as RawGroupShape);
             } else {
                 this._errors.push(`${ShapeUnsupportedTopLevelType} - Name: ${shape.nm} Type: ${shape.ty}`);
                 continue;
             }
         }
-
-        return sprites;
     }
 
-    private _processGroupShape(group: RawGroupShape): LottieSprite | undefined {
-        if (!group.it) {
-            return undefined;
+    private _processGroupShape(parent: LottieNode, rawGroup: RawGroupShape): void {
+        if (!rawGroup.it) {
+            // No shapes in the group
+            return;
         }
 
-        if (group.hd === true) {
-            return undefined;
-        }
-
-        const sprite: LottieSprite = {
-            isVisible: true,
-            transform: undefined,
-            child: undefined,
-        };
-
-        for (const shape of group.it) {
+        let transform: Transform | undefined = undefined;
+        for (const shape of rawGroup.it) {
             if (shape.ty === "gr") {
-                sprite.child = this._processGroupShape(shape as RawGroupShape);
+                // TODO: deal with children inside of children
+                this._errors.push(`Group ${rawGroup.nm} contains another shape ${shape.nm} which is a group. Nested groups are not yet supported`);
             } else if (shape.ty === "tr") {
-                const transform = this._processLottieTransformShape(shape as RawTransformShape);
-                sprite.transform = transform;
-
-                // We do not support animated transforms
-                this._validateNonAnimatedTransform(sprite.transform);
+                transform = this._processLottieTransformShape(shape as RawTransformShape);
+                this._validateNonAnimatedTransform(transform); // We do not support animated transforms for groups
             } else if (shape.ty === "sh") {
                 this._validatePathShape(shape as RawPathShape);
             } else if (shape.ty === "rc") {
@@ -280,10 +210,63 @@ export class LottieParser {
             }
         }
 
-        return sprite;
+        if (transform === undefined) {
+            this._errors.push(`Group ${rawGroup.nm} does not have a transform, which is required for rendering`);
+            return;
+        }
+
+        const newNode: LottieNode = {
+            name: `${parent.name} - ${rawGroup.nm}`,
+            parentIndex: parent.index,
+            index: this._childIndex++,
+            isHidden: rawGroup.hd ?? false,
+            inFrame: parent.inFrame,
+            outFrame: parent.outFrame,
+            startTime: parent.startTime ?? 0,
+            timeStretch: parent.timeStretch ?? 1,
+            autoOrient: parent.autoOrient,
+            transform: transform,
+        };
+
+        newNode.nodeTrs = new TransformNode(`TRS - ${rawGroup.nm}`);
+
+        newNode.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
+        newNode.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
+        newNode.nodeTrs.position.z = this._zIndex;
+        this._zIndex -= 0.1; // Increment zIndex for each layer
+
+        newNode.nodeTrs.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+
+        newNode.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+
+        const size = this._mapSize(newNode.name);
+        const scale = this._mapScale(newNode.name);
+        const mesh = MeshBuilder.CreatePlane(`Anchor with Sprite - ${rawGroup.nm}`, { height: size.y * scale, width: size.x * scale });
+
+        mesh.isVisible = false;
+
+        const material = new StandardMaterial("myMaterial");
+        const texture = this._mapTexture(newNode.name);
+        if (texture) {
+            material.diffuseTexture = texture;
+        } else {
+            material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
+        }
+
+        mesh.material = material;
+
+        newNode.nodeAnchor = mesh;
+        newNode.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
+        newNode.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
+        newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
+
+        newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
+
+        this._processedData.nodes.set(newNode.index, newNode);
     }
 
-    private _processLottieTransform(transform: RawTransform): Transform {
+    private _processRawLottieTransform(transform: RawTransform): Transform {
         return {
             opacity: this._fromLottieScalarToBabylonScalar(transform.o),
             rotation: this._fromLottieScalarToBabylonScalar(transform.r),
@@ -347,11 +330,11 @@ export class LottieParser {
         }
 
         // DEBUGGING - Add one extra keyframe at the end to make sure the animation reaches the end value
-        keyframes.push({
-            value: rawKeyFrames[i - 1].s[0],
-            time: rawKeyFrames[i - 1].t + 1,
-            easeFunction: keyframes[i - 2].easeFunction,
-        });
+        // keyframes.push({
+        //     value: rawKeyFrames[i - 1].s[0],
+        //     time: rawKeyFrames[i - 1].t + 1,
+        //     easeFunction: keyframes[i - 2].easeFunction,
+        // });
 
         return {
             startValue: rawKeyFrames[0].s[0],
@@ -524,5 +507,30 @@ export class LottieParser {
         if (shape.e.a === 1) {
             this._errors.push(`Gradient fill ${shape.nm} has an end point property that is animated which is not supported`);
         }
+    }
+
+    /* These functions are only needed while we render custom made textures, they will be removed with SVGs */
+    private _mapSize(layerName: string): Vector2 {
+        if (!this._spritesData) {
+            return new Vector2(BaseSize, BaseSize);
+        }
+
+        return this._spritesData.get(layerName)?.size ?? new Vector2(BaseSize, BaseSize);
+    }
+
+    private _mapScale(layerName: string): number {
+        if (!this._spritesData) {
+            return 1;
+        }
+
+        return this._spritesData.get(layerName)?.scaling ?? 1;
+    }
+
+    private _mapTexture(layerName: string): Texture | undefined {
+        if (!this._spritesData) {
+            return undefined;
+        }
+
+        return this._spritesData.get(layerName)?.texture;
     }
 }

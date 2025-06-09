@@ -18,29 +18,28 @@ export type LottieAnimation = {
     startFrame: number; // Frame number where the animation starts
     endFrame: number; // Frame number where the animation ends
     frameRate: number; // Frame rate of the animation
-    layers: Map<number, LottieLayer>; // Array of layers in the animation, in top-down z order
+    nodes: Map<number, LottieNode>; // Array of nodes in the animation, in top-down z order
     size: Vector2; // Size of the animation in pixels
 };
 
-export type LottieLayer = {
+/**
+ * Represents a node in the animation.
+ * Both Lottie Layers and Lottie Groups get transformed into LottieNodes when parsing.
+ * A LottieNode contains two transforms, one for the TRS, and one for the anchor.
+ */
+export type LottieNode = {
     name: string;
     index: number; // Index of the layer, used for parenting layers
     parentIndex?: number; // Index of the parent layer, if any
+    isHidden: boolean; // Whether the layer is hidden
     inFrame: number; // Frame number where the layer becomes visible
     outFrame: number; // Frame number where the layer becomes invisible
     startTime: number; // Time when the layer starts
     timeStretch: number; // Time stretch factor
     autoOrient: boolean; // Whether the layer auto-orients to its path
-    isVisible: boolean; // Whether this layer is visible
     transform: Transform; // Initial transform properties and animations of the layer
     nodeTrs?: TransformNode; // Translation/Rotation/Scale node, it will contain the current transformed value
     nodeAnchor?: TransformNode; // Anchor node, it may contain a sprite to render
-};
-
-export type LottieSprite = {
-    isVisible: boolean; // Whether the shape is visible
-    transform?: Transform; // Initial transform properties and animations of the shape
-    child?: LottieSprite; // Children, if any
 };
 
 export type Transform = {
