@@ -1,5 +1,5 @@
 import { Body1Strong, Button, InfoLabel, makeStyles, tokens } from "@fluentui/react-components";
-import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
+// import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
 import { useState } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
@@ -87,7 +87,7 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                     {expandedContent && (
                         <Button
                             appearance="subtle"
-                            icon={expanded ? <Subtract24Filled /> : <Add24Filled />}
+                            //  icon={expanded ? <Subtract24Filled /> : <Add24Filled />}
                             className={classes.button}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -97,7 +97,13 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                     )}
 
                     {onCopy && (
-                        <Button className={classes.button} id="copyProperty" icon={<Copy24Regular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
+                        <Button
+                            className={classes.button}
+                            id="copyProperty"
+                            // icon={<Copy24Regular />}
+                            onClick={() => copyCommandToClipboard(onCopy())}
+                            title="Copy to clipboard"
+                        />
                     )}
                 </div>
             </div>
