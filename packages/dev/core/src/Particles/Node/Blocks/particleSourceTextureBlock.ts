@@ -5,6 +5,7 @@ import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
+import { TextureTools } from "core/Misc/textureTools";
 
 /**
  * Block used to provide a texture for particles in a particle system
@@ -13,6 +14,11 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _url: string = "";
     private _textureDataUrl: string = "";
     private _sourceTexture: Nullable<Texture> = null;
+    private _cachedData: Nullable<{
+        width: number;
+        height: number;
+        data: Uint8ClampedArray;
+    }> = null;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
@@ -30,6 +36,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         if (this._url === value) {
             return;
         }
+        this._cachedData = null;
         this._url = value;
         this._textureDataUrl = "";
         this._sourceTexture = null;
@@ -47,6 +54,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         if (this._textureDataUrl === value) {
             return;
         }
+        this._cachedData = null;
         this._textureDataUrl = value;
         this._url = "";
         this._sourceTexture = null;
@@ -60,6 +68,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         if (this._sourceTexture === value) {
             return;
         }
+        this._cachedData = null;
         this._sourceTexture = value;
         this._url = "";
         this._textureDataUrl = "";
@@ -88,6 +97,56 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      */
     public get texture(): NodeParticleConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Gets the texture content as a promise
+     * @returns a promise that resolves to the texture content, including width, height, and pixel data
+     */
+    async extractTextureContentAsync() {
+        if (!this.texture._storedValue) {
+            return null;
+        }
+
+        if (this._cachedData) {
+            return this._cachedData;
+        }
+
+        const texture = this.texture._storedValue;
+        return await new Promise<
+            Nullable<{
+                width: number;
+                height: number;
+                data: Uint8ClampedArray;
+            }>
+        >((resolve, reject) => {
+            if (!texture.isReady()) {
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                texture.onLoadObservable.addOnce(async () => {
+                    try {
+                        this._cachedData = await this.extractTextureContentAsync();
+                        resolve(this._cachedData);
+                    } catch (e) {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject(e);
+                    }
+                });
+                return;
+            }
+            const size = texture.getSize();
+            TextureTools.GetTextureDataAsync(texture, size.width, size.height)
+                // eslint-disable-next-line github/no-then
+                .then((data) => {
+                    this._cachedData = {
+                        width: size.width,
+                        height: size.height,
+                        data: new Uint8ClampedArray(data),
+                    };
+                    resolve(this._cachedData);
+                })
+                // eslint-disable-next-line github/no-then
+                .catch(reject);
+        });
     }
 
     /**

@@ -8,6 +8,7 @@ import type { Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { FlowMap } from "core/Particles/flowMap";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import type { ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
 
 /**
  * Block used to update particle position based on a flow map
@@ -67,19 +68,24 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         const system = this.input.getConnectedValue(state) as ThinParticleSystem;
         const scene = state.scene;
 
-        const flowMapTexture = this.flowMap.getConnectedValue(state);
+        const flowMapTexture = this.flowMap.connectedPoint?.ownerBlock as ParticleTextureSourceBlock;
         let flowMap: FlowMap;
 
         // eslint-disable-next-line github/no-then
-        void FlowMap.ExtractFromTextureAsync(flowMapTexture).then((fm) => {
-            flowMap = fm;
+        void flowMapTexture.extractTextureContentAsync().then((textureContent) => {
+            if (!textureContent) {
+                return;
+            }
+            flowMap = new FlowMap(textureContent.width, textureContent.height, textureContent.data as Uint8ClampedArray);
         });
 
         const processFlowMap = (particle: Particle) => {
             const matrix = scene.getTransformMatrix();
             if (!flowMap) {
+                // If the flow map is not ready, we skip processing
                 return;
             }
+
             flowMap._processParticle(particle, this.strength * system._tempScaledUpdateSpeed, matrix);
         };
 
