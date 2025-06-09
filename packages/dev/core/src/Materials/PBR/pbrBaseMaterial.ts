@@ -214,6 +214,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public PREPASS_DEPTH_INDEX = -1;
     public PREPASS_SCREENSPACE_DEPTH = false;
     public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
+    public PREPASS_NORMALIZED_VIEW_DEPTH = false;
+    public PREPASS_NORMALIZED_VIEW_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
@@ -1534,6 +1536,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vDebugMode",
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
+            "cameraInfo",
         ];
 
         const samplers = [
@@ -2141,6 +2144,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vSphericalYZ", 3);
         ubo.addUniform("vSphericalZX", 3);
 
+        ubo.addUniform("cameraInfo", 4);
+
         super.buildUniformLayout();
     }
 
@@ -2178,6 +2183,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         MaterialHelperGeometryRendering.Bind(engine.currentRenderPassId, this._activeEffect, mesh, world, this);
+
+        const camera = scene.activeCamera;
+        if (camera) {
+            this._uniformBuffer.updateFloat4("cameraInfo", camera.minZ, camera.maxZ, 0, 0);
+        } else {
+            this._uniformBuffer.updateFloat4("cameraInfo", 0, 0, 0, 0);
+        }
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);

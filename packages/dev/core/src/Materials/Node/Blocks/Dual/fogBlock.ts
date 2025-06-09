@@ -128,7 +128,11 @@ export class FogBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         const scene = mesh.getScene();
         defines.setValue("FOG", nodeMaterial.fogEnabled && GetFogState(mesh, scene));
     }

@@ -1,6 +1,497 @@
 {
-    "fromTag": "8.9.1",
+    "fromTag": "8.10.1",
     "changelog": {
+        "8.11.0": [
+            {
+                "pr": "16714",
+                "title": "SmartFilterTextureBlock: Uniform metadata and multiple block instance handling",
+                "description": "This PR extends the SmartFilterTextureBlock's functionality to permit\r\n- Multiple instances of the block, used for sampling several textures\r\n- Designating a block as the \"main input\", which is used for auto-disabling in SFE\r\n- Annotations for input block and bindable block uniforms, used for specifying default values\r\n- Cleaning up of uniform names, used as display names for connection points in SFE\r\n\r\nSome misc changes include\r\n- Use Logger for errors instead of throwing and breaking the build :)\r\n- Extra WebGPU check for good measure\r\n- Expose ScreenSizeBlock uniform name ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16716",
+                "title": "NME SFE: Update block list exclusions",
+                "description": "Remove blocks-- both as categories and individually-- that would break in SFE mode. ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16703",
+                "title": "Add dominant direction to env file",
+                "description": "Not sure how to test this. I'm trying to add the dominant direction of an IBL to the irradiance stored in a .env file.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16715",
+                "title": "WebGPU: Fix wrong display in fast snapshot mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16708",
+                "title": "glTF Exporter: Fixes and clean-up for camera rotations",
+                "description": "This PR primarily aims to fix exported camera rotation animations ([see most recent forum post](https://forum.babylonjs.com/t/gltfexport-flipped-camera/45986/22)). While in the area, I've also minorly cleaned up the surrounding camera code. \r\n\r\nFixes:\r\n- Fix camera rotation animation export\r\n- Allow camera nodes' transformations to collapse into parents\r\n- Update CollapseChildIntoParent to disregard parent scaling\r\n- Add tests for camera animation export\r\n- Ensure rotation and rotationQuaternion are mutually exclusive in _setNodeTransformation and _setCameraTransformation\r\n\r\nCleanup nits:\r\n- Renames CollapseParentNode -> CollapseChildIntoParent, and IsParentAddedByImporter -> AreCollapsible\r\n- Remove unused RotateNode180Y and ConvertToRightHandedNode\r\n- Use TargetCamera instead of Camera, as Camera doesn't have TRS fields.\r\n- Simplify rotation animation export\r\n- Move camera transformation export into _setCameraTransformation\r\n- Clarify that CollapseChildIntoParent only accepts light and camera-type children\r\n\r\nMisc:\r\n- Allow KHR_punctual_lights to throw a warning for non-shadow lights\r\n- Change usages of .equals() to .equalsWithEpsilon(), using Epsilon constant from math package",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerCameraRotationAnimation.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "8.10.1": [
+            {
+                "pr": "16713",
+                "title": "ThinTexture now respects wrapU/V/R previously applied to the InternalTexture it wraps",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/babylon.thinTexture.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16712",
+                "title": "Viewer: Add missing element event for shadows config",
+                "description": "This adds an event at the element level for the shadow config changing. This just got missed in the initial shadows PR. However, I also noticed that with some other refactors and merges, we lost the code that was firing a couple other events, so added those back as well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewerElement.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16711",
+                "title": "Viewer Configurator: Add shadows to Viewer Configurator",
+                "description": "This change adds shadows to the Viewer Configurator. I noticed in the process that somehow post processing got missed for the json output, so I fixed that as well. Lastly, I made a few memoized objects and arrays readonly to prevent bugs where we accidentally mutate them.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "16636",
+                "title": "Inspector v2 foundation + some partial impl + stubs",
+                "description": "This PR includes:\r\n- Foundational work for inspector v2 (modularity/extensibility, Fluent)\r\n- A partial implementation of scene explorer and the properties pane\r\n- Various stubs for other inspector features, such as the debug and status panes, etc.)\r\n\r\nHere is what it looks like when testing in the Viewer test app:\r\n![image](https://github.com/user-attachments/assets/103d2638-0090-48cb-a278-e9d84e5f3915)\r\n\r\nReview this PR in this order:\r\n1. [readme.md](https://github.com/BabylonJS/Babylon.js/pull/16636/files?short_path=aa737fd#diff-aa737fdbc1352bc312809f1e20038c0655df7b2a62b4e14c3c78330ec4f4c795) (which contains an overview of the foundation)\r\n2. [modularity/serviceDefinition.ts](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-23f3cf1e7443e17428f2d8adbe0ff00e00464aebb49b2a7aea3463562b282b02)\r\n3. [modularity/serviceCatalog.ts](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-41aed3d5d47bc9ca08eaf32a981d9722687bbc5a0c82d03b0d3989d75e752751)\r\n4. [services/panes/properties/propertiesService.tsx](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-d106ccadaad1aef234393618a10810f522127376dee6b388bc9dcc3eb73f37b6) (for a concreate example of a simple \"service\" that consumes another service (dependency) and produces a service (dependents)).\r\n5. [extensibility/extensionFeed.ts](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-25d54eecc2541509065afe71d7bd09a0963dfff77ced17832d3487a99b9f9edd)\r\n6. [extensibility/builtInsExtensionFeed.ts](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-41876863a14453eb2d893b9aacb4b6d66ff800ec1dd314d0436e105822870f7a)\r\n7. [extensibility/extensionManager.ts](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-8462a4c82a92ad9ddaae70221b53c97509146955768e9e1797a080d9d1b80af8)\r\n8. [services/shellService.tsx](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-37b62b55dee4da4b4667459b1cea2d8d7dfa360776a103c00bf7a0f5f23b39b5) (or at least the contracts/interfaces)\r\n9. [modularTool.tsx](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-d4d1e5af9e2a9732691530e3829f504768d83f6f7e16192c75b7b1b11479ac23)\r\n10. [inspector.tsx](https://github.com/BabylonJS/Babylon.js/pull/16636/files#diff-c4ee50169e3a4a2b6c39374a0d2a12493518b4e64bbda56ec56ae0a473b089e8)\r\n11. services/**\r\n12. Everything else in whatever order",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/components/teachingMoment.tsx",
+                    "packages/dev/inspector-v2/src/contexts/extensionManagerContext.ts",
+                    "packages/dev/inspector-v2/src/extensibility/builtInsExtensionFeed.ts",
+                    "packages/dev/inspector-v2/src/extensibility/extensionFeed.ts",
+                    "packages/dev/inspector-v2/src/extensibility/extensionManager.ts",
+                    "packages/dev/inspector-v2/src/hooks/observableHooks.ts",
+                    "packages/dev/inspector-v2/src/hooks/teachingMomentHooks.ts",
+                    "packages/dev/inspector-v2/src/index.ts",
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/dev/inspector-v2/src/misc/assert.ts",
+                    "packages/dev/inspector-v2/src/misc/graphUtils.ts",
+                    "packages/dev/inspector-v2/src/misc/observableCollection.ts",
+                    "packages/dev/inspector-v2/src/modularTool.tsx",
+                    "packages/dev/inspector-v2/src/modularity/serviceContainer.ts",
+                    "packages/dev/inspector-v2/src/modularity/serviceDefinition.ts",
+                    "packages/dev/inspector-v2/src/services/creationToolsService.tsx",
+                    "packages/dev/inspector-v2/src/services/extensionsListService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/debugService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/common/commonGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/common/commonPropertiesService.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/mesh/meshGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/mesh/meshPropertiesService.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/mesh/meshTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/propertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/materialExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/nodeExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/sceneExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/texturesExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/settingsService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/statsService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/toolsService.tsx",
+                    "packages/dev/inspector-v2/src/services/sceneContext.ts",
+                    "packages/dev/inspector-v2/src/services/selectionService.ts",
+                    "packages/dev/inspector-v2/src/services/shellService.tsx",
+                    "packages/dev/inspector-v2/src/services/themeSelectorService.tsx",
+                    "packages/dev/inspector-v2/src/themes/babylonTheme.ts",
+                    "packages/dev/inspector-v2/tsconfig.build.json",
+                    "packages/dev/inspector-v2/tsconfig.json",
+                    "tsconfig.build.json",
+                    "tsconfig.json"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16710",
+                "title": "Frame Graph: Add support for autoCalcDepthBounds when frameGraph is defined at scene level",
+                "description": "See https://forum.babylonjs.com/t/feedback-on-frame-graphs/58672/11",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Misc/depthReducer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-csm-shadows-with-autoCalcDepthBounds.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16707",
+                "title": "Viewer: Switch from ShadowOnlyMaterial to BackgroundMaterial",
+                "description": "`ShadowOnlyMaterial` does not currently have a native wgsl implementation, which means it has to be converted to glsl at runtime, which is not ideal. Switching to `BackgroundMaterial` solves this, plus it removes the dependency on `@babylonjs/materials`.\r\n\r\nI also switched the skybox material over to `BackgroundMaterial` since it can do what we need in a lighter weight way (unlit + reflection blur). In doing so, it revealed a bug in `BackgroundMaterial`'s wgls fragment shader implementation, where it was simply missing `uniforms.` when referencing the `vReflectionMicrosurfaceInfos` uniform.\r\n\r\nThis PR also includes a few other small Viewer changes related to shadows:\r\n- Store the shadow light as type `ShadowLight` instead of `Spotlight`. This is really just in preparation to switch to `DirectionalLight`, which will be a different PR.\r\n- Set `ShadowGenerator.enableSoftTransparentShadow = true;` (feedback from @Popov72).\r\n- Set `ShadowGenerator.bias = radius / 1000;` (feedback from @Popov72, and we'll see if we need to also allow the user to explicitly override the `bias`).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/background.fragment.fx",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": [
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16696",
+                "title": "Viewer IBL shadow fixes",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16706",
+                "title": "glTF interactivity extension updates",
+                "description": "- Changed casing (spec update)\r\n  - rotate2d -> rotate2D\r\n  - rotate3d -> rotate3D\r\n- Updated rotate2D to use explicit function instead of matrix (to match new spec language exactly)\r\n- Updated rotate3D to use quaternion instead of axis/angle (spec update)\r\n- Pass targetFps directly into gltf interactivity parser\r\n- Factor out rounding function in math nodes unit test\r\n\r\nSee https://github.com/KhronosGroup/glTF/pull/2293/files/048bc309bf5fb6340cd07157d9610350e17fb256..5713a5c8b81bfbfa8382ca498f018833197ddc8a for spec update.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVectorMathBlocks.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/animation nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/babylon.interactivity.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/event nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivity.math nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/objectModel.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16705",
+                "title": "Fix inspector bugs where animation target name gets cut off and clicking on it does not link to target",
+                "description": "Added the tooltip on hover\r\n![image](https://github.com/user-attachments/assets/39eedd11-60ab-4e7e-91ad-62653fbeacb9)\r\n\r\nAnd clicking on the target now updates scene explorer with target as selected node\r\n![image](https://github.com/user-attachments/assets/abbc6e6e-1628-4b74-8694-e7cfb4e35d25)\r\n",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16704",
+                "title": "Add AudioEngineV2 sound `clone` method",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSound.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/staticSoundBuffer.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/staticSound.clone.test.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16699",
+                "title": "shape accessor for CharacterController",
+                "description": "followup https://forum.babylonjs.com/t/is-it-possible-to-change-shape-of-a-babylon-physics-character-controller/58783/2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16697",
+                "title": "Rh test",
+                "description": "Please note that I'm removing preserveParentRotationForBillboard as it was simply not use in the code and literally not working at all (for some reason it was disabling the billboard mode)\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/rh-billboard.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16702",
+                "title": "Add IReadonlyObservable (interface for receiver side of Observable)",
+                "description": "This PR adds an `IReadonlyObservable` interface which is the receiver side of the Observable contract. I want to add this for two reasons:\r\n\r\n1. The `Observable` class is type invariant (meaning it is not covariant or contravariant). This means you cannot do something like `const nodeObservable: Observable<Node> = new Observable<Mesh>()`, even though a `Mesh` is a `Node`. This makes it hard to write code that should be the same regardless of what type of `Node` you are trying to observe (e.g. same code using `Scene.onNewMeshAddedObservable` and `Scene.onNewTransformNodeAdded` for example). You can, but it requires some ugly and type unsafe casting. This problem happens specifically because `Observable` is not covariant. It's not covariant because it is invariant because the type `T` is used as both inputs and outputs of the contract, which means if you have `IObservable<T1>` and `IObservable<T2>`, `T1` must exactly be `T2` (neither can be subtype of the other). `IReadonlyObservable` is the receiver side of `Observable` and only exposes `T` as outputs, meaning it is covariant, and therefore `const nodeObservable: IReadonlyObservable<Node> = new Observable<Mesh>()` is perfectly valid.\r\n2. Separating out the receiver side of `Observable` makes it easier to express intent in the API. For example, `Scene` should be the one firing the `Scene.onNewMeshAddedObservable`, not anyone outside of the `Scene`. However, since we current expose `onNewMeshAddedObservable` as an `Observable<T>`, nothing stops code outside of `Scene` from calling `notifyObservers`.\r\n\r\nI used the name `IReadonlyObservable` because it seems like people will likely understand what this means, and because if I recall @AmoebaChant did something like this in another project. The downside of this name is that it's harder to come up with a name for an interface for the \"write\" side of `Observable` if we ever decide to do that (e.g. if we want a contravariant interface as well). Alternative names could be:\r\n- `IObservableSink1` (such that a write side could be named `IObservableSource`).\r\n- `IObservableReceiver` (such that a write side could be named `IObservableSender`).\r\n\r\nI'm open to any naming choices.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16701",
+                "title": "Fix nasty bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16700",
+                "title": "Optimization for NME: teleports will do nothing if the input node is …",
+                "description": "…an uniform",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportOutBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16691",
+                "title": "RH camera fixes",
+                "description": "This fixes an issue we have with cameras when in right-handed system where setting `rotation` or `rotationQuaterion` on a camera in right-handed system actually sets the camera 180 flipped from what is represented in the view matrix.\r\n\r\nYou can see this problem using this PG: https://playground.babylonjs.com/#BDQ72M#1\r\nOn line 14, we are setting the `rotation` to `0,0,0`, but the rotation from the world matrix of the camera is `0,PI,0`.\r\n\r\nThis change fixes the problem, but it is a breaking change for setting the rotation properties since it will behave 180 flipped from before. The default orientation of camera will still work as before (i.e., always point to +Z for both LH and RH) to maintain backwards compatibility as much as possible.\r\n\r\nThe fix involves changing the reference point of camera. The code mistakenly uses the same reference point of `0,0,1` for both LH and RH view matrix. Babylon target camera's LH and RH view matrices are flipped by Z. Thus, the reference point should also flip by Z for the math to work.\r\n\r\nThere is a secondary problem in `setTarget` where it is hard-coded to use LH math. This has been fixed to consider RH.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "16694",
+                "title": "Fix incorrect rotation in billboard mode RH",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16695",
+                "title": "NME: Consolidate SFE mode logic into SmartFilterTextureBlock",
+                "description": "This is an attempt to keep the SFE logic all in one place, as much as possible, to help with maintainability and extending the SFE mode logic. In practice, this block would be mandatory for exporting an SFE block.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16687",
+                "title": "Fix compile error for WebGPU and animated meshes",
+                "description": "Animated meshes with WebGPU previously caused a shader compile error in the GeometryBufferRenderer. This PR fixes the issue.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bonesDeclaration.fx",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16688",
+                "title": "Add loading support for EXT_materials_specular_edge_color",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_specular.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16686",
+                "title": "Add functions to clear IBL shadow casters",
+                "description": null,
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowGBufferDebug.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16689",
+                "title": "Removing file commited by mistake",
+                "description": "This removes the file debug.log, it was added 3 years ago on PR 13159 and nothing references it, it seems it was added by mistake.",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "debug.log"
+                ],
+                "tags": []
+            }
+        ],
         "8.10.0": [
             {
                 "pr": "16625",

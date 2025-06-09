@@ -92,6 +92,13 @@ export class GPUPicker {
         return this._pickingInProgress;
     }
 
+    /**
+     * Gets the default render material used by the picker.
+     */
+    public get defaultRenderMaterial(): Nullable<ShaderMaterial> {
+        return this._defaultRenderMaterial;
+    }
+
     private static _IdToRgb(id: number) {
         GPUPicker._TempColor.r = (id & 0xff0000) >> 16;
         GPUPicker._TempColor.g = (id & 0x00ff00) >> 8;

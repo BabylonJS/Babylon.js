@@ -53,6 +53,9 @@
             "path": "packages/dev/inspector/tsconfig.build.json"
         },
         {
+            "path": "packages/dev/inspector-v2/tsconfig.build.json"
+        },
+        {
             "path": "packages/tools/ktx2Decoder/tsconfig.build.json"
         }
     ],
