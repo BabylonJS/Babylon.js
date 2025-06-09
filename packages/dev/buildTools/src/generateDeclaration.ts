@@ -112,7 +112,7 @@ function GetModuleDeclaration(
                                 // not a dev dependency
                                 // TODO - make a list of external dependencies per package
                                 // for now - we support react
-                                if (match[1] !== "react") {
+                                if (match[1] !== "react" /* && !match[1].startsWith("@fluentui")*/) {
                                     // check what the line imports
                                     line = "";
                                 }
@@ -163,9 +163,9 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
                     // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^;\n ]*)([^\\w])`, "g");
+                    const matchRegex = new RegExp(`([ <])(${alias}[^;\n> ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
                     return;
                 }
@@ -394,9 +394,9 @@ function GetPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
+                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
                         // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^;\n ]*)([^\\w])`, "g");
+                        const matchRegex = new RegExp(`([ <])(${alias}[^;\n> ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
                         return;
                     } else if (externalName === "react") {
