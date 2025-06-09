@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 
 import type { InputProps as FluentInputProps } from "@fluentui/react-components";
@@ -28,7 +28,7 @@ export const Input: FunctionComponent<FluentInputProps> = (props) => {
         setValue(props.value ?? ""); // Update local state when props.value changes
     }, [props.value]);
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>, data: any) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>, data: any) => {
         event.stopPropagation(); // Prevent event propagation
         if (props.onChange) {
             props.onChange(event, data); // Call the original onChange handler passed as prop
@@ -36,7 +36,7 @@ export const Input: FunctionComponent<FluentInputProps> = (props) => {
         setValue(event.target.value); // Update local state with the new value
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         event.stopPropagation(); // Prevent event propagation
         if (props.onKeyDown) {
             props.onKeyDown(event); // Call the original onKeyDown handler passed as prop
