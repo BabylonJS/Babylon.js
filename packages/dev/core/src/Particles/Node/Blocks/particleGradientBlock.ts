@@ -11,6 +11,7 @@ import { Vector2, Vector3 } from "core/Maths/math.vector";
  * Block used to define a list of gradient entries
  */
 export class ParticleGradientBlock extends NodeParticleBlock {
+    private _entryCount = 1;
     /**
      * Creates a new ParticleGradientBlock
      * @param name defines the block name
@@ -20,10 +21,6 @@ export class ParticleGradientBlock extends NodeParticleBlock {
 
         this.registerInput("gradient", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
         this.registerInput("entry0", NodeParticleBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("entry1", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("entry2", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("entry3", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("entry4", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[1];
@@ -48,10 +45,20 @@ export class ParticleGradientBlock extends NodeParticleBlock {
                 NodeParticleBlockConnectionPointTypes.Color4Gradient
         );
 
-        this._linkConnectionTypes(1, 2);
-        this._linkConnectionTypes(1, 3);
-        this._linkConnectionTypes(1, 4);
-        this._linkConnectionTypes(1, 5);
+        this._manageExtendedInputs(1);
+    }
+
+    private _manageExtendedInputs(index: number) {
+        this._inputs[index].onConnectionObservable.add(() => {
+            if (this._entryCount > index) {
+                return;
+            }
+            this._entryCount++;
+            this.registerInput("entry" + (this._entryCount - 1), NodeParticleBlockConnectionPointTypes.AutoDetect, true);
+            this._linkConnectionTypes(1, this._entryCount);
+
+            this._manageExtendedInputs(this._entryCount);
+        });
     }
 
     /**

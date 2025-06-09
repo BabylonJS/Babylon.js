@@ -88,6 +88,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TimeBlock: "Block used to get the current time in ms",
         DeltaBlock: "Block used to get the delta value for animations",
         BasicUpdateBlock: "Block used to update the position of a particle with a basic update (eg. direction * delta)",
+        BasicConditionBlock: "Block used to compare two values and return a value based on the comparison (1 or 0)",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -175,6 +176,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Emitters: ["BoxEmitterBlock", "SphereEmitterBlock", "PointEmitterBlock", "CustomEmitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Int", "TextureBlock", "Color4"],
             Updates: ["UpdateDirectionBlock", "UpdatePositionBlock", "UpdateColorBlock", "UpdateScaleBlock", "UpdateAngleBlock", "BasicUpdateBlock"],
+            Conditions: ["BasicConditionBlock"],
             Math__Standard: [
                 "AddBlock",
                 "DivideBlock",

@@ -8,16 +8,20 @@ import type { Observer } from "core/Misc/observable";
 import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import type { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 import type { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
+import type { NodeParticleConnectionPoint } from "core/Particles";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
     private _outputs: IPortData[] = [];
     private _onBuildObserver: Nullable<Observer<NodeParticleBlock>> = null;
+    private _onInputChangeObserver: Nullable<Observer<NodeParticleConnectionPoint>> = null;
 
     /**
      * Gets or sets a callback used to call node visual refresh
      */
     public refreshCallback?: () => void;
+
+    public onInputCountChanged?: () => void;
 
     public get uniqueId(): number {
         return this.data.uniqueId;
@@ -79,6 +83,7 @@ export class BlockNodeData implements INodeData {
     public dispose() {
         this.data.dispose();
         this.data.onBuildObservable.remove(this._onBuildObserver);
+        this._onInputChangeObserver?.remove();
     }
 
     public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
@@ -118,6 +123,13 @@ export class BlockNodeData implements INodeData {
         this._onBuildObserver = data.onBuildObservable.add(() => {
             if (this.refreshCallback) {
                 this.refreshCallback();
+            }
+        });
+
+        this._onInputChangeObserver = data.onInputChangedObservable.add((input) => {
+            this._inputs.push(new ConnectionPointPortData(input, nodeContainer));
+            if (this.onInputCountChanged) {
+                this.onInputCountChanged();
             }
         });
     }

@@ -35,6 +35,11 @@ export class NodeParticleBlock {
     public onBuildObservable = new Observable<NodeParticleBlock>();
 
     /**
+     * Gets an observable raised when the inputs of the block change
+     */
+    public onInputChangedObservable = new Observable<NodeParticleConnectionPoint>();
+
+    /**
      * Gets a boolean indicating if this block is a teleport out
      */
     public get isTeleportOut(): boolean {
@@ -220,6 +225,8 @@ export class NodeParticleBlock {
         point.valueMax = valueMax;
 
         this._inputs.push(point);
+
+        this.onInputChangedObservable.notifyObservers(point);
 
         return this;
     }
@@ -409,5 +416,6 @@ export class NodeParticleBlock {
         }
 
         this.onBuildObservable.clear();
+        this.onInputChangedObservable.clear();
     }
 }
