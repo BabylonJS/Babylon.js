@@ -6,7 +6,7 @@ import type { IBlockSerializerV1, BaseBlock } from "@dev/smart-filters";
 /**
  * The V1 serializer for a Composition Block
  */
-export const compositionBlockSerializer: IBlockSerializerV1 = {
+export const CompositionBlockSerializer: IBlockSerializerV1 = {
     blockType: compositionBlockType,
     serialize: (block: BaseBlock) => {
         if (block.getClassName() !== compositionBlockType) {

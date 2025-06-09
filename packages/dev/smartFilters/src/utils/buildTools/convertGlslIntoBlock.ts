@@ -38,13 +38,13 @@ const ShaderBindingPrivateVariablesTemplate = `    private readonly _${CAMEL_CAS
 const ShaderBindingCtorDocstringParams = `     * @param ${CAMEL_CASE_UNIFORM} - The ${CAMEL_CASE_UNIFORM} runtime value`;
 const ShaderBindingCtorParams = `        ${CAMEL_CASE_UNIFORM}: RuntimeData<ConnectionPointType.${CONNECTION_POINT_TYPE}>`;
 const ShaderBindingCtor = `        this._${CAMEL_CASE_UNIFORM} = ${CAMEL_CASE_UNIFORM};`;
-const ShaderBindingBind = `        effect.${EFFECT_SETTER}(this.getRemappedName(uniforms.${CAMEL_CASE_UNIFORM}), ${EFFECT_VALUE});`;
+const ShaderBindingBind = `        effect.${EFFECT_SETTER}(this.getRemappedName(Uniforms.${CAMEL_CASE_UNIFORM}), ${EFFECT_VALUE});`;
 const ShaderBindingBindRegularValue = `this._${CAMEL_CASE_UNIFORM}.value`;
 
 const BlockInputProperty = `    /**
      * The ${CAMEL_CASE_UNIFORM} connection point.
      */
-    public readonly ${CAMEL_CASE_UNIFORM} = this._registerInput(uniforms.${CAMEL_CASE_UNIFORM}, ConnectionPointType.${CONNECTION_POINT_TYPE});
+    public readonly ${CAMEL_CASE_UNIFORM} = this._registerInput(Uniforms.${CAMEL_CASE_UNIFORM}, ConnectionPointType.${CONNECTION_POINT_TYPE});
 `;
 const BlockInputOptionalProperty = `    /**
     /**
@@ -122,7 +122,7 @@ ${BLOCK_INPUT_PROPERTIES}
     /**
      * The shader program (vertex and fragment code) to use to render the block
      */
-    public static override ShaderCode = shaderProgram;
+    public static override ShaderCode = ShaderProgram;
 
     /**
      * Instantiates a new ${BLOCK_NAME}.

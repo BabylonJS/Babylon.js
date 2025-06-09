@@ -17,7 +17,7 @@ import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 /**
  * This block uses a custom vertex shader, so it defines the ShaderProgram inline
  */
-const shaderProgram: ShaderProgram = {
+const ShaderProgram: ShaderProgram = {
     vertex: `
         // Attributes
         attribute vec2 position;
@@ -164,7 +164,7 @@ export class KaleidoscopeBlock extends DisableableShaderBlock {
     /**
      * The shader program (vertex and fragment code) to use to render the block
      */
-    public static override ShaderCode = shaderProgram;
+    public static override ShaderCode = ShaderProgram;
 
     /**
      * Instantiates a new Block.

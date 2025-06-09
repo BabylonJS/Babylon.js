@@ -8,7 +8,7 @@ import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
  * Though it is an aggregate block, Blur creates and manages its own blocks
  * internally, so there's no need to worry about serializing them.
  */
-export const blurBlockSerializer: IBlockSerializerV1 = {
+export const BlurBlockSerializer: IBlockSerializerV1 = {
     blockType: blurBlockType,
     serialize: (block: BaseBlock) => {
         if (block.getClassName() !== blurBlockType) {

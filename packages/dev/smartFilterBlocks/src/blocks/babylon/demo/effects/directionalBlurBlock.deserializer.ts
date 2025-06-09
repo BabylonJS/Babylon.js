@@ -32,7 +32,7 @@ export interface ISerializedDirectionalBlurBlockV1 extends ISerializedBlockV1 {
  * @param serializedBlock - The serialized block data
  * @returns A deserialized DirectionalBlurBlock
  */
-export function directionalBlurDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedDirectionalBlurBlockV1) {
+export function DirectionalBlurDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedDirectionalBlurBlockV1) {
     const block = new DirectionalBlurBlock(smartFilter, serializedBlock.name);
 
     // If data is missing, use the default value set by the block

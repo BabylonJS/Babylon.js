@@ -42,7 +42,7 @@ const ShaderTemplate = `${IMPORTS}
 /**
  * The shader program for the block.
  */
-${EXPORT}const shaderProgram: ShaderProgram = {
+const BlockShaderProgram: ShaderProgram = {
     vertex: ${VERTEX_SHADER},
     fragment: {
         uniform: \`${UNIFORMS}\`,${CONSTS_PROPERTY}
@@ -57,10 +57,11 @@ ${EXPORT}const shaderProgram: ShaderProgram = {
  * The uniform names for this shader, to be used in the shader binding so
  * that the names are always in sync.
  */
-${EXPORT}const uniforms = {
+const Uniforms = {
 ${UNIFORM_NAMES}
 };
-`;
+
+${EXPORT}`;
 
 const UniformNameLinePrefix = "    ";
 
@@ -142,7 +143,15 @@ export function ExtractShaderProgramFromGlsl(
         )
         .replace(FUNCTIONS, functionsSection.join(""))
         .replace(UNIFORM_NAMES, AddLinePrefixes(fragmentShaderInfo.uniforms.map((u) => `${u.name}: "${u.name}",`).join("\n"), UniformNameLinePrefix))
-        .replace(new RegExp(EXPORT, "g"), exportObjects ? "export " : "");
+        .replace(
+            new RegExp(EXPORT, "g"),
+            exportObjects
+                ? `export { BlockShaderProgram, Uniforms };
+// Back compat for when camelCase was used
+export { BlockShaderProgram as shaderProgram, Uniforms as uniforms };
+`
+                : ""
+        );
 
     return {
         shaderProgramCode: finalContents,

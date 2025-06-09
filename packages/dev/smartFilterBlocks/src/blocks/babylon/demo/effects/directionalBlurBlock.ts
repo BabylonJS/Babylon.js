@@ -14,7 +14,7 @@ import {
 import { directionalBlurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 
-const shaderProgram: ShaderProgram = {
+const ShaderProgram: ShaderProgram = {
     fragment: {
         const: `
             const float _epsilon_ = 0.01;
@@ -61,7 +61,7 @@ const shaderProgram: ShaderProgram = {
     },
 };
 
-const wideWeights = Float32Array.from([0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]);
+const WideWeights = Float32Array.from([0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]);
 
 /**
  * The shader bindings for the DirectionalBlur block.
@@ -90,7 +90,7 @@ export class DirectionalBlurShaderBinding extends ShaderBinding {
      */
     public override bind(effect: Effect): void {
         // Global pass Setup
-        effect.setFloatArray(this.getRemappedName("weights"), wideWeights);
+        effect.setFloatArray(this.getRemappedName("weights"), WideWeights);
 
         // V blur
         effect.setTexture(this.getRemappedName("input"), this._inputTexture.value);
@@ -159,7 +159,7 @@ export class DirectionalBlurBlock extends ShaderBlock {
     /**
      * The shader program (vertex and fragment code) to use to render the block
      */
-    public static override ShaderCode = shaderProgram;
+    public static override ShaderCode = ShaderProgram;
 
     /**
      * Instantiates a new Block.

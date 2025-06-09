@@ -4,7 +4,7 @@ import { ConnectionPointType, type SerializedShaderBlockDefinition } from "@dev/
  * This is included to show how a serialized block definition can be loaded and used.
  * This object could have been deserialized from a JSON file, for example.
  */
-export const deserializedTintBlockDefinition: SerializedShaderBlockDefinition = {
+export const DeserializedTintBlockDefinition: SerializedShaderBlockDefinition = {
     format: "shaderBlockDefinition",
     formatVersion: 1,
     blockType: "TintBlock",

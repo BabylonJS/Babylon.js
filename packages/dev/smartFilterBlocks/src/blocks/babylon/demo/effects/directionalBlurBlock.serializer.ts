@@ -6,7 +6,7 @@ import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 /**
  * The V1 serializer for a Directional Blur Block
  */
-export const directionalBlurBlockSerializer: IBlockSerializerV1 = {
+export const DirectionalBlurBlockSerializer: IBlockSerializerV1 = {
     blockType: directionalBlurBlockType,
     serialize: (block: BaseBlock) => {
         if (block.getClassName() !== directionalBlurBlockType) {

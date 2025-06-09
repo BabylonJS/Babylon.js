@@ -27,7 +27,7 @@ export interface ISerializedBlurBlockV1 extends ISerializedBlockV1 {
  * @param serializedBlock - The serialized block data
  * @returns A deserialized BlurBlock
  */
-export function blurBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlurBlockV1) {
+export function BlurBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlurBlockV1) {
     const block = new BlurBlock(smartFilter, serializedBlock.name);
 
     // If data is missing, use the default value set by the block

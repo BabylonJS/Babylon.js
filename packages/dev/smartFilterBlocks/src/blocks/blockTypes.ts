@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export const pixelateBlockType = "PixelateBlock";
 export const blackAndWhiteBlockType = "BlackAndWhiteBlock";
 export const exposureBlockType = "ExposureBlock";
@@ -19,3 +20,4 @@ export const particleBlockType = "ParticleBlock";
 export const spritesheetBlockType = "SpritesheetBlock";
 export const tintBlockType = "TintBlock";
 export const premultiplyAlphaBlockType = "PremultiplyAlphaBlock";
+/* eslint-enable @typescript-eslint/naming-convention */

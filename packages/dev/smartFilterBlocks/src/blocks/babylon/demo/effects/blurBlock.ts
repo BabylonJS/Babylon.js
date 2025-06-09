@@ -3,8 +3,8 @@ import { DirectionalBlurBlock } from "./directionalBlurBlock.js";
 import { blurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 
-const defaultBlurTextureRatioPerPass = 0.5;
-const defaultBlurSize = 2;
+const DefaultBlurTextureRatioPerPass = 0.5;
+const DefaultBlurSize = 2;
 
 /**
  * A block performing a blur on the input texture.
@@ -32,8 +32,8 @@ export class BlurBlock extends AggregateBlock {
      */
     public readonly output: ConnectionPoint<ConnectionPointType.Texture>;
 
-    private _blurTextureRatioPerPass = defaultBlurTextureRatioPerPass;
-    private _blurSize = defaultBlurSize;
+    private _blurTextureRatioPerPass = DefaultBlurTextureRatioPerPass;
+    private _blurSize = DefaultBlurSize;
 
     private readonly _intermediateBlurV: DirectionalBlurBlock;
     private readonly _intermediateBlurH: DirectionalBlurBlock;
@@ -105,8 +105,8 @@ export class BlurBlock extends AggregateBlock {
         this.input = this._registerSubfilterInput("input", [this._intermediateBlurV.input]);
         this.output = this._registerSubfilterOutput("output", this._finalBlurH.output);
 
-        this.blurSize = defaultBlurSize;
-        this.blurTextureRatioPerPass = defaultBlurTextureRatioPerPass;
+        this.blurSize = DefaultBlurSize;
+        this.blurTextureRatioPerPass = DefaultBlurTextureRatioPerPass;
         this._intermediateBlurV.blurVerticalWidth = 0;
         this._intermediateBlurH.blurHorizontalWidth = 0;
         this._finalBlurV.blurVerticalWidth = 0;

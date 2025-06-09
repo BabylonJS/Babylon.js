@@ -30,12 +30,13 @@ import {
  *   3. If the deserializer is non-trivial (needs serializedBlock.data), implement it in a separate file alongside the block
  *      in the form blockClassName.deserializer.ts
  */
-export const builtInBlockRegistrations: IBlockRegistration[] = [
+export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     // Blocks with trivial deserializers
     // Note that some choose to predefine corresponding input blocks if not being deserialized
     // ---------------------------------------------------------------------------------------
     {
         blockType: blackAndWhiteBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "blackAndWhiteBlock" */ "../blocks/babylon/demo/effects/blackAndWhiteBlock.block.js");
             return new module.BlackAndWhiteBlock(smartFilter, serializedBlock?.name || "BlackAndWhite");
@@ -45,6 +46,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: kaleidoscopeBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "kaleidoscopeBlock" */ "../blocks/babylon/demo/effects/kaleidoscopeBlock.js");
             const block = new module.KaleidoscopeBlock(smartFilter, serializedBlock?.name || "Kaleidoscope");
@@ -59,6 +61,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: posterizeBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "posterizeBlock" */ "../blocks/babylon/demo/effects/posterizeBlock.block.js");
             const block = new module.PosterizeBlock(smartFilter, serializedBlock?.name || "Posterize");
@@ -73,6 +76,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: desaturateBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "desaturateBlock" */ "../blocks/babylon/demo/effects/desaturateBlock.block.js");
             const block = new module.DesaturateBlock(smartFilter, serializedBlock?.name || "Desaturate");
@@ -87,6 +91,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: contrastBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "contrastBlock" */ "../blocks/babylon/demo/effects/contrastBlock.block.js");
             const block = new module.ContrastBlock(smartFilter, serializedBlock?.name || "Contrast");
@@ -101,6 +106,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: greenScreenBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "greenScreenBlock" */ "../blocks/babylon/demo/effects/greenScreenBlock.block.js");
             const block = new module.GreenScreenBlock(smartFilter, serializedBlock?.name || "GreenScreen");
@@ -121,6 +127,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: pixelateBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "pixelateBlock" */ "../blocks/babylon/demo/effects/pixelateBlock.block.js");
             const block = new module.PixelateBlock(smartFilter, serializedBlock?.name || "Pixelate");
@@ -135,6 +142,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: exposureBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "exposureBlock" */ "../blocks/babylon/demo/effects/exposureBlock.block.js");
             const block = new module.ExposureBlock(smartFilter, serializedBlock?.name || "Exposure");
@@ -149,6 +157,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: maskBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "maskBlock" */ "../blocks/babylon/demo/effects/maskBlock.block.js");
             return new module.MaskBlock(smartFilter, serializedBlock?.name || "Mask");
@@ -158,6 +167,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: spritesheetBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "spritesheetBlock" */ "../blocks/babylon/demo/effects/spritesheetBlock.js");
             return new module.SpritesheetBlock(smartFilter, serializedBlock?.name || "Spritesheet");
@@ -167,6 +177,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: premultiplyAlphaBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "premultiplyAlphaBlock" */ "../blocks/babylon/demo/utilities/premultiplyAlphaBlock.block.js");
             return new module.PremultiplyAlphaBlock(smartFilter, serializedBlock?.name || "PremultiplyAlpha");
@@ -176,6 +187,7 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: wipeBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "wipeBlock" */ "../blocks/babylon/demo/transitions/wipeBlock.block.js");
             return new module.WipeBlock(smartFilter, serializedBlock?.name || "Wipe");
@@ -188,10 +200,11 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     // --------------------------------
     {
         blockType: blurBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             if (serializedBlock) {
                 const module = await import(/* webpackChunkName: "blurBlockDeserializer" */ "../blocks/babylon/demo/effects/blurBlock.deserializer.js");
-                return module.blurBlockDeserializer(smartFilter, serializedBlock);
+                return module.BlurBlockDeserializer(smartFilter, serializedBlock);
             } else {
                 const module = await import(/* webpackChunkName: "blurBlock" */ "../blocks/babylon/demo/effects/blurBlock.js");
                 return new module.BlurBlock(smartFilter, "Blur");
@@ -202,10 +215,11 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     },
     {
         blockType: compositionBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             if (serializedBlock) {
                 const module = await import(/* webpackChunkName: "compositionBlockDeserializer" */ "../blocks/babylon/demo/effects/compositionBlock.deserializer.js");
-                return module.compositionDeserializer(smartFilter, serializedBlock);
+                return module.CompositionDeserializer(smartFilter, serializedBlock);
             } else {
                 const module = await import(/* webpackChunkName: "compositionBlock" */ "../blocks/babylon/demo/effects/compositionBlock.js");
                 const block = new module.CompositionBlock(smartFilter, "Composition");
@@ -229,9 +243,10 @@ export const builtInBlockRegistrations: IBlockRegistration[] = [
     // ----------------------------------------
     {
         blockType: tintBlockType,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
             const module = await import(/* webpackChunkName: "tintBlock" */ "../blocks/babylon/demo/effects/tintBlock.js");
-            return CustomShaderBlock.Create(smartFilter, serializedBlock?.name || "Tint", module.deserializedTintBlockDefinition);
+            return CustomShaderBlock.Create(smartFilter, serializedBlock?.name || "Tint", module.DeserializedTintBlockDefinition);
         },
         namespace: babylonDemoEffectsNamespace,
         tooltip: "Adds colored tint to the input texture",

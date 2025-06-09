@@ -1,7 +1,7 @@
 import type { IBlockSerializerV1 } from "@dev/smart-filters";
-import { blurBlockSerializer } from "../blocks/babylon/demo/effects/blurBlock.serializer.js";
-import { directionalBlurBlockSerializer } from "../blocks/babylon/demo/effects/directionalBlurBlock.serializer.js";
-import { compositionBlockSerializer } from "../blocks/babylon/demo/effects/compositionBlock.serializer.js";
+import { BlurBlockSerializer } from "../blocks/babylon/demo/effects/blurBlock.serializer.js";
+import { DirectionalBlurBlockSerializer } from "../blocks/babylon/demo/effects/directionalBlurBlock.serializer.js";
+import { CompositionBlockSerializer } from "../blocks/babylon/demo/effects/compositionBlock.serializer.js";
 import {
     blackAndWhiteBlockType,
     pixelateBlockType,
@@ -24,6 +24,7 @@ import {
  * should go in this list. If the serializer needs to store additional info in ISerializedBlockV1.data (e.g.
  * webcam source name), then it should be registered in additionalBlockSerializers below.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const blocksUsingDefaultSerialization: string[] = [
     blackAndWhiteBlockType,
     pixelateBlockType,
@@ -45,4 +46,5 @@ export const blocksUsingDefaultSerialization: string[] = [
  * Any blocks which require serializing more information than just the connections should be registered here.
  * They should make use of the ISerializedBlockV1.data field to store this information.
  */
-export const additionalBlockSerializers: IBlockSerializerV1[] = [blurBlockSerializer, directionalBlurBlockSerializer, compositionBlockSerializer];
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const additionalBlockSerializers: IBlockSerializerV1[] = [BlurBlockSerializer, DirectionalBlurBlockSerializer, CompositionBlockSerializer];

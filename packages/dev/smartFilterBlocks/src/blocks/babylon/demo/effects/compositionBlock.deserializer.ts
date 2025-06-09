@@ -22,7 +22,7 @@ export interface ISerializedCompositionBlockV1 extends ISerializedBlockV1 {
  * @param serializedBlock - The serialized block data
  * @returns A deserialized CompositionBlock
  */
-export function compositionDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedCompositionBlockV1) {
+export function CompositionDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedCompositionBlockV1) {
     const block = new CompositionBlock(smartFilter, serializedBlock.name);
 
     // If data is missing, use the default value set by the block

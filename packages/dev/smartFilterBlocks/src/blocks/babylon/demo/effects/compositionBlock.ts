@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import type { Effect } from "core/Materials/effect";
 import {
     DisableableShaderBinding,
