@@ -1,4 +1,4 @@
-import type { ISerializedBlockV1, SmartFilter } from "@babylonjs/smart-filters";
+import type { ISerializedBlockV1, SmartFilter } from "@dev/smart-filters";
 import { CompositionBlock } from "./compositionBlock.js";
 
 /**

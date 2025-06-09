@@ -1,4 +1,4 @@
-import type { ISerializedBlockV1, SmartFilter } from "@babylonjs/smart-filters";
+import type { ISerializedBlockV1, SmartFilter } from "@dev/smart-filters";
 import { DirectionalBlurBlock } from "./directionalBlurBlock.js";
 
 /**
@@ -32,10 +32,7 @@ export interface ISerializedDirectionalBlurBlockV1 extends ISerializedBlockV1 {
  * @param serializedBlock - The serialized block data
  * @returns A deserialized DirectionalBlurBlock
  */
-export function directionalBlurDeserializer(
-    smartFilter: SmartFilter,
-    serializedBlock: ISerializedDirectionalBlurBlockV1
-) {
+export function directionalBlurDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedDirectionalBlurBlockV1) {
     const block = new DirectionalBlurBlock(smartFilter, serializedBlock.name);
 
     // If data is missing, use the default value set by the block

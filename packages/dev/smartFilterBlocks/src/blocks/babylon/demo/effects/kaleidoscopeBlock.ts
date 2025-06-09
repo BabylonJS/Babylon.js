@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 
 import {
     type ShaderProgram,
@@ -9,7 +9,7 @@ import {
     DisableableShaderBlock,
     type SmartFilter,
     BlockDisableStrategy,
-} from "@babylonjs/smart-filters";
+} from "@dev/smart-filters";
 
 import { kaleidoscopeBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
@@ -21,10 +21,10 @@ const shaderProgram: ShaderProgram = {
     vertex: `
         // Attributes
         attribute vec2 position;
-        
+
         // Output
         varying vec2 vUV;
-        
+
         void main(void) {
             vUV = position;
             gl_Position = vec4(position, 0.0, 1.0);
@@ -44,10 +44,10 @@ const shaderProgram: ShaderProgram = {
             const vec2 _imageRatio_ =  vec2(700. / _width_, 1024. / _height_);
             const vec2 _imageRelativeSize_ = 1. / _imageRatio_;
             const float _halfDiag_ = sqrt(_imageRelativeSize_.x * _imageRelativeSize_.x + _imageRelativeSize_.y * _imageRelativeSize_.y) * 0.5;
-            
+
             const float _radius_ = 0.9;
             const float _radius2_ = 0.4;
-            
+
             const float _segments_ = 6.;
             const float _segmentArc_ = (2. * 3.1415926535897932384626433832795 / _segments_);
             `,
@@ -62,10 +62,10 @@ const shaderProgram: ShaderProgram = {
                 code: `
                 vec4 _kaleidoscope_(vec2 vUV) {
                     if (_disabled_) return texture2D(_input_, vUV);
-                    
+
                     float distanceToCircle = abs(length(vUV) - _radius_);
                     vec4 result = vec4(0., 0., 0., 0.);
-                
+
                     if (distanceToCircle < _halfDiag_ * 10000.) {
                         float pointTheta = atan(vUV.y, vUV.x);
                         pointTheta += _time_;
@@ -77,12 +77,12 @@ const shaderProgram: ShaderProgram = {
                             chunkStartPoint *= _imageRatio_;
                             chunkStartPoint *= vec2(0.5, 0.5);
                             chunkStartPoint += vec2(0.5, 0.5);
-                
+
                             if (chunkStartPoint.x > 0. && chunkStartPoint.x < 1. && chunkStartPoint.y > 0. && chunkStartPoint.y < 1.) {
                                 result = texture2D(_input_, chunkStartPoint);
                             }
                         }
-                
+
                         for (float i = -1.; i < 2.; i += 1.) {
                             float chunk = floor(pointTheta / _segmentArc_) + i;
                             float chunkStart = -_time_ + chunk * _segmentArc_ + _segmentArc_ * 0.5;
@@ -91,14 +91,14 @@ const shaderProgram: ShaderProgram = {
                             chunkStartPoint *= _imageRatio_;
                             chunkStartPoint *= vec2(0.5, 0.5);
                             chunkStartPoint += vec2(0.5, 0.5);
-                
+
                             if (chunkStartPoint.x > 0. && chunkStartPoint.x < 1. && chunkStartPoint.y > 0. && chunkStartPoint.y < 1.) {
                                 vec4 top = texture2D(_input_, chunkStartPoint);
                                 result = mix(result, top, (result.a <= 0.) ? 1. : top.a);
                             }
                         }
                     }
-                
+
                     return result;
                 }
             `,
@@ -120,11 +120,7 @@ export class KaleidoscopeShaderBinding extends DisableableShaderBinding {
      * @param inputTexture - the input texture
      * @param time - the time
      */
-    constructor(
-        parentBlock: IDisableableBlock,
-        inputTexture: RuntimeData<ConnectionPointType.Texture>,
-        time: RuntimeData<ConnectionPointType.Float>
-    ) {
+    constructor(parentBlock: IDisableableBlock, inputTexture: RuntimeData<ConnectionPointType.Texture>, time: RuntimeData<ConnectionPointType.Float>) {
         super(parentBlock);
         this._inputTexture = inputTexture;
         this._time = time;

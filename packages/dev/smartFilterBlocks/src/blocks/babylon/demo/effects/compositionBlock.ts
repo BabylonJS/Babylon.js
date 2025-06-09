@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 import {
     DisableableShaderBinding,
     type RuntimeData,
@@ -9,7 +9,7 @@ import {
     createStrongRef,
     PropertyTypeForEdition,
     editableInPropertyPage,
-} from "@babylonjs/smart-filters";
+} from "@dev/smart-filters";
 import { compositionBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 import { uniforms, shaderProgram } from "./compositionBlock.fragment.js";
@@ -134,56 +134,32 @@ export class CompositionBlock extends DisableableShaderBlock {
     /**
      * The foreground texture to composite in.
      */
-    public readonly foreground = this._registerOptionalInput(
-        uniforms.foreground,
-        ConnectionPointType.Texture,
-        createStrongRef(null)
-    );
+    public readonly foreground = this._registerOptionalInput(uniforms.foreground, ConnectionPointType.Texture, createStrongRef(null));
 
     /**
      * Defines where the top of the texture to composite in should be displayed. (between 0 and 1).
      */
-    public readonly foregroundTop = this._registerOptionalInput(
-        "foregroundTop",
-        ConnectionPointType.Float,
-        createStrongRef(0.0)
-    );
+    public readonly foregroundTop = this._registerOptionalInput("foregroundTop", ConnectionPointType.Float, createStrongRef(0.0));
 
     /**
      * Defines where the left of the texture to composite in should be displayed. (between 0 and 1).
      */
-    public readonly foregroundLeft = this._registerOptionalInput(
-        "foregroundLeft",
-        ConnectionPointType.Float,
-        createStrongRef(0.0)
-    );
+    public readonly foregroundLeft = this._registerOptionalInput("foregroundLeft", ConnectionPointType.Float, createStrongRef(0.0));
 
     /**
      * Defines the width of the texture in the composition.
      */
-    public readonly foregroundWidth = this._registerOptionalInput(
-        "foregroundWidth",
-        ConnectionPointType.Float,
-        createStrongRef(1.0)
-    );
+    public readonly foregroundWidth = this._registerOptionalInput("foregroundWidth", ConnectionPointType.Float, createStrongRef(1.0));
 
     /**
      * Defines the height of the texture in the composition.
      */
-    public readonly foregroundHeight = this._registerOptionalInput(
-        "foregroundHeight",
-        ConnectionPointType.Float,
-        createStrongRef(1.0)
-    );
+    public readonly foregroundHeight = this._registerOptionalInput("foregroundHeight", ConnectionPointType.Float, createStrongRef(1.0));
 
     /**
      * Defines a multiplier applied to the foreground's alpha channel.
      */
-    public readonly foregroundAlphaScale = this._registerOptionalInput(
-        uniforms.foregroundAlphaScale,
-        ConnectionPointType.Float,
-        createStrongRef(1.0)
-    );
+    public readonly foregroundAlphaScale = this._registerOptionalInput(uniforms.foregroundAlphaScale, ConnectionPointType.Float, createStrongRef(1.0));
 
     /**
      * Defines blend mode of the composition.
@@ -228,16 +204,6 @@ export class CompositionBlock extends DisableableShaderBlock {
         const foregroundAlphaScale = this.foregroundAlphaScale.runtimeData;
         const alphaMode = this.alphaMode;
 
-        return new CompositionShaderBinding(
-            this,
-            background,
-            foreground,
-            foregroundTop,
-            foregroundLeft,
-            foregroundWidth,
-            foregroundHeight,
-            foregroundAlphaScale,
-            alphaMode
-        );
+        return new CompositionShaderBinding(this, background, foreground, foregroundTop, foregroundLeft, foregroundWidth, foregroundHeight, foregroundAlphaScale, alphaMode);
     }
 }

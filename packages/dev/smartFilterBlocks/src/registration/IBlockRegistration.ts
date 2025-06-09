@@ -1,5 +1,5 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { SmartFilter, SmartFilterDeserializer, ISerializedBlockV1, BaseBlock } from "@babylonjs/smart-filters";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { SmartFilter, SmartFilterDeserializer, ISerializedBlockV1, BaseBlock } from "@dev/smart-filters";
 
 /**
  * An object which describes a block definition, as well as a factory for creating a new instance of the block or
@@ -19,12 +19,7 @@ export interface IBlockRegistration {
      * @param serializedBlock - The serialized block to deserialize, if any
      * @returns - A promise for a new instance of the block
      */
-    factory?: (
-        smartFilter: SmartFilter,
-        engine: ThinEngine,
-        smartFilterDeserializer: SmartFilterDeserializer,
-        serializedBlock?: ISerializedBlockV1
-    ) => Promise<BaseBlock>;
+    factory?: (smartFilter: SmartFilter, engine: ThinEngine, smartFilterDeserializer: SmartFilterDeserializer, serializedBlock?: ISerializedBlockV1) => Promise<BaseBlock>;
 
     /**
      * The namespace of the block

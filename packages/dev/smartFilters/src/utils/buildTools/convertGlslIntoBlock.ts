@@ -5,6 +5,8 @@ import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlo
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const EXTRA_IMPORTS = "@EXTRA_IMPORTS@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const SMART_FILTER_CORE_IMPORT = "@SMART_FILTER_CORE_IMPORT@";
 const SHADER_PROGRAM = "@SHADER_PROGRAM@";
 const BLOCK_NAME = "@BLOCK_NAME@";
 const NAMESPACE = "@NAMESPACE@";
@@ -75,7 +77,7 @@ import {
     type SmartFilter,
     ${SHADER_BLOCK_EXTENDS},
     type ShaderProgram,
-${EXTRA_IMPORTS}} from "@babylonjs/smart-filters";${SHADER_PROGRAM}
+${EXTRA_IMPORTS}} from "${SMART_FILTER_CORE_IMPORT}";${SHADER_PROGRAM}
 /**
  * The shader binding for the ${BLOCK_NAME}, used by the runtime
  */
@@ -294,6 +296,7 @@ export function ConvertGlslIntoBlock(fragmentShaderPath: string, importPath: str
     // Generate final contents
     const finalContents = FileTemplate.replace(SHADER_PROGRAM, shaderProgramCode)
         .replace(EXTRA_IMPORTS, extraImports.join(",\n"))
+        .replace(SMART_FILTER_CORE_IMPORT, importPath)
         .replace(new RegExp(BLOCK_NAME, "g"), fragmentShaderInfo.blockType)
         .replace(NAMESPACE, fragmentShaderInfo.namespace || "Other")
         .replace(new RegExp(SHADER_BINDING_EXTENDS, "g"), shaderBindingExtends)

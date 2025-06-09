@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 
 import {
     type ShaderProgram,
@@ -9,7 +9,7 @@ import {
     PropertyTypeForEdition,
     ShaderBinding,
     ShaderBlock,
-} from "@babylonjs/smart-filters";
+} from "@dev/smart-filters";
 
 import { directionalBlurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
@@ -38,9 +38,9 @@ const shaderProgram: ShaderProgram = {
                 code: `
                 vec4 _directionalBlur_(vec2 vUV) {
                     vec2 start = vUV - 3.0 * _texelStep_;
-    
+
                     vec4 finalWeightedColor = vec4(0., 0., 0., 0.);
-                
+
                     for (int i = 0; i < 7; i++)
                     {
                         vec2 fetchUV = start + _texelStep_ * float(i);
@@ -49,10 +49,10 @@ const shaderProgram: ShaderProgram = {
 
                         // Ignore samples from mostly transparent pixels
                         if (colorSample.a < _epsilon_) continue;
-                
-                        finalWeightedColor += colorSample * _weights_[i];                    
+
+                        finalWeightedColor += colorSample * _weights_[i];
                     }
-                
+
                     return finalWeightedColor;
                 }
             `,
@@ -77,11 +77,7 @@ export class DirectionalBlurShaderBinding extends ShaderBinding {
      * @param blurHorizontalWidth - The horizontal blur width
      * @param blurVerticalWidth - The vertical blur width
      */
-    constructor(
-        inputTexture: RuntimeData<ConnectionPointType.Texture>,
-        blurHorizontalWidth: number,
-        blurVerticalWidth: number
-    ) {
+    constructor(inputTexture: RuntimeData<ConnectionPointType.Texture>, blurHorizontalWidth: number, blurVerticalWidth: number) {
         super();
         this._inputTexture = inputTexture;
         this._blurHorizontalWidth = blurHorizontalWidth;

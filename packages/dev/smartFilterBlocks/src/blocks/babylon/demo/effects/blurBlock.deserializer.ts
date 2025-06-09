@@ -1,4 +1,4 @@
-import { type SmartFilter, type ISerializedBlockV1 } from "@babylonjs/smart-filters";
+import { type SmartFilter, type ISerializedBlockV1 } from "@dev/smart-filters";
 import { BlurBlock } from "./blurBlock.js";
 
 /**

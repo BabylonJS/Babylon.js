@@ -1,4 +1,4 @@
-import { ConnectionPointType, type SerializedShaderBlockDefinition } from "@babylonjs/smart-filters";
+import { ConnectionPointType, type SerializedShaderBlockDefinition } from "@dev/smart-filters";
 
 /**
  * This is included to show how a serialized block definition can be loaded and used.
@@ -12,7 +12,7 @@ export const deserializedTintBlockDefinition: SerializedShaderBlockDefinition = 
     shaderProgram: {
         fragment: {
             uniform: `
-                uniform sampler2D _input_; // main 
+                uniform sampler2D _input_; // main
                 uniform vec3 _tint_;
                 uniform float _amount_;
                 `,

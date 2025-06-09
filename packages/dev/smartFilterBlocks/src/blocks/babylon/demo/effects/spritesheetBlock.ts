@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 
 import { spritesheetBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
@@ -12,7 +12,7 @@ import {
     type SmartFilter,
     createStrongRef,
     BlockDisableStrategy,
-} from "@babylonjs/smart-filters";
+} from "@dev/smart-filters";
 
 /**
  * The shader bindings for the Spritesheet block.
@@ -61,10 +61,7 @@ export class SpritesheetShaderBinding extends DisableableShaderBinding {
         effect.setFloat(this.getRemappedName(uniforms.cols), this._cols.value);
 
         // Apply default value for frame count if it was not provided
-        effect.setFloat(
-            this.getRemappedName(uniforms.frames),
-            this._frames.value > 0 ? this._frames.value : this._rows.value * this._cols.value
-        );
+        effect.setFloat(this.getRemappedName(uniforms.frames), this._frames.value > 0 ? this._frames.value : this._rows.value * this._cols.value);
     }
 }
 
