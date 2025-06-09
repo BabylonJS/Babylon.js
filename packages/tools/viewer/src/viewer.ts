@@ -806,7 +806,7 @@ export class Viewer implements IDisposable {
     private _reflectionTexture: Nullable<CubeTexture | HDRCubeTexture> = null;
     private _reflectionsIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
     private _reflectionsRotation = this._options?.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation;
-    private _light: Nullable<HemisphericLight | DirectionalLight> = null;
+    private _light: Nullable<HemisphericLight> = null;
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;

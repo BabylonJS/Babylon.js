@@ -144,7 +144,10 @@
             <button onClick="onResumeRendering()">Resume Rendering</button>
             <button onClick="onMarkSceneMutated()">Mark Scene Mutated</button>
             <button onClick="resetModel()">Reset Model</button>
+
+            <!-- // TODO: to remove before merge the PR, just to test the feature -->
             <button onclick="nextEnv()">Next Environment</button>
+
             <div>
                 <span>Environment Intensity</span>
                 <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
@@ -356,13 +359,13 @@
                 viewerElement.viewerDetails.viewer.resetModel();
             };
 
+            // TODO: to remove before merge the PR, just to test the feature
             const envs = [
                 "https://assets.babylonjs.com/environments/sanGiuseppeBridge.env",
                 "https://assets.babylonjs.com/environments/ulmerMuenster.env",
                 "https://cdn.substance3d.com/v2/files/public/studio-white.env",
                 "https://cdn.substance3d.com/v2/files/public/Atelier1K.env",
                 "https://cdn.substance3d.com/v2/files/public/Exterior1K.env",
-                "https://playground.babylonjs.com/textures/room.hdr",
             ];
             let currentEnv = 0;
 
