@@ -165,7 +165,7 @@ function GetModuleDeclaration(
             if (externalName) {
                 if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
                     // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^;\n> ]*)([^\\w])`, "g");
+                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
                     return;
                 }
@@ -396,7 +396,7 @@ function GetPackageDeclaration(
                 if (externalName) {
                     if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
                         // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^;\n> ]*)([^\\w])`, "g");
+                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
                         return;
                     } else if (externalName === "react") {
