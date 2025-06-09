@@ -121,7 +121,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
             nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
         }

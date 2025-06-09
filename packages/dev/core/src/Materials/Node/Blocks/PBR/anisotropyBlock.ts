@@ -5,12 +5,10 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
-import { Logger } from "core/Misc/logger";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -142,7 +140,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
             // we must set the uv input as optional because we may not end up in this method (in case a PerturbNormal block is linked to the PBR material)
             // in which case uv is not required. But if we do come here, we do need the uv, so we have to raise an error but not with throw, else
             // it will stop the building of the node material and will lead to errors in the editor!
-            Logger.Error("You must connect the 'uv' input of the Anisotropy block!");
+            state.sharedData.raiseBuildError(`You must connect the 'uv' input of the ${this.name} block!`);
         }
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
@@ -212,9 +210,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return code;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("ANISOTROPIC", true);
         defines.setValue("ANISOTROPIC_TEXTURE", false, true);
         defines.setValue("ANISOTROPIC_LEGACY", !this.roughness.isConnected);

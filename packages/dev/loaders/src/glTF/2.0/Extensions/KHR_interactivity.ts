@@ -79,7 +79,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const coordinator = new FlowGraphCoordinator({ scene });
         coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
         const graphs = interactivityDefinition.graphs.map((graph) => {
-            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader);
+            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
             return parser.serializeToFlowGraph();
         });
         // parse each graph async

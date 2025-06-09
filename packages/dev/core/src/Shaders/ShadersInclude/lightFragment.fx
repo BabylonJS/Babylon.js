@@ -82,6 +82,10 @@
             #endif
 
             // Diffuse contribution
+            #ifdef SS_TRANSLUCENCY
+                info.diffuseTransmission = vec3(0.0);
+            #endif
+
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
             #elif defined(AREALIGHT{X})
@@ -92,7 +96,6 @@
                     info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance); // note subSurfaceOut.translucencyIntensity is already factored in subSurfaceOut.transmittance
                 #else
                     info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
-                    info.diffuseTransmission = vec3(0.0);
                 #endif
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
@@ -101,7 +104,7 @@
             // Specular contribution
             #ifdef SPECULARTERM
                 #if AREALIGHT{X}
-                    info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb);
+                    info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
                 #else
                     // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
                     // usual Schlick lobe.

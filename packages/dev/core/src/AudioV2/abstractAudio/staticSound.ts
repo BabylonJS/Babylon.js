@@ -1,6 +1,8 @@
+import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
 import type { IAbstractSoundOptions, IAbstractSoundPlayOptions, IAbstractSoundStoredOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
+import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "./staticSoundBuffer";
 import type { _StaticSoundInstance } from "./staticSoundInstance";
@@ -67,6 +69,26 @@ export interface IStaticSoundStopOptions {
      * The time to wait before stopping the sound, in seconds. Defaults to `0`.
      */
     waitTime: number;
+}
+
+/**
+ * Options for cloning a static sound.
+ * - @see {@link StaticSound.clone}.
+ */
+export interface IStaticSoundCloneOptions {
+    /**
+     * Whether to clone the sound buffer when cloning the sound. Defaults to `false`.
+     * - If `true`, the original sound's buffer is cloned, and the cloned sound will use its own copy.
+     * - If `false`, the sound buffer is shared with the original sound.
+     */
+    cloneBuffer: boolean;
+
+    /**
+     * The output bus for the cloned sound. Defaults to `null`.
+     * - If not set or `null`, the cloned sound uses the original sound's `outBus`.
+     * @see {@link AudioEngineV2.defaultMainBus}
+     */
+    outBus: Nullable<PrimaryAudioBus>;
 }
 
 /**
@@ -166,7 +188,11 @@ export abstract class StaticSound extends AbstractSound {
         }
     }
 
-    protected abstract override _createInstance(): _StaticSoundInstance;
+    /**
+     * Clones the sound.
+     * @param options Options for cloning the sound.
+     */
+    public abstract cloneAsync(options?: Partial<IStaticSoundCloneOptions>): Promise<StaticSound>;
 
     /**
      * Plays the sound.
@@ -215,4 +241,6 @@ export abstract class StaticSound extends AbstractSound {
             instance.stop(options);
         }
     }
+
+    protected abstract override _createInstance(): _StaticSoundInstance;
 }

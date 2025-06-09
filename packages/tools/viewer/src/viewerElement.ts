@@ -113,6 +113,7 @@ export interface ViewerElementEventMap extends HTMLElementEventMap {
     environmentchange: Event;
     environmentconfigurationchange: Event;
     environmenterror: ErrorEvent;
+    shadowsconfigurationchange: Event;
     modelchange: CustomEvent<Nullable<string | File | ArrayBufferView>>;
     modelerror: ErrorEvent;
     loadingprogresschange: Event;
@@ -1389,6 +1390,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
                 });
 
+                details.viewer.onShadowsConfigurationChanged.add(() => {
+                    this._dispatchCustomEvent("shadowsconfigurationchange", (type) => new Event(type));
+                });
+
                 details.viewer.onModelChanged.add((source) => {
                     this._animations = [...details.viewer.animations];
                     this._dispatchCustomEvent("modelchange", (type) => new CustomEvent(type, { detail: source }));
@@ -1404,6 +1409,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                     this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
                 });
 
+                details.viewer.onSelectedAnimationChanged.add(() => {
+                    this._dispatchCustomEvent("selectedanimationchange", (type) => new Event(type));
+                });
+
                 details.viewer.onIsAnimationPlayingChanged.add(() => {
                     this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
                     this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
@@ -1412,6 +1421,10 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 details.viewer.onAnimationProgressChanged.add(() => {
                     this.animationProgress = details.viewer.animationProgress ?? 0;
                     this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                });
+
+                details.viewer.onSelectedMaterialVariantChanged.add(() => {
+                    this._dispatchCustomEvent("selectedmaterialvariantchange", (type) => new Event(type));
                 });
 
                 details.scene.onAfterRenderCameraObservable.add(() => {

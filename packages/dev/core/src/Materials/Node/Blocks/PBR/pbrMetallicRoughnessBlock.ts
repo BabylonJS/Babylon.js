@@ -717,7 +717,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         // General
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);
@@ -1488,7 +1492,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                         state.compilationString += `#endif\n`;
                     }
                 } else {
-                    Logger.Error(`There's no remapping for the ${output.name} end point! No code generated`);
+                    state.sharedData.raiseBuildError(`There's no remapping for the ${output.name} end point! No code generated`);
                 }
             }
         }

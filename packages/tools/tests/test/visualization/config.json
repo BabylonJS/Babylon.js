@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "RH billboard",
+            "playgroundId": "#PDO1L6#1",
+            "referenceImage": "rh-billboard.png"
+        },
+        {
             "title": "MSDF",
             "playgroundId": "#6RLCWP#20",
             "referenceImage": "msdf.png"
@@ -647,7 +652,7 @@
         },
         {
             "title": "Area Lights - Standard Material",
-            "playgroundId": "#T7FXR8#11",
+            "playgroundId": "#T7FXR8#67",
             "referenceImage": "areaLightsStandardMaterial.png"
         },
         {
@@ -1081,6 +1086,30 @@
             "title": "GLTF Serializer Rotation conversion, left-handed",
             "playgroundId": "#UK7FLI#1",
             "referenceImage": "glTFSerializerRotationConversionLH.png"
+        },
+        {
+            "title": "GLTF Serializer camera rotation animation, RH -> LH",
+            "playgroundId": "#3A00GJ#42",
+            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = false;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer camera rotation animation, RH -> RH",
+            "playgroundId": "#3A00GJ#42",
+            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = true;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer camera rotation animation, LH -> RH",
+            "playgroundId": "#3A00GJ#42",
+            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = true;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer camera rotation animation, LH -> LH",
+            "playgroundId": "#3A00GJ#42",
+            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = false;",
+            "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -2534,6 +2563,11 @@
             "title": "FrameGraph nrge csm shadows",
             "playgroundId": "#JWKDME#29",
             "errorRatio": 2
+        },
+        {
+            "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
+            "playgroundId": "#JWKDME#77",
+            "renderCount": 10
         },
         {
             "title": "FrameGraph nrge custom rendering",

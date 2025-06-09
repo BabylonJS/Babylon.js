@@ -164,6 +164,10 @@ export class ThinTexture {
         this._texture = ThinTexture._IsRenderTargetWrapper(internalTexture) ? internalTexture.texture : internalTexture;
         if (this._texture) {
             this._engine = this._texture.getEngine();
+
+            this.wrapU = this._texture._cachedWrapU ?? this.wrapU;
+            this.wrapV = this._texture._cachedWrapV ?? this.wrapV;
+            this.wrapR = this._texture._cachedWrapR ?? this.wrapR;
         }
     }
 

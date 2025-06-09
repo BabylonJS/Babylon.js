@@ -1,5 +1,7 @@
 import type { AudioEngineV2 } from "./audioEngineV2";
 
+let StaticSoundBufferId = 1;
+
 /**
  * Options for creating a static sound buffer.
  */
@@ -10,6 +12,17 @@ export interface IStaticSoundBufferOptions {
      * @see {@link CreateSoundAsync} `source` parameter.
      */
     skipCodecCheck: boolean;
+}
+
+/**
+ * Options for cloning a static sound buffer.
+ * - @see {@link StaticSoundBuffer.clone}.
+ */
+export interface IStaticSoundBufferCloneOptions {
+    /**
+     * The name of the cloned sound buffer. Defaults to `StaticSoundBuffer #${id}`.
+     */
+    name: string;
 }
 
 /**
@@ -28,6 +41,11 @@ export abstract class StaticSoundBuffer {
      * The engine that the sound buffer belongs to.
      */
     public readonly engine: AudioEngineV2;
+
+    /**
+     * The name of the sound buffer.
+     */
+    public name: string = `StaticSoundBuffer #${StaticSoundBufferId++}`;
 
     protected constructor(engine: AudioEngineV2) {
         this.engine = engine;
@@ -52,4 +70,10 @@ export abstract class StaticSoundBuffer {
      * The number of channels in the sound buffer.
      */
     public abstract readonly channelCount: number;
+
+    /**
+     * Clones the sound buffer.
+     * @param options Options for cloning the sound buffer.
+     */
+    public abstract clone(options?: Partial<IStaticSoundBufferCloneOptions>): StaticSoundBuffer;
 }
