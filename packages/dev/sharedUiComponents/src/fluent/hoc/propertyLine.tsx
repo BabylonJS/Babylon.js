@@ -2,7 +2,7 @@ import { Body1Strong, Button, InfoLabel, makeStyles, tokens } from "@fluentui/re
 import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
 import { useState } from "react";
-import { copyCommandToClipboard } from "shared-ui-components/copyCommandToClipboard";
+import { copyCommandToClipboard } from "../../copyCommandToClipboard";
 
 const usePropertyLineStyles = makeStyles({
     container: {
