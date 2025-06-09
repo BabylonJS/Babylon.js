@@ -5,6 +5,7 @@
     "types": "dist/index",
     "main": "dist/index",
     "module": "dist/index",
+    "type": "module",
     "files": [
         "dist",
         "src"
@@ -17,7 +18,7 @@
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --packages \"gui\" -wa"
+        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa"
     },
     "sideEffects": [
         "./dist/utils/buildTools/**"

@@ -11,7 +11,8 @@
         "**/packages/dev/**/shadersWGSL/**/*.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
-        "**/*.compute.ts": true
+        "**/*.compute.ts": true,
+        "**/*.block.ts": true
     },
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"

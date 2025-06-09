@@ -1,0 +1,31 @@
+{
+    "name": "@dev/smart-filters-blocks",
+    "private": true,
+    "version": "1.0.0",
+    "readme": "README.md",
+    "main": "dist/index",
+    "module": "dist/index",
+    "types": "dist/index",
+    "type": "module",
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run compile",
+        "test": "jest -c ../../../jest.config.ts",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf --glob ./src/blocks/**/*.block.ts && rimraf --glob ./src/blocks/**/*.fragment.ts",
+        "precompile": "node ../smartFilters/dist/utils/buildTools/buildShaders.js ./src/blocks @babylonjs/smart-filters",
+        "compile": "npm run compile:source",
+        "compile:source": "tsc -b tsconfig.build.json",
+        "watch": "concurrently \"npm run watch:shaders\" && \" npm run watch:buildTools\"",
+        "watch:shaders": "node ../core/dist/utils/buildTools/watchShaders.js ./src/blocks @babylonjs/smart-filters",
+        "watch:buildTools": "build-tools -c dev-watch --packages \"smart-filters-blocks\" -wa",
+        "watch:source": "tsc -b tsconfig.build.json -w"
+    },
+    "devDependencies": {
+        "core": "npm:@babylonjs/core@8.0.1",
+        "@dev/smart-filters": "^1.0.0"
+    }
+}

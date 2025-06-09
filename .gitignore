@@ -35,3 +35,6 @@ playwright-report
 playwright/.cache/
 .nx
 .DS_Store
+
+# generated Smart Filter block TS files
+**/*.block.ts
