@@ -110,14 +110,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Represent the Babylon light's direction as a quaternion
             // relative to glTF lights' forward direction, (0, 0, -1).
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
-                const direction = TmpVectors.Vector3[0];
-                babylonNode.direction.normalizeToRef(direction);
+                const direction = babylonNode.direction.normalizeToRef(TmpVectors.Vector3[0]);
                 if (convertToRightHanded) {
                     ConvertToRightHandedPosition(direction);
                 }
 
-                const lightRotationQuaternion = TmpVectors.Quaternion[0];
-                Quaternion.FromUnitVectorsToRef(LIGHTDIRECTION, direction, lightRotationQuaternion);
+                const lightRotationQuaternion = Quaternion.FromUnitVectorsToRef(LIGHTDIRECTION, direction, TmpVectors.Quaternion[0]);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
                     node.rotation = lightRotationQuaternion.asArray();
                 }
