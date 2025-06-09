@@ -5,6 +5,10 @@ import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
+import { PropertyLine } from "../fluent/hoc/propertyLine";
+import { Textarea } from "../fluent/primitives/textarea";
+import { Input } from "../fluent/primitives/input";
+import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
 
 export interface ITextInputLineComponentProps {
     label?: string;
@@ -192,7 +196,46 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         }
     }
 
-    override render() {
+    renderFluent() {
+        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
+        const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
+        return (
+            <PropertyLine label={this.props.label || ""}>
+                {this.props.multilines ? (
+                    <Textarea
+                        value={this.state.value}
+                        onChange={(evt) => this.updateValue(evt.target.value)}
+                        onKeyDown={(evt) => {
+                            if (evt.keyCode !== 13) {
+                                return;
+                            }
+                            this.updateValue(this.state.value);
+                        }}
+                        onBlur={(evt) => {
+                            this.updateValue(evt.target.value, evt.target.value);
+                        }}
+                        disabled={this.props.disabled}
+                    />
+                ) : (
+                    <Input
+                        value={value}
+                        onBlur={(evt) => {
+                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "", evt.target.value);
+                        }}
+                        onChange={(evt) => this.updateValue(evt.target.value)}
+                        onKeyDown={(evt) => this.onKeyDown(evt)}
+                        placeholder={placeholder}
+                        type={this.props.numeric ? "number" : "text"}
+                        step={step}
+                        disabled={this.props.disabled}
+                    />
+                )}
+            </PropertyLine>
+        );
+    }
+
+    renderOriginal() {
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
@@ -265,5 +308,8 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
                 {this.props.unit}
             </div>
         );
+    }
+    override render() {
+        return <ConditionallyUseFluent fluent={this.renderFluent} original={this.renderOriginal} />;
     }
 }
