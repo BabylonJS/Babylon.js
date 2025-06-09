@@ -12,7 +12,7 @@ import { GetClass } from "core/Misc/typeStore";
  */
 export class NodeParticleBlock {
     private _name = "";
-    private _buildId: number;
+    protected _buildId: number;
     protected _isInput = false;
     protected _isSystem = false;
     protected _isDebug = false;
@@ -268,7 +268,7 @@ export class NodeParticleBlock {
         }
 
         if (this._outputs.length > 0) {
-            if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug) {
+            if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug && !this.isSystem) {
                 return false;
             }
         }

@@ -27,6 +27,7 @@ import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleB
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 import { BasicUpdateBlock } from "core/Particles/Node/Blocks/Update/basicUpdateBlock";
 import { BasicConditionBlock } from "core/Particles/Node/Blocks/Conditions/basicConditionBlock";
+import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
 
 /**
  * Static class for BlockTools
@@ -34,6 +35,8 @@ import { BasicConditionBlock } from "core/Particles/Node/Blocks/Conditions/basic
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "TriggerBlock":
+                return new ParticleTriggerBlock("Trigger");
             case "BasicConditionBlock":
                 return new BasicConditionBlock("Basic condition");
             case "BasicUpdateBlock":
@@ -306,6 +309,9 @@ export class BlockTools {
                 break;
             case NodeParticleBlockConnectionPointTypes.Texture:
                 color = "#f28e0a";
+                break;
+            case NodeParticleBlockConnectionPointTypes.System:
+                color = "#f20a2e";
                 break;
         }
 

@@ -9,6 +9,7 @@ import { ElbowDisplayManager } from "./display/elbowDisplayManager";
 import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
 import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 import { ConditionDisplayManager } from "./display/conditionDisplayManager";
+import { TriggerDisplayManager } from "./display/triggerDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
@@ -29,4 +30,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleTeleportInBlock"] = TeleportInDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutDisplayManager;
     DisplayLedger.RegisteredControls["BasicConditionBlock"] = ConditionDisplayManager;
+    DisplayLedger.RegisteredControls["ParticleTriggerBlock"] = TriggerDisplayManager;
 };

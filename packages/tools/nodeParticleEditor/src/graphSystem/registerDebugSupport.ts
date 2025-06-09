@@ -15,6 +15,10 @@ export const RegisterDebugSupport = (stateManager: StateManager) => {
             return false; // We do not support debug on texture data
         }
 
+        if (pointA.type === NodeParticleBlockConnectionPointTypes.System || pointB.type === NodeParticleBlockConnectionPointTypes.System) {
+            return false; // We do not support debug on system data
+        }
+
         if (pointA.type === NodeParticleBlockConnectionPointTypes.FloatGradient || pointB.type === NodeParticleBlockConnectionPointTypes.FloatGradient) {
             return false; // We do not support debug on gradient data
         }

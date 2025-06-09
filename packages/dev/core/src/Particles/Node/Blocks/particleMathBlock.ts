@@ -67,6 +67,7 @@ export class ParticleMathBlock extends NodeParticleBlock {
             NodeParticleBlockConnectionPointTypes.Matrix,
             NodeParticleBlockConnectionPointTypes.Particle,
             NodeParticleBlockConnectionPointTypes.Texture,
+            NodeParticleBlockConnectionPointTypes.System,
             NodeParticleBlockConnectionPointTypes.FloatGradient,
             NodeParticleBlockConnectionPointTypes.Color4Gradient,
             NodeParticleBlockConnectionPointTypes.Vector2Gradient,

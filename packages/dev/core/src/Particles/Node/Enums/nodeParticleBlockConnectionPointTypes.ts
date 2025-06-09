@@ -26,12 +26,14 @@ export enum NodeParticleBlockConnectionPointTypes {
     Vector3Gradient = 0x0400,
     /** Color4Gradient */
     Color4Gradient = 0x0800,
+    /** System */
+    System = 0x1000,
     /** Detect type based on connection */
-    AutoDetect = 0x1000,
+    AutoDetect = 0x2000,
     /** Output type that will be defined by input type */
-    BasedOnInput = 0x2000,
+    BasedOnInput = 0x4000,
     /** Undefined */
-    Undefined = 0x4000,
+    Undefined = 0x8000,
     /** Bitmask of all types */
     All = 0xffff,
 }

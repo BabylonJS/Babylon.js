@@ -89,6 +89,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         DeltaBlock: "Block used to get the delta value for animations",
         BasicUpdateBlock: "Block used to update the position of a particle with a basic update (eg. direction * delta)",
         BasicConditionBlock: "Block used to compare two values and return a value based on the comparison (1 or 0)",
+        TriggerBlock: "Block used to trigger a particle system based on a condition",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -177,6 +178,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Inputs: ["Float", "Vector2", "Vector3", "Int", "TextureBlock", "Color4"],
             Updates: ["UpdateDirectionBlock", "UpdatePositionBlock", "UpdateColorBlock", "UpdateScaleBlock", "UpdateAngleBlock", "BasicUpdateBlock"],
             Conditions: ["BasicConditionBlock"],
+            Triggers: ["TriggerBlock"],
             Math__Standard: [
                 "AddBlock",
                 "DivideBlock",

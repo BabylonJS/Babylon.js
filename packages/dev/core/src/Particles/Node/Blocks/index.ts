@@ -22,3 +22,4 @@ export * from "./particleElbowBlock";
 export * from "./Teleport/particleTeleportInBlock";
 export * from "./Teleport/particleTeleportOutBlock";
 export * from "./Conditions/basicConditionBlock";
+export * from "./Triggers/particleTriggerBlock";

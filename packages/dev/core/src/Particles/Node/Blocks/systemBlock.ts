@@ -46,6 +46,12 @@ export class SystemBlock extends NodeParticleBlock {
     public emitRate = 10;
 
     /**
+     * Gets or sets the emit rate
+     */
+    @editableInPropertyPage("Target duration", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public targetStopDuration = 0;
+
+    /**
      * Gets or sets a boolean indicating if the system should not start automatically
      */
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
@@ -62,6 +68,7 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
+        this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
     /**
@@ -87,6 +94,13 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the system output component
+     */
+    public get system(): NodeParticleConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
      * Builds the block and return a functional particle system
      * @param state defines the building state
      * @returns the built particle system
@@ -101,6 +115,10 @@ export class SystemBlock extends NodeParticleBlock {
         this._particleSystem.emitRate = this.emitRate;
         this._particleSystem.blendMode = this.blendMode;
         this._particleSystem.name = this.name;
+        this._particleSystem._nodeGenerated = true;
+        this._particleSystem.targetStopDuration = this.targetStopDuration;
+
+        this.system._storedValue = this;
 
         this._particleSystem.canStart = () => {
             return !this.doNoStart;
@@ -120,6 +138,7 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.emitRate = this.emitRate;
         serializationObject.blendMode = this.blendMode;
         serializationObject.doNoStart = this.doNoStart;
+        serializationObject.targetStopDuration = this.targetStopDuration;
 
         return serializationObject;
     }
@@ -133,6 +152,10 @@ export class SystemBlock extends NodeParticleBlock {
 
         if (serializationObject.blendMode !== undefined) {
             this.blendMode = serializationObject.blendMode;
+        }
+
+        if (serializationObject.targetStopDuration !== undefined) {
+            this.targetStopDuration = serializationObject.targetStopDuration;
         }
     }
 }
