@@ -1,6 +1,7 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
     return {
@@ -34,10 +35,12 @@ module.exports = (env) => {
                     test: /\.tsx?$/,
                     use: [
                         {
-                            loader: "babel-loader",
+                            loader: "ts-loader",
                             options: {
-                                targets: "defaults",
-                                presets: [["@babel/preset-env"], ["@babel/preset-react", { runtime: "automatic" }], ["@babel/preset-typescript"]],
+                                getCustomTransformers: () => ({
+                                    before: [ReactRefreshTypeScript()].filter(Boolean),
+                                }),
+                                transpileOnly: true,
                             },
                         },
                     ],
