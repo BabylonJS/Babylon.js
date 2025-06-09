@@ -72,6 +72,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
