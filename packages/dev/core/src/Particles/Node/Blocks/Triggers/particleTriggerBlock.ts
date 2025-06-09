@@ -7,12 +7,20 @@ import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import type { SystemBlock } from "../systemBlock";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to trigger a particle system based on a condition.
  */
 export class ParticleTriggerBlock extends NodeParticleBlock {
     private _triggerCount = 0;
+
+    /**
+     * Gets or sets the emit rate
+     */
+    @editableInPropertyPage("Limit", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public limit = 5;
+
     /**
      * Create a new ParticleTriggerBlock
      * @param name defines the block name
@@ -74,7 +82,7 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
             if (this.condition.getConnectedValue(state) !== 0) {
                 this._triggerCount++;
 
-                if (this._triggerCount < 5) {
+                if (this.limit === 0 || this._triggerCount < this.limit) {
                     // Trigger the target particle system
                     const targetSystem = this.target.getConnectedValue(state) as SystemBlock;
                     if (targetSystem) {
@@ -109,6 +117,24 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
         }
 
         this.output._storedValue = system;
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.limit = this.limit;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.limit = serializationObject.limit;
+
+        if (serializationObject.limit !== undefined) {
+            this.limit = serializationObject.limit;
+        }
     }
 }
 

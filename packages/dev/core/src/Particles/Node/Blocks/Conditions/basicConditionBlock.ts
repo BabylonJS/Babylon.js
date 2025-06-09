@@ -9,7 +9,7 @@ import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 /**
  * Conditions supported by the condition block
  */
-export enum ConditionBlockTests {
+export enum ParticleConditionBlockTests {
     /** Equal */
     Equal,
     /** NotEqual */
@@ -41,18 +41,18 @@ export class BasicConditionBlock extends NodeParticleBlock {
         notifiers: { rebuild: true },
         embedded: true,
         options: [
-            { label: "Equal", value: ConditionBlockTests.Equal },
-            { label: "NotEqual", value: ConditionBlockTests.NotEqual },
-            { label: "LessThan", value: ConditionBlockTests.LessThan },
-            { label: "GreaterThan", value: ConditionBlockTests.GreaterThan },
-            { label: "LessOrEqual", value: ConditionBlockTests.LessOrEqual },
-            { label: "GreaterOrEqual", value: ConditionBlockTests.GreaterOrEqual },
-            { label: "Xor", value: ConditionBlockTests.Xor },
-            { label: "Or", value: ConditionBlockTests.Or },
-            { label: "And", value: ConditionBlockTests.And },
+            { label: "Equal", value: ParticleConditionBlockTests.Equal },
+            { label: "NotEqual", value: ParticleConditionBlockTests.NotEqual },
+            { label: "LessThan", value: ParticleConditionBlockTests.LessThan },
+            { label: "GreaterThan", value: ParticleConditionBlockTests.GreaterThan },
+            { label: "LessOrEqual", value: ParticleConditionBlockTests.LessOrEqual },
+            { label: "GreaterOrEqual", value: ParticleConditionBlockTests.GreaterOrEqual },
+            { label: "Xor", value: ParticleConditionBlockTests.Xor },
+            { label: "Or", value: ParticleConditionBlockTests.Or },
+            { label: "And", value: ParticleConditionBlockTests.And },
         ],
     })
-    public test = ConditionBlockTests.Equal;
+    public test = ParticleConditionBlockTests.Equal;
 
     /**
      * Gets or sets the epsilon value used for comparison
@@ -109,31 +109,31 @@ export class BasicConditionBlock extends NodeParticleBlock {
             let condition = false;
 
             switch (this.test) {
-                case ConditionBlockTests.Equal:
+                case ParticleConditionBlockTests.Equal:
                     condition = WithinEpsilon(left, right, this.epsilon);
                     break;
-                case ConditionBlockTests.NotEqual:
+                case ParticleConditionBlockTests.NotEqual:
                     condition = !WithinEpsilon(left, right, this.epsilon);
                     break;
-                case ConditionBlockTests.LessThan:
+                case ParticleConditionBlockTests.LessThan:
                     condition = left < right + this.epsilon;
                     break;
-                case ConditionBlockTests.GreaterThan:
+                case ParticleConditionBlockTests.GreaterThan:
                     condition = left > right - this.epsilon;
                     break;
-                case ConditionBlockTests.LessOrEqual:
+                case ParticleConditionBlockTests.LessOrEqual:
                     condition = left <= right + this.epsilon;
                     break;
-                case ConditionBlockTests.GreaterOrEqual:
+                case ParticleConditionBlockTests.GreaterOrEqual:
                     condition = left >= right - this.epsilon;
                     break;
-                case ConditionBlockTests.Xor:
+                case ParticleConditionBlockTests.Xor:
                     condition = (!!left && !right) || (!left && !!right);
                     break;
-                case ConditionBlockTests.Or:
+                case ParticleConditionBlockTests.Or:
                     condition = !!left || !!right;
                     break;
-                case ConditionBlockTests.And:
+                case ParticleConditionBlockTests.And:
                     condition = !!left && !!right;
                     break;
             }
