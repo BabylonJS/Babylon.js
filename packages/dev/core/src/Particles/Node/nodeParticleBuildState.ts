@@ -8,6 +8,7 @@ import { Vector2, Vector3 } from "core/Maths/math.vector";
 import type { ThinParticleSystem } from "../thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * Class used to store node based geometry build state
@@ -154,6 +155,13 @@ export class NodeParticleBuildState {
                 return this.systemContext._actualFrame;
             case NodeParticleSystemSources.Delta:
                 return this.systemContext._scaledUpdateSpeed;
+            case NodeParticleSystemSources.Emitter:
+                if ((<AbstractMesh>this.systemContext.emitter).position) {
+                    const emitterMesh = <AbstractMesh>this.systemContext.emitter;
+                    return emitterMesh.absolutePosition;
+                } else {
+                    return this.systemContext.emitter;
+                }
         }
 
         return null;

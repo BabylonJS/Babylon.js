@@ -63,9 +63,6 @@ export class PreviewManager {
         const sceneInstrumentation = new SceneInstrumentation(this._scene);
         sceneInstrumentation.captureParticlesRenderTime = true;
 
-        const root = document.getElementById("preview-config-bar")!;
-        const reportLeftDiv = root.children[0] as HTMLDivElement;
-        const reportRightDiv = root.children[1] as HTMLDivElement;
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
@@ -73,8 +70,12 @@ export class PreviewManager {
             (this._scene.particleSystems as ThinParticleSystem[]).forEach((ps) => {
                 totalParticleCount += ps.particles.length;
             });
-            reportLeftDiv.innerText = "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms";
-            reportRightDiv.innerText = "Total particles: " + totalParticleCount;
+            if (globalState.updateState) {
+                globalState.updateState(
+                    "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms",
+                    "Total particles: " + totalParticleCount
+                );
+            }
         });
 
         const groundMaterial = new GridMaterial("groundMaterial", this._scene);

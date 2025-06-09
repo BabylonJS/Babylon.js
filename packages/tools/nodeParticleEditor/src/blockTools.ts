@@ -32,6 +32,7 @@ import { CylinderEmitterBlock } from "core/Particles/Node/Blocks/Emitters/cylind
 import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setupSpriteSheetBlock";
 import { BasicUpdateSpriteBlock } from "core/Particles/Node/Blocks/Update/basicUpdateSpriteBlock";
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
+import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
 
 /**
  * Static class for BlockTools
@@ -77,6 +78,8 @@ export class BlockTools {
                 return new UpdateScaleBlock("Update scale");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
+            case "UpdateFlowMapBlock":
+                return new UpdateFlowMapBlock("Update flow map");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -161,6 +164,11 @@ export class BlockTools {
             case "DeltaBlock": {
                 const block = new ParticleInputBlock("Delta");
                 block.systemSource = NodeParticleSystemSources.Delta;
+                return block;
+            }
+            case "EmitterBlock": {
+                const block = new ParticleInputBlock("Emitter");
+                block.systemSource = NodeParticleSystemSources.Emitter;
                 return block;
             }
             case "AddBlock": {

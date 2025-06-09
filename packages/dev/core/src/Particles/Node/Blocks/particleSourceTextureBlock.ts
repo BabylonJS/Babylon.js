@@ -105,6 +105,11 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             return;
         }
 
+        if (this.texture._storedValue) {
+            this.texture._storedValue.dispose();
+            this.texture._storedValue = null;
+        }
+
         if (this._textureDataUrl) {
             this.texture._storedValue = new Texture(this._textureDataUrl, state.scene);
             return;
@@ -135,6 +140,16 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         if (serializationObject.textureDataUrl) {
             this.textureDataUrl = serializationObject.textureDataUrl;
         }
+    }
+
+    public override dispose(): void {
+        if (!this._sourceTexture) {
+            if (this.texture._storedValue) {
+                this.texture._storedValue.dispose();
+                this.texture._storedValue = null;
+            }
+        }
+        super.dispose();
     }
 }
 

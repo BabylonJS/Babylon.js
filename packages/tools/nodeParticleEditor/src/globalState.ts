@@ -41,6 +41,7 @@ export class GlobalState {
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
     onExportToGLBRequired = new Observable<void>();
+    updateState: (left: string, right: string) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 

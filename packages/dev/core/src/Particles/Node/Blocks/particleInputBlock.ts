@@ -94,6 +94,9 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleSystemSources.Delta:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
+                case NodeParticleSystemSources.Emitter:
+                    this._type = NodeParticleBlockConnectionPointTypes.Vector3;
+                    break;
             }
 
             if (this.output) {

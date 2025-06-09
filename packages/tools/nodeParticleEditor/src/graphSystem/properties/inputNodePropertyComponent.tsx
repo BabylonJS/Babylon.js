@@ -144,6 +144,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Direction", value: NodeParticleContextualSources.Direction },
                     { label: "Scaled direction", value: NodeParticleContextualSources.ScaledDirection },
                 ];
+                systemSourcesOptions = [{ label: "Emitter", value: NodeParticleSystemSources.Emitter }];
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
                 contextualSourcesOptions = [{ label: "Color", value: NodeParticleContextualSources.Color }];
@@ -162,6 +163,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         if (systemSourcesOptions.length > 0) {
             modeOptions.push({ label: "System value (Float)", value: 6 });
+            modeOptions.push({ label: "System value (Vector3)", value: 7 });
         }
 
         return (
@@ -204,6 +206,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                             break;
                                         case 6:
                                             inputBlock.systemSource = NodeParticleSystemSources.Time;
+                                            break;
+                                        case 7:
+                                            inputBlock.systemSource = NodeParticleSystemSources.Emitter;
                                             break;
                                     }
                                     break;

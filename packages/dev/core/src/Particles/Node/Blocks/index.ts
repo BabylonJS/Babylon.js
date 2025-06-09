@@ -13,6 +13,7 @@ export * from "./Update/updateAngleBlock";
 export * from "./Update/basicUpdateBlock";
 export * from "./Update/basicUpdateSpriteBlock";
 export * from "./Update/updateSpriteCellIndexBlock";
+export * from "./Update/updateFlowMapBlock";
 export * from "./Emitters/index";
 export * from "./particleGradientEntryBlock";
 export * from "./particleGradientBlock";

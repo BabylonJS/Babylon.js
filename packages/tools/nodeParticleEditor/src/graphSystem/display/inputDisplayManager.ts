@@ -65,6 +65,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleSystemSources.Delta:
                     value = "Delta";
                     break;
+                case NodeParticleSystemSources.Emitter:
+                    value = "Emitter";
+                    break;
             }
         } else if (inputBlock.isContextual) {
             switch (inputBlock.contextualValue) {
