@@ -46,9 +46,9 @@ export class SystemBlock extends NodeParticleBlock {
     public emitRate = 10;
 
     /**
-     * Gets or sets the emit rate
+     * Gets or sets the target stop duration for the particle system
      */
-    @editableInPropertyPage("Target duration", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    @editableInPropertyPage("Target duration", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
     public targetStopDuration = 0;
 
     /**
@@ -116,7 +116,7 @@ export class SystemBlock extends NodeParticleBlock {
         this._particleSystem.blendMode = this.blendMode;
         this._particleSystem.name = this.name;
         this._particleSystem._nodeGenerated = true;
-        this._particleSystem.targetStopDuration = this.targetStopDuration;
+        this._particleSystem._targetStopDuration = this.targetStopDuration;
 
         this.system._storedValue = this;
 

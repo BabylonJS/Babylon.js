@@ -28,6 +28,7 @@ import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticl
 import { BasicUpdateBlock } from "core/Particles/Node/Blocks/Update/basicUpdateBlock";
 import { BasicConditionBlock } from "core/Particles/Node/Blocks/Conditions/basicConditionBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
+import { CylinderEmitterBlock } from "core/Particles/Node/Blocks/Emitters/cylinderEmitterBlock";
 
 /**
  * Static class for BlockTools
@@ -79,6 +80,8 @@ export class BlockTools {
                 return new PointEmitterBlock("Point emitter");
             case "CustomEmitterBlock":
                 return new CustomEmitterBlock("Custom emitter");
+            case "CylinderEmitterBlock":
+                return new CylinderEmitterBlock("Cylinder emitter");
             case "RandomRangeBlock":
                 return new RandomRangeBlock("Random range");
             case "PositionBlock": {

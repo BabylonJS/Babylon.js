@@ -18,7 +18,7 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
     /**
      * Gets or sets the emit rate
      */
-    @editableInPropertyPage("Limit", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    @editableInPropertyPage("Max simultaneous", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
     public limit = 5;
 
     /**
@@ -80,9 +80,8 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
             state.systemContext = system;
 
             if (this.condition.getConnectedValue(state) !== 0) {
-                this._triggerCount++;
-
                 if (this.limit === 0 || this._triggerCount < this.limit) {
+                    this._triggerCount++;
                     // Trigger the target particle system
                     const targetSystem = this.target.getConnectedValue(state) as SystemBlock;
                     if (targetSystem) {
@@ -94,6 +93,9 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
                         clone.emitter = particle.position.clone(); // Set the emitter to the particle's position
                         clone.disposeOnStop = true; // Clean up the system when it stops
                         clone.start();
+                        clone.onDisposeObservable.addOnce(() => {
+                            this._triggerCount--;
+                        });
 
                         system.onDisposeObservable.addOnce(() => {
                             // Clean up the cloned system when the original system is disposed
@@ -129,8 +131,6 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
-
-        this.limit = serializationObject.limit;
 
         if (serializationObject.limit !== undefined) {
             this.limit = serializationObject.limit;

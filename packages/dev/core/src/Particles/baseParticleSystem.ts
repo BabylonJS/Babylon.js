@@ -109,7 +109,8 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public updateSpeed = 0.01;
 
-    protected _targetStopDuration = 0;
+    /** @internal */
+    public _targetStopDuration = 0;
     /**
      * The amount of time the particle system is running (depends of the overall update speed).
      */
