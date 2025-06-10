@@ -1,82 +1,81 @@
 {
-    "fromTag": "8.10.0",
+    "fromTag": "8.10.1",
     "changelog": {
-        "8.10.0": [
+        "8.11.0": [
             {
-                "pr": "16625",
-                "title": "SH support in NME GS",
-                "description": null,
+                "pr": "16714",
+                "title": "SmartFilterTextureBlock: Uniform metadata and multiple block instance handling",
+                "description": "This PR extends the SmartFilterTextureBlock's functionality to permit\r\n- Multiple instances of the block, used for sampling several textures\r\n- Designating a block as the \"main input\", which is used for auto-disabling in SFE\r\n- Annotations for input block and bindable block uniforms, used for specifying default values\r\n- Cleaning up of uniform names, used as display names for connection points in SFE\r\n\r\nSome misc changes include\r\n- Use Logger for errors instead of throwing and breaking the build :)\r\n- Extra WebGPU check for good measure\r\n- Expose ScreenSizeBlock uniform name ",
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
                     "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
-                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplatting.fx",
-                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx"
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
                 ],
-                "tags": [
-                    "nme"
-                ]
+                "tags": []
             },
             {
-                "pr": "16685",
-                "title": "WebGPU bind groups: Improve error messages",
+                "pr": "16716",
+                "title": "NME SFE: Update block list exclusions",
+                "description": "Remove blocks-- both as categories and individually-- that would break in SFE mode. ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16703",
+                "title": "Add dominant direction to env file",
+                "description": "Not sure how to test this. I'm trying to add the dominant direction of an IBL to the irradiance stored in a .env file.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16715",
+                "title": "WebGPU: Fix wrong display in fast snapshot mode",
                 "description": null,
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts"
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug",
+                    "WebGPU"
                 ]
             },
             {
-                "pr": "16684",
-                "title": "Convert color objects to vectors when using json pointers",
-                "description": "glTF interactivity doesn't differentiate between color3 and vector3. As the math nodes all work with vector3 and there are no specific Color nodes (in interactivity) it is safe to convert any value received as color to a vector object, and converting it back to color when saving it in the babylon object.\nThe conversion from vector to color is already iplemented, the only thing missing was the vcolor to vector when reading values.",
+                "pr": "16708",
+                "title": "glTF Exporter: Fixes and clean-up for camera rotations",
+                "description": "This PR primarily aims to fix exported camera rotation animations ([see most recent forum post](https://forum.babylonjs.com/t/gltfexport-flipped-camera/45986/22)). While in the area, I've also minorly cleaned up the surrounding camera code. \r\n\r\nFixes:\r\n- Fix camera rotation animation export\r\n- Allow camera nodes' transformations to collapse into parents\r\n- Update CollapseChildIntoParent to disregard parent scaling\r\n- Add tests for camera animation export\r\n- Ensure rotation and rotationQuaternion are mutually exclusive in _setNodeTransformation and _setCameraTransformation\r\n\r\nCleanup nits:\r\n- Renames CollapseParentNode -> CollapseChildIntoParent, and IsParentAddedByImporter -> AreCollapsible\r\n- Remove unused RotateNode180Y and ConvertToRightHandedNode\r\n- Use TargetCamera instead of Camera, as Camera doesn't have TRS fields.\r\n- Simplify rotation animation export\r\n- Move camera transformation export into _setCameraTransformation\r\n- Clarify that CollapseChildIntoParent only accepts light and camera-type children\r\n\r\nMisc:\r\n- Allow KHR_punctual_lights to throw a warning for non-shadow lights\r\n- Change usages of .equals() to .equalsWithEpsilon(), using Epsilon constant from math package",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
                 },
                 "files": [
-                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16683",
-                "title": "Consider morph targets influence when creating mesh decal",
-                "description": "see [Forum post](https://forum.babylonjs.com/t/mesh-decals-with-morph-targets/58682)",
-                "author": {
-                    "name": "HoferMarkus",
-                    "url": "https://github.com/HoferMarkus"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "16665",
-                "title": "Allow Image source to be set without Canvas",
-                "description": "Instead of throwing an error, now just skips DOM image operations and the image source will just be the passed in value. Needed for Domless environments. ",
-                "author": {
-                    "name": "jamessimo",
-                    "url": "https://github.com/jamessimo"
-                },
-                "files": [
-                    "packages/dev/gui/src/2D/controls/image.ts"
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerCameraRotationAnimation.png",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
             }
@@ -489,6 +488,86 @@
                 },
                 "files": [
                     "debug.log"
+                ],
+                "tags": []
+            }
+        ],
+        "8.10.0": [
+            {
+                "pr": "16625",
+                "title": "SH support in NME GS",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx"
+                ],
+                "tags": [
+                    "nme"
+                ]
+            },
+            {
+                "pr": "16685",
+                "title": "WebGPU bind groups: Improve error messages",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16684",
+                "title": "Convert color objects to vectors when using json pointers",
+                "description": "glTF interactivity doesn't differentiate between color3 and vector3. As the math nodes all work with vector3 and there are no specific Color nodes (in interactivity) it is safe to convert any value received as color to a vector object, and converting it back to color when saving it in the babylon object.\nThe conversion from vector to color is already iplemented, the only thing missing was the vcolor to vector when reading values.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16683",
+                "title": "Consider morph targets influence when creating mesh decal",
+                "description": "see [Forum post](https://forum.babylonjs.com/t/mesh-decals-with-morph-targets/58682)",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16665",
+                "title": "Allow Image source to be set without Canvas",
+                "description": "Instead of throwing an error, now just skips DOM image operations and the image source will just be the passed in value. Needed for Domless environments. ",
+                "author": {
+                    "name": "jamessimo",
+                    "url": "https://github.com/jamessimo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
                 ],
                 "tags": []
             }

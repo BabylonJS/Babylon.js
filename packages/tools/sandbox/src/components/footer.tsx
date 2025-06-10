@@ -41,7 +41,7 @@ export class Footer extends React.Component<IFooterProps> {
 
     showInspector() {
         if (this.props.globalState.currentScene) {
-            if (this.props.globalState.currentScene.debugLayer.isVisible()) {
+            if (this.props.globalState.isDebugLayerEnabled) {
                 this.props.globalState.hideDebugLayer();
             } else {
                 this.props.globalState.showDebugLayer();

@@ -9,6 +9,7 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { Process } from "core/Engines/Processors/shaderProcessor";
 import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to store node based material build state
@@ -112,7 +113,8 @@ export class NodeMaterialBuildState {
      */
     public async getProcessedShaderAsync(defines: string): Promise<string> {
         if (!this._builtCompilationString) {
-            throw new Error("Shader not built yet.");
+            Logger.Error("getProcessedShaderAsync: Shader not built yet.");
+            return "";
         }
 
         const engine = this.sharedData.nodeMaterial.getScene().getEngine();
@@ -240,7 +242,7 @@ export class NodeMaterialBuildState {
      * @internal
      */
     public _getFreeVariableName(prefix: string): string {
-        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+        prefix = this.sharedData.formatConfig.formatVariablename(prefix);
 
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
@@ -629,6 +631,9 @@ export class NodeMaterialBuildState {
             } else {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
+        }
+        if (this.sharedData.formatConfig.getUniformAnnotation) {
+            this._uniformDeclaration += this.sharedData.formatConfig.getUniformAnnotation(name);
         }
         const shaderType = this._getShaderType(type);
         if (this.shaderLanguage === ShaderLanguage.WGSL) {

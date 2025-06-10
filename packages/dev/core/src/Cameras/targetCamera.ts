@@ -276,6 +276,9 @@ export class TargetCamera extends Camera {
         Quaternion.FromRotationMatrixToRef(TmpMatrix, rotationQuaternion);
 
         rotationQuaternion.toEulerAnglesToRef(this.rotation);
+
+        // Explicitly set z to 0 to match previous behavior.
+        this.rotation.z = 0;
     }
 
     /**

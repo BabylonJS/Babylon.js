@@ -7,7 +7,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Nullable } from "../../../../types";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -189,9 +188,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         const refractionTexture = this._getTexture();
         const refraction = refractionTexture && refractionTexture.getTextureMatrix;
 
