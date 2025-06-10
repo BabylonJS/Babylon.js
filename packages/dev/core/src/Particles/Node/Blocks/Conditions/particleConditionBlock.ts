@@ -1,10 +1,10 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { WithinEpsilon } from "../../../../Maths/math.scalar.functions";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleBlock } from "../../nodeParticleBlock";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 
 /**
  * Conditions supported by the condition block
@@ -33,7 +33,7 @@ export enum ParticleConditionBlockTests {
 /**
  * Block used to evaluate a condition and return a true or false value as a float (1 or 0).
  */
-export class BasicConditionBlock extends NodeParticleBlock {
+export class ParticleConditionBlock extends NodeParticleBlock {
     /**
      * Gets or sets the test used by the block
      */
@@ -61,7 +61,7 @@ export class BasicConditionBlock extends NodeParticleBlock {
     public epsilon = 0;
 
     /**
-     * Create a new BasicConditionBlock
+     * Create a new ParticleConditionBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -69,8 +69,15 @@ export class BasicConditionBlock extends NodeParticleBlock {
 
         this.registerInput("left", NodeParticleBlockConnectionPointTypes.Float);
         this.registerInput("right", NodeParticleBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("ifTrue", NodeParticleBlockConnectionPointTypes.AutoDetect, true, 1);
+        this.registerInput("ifFalse", NodeParticleBlockConnectionPointTypes.AutoDetect, true, 0);
+        this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
 
-        this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Float);
+        this.output._typeConnectionSource = this._inputs[2];
+        this.output._defaultConnectionPointType = NodeParticleBlockConnectionPointTypes.Float;
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Int);
+        this._inputs[1].acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Int);
+        this._linkConnectionTypes(2, 3);
     }
 
     /**
@@ -78,7 +85,7 @@ export class BasicConditionBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "BasicConditionBlock";
+        return "ParticleConditionBlock";
     }
 
     /**
@@ -93,6 +100,20 @@ export class BasicConditionBlock extends NodeParticleBlock {
      */
     public get right(): NodeParticleConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the ifTrue input component
+     */
+    public get ifTrue(): NodeParticleConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the ifFalse input component
+     */
+    public get ifFalse(): NodeParticleConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
@@ -142,10 +163,10 @@ export class BasicConditionBlock extends NodeParticleBlock {
 
         this.output._storedFunction = (state) => {
             if (func(state)) {
-                return 1;
+                return this.ifTrue.getConnectedValue(state);
             }
 
-            return 0;
+            return this.ifFalse.getConnectedValue(state);
         };
     }
 
@@ -172,4 +193,4 @@ export class BasicConditionBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.BasicConditionBlock", BasicConditionBlock);
+RegisterClass("BABYLON.ParticleConditionBlock", ParticleConditionBlock);

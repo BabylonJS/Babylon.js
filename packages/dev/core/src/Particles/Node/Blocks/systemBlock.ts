@@ -166,7 +166,7 @@ export class SystemBlock extends NodeParticleBlock {
             this.targetStopDuration = serializationObject.targetStopDuration;
         }
 
-        if (serializationObject.targetStopDuration !== undefined) {
+        if (serializationObject.startDelay !== undefined) {
             this.startDelay = serializationObject.startDelay;
         }
     }

@@ -54,6 +54,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         if (this._textureDataUrl === value) {
             return;
         }
+
         this._cachedData = null;
         this._textureDataUrl = value;
         this._url = "";
@@ -142,6 +143,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                         height: size.height,
                         data: new Uint8ClampedArray(data),
                     };
+                    texture.dispose();
                     resolve(this._cachedData);
                 })
                 // eslint-disable-next-line github/no-then
@@ -162,11 +164,6 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         if (!this._textureDataUrl && !this._url) {
             this.texture._storedValue = null;
             return;
-        }
-
-        if (this.texture._storedValue) {
-            this.texture._storedValue.dispose();
-            this.texture._storedValue = null;
         }
 
         if (this._textureDataUrl) {

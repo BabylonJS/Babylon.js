@@ -46,8 +46,8 @@ export class ParticleRandomBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("min", NodeParticleBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("max", NodeParticleBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("min", NodeParticleBlockConnectionPointTypes.AutoDetect, true, 0);
+        this.registerInput("max", NodeParticleBlockConnectionPointTypes.AutoDetect, true, 1);
 
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
 
@@ -67,6 +67,7 @@ export class ParticleRandomBlock extends NodeParticleBlock {
         );
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._outputs[0]._defaultConnectionPointType = NodeParticleBlockConnectionPointTypes.Float;
         this._linkConnectionTypes(0, 1);
     }
 
@@ -104,6 +105,7 @@ export class ParticleRandomBlock extends NodeParticleBlock {
         this._currentLockId = -2;
 
         switch (this.min.type) {
+            case NodeParticleBlockConnectionPointTypes.AutoDetect:
             case NodeParticleBlockConnectionPointTypes.Int:
             case NodeParticleBlockConnectionPointTypes.Float: {
                 func = (state) => {

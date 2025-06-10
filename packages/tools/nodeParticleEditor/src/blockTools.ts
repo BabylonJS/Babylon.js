@@ -26,13 +26,13 @@ import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/pa
 import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 import { BasicUpdateBlock } from "core/Particles/Node/Blocks/Update/basicUpdateBlock";
-import { BasicConditionBlock } from "core/Particles/Node/Blocks/Conditions/basicConditionBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
 import { CylinderEmitterBlock } from "core/Particles/Node/Blocks/Emitters/cylinderEmitterBlock";
 import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setupSpriteSheetBlock";
 import { BasicUpdateSpriteBlock } from "core/Particles/Node/Blocks/Update/basicUpdateSpriteBlock";
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
+import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 
 /**
  * Static class for BlockTools
@@ -40,6 +40,51 @@ import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlow
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "EqualBlock": {
+                const block = new ParticleConditionBlock("Equal");
+                block.test = ParticleConditionBlockTests.Equal;
+                return block;
+            }
+            case "NotEqualBlock": {
+                const block = new ParticleConditionBlock("Not equal");
+                block.test = ParticleConditionBlockTests.NotEqual;
+                return block;
+            }
+            case "LessThanBlock": {
+                const block = new ParticleConditionBlock("Less than");
+                block.test = ParticleConditionBlockTests.LessThan;
+                return block;
+            }
+            case "LessOrEqualBlock": {
+                const block = new ParticleConditionBlock("Less or equal");
+                block.test = ParticleConditionBlockTests.LessOrEqual;
+                return block;
+            }
+            case "GreaterThanBlock": {
+                const block = new ParticleConditionBlock("Greater than");
+                block.test = ParticleConditionBlockTests.GreaterThan;
+                return block;
+            }
+            case "GreaterOrEqualBlock": {
+                const block = new ParticleConditionBlock("Greater or equal");
+                block.test = ParticleConditionBlockTests.GreaterOrEqual;
+                return block;
+            }
+            case "XorBlock": {
+                const block = new ParticleConditionBlock("Xor");
+                block.test = ParticleConditionBlockTests.Xor;
+                return block;
+            }
+            case "OrBlock": {
+                const block = new ParticleConditionBlock("Or");
+                block.test = ParticleConditionBlockTests.Or;
+                return block;
+            }
+            case "AndBlock": {
+                const block = new ParticleConditionBlock("And");
+                block.test = ParticleConditionBlockTests.And;
+                return block;
+            }
             case "UpdateSpriteCellIndexBlock":
                 return new UpdateSpriteCellIndexBlock("Update sprite cell index");
             case "BasicUpdateSpriteBlock":
@@ -48,8 +93,6 @@ export class BlockTools {
                 return new SetupSpriteSheetBlock("Setup sprite sheet");
             case "TriggerBlock":
                 return new ParticleTriggerBlock("Trigger");
-            case "BasicConditionBlock":
-                return new BasicConditionBlock("Basic condition");
             case "BasicUpdateBlock":
                 return new BasicUpdateBlock("Basic update");
             case "TeleportInBlock":
