@@ -19,11 +19,6 @@ import {
     compositionBlockType,
     tintBlockType,
 } from "../blocks/blockTypes.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
-import { LocalProof } from "@babylonjs/smart-filters";
-
-Logger.WarnNM("DO NOT CHECK THIS IN - TESTING IMPORTS ONLY");
-LocalProof();
 
 /**
  * The list of block registrations.
