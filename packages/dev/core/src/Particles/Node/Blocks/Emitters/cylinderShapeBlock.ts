@@ -19,7 +19,7 @@ export class CylinderShapeBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("radius", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("height", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0);
         this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
@@ -36,9 +36,9 @@ export class CylinderShapeBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the input component
+     * Gets the particle component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -82,7 +82,7 @@ export class CylinderShapeBlock extends NodeParticleBlock {
      * @param state defines the build state
      */
     public override _build(state: NodeParticleBuildState) {
-        const system = this.input.getConnectedValue(state);
+        const system = this.particle.getConnectedValue(state);
 
         system._directionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
@@ -93,7 +93,9 @@ export class CylinderShapeBlock extends NodeParticleBlock {
 
             this._tempVector.normalize();
 
-            Vector3.TransformNormalToRef(this._tempVector, state.emitterInverseWorldMatrix!, this._tempVector);
+            if (state.isEmitterTransformNode) {
+                Vector3.TransformNormalToRef(this._tempVector, state.emitterInverseWorldMatrix!, this._tempVector);
+            }
 
             const randY = RandomRange(-directionRandomizer / 2, directionRandomizer / 2);
 
@@ -131,6 +133,7 @@ export class CylinderShapeBlock extends NodeParticleBlock {
                 Vector3.TransformCoordinatesFromFloatsToRef(xPos, yPos, zPos, state.emitterWorldMatrix!, particle.position);
             } else {
                 particle.position.copyFromFloats(xPos, yPos, zPos);
+                particle.position.addInPlace(state.emitterPosition!);
             }
         };
 

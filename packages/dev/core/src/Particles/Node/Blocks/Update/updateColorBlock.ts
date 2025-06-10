@@ -19,15 +19,15 @@ export class UpdateColorBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
     /**
-     * Gets the input component
+     * Gets the particle component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -58,7 +58,13 @@ export class UpdateColorBlock extends NodeParticleBlock {
      * @param state defines the current build state
      */
     public override _build(state: NodeParticleBuildState) {
-        const system = this.input.getConnectedValue(state) as ThinParticleSystem;
+        const system = this.particle.getConnectedValue(state) as ThinParticleSystem;
+
+        this.output._storedValue = system;
+
+        if (!this.color.isConnected) {
+            return;
+        }
 
         const processColor = (particle: Particle) => {
             state.particleContext = particle;
@@ -77,8 +83,6 @@ export class UpdateColorBlock extends NodeParticleBlock {
         } else {
             system._updateQueueStart = colorProcessing;
         }
-
-        this.output._storedValue = system;
     }
 }
 

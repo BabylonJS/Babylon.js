@@ -2,13 +2,15 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import type { SystemBlock } from "../systemBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { ParticleSystem } from "core/Particles/particleSystem";
+import { _TriggerSubEmitter } from "./triggerTools";
+import type { Nullable } from "core/types";
 
 /**
  * Block used to trigger a particle system based on a condition.
@@ -22,6 +24,12 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
      */
     @editableInPropertyPage("Max simultaneous", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
     public limit = 5;
+
+    /**
+     * Gets or sets the emit rate
+     */
+    @editableInPropertyPage("Delay between calls (ms)", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public delay = 250;
 
     /**
      * Create a new ParticleTriggerBlock
@@ -73,29 +81,30 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
         return this._outputs[0];
     }
 
+    private _previousOne: Nullable<number> = null;
+
     public override _build(state: NodeParticleBuildState) {
         this._triggerCount = 0;
         const system = this.input.getConnectedValue(state) as ThinParticleSystem;
 
-        const processPosition = (particle: Particle) => {
+        const processCondition = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
 
             if (this.condition.getConnectedValue(state) !== 0) {
                 if (this.limit === 0 || this._triggerCount < this.limit) {
+                    const now = new Date().getTime();
+                    if (this._previousOne && now - this._previousOne < this.delay) {
+                        return; // Skip if the delay has not passed
+                    }
+
                     this._triggerCount++;
+                    this._previousOne = now;
                     // Trigger the target particle system
                     const targetSystem = this.system.getConnectedValue(state) as SystemBlock;
                     if (targetSystem) {
-                        const newState = new NodeParticleBuildState();
-                        newState.buildId = this._buildId++;
-                        newState.scene = state.scene;
-                        const clone = targetSystem.createSystem(newState);
-                        clone.canStart = () => true; // Allow the cloned system to start
-                        clone.emitter = particle.position.clone(); // Set the emitter to the particle's position
-                        clone.disposeOnStop = true; // Clean up the system when it stops
+                        const clone = _TriggerSubEmitter(targetSystem, state.scene, particle.position);
                         this._trackedSubSystems.push(clone);
-                        clone.start();
                         clone.onDisposeObservable.addOnce(() => {
                             this._triggerCount--;
                             // Remove the system from tracked subsystems
@@ -114,16 +123,16 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
             }
         };
 
-        const positionProcessing = {
-            process: processPosition,
+        const conditionProcessing = {
+            process: processCondition,
             previousItem: null,
             nextItem: null,
         };
 
         if (system._updateQueueStart) {
-            _ConnectAtTheEnd(positionProcessing, system._updateQueueStart);
+            _ConnectAtTheEnd(conditionProcessing, system._updateQueueStart);
         } else {
-            system._updateQueueStart = positionProcessing;
+            system._updateQueueStart = conditionProcessing;
         }
 
         this.output._storedValue = system;
@@ -133,6 +142,7 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
         const serializationObject = super.serialize();
 
         serializationObject.limit = this.limit;
+        serializationObject.delay = this.delay;
 
         return serializationObject;
     }
@@ -142,6 +152,10 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
 
         if (serializationObject.limit !== undefined) {
             this.limit = serializationObject.limit;
+        }
+
+        if (serializationObject.delay !== undefined) {
+            this.delay = serializationObject.delay;
         }
     }
 

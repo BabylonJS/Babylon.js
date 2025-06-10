@@ -116,6 +116,7 @@ export class SphereShapeBlock extends NodeParticleBlock {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             } else {
                 particle.position.copyFromFloats(randX, randY, randZ);
+                particle.position.addInPlace(state.emitterPosition!);
             }
         };
 

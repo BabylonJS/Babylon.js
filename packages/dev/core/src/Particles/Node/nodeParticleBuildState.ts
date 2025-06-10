@@ -4,7 +4,7 @@ import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSou
 import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import type { ThinParticleSystem } from "../thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
@@ -159,32 +159,20 @@ export class NodeParticleBuildState {
      * Gets the emitter world matrix
      */
     public get emitterWorldMatrix() {
-        if (!this.isEmitterTransformNode || !this.systemContext) {
+        if (!this.systemContext) {
             return null;
         }
-        return (<AbstractMesh>this.systemContext.emitter).getWorldMatrix();
+        return this.systemContext._emitterWorldMatrix;
     }
-
-    private _matrixCachedId: number = -1;
-    private _cachedInverseWorldMatrix: Nullable<Matrix> = null;
 
     /**
      * Gets the emitter inverse world matrix
      */
     public get emitterInverseWorldMatrix() {
-        if (!this.isEmitterTransformNode || !this.systemContext) {
+        if (!this.systemContext) {
             return null;
         }
-
-        const worldMatrix = (<AbstractMesh>this.systemContext.emitter).getWorldMatrix();
-        if (this._matrixCachedId === worldMatrix.updateFlag) {
-            return this._cachedInverseWorldMatrix;
-        }
-
-        this._cachedInverseWorldMatrix = Matrix.Invert(worldMatrix);
-        this._matrixCachedId = worldMatrix.updateFlag;
-
-        return this._cachedInverseWorldMatrix;
+        return this.systemContext._emitterInverseWorldMatrix;
     }
 
     /**

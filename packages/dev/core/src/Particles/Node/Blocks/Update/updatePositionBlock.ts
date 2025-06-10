@@ -19,15 +19,15 @@ export class UpdatePositionBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
     /**
-     * Gets the input component
+     * Gets the particle component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -58,7 +58,12 @@ export class UpdatePositionBlock extends NodeParticleBlock {
      * @param state defines the current build state
      */
     public override _build(state: NodeParticleBuildState) {
-        const system = this.input.getConnectedValue(state) as ThinParticleSystem;
+        const system = this.particle.getConnectedValue(state) as ThinParticleSystem;
+        this.output._storedValue = system;
+
+        if (!this.position.isConnected) {
+            return;
+        }
 
         const processPosition = (particle: Particle) => {
             state.particleContext = particle;
@@ -77,8 +82,6 @@ export class UpdatePositionBlock extends NodeParticleBlock {
         } else {
             system._updateQueueStart = positionProcessing;
         }
-
-        this.output._storedValue = system;
     }
 }
 

@@ -7,6 +7,7 @@ import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
+import { _TriggerSubEmitter } from "./Triggers/triggerTools";
 
 /**
  * Block used to get a system of particles
@@ -74,6 +75,8 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
+        this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
+        this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -100,6 +103,20 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the onStart input component
+     */
+    public get onStart(): NodeParticleConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the onEnd input component
+     */
+    public get onEnd(): NodeParticleConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -109,10 +126,12 @@ export class SystemBlock extends NodeParticleBlock {
     /**
      * Builds the block and return a functional particle system
      * @param state defines the building state
+     * @param _forCloning defines if the system is being built for cloning purposes (do not use)
      * @returns the built particle system
      */
-    public createSystem(state: NodeParticleBuildState): ParticleSystem {
+    public createSystem(state: NodeParticleBuildState, _forCloning = false): ParticleSystem {
         state.capacity = this.capacity;
+        state.buildId = this._buildId++;
 
         this.build(state);
 
@@ -125,12 +144,34 @@ export class SystemBlock extends NodeParticleBlock {
         this._particleSystem._targetStopDuration = this.targetStopDuration;
         this._particleSystem.startDelay = this.startDelay;
 
-        this.system._storedValue = this;
+        if (!_forCloning) {
+            this.system._storedValue = this;
+        }
 
         this._particleSystem.canStart = () => {
             return !this.doNoStart;
         };
 
+        // Triggers
+        const onStartSystem = this.onStart.getConnectedValue(state);
+        if (onStartSystem) {
+            this._particleSystem.onStartedObservable.addOnce(() => {});
+        }
+
+        const onEndSystem = this.onEnd.getConnectedValue(state);
+        if (onEndSystem) {
+            this._particleSystem.onStoppedObservable.addOnce(() => {
+                state.systemContext = this._particleSystem;
+                const clone = _TriggerSubEmitter(onEndSystem, state.scene, state.emitterPosition!);
+
+                this.onDisposeObservable.addOnce(() => {
+                    // Clean up the cloned system when the original system is disposed
+                    clone.stop();
+                });
+            });
+        }
+
+        // Return
         return this._particleSystem;
     }
 

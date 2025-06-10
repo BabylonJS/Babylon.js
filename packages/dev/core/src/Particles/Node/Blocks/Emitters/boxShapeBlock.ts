@@ -18,7 +18,7 @@ export class BoxShapeBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("direction1", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
         this.registerInput("direction2", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
         this.registerInput("minEmitBox", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(-0.5, -0.5, -0.5));
@@ -35,9 +35,9 @@ export class BoxShapeBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the input component
+     * Gets the particle input component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -81,7 +81,7 @@ export class BoxShapeBlock extends NodeParticleBlock {
      * @param state defines the build state
      */
     public override _build(state: NodeParticleBuildState) {
-        const system = this.input.getConnectedValue(state);
+        const system = this.particle.getConnectedValue(state);
 
         system._directionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
@@ -115,6 +115,7 @@ export class BoxShapeBlock extends NodeParticleBlock {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             } else {
                 particle.position.copyFromFloats(randX, randY, randZ);
+                particle.position.addInPlace(state.emitterPosition!);
             }
         };
 

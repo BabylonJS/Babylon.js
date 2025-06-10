@@ -157,6 +157,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * An event triggered when the system is stopped
      */
     public onStoppedObservable = new Observable<IParticleSystem>();
+    /**
+     * An event triggered when the system is started
+     */
+    public onStartedObservable = new Observable<IParticleSystem>();
 
     private _onDisposeObserver: Nullable<Observer<IParticleSystem>>;
     /**
@@ -1613,6 +1617,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
             this._scene.beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
         }
+
+        this.onStartedObservable.notifyObservers(this);
     }
 
     /**
@@ -1632,7 +1638,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _postStop(stopSubEmitters: boolean) {
+    public _postStop(_stopSubEmitters: boolean) {
         // Do nothing
     }
 
@@ -1759,7 +1765,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     };
 
     /** @internal */
-    public _prepareParticle(particle: Particle) {
+    public _prepareParticle(_particle: Particle) {
         //Do nothing
     }
 
@@ -2303,7 +2309,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _onDispose(disposeAttachedSubEmitters = false, disposeEndSubEmitters = false) {
+    public _onDispose(_disposeAttachedSubEmitters = false, _disposeEndSubEmitters = false) {
         // Do Nothing
     }
 
@@ -2381,6 +2387,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
         this.onStoppedObservable.clear();
+        this.onStartedObservable.clear();
 
         this.reset();
     }

@@ -52,7 +52,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
@@ -67,9 +67,9 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the input component
+     * Gets the particle component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -83,7 +83,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
     public override _build(state: NodeParticleBuildState) {
         super._build(state);
 
-        const system = this.input.getConnectedValue(state) as ParticleSystem;
+        const system = this.particle.getConnectedValue(state) as ParticleSystem;
 
         system._isAnimationSheetEnabled = true;
         system.spriteCellWidth = this.width;

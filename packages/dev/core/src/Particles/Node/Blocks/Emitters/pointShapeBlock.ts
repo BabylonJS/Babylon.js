@@ -18,7 +18,7 @@ export class PointShapeBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("direction1", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
         this.registerInput("direction2", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
@@ -33,9 +33,9 @@ export class PointShapeBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the input component
+     * Gets the particle component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -65,7 +65,7 @@ export class PointShapeBlock extends NodeParticleBlock {
      * @param state defines the build state
      */
     public override _build(state: NodeParticleBuildState) {
-        const system = this.input.getConnectedValue(state);
+        const system = this.particle.getConnectedValue(state);
 
         system._directionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
@@ -90,7 +90,7 @@ export class PointShapeBlock extends NodeParticleBlock {
             if (state.isEmitterTransformNode) {
                 Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, state.emitterWorldMatrix!, particle.position);
             } else {
-                particle.position.copyFromFloats(0, 0, 0);
+                particle.position.copyFrom(state.emitterPosition!);
             }
         };
 

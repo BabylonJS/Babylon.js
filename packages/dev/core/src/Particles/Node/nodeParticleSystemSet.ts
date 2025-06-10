@@ -19,7 +19,7 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particl
 import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
-import { CreateParticleBlock } from "./Blocks";
+import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 
 /**
  * Defines a set of particle systems defined as a node graph.
@@ -200,8 +200,8 @@ export class NodeParticleSystemSet {
 
         // Shape
         const emitterShape = new BoxShapeBlock("Box shape");
-        createParticleBlock.particle.connectTo(emitterShape.input);
-        emitterShape.output.connectTo(updatePositionBlock.input);
+        createParticleBlock.particle.connectTo(emitterShape.particle);
+        emitterShape.output.connectTo(updatePositionBlock.particle);
 
         // Texture
         const textureBlock = new ParticleTextureSourceBlock("Texture");

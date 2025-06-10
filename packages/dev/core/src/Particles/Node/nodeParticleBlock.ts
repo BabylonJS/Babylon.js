@@ -35,6 +35,11 @@ export class NodeParticleBlock {
     public onBuildObservable = new Observable<NodeParticleBlock>();
 
     /**
+     * Gets an observable raised when the block is disposed
+     */
+    public onDisposeObservable = new Observable<NodeParticleBlock>();
+
+    /**
      * Gets an observable raised when the inputs of the block change
      */
     public onInputChangedObservable = new Observable<NodeParticleConnectionPoint>();
@@ -407,6 +412,9 @@ export class NodeParticleBlock {
      * Release resources
      */
     public dispose() {
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
+
         for (const input of this.inputs) {
             input.dispose();
         }
