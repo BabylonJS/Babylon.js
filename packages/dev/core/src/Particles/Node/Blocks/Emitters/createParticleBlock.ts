@@ -11,15 +11,15 @@ import type { Particle } from "core/Particles/particle";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
 import { Vector2 } from "core/Maths/math.vector";
+import { RegisterClass } from "core/Misc/typeStore";
+import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 
 /**
  * @internal
  */
-export abstract class BaseEmitterBlock extends NodeParticleBlock {
-    protected readonly _inputOffset = 5;
-
+export class CreateParticleBlock extends NodeParticleBlock {
     /**
-     * Create a new BaseEmitterBlock
+     * Create a new CreateParticleBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -38,7 +38,7 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "BaseEmitterBlock";
+        return "CreateParticleBlock";
     }
 
     /**
@@ -86,8 +86,9 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
     /**
      * @internal
      */
-    protected _prepare(state: NodeParticleBuildState) {
+    public override _build(state: NodeParticleBuildState) {
         const system = new ParticleSystem(this.name, state.capacity, state.scene, null, false, undefined, true);
+        system.particleEmitterType = new PointParticleEmitter();
 
         // Creation
         system._lifeTimeCreation.process = (particle: Particle, system: ThinParticleSystem) => {
@@ -112,6 +113,8 @@ export abstract class BaseEmitterBlock extends NodeParticleBlock {
             particle.angle = this.angle.getConnectedValue(state);
         };
 
-        return system;
+        this.particle._storedValue = system;
     }
 }
+
+RegisterClass("BABYLON.CreateParticleBlock", CreateParticleBlock);

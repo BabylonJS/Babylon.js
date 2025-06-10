@@ -2,7 +2,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { ParticleGradientEntryBlock } from "./particleGradientEntryBlock";
+import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
 import type { Nullable } from "core/types";
 import { Lerp } from "core/Maths/math.scalar.functions";
 import { Color4 } from "core/Maths/math.color";
@@ -20,7 +20,7 @@ export class ParticleGradientBlock extends NodeParticleBlock {
         super(name);
 
         this.registerInput("gradient", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
-        this.registerInput("entry0", NodeParticleBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("value0", NodeParticleBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[1];
@@ -54,7 +54,7 @@ export class ParticleGradientBlock extends NodeParticleBlock {
                 return;
             }
             this._entryCount++;
-            this.registerInput("entry" + (this._entryCount - 1), NodeParticleBlockConnectionPointTypes.AutoDetect, true);
+            this.registerInput("value" + (this._entryCount - 1), NodeParticleBlockConnectionPointTypes.AutoDetect, true);
             this._linkConnectionTypes(1, this._entryCount);
 
             this._manageExtendedInputs(this._entryCount);
@@ -85,10 +85,10 @@ export class ParticleGradientBlock extends NodeParticleBlock {
 
     public override _build() {
         // Building the list of entries in order
-        const entries: ParticleGradientEntryBlock[] = [];
+        const entries: ParticleGradientValueBlock[] = [];
         for (let i = 1; i < this._inputs.length; i++) {
             if (this._inputs[i].isConnected) {
-                entries.push(this._inputs[i].connectedPoint?.ownerBlock as ParticleGradientEntryBlock);
+                entries.push(this._inputs[i].connectedPoint?.ownerBlock as ParticleGradientValueBlock);
             }
         }
 
@@ -104,7 +104,7 @@ export class ParticleGradientBlock extends NodeParticleBlock {
             }
 
             // Go down the entries list in reverse order
-            let nextEntry: Nullable<ParticleGradientEntryBlock> = null;
+            let nextEntry: Nullable<ParticleGradientValueBlock> = null;
             for (let i = entries.length - 1; i >= 0; i--) {
                 const entry = entries[i];
                 if (entry.reference <= gradient) {

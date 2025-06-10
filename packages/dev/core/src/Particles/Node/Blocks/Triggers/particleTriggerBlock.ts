@@ -32,7 +32,7 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
 
         this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("condition", NodeParticleBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("target", NodeParticleBlockConnectionPointTypes.System);
+        this.registerInput("system", NodeParticleBlockConnectionPointTypes.System);
 
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
@@ -62,7 +62,7 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
     /**
      * Gets the target system input component
      */
-    public get target(): NodeParticleConnectionPoint {
+    public get system(): NodeParticleConnectionPoint {
         return this._inputs[2];
     }
 
@@ -85,7 +85,7 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
                 if (this.limit === 0 || this._triggerCount < this.limit) {
                     this._triggerCount++;
                     // Trigger the target particle system
-                    const targetSystem = this.target.getConnectedValue(state) as SystemBlock;
+                    const targetSystem = this.system.getConnectedValue(state) as SystemBlock;
                     if (targetSystem) {
                         const newState = new NodeParticleBuildState();
                         newState.buildId = this._buildId++;

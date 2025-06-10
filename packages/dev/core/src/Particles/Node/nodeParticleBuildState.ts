@@ -4,7 +4,7 @@ import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSou
 import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import type { ThinParticleSystem } from "../thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
@@ -141,6 +141,68 @@ export class NodeParticleBuildState {
     }
 
     /**
+     * Gets a boolean indicating if the emitter is a transform node (or a simple vector3)
+     */
+    public get isEmitterTransformNode() {
+        if (!this.systemContext) {
+            return false;
+        }
+
+        if ((<AbstractMesh>this.systemContext.emitter).position) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the emitter world matrix
+     */
+    public get emitterWorldMatrix() {
+        if (!this.isEmitterTransformNode || !this.systemContext) {
+            return null;
+        }
+        return (<AbstractMesh>this.systemContext.emitter).getWorldMatrix();
+    }
+
+    private _matrixCachedId: number = -1;
+    private _cachedInverseWorldMatrix: Nullable<Matrix> = null;
+
+    /**
+     * Gets the emitter inverse world matrix
+     */
+    public get emitterInverseWorldMatrix() {
+        if (!this.isEmitterTransformNode || !this.systemContext) {
+            return null;
+        }
+
+        const worldMatrix = (<AbstractMesh>this.systemContext.emitter).getWorldMatrix();
+        if (this._matrixCachedId === worldMatrix.updateFlag) {
+            return this._cachedInverseWorldMatrix;
+        }
+
+        this._cachedInverseWorldMatrix = Matrix.Invert(worldMatrix);
+        this._matrixCachedId = worldMatrix.updateFlag;
+
+        return this._cachedInverseWorldMatrix;
+    }
+
+    /**
+     * Gets the emitter position
+     */
+    public get emitterPosition() {
+        if (!this.systemContext) {
+            return null;
+        }
+
+        if (this.isEmitterTransformNode) {
+            return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
+        }
+
+        return this.systemContext.emitter as Vector3;
+    }
+
+    /**
      * Gets the value associated with a system source
      * @param source Source of the system value
      * @returns the value associated with the source
@@ -156,7 +218,7 @@ export class NodeParticleBuildState {
             case NodeParticleSystemSources.Delta:
                 return this.systemContext._scaledUpdateSpeed;
             case NodeParticleSystemSources.Emitter:
-                if ((<AbstractMesh>this.systemContext.emitter).position) {
+                if (this.isEmitterTransformNode) {
                     const emitterMesh = <AbstractMesh>this.systemContext.emitter;
                     return emitterMesh.absolutePosition;
                 } else {

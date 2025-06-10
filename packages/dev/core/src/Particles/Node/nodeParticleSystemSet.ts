@@ -13,12 +13,13 @@ import { Tools } from "core/Misc/tools";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
-import { BoxEmitterBlock } from "./Blocks/Emitters/boxEmitterBlock";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
 import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
+import { CreateParticleBlock } from "./Blocks";
 
 /**
  * Defines a set of particle systems defined as a node graph.
@@ -194,9 +195,13 @@ export class NodeParticleSystemSet {
         directionBlock.output.connectTo(addBlock.right);
         addBlock.output.connectTo(updatePositionBlock.position);
 
-        // Emitter
-        const emitterBlock = new BoxEmitterBlock("Box emitter");
-        emitterBlock.particle.connectTo(updatePositionBlock.input);
+        // Create particle
+        const createParticleBlock = new CreateParticleBlock("Create particle");
+
+        // Shape
+        const emitterShape = new BoxShapeBlock("Box shape");
+        createParticleBlock.particle.connectTo(emitterShape.input);
+        emitterShape.output.connectTo(updatePositionBlock.input);
 
         // Texture
         const textureBlock = new ParticleTextureSourceBlock("Texture");

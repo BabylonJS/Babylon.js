@@ -14,11 +14,12 @@ import { TriggerDisplayManager } from "./display/triggerDisplayManager";
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTextureSourceBlock"] = TextureDisplayManager;
-    DisplayLedger.RegisteredControls["BoxEmitterBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["PointEmitterBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["CustomEmitterBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["SphereEmitterBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["CylinderEmitterBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["BoxShapeBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["PointShapeBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["CustomShapeBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["SphereShapeBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["CylinderShapeBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["CreateParticleBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SetupSpriteSheetBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["UpdatePositionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;

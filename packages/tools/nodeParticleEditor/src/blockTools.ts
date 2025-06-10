@@ -1,6 +1,3 @@
-import { BoxEmitterBlock } from "core/Particles/Node/Blocks/Emitters/boxEmitterBlock";
-import { PointEmitterBlock } from "core/Particles/Node/Blocks/Emitters/pointEmitterBlock";
-import { SphereEmitterBlock } from "core/Particles/Node/Blocks/Emitters/sphereEmitterBlock";
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 import { RandomRangeBlock } from "core/Particles/Node/Blocks/randomRangeBlock";
@@ -13,10 +10,9 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/N
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
-import { ParticleGradientEntryBlock } from "core/Particles/Node/Blocks/particleGradientEntryBlock";
+import { ParticleGradientValueBlock } from "core/Particles/Node/Blocks/particleGradientValueBlock";
 import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
 import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
-import { CustomEmitterBlock } from "core/Particles/Node/Blocks/Emitters/customEmitterBlock";
 import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "core/Particles/Node/Blocks/particleTrigonometryBlock";
 import { ParticleRandomBlock } from "core/Particles/Node/Blocks/particleRandomBlock";
 import { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebugBlock";
@@ -25,14 +21,19 @@ import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/par
 import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
-import { BasicUpdateBlock } from "core/Particles/Node/Blocks/Update/basicUpdateBlock";
+import { BasicPositionUpdateBlock } from "core/Particles/Node/Blocks/Update/basicPositionUpdateBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
-import { CylinderEmitterBlock } from "core/Particles/Node/Blocks/Emitters/cylinderEmitterBlock";
 import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setupSpriteSheetBlock";
-import { BasicUpdateSpriteBlock } from "core/Particles/Node/Blocks/Update/basicUpdateSpriteBlock";
+import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicSpriteUpdateBlock";
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
+import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
+import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
+import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShapeBlock";
+import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
+import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
+import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
 
 /**
  * Static class for BlockTools
@@ -40,6 +41,8 @@ import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Partic
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "CreateParticleBlock":
+                return new CreateParticleBlock("Create particle");
             case "EqualBlock": {
                 const block = new ParticleConditionBlock("Equal");
                 block.test = ParticleConditionBlockTests.Equal;
@@ -87,14 +90,14 @@ export class BlockTools {
             }
             case "UpdateSpriteCellIndexBlock":
                 return new UpdateSpriteCellIndexBlock("Update sprite cell index");
-            case "BasicUpdateSpriteBlock":
-                return new BasicUpdateSpriteBlock("Basic update sprite");
+            case "BasicSpriteUpdateBlock":
+                return new BasicSpriteUpdateBlock("Basic sprite update");
             case "SetupSpriteSheetBlock":
                 return new SetupSpriteSheetBlock("Setup sprite sheet");
             case "TriggerBlock":
                 return new ParticleTriggerBlock("Trigger");
-            case "BasicUpdateBlock":
-                return new BasicUpdateBlock("Basic update");
+            case "BasicPositionUpdateBlock":
+                return new BasicPositionUpdateBlock("Basic position update");
             case "TeleportInBlock":
                 return new ParticleTeleportInBlock("Teleport In");
             case "TeleportOutBlock":
@@ -107,8 +110,8 @@ export class BlockTools {
                 return new ParticleConverterBlock("Converter");
             case "GradientBlock":
                 return new ParticleGradientBlock("Gradient");
-            case "GradientEntryBlock":
-                return new ParticleGradientEntryBlock("Gradient entry");
+            case "GradientValueBlock":
+                return new ParticleGradientValueBlock("Gradient value");
             case "LerpBlock":
                 return new ParticleLerpBlock("Lerp");
             case "UpdatePositionBlock":
@@ -127,16 +130,16 @@ export class BlockTools {
                 return new SystemBlock("System");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
-            case "BoxEmitterBlock":
-                return new BoxEmitterBlock("Box emitter");
-            case "SphereEmitterBlock":
-                return new SphereEmitterBlock("Sphere emitter");
-            case "PointEmitterBlock":
-                return new PointEmitterBlock("Point emitter");
-            case "CustomEmitterBlock":
-                return new CustomEmitterBlock("Custom emitter");
-            case "CylinderEmitterBlock":
-                return new CylinderEmitterBlock("Cylinder emitter");
+            case "BoxShapeBlock":
+                return new BoxShapeBlock("Box shape");
+            case "SphereShapeBlock":
+                return new SphereShapeBlock("Sphere shape");
+            case "PointShapeBlock":
+                return new PointShapeBlock("Point shape");
+            case "CustomShapeBlock":
+                return new CustomShapeBlock("Custom shape");
+            case "CylinderShapeBlock":
+                return new CylinderShapeBlock("Cylinder shape");
             case "RandomRangeBlock":
                 return new RandomRangeBlock("Random range");
             case "PositionBlock": {
@@ -209,8 +212,8 @@ export class BlockTools {
                 block.systemSource = NodeParticleSystemSources.Delta;
                 return block;
             }
-            case "EmitterBlock": {
-                const block = new ParticleInputBlock("Emitter");
+            case "EmitterPositionBlock": {
+                const block = new ParticleInputBlock("Emitter position");
                 block.systemSource = NodeParticleSystemSources.Emitter;
                 return block;
             }

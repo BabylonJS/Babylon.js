@@ -10,7 +10,7 @@ import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 /**
  * Block used to provide the basic update functionality for particles.
  */
-export class BasicUpdateBlock extends NodeParticleBlock {
+export class BasicPositionUpdateBlock extends NodeParticleBlock {
     /**
      * Create a new UpdateScaleBlock
      * @param name defines the block name
@@ -41,7 +41,7 @@ export class BasicUpdateBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "BasicUpdateBlock";
+        return "BasicPositionUpdateBlock";
     }
 
     /**
@@ -74,4 +74,4 @@ export class BasicUpdateBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.BasicUpdateBlock", BasicUpdateBlock);
+RegisterClass("BABYLON.BasicPositionUpdateBlock", BasicPositionUpdateBlock);

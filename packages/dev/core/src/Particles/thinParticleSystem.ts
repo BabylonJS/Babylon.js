@@ -247,9 +247,11 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     /** @internal */
     public _lifeTimeCreation: _IExecutionQueueItem;
-    private _positionCreation: _IExecutionQueueItem;
+    /** @internal */
+    public _positionCreation: _IExecutionQueueItem;
     private _isLocalCreation: _IExecutionQueueItem;
-    private _directionCreation: _IExecutionQueueItem;
+    /** @internal */
+    public _directionCreation: _IExecutionQueueItem;
     private _emitPowerCreation: _IExecutionQueueItem;
     /** @internal */
     public _sizeCreation: _IExecutionQueueItem;

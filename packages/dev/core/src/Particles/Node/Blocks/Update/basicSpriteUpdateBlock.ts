@@ -10,9 +10,9 @@ import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 /**
  * Block used to provide the basic update functionality for particle sprite index.
  */
-export class BasicUpdateSpriteBlock extends NodeParticleBlock {
+export class BasicSpriteUpdateBlock extends NodeParticleBlock {
     /**
-     * Create a new BasicUpdateSpriteBlock
+     * Create a new BasicSpriteUpdateBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -41,7 +41,7 @@ export class BasicUpdateSpriteBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "BasicUpdateSpriteBlock";
+        return "BasicSpriteUpdateBlock";
     }
 
     /**
@@ -73,4 +73,4 @@ export class BasicUpdateSpriteBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.BasicUpdateSpriteBlock", BasicUpdateSpriteBlock);
+RegisterClass("BABYLON.BasicSpriteUpdateBlock", BasicSpriteUpdateBlock);

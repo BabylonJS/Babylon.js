@@ -6,7 +6,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
 /**
  * Block used to define a gradient entry for a gradient block
  */
-export class ParticleGradientEntryBlock extends NodeParticleBlock {
+export class ParticleGradientValueBlock extends NodeParticleBlock {
     /**
      * Gets or sets the epsilon value used for comparison
      */
@@ -51,7 +51,7 @@ export class ParticleGradientEntryBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "ParticleGradientEntryBlock";
+        return "ParticleGradientValueBlock";
     }
 
     /**
@@ -89,4 +89,4 @@ export class ParticleGradientEntryBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.ParticleGradientEntryBlock", ParticleGradientEntryBlock);
+RegisterClass("BABYLON.ParticleGradientValueBlock", ParticleGradientValueBlock);
