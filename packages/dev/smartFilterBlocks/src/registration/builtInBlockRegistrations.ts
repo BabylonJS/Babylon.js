@@ -21,7 +21,7 @@ import {
 } from "../blocks/blockTypes.js";
 import { Logger } from "core/Misc/logger.js";
 
-Logger.Warn("The smart filter blocks registration is deprecated and will be removed in a future version. Please use the new smart filters registration instead.");
+Logger.Warn("DO NOT CHECK THIS IN - TESTING IMPORTS ONLY");
 
 /**
  * The list of block registrations.
