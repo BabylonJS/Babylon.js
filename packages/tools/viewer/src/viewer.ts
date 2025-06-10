@@ -137,7 +137,7 @@ type ShadowState = {
     normal?: {
         generator: ShadowGenerator;
         ground: Mesh;
-        light: DirectionalLight;
+        light: ShadowLight;
         shouldRender: boolean;
     };
     high?: {
@@ -271,7 +271,7 @@ function adjustLightTargetDirection(targetDirection: Vector3): Vector3 {
         adjustedDirection.y = Math.min(adjustedDirection.y * lightSteepnessFactor, minLightDirectionY);
     }
 
-    return adjustedDirection.normalize();
+    return adjustedDirection;
 }
 
 /**
@@ -836,7 +836,10 @@ export class Viewer implements IDisposable {
 
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
-    private _cachedIblDominantDirection: Nullable<Vector3> = null;
+
+    private readonly _iblDirectionCalculationLock = new AsyncLock();
+    private _iblDirectionCalculationAbortController: Nullable<AbortController> = null;
+    private _cachedIblDirection: Nullable<Vector3> = null;
     private _cachedShadowLightPositionFactor: number = 20;
 
     public constructor(
@@ -1794,25 +1797,33 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Retrieves the dominant light direction from the IBL.
-     * Then populates populates this._cachedDominantDirection with the result.
+     * Calculates and caches the dominant light direction from the IBL.
+     * @param abortSignal An optional signal to abort this specific calculation.
      * @return The IBL dominant direction, or null.
      */
-    private async _computeIblDominantDirection(): Promise<Nullable<Vector3>> {
-        await import("core/Rendering/iblCdfGeneratorSceneComponent");
+    private async _calculateAndCacheIblDominantDirection(abortSignal?: AbortSignal): Promise<Nullable<Vector3>> {
+        this._iblDirectionCalculationAbortController?.abort(new AbortError("New IBL dominant direction calculation initiated before previous calculation finished."));
+        const iblDirectionCalculationAbortController = (this._iblDirectionCalculationAbortController = new AbortController());
 
-        if (!this._scene.iblCdfGenerator) {
-            this._scene.enableIblCdfGenerator();
-        }
+        return this._iblDirectionCalculationLock.lockAsync(async () => {
+            throwIfAborted(abortSignal, iblDirectionCalculationAbortController.signal);
 
-        if (this._scene.iblCdfGenerator) {
-            this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
-            await this._scene.iblCdfGenerator.renderWhenReady();
-            this._cachedIblDominantDirection = await this._scene.iblCdfGenerator.findDominantDirection();
-            return this._cachedIblDominantDirection;
-        }
+            await import("core/Rendering/iblCdfGeneratorSceneComponent");
 
-        return null;
+            if (!this._scene.iblCdfGenerator) {
+                this._scene.enableIblCdfGenerator();
+            }
+
+            if (this._scene.iblCdfGenerator) {
+                this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
+                await this._scene.iblCdfGenerator.renderWhenReady();
+                this._cachedIblDirection = await this._scene.iblCdfGenerator.findDominantDirection();
+                return this._cachedIblDirection;
+            }
+
+            this._cachedIblDirection = null;
+            return null;
+        });
     }
 
     /**
@@ -1822,8 +1833,8 @@ export class Viewer implements IDisposable {
     private _getEffectiveLightSourceDirection(): Vector3 {
         let effectiveSourceDir: Vector3;
 
-        if (this._cachedIblDominantDirection) {
-            effectiveSourceDir = this._cachedIblDominantDirection.clone();
+        if (this._cachedIblDirection) {
+            effectiveSourceDir = this._cachedIblDirection.clone();
         } else {
             // Fallback if IBL direction is not available:
             const x = Math.cos(this._reflectionsRotation);
@@ -1832,7 +1843,7 @@ export class Viewer implements IDisposable {
         }
 
         // Apply the manual _reflectionsRotation around the Y-axis to the determined source direction
-        if (this._reflectionsRotation !== 0 && this._cachedIblDominantDirection) {
+        if (this._reflectionsRotation !== 0 && this._cachedIblDirection) {
             const rotationYMatrix = Matrix.RotationY(this._reflectionsRotation);
             effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
         }
@@ -1867,6 +1878,9 @@ export class Viewer implements IDisposable {
             return;
         }
 
+        await this._calculateAndCacheIblDominantDirection(abortSignal);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+
         this._snapshotHelper.disableSnapshotRendering();
 
         const size = 4096;
@@ -1874,16 +1888,7 @@ export class Viewer implements IDisposable {
         const groundSize = radius * groundFactor;
         this._cachedShadowLightPositionFactor = radius * 3;
 
-        // attempt to compute IBL direction first, as it might influence the light setup
-        try {
-            await this._computeIblDominantDirection(); // this populates this._cachedDominantDirection
-        } catch (error) {
-            this._log(`Failed to get IBL dominant direction. Will use fallback.`);
-            this._cachedIblDominantDirection = null;
-        }
-
         const effectiveSourceDir = this._getEffectiveLightSourceDirection();
-
         const lightPosition = effectiveSourceDir.scale(this._cachedShadowLightPositionFactor);
         const lightTargetDirection = adjustLightTargetDirection(effectiveSourceDir.negate());
 
@@ -2356,6 +2361,7 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._iblDirectionCalculationAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
