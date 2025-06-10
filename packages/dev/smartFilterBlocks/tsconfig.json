@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "core/*": ["node_modules/core/*"]
+            "core/*": ["node_modules/core/*"],
+            "smart-filters": ["dev/smartFilters/src"]
         }
     }
 }

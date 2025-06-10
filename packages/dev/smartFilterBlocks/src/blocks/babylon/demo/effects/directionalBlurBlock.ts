@@ -9,7 +9,7 @@ import {
     PropertyTypeForEdition,
     ShaderBinding,
     ShaderBlock,
-} from "@dev/smart-filters";
+} from "smart-filters";
 
 import { directionalBlurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";

@@ -9,7 +9,7 @@ import {
     DisableableShaderBlock,
     type SmartFilter,
     BlockDisableStrategy,
-} from "@dev/smart-filters";
+} from "smart-filters";
 
 import { kaleidoscopeBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";

@@ -1,4 +1,4 @@
-import type { IBlockSerializerV1, BaseBlock } from "@dev/smart-filters";
+import type { IBlockSerializerV1, BaseBlock } from "smart-filters";
 import type { DirectionalBlurBlock } from "./directionalBlurBlock";
 import { directionalBlurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";

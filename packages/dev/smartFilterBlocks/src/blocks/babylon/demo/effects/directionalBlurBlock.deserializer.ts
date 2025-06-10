@@ -1,4 +1,4 @@
-import type { ISerializedBlockV1, SmartFilter } from "@dev/smart-filters";
+import type { ISerializedBlockV1, SmartFilter } from "smart-filters";
 import { DirectionalBlurBlock } from "./directionalBlurBlock.js";
 
 /**

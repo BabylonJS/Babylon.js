@@ -1,5 +1,5 @@
 import type { ThinEngine } from "core/Engines/thinEngine.js";
-import { InputBlock, type SmartFilter, type SmartFilterDeserializer, type ISerializedBlockV1, ConnectionPointType, CustomShaderBlock } from "@dev/smart-filters";
+import { InputBlock, type SmartFilter, type SmartFilterDeserializer, type ISerializedBlockV1, ConnectionPointType, CustomShaderBlock } from "smart-filters";
 import type { IBlockRegistration } from "./IBlockRegistration.js";
 import { babylonDemoEffectsNamespace, babylonDemoTransitionsNamespace, babylonDemoUtilitiesNamespace, inputsNamespace } from "../blocks/blockNamespaces.js";
 import {
@@ -19,6 +19,9 @@ import {
     compositionBlockType,
     tintBlockType,
 } from "../blocks/blockTypes.js";
+import { Logger } from "core/Misc/logger.js";
+
+Logger.Warn("The smart filter blocks registration is deprecated and will be removed in a future version. Please use the new smart filters registration instead.");
 
 /**
  * The list of block registrations.

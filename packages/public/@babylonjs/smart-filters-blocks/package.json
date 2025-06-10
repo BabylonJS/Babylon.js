@@ -32,8 +32,14 @@
         "license.md",
         "readme.md"
     ],
-    "scripts": {},
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "precompile": "node ../../../dev/smartFilters/dist/utils/buildTools/buildShaders.js ../../../dev/smartFilterBlocks/src/blocks @dev/smart-filters",
+        "compile": "tsc -b tsconfig.build.json"
+    },
     "devDependencies": {
+        "@dev/smart-filters": "^1.0.0",
         "@dev/build-tools": "^1.0.0"
     },
     "peerDependencies": {

@@ -12,7 +12,7 @@ import {
     type SmartFilter,
     createStrongRef,
     BlockDisableStrategy,
-} from "@dev/smart-filters";
+} from "smart-filters";
 
 /**
  * The shader bindings for the Spritesheet block.

@@ -1,4 +1,4 @@
-import { type ConnectionPointType, AggregateBlock, type ConnectionPoint, editableInPropertyPage, PropertyTypeForEdition, SmartFilter } from "@dev/smart-filters";
+import { type ConnectionPointType, AggregateBlock, type ConnectionPoint, editableInPropertyPage, PropertyTypeForEdition, SmartFilter } from "smart-filters";
 import { DirectionalBlurBlock } from "./directionalBlurBlock.js";
 import { blurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";

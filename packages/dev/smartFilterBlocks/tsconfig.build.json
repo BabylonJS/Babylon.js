@@ -5,7 +5,11 @@
         "composite": true,
         "strict": true,
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["node_modules/core/*"],
+            "smart-filters": ["dev/smartFilters/dist"]
+        }
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
