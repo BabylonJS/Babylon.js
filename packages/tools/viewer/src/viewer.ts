@@ -1799,13 +1799,13 @@ export class Viewer implements IDisposable {
     /**
      * Calculates and caches the dominant light direction from the IBL.
      * @param abortSignal An optional signal to abort this specific calculation.
-     * @return The IBL dominant direction, or null.
+     * @returns The IBL dominant direction, or null.
      */
     private async _calculateAndCacheIblDominantDirection(abortSignal?: AbortSignal): Promise<Nullable<Vector3>> {
         this._iblDirectionCalculationAbortController?.abort(new AbortError("New IBL dominant direction calculation initiated before previous calculation finished."));
         const iblDirectionCalculationAbortController = (this._iblDirectionCalculationAbortController = new AbortController());
 
-        return this._iblDirectionCalculationLock.lockAsync(async () => {
+        return await this._iblDirectionCalculationLock.lockAsync(async () => {
             throwIfAborted(abortSignal, iblDirectionCalculationAbortController.signal);
 
             await import("core/Rendering/iblCdfGeneratorSceneComponent");
@@ -1828,7 +1828,7 @@ export class Viewer implements IDisposable {
 
     /**
      * Calculates the effective light source direction considering IBL and manual rotation.
-     * @return The effective light source direction.
+     * @returns The effective light source direction.
      */
     private _getEffectiveLightSourceDirection(): Vector3 {
         let effectiveSourceDir: Vector3;
