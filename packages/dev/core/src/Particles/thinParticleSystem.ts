@@ -1363,6 +1363,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * Resets the draw wrappers cache
      */
     public resetDrawCache(): void {
+        if (!this._drawWrappers) {
+            return;
+        }
         for (const drawWrappers of this._drawWrappers) {
             if (drawWrappers) {
                 for (const drawWrapper of drawWrappers) {
