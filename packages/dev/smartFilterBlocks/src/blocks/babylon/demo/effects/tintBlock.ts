@@ -1,4 +1,4 @@
-import { ConnectionPointType, type SerializedShaderBlockDefinition } from "smart-filters";
+import { ConnectionPointType, type SerializedShaderBlockDefinition } from "@babylonjs/smart-filters";
 
 /**
  * This is included to show how a serialized block definition can be loaded and used.

@@ -1,4 +1,4 @@
-import type { Effect } from "core/Materials/effect";
+import type { Effect } from "@babylonjs/core/Materials/effect";
 
 import { spritesheetBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
@@ -12,7 +12,7 @@ import {
     type SmartFilter,
     createStrongRef,
     BlockDisableStrategy,
-} from "smart-filters";
+} from "@babylonjs/smart-filters";
 
 /**
  * The shader bindings for the Spritesheet block.

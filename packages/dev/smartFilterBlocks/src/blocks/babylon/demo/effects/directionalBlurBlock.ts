@@ -1,4 +1,4 @@
-import type { Effect } from "core/Materials/effect";
+import type { Effect } from "@babylonjs/core/Materials/effect";
 
 import {
     type ShaderProgram,
@@ -9,7 +9,7 @@ import {
     PropertyTypeForEdition,
     ShaderBinding,
     ShaderBlock,
-} from "smart-filters";
+} from "@babylonjs/smart-filters";
 
 import { directionalBlurBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";

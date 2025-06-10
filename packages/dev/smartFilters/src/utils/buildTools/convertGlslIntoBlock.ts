@@ -68,7 +68,7 @@ const FileTemplate = `/* eslint-disable prettier/prettier */
 // to the block. This file will get overwritten when the build
 // is run or during a watch when the .glsl file is updated.
 
-import type { Effect } from "core/Materials/effect";
+import type { Effect } from "@babylonjs/core/Materials/effect";
 
 import {
     ${SHADER_BINDING_EXTENDS},
@@ -122,7 +122,7 @@ ${BLOCK_INPUT_PROPERTIES}
     /**
      * The shader program (vertex and fragment code) to use to render the block
      */
-    public static override ShaderCode = ShaderProgram;
+    public static override ShaderCode = BlockShaderProgram;
 
     /**
      * Instantiates a new ${BLOCK_NAME}.

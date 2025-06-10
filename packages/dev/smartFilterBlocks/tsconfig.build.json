@@ -7,8 +7,9 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["node_modules/core/*"],
-            "smart-filters": ["dev/smartFilters/dist"]
+            "core/*": ["../node_modules/core/*"],
+            "@babylonjs/core/*": ["../node_modules/core/*"],
+            "@babylonjs/smart-filters": ["dev/smartFilters/dist"]
         }
     },
 

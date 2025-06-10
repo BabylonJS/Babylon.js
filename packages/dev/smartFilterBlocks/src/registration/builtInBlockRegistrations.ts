@@ -1,5 +1,5 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
-import { InputBlock, type SmartFilter, type SmartFilterDeserializer, type ISerializedBlockV1, ConnectionPointType, CustomShaderBlock } from "smart-filters";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import { InputBlock, type SmartFilter, type SmartFilterDeserializer, type ISerializedBlockV1, ConnectionPointType, CustomShaderBlock } from "@babylonjs/smart-filters";
 import type { IBlockRegistration } from "./IBlockRegistration.js";
 import { babylonDemoEffectsNamespace, babylonDemoTransitionsNamespace, babylonDemoUtilitiesNamespace, inputsNamespace } from "../blocks/blockNamespaces.js";
 import {
@@ -19,9 +19,11 @@ import {
     compositionBlockType,
     tintBlockType,
 } from "../blocks/blockTypes.js";
-import { Logger } from "core/Misc/logger.js";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
+import { LocalProof } from "@babylonjs/smart-filters";
 
-Logger.Warn("DO NOT CHECK THIS IN - TESTING IMPORTS ONLY");
+Logger.WarnNM("DO NOT CHECK THIS IN - TESTING IMPORTS ONLY");
+LocalProof();
 
 /**
  * The list of block registrations.
