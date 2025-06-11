@@ -1,5 +1,5 @@
 import type { BaseBlock } from "../blockFoundation/baseBlock";
-import { ConnectionPoint, type RuntimeData } from "./connectionPoint.js";
+import { ConnectionPoint, type RuntimeData } from "./connectionPoint";
 import type { ConnectionPointDirection } from "./connectionPointDirection";
 import type { ConnectionPointType } from "./connectionPointType";
 

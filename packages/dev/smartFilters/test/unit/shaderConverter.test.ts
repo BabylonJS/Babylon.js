@@ -1,4 +1,4 @@
-import { parseFragmentShader } from "../../dist/utils/buildTools/shaderConverter.js";
+import { ParseFragmentShader } from "../../src/utils/buildTools/shaderConverter";
 
 const decorator = "_";
 function decorated(name: string) {
@@ -15,7 +15,7 @@ uniform float intensity;
 
 vec4 apply(vec2 vUV){ // main
     if (flag) {
-        for (int i = 0; i < 10; i++) 
+        for (int i = 0; i < 10; i++)
         {
             if (i > 5) {vUV += double(vUV);}
         }
@@ -27,15 +27,15 @@ vec4 apply(vec2 vUV){ // main
 
 float double(float value) { return value * 2.0; }
 
-vec2 double(vec2 value) 
-{ 
-    return vec2(double(value.x), double(value.y)); 
+vec2 double(vec2 value)
+{
+    return vec2(double(value.x), double(value.y));
 }
 
 `;
 
 describe("parseFragmentShader", () => {
-    const result = parseFragmentShader(annotatedFragment);
+    const result = ParseFragmentShader(annotatedFragment);
 
     describe("uniform parsing", () => {
         it("identifies all uniforms", () => {
@@ -82,9 +82,7 @@ describe("parseFragmentShader", () => {
             expect(functionNames).toContain(decorated("double"));
             // Ensure there are two double functions
             expect(result.shaderCode.functions.length).toBe(3);
-            expect(functionNames.indexOf(decorated("double"))).toBeLessThan(
-                functionNames.lastIndexOf(decorated("double"))
-            );
+            expect(functionNames.indexOf(decorated("double"))).toBeLessThan(functionNames.lastIndexOf(decorated("double")));
         });
 
         it("extracts function parameters", () => {
@@ -126,12 +124,12 @@ describe("parseFragmentShader", () => {
     describe("error handling", () => {
         it("throws when no main function is defined", () => {
             const noMainFunction = annotatedFragment.replace("apply(vec2 vUV){ // main", "apply(vec2 vUV) {");
-            expect(() => parseFragmentShader(noMainFunction)).toThrow();
+            expect(() => ParseFragmentShader(noMainFunction)).toThrow();
         });
 
         it("throws if more than one main function is defined", () => {
             const twoMainFunctions = annotatedFragment + "\nvec4 apply2(vec2 vUV) { // main return vec4(0.0); }";
-            expect(() => parseFragmentShader(twoMainFunctions)).toThrow();
+            expect(() => ParseFragmentShader(twoMainFunctions)).toThrow();
         });
     });
 });

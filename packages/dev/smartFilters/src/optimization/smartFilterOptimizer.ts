@@ -1,19 +1,19 @@
 import type { Nullable } from "core/types";
-import { Logger } from "core/Misc/logger.js";
+import { Logger } from "core/Misc/logger";
 
 import type { ConnectionPoint } from "../connection/connectionPoint";
 import type { ShaderBinding } from "../runtime/shaderRuntime";
 import type { InputBlock } from "../blockFoundation/inputBlock";
 import type { BaseBlock } from "../blockFoundation/baseBlock";
-import { SmartFilter } from "../smartFilter.js";
-import { ConnectionPointType } from "../connection/connectionPointType.js";
-import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
-import { IsTextureInputBlock } from "../blockFoundation/inputBlock.js";
-import { OptimizedShaderBlock } from "./optimizedShaderBlock.js";
-import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
-import { DependencyGraph } from "./dependencyGraph.js";
-import { DisableableShaderBlock, BlockDisableStrategy } from "../blockFoundation/disableableShaderBlock.js";
-import { TextureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions.js";
+import { SmartFilter } from "../smartFilter";
+import { ConnectionPointType } from "../connection/connectionPointType";
+import { ShaderBlock } from "../blockFoundation/shaderBlock";
+import { IsTextureInputBlock } from "../blockFoundation/inputBlock";
+import { OptimizedShaderBlock } from "./optimizedShaderBlock";
+import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, UndecorateSymbol } from "../utils/shaderCodeUtils";
+import { DependencyGraph } from "./dependencyGraph";
+import { DisableableShaderBlock, BlockDisableStrategy } from "../blockFoundation/disableableShaderBlock";
+import { TextureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions";
 
 const GetDefineRegEx = /^\S*#define\s+(\w+).*$/; // Matches a #define statement line, capturing its decorated or undecorated name
 const ShowDebugData = false;

@@ -1,4 +1,4 @@
-import { Logger } from "core/Misc/logger.js";
+import { Logger } from "core/Misc/logger";
 import type { CommandBuffer } from "./commandBuffer";
 
 /**

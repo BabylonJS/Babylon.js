@@ -1,8 +1,8 @@
-export { type StrongRef } from "./strongRef.js";
-export { CreateStrongRef } from "./strongRef.js";
+export { type StrongRef } from "./strongRef";
+export { CreateStrongRef } from "./strongRef";
 // Back compat for when camelCase was used
-export { CreateStrongRef as createStrongRef } from "./strongRef.js";
-export { DisableableShaderBinding, ShaderBinding, ShaderRuntime } from "./shaderRuntime.js";
-export { type SmartFilterRuntime } from "./smartFilterRuntime.js";
-export { InternalSmartFilterRuntime } from "./smartFilterRuntime.js";
-export { RenderTargetGenerator } from "./renderTargetGenerator.js";
+export { CreateStrongRef as createStrongRef } from "./strongRef";
+export { DisableableShaderBinding, ShaderBinding, ShaderRuntime } from "./shaderRuntime";
+export { type SmartFilterRuntime } from "./smartFilterRuntime";
+export { InternalSmartFilterRuntime } from "./smartFilterRuntime";
+export { RenderTargetGenerator } from "./renderTargetGenerator";

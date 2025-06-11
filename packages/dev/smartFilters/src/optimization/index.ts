@@ -1,1 +1,1 @@
-export { SmartFilterOptimizer } from "./smartFilterOptimizer.js";
+export { SmartFilterOptimizer } from "./smartFilterOptimizer";

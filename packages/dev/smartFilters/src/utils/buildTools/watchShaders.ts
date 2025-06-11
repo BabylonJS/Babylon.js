@@ -8,7 +8,7 @@
 
 import { watch } from "chokidar";
 import { extname } from "path";
-import { ConvertShader } from "./convertShaders.js";
+import { ConvertShader } from "./convertShaders";
 
 const ExternalArguments = process.argv.slice(2);
 if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {

@@ -4,15 +4,15 @@ import type { SmartFilterRuntime } from "./runtime/smartFilterRuntime";
 import type { BaseBlock } from "./blockFoundation/baseBlock";
 import type { ConnectionPointType } from "./connection/connectionPointType";
 import type { ConnectionPoint } from "./connection/connectionPoint";
-import { OutputBlock } from "./blockFoundation/outputBlock.js";
-import { InternalSmartFilterRuntime } from "./runtime/smartFilterRuntime.js";
-import { RenderTargetGenerator } from "./runtime/renderTargetGenerator.js";
-import { AggregateBlock } from "./blockFoundation/aggregateBlock.js";
+import { OutputBlock } from "./blockFoundation/outputBlock";
+import { InternalSmartFilterRuntime } from "./runtime/smartFilterRuntime";
+import { RenderTargetGenerator } from "./runtime/renderTargetGenerator";
+import { AggregateBlock } from "./blockFoundation/aggregateBlock";
 import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { IDisposable } from "./IDisposable";
-import { ShaderBlock } from "./blockFoundation/shaderBlock.js";
+import { ShaderBlock } from "./blockFoundation/shaderBlock";
 import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
-import { GetBlockOutputTextureSize } from "./utils/textureUtils.js";
+import { GetBlockOutputTextureSize } from "./utils/textureUtils";
 
 /**
  * How long to wait for shader compilation and texture loading to complete before erroring out.

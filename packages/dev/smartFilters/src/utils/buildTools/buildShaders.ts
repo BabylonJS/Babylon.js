@@ -5,7 +5,7 @@
  * @example node buildShaders.js <shaderPath> <importPath>
  */
 
-import { ConvertShaders } from "./convertShaders.js";
+import { ConvertShaders } from "./convertShaders";
 
 const ExternalArguments = process.argv.slice(2);
 if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {

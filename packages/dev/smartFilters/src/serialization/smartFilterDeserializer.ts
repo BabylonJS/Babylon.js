@@ -1,12 +1,12 @@
 import type { BaseBlock } from "../blockFoundation/baseBlock";
-import type { SerializedSmartFilter } from "./serializedSmartFilter.js";
-import { SmartFilter } from "../smartFilter.js";
-import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer.js";
-import { OutputBlock } from "../blockFoundation/outputBlock.js";
+import type { SerializedSmartFilter } from "./serializedSmartFilter";
+import { SmartFilter } from "../smartFilter";
+import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer";
+import { OutputBlock } from "../blockFoundation/outputBlock";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import { InputBlock } from "../blockFoundation/inputBlock.js";
+import { InputBlock } from "../blockFoundation/inputBlock";
 import type { ISerializedBlockV1, ISerializedConnectionV1, OptionalBlockDeserializerV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types";
-import { UniqueIdGenerator } from "../utils/uniqueIdGenerator.js";
+import { UniqueIdGenerator } from "../utils/uniqueIdGenerator";
 import type { Nullable } from "core/types";
 
 /**

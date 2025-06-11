@@ -1,18 +1,10 @@
-import {
-    ConnectionPointType,
-    CustomShaderBlock,
-    importCustomBlockDefinition,
-    InputBlock,
-    type ShaderBlock,
-    SmartFilter,
-    SmartFilterOptimizer,
-} from "../../dist/index.js";
+import { ConnectionPointType, CustomShaderBlock, importCustomBlockDefinition, InputBlock, type ShaderBlock, SmartFilter, SmartFilterOptimizer } from "../../src/";
 
 const testBlockWithOverloadsAnnotatedGlsl = `
-/*  
-{ 
-    "smartFilterBlockType": "TestBlockWithOverloads", 
-    "namespace": "Babylon.UnitTests", 
+/*
+{
+    "smartFilterBlockType": "TestBlockWithOverloads",
+    "namespace": "Babylon.UnitTests",
     "blockDisableStrategy": "AutoSample"
 }
 */
@@ -48,11 +40,7 @@ describe("smartFilterOptimizer", () => {
             // Arrange
             const smartFilter = new SmartFilter("Test");
 
-            const testBlockWithOverloads = CustomShaderBlock.Create(
-                smartFilter,
-                "TestBlock1",
-                testBlockWithOverloadsDefinition
-            );
+            const testBlockWithOverloads = CustomShaderBlock.Create(smartFilter, "TestBlock1", testBlockWithOverloadsDefinition);
             const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
             const mixInputBlock = new InputBlock(smartFilter, "amount", ConnectionPointType.Float, 0.5);
 
@@ -83,16 +71,8 @@ describe("smartFilterOptimizer", () => {
             // Arrange
             const smartFilter = new SmartFilter("Test");
 
-            const testBlockWithOverloads1 = CustomShaderBlock.Create(
-                smartFilter,
-                "TestBlock1",
-                testBlockWithOverloadsDefinition
-            );
-            const testBlockWithOverloads2 = CustomShaderBlock.Create(
-                smartFilter,
-                "TestBlock2",
-                testBlockWithOverloadsDefinition
-            );
+            const testBlockWithOverloads1 = CustomShaderBlock.Create(smartFilter, "TestBlock1", testBlockWithOverloadsDefinition);
+            const testBlockWithOverloads2 = CustomShaderBlock.Create(smartFilter, "TestBlock2", testBlockWithOverloadsDefinition);
             const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
             const mixInputBlock = new InputBlock(smartFilter, "amount", ConnectionPointType.Float, 0.5);
 
@@ -122,16 +102,8 @@ describe("smartFilterOptimizer", () => {
 
     describe("when a smart filter has multiple instances of a block which has a define", () => {
         const smartFilter = new SmartFilter("Test");
-        const testBlockWithOverloads1 = CustomShaderBlock.Create(
-            smartFilter,
-            "TestBlock1",
-            testBlockWithOverloadsDefinition
-        );
-        const testBlockWithOverloads2 = CustomShaderBlock.Create(
-            smartFilter,
-            "TestBlock2",
-            testBlockWithOverloadsDefinition
-        );
+        const testBlockWithOverloads1 = CustomShaderBlock.Create(smartFilter, "TestBlock1", testBlockWithOverloadsDefinition);
+        const testBlockWithOverloads2 = CustomShaderBlock.Create(smartFilter, "TestBlock2", testBlockWithOverloadsDefinition);
         const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
         const mixInputBlock = new InputBlock(smartFilter, "amount", ConnectionPointType.Float, 0.5);
 

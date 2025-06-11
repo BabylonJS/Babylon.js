@@ -1,6 +1,6 @@
 import * as fs from "fs";
-import { Logger } from "core/Misc/logger.js";
-import { ParseFragmentShader, type FragmentShaderInfo } from "./shaderConverter.js";
+import { Logger } from "core/Misc/logger";
+import { ParseFragmentShader, type FragmentShaderInfo } from "./shaderConverter";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const TYPE_IMPORT_PATH = "@TYPE_IMPORT_PATH@";

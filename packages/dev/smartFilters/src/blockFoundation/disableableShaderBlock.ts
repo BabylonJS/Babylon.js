@@ -1,10 +1,10 @@
-import type { SmartFilter } from "../smartFilter.js";
-import type { ConnectionPoint } from "../connection/connectionPoint.js";
+import type { SmartFilter } from "../smartFilter";
+import type { ConnectionPoint } from "../connection/connectionPoint";
 
-import { ConnectionPointType } from "../connection/connectionPointType.js";
-import { CreateStrongRef } from "../runtime/strongRef.js";
-import { ShaderBlock } from "./shaderBlock.js";
-import { InjectAutoSampleDisableCode } from "../utils/shaderCodeUtils.js";
+import { ConnectionPointType } from "../connection/connectionPointType";
+import { CreateStrongRef } from "../runtime/strongRef";
+import { ShaderBlock } from "./shaderBlock";
+import { InjectAutoSampleDisableCode } from "../utils/shaderCodeUtils";
 
 /**
  * The interface that describes the disableable block.

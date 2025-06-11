@@ -1,8 +1,8 @@
-export { ConnectionPointDirection } from "./connectionPointDirection.js";
-export { ConnectionPointType } from "./connectionPointType.js";
-export { type ConnectionPointValue } from "./connectionPointType.js";
-export { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
+export { ConnectionPointDirection } from "./connectionPointDirection";
+export { ConnectionPointType } from "./connectionPointType";
+export { type ConnectionPointValue } from "./connectionPointType";
+export { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState";
 // Back compat for when camelCase was used
-export { GetCompatibilityIssueMessage as getCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
-export { ConnectionPoint } from "./connectionPoint.js";
-export { type RuntimeData } from "./connectionPoint.js";
+export { GetCompatibilityIssueMessage as getCompatibilityIssueMessage } from "./connectionPointCompatibilityState";
+export { ConnectionPoint } from "./connectionPoint";
+export { type RuntimeData } from "./connectionPoint";

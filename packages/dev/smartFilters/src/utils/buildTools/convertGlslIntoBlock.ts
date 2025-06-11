@@ -1,7 +1,7 @@
 import * as fs from "fs";
-import { ExtractShaderProgramFromGlsl } from "./convertGlslIntoShaderProgram.js";
-import { ConnectionPointType } from "../../connection/connectionPointType.js";
-import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";
+import { ExtractShaderProgramFromGlsl } from "./convertGlslIntoShaderProgram";
+import { ConnectionPointType } from "../../connection/connectionPointType";
+import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const EXTRA_IMPORTS = "@EXTRA_IMPORTS@";

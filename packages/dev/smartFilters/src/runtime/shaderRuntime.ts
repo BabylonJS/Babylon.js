@@ -2,14 +2,14 @@ import type { EffectRenderer } from "core/Materials/effectRenderer";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Effect } from "core/Materials/effect";
-import { EffectWrapper } from "core/Materials/effectRenderer.js";
+import { EffectWrapper } from "core/Materials/effectRenderer";
 import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
 
 import type { IDisposable } from "../IDisposable";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
-import { CreateStrongRef, type StrongRef } from "./strongRef.js";
+import { CreateStrongRef, type StrongRef } from "./strongRef";
 import type { IDisableableBlock } from "../blockFoundation/disableableShaderBlock";
-import { DecorateSymbol, DisableUniform, GetShaderCreateOptions } from "../utils/shaderCodeUtils.js";
+import { DecorateSymbol, DisableUniform, GetShaderCreateOptions } from "../utils/shaderCodeUtils";
 import type { OutputBlock } from "../blockFoundation/outputBlock";
 
 /**

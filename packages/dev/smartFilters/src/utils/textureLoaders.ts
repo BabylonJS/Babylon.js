@@ -1,5 +1,5 @@
-import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
-import { type ThinEngine } from "core/Engines/thinEngine.js";
+import { ThinTexture } from "core/Materials/Textures/thinTexture";
+import { type ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
 
 /**

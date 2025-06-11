@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { ConnectionPoint, RuntimeData } from "../connection/connectionPoint";
 import type { ConnectionPointType } from "../connection/connectionPointType";
 
-import { BaseBlock } from "./baseBlock.js";
+import { BaseBlock } from "./baseBlock";
 
 /**
  * The aggregate block class is the base class for all blocks that be created from other blocks.

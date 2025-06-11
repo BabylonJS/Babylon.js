@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types.js";
-import type { BaseBlock } from "../../blockFoundation/baseBlock.js";
-import type { SmartFilter } from "../../smartFilter.js";
+import type { Nullable } from "core/types";
+import type { BaseBlock } from "../../blockFoundation/baseBlock";
+import type { SmartFilter } from "../../smartFilter";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo.js";
-import type { SmartFilterDeserializer } from "../smartFilterDeserializer.js";
+import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { SmartFilterDeserializer } from "../smartFilterDeserializer";
 
 /**
  * ----------------------------------------------------------------------------

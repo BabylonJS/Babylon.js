@@ -1,6 +1,6 @@
-import { EffectRenderer } from "core/Materials/effectRenderer.js";
+import { EffectRenderer } from "core/Materials/effectRenderer";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import { CommandBuffer } from "../command/commandBuffer.js";
+import { CommandBuffer } from "../command/commandBuffer";
 import type { IDisposable } from "../IDisposable";
 import type { Command } from "../command/command";
 

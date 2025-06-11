@@ -1,8 +1,8 @@
-import { InputBlock } from "./inputBlock.js";
-import type { SerializedInputBlockData } from "./inputBlock.serialization.types.js";
-import { ConnectionPointType } from "../connection/connectionPointType.js";
-import type { SmartFilter } from "../smartFilter.js";
-import type { ISerializedBlockV1 } from "../serialization/v1/smartFilterSerialization.types.js";
+import { InputBlock } from "./inputBlock";
+import type { SerializedInputBlockData } from "./inputBlock.serialization.types";
+import { ConnectionPointType } from "../connection/connectionPointType";
+import type { SmartFilter } from "../smartFilter";
+import type { ISerializedBlockV1 } from "../serialization/v1/smartFilterSerialization.types";
 
 /**
  * V1 Input Block Deserializer

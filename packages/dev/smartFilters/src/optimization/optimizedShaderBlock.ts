@@ -4,9 +4,9 @@ import type { Nullable } from "core/types";
 import type { SmartFilter } from "../smartFilter";
 import type { ShaderProgram } from "../utils/shaderCodeUtils";
 import type { RuntimeData } from "../connection/connectionPoint";
-import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
-import { ShaderBinding } from "../runtime/shaderRuntime.js";
-import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { ShaderBlock } from "../blockFoundation/shaderBlock";
+import { ShaderBinding } from "../runtime/shaderRuntime";
+import { ConnectionPointType } from "../connection/connectionPointType";
 
 /**
  * The shader bindings for the OptimizedShader block.

@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
-import { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
-import { ConnectionPointDirection } from "./connectionPointDirection.js";
-import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState";
+import { ConnectionPointDirection } from "./connectionPointDirection";
+import type { BaseBlock } from "../blockFoundation/baseBlock";
 import type { ConnectionPointType, ConnectionPointValue } from "./connectionPointType";
 import type { StrongRef } from "../runtime/strongRef";
 

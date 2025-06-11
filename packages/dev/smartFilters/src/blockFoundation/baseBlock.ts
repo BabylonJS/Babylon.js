@@ -1,11 +1,11 @@
 import type { Nullable } from "core/types";
-import { ConnectionPointType, type ConnectionPointValue } from "../connection/connectionPointType.js";
-import type { InitializationData, SmartFilter } from "../smartFilter.js";
-import type { ICommandOwner } from "../command/command.js";
-import { ConnectionPoint, type RuntimeData } from "../connection/connectionPoint.js";
-import { ConnectionPointWithDefault } from "../connection/connectionPointWithDefault.js";
-import { ConnectionPointDirection } from "../connection/connectionPointDirection.js";
-import { UniqueIdGenerator } from "../utils/uniqueIdGenerator.js";
+import { ConnectionPointType, type ConnectionPointValue } from "../connection/connectionPointType";
+import type { InitializationData, SmartFilter } from "../smartFilter";
+import type { ICommandOwner } from "../command/command";
+import { ConnectionPoint, type RuntimeData } from "../connection/connectionPoint";
+import { ConnectionPointWithDefault } from "../connection/connectionPointWithDefault";
+import { ConnectionPointDirection } from "../connection/connectionPointDirection";
+import { UniqueIdGenerator } from "../utils/uniqueIdGenerator";
 
 /**
  * Defines a callback function that is triggered when visiting a block,

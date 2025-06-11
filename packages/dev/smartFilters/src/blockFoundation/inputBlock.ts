@@ -3,9 +3,9 @@ import type { ConnectionPointValue } from "../connection/connectionPointType";
 import type { RuntimeData } from "../connection/connectionPoint";
 import type { ConnectionPointWithDefault } from "../connection/connectionPointWithDefault";
 import type { DisableableShaderBlock } from "./disableableShaderBlock";
-import { BaseBlock } from "./baseBlock.js";
-import { CreateStrongRef } from "../runtime/strongRef.js";
-import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { BaseBlock } from "./baseBlock";
+import { CreateStrongRef } from "../runtime/strongRef";
+import { ConnectionPointType } from "../connection/connectionPointType";
 import type { Nullable } from "core/types";
 
 /**
