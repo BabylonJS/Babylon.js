@@ -113,7 +113,7 @@ export class ParticleGradientBlock extends NodeParticleBlock {
                         const nextValue = nextEntry.value.getConnectedValue(state);
                         const nextReference = nextEntry.reference;
                         const currentReference = entry.reference;
-                        const scale = (gradient - currentReference) / (nextReference - currentReference);
+                        const scale = Math.max(0, Math.min(1, (gradient - currentReference) / (nextReference - currentReference)));
 
                         switch (this.output.type) {
                             case NodeParticleBlockConnectionPointTypes.Float:
