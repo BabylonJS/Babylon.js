@@ -95,7 +95,7 @@ export class FrameGraph {
         this._scene = scene;
         this._engine = scene.getEngine();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
-        this._passContext = new FrameGraphContext();
+        this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
 
         this._scene.frameGraphs.push(this);
