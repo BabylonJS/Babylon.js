@@ -39,6 +39,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
@@ -1823,7 +1824,9 @@ export class Viewer implements IDisposable {
         let effectiveSourceDir: Vector3;
 
         if (this._cachedIblDirection) {
-            effectiveSourceDir = this._cachedIblDirection.clone();
+            effectiveSourceDir = this._cachedIblDirection.normalizeToNew();
+            const rotationYMatrix = Matrix.RotationY(this._reflectionsRotation);
+            effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
         } else {
             // Fallback if IBL direction is not available:
             const x = Math.cos(this._reflectionsRotation);
@@ -1831,13 +1834,7 @@ export class Viewer implements IDisposable {
             effectiveSourceDir = new Vector3(x, 1, z);
         }
 
-        // Apply the manual _reflectionsRotation around the Y-axis to the determined source direction
-        if (this._reflectionsRotation !== 0 && this._cachedIblDirection) {
-            const rotationYMatrix = Matrix.RotationY(this._reflectionsRotation);
-            effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
-        }
-
-        return effectiveSourceDir.normalize();
+        return effectiveSourceDir;
     }
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
@@ -1867,7 +1864,7 @@ export class Viewer implements IDisposable {
             return;
         }
 
-        await this._calculateAndCacheIblDominantDirection();
+        const rawIblDirection = await this._calculateAndCacheIblDominantDirection();
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
         this._snapshotHelper.disableSnapshotRendering();
@@ -1876,6 +1873,7 @@ export class Viewer implements IDisposable {
         const groundFactor = 20;
         const groundSize = radius * groundFactor;
         this._cachedShadowLightPositionFactor = radius * 3;
+        const iblLightStrength = rawIblDirection ? Math.min(1.0, Math.max(0.0, rawIblDirection.length())) : 0.5;
 
         const effectiveSourceDir = this._getEffectiveLightSourceDirection();
         const lightPosition = effectiveSourceDir.scale(this._cachedShadowLightPositionFactor);
@@ -1886,14 +1884,14 @@ export class Viewer implements IDisposable {
             const light = new DirectionalLight("shadowMapDirectionalLight", lightTargetDirection, this._scene);
 
             const generator = new ShadowGenerator(size, light);
-            generator.setDarkness(0.8);
+            generator.setDarkness(Scalar.Lerp(0.8, 0.2, iblLightStrength));
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
             generator.useBlurExponentialShadowMap = true;
             generator.enableSoftTransparentShadow = true;
             generator.bias = radius / 1000;
             generator.useKernelBlur = true;
-            generator.blurKernel = 32;
+            generator.blurKernel = Math.floor(Scalar.Lerp(64, 8, iblLightStrength));
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
