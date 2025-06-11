@@ -1,9 +1,9 @@
 {
     "name": "@babylonjs/gui-editor",
     "version": "8.11.0",
-    "main": "dist/babylon.guiEditor.js",
-    "module": "dist/babylon.guiEditor.js",
-    "esnext": "dist/babylon.guiEditor.js",
+    "main": "dist/babylon.guiEditor.max.js",
+    "module": "dist/babylon.guiEditor.max.js",
+    "esnext": "dist/babylon.guiEditor.max.js",
     "typings": "dist/babylon.guiEditor.module.d.ts",
     "files": [
         "dist/**/*.*",

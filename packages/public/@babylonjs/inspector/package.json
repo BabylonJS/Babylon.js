@@ -1,9 +1,9 @@
 {
     "name": "@babylonjs/inspector",
     "version": "8.11.0",
-    "module": "dist/babylon.inspector.bundle.js",
-    "main": "dist/babylon.inspector.bundle.js",
-    "esnext": "dist/babylon.inspector.bundle.js",
+    "module": "dist/babylon.inspector.bundle.max.js",
+    "main": "dist/babylon.inspector.bundle.max.js",
+    "esnext": "dist/babylon.inspector.bundle.max.js",
     "typings": "dist/babylon.inspector.module.d.ts",
     "files": [
         "dist/**/*.*",
