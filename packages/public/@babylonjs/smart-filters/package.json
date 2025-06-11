@@ -38,7 +38,7 @@
         "build": "npm run clean && npm run copySrc && npm run compile",
         "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
         "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilters/src', './src', { recursive: true })\"",
-        "compile": "tsc -b tsconfig.build.json && node dist/utils/buildTools/recordVersionNumber.js"
+        "compile": "node src/utils/buildTools/recordVersionNumber.js && tsc -b tsconfig.build.json"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0"

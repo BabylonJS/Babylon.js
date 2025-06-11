@@ -13,5 +13,5 @@ const VersionTsText = `/**
  * The version of the SmartFilter core. During publish, this file is overwritten by recordVersionNumber.ts with the same version that is used for the NPM publish.
  */
 export const SmartFilterCoreVersion = "${PackageJSON.version}";\n`;
-fs.writeFileSync("dist/version.js", VersionTsText);
+fs.writeFileSync("src/version.ts", VersionTsText);
 console.log("Wrote version.ts with version:", PackageJSON.version);
