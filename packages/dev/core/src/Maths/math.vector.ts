@@ -5505,6 +5505,9 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Returns the angle in radians between two quaternions
+     * @param q1 defines the first quaternion
+     * @param q2 defines the second quaternion
+     * @returns the angle in radians between the two quaternions
      */
     public static AngleBetween(q1: DeepImmutable<Quaternion>, q2: DeepImmutable<Quaternion>): number {
         return Math.acos(Clamp(Quaternion.Dot(q1, q2))) * 2;
