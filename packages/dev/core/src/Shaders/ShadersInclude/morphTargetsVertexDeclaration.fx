@@ -19,6 +19,10 @@
 		#ifdef MORPHTARGETS_UV2
 		attribute vec2 uv2_{X};
 		#endif
+
+		#ifdef MORPHTARGETS_COLOR
+		attribute vec4 color{X};
+		#endif
 	#elif {X} == 0
 		uniform int morphTargetCount;
 	#endif
