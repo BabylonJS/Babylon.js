@@ -215,7 +215,6 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
             }
 
             if (color) {
-                console.log("@@@I");
                 attribs.push(Constants.ColorKind + index);
             }
 
@@ -881,7 +880,6 @@ export function PrepareDefinesForAttributes(
         defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
     }
 
-    console.log("useVertexColor", useVertexColor, mesh.useVertexColors, mesh.isVerticesDataPresent(Constants.ColorKind));
     if (useVertexColor) {
         const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(Constants.ColorKind);
         defines["VERTEXCOLOR"] = hasVertexColors;
