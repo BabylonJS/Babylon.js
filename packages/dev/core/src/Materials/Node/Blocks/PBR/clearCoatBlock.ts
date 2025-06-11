@@ -8,7 +8,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { ReflectionBlock } from "./reflectionBlock";
 import type { Scene } from "../../../../scene";
 import type { Nullable } from "../../../../types";
@@ -186,9 +185,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("CLEARCOAT", true);
         defines.setValue("CLEARCOAT_TEXTURE", false, true);
         defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);

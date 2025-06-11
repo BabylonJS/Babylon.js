@@ -141,7 +141,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         this.world.define = "!INSTANCES || THIN_INSTANCES";
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh, useInstances: boolean = false, subMesh?: SubMesh) {
         let changed = false;
         if (defines["INSTANCES"] !== useInstances) {
             defines.setValue("INSTANCES", useInstances);

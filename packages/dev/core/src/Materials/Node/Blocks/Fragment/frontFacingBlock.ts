@@ -38,8 +38,8 @@ export class FrontFacingBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            // eslint-disable-next-line no-throw-literal
-            throw "FrontFacingBlock must only be used in a fragment shader";
+            state.sharedData.raiseBuildError("FrontFacingBlock must only be used in a fragment shader");
+            return this;
         }
 
         const output = this._outputs[0];

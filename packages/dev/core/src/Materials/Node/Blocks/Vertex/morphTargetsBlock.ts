@@ -223,7 +223,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         if ((<Mesh>mesh).morphTargetManager) {
             const morphTargetManager = (<Mesh>mesh).morphTargetManager;
 
@@ -249,12 +253,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public override replaceRepeatableContent(
-        vertexShaderState: NodeMaterialBuildState,
-        fragmentShaderState: NodeMaterialBuildState,
-        mesh: AbstractMesh,
-        defines: NodeMaterialDefines
-    ) {
+    public override replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, defines: NodeMaterialDefines, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         const position = this.position;
         const normal = this.normal;
         const tangent = this.tangent;

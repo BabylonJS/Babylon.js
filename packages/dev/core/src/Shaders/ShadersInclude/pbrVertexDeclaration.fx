@@ -69,6 +69,8 @@ uniform mat4 bumpMatrix;
 uniform float pointSize;
 #endif
 
+uniform vec4 cameraInfo;
+
 // Reflection
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;

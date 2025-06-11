@@ -4,7 +4,6 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
@@ -350,7 +349,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public override initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override initializeDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -360,7 +359,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }

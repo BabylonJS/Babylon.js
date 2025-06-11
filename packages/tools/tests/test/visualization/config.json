@@ -652,7 +652,7 @@
         },
         {
             "title": "Area Lights - Standard Material",
-            "playgroundId": "#T7FXR8#11",
+            "playgroundId": "#T7FXR8#67",
             "referenceImage": "areaLightsStandardMaterial.png"
         },
         {
@@ -1048,13 +1048,13 @@
         },
         {
             "title": "GLTF Serializer KHR punctual light, left-handed",
-            "playgroundId": "#FLXW8B#25",
+            "playgroundId": "#FLXW8B#27",
             "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
             "referenceImage": "glTFSerializerKHRPunctualLightLH.png"
         },
         {
             "title": "GLTF Serializer KHR punctual light, right-handed",
-            "playgroundId": "#FLXW8B#25",
+            "playgroundId": "#FLXW8B#27",
             "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
             "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
         },
@@ -2566,7 +2566,7 @@
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#77",
+            "playgroundId": "#JWKDME#88",
             "renderCount": 10
         },
         {
