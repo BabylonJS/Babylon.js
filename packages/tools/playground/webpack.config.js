@@ -19,7 +19,10 @@ module.exports = (env) => {
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "inspector-v2": path.resolve("../../dev/inspector-v2/dist"),
+                core: path.resolve("../../dev/core/dist"),
+                loaders: path.resolve("../../dev/loaders/dist"),
             },
         },
         externals: {
