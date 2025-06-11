@@ -26,7 +26,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/BabylonJS/Babylon.js.git"
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
     },
     "files": [
         "dist",
@@ -35,8 +35,9 @@
         "readme.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "build": "npm run clean && npm run copySrc && npm run compile",
+        "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilters/src', './src', { recursive: true })\"",
         "compile": "tsc -b tsconfig.build.json && node dist/utils/buildTools/recordVersionNumber.js"
     },
     "devDependencies": {

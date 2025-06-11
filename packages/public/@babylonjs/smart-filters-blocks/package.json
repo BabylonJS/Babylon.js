@@ -24,7 +24,7 @@
     "sideEffects": false,
     "repository": {
         "type": "git",
-        "url": "https://github.com/BabylonJS/Babylon.js.git"
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
     },
     "files": [
         "dist",
@@ -33,9 +33,10 @@
         "readme.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
-        "precompile": "node ../../../dev/smartFilters/dist/utils/buildTools/buildShaders.js ../../../dev/smartFilterBlocks/src/blocks @babylonjs/smart-filters",
+        "build": "npm run clean && npm run copySrc && npm run compile",
+        "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilterBlocks/src', './src', { recursive: true })\"",
+        "precompile": "node ../../../dev/smartFilters/dist/utils/buildTools/buildShaders.js ./src/blocks @babylonjs/smart-filters",
         "compile": "tsc -b tsconfig.build.json"
     },
     "devDependencies": {
@@ -45,5 +46,8 @@
     },
     "peerDependencies": {
         "@babylonjs/core": "^8.0.1"
+    },
+    "dependencies": {
+        "@babylonjs/smart-filters": "^8.10.1"
     }
 }

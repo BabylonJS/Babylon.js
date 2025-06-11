@@ -3,10 +3,13 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "../../../dev/smartFilters/src",
+        "rootDir": "./src",
         "declaration": true,
         "target": "ES2020",
         "importHelpers": true,
+        "sourceMap": true,
+        "declarationMap": true,
+        "inlineSources": false,
         "plugins": [
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
@@ -25,5 +28,5 @@
         ]
     },
 
-    "include": ["../../../dev/smartFilters/src/**/*"]
+    "include": ["./src/**/*"]
 }

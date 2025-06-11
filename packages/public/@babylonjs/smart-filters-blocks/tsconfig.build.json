@@ -3,14 +3,17 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "../../../dev/smartFilterBlocks/src",
+        "rootDir": "./src",
         "declaration": true,
         "target": "ES2020",
         "importHelpers": true,
+        "sourceMap": true,
+        "declarationMap": true,
+        "inlineSources": false,
         "paths": {
             "@babylonjs/core/*": ["../node_modules/core/*"]
         }
     },
 
-    "include": ["../../../dev/smartFilterBlocks/src/**/*"]
+    "include": ["./src/**/*"]
 }
