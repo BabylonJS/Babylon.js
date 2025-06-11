@@ -24,7 +24,7 @@ import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 /**
  * Defines a set of particle systems defined as a node graph.
  * @experimental This API is experimental and may change in future releases.
- * #N6SK7N
+ * #K6F1ZB
  */
 export class NodeParticleSystemSet {
     private _systemBlocks: SystemBlock[] = [];
