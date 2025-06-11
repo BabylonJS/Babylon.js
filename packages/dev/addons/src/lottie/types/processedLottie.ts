@@ -40,6 +40,7 @@ export type LottieNode = {
     transform: Transform; // Initial transform properties and animations of the layer
     nodeTrs?: TransformNode; // Translation/Rotation/Scale node, it will contain the current transformed value
     nodeAnchor?: TransformNode; // Anchor node, it may contain a sprite to render
+    svgData?: SVGElement; // SVG data coming from a group, if applicable
 };
 
 export type Transform = {

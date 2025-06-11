@@ -195,8 +195,8 @@ export class LottieParser {
                 // TODO: deal with children inside of children
                 this._errors.push(`Group ${rawGroup.nm} contains another shape ${shape.nm} which is a group. Nested groups are not yet supported`);
             } else if (shape.ty === "tr") {
-                transform = this._processLottieTransformShape(shape as RawTransformShape);
                 this._validateNonAnimatedTransform(transform); // We do not support animated transforms for groups
+                transform = this._processLottieTransformShape(shape as RawTransformShape);
             } else if (shape.ty === "sh") {
                 this._validatePathShape(shape as RawPathShape);
             } else if (shape.ty === "rc") {
@@ -215,6 +215,8 @@ export class LottieParser {
             return;
         }
 
+        const svgElement = this._svgElementFromGroup(rawGroup);
+
         const newNode: LottieNode = {
             name: `${parent.name} - ${rawGroup.nm}`,
             parentIndex: parent.index,
@@ -226,6 +228,7 @@ export class LottieParser {
             timeStretch: parent.timeStretch ?? 1,
             autoOrient: parent.autoOrient,
             transform: transform,
+            svgData: svgElement,
         };
 
         newNode.nodeTrs = new TransformNode(`TRS - ${rawGroup.nm}`);
@@ -240,6 +243,7 @@ export class LottieParser {
         newNode.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
         newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
+        /* Start fake sprites debugging */
         const size = this._mapSize(newNode.name);
         const scale = this._mapScale(newNode.name);
         const mesh = MeshBuilder.CreatePlane(`Anchor with Sprite - ${rawGroup.nm}`, { height: size.y * scale, width: size.x * scale });
@@ -262,6 +266,7 @@ export class LottieParser {
         newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
 
         newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
+        /* End fake sprites debugging */
 
         this._processedData.nodes.set(newNode.index, newNode);
     }
@@ -532,5 +537,53 @@ export class LottieParser {
         }
 
         return this._spritesData.get(layerName)?.texture;
+    }
+
+    /** SVG Functions */
+
+    private _svgElementFromGroup(rawGroup: RawGroupShape): SVGElement {
+        const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgElement.setAttribute("width", this._processedData.size.x.toString());
+        svgElement.setAttribute("height", this._processedData.size.y.toString());
+        svgElement.setAttribute("viewBox", `0 0 ${this._processedData.size.x} ${this._processedData.size.y}`);
+        svgElement.setAttribute("style", "width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px); content-visibility: visible;");
+
+        this._createSVGData(rawGroup as Required<RawGroupShape>, svgElement);
+
+        return svgElement;
+    }
+
+    private _createSVGData(rawGroup: Required<RawGroupShape>, svg: SVGElement): void {
+        // Each Group must contain: Shape (Path or Rectangle) + Style (Fill or GradientFill)
+
+        let svgElement: SVGGeometryElement | undefined = undefined;
+        // First, let's find the Shape
+        let path = rawGroup.it.find((shape) => shape.ty === "sh");
+        if (path !== undefined) {
+            svgElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        } else {
+            path = rawGroup.it.find((shape) => shape.ty === "rc");
+            if (path !== undefined) {
+                svgElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            }
+        }
+
+        // Second, let's find the style
+        let style = rawGroup.it.find((shape) => shape.ty === "fl");
+        if (style === undefined) {
+            style = rawGroup.it.find((shape) => shape.ty === "gf");
+        } else {
+            isFill = true;
+        }
+
+        if (isPath && isFill) {
+            this._processPathAndFill(svg, path as RawPathShape, style as RawFillShape);
+        } else if (isPath && !isFill) {
+            this._processPathAndGradient(svg, path as RawPathShape, style as RawGradientFillShape);
+        } else if (!isPath && isFill) {
+            this._processRectangleAndFill(svg, path as RawRectangleShape, style as RawFillShape);
+        } else if (!isPath && !isFill) {
+            this._processRectangleAndGradient(svg, path as RawRectangleShape, style as RawGradientFillShape);
+        }
     }
 }
