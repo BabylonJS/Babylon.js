@@ -836,9 +836,6 @@ export class Viewer implements IDisposable {
 
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
-
-    private readonly _iblDirectionCalculationLock = new AsyncLock();
-    private _iblDirectionCalculationAbortController: Nullable<AbortController> = null;
     private _cachedIblDirection: Nullable<Vector3> = null;
     private _cachedShadowLightPositionFactor: number = 20;
 
@@ -1798,32 +1795,24 @@ export class Viewer implements IDisposable {
 
     /**
      * Calculates and caches the dominant light direction from the IBL.
-     * @param abortSignal An optional signal to abort this specific calculation.
      * @returns The IBL dominant direction, or null.
      */
-    private async _calculateAndCacheIblDominantDirection(abortSignal?: AbortSignal): Promise<Nullable<Vector3>> {
-        this._iblDirectionCalculationAbortController?.abort(new AbortError("New IBL dominant direction calculation initiated before previous calculation finished."));
-        const iblDirectionCalculationAbortController = (this._iblDirectionCalculationAbortController = new AbortController());
+    private async _calculateAndCacheIblDominantDirection(): Promise<Nullable<Vector3>> {
+        await import("core/Rendering/iblCdfGeneratorSceneComponent");
 
-        return await this._iblDirectionCalculationLock.lockAsync(async () => {
-            throwIfAborted(abortSignal, iblDirectionCalculationAbortController.signal);
+        if (!this._scene.iblCdfGenerator) {
+            this._scene.enableIblCdfGenerator();
+        }
 
-            await import("core/Rendering/iblCdfGeneratorSceneComponent");
-
-            if (!this._scene.iblCdfGenerator) {
-                this._scene.enableIblCdfGenerator();
-            }
-
-            if (this._scene.iblCdfGenerator) {
-                this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
-                await this._scene.iblCdfGenerator.renderWhenReady();
-                this._cachedIblDirection = await this._scene.iblCdfGenerator.findDominantDirection();
-                return this._cachedIblDirection;
-            }
-
+        if (this._scene.iblCdfGenerator) {
+            this._scene.iblCdfGenerator.iblSource = this._skyboxTexture;
+            await this._scene.iblCdfGenerator.renderWhenReady();
+            this._cachedIblDirection = await this._scene.iblCdfGenerator.findDominantDirection();
+        } else {
             this._cachedIblDirection = null;
-            return null;
-        });
+        }
+
+        return this._cachedIblDirection;
     }
 
     /**
@@ -1878,7 +1867,7 @@ export class Viewer implements IDisposable {
             return;
         }
 
-        await this._calculateAndCacheIblDominantDirection(abortSignal);
+        await this._calculateAndCacheIblDominantDirection();
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
         this._snapshotHelper.disableSnapshotRendering();
@@ -2361,7 +2350,6 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
-        this._iblDirectionCalculationAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
