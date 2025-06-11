@@ -5311,6 +5311,37 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return this._x * other._x + this._y * other._y + this._z * other._z + this._w * other._w;
     }
 
+    /**
+     * Converts the current quaternion to an axis angle representation
+     * @returns the axis and angle in radians
+     */
+    public toAxisAngle(): { axis: Vector3; angle: number } {
+        const axis = Vector3.Zero();
+        const angle = this.toAxisAngleToRef(axis);
+        return { axis, angle };
+    }
+
+    /**
+     * Converts the current quaternion to an axis angle representation
+     * @param axis defines the target axis vector
+     * @returns the angle in radians
+     */
+    public toAxisAngleToRef<T extends Vector3>(axis: T): number {
+        let angle = 0;
+        const sinHalfAngle = Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
+        const cosHalfAngle = this._w;
+
+        if (sinHalfAngle > 0) {
+            angle = 2 * Math.atan2(sinHalfAngle, cosHalfAngle);
+            axis.set(this._x / sinHalfAngle, this._y / sinHalfAngle, this._z / sinHalfAngle);
+        } else {
+            angle = 0;
+            axis.set(1, 0, 0);
+        }
+
+        return angle;
+    }
+
     // Statics
 
     /**
@@ -5473,6 +5504,13 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     }
 
     /**
+     * Returns the angle in radians between two quaternions
+     */
+    public static AngleBetween(q1: DeepImmutable<Quaternion>, q2: DeepImmutable<Quaternion>): number {
+        return Math.acos(Clamp(Quaternion.Dot(q1, q2))) * 2;
+    }
+
+    /**
      * Creates a quaternion from a rotation around an axis
      * Example Playground https://playground.babylonjs.com/#L49EJ7#72
      * @param axis defines the axis to use
@@ -5498,6 +5536,32 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         result._y = axis._y * sinByLength;
         result._z = axis._z * sinByLength;
         result._isDirty = true;
+        return result;
+    }
+
+    /**
+     * Creates a quaternion from two direction vectors
+     * @param a defines the first direction vector
+     * @param b defines the second direction vector
+     * @returns the target quaternion
+     */
+    public static FromDirections<T extends Vector3>(a: T, b: T): Quaternion {
+        const result = new Quaternion();
+        Quaternion.FromDirectionsToRef(a, b, result);
+        return result;
+    }
+
+    /**
+     * Creates a quaternion from two direction vectors
+     * @param a defines the first direction vector
+     * @param b defines the second direction vector
+     * @param result defines the target quaternion
+     * @returns the target quaternion
+     */
+    public static FromDirectionsToRef<T extends Vector3, ResultT extends Quaternion>(a: T, b: T, result: ResultT): ResultT {
+        const axis = Vector3.Cross(a, b);
+        const angle = Math.acos(Clamp(Vector3.Dot(a, b), -1, 1));
+        Quaternion.RotationAxisToRef(axis, angle, result);
         return result;
     }
 
