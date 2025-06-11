@@ -13,11 +13,3 @@ export * from "./version.js";
 
 // So that users of the Smart Filters core can easily modify the logger settings (e.g. to change the logging level)
 export { Logger } from "core/Misc/logger.js";
-
-/**
- *
- */
-export function LocalProof(): void {
-    // eslint-disable-next-line no-console
-    console.log("Smart Filters core is loaded and ready to use.");
-}
