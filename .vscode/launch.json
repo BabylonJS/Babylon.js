@@ -526,15 +526,18 @@
             "preLaunchTask": "Viewer Test App (Web)"
         },
         {
-            /*
-            Viewer configurator development - meant for development of the playground
-            It doesn't set any source code watchers!
-            */
             "type": "chrome",
             "request": "launch",
             "name": "Viewer Configurator development (Chrome)",
             "url": "http://localhost:3003",
             "preLaunchTask": "Viewer Configurator Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Inspector v2 development (Chrome)",
+            "url": "http://localhost:9001",
+            "preLaunchTask": "Inspector v2 Test App"
         }
     ],
     "inputs": [
