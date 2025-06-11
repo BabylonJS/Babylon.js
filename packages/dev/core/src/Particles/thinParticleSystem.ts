@@ -205,6 +205,15 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _useInstancing = false;
     private _vertexArrayObject: Nullable<WebGLVertexArrayObject>;
 
+    private _isDisposed = false;
+
+    /**
+     * Gets a boolean indicating that the particle system was disposed
+     */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
+
     private _started = false;
     private _stopped = false;
     /** @internal */
@@ -2390,5 +2399,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this.onStartedObservable.clear();
 
         this.reset();
+
+        this._isDisposed = true;
     }
 }

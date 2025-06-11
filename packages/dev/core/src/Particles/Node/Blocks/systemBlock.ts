@@ -4,7 +4,6 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import type { Nullable } from "core/types";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { _TriggerSubEmitter } from "./Triggers/triggerTools";
@@ -13,11 +12,6 @@ import { _TriggerSubEmitter } from "./Triggers/triggerTools";
  * Block used to get a system of particles
  */
 export class SystemBlock extends NodeParticleBlock {
-    /**
-     * @internal
-     */
-    public _particleSystem: Nullable<ParticleSystem> = null;
-
     /**
      * Gets or sets the blend mode for the particle system
      */
@@ -126,57 +120,64 @@ export class SystemBlock extends NodeParticleBlock {
     /**
      * Builds the block and return a functional particle system
      * @param state defines the building state
-     * @param _forCloning defines if the system is being built for cloning purposes (do not use)
      * @returns the built particle system
      */
-    public createSystem(state: NodeParticleBuildState, _forCloning = false): ParticleSystem {
+    public createSystem(state: NodeParticleBuildState): ParticleSystem {
         state.capacity = this.capacity;
         state.buildId = this._buildId++;
 
         this.build(state);
 
-        this._particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
-        this._particleSystem.particleTexture = this.texture.getConnectedValue(state);
-        this._particleSystem.emitRate = this.emitRate;
-        this._particleSystem.blendMode = this.blendMode;
-        this._particleSystem.name = this.name;
-        this._particleSystem._nodeGenerated = true;
-        this._particleSystem._targetStopDuration = this.targetStopDuration;
-        this._particleSystem.startDelay = this.startDelay;
+        const particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
+        particleSystem.particleTexture = this.texture.getConnectedValue(state);
+        particleSystem.emitRate = this.emitRate;
+        particleSystem.blendMode = this.blendMode;
+        particleSystem.name = this.name;
+        particleSystem._nodeGenerated = true;
+        particleSystem._targetStopDuration = this.targetStopDuration;
+        particleSystem.startDelay = this.startDelay;
 
-        if (!_forCloning) {
-            this.system._storedValue = this;
-        }
+        this.system._storedValue = this;
 
-        this._particleSystem.canStart = () => {
+        particleSystem.canStart = () => {
             return !this.doNoStart;
         };
 
-        // Triggers
-        const onStartSystem = this.onStart.getConnectedValue(state);
-        if (onStartSystem) {
-            this._particleSystem.onStartedObservable.addOnce(() => {});
-        }
+        particleSystem.onStartedObservable.add((system) => {
+            // Triggers
+            const onStartSystem = this.onStart.getConnectedValue(state);
+            if (onStartSystem) {
+                system.onStartedObservable.addOnce(() => {
+                    state.systemContext = particleSystem;
+                    const clone = _TriggerSubEmitter(onStartSystem, state.scene, state.emitterPosition!);
 
-        const onEndSystem = this.onEnd.getConnectedValue(state);
-        if (onEndSystem) {
-            this._particleSystem.onStoppedObservable.addOnce(() => {
-                state.systemContext = this._particleSystem;
-                const clone = _TriggerSubEmitter(onEndSystem, state.scene, state.emitterPosition!);
-
-                this.onDisposeObservable.addOnce(() => {
-                    // Clean up the cloned system when the original system is disposed
-                    clone.stop();
+                    this.onDisposeObservable.addOnce(() => {
+                        // Clean up the cloned system when the original system is disposed
+                        clone.dispose();
+                    });
                 });
-            });
-        }
+            }
+
+            const onEndSystem = this.onEnd.getConnectedValue(state);
+            if (onEndSystem) {
+                system.onStoppedObservable.addOnce(() => {
+                    state.systemContext = particleSystem;
+                    const clone = _TriggerSubEmitter(onEndSystem, state.scene, state.emitterPosition!);
+
+                    this.onDisposeObservable.addOnce(() => {
+                        // Clean up the cloned system when the original system is disposed
+                        clone.dispose();
+                    });
+                });
+            }
+        });
+
+        this.onDisposeObservable.addOnce(() => {
+            particleSystem.dispose();
+        });
 
         // Return
-        return this._particleSystem;
-    }
-
-    public override dispose(): void {
-        this._particleSystem = null;
+        return particleSystem;
     }
 
     public override serialize(): any {

@@ -8,7 +8,6 @@ import type { Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import type { SystemBlock } from "../systemBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import type { ParticleSystem } from "core/Particles/particleSystem";
 import { _TriggerSubEmitter } from "./triggerTools";
 import type { Nullable } from "core/types";
 
@@ -17,7 +16,6 @@ import type { Nullable } from "core/types";
  */
 export class ParticleTriggerBlock extends NodeParticleBlock {
     private _triggerCount = 0;
-    private _trackedSubSystems: ParticleSystem[] = [];
 
     /**
      * Gets or sets the emit rate
@@ -104,19 +102,13 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
                     const targetSystem = this.system.getConnectedValue(state) as SystemBlock;
                     if (targetSystem) {
                         const clone = _TriggerSubEmitter(targetSystem, state.scene, particle.position);
-                        this._trackedSubSystems.push(clone);
                         clone.onDisposeObservable.addOnce(() => {
                             this._triggerCount--;
-                            // Remove the system from tracked subsystems
-                            const index = this._trackedSubSystems.indexOf(clone);
-                            if (index !== -1) {
-                                this._trackedSubSystems.splice(index, 1);
-                            }
                         });
 
                         system.onDisposeObservable.addOnce(() => {
                             // Clean up the cloned system when the original system is disposed
-                            clone.stop();
+                            clone.dispose();
                         });
                     }
                 }
@@ -162,13 +154,6 @@ export class ParticleTriggerBlock extends NodeParticleBlock {
     public override dispose(): void {
         super.dispose();
         this._triggerCount = 0;
-
-        const trackedSubSystems = this._trackedSubSystems.slice();
-        for (const subSystem of trackedSubSystems) {
-            subSystem.dispose();
-        }
-
-        this._trackedSubSystems = [];
     }
 }
 

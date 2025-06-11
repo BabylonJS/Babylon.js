@@ -291,7 +291,7 @@ export class NodeParticleBlock {
             }
 
             const block = input.connectedPoint.ownerBlock;
-            if (block && block !== this) {
+            if (block && block !== this && !block.isSystem) {
                 block.build(state);
             }
         }
