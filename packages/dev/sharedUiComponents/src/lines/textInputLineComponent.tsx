@@ -310,6 +310,6 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         );
     }
     override render() {
-        return <ConditionallyUseFluent fluent={this.renderFluent} original={this.renderOriginal} />;
+        return <ConditionallyUseFluent fluent={() => this.renderFluent()} original={() => this.renderOriginal()} />;
     }
 }
