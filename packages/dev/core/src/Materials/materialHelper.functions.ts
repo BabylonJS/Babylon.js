@@ -192,7 +192,7 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
         const uv2 = manager && manager.supportsUV2s && defines["UV2"];
-        const color = manager && manager.supportsColors && defines["COLOR"];
+        const color = manager && manager.supportsColors && defines["VERTEXCOLOR"];
         for (let index = 0; index < influencers; index++) {
             if (position) {
                 attribs.push(Constants.PositionKind + index);
@@ -215,6 +215,7 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
             }
 
             if (color) {
+                console.log("@@@I");
                 attribs.push(Constants.ColorKind + index);
             }
 
@@ -880,6 +881,7 @@ export function PrepareDefinesForAttributes(
         defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
     }
 
+    console.log("useVertexColor", useVertexColor, mesh.useVertexColors, mesh.isVerticesDataPresent(Constants.ColorKind));
     if (useVertexColor) {
         const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(Constants.ColorKind);
         defines["VERTEXCOLOR"] = hasVertexColors;
