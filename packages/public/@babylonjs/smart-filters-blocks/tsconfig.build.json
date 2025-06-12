@@ -10,6 +10,22 @@
         "sourceMap": true,
         "declarationMap": true,
         "inlineSources": false,
+        "plugins": [
+            {
+                "transform": "@dev/build-tools/dist/pathTransform.js",
+                "after": true,
+                "buildType": "es6",
+                "basePackage": "@babylonjs/smart-filters",
+                "appendJS": true
+            },
+            {
+                "transform": "@dev/build-tools/dist/pathTransform.js",
+                "afterDeclarations": true,
+                "buildType": "es6",
+                "basePackage": "@babylonjs/smart-filters",
+                "appendJS": true
+            }
+        ],
         "paths": {
             "@babylonjs/core/*": ["../node_modules/core/*"]
         }
