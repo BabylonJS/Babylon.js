@@ -1,0 +1,12 @@
+{
+    "extends": "../../tsconfig.common.build.json",
+
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "composite": true
+    },
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": ["**/node_modules", "**/dist"]
+}
