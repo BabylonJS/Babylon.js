@@ -42,9 +42,12 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@dev/build-tools": "^1.0.0"
+        "@dev/build-tools": "^1.0.0",
+        "@babylonjs/core": "npm:@babylonjs/core@8.0.1",
+        "@babylonjs/shared-ui-components": "npm:@babylonjs/shared-ui-components@8.0.1"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.1"
+        "@babylonjs/core": "^8.0.1",
+        "@babylonjs/shared-ui-components": "^8.0.1"
     }
 }

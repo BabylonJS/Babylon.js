@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { BaseBlock } from "../../blockFoundation/baseBlock";
 import type { SmartFilter } from "../../smartFilter";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { SmartFilterDeserializer } from "../smartFilterDeserializer";
 
 /**

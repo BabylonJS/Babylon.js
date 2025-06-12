@@ -2,7 +2,7 @@
 import { kebabize } from "./utils.js";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";
-const privatePackages: DevPackageName[] = ["shared-ui-components"];
+const privatePackages: DevPackageName[] = [];
 export const declarationsOnlyPackages: DevPackageName[] = ["babylonjs-gltf2interface"];
 export type DevPackageName =
     | "core"
