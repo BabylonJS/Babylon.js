@@ -1797,8 +1797,6 @@ export class Viewer implements IDisposable {
         this._markSceneMutated();
     }
 
-    private async _updateCdfGenerator() {}
-
     /**
      * Calculates and caches the dominant light direction from the IBL.
      * @returns The IBL dominant direction, or null.
@@ -2180,9 +2178,6 @@ export class Viewer implements IDisposable {
                 await Promise.all(newTexturePromises);
 
                 this._updateLight();
-                if (this._shadowQuality === "normal") {
-                    observePromise(this._updateCdfGenerator());
-                }
                 observePromise(this._updateShadows());
                 this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
