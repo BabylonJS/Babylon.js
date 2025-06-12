@@ -1931,7 +1931,7 @@ export class Viewer implements IDisposable {
         normal.light.position = lightPosition;
         normal.light.direction = lightTargetDirection;
         (normal.light as DirectionalLight).autoUpdateExtends = false;
-        (normal.light as DirectionalLight).shadowFrustumSize = radius * 2;
+        (normal.light as DirectionalLight).shadowFrustumSize = radius * 4;
 
         for (const model of this._loadedModelsBacking) {
             // Add all root meshes to the shadow generator.
