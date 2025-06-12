@@ -14,7 +14,7 @@
     ],
     "scripts": {
         "build": "npm run compile",
-        "test": "jest -c ../../../jest.config.ts",
+        "test": "jest -c ../../../jest.config.ts --passWithNoTests",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf --glob ./src/blocks/**/*.block.ts && rimraf --glob ./src/blocks/**/*.fragment.ts",
         "precompile": "node ../smartFilters/dist/utils/buildTools/buildShaders.js ./src/blocks @babylonjs/smart-filters",
         "compile": "npm run compile:source",
