@@ -11,6 +11,12 @@ export const ShapeUnsupportedChildType =
 export const ShapeAnimatedPathProperty = "Animated path properties are not supported.";
 export const PropertyInvalidVector2Length = "Vector2 property must have exactly 2 values.";
 
+/* eslint-disable jsdoc/require-jsdoc */
+export type BoundingBox = {
+    height: number;
+    width: number;
+};
+
 export type VectorType = "Scale" | "Position" | "AnchorPoint";
 
 /* eslint-disable jsdoc/require-jsdoc */
@@ -40,7 +46,7 @@ export type LottieNode = {
     transform: Transform; // Initial transform properties and animations of the layer
     nodeTrs?: TransformNode; // Translation/Rotation/Scale node, it will contain the current transformed value
     nodeAnchor?: TransformNode; // Anchor node, it may contain a sprite to render
-    svgData?: SVGElement; // SVG data coming from a group, if applicable
+    drawable?: HTMLCanvasElement; // Canvas that contains the rendered information of this group
 };
 
 export type Transform = {

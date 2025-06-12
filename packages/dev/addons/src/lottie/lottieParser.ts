@@ -13,6 +13,7 @@ import type {
     RawTransformShape,
     RawVectorKeyframe,
     RawVectorProperty,
+    RawBezier,
 } from "./types/rawLottie";
 import {
     LayerUnsuportedType,
@@ -28,6 +29,7 @@ import {
     type Transform,
     type Vector2Keyframe,
     type Vector2Property,
+    type BoundingBox,
 } from "./types/processedLottie";
 import { Color3, Vector2, Vector3 } from "core/Maths";
 import { BezierCurveEase } from "core/Animations";
@@ -215,7 +217,7 @@ export class LottieParser {
             return;
         }
 
-        const svgElement = this._svgElementFromGroup(rawGroup);
+        const canvas = this._drawGroup(rawGroup);
 
         const newNode: LottieNode = {
             name: `${parent.name} - ${rawGroup.nm}`,
@@ -228,7 +230,7 @@ export class LottieParser {
             timeStretch: parent.timeStretch ?? 1,
             autoOrient: parent.autoOrient,
             transform: transform,
-            svgData: svgElement,
+            drawable: canvas,
         };
 
         newNode.nodeTrs = new TransformNode(`TRS - ${rawGroup.nm}`);
@@ -539,51 +541,127 @@ export class LottieParser {
         return this._spritesData.get(layerName)?.texture;
     }
 
-    /** SVG Functions */
+    /** Canvas Drawing Functions */
 
-    private _svgElementFromGroup(rawGroup: RawGroupShape): SVGElement {
-        const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svgElement.setAttribute("width", this._processedData.size.x.toString());
-        svgElement.setAttribute("height", this._processedData.size.y.toString());
-        svgElement.setAttribute("viewBox", `0 0 ${this._processedData.size.x} ${this._processedData.size.y}`);
-        svgElement.setAttribute("style", "width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px); content-visibility: visible;");
+    private _drawGroup(rawGroup: RawGroupShape): HTMLCanvasElement {
+        const canvas = document.createElement("canvas");
 
-        this._createSVGData(rawGroup as Required<RawGroupShape>, svgElement);
+        const bbox = this._getBoundingBox(rawGroup);
+        if (bbox.width <= 0 || bbox.height <= 0) {
+            this._errors.push(`Bounding box for group ${rawGroup.nm} is invalid: ${JSON.stringify(bbox)}`);
+            return canvas;
+        }
 
-        return svgElement;
+        canvas.width = bbox.width;
+        canvas.height = bbox.height;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+            this._errors.push(`Failed to get 2D context for canvas`);
+            return canvas;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "transparent"; // Set transparent background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        this._drawShapes(ctx, rawGroup);
+
+        return canvas;
     }
 
-    private _createSVGData(rawGroup: Required<RawGroupShape>, svg: SVGElement): void {
-        // Each Group must contain: Shape (Path or Rectangle) + Style (Fill or GradientFill)
+    private _getBoundingBox(rawGroup: RawGroupShape): BoundingBox {
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
 
-        let svgElement: SVGGeometryElement | undefined = undefined;
-        // First, let's find the Shape
-        let path = rawGroup.it.find((shape) => shape.ty === "sh");
+        const rect = rawGroup.it?.find((shape) => shape.ty === "rc") as RawRectangleShape;
+        if (rect !== undefined) {
+            const size = rect.s.k as number[];
+            return {
+                width: size[0],
+                height: size[1],
+            };
+        }
+
+        const path = rawGroup.it?.find((shape) => shape.ty === "sh") as RawPathShape;
         if (path !== undefined) {
-            svgElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        } else {
-            path = rawGroup.it.find((shape) => shape.ty === "rc");
-            if (path !== undefined) {
-                svgElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            const vertices = (path.ks.k as RawBezier).v as number[][];
+            for (const vertex of vertices) {
+                minX = Math.min(minX, vertex[0]);
+                minY = Math.min(minY, vertex[1]);
+                maxX = Math.max(maxX, vertex[0]);
+                maxY = Math.max(maxY, vertex[1]);
             }
+
+            return {
+                width: maxX - minX,
+                height: maxY - minY,
+            };
         }
 
-        // Second, let's find the style
-        let style = rawGroup.it.find((shape) => shape.ty === "fl");
-        if (style === undefined) {
-            style = rawGroup.it.find((shape) => shape.ty === "gf");
+        return {
+            width: 0,
+            height: 0,
+        };
+    }
+
+    private _drawShapes(ctx: CanvasRenderingContext2D, rawGroup: RawGroupShape): void {
+        // First draw the shape
+        const rect = rawGroup.it?.find((shape) => shape.ty === "rc") as RawRectangleShape;
+        if (rect !== undefined) {
+            this._drawRectangleShape(ctx, rect);
+        }
+
+        // Then fill the shape
+        const fill = rawGroup.it?.find((shape) => shape.ty === "fl") as RawFillShape;
+        if (rect !== undefined) {
+            this._fillShape(ctx, fill);
+        }
+    }
+
+    private _drawRectangleShape(ctx: CanvasRenderingContext2D, rect: RawRectangleShape): void {
+        const size = rect.s.k as number[];
+        const radius = rect.r.k as number;
+
+        if (radius === 0) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(size[0], 0);
+            ctx.lineTo(size[0], size[1]);
+            ctx.lineTo(0, size[1]);
+            ctx.closePath();
         } else {
-            isFill = true;
+            // Handle rounded corners
+            ctx.beginPath();
+            ctx.closePath();
+        }
+    }
+
+    private _fillShape(ctx: CanvasRenderingContext2D, fill: RawFillShape): void {
+        if (!fill || !fill.c || !fill.o) {
+            this._errors.push(`Fill shape is missing color or opacity properties`);
+            return;
         }
 
-        if (isPath && isFill) {
-            this._processPathAndFill(svg, path as RawPathShape, style as RawFillShape);
-        } else if (isPath && !isFill) {
-            this._processPathAndGradient(svg, path as RawPathShape, style as RawGradientFillShape);
-        } else if (!isPath && isFill) {
-            this._processRectangleAndFill(svg, path as RawRectangleShape, style as RawFillShape);
-        } else if (!isPath && !isFill) {
-            this._processRectangleAndGradient(svg, path as RawRectangleShape, style as RawGradientFillShape);
+        const color = this._lottieColorToSVGColor(fill.c.k as number[], (fill.o.k as number) / 100);
+        ctx.fillStyle = color;
+
+        ctx.fill();
+    }
+
+    private _lottieColorToSVGColor(color: number[], opacity: number): string {
+        if (color.length !== 3 && color.length !== 4) {
+            this._errors.push(`Invalid color length: ${color.length}. Expected 3 or 4.`);
+            return "rgba(0, 0, 0, 1)"; // Default to black if invalid
         }
+
+        const r = Math.round(color[0] * 255);
+        const g = Math.round(color[1] * 255);
+        const b = Math.round(color[2] * 255);
+        const a = (color[3] || 1) * opacity;
+
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
     }
 }
