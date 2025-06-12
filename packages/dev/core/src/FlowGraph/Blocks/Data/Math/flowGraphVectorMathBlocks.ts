@@ -20,6 +20,7 @@ import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
 import { _GetClassNameOf } from "core/FlowGraph/utils";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
+import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../Maths/math.vector.functions";
 
 /**
  * Vector length block.
@@ -219,7 +220,7 @@ RegisterClass(FlowGraphBlockNames.Conjugate, FlowGraphConjugateBlock);
  */
 export class FlowGraphAngleBetweenBlock extends FlowGraphBinaryOperationBlock<Quaternion, Quaternion, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeQuaternion, RichTypeQuaternion, RichTypeNumber, (a, b) => Quaternion.AngleBetween(a, b), FlowGraphBlockNames.AngleBetween, config);
+        super(RichTypeQuaternion, RichTypeQuaternion, RichTypeNumber, (a, b) => GetAngleBetweenQuaternions(a, b), FlowGraphBlockNames.AngleBetween, config);
     }
 }
 
@@ -285,6 +286,6 @@ RegisterClass(FlowGraphBlockNames.AxisAngleFromQuaternion, FlowGraphAxisAngleFro
  */
 export class FlowGraphQuaternionFromDirectionsBlock extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Quaternion> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeVector3, RichTypeVector3, RichTypeQuaternion, (a, b) => Quaternion.FromDirections(a, b), FlowGraphBlockNames.QuaternionFromDirections, config);
+        super(RichTypeVector3, RichTypeVector3, RichTypeQuaternion, (a, b) => GetQuaternionFromDirections(a, b), FlowGraphBlockNames.QuaternionFromDirections, config);
     }
 }

@@ -10,6 +10,7 @@ import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../core/src/Maths/math.vector.functions";
 
 const typesAndLengths: {
     [key: string]: number;
@@ -1953,7 +1954,7 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         const result = round3(logItem!.payload.value);
-        const expected = round3(Quaternion.AngleBetween(randomQuaternion1, randomQuaternion2));
+        const expected = round3(GetAngleBetweenQuaternions(randomQuaternion1, randomQuaternion2));
         expect(result).toEqual(expected);
     });
 
@@ -2036,7 +2037,7 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         const resultArray = roundArray3(logItem!.payload.value.asArray());
-        const expected = roundArray3(Quaternion.FromDirections(randomDirection1, randomDirection2).asArray());
+        const expected = roundArray3(GetQuaternionFromDirections(randomDirection1, randomDirection2).asArray());
         expect(resultArray).toEqual(expected);
     });
 });
