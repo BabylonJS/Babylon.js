@@ -4,7 +4,7 @@ import type { IDisplayManager } from "@babylonjs/shared-ui-components/nodeGraphS
 import type { INodeData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "../../assets/styles/graphSystem/display/inputDisplayManager.module.scss";
 import { ConnectionPointType } from "@babylonjs/smart-filters";
-import { Color3, Color4 } from "@babylonjs/core/Maths/math.color.js";
+import { Color3, Color4 } from "core/Maths/math.color.js";
 import type { AnyInputBlock } from "@babylonjs/smart-filters";
 import { getTextureInputBlockEditorData } from "../getEditorData.js";
 
@@ -67,10 +67,7 @@ export class InputDisplayManager implements IDisplayManager {
                 if (inputBlock.editorData?.urlTypeHint === "video") {
                     value = "Video";
                 } else {
-                    const style =
-                        getTextureInputBlockEditorData(inputBlock).flipY === false
-                            ? "transform: scaleY(-1); z-index: -1;"
-                            : "";
+                    const style = getTextureInputBlockEditorData(inputBlock).flipY === false ? "transform: scaleY(-1); z-index: -1;" : "";
                     const src = inputBlock.editorData?.url || inputBlock.runtimeValue.value?.getInternalTexture()?.url;
                     value = src ? `<img src="${src}" style="${style}" class="texture-input-preview"/>` : "";
                 }

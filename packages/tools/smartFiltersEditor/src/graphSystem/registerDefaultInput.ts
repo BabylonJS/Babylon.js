@@ -5,21 +5,18 @@ import type { GlobalState } from "../globalState";
 import type { INodeContainer } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData";
 import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
 import "@babylonjs/core/Engines/Extensions/engine.dynamicTexture.js";
 import "@babylonjs/core/Engines/Extensions/engine.videoTexture.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { Nullable } from "core/types.js";
 
 /**
  * Creates a default value for the input block of a certain type
  * @param type - defines the type of the input block
  * @returns a strong ref containing the default value
  */
-export function createDefaultValue<U extends ConnectionPointType>(
-    type: U,
-    engine: Nullable<ThinEngine>
-): RuntimeData<U> {
+export function createDefaultValue<U extends ConnectionPointType>(type: U, engine: Nullable<ThinEngine>): RuntimeData<U> {
     // conversion needed due to https://github.com/microsoft/TypeScript/issues/33014
     switch (type) {
         case ConnectionPointType.Boolean:
@@ -39,11 +36,7 @@ export function createDefaultValue<U extends ConnectionPointType>(
     }
 }
 
-export function createDefaultInput<U extends ConnectionPointType>(
-    smartFilter: SmartFilter,
-    type: U,
-    engine: Nullable<ThinEngine>
-): InputBlock<U> {
+export function createDefaultInput<U extends ConnectionPointType>(smartFilter: SmartFilter, type: U, engine: Nullable<ThinEngine>): InputBlock<U> {
     const name = ConnectionPointType[type] ?? "Unknown";
     const inputBlock = new InputBlock(smartFilter, name, type, createDefaultValue(type, engine));
     return inputBlock;
@@ -59,9 +52,7 @@ export function createDefaultInputForConnectionPoint<U extends ConnectionPointTy
         smartFilter,
         name,
         point.type,
-        point.defaultRuntimeData
-            ? createStrongRef(structuredClone(point.defaultRuntimeData.value))
-            : createDefaultValue(point.type, engine)
+        point.defaultRuntimeData ? createStrongRef(structuredClone(point.defaultRuntimeData.value)) : createDefaultValue(point.type, engine)
     );
     return inputBlock;
 }

@@ -1,6 +1,6 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
+import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
 import type { ConnectionPointType, IDisposable, RuntimeData } from "@babylonjs/smart-filters";
 
 /**
@@ -69,12 +69,7 @@ export class WebCamSession implements IDisposable {
         };
 
         hiddenVideo.onloadeddata = () => {
-            const internalVideoTexture = this._engine.createDynamicTexture(
-                hiddenVideo.videoWidth,
-                hiddenVideo.videoHeight,
-                false,
-                2
-            );
+            const internalVideoTexture = this._engine.createDynamicTexture(hiddenVideo.videoWidth, hiddenVideo.videoHeight, false, 2);
             this._internalVideoTexture = internalVideoTexture;
             this._videoTexture = new ThinTexture(internalVideoTexture);
             this._videoTexture.wrapU = 0;

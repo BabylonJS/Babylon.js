@@ -1,8 +1,8 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture";
-import { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
-import type { Observable } from "@babylonjs/core/Misc/observable";
-import type { Nullable } from "@babylonjs/core/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
+import type { Observable } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import { createImageTexture, type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
 
 export type LoadResult = {
@@ -30,10 +30,7 @@ export async function loadTextureInputBlockAsset(
         switch (editorData.urlTypeHint) {
             case "video":
                 {
-                    const { videoTexture, update, disposeVideoElementAndTextures } = await createVideoTextureAsync(
-                        engine,
-                        editorData.url
-                    );
+                    const { videoTexture, update, disposeVideoElementAndTextures } = await createVideoTextureAsync(engine, editorData.url);
                     const observer = beforeRenderObservable.add(() => {
                         update();
                     });
@@ -104,12 +101,7 @@ export function createVideoTextureAsync(engine: ThinEngine, url: string): Promis
                 return;
             }
 
-            let internalVideoTexture: Nullable<InternalTexture> = engine.createDynamicTexture(
-                hiddenVideo.videoWidth,
-                hiddenVideo.videoHeight,
-                false,
-                2
-            );
+            let internalVideoTexture: Nullable<InternalTexture> = engine.createDynamicTexture(hiddenVideo.videoWidth, hiddenVideo.videoHeight, false, 2);
 
             const update = () => {
                 if (!hiddenVideo || hiddenVideo.readyState < hiddenVideo.HAVE_CURRENT_DATA) {

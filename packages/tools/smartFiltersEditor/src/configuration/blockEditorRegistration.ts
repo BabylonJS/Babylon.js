@@ -1,5 +1,5 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { Nullable } from "@babylonjs/core/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Nullable } from "core/types";
 import type { BaseBlock, SmartFilter } from "@babylonjs/smart-filters";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 
@@ -24,12 +24,7 @@ export type BlockEditorRegistration = {
      * @param engine - The engine to use for creating blocks
      * @returns A new instance of the block, or null if the block name is not recognized
      */
-    getBlock(
-        blockType: string,
-        namespace: Nullable<string>,
-        smartFilter: SmartFilter,
-        engine: ThinEngine
-    ): Promise<Nullable<BaseBlock>>;
+    getBlock(blockType: string, namespace: Nullable<string>, smartFilter: SmartFilter, engine: ThinEngine): Promise<Nullable<BaseBlock>>;
 
     /**
      * An object that contains all of the blocks to display, organized by category.

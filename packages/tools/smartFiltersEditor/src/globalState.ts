@@ -1,6 +1,6 @@
-import { Observable } from "@babylonjs/core/Misc/observable.js";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { Nullable } from "@babylonjs/core/types";
+import { Observable } from "core/Misc/observable.js";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Nullable } from "core/types";
 import { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager.js";
 import { LockObject } from "@babylonjs/shared-ui-components/tabs/propertyGrids/lockObject.js";
 import { type BaseBlock, type ConnectionPoint, SmartFilter } from "@babylonjs/smart-filters";
@@ -37,13 +37,9 @@ export class GlobalState {
 
     optimizerEnabled: Nullable<ObservableProperty<boolean>>;
 
-    previewAspectRatio: ObservableProperty<string> = new ObservableProperty<string>(
-        localStorage.getItem(PreviewAspectRatioKey) ?? DefaultPreviewAspectRatio
-    );
+    previewAspectRatio: ObservableProperty<string> = new ObservableProperty<string>(localStorage.getItem(PreviewAspectRatioKey) ?? DefaultPreviewAspectRatio);
 
-    previewFillContainer: ObservableProperty<boolean> = new ObservableProperty<boolean>(
-        !!localStorage.getItem(PreviewFillContainerKey)
-    );
+    previewFillContainer: ObservableProperty<boolean> = new ObservableProperty<boolean>(!!localStorage.getItem(PreviewFillContainerKey));
 
     forceWebGL1: boolean = !!localStorage.getItem(ForceWebGL1StorageKey);
 

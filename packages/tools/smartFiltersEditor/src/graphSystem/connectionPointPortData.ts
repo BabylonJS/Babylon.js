@@ -1,4 +1,4 @@
-import type { Nullable } from "@babylonjs/core/types";
+import type { Nullable } from "core/types";
 import type { GraphNode } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData";

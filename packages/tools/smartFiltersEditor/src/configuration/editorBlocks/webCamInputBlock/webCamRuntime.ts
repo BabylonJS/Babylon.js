@@ -1,6 +1,6 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 import { type ConnectionPointType, type IDisposable, type RuntimeData, Logger } from "@babylonjs/smart-filters";
-import type { Nullable } from "@babylonjs/core/types";
+import type { Nullable } from "core/types";
 import { WebCamSession } from "./webCamSession.js";
 
 /**

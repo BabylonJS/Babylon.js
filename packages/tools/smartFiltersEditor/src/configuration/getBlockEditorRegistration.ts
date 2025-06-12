@@ -1,11 +1,11 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
+import type { Nullable } from "core/types.js";
 import { type BaseBlock, type SmartFilter, type SmartFilterDeserializer, Logger } from "@babylonjs/smart-filters";
 import { inputsNamespace, type IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import type { BlockEditorRegistration } from "./blockEditorRegistration";
 import { CustomInputDisplayManager } from "./customInputDisplayManager.js";
 import { CustomBlocksNamespace, OutputBlockName } from "./constants.js";
-import type { Observable } from "@babylonjs/core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { LogEntry } from "../components/log/logComponent.js";
 
 /**
@@ -33,9 +33,7 @@ export function getBlockEditorRegistration(
     allBlocks[inputsNamespace] = [];
 
     // Create the map of blocks by namespace now in alphabetical order
-    const allBlockRegistrationsSortedByNamespace = allBlockRegistrations.sort((a, b) =>
-        a.namespace.localeCompare(b.namespace)
-    );
+    const allBlockRegistrationsSortedByNamespace = allBlockRegistrations.sort((a, b) => a.namespace.localeCompare(b.namespace));
 
     allBlockRegistrationsSortedByNamespace.forEach((registration: IBlockRegistration) => {
         if (allBlocks[registration.namespace]) {
@@ -46,12 +44,7 @@ export function getBlockEditorRegistration(
     });
 
     // Create function to call the right factory for a block given the block type and namespace
-    const getBlock = async (
-        blockType: string,
-        namespace: Nullable<string>,
-        smartFilter: SmartFilter,
-        engine: ThinEngine
-    ): Promise<Nullable<BaseBlock>> => {
+    const getBlock = async (blockType: string, namespace: Nullable<string>, smartFilter: SmartFilter, engine: ThinEngine): Promise<Nullable<BaseBlock>> => {
         const registration = allBlockRegistrations.find((r) => r.blockType === blockType && r.namespace === namespace);
         if (registration && registration.factory) {
             try {

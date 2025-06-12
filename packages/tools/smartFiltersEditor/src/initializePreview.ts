@@ -1,4 +1,4 @@
-import { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import { ThinEngine } from "core/Engines/thinEngine.js";
 
 export function initializePreview(canvas: HTMLCanvasElement, forceWebGL1: boolean): ThinEngine {
     const antialias = false;
