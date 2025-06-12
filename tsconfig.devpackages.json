@@ -56,7 +56,7 @@
             "path": "packages/tools/nodeParticleEditor/tsconfig.build.json"
         },
         {
-            "path": "packages/tools/smartFiltersEditor/tsconfig.build.json"
+            "path": "packages/tools/smartFiltersEditorControl/tsconfig.build.json"
         },
         {
             "path": "packages/dev/inspector/tsconfig.build.json"
