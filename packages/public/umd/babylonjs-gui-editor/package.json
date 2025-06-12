@@ -1,7 +1,7 @@
 {
     "name": "babylonjs-gui-editor",
     "version": "8.11.0",
-    "main": "babylon.guiEditor.max.js",
+    "main": "babylon.guiEditor.js",
     "types": "babylon.guiEditor.module.d.ts",
     "files": [
         "*"
