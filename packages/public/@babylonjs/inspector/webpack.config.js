@@ -14,9 +14,6 @@ module.exports = (env) => {
                 "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),
             },
         }),
-        optimization: {
-            usedExports: true,
-        },
     };
     return commonConfig;
 };
