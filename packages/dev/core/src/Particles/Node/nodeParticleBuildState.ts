@@ -4,6 +4,7 @@ import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSou
 import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
 import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
+import type { Matrix } from "core/Maths/math.vector";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import type { ThinParticleSystem } from "../thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
@@ -158,7 +159,7 @@ export class NodeParticleBuildState {
     /**
      * Gets the emitter world matrix
      */
-    public get emitterWorldMatrix() {
+    public get emitterWorldMatrix(): Nullable<Matrix> {
         if (!this.systemContext) {
             return null;
         }
@@ -168,7 +169,7 @@ export class NodeParticleBuildState {
     /**
      * Gets the emitter inverse world matrix
      */
-    public get emitterInverseWorldMatrix() {
+    public get emitterInverseWorldMatrix(): Nullable<Matrix> {
         if (!this.systemContext) {
             return null;
         }
