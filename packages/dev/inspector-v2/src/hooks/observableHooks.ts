@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Observable } from "core/index";
+import type { IReadonlyObservable } from "core/index";
 
 import type { ObservableCollection } from "../misc/observableCollection";
 
@@ -49,7 +49,7 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
  * @returns The current value of the accessor.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function useObservableState<T>(accessor: () => T, ...observables: Array<Observable<any> | null | undefined>): T {
+export function useObservableState<T>(accessor: () => T, ...observables: Array<IReadonlyObservable | null | undefined>): T {
     const [current, setCurrent] = useState(accessor);
 
     useEffect(() => {

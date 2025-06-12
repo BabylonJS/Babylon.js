@@ -366,6 +366,11 @@ function GetPackageDeclaration(
             }
         }
 
+        // if the import is a return-type import from core, we remove the import and the dot
+        if (line.match(/import\("core(.*)"\)\./g)) {
+            line = line.replace(/import\("(.*)"\)\./g, "");
+        }
+
         if (excludeLine) {
             lines[i] = "";
         } else {
@@ -410,6 +415,9 @@ function GetPackageDeclaration(
             const devPackageToUse = isValidDevPackageName(localDevPackageMap, true) ? localDevPackageMap : devPackageName;
             const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace);
             const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace, fullPath /*, fullPath*/);
+            if (fullPath.indexOf("nodeParticleBuildState") !== -1) {
+                console.log(`Replacing ${alias} with ${namespace}.${realClassName} in ${fullPath} for package ${devPackageToUse} (${originalNamespace})`);
+            }
             if (namespace !== defaultModuleName || originalNamespace !== namespace || alias !== realClassName) {
                 const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
                 if (exported) {
