@@ -1,4 +1,4 @@
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import {
     RichTypeVector3,
     FlowGraphTypes,
@@ -18,6 +18,8 @@ import type { Matrix, Vector2 } from "core/Maths/math.vector";
 import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
 import { _GetClassNameOf } from "core/FlowGraph/utils";
+import { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { FlowGraphContext } from "../../../flowGraphContext";
 
 /**
  * Vector length block.
@@ -237,9 +239,42 @@ RegisterClass(FlowGraphBlockNames.QuaternionFromAxisAngle, FlowGraphQuaternionFr
 /**
  * Get the axis and angle from a quaternion.
  */
-export class FlowGraphAxisAngleFromQuaternionBlock extends FlowGraphUnaryOperationBlock<Quaternion, { axis: Vector3; angle: number }> {
+export class FlowGraphAxisAngleFromQuaternionBlock extends FlowGraphBlock {
+    /**
+     * The input of this block.
+     */
+    public readonly a: FlowGraphDataConnection<Quaternion>;
+
+    /**
+     * The output axis of rotation.
+     */
+    public readonly axis: FlowGraphDataConnection<Vector3>;
+
+    /**
+     * The output angle of rotation.
+     */
+    public readonly angle: FlowGraphDataConnection<number>;
+
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeQuaternion, RichTypeAny, (a) => a.toAxisAngle(), FlowGraphBlockNames.AxisAngleFromQuaternion, config);
+        super(config);
+
+        this.a = this.registerDataInput("a", RichTypeQuaternion);
+
+        this.axis = this.registerDataOutput("axis", RichTypeVector3);
+        this.angle = this.registerDataOutput("angle", RichTypeNumber);
+    }
+
+    /** @override */
+    public override _updateOutputs(context: FlowGraphContext) {
+        // REVIEW: do we need to cache?
+        const { axis, angle } = this.a.getValue(context).toAxisAngle();
+        this.axis.setValue(axis, context);
+        this.angle.setValue(angle, context);
+    }
+
+    /** @override */
+    public override getClassName(): string {
+        return FlowGraphBlockNames.AxisAngleFromQuaternion;
     }
 }
 

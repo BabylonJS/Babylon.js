@@ -2012,8 +2012,8 @@ describe("Interactivity math nodes", () => {
     });
 
     it("should use math/quatFromDirections", async () => {
-        const vec1 = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
-        const vec2 = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+        const randomDirection1 = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+        const randomDirection2 = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
         const graph = await generateSimpleNodeGraph(
             [{ op: "math/quatFromDirections" }],
             [
@@ -2022,11 +2022,11 @@ describe("Interactivity math nodes", () => {
                     values: {
                         a: {
                             type: 0,
-                            value: vec1.asArray(),
+                            value: randomDirection1.asArray(),
                         },
                         b: {
                             type: 0,
-                            value: vec2.asArray(),
+                            value: randomDirection2.asArray(),
                         },
                     },
                 },
@@ -2036,7 +2036,7 @@ describe("Interactivity math nodes", () => {
         const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
         expect(logItem).toBeDefined();
         const resultArray = roundArray3(logItem!.payload.value.asArray());
-        const expected = roundArray3(Quaternion.FromDirections(vec1, vec2).asArray());
+        const expected = roundArray3(Quaternion.FromDirections(randomDirection1, randomDirection2).asArray());
         expect(resultArray).toEqual(expected);
     });
 });
