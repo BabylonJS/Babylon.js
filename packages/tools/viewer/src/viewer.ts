@@ -37,7 +37,7 @@ import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Scalar } from "core/Maths/math.scalar";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
@@ -1848,8 +1848,6 @@ export class Viewer implements IDisposable {
 
         // cancel if the model is unloaded before the shadows are created
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
-
-        let normal = this._shadowState.normal;
 
         const worldBounds = computeModelsBoundingInfos(this._loadedModelsBacking);
         if (!worldBounds) {
