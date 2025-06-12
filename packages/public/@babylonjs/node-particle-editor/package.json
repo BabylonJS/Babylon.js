@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-particle-editor",
-    "version": "8.10.0",
+    "version": "8.11.1",
     "main": "dist/babylon.nodeParticleEditor.max.js",
     "module": "dist/babylon.nodeParticleEditor.max.js",
     "esnext": "dist/babylon.nodeParticleEditor.max.js",
@@ -23,7 +23,7 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^8.10.0",
+        "@babylonjs/core": "^8.12.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
