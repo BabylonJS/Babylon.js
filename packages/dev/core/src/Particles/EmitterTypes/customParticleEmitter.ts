@@ -23,6 +23,12 @@ export class CustomParticleEmitter implements IParticleEmitterType {
     public particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = () => {};
 
     /**
+     * Gets or sets the direction generator that will create the initial direction of each particle.
+     *  * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
+     */
+    public particleDirectionGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = () => {};
+
+    /**
      * Creates a new instance CustomParticleEmitter
      */
     constructor() {}
@@ -37,7 +43,9 @@ export class CustomParticleEmitter implements IParticleEmitterType {
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         const tmpVector = TmpVectors.Vector3[0];
 
-        if (this.particleDestinationGenerator) {
+        if (this.particleDirectionGenerator) {
+            this.particleDirectionGenerator(-1, particle, tmpVector);
+        } else if (this.particleDestinationGenerator) {
             this.particleDestinationGenerator(-1, particle, tmpVector);
 
             // Get direction
