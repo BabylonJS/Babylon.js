@@ -11,6 +11,9 @@ import type { Nullable, Scene } from "@dev/core";
 
 import "../scss/rendering.scss";
 
+// If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
+const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
+
 interface IRenderingComponentProps {
     globalState: GlobalState;
 }
@@ -54,29 +57,40 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.download(this._engine);
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(() => {
+        this.props.globalState.onInspectorRequiredObservable.add(async () => {
             if (!this._scene) {
                 return;
             }
 
-            // support for older versions
-            // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
-            if (this._scene.debugLayer.openedPanes === undefined) {
-                this._inspectorFallback = true;
-            }
-
-            // fallback?
-            if (this._inspectorFallback) {
-                const debugLayer: any = this._scene.debugLayer;
-                debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
-            }
-
-            if (this._scene.debugLayer.openedPanes === 0) {
-                this._scene.debugLayer.show({
-                    embedMode: true,
-                });
+            if (InspectorV2ModulePromise) {
+                const inspectorV2Module = await InspectorV2ModulePromise;
+                if (inspectorV2Module.IsInspectorVisible()) {
+                    inspectorV2Module.HideInspector();
+                } else {
+                    inspectorV2Module.ShowInspector(this._scene, {
+                        embedMode: true,
+                    });
+                }
             } else {
-                this._scene.debugLayer.hide();
+                // support for older versions
+                // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
+                if (this._scene.debugLayer.openedPanes === undefined) {
+                    this._inspectorFallback = true;
+                }
+
+                // fallback?
+                if (this._inspectorFallback) {
+                    const debugLayer: any = this._scene.debugLayer;
+                    debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
+                }
+
+                if (this._scene.debugLayer.openedPanes === 0) {
+                    this._scene.debugLayer.show({
+                        embedMode: true,
+                    });
+                } else {
+                    this._scene.debugLayer.hide();
+                }
             }
         });
 
@@ -128,7 +142,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = this._scene?.debugLayer.isVisible();
+        const displayInspector = InspectorV2ModulePromise ? (await InspectorV2ModulePromise).IsInspectorVisible() : this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
