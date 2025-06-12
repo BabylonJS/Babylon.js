@@ -1,6 +1,7 @@
 import { DeepImmutable } from "../types";
 import { Clamp } from "./math.scalar.functions";
-import { Quaternion, Vector2, Vector3, Vector4 } from "./math.vector";
+import type { Vector2, Vector4 } from "./math.vector";
+import { Quaternion, Vector3 } from "./math.vector";
 
 /**
  * Creates a string representation of the Vector2
