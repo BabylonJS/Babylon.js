@@ -130,6 +130,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public onStoppedObservable = new Observable<IParticleSystem>();
 
+    /**
+     * An event triggered when the system is started
+     */
+    public onStartedObservable = new Observable<IParticleSystem>();
+
     private _createIndexBuffer() {
         this._linesIndexBufferUseInstancing = this._engine.createIndexBuffer(new Uint32Array([0, 1, 1, 3, 3, 2, 2, 0, 0, 3]), undefined, "GPUParticleSystemLinesIndexBuffer");
     }

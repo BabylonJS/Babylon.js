@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable } from "core/index";
+import type { IReadonlyObservable, Nullable } from "core/index";
 
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
@@ -19,7 +19,7 @@ export interface ISelectionService extends IService<typeof SelectionServiceIdent
     /**
      * An observable that notifies when the selected entity changes.
      */
-    readonly onSelectedEntityChanged: Observable<void>;
+    readonly onSelectedEntityChanged: IReadonlyObservable<void>;
 }
 
 export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], []> = {

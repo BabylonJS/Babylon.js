@@ -59,7 +59,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         scene = EngineStore.LastCreatedScene;
     }
 
-    if (!scene) {
+    if (!scene || scene.isDisposed) {
         return;
     }
 
@@ -198,14 +198,27 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     });
     disposeActions.push(() => modularTool.dispose());
 
+    let disposed = false;
     CurrentInspectorToken = {
         dispose: () => {
+            if (disposed) {
+                return;
+            }
+
             disposeActions.reverse().forEach((dispose) => dispose());
             if (options.handleResize) {
                 scene.getEngine().resize();
             }
+
+            disposed = true;
         },
     };
+
+    const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
+        HideInspector();
+    });
+
+    disposeActions.push(() => sceneDisposedObserver.remove());
 }
 
 export function HideInspector() {

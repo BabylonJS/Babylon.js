@@ -33,6 +33,17 @@ export function _ConnectAfter(newOne: _IExecutionQueueItem, activeOne: _IExecuti
 }
 
 /** @internal */
+export function _ConnectAtTheEnd(newOne: _IExecutionQueueItem, root: _IExecutionQueueItem) {
+    let activeOne = root;
+    while (activeOne.nextItem) {
+        activeOne = activeOne.nextItem;
+    }
+    newOne.previousItem = activeOne;
+    newOne.nextItem = activeOne.nextItem;
+    activeOne.nextItem = newOne;
+}
+
+/** @internal */
 export function _RemoveFromQueue(item: _IExecutionQueueItem) {
     if (item.previousItem) {
         item.previousItem.nextItem = item.nextItem;

@@ -269,7 +269,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _frustumCornersWorldSpace: Array<Array<Vector3>>;
     private _frustumCenter: Array<Vector3>;
     private _shadowCameraPos: Array<Vector3>;
-    private _onRenderDepthRendererObserver: Observer<Scene>;
 
     private _shadowMaxZ: number;
     /**
@@ -776,18 +775,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         super(mapSize, light, usefulFloatFirst, camera, useRedTextureType);
 
         this.usePercentageCloserFiltering = true;
-
-        this._onRenderDepthRendererObserver = this._scene.onBeforeRenderObservable.add(() => {
-            const depthRenderer = this._depthReducer?.depthRenderer;
-            if (this._scene.frameGraph && depthRenderer && this._autoCalcDepthBounds) {
-                const depthMap = depthRenderer.getDepthMap();
-                if (!depthMap.renderList) {
-                    depthMap.renderList = this._scene.meshes;
-                }
-                this._scene._renderRenderTarget(depthMap, this._camera);
-                this._scene.activeCamera = null;
-            }
-        });
     }
 
     protected override _initializeGenerator(): void {
@@ -1042,8 +1029,6 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      */
     public override dispose(): void {
         super.dispose();
-
-        this._scene.onBeforeRenderObservable.remove(this._onRenderDepthRendererObserver);
 
         if (this._freezeShadowCastersBoundingInfoObservable) {
             this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable } from "core/index";
+import type { IDisposable, IReadonlyObservable } from "core/index";
 
 import { Observable } from "core/Misc/observable";
 
@@ -9,11 +9,14 @@ import { Observable } from "core/Misc/observable";
 export class ObservableCollection<T> {
     private readonly _items: T[] = [];
     private readonly _keys: symbol[] = [];
+    private readonly _observable = new Observable<void>();
 
     /**
      * An observable that notifies observers when the collection changes.
      */
-    public readonly observable = new Observable<void>();
+    public get observable(): IReadonlyObservable<void> {
+        return this._observable;
+    }
 
     /**
      * The items in the collection.
@@ -31,14 +34,14 @@ export class ObservableCollection<T> {
         const key = Symbol();
         this._items.push(item);
         this._keys.push(key);
-        this.observable.notifyObservers();
+        this._observable.notifyObservers();
 
         return {
             dispose: () => {
                 const index = this._keys.indexOf(key);
                 this._items.splice(index, 1);
                 this._keys.splice(index, 1);
-                this.observable.notifyObservers();
+                this._observable.notifyObservers();
             },
         };
     }

@@ -1,14 +1,14 @@
-import { Component } from "react";
 import type { ReactNode, KeyboardEvent } from "react";
+import { Component } from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
-import { Textarea } from "shared-ui-components/fluent/primitives/textarea";
-import { Input } from "shared-ui-components/fluent/primitives/input";
-import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { PropertyLine } from "../fluent/hoc/propertyLine";
+import { Textarea } from "../fluent/primitives/textarea";
+import { Input } from "../fluent/primitives/input";
+import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
 
 export interface ITextInputLineComponentProps {
     label?: string;
@@ -196,7 +196,10 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         }
     }
 
-    renderFluent(value: string, placeholder: string, step: number) {
+    renderFluent() {
+        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
+        const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         return (
             <PropertyLine label={this.props.label || ""}>
                 {this.props.multilines ? (
@@ -232,7 +235,10 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         );
     }
 
-    renderOriginal(value: string, placeholder: string, step: number) {
+    renderOriginal() {
+        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
+        const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
         return (
             <div className={className}>
@@ -304,14 +310,6 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         );
     }
     override render() {
-        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
-        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
-        const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
-
-        return (
-            <ToolContext.Consumer>
-                {({ useFluent }) => (useFluent ? this.renderFluent(value, placeholder, step) : this.renderOriginal(value, placeholder, step))}
-            </ToolContext.Consumer>
-        );
+        return <ConditionallyUseFluent fluent={() => this.renderFluent()} original={() => this.renderOriginal()} />;
     }
 }

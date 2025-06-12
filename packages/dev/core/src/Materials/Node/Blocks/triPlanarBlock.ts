@@ -4,7 +4,6 @@ import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines } from "../nodeMaterial";
 import { NodeMaterial } from "../nodeMaterial";
 import type { Effect } from "../../effect";
@@ -324,7 +323,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }

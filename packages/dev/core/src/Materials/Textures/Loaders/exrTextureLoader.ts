@@ -3,7 +3,7 @@ import type { InternalTexture } from "../internalTexture";
 import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { GetExrHeader } from "./EXR/exrLoader.header";
 import { CreateDecoderAsync, ScanData } from "./EXR/exrLoader.decoder";
-import { ExrLoaderGlobalConfiguration } from "./EXR/exrLoader.configuration";
+import { ExrLoaderGlobalConfiguration, EXROutputType } from "./EXR/exrLoader.configuration";
 import { Logger } from "core/Misc/logger";
 
 /**
@@ -152,4 +152,35 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
                 Logger.Error("Failed to load EXR texture: ", error);
             });
     }
+}
+
+/**
+ * Read the EXR data from an ArrayBufferView asynchronously.
+ * @param data ArrayBufferView containing the EXR data
+ * @returns An object containing the width, height, and data of the EXR texture.
+ */
+export async function ReadExrDataAsync(data: ArrayBuffer): Promise<{ width: number; height: number; data: Nullable<Float32Array> }> {
+    const dataView = new DataView(data);
+
+    const offset = { value: 0 };
+    const header = GetExrHeader(dataView, offset);
+    try {
+        const decoder = await CreateDecoderAsync(header, dataView, offset, EXROutputType.Float);
+        ScanData(decoder, header, dataView, offset);
+
+        if (!decoder.byteArray) {
+            Logger.Error("Failed to decode EXR data: No byte array available.");
+            return { width: 0, height: 0, data: null };
+        }
+
+        return {
+            width: header.dataWindow.xMax - header.dataWindow.xMin + 1,
+            height: header.dataWindow.yMax - header.dataWindow.yMin + 1,
+            data: new Float32Array(decoder.byteArray),
+        };
+    } catch (error) {
+        Logger.Error("Failed to load EXR data: ", error);
+    }
+
+    return { width: 0, height: 0, data: null };
 }

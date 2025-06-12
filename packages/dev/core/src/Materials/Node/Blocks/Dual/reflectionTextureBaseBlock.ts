@@ -3,7 +3,6 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { BaseTexture } from "../../../Textures/baseTexture";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterial } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
@@ -225,7 +224,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }

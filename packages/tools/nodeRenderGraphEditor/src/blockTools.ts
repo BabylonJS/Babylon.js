@@ -190,6 +190,7 @@ export class BlockTools {
                 color = "#51e593";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth:
                 color = "#51e566";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
@@ -260,6 +261,8 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.ObjectList;
             case "TextureViewDepth":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth;
+            case "TextureNormalizedViewDepth":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth;
             case "TextureNormal":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal;
             case "TextureAlbedo":
@@ -304,7 +307,9 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
                 return "ObjectList";
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
-                return "TextureDepth";
+                return "TextureViewDepth";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth:
+                return "TextureNormalizedViewDepth";
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
                 return "TextureNormal";
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
