@@ -333,6 +333,10 @@ export interface IParticleSystem {
      */
     onStoppedObservable: Observable<IParticleSystem>;
     /**
+     * An event triggered when the system is started
+     */
+    onStartedObservable: Observable<IParticleSystem>;
+    /**
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
