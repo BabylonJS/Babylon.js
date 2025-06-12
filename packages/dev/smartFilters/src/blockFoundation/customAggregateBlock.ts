@@ -1,5 +1,6 @@
+/* eslint-disable import/no-internal-modules */
 import type { ThinEngine } from "core/Engines/thinEngine";
-import type { SmartFilterDeserializer, SerializedBlockDefinition } from "../serialization/";
+import type { SmartFilterDeserializer, SerializedBlockDefinition } from "../serialization/index";
 import type { SmartFilter } from "../smartFilter";
 import { AggregateBlock } from "./aggregateBlock";
 import type { BaseBlock } from "./baseBlock";

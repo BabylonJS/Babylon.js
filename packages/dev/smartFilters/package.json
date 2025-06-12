@@ -18,12 +18,14 @@
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa"
+        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa",
+        "postcompile": "build-tools -c add-js-to-es6"
     },
     "sideEffects": [
         "./dist/utils/buildTools/**"
     ],
     "devDependencies": {
-        "core": "npm:@babylonjs/core@8.0.1"
+        "core": "npm:@babylonjs/core@8.0.1",
+        "@dev/build-tools": "^1.0.0"
     }
 }

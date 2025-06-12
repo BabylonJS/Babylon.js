@@ -1,4 +1,5 @@
-export * from "./v1/";
+/* eslint-disable import/no-internal-modules */
+export * from "./v1/index";
 export * from "./serializedSmartFilter";
 export * from "./smartFilterDeserializer";
 export * from "./smartFilterSerializer";
