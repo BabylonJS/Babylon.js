@@ -18,8 +18,8 @@ import type { Matrix, Vector2 } from "core/Maths/math.vector";
 import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
 import { _GetClassNameOf } from "core/FlowGraph/utils";
-import { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import type { FlowGraphContext } from "../../../flowGraphContext";
 
 /**
  * Vector length block.
