@@ -13,7 +13,6 @@ import type {
     RawTransformShape,
     RawVectorKeyframe,
     RawVectorProperty,
-    RawBezier,
 } from "./types/rawLottie";
 import {
     LayerUnsuportedType,
@@ -29,35 +28,30 @@ import {
     type Transform,
     type Vector2Keyframe,
     type Vector2Property,
-    type BoundingBox,
 } from "./types/processedLottie";
 import { Color3, Vector2, Vector3 } from "core/Maths";
 import { BezierCurveEase } from "core/Animations";
-import { MeshBuilder, TransformNode } from "core/Meshes";
-import { StandardMaterial, type Texture } from "core/Materials";
-
-const BaseSize = 35; // Base size for the plane mesh, can be adjusted as needed
-
-type SpriteData = {
-    size: Vector2;
-    scaling: number;
-    texture: Texture;
-};
+import { type Mesh, MeshBuilder, TransformNode } from "core/Meshes";
+import { StandardMaterial } from "core/Materials";
+import { DrawGroup } from "./canvasDrawing";
 
 /**
  * Class responsible for parsing lottie data
  */
 export class LottieParser {
+    private _scaling: number = 1;
     private _processedData: LottieAnimation;
     private _errors = new Array<string>();
     private _childIndex = 1000;
     private _zIndex = 0;
-    private _spritesData: Map<string, SpriteData> | undefined = undefined;
 
     /**
      * Creates an instance of LottieParser.
+     * @param scaling - The scaling factor to apply to canvas rendering
      */
-    public constructor() {}
+    public constructor(scaling: number = 1) {
+        this._scaling = scaling;
+    }
 
     /**
      * Gets the processed Lottie animation data, if available.
@@ -86,11 +80,9 @@ export class LottieParser {
     /**
      * Processes the loaded Lottie data.
      * @param lottieAsJsonString - The lottie definition data as a string.
-     * @param spritesData - Data for each sprite
      */
-    public processLottieData(lottieAsJsonString: string, spritesData: Map<string, SpriteData>): void {
+    public processLottieData(lottieAsJsonString: string): void {
         this._errors.length = 0; // Clear previous errors
-        this._spritesData = spritesData;
         const rawData = JSON.parse(lottieAsJsonString) as RawLottieAnimation;
 
         this._processedData = {
@@ -100,10 +92,6 @@ export class LottieParser {
             nodes: new Map<number, LottieNode>(),
             size: new Vector2(rawData.w, rawData.h),
         };
-
-        // Bounds of the animation for testing
-        const background = MeshBuilder.CreatePlane(`Animation bounds`, { height: rawData.h, width: rawData.w });
-        background.position = new Vector3(rawData.w / 2, -rawData.h / 2, 0.1); // Position the background slightly behind the layers
 
         // Create a map of all the layers by their order in the original json file
         for (let i = 0; i < rawData.layers.length; i++) {
@@ -121,6 +109,10 @@ export class LottieParser {
                 layer.nodeTrs!.parent = parentLayer.nodeAnchor!; // Set the Babylon node parent
             }
         }
+
+        // Bounds of the animation for testing
+        const background = MeshBuilder.CreatePlane(`Animation bounds`, { height: rawData.h, width: rawData.w });
+        background.position = new Vector3(rawData.w / 2, -rawData.h / 2, this._zIndex * 10); // Position the background slightly behind the layers
     }
 
     private _processRawLottieLayer(rawLayer: RawLottieLayer): void {
@@ -149,7 +141,7 @@ export class LottieParser {
         newNode.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
         newNode.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
         newNode.nodeTrs.position.z = this._zIndex;
-        this._zIndex -= 0.1; // Decrement zIndex for each layer
+        this._zIndex += 5; // Decrement zIndex for each layer
 
         newNode.nodeTrs.rotation.z = -((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
 
@@ -217,8 +209,6 @@ export class LottieParser {
             return;
         }
 
-        const canvas = this._drawGroup(rawGroup);
-
         const newNode: LottieNode = {
             name: `${parent.name} - ${rawGroup.nm}`,
             parentIndex: parent.index,
@@ -230,7 +220,6 @@ export class LottieParser {
             timeStretch: parent.timeStretch ?? 1,
             autoOrient: parent.autoOrient,
             transform: transform,
-            drawable: canvas,
         };
 
         newNode.nodeTrs = new TransformNode(`TRS - ${rawGroup.nm}`);
@@ -238,24 +227,31 @@ export class LottieParser {
         newNode.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
         newNode.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
         newNode.nodeTrs.position.z = this._zIndex;
-        this._zIndex -= 0.1; // Increment zIndex for each layer
+        this._zIndex += 5; // Increment zIndex for each layer
 
         newNode.nodeTrs.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
 
         newNode.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
         newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
-        /* Start fake sprites debugging */
-        const size = this._mapSize(newNode.name);
-        const scale = this._mapScale(newNode.name);
-        const mesh = MeshBuilder.CreatePlane(`Anchor with Sprite - ${rawGroup.nm}`, { height: size.y * scale, width: size.x * scale });
+        let mesh: Mesh | undefined = undefined;
+        const texture = DrawGroup(newNode.name, rawGroup, this._scaling);
+
+        if (texture !== undefined) {
+            const size = texture.getSize();
+            mesh = MeshBuilder.CreatePlane(`Anchor - ${newNode.name}`, { height: size.height, width: size.width });
+        } else {
+            mesh = MeshBuilder.CreatePlane(`Anchor with Fake Texture - ${newNode.name}`, { height: 50, width: 50 });
+        }
 
         mesh.isVisible = false;
+        const material = new StandardMaterial(`Material - ${newNode.name}`);
 
-        const material = new StandardMaterial("myMaterial");
-        const texture = this._mapTexture(newNode.name);
         if (texture) {
+            texture.hasAlpha = true;
             material.diffuseTexture = texture;
+            material.useAlphaFromDiffuseTexture = true;
+            material.transparencyMode = 2;
         } else {
             material.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
         }
@@ -266,6 +262,8 @@ export class LottieParser {
         newNode.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
         newNode.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
         newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
+        newNode.nodeAnchor.scaling.x = 1 / this._scaling;
+        newNode.nodeAnchor.scaling.y = 1 / this._scaling;
 
         newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
         /* End fake sprites debugging */
@@ -514,154 +512,5 @@ export class LottieParser {
         if (shape.e.a === 1) {
             this._errors.push(`Gradient fill ${shape.nm} has an end point property that is animated which is not supported`);
         }
-    }
-
-    /* These functions are only needed while we render custom made textures, they will be removed with SVGs */
-    private _mapSize(layerName: string): Vector2 {
-        if (!this._spritesData) {
-            return new Vector2(BaseSize, BaseSize);
-        }
-
-        return this._spritesData.get(layerName)?.size ?? new Vector2(BaseSize, BaseSize);
-    }
-
-    private _mapScale(layerName: string): number {
-        if (!this._spritesData) {
-            return 1;
-        }
-
-        return this._spritesData.get(layerName)?.scaling ?? 1;
-    }
-
-    private _mapTexture(layerName: string): Texture | undefined {
-        if (!this._spritesData) {
-            return undefined;
-        }
-
-        return this._spritesData.get(layerName)?.texture;
-    }
-
-    /** Canvas Drawing Functions */
-
-    private _drawGroup(rawGroup: RawGroupShape): HTMLCanvasElement {
-        const canvas = document.createElement("canvas");
-
-        const bbox = this._getBoundingBox(rawGroup);
-        if (bbox.width <= 0 || bbox.height <= 0) {
-            this._errors.push(`Bounding box for group ${rawGroup.nm} is invalid: ${JSON.stringify(bbox)}`);
-            return canvas;
-        }
-
-        canvas.width = bbox.width;
-        canvas.height = bbox.height;
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-            this._errors.push(`Failed to get 2D context for canvas`);
-            return canvas;
-        }
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "transparent"; // Set transparent background
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        this._drawShapes(ctx, rawGroup);
-
-        return canvas;
-    }
-
-    private _getBoundingBox(rawGroup: RawGroupShape): BoundingBox {
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-
-        const rect = rawGroup.it?.find((shape) => shape.ty === "rc") as RawRectangleShape;
-        if (rect !== undefined) {
-            const size = rect.s.k as number[];
-            return {
-                width: size[0],
-                height: size[1],
-            };
-        }
-
-        const path = rawGroup.it?.find((shape) => shape.ty === "sh") as RawPathShape;
-        if (path !== undefined) {
-            const vertices = (path.ks.k as RawBezier).v as number[][];
-            for (const vertex of vertices) {
-                minX = Math.min(minX, vertex[0]);
-                minY = Math.min(minY, vertex[1]);
-                maxX = Math.max(maxX, vertex[0]);
-                maxY = Math.max(maxY, vertex[1]);
-            }
-
-            return {
-                width: maxX - minX,
-                height: maxY - minY,
-            };
-        }
-
-        return {
-            width: 0,
-            height: 0,
-        };
-    }
-
-    private _drawShapes(ctx: CanvasRenderingContext2D, rawGroup: RawGroupShape): void {
-        // First draw the shape
-        const rect = rawGroup.it?.find((shape) => shape.ty === "rc") as RawRectangleShape;
-        if (rect !== undefined) {
-            this._drawRectangleShape(ctx, rect);
-        }
-
-        // Then fill the shape
-        const fill = rawGroup.it?.find((shape) => shape.ty === "fl") as RawFillShape;
-        if (rect !== undefined) {
-            this._fillShape(ctx, fill);
-        }
-    }
-
-    private _drawRectangleShape(ctx: CanvasRenderingContext2D, rect: RawRectangleShape): void {
-        const size = rect.s.k as number[];
-        const radius = rect.r.k as number;
-
-        if (radius === 0) {
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(size[0], 0);
-            ctx.lineTo(size[0], size[1]);
-            ctx.lineTo(0, size[1]);
-            ctx.closePath();
-        } else {
-            // Handle rounded corners
-            ctx.beginPath();
-            ctx.closePath();
-        }
-    }
-
-    private _fillShape(ctx: CanvasRenderingContext2D, fill: RawFillShape): void {
-        if (!fill || !fill.c || !fill.o) {
-            this._errors.push(`Fill shape is missing color or opacity properties`);
-            return;
-        }
-
-        const color = this._lottieColorToSVGColor(fill.c.k as number[], (fill.o.k as number) / 100);
-        ctx.fillStyle = color;
-
-        ctx.fill();
-    }
-
-    private _lottieColorToSVGColor(color: number[], opacity: number): string {
-        if (color.length !== 3 && color.length !== 4) {
-            this._errors.push(`Invalid color length: ${color.length}. Expected 3 or 4.`);
-            return "rgba(0, 0, 0, 1)"; // Default to black if invalid
-        }
-
-        const r = Math.round(color[0] * 255);
-        const g = Math.round(color[1] * 255);
-        const b = Math.round(color[2] * 255);
-        const a = (color[3] || 1) * opacity;
-
-        return `rgba(${r}, ${g}, ${b}, ${a})`;
     }
 }

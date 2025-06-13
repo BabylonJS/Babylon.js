@@ -107,7 +107,7 @@ export type RawGradientsProperty = {
 
 export type RawGradientProperty = {
     a: RawNumberBoolean; // Animated (0: false, 1: true)
-    k: number[]; // Gradient array
+    k: number[]; // Gradient colors array
 };
 
 export type RawKeyFrameEasing = {
