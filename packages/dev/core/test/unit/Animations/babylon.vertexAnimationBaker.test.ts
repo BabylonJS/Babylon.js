@@ -65,8 +65,13 @@ describe("VertexAnimationBaker", function () {
             const baker = new VertexAnimationBaker(scene, mesh);
 
             // Act: Bake vertex data with halfFloat: false
+            let start = performance.now();
             const vertexData = baker.bakeVertexDataSync(animationRanges as AnimationRange[], false);
+            let end = performance.now();
+            console.log(`Synchronous bake took: ${end - start} ms`);
             const asyncVertexData = await baker.bakeVertexData(animationRanges as AnimationRange[]);
+            end = performance.now();
+            console.log(`Asynchronous bake took: ${end - start} ms`);
             // Assert: Check type and size
             expect(vertexData.length).toEqual(asyncVertexData.length, "Synchronous and asynchronous vertex data should match");
             expect(vertexData).toBeInstanceOf(Float32Array, "Vertex data should be Float32Array");
@@ -74,16 +79,13 @@ describe("VertexAnimationBaker", function () {
 
         it("should bake vertex data as Uint16Array for half-float", () => {
             const baker = new VertexAnimationBaker(scene, mesh);
-
             const vertexData = baker.bakeVertexDataSync(animationRanges as AnimationRange[], true);
-
             expect(vertexData).toBeInstanceOf(Uint16Array, "Vertex data should be Uint16Array");
         });
 
         it("should throw an error if no skeleton is provided", () => {
             const mesh = { skeleton: null }; // Mock mesh with no skeleton
             const baker = new VertexAnimationBaker(scene, mesh as any);
-
             expect(() => baker.bakeVertexDataSync(animationRanges as AnimationRange[], false)).toThrow("No skeleton provided.");
         });
     });
