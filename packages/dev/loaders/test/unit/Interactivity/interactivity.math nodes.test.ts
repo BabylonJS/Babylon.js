@@ -1,4 +1,4 @@
-import { IKHRInteractivity_Declaration, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
+import type { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
@@ -10,6 +10,7 @@ import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../core/src/Maths/math.vector.functions";
 
 const typesAndLengths: {
     [key: string]: number;
@@ -58,7 +59,7 @@ describe("Interactivity math nodes", () => {
                     declaration: declarations.length,
                     flows: {
                         out: {
-                            node: declarations.length + 1,
+                            node: nodes.length + 1,
                             socket: "in",
                         },
                     },
@@ -1874,4 +1875,224 @@ describe("Interactivity math nodes", () => {
     //     ]);
     //     expect(resultArray).toEqual(expected);
     // });
+
+    it("should use math/quatConjugate", async () => {
+        const randomQuaternion = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatConjugate" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomQuaternion.asArray(),
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3(randomQuaternion.conjugate().asArray());
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/quatMul", async () => {
+        const randomQuaternion1 = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const randomQuaternion2 = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatMul" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomQuaternion1.asArray(),
+                        },
+                        b: {
+                            type: 0,
+                            value: randomQuaternion2.asArray(),
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3(randomQuaternion1.multiply(randomQuaternion2).asArray());
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/quatAngleBetween", async () => {
+        const randomQuaternion1 = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const randomQuaternion2 = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatAngleBetween" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomQuaternion1.asArray(),
+                        },
+                        b: {
+                            type: 0,
+                            value: randomQuaternion2.asArray(),
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float4" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const result = round3(logItem!.payload.value);
+        const expected = round3(GetAngleBetweenQuaternions(randomQuaternion1, randomQuaternion2));
+        expect(result).toEqual(expected);
+    });
+
+    it("should use math/quatFromAxisAngle", async () => {
+        const randomAxis = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+        const randomAngle = Math.random() * Math.PI;
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromAxisAngle" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        axis: {
+                            type: 0,
+                            value: randomAxis.asArray(),
+                        },
+                        angle: {
+                            type: 1,
+                            value: [randomAngle],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float3" }, { signature: "float" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3(Quaternion.RotationAxis(randomAxis, randomAngle).asArray());
+        expect(resultArray).toEqual(expected);
+    });
+
+    it("should use math/quatToAxisAngle", async () => {
+        const randomQuaternion = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
+        const ig: IKHRInteractivity_Graph = {
+            declarations: [{ op: "math/quatToAxisAngle" }, { op: "event/onStart" }, { op: "flow/log", extension: "BABYLON" }],
+            types: [{ signature: "float4" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomQuaternion.asArray(),
+                        },
+                    },
+                },
+                {
+                    declaration: 1,
+                    flows: {
+                        out: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 2,
+                    values: {
+                        axis: {
+                            node: 0,
+                            socket: "axis",
+                        },
+                        angle: {
+                            node: 0,
+                            socket: "angle",
+                        },
+                    },
+                    configuration: {
+                        messageTemplate: {
+                            value: ["{axis}{angle}"],
+                        },
+                    },
+                },
+            ],
+        };
+
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
+        const json = i2fg.serializeToFlowGraph();
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const flowGraph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });
+        flowGraph.getContext(0).enableLogging = true;
+        flowGraph.getContext(0).logger!.logToConsole = false;
+
+        coordinator.start();
+
+        const graph = {
+            graph: flowGraph,
+            logger: flowGraph.getContext(0).logger!,
+        };
+
+        const expected = randomQuaternion.toAxisAngle();
+        const logItems = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue);
+
+        {
+            const logItem = logItems.pop();
+            expect(logItem).toBeDefined();
+            const angle = logItem!.payload.value;
+            expect(round3(angle)).toEqual(round3(expected.angle));
+        }
+
+        logItems.pop();
+
+        {
+            const logItem = logItems.pop();
+            expect(logItem).toBeDefined();
+            const axis = logItem!.payload.value;
+            expect(roundArray3(axis.asArray())).toEqual(roundArray3(expected.axis.asArray()));
+        }
+    });
+
+    it("should use math/quatFromDirections", async () => {
+        const randomDirection1 = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+        const randomDirection2 = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+        const graph = await generateSimpleNodeGraph(
+            [{ op: "math/quatFromDirections" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        a: {
+                            type: 0,
+                            value: randomDirection1.asArray(),
+                        },
+                        b: {
+                            type: 0,
+                            value: randomDirection2.asArray(),
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float3" }]
+        );
+        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
+        expect(logItem).toBeDefined();
+        const resultArray = roundArray3(logItem!.payload.value.asArray());
+        const expected = roundArray3(GetQuaternionFromDirections(randomDirection1, randomDirection2).asArray());
+        expect(resultArray).toEqual(expected);
+    });
 });

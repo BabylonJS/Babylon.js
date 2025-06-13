@@ -254,6 +254,16 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformBlock;
         case FlowGraphBlockNames.TransformCoordinates:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformCoordinatesBlock;
+        case FlowGraphBlockNames.Conjugate:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphConjugateBlock;
+        case FlowGraphBlockNames.AngleBetween:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAngleBetweenBlock;
+        case FlowGraphBlockNames.QuaternionFromAxisAngle:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromAxisAngleBlock;
+        case FlowGraphBlockNames.AxisAngleFromQuaternion:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAxisAngleFromQuaternionBlock;
+        case FlowGraphBlockNames.QuaternionFromDirections:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromDirectionsBlock;
         case FlowGraphBlockNames.MatrixDecompose:
             return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;
         case FlowGraphBlockNames.MatrixCompose:
