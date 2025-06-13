@@ -2,6 +2,8 @@
     "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
         "resolveJsonModule": true,
         "paths": {
             "core/*": ["../node_modules/core/*"],
