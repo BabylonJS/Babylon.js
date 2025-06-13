@@ -1,9 +1,9 @@
 import { Component } from "react";
 import type { ConnectionPointType, InputBlock } from "@babylonjs/smart-filters";
-import { FloatLineComponent } from "@babylonjs/shared-ui-components/lines/floatLineComponent.js";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
 import { getFloatInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
 import { FloatSliderComponent } from "../../../sharedComponents/floatSliderComponent.js";
-import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager.js";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 
 export interface FloatPropertyTabComponentProps {
     stateManager: StateManager;
@@ -20,10 +20,7 @@ type FloatPropertyTabComponentState = {
  * plainly-- no slider capability. Otherwise, display the value alongside
  * optional min and max properties that, when set, toggle a slider for the value.
  */
-export class FloatPropertyTabComponent extends Component<
-    FloatPropertyTabComponentProps,
-    FloatPropertyTabComponentState
-> {
+export class FloatPropertyTabComponent extends Component<FloatPropertyTabComponentProps, FloatPropertyTabComponentState> {
     constructor(props: FloatPropertyTabComponentProps) {
         super(props);
         this.processEditorData(true);

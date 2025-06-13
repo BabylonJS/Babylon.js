@@ -4,6 +4,7 @@ import * as reactDOM from "react-dom";
 
 interface IPortalProps {
     globalState: GlobalState;
+    children: react.ReactNode;
 }
 
 export class Portal extends react.Component<IPortalProps> {

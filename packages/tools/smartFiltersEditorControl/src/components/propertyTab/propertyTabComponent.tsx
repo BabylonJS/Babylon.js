@@ -1,29 +1,29 @@
-import { GraphFrame } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphFrame.js";
-import { GraphNode } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphNode.js";
-import { NodePort } from "@babylonjs/shared-ui-components/nodeGraphSystem/nodePort.js";
+import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame.js";
+import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode.js";
+import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort.js";
 import * as react from "react";
-import { DataStorage } from "@babylonjs/core/Misc/dataStorage.js";
+import { DataStorage } from "core/Misc/dataStorage.js";
 
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent.js";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 
-import { IsFramePortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/tools.js";
-// import { OptionsLineComponent } from "@babylonjs/shared-ui-components/lines/optionsLineComponent";
-import { TextLineComponent } from "@babylonjs/shared-ui-components/lines/textLineComponent.js";
-import { TextInputLineComponent } from "@babylonjs/shared-ui-components/lines/textInputLineComponent.js";
-import { ButtonLineComponent } from "@babylonjs/shared-ui-components/lines/buttonLineComponent.js";
-import { SliderLineComponent } from "@babylonjs/shared-ui-components/lines/sliderLineComponent.js";
+import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools.js";
+// import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent.js";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent.js";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent.js";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent.js";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent.js";
 import { BlockTools } from "../../blockTools.js";
 
-import type { Nullable } from "@babylonjs/core/types";
-import type { FrameNodePort } from "@babylonjs/shared-ui-components/nodeGraphSystem/frameNodePort";
-import type { LockObject } from "@babylonjs/shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Nullable } from "core/types";
+import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ForceWebGL1StorageKey, type GlobalState } from "../../globalState.js";
-import type { ISelectionChangedOptions } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { SmartFilterCoreVersion, type AnyInputBlock } from "@babylonjs/smart-filters";
-import type { Observer } from "@babylonjs/core/Misc/observable.js";
+import type { Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 
 interface IPropertyTabComponentProps {
@@ -64,58 +64,54 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
     }
 
     override componentDidMount() {
-        this.props.globalState.stateManager.onSelectionChangedObservable.add(
-            (options: Nullable<ISelectionChangedOptions>) => {
-                const { selection } = options || {};
-                if (selection instanceof GraphNode) {
-                    this.setState({
-                        currentNode: selection,
-                        currentFrame: null,
-                        currentFrameNodePort: null,
-                        currentNodePort: null,
-                    });
-                } else if (selection instanceof GraphFrame) {
-                    this.setState({
-                        currentNode: null,
-                        currentFrame: selection,
-                        currentFrameNodePort: null,
-                        currentNodePort: null,
-                    });
-                } else if (IsFramePortData(selection)) {
-                    this.setState({
-                        currentNode: null,
-                        currentFrame: selection.frame,
-                        currentFrameNodePort: selection.port,
-                        currentNodePort: null,
-                    });
-                } else if (selection instanceof NodePort) {
-                    this.setState({
-                        currentNode: null,
-                        currentFrame: null,
-                        currentFrameNodePort: null,
-                        currentNodePort: selection,
-                    });
-                } else {
-                    this.setState({
-                        currentNode: null,
-                        currentFrame: null,
-                        currentFrameNodePort: null,
-                        currentNodePort: null,
-                    });
-                }
+        this.props.globalState.stateManager.onSelectionChangedObservable.add((options: Nullable<ISelectionChangedOptions>) => {
+            const { selection } = options || {};
+            if (selection instanceof GraphNode) {
+                this.setState({
+                    currentNode: selection,
+                    currentFrame: null,
+                    currentFrameNodePort: null,
+                    currentNodePort: null,
+                });
+            } else if (selection instanceof GraphFrame) {
+                this.setState({
+                    currentNode: null,
+                    currentFrame: selection,
+                    currentFrameNodePort: null,
+                    currentNodePort: null,
+                });
+            } else if (IsFramePortData(selection)) {
+                this.setState({
+                    currentNode: null,
+                    currentFrame: selection.frame,
+                    currentFrameNodePort: selection.port,
+                    currentNodePort: null,
+                });
+            } else if (selection instanceof NodePort) {
+                this.setState({
+                    currentNode: null,
+                    currentFrame: null,
+                    currentFrameNodePort: null,
+                    currentNodePort: selection,
+                });
+            } else {
+                this.setState({
+                    currentNode: null,
+                    currentFrame: null,
+                    currentFrameNodePort: null,
+                    currentNodePort: null,
+                });
             }
-        );
+        });
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable?.add(() => {
             this.forceUpdate();
         });
 
         if (this.props.globalState.optimizerEnabled) {
-            this._onOptimizerEnabledChangedObserver = this.props.globalState.optimizerEnabled.onChangedObservable.add(
-                (value: boolean) => {
-                    this.setState({ optimize: value });
-                }
-            );
+            this._onOptimizerEnabledChangedObserver = this.props.globalState.optimizerEnabled.onChangedObservable.add((value: boolean) => {
+                this.setState({ optimize: value });
+            });
         }
     }
 
@@ -217,11 +213,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
             return (
                 <div id="propertyTab">
                     <div id="header">
-                        <img
-                            id="logo"
-                            src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png"
-                            alt="Babylon Logo"
-                        />
+                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" alt="Babylon Logo" />
                         <div id="title">SMART FILTER EDITOR</div>
                     </div>
                     {this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}
@@ -253,11 +245,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         return (
             <div id="propertyTab">
                 <div id="header">
-                    <img
-                        id="logo"
-                        src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png"
-                        alt="Babylon Logo"
-                    />
+                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" alt="Babylon Logo" />
                     <div id="title">SMART FILTER EDITOR</div>
                 </div>
                 <div>
@@ -267,19 +255,9 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                             label="Help"
                             value="doc.babylonjs.com"
                             underline={true}
-                            onLink={() =>
-                                this.props.globalState.hostDocument.defaultView!.open(
-                                    "https://doc.babylonjs.com/features/featuresDeepDive/smartFilters/",
-                                    "_blank"
-                                )
-                            }
+                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/features/featuresDeepDive/smartFilters/", "_blank")}
                         />
-                        <TextInputLineComponent
-                            label="Name"
-                            lockObject={this.props.globalState.lockObject}
-                            target={this.props.globalState.smartFilter}
-                            propertyName="name"
-                        />
+                        <TextInputLineComponent label="Name" lockObject={this.props.globalState.lockObject} target={this.props.globalState.smartFilter} propertyName="name" />
                         <TextInputLineComponent
                             label="Namespace"
                             lockObject={this.props.globalState.lockObject}
@@ -340,9 +318,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                         />
                         <CheckBoxLineComponent
                             label="Only show custom blocks"
-                            isSelected={() =>
-                                DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue)
-                            }
+                            isSelected={() => DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue)}
                             onSelect={(value: boolean) => {
                                 DataStorage.WriteBoolean("OnlyShowCustomBlocks", value);
                                 this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(value);
@@ -381,13 +357,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                         this.props.globalState.pasteSmartFilter ||
                         this.props.globalState.saveToSnippetServer) && (
                         <LineContainerComponent title="FILE">
-                            {this.props.globalState.loadSmartFilter && (
-                                <FileButtonLineComponent
-                                    label="Load"
-                                    onClick={(file) => this.load(file)}
-                                    accept=".json"
-                                />
-                            )}
+                            {this.props.globalState.loadSmartFilter && <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />}
                             {this.props.globalState.downloadSmartFilter && (
                                 <ButtonLineComponent
                                     label="Save"
@@ -408,9 +378,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                 <ButtonLineComponent
                                     label="Paste from Clipboard"
                                     onClick={() => {
-                                        if (
-                                            window.confirm("Any unsaved changes will be lost. Do you want to continue?")
-                                        ) {
+                                        if (window.confirm("Any unsaved changes will be lost. Do you want to continue?")) {
                                             this.pasteSmartFilter();
                                         }
                                     }}

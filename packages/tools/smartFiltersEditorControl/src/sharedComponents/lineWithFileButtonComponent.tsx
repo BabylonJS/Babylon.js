@@ -1,4 +1,4 @@
-import { DataStorage } from "@babylonjs/core/Misc/dataStorage.js";
+import { DataStorage } from "core/Misc/dataStorage.js";
 import * as react from "react";
 
 interface ILineWithFileButtonComponentProps {
@@ -12,10 +12,7 @@ interface ILineWithFileButtonComponentProps {
     allowMultiple?: boolean;
 }
 
-export class LineWithFileButtonComponent extends react.Component<
-    ILineWithFileButtonComponentProps,
-    { isExpanded: boolean }
-> {
+export class LineWithFileButtonComponent extends react.Component<ILineWithFileButtonComponentProps, { isExpanded: boolean }> {
     private _uploadRef: react.RefObject<HTMLInputElement>;
     constructor(props: ILineWithFileButtonComponentProps) {
         super(props);
@@ -49,10 +46,7 @@ export class LineWithFileButtonComponent extends react.Component<
                     <img className="img" src={this.props.iconImage} alt="icon" />
                 </div>
                 <div className="buttonLine" title={this.props.title}>
-                    <label
-                        htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"}
-                        className="file-upload"
-                    />
+                    <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload" />
                     <input
                         ref={this._uploadRef}
                         id={this.props.uploadName ? this.props.uploadName : "file-upload"}

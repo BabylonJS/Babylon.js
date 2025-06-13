@@ -1,19 +1,19 @@
 import * as react from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
 import { GeneralPropertyTabComponent, GenericPropertyComponent } from "./genericNodePropertyComponent.js";
-import type { IPropertyComponentProps } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLine } from "@babylonjs/shared-ui-components/lines/optionsLineComponent.js";
-import type { IInspectableOptions } from "@babylonjs/core/Misc/iInspectable.js";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
+import type { IInspectableOptions } from "core/Misc/iInspectable.js";
 import { ConnectionPointType, type AnyInputBlock } from "@babylonjs/smart-filters";
 import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent.js";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent.js";
 import { ImageSourcePropertyTabComponent } from "../../components/propertyTab/properties/imageSourcePropertyTabComponent.js";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent.js";
-import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent.js";
 import { LazyTextInputLineComponent } from "../../sharedComponents/lazyTextInputLineComponent.js";
 
-const booleanOptions: IInspectableOptions[] = [
+const BooleanOptions: IInspectableOptions[] = [
     {
         label: "True",
         value: 1,
@@ -40,10 +40,7 @@ export class InputPropertyComponent extends react.Component<IPropertyComponentPr
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <InputPropertyTabComponent
-                        stateManager={this.props.stateManager}
-                        inputBlock={this.props.nodeData.data}
-                    ></InputPropertyTabComponent>
+                    <InputPropertyTabComponent stateManager={this.props.stateManager} inputBlock={this.props.nodeData.data}></InputPropertyTabComponent>
                 </LineContainerComponent>
                 <LineContainerComponent title="APP METADATA">
                     <div id="appMetadata">
@@ -61,9 +58,7 @@ export class InputPropertyComponent extends react.Component<IPropertyComponentPr
                                 return value ? JSON.parse(value) : undefined;
                             }}
                             onExtractValueFailed={() => {
-                                this.props.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(
-                                    "Invalid JSON"
-                                );
+                                this.props.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Invalid JSON");
                             }}
                         ></LazyTextInputLineComponent>
                     </div>
@@ -123,7 +118,7 @@ export class InputPropertyTabComponent extends react.Component<InputPropertyComp
                         label="Value"
                         target={dummyTarget}
                         propertyName="value"
-                        options={booleanOptions}
+                        options={BooleanOptions}
                         noDirectUpdate
                         extractValue={() => {
                             return inputBlock.runtimeValue.value ? 1 : 0;
@@ -136,23 +131,11 @@ export class InputPropertyTabComponent extends react.Component<InputPropertyComp
                 );
             }
             case ConnectionPointType.Float: {
-                return (
-                    <FloatPropertyTabComponent
-                        key={inputBlock.uniqueId}
-                        inputBlock={inputBlock}
-                        stateManager={this.props.stateManager}
-                    />
-                );
+                return <FloatPropertyTabComponent key={inputBlock.uniqueId} inputBlock={inputBlock} stateManager={this.props.stateManager} />;
             }
             case ConnectionPointType.Texture:
                 {
-                    return (
-                        <ImageSourcePropertyTabComponent
-                            key={inputBlock.uniqueId}
-                            inputBlock={inputBlock}
-                            stateManager={this.props.stateManager}
-                        />
-                    );
+                    return <ImageSourcePropertyTabComponent key={inputBlock.uniqueId} inputBlock={inputBlock} stateManager={this.props.stateManager} />;
                 }
                 break;
             // case NodeMaterialBlockConnectionPointTypes.Vector2:
@@ -160,21 +143,13 @@ export class InputPropertyTabComponent extends react.Component<InputPropertyComp
             case ConnectionPointType.Color3:
                 return (
                     <>
-                        <Color3PropertyTabComponent
-                            key={inputBlock.uniqueId}
-                            stateManager={this.props.stateManager}
-                            inputBlock={inputBlock}
-                        />
+                        <Color3PropertyTabComponent key={inputBlock.uniqueId} stateManager={this.props.stateManager} inputBlock={inputBlock} />
                     </>
                 );
             case ConnectionPointType.Color4:
                 return (
                     <>
-                        <Color4PropertyTabComponent
-                            key={inputBlock.uniqueId}
-                            stateManager={this.props.stateManager}
-                            inputBlock={inputBlock}
-                        />
+                        <Color4PropertyTabComponent key={inputBlock.uniqueId} stateManager={this.props.stateManager} inputBlock={inputBlock} />
                     </>
                 );
             // case NodeMaterialBlockConnectionPointTypes.Vector3:

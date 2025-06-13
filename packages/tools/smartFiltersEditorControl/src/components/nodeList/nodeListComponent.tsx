@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as react from "react";
-import type { Nullable } from "@babylonjs/core/types";
-import type { Observer } from "@babylonjs/core/Misc/observable";
-import { Tools } from "@babylonjs/core/Misc/tools.js";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Tools } from "core/Misc/tools.js";
 
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
-import { NodeLedger } from "@babylonjs/shared-ui-components/nodeGraphSystem/nodeLedger.js";
+import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger.js";
 import "../../assets/styles/components/nodeList.scss";
 import { DraggableBlockLineComponent } from "../../sharedComponents/draggableBlockLineComponent.js";
 import deleteButton from "../../assets/imgs/delete.svg";
@@ -21,10 +21,7 @@ interface INodeListComponentProps {
     globalState: GlobalState;
 }
 
-export class NodeListComponent extends react.Component<
-    INodeListComponentProps,
-    { filter: string; onlyShowCustomBlocks: boolean }
-> {
+export class NodeListComponent extends react.Component<INodeListComponentProps, { filter: string; onlyShowCustomBlocks: boolean }> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
     private _onOnlyShowCustomBlocksObserver: Nullable<Observer<boolean>>;
 
@@ -84,16 +81,13 @@ export class NodeListComponent extends react.Component<
     override render() {
         // Create node menu
         const blockMenu = [];
-        const allBlocks = this.props.globalState.blockEditorRegistration
-            ? this.props.globalState.blockEditorRegistration.allBlocks
-            : {};
+        const allBlocks = this.props.globalState.blockEditorRegistration ? this.props.globalState.blockEditorRegistration.allBlocks : {};
 
         for (const key in allBlocks) {
             const blockList = allBlocks[key]!.filter(
                 (block: IBlockRegistration) =>
                     (!this.state.onlyShowCustomBlocks || block.isCustom || block.isInput) &&
-                    (!this.state.filter ||
-                        block.blockType.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
+                    (!this.state.filter || block.blockType.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             )
                 .sort((a: IBlockRegistration, b: IBlockRegistration) => a.blockType.localeCompare(b.blockType))
                 .map((block: IBlockRegistration) => {
@@ -110,12 +104,7 @@ export class NodeListComponent extends react.Component<
                             />
                         );
                     }
-                    return (
-                        <DraggableBlockLineComponent
-                            key={getBlockKey(block.blockType, block.namespace)}
-                            block={block}
-                        />
-                    );
+                    return <DraggableBlockLineComponent key={getBlockKey(block.blockType, block.namespace)} block={block} />;
                 });
 
             if (key === CustomBlocksNamespace) {
@@ -137,11 +126,7 @@ export class NodeListComponent extends react.Component<
 
             if (blockList.length) {
                 blockMenu.push(
-                    <LineContainerComponent
-                        key={key + " blocks"}
-                        title={key.replace("__", ": ").replace("_", " ")}
-                        closed={false}
-                    >
+                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
                         {blockList}
                     </LineContainerComponent>
                 );

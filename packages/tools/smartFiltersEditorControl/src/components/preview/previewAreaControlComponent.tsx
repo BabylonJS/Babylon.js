@@ -2,9 +2,9 @@ import * as react from "react";
 import { DefaultPreviewAspectRatio, type GlobalState } from "../../globalState.js";
 
 import popUpIcon from "../../assets/imgs/popOut.svg";
-import type { Nullable } from "@babylonjs/core/types";
-import type { Observer } from "@babylonjs/core/Misc/observable";
-import { OptionsLine } from "@babylonjs/shared-ui-components/lines/optionsLineComponent.js";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 
 interface IPreviewAreaControlComponent {
@@ -39,23 +39,18 @@ export class PreviewAreaControlComponent extends react.Component<IPreviewAreaCon
             this.forceUpdate();
         });
 
-        this._onPreviewAspectRatioChangedObserver = this.props.globalState.previewAspectRatio.onChangedObservable.add(
-            () => {
-                this.forceUpdate();
-            }
-        );
-        this._onPreviewFillContainerChangedObserver =
-            this.props.globalState.previewFillContainer.onChangedObservable.add(() => {
-                this.forceUpdate();
-            });
+        this._onPreviewAspectRatioChangedObserver = this.props.globalState.previewAspectRatio.onChangedObservable.add(() => {
+            this.forceUpdate();
+        });
+        this._onPreviewFillContainerChangedObserver = this.props.globalState.previewFillContainer.onChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this.props.globalState.previewAspectRatio.onChangedObservable.remove(this._onPreviewAspectRatioChangedObserver);
-        this.props.globalState.previewFillContainer.onChangedObservable.remove(
-            this._onPreviewFillContainerChangedObserver
-        );
+        this.props.globalState.previewFillContainer.onChangedObservable.remove(this._onPreviewFillContainerChangedObserver);
     }
 
     onPopUp() {
@@ -76,13 +71,7 @@ export class PreviewAreaControlComponent extends react.Component<IPreviewAreaCon
                     }}
                 />
                 {(!this.props.allowPreviewFillMode || !this.props.globalState.previewFillContainer.value) && (
-                    <OptionsLine
-                        label=""
-                        options={aspectRatioOptions}
-                        target={this.props.globalState.previewAspectRatio}
-                        propertyName="value"
-                        valuesAreStrings={true}
-                    />
+                    <OptionsLine label="" options={aspectRatioOptions} target={this.props.globalState.previewAspectRatio} propertyName="value" valuesAreStrings={true} />
                 )}
                 {this.props.allowPreviewFillMode && (
                     <CheckBoxLineComponent
@@ -93,12 +82,7 @@ export class PreviewAreaControlComponent extends react.Component<IPreviewAreaCon
                         }}
                     />
                 )}
-                <div
-                    title="Open preview in new window"
-                    id="preview-new-window"
-                    onClick={() => this.onPopUp()}
-                    className="button"
-                >
+                <div title="Open preview in new window" id="preview-new-window" onClick={() => this.onPopUp()} className="button">
                     <img src={popUpIcon} alt="" />
                 </div>
             </div>

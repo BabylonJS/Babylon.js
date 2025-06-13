@@ -1,6 +1,6 @@
 import * as react from "react";
-import type { PropertyChangedEvent } from "@babylonjs/shared-ui-components/propertyChangedEvent";
-import type { Observable } from "@babylonjs/core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
 
 export interface ICheckBoxLineComponentProps {
     label: string;
@@ -13,10 +13,7 @@ export interface ICheckBoxLineComponentProps {
     disabled?: boolean;
 }
 
-export class CheckBoxLineComponent extends react.Component<
-    ICheckBoxLineComponentProps,
-    { isSelected: boolean; isDisabled?: boolean }
-> {
+export class CheckBoxLineComponent extends react.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean }> {
     private static _UniqueIdSeed = 0;
     private _uniqueId: number;
     private _localChange = false;
@@ -37,10 +34,7 @@ export class CheckBoxLineComponent extends react.Component<
         }
     }
 
-    override shouldComponentUpdate(
-        nextProps: ICheckBoxLineComponentProps,
-        nextState: { isSelected: boolean; isDisabled: boolean }
-    ) {
+    override shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean }) {
         let currentState: boolean;
 
         if (nextProps.isSelected) {
@@ -101,10 +95,7 @@ export class CheckBoxLineComponent extends react.Component<
                         onChange={() => this.onChange()}
                         disabled={!!this.props.disabled}
                     />
-                    <label
-                        htmlFor={"checkbox" + this._uniqueId}
-                        className={`lbl${this.props.disabled ? " disabled" : ""}`}
-                    ></label>
+                    <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${this.props.disabled ? " disabled" : ""}`}></label>
                 </div>
             </div>
         );

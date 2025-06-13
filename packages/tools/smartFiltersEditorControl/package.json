@@ -26,8 +26,12 @@
         "@babylonjs/shared-ui-components": "^8.0.1",
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
         "@fortawesome/free-solid-svg-icons": "^6.1.0",
-        "@fortawesome/react-fontawesome": "^0.1.18",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2"
+        "@fortawesome/react-fontawesome": "^0.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "core": "npm:@babylonjs/core@8.0.1",
+        "@dev/smart-filters": "^1.0.0"
     }
 }

@@ -1,8 +1,8 @@
-import type { LockObject } from "@babylonjs/shared-ui-components/tabs/propertyGrids/lockObject";
-import { InputArrowsComponent } from "@babylonjs/shared-ui-components/lines/inputArrowsComponent.js";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { InputArrowsComponent } from "shared-ui-components/lines/inputArrowsComponent.js";
 import * as react from "react";
-import type { Observable } from "@babylonjs/core/Misc/observable";
-import type { PropertyChangedEvent } from "@babylonjs/shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 export const conflictingValuesPlaceholder = "—";
 
@@ -92,10 +92,7 @@ function formatValue(value: string, props: ILazyTextInputLineComponentProps) {
     return value;
 }
 
-export class LazyTextInputLineComponent extends react.Component<
-    ILazyTextInputLineComponentProps,
-    ILazyTextInputLineComponentState
-> {
+export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLineComponentProps, ILazyTextInputLineComponentState> {
     _localChange = false;
     _lastInvalidSubmission: string | undefined;
 
@@ -117,10 +114,7 @@ export class LazyTextInputLineComponent extends react.Component<
         return props.formatValue?.(value) ?? value ?? emptyValue;
     };
 
-    override shouldComponentUpdate(
-        nextProps: ILazyTextInputLineComponentProps,
-        nextState: { input: string; originalInput: string; dragging: boolean }
-    ) {
+    override shouldComponentUpdate(nextProps: ILazyTextInputLineComponentProps, nextState: { input: string; originalInput: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -260,28 +254,13 @@ export class LazyTextInputLineComponent extends react.Component<
 
     override render() {
         const value = this.state.input === conflictingValuesPlaceholder ? "" : this.state.input;
-        const placeholder =
-            this.state.input === conflictingValuesPlaceholder
-                ? conflictingValuesPlaceholder
-                : this.props.placeholder || "";
+        const placeholder = this.state.input === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
-        const className = this.props.multilines
-            ? "textInputArea"
-            : this.props.unit !== undefined
-              ? "textInputLine withUnits"
-              : "textInputLine";
+        const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
         const style = { background: this.state.inputValid ? undefined : "lightpink" };
         return (
             <div className={className}>
-                {this.props.icon && (
-                    <img
-                        src={this.props.icon}
-                        title={this.props.iconLabel}
-                        alt={this.props.iconLabel}
-                        color="black"
-                        className="icon"
-                    />
-                )}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 {this.props.label !== undefined && (
                     <div className="label" title={this.props.label}>
                         {this.props.label}
@@ -317,9 +296,7 @@ export class LazyTextInputLineComponent extends react.Component<
                             step={step}
                             disabled={this.props.disabled}
                         />
-                        {this.props.arrows && (
-                            <InputArrowsComponent incrementValue={this.incrementValue} setDragging={this.setDragging} />
-                        )}
+                        {this.props.arrows && <InputArrowsComponent incrementValue={this.incrementValue} setDragging={this.setDragging} />}
                     </div>
                 )}
                 {this.props.unit}

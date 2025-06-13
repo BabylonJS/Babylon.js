@@ -1,7 +1,7 @@
 import { Component } from "react";
-import { FloatLineComponent } from "@babylonjs/shared-ui-components/lines/floatLineComponent.js";
-import { SliderLineComponent } from "@babylonjs/shared-ui-components/lines/sliderLineComponent.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent.js";
+import type { Nullable } from "core/types.js";
 
 export interface FloatSliderComponentProps {
     lockObject: any;
@@ -34,18 +34,11 @@ export class FloatSliderComponent extends Component<FloatSliderComponentProps> {
     }
 
     override render() {
-        const canUseSlider =
-            !this.props.forceSliderOff &&
-            this.props.min !== null &&
-            this.props.max !== null &&
-            this.props.min < this.props.max;
+        const canUseSlider = !this.props.forceSliderOff && this.props.min !== null && this.props.max !== null && this.props.min < this.props.max;
 
         // Ensure the value is within the min/max range
         if (canUseSlider) {
-            this.props.target[this.props.propertyName] = Math.max(
-                this.props.min,
-                Math.min(this.props.max, this.props.target[this.props.propertyName])
-            );
+            this.props.target[this.props.propertyName] = Math.max(this.props.min, Math.min(this.props.max, this.props.target[this.props.propertyName]));
         }
 
         return (

@@ -1,8 +1,8 @@
 import * as react from "react";
-import { Color4LineComponent } from "@babylonjs/shared-ui-components/lines/color4LineComponent.js";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent.js";
 import type { ConnectionPointType, InputBlock } from "@babylonjs/smart-filters";
-import { Color4 } from "@babylonjs/core/Maths/math.color.js";
-import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager";
+import { Color4 } from "core/Maths/math.color.js";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 interface IColor4PropertyTabComponentProps {
     stateManager: StateManager;

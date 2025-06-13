@@ -1,4 +1,4 @@
-import { DataStorage } from "@babylonjs/core/Misc/dataStorage.js";
+import { DataStorage } from "core/Misc/dataStorage.js";
 import * as react from "react";
 import downArrow from "../assets/imgs/downArrow.svg";
 

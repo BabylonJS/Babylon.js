@@ -4,7 +4,7 @@ import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
 
 import "../../assets/styles/components/propertyTab.scss";
-import type { LockObject } from "@babylonjs/shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponent.js";
 import { ConnectionPointType } from "@babylonjs/smart-filters";
 import type { AnyInputBlock } from "@babylonjs/smart-filters";
@@ -30,22 +30,10 @@ export class InputsPropertyTabComponent extends react.Component<IInputsPropertyT
     renderInputBlock(block: AnyInputBlock) {
         switch (block.type) {
             case ConnectionPointType.Color3: {
-                return (
-                    <Color3PropertyTabComponent
-                        key={block.uniqueId}
-                        stateManager={this.props.globalState.stateManager}
-                        inputBlock={block}
-                    ></Color3PropertyTabComponent>
-                );
+                return <Color3PropertyTabComponent key={block.uniqueId} stateManager={this.props.globalState.stateManager} inputBlock={block}></Color3PropertyTabComponent>;
             }
             case ConnectionPointType.Color4: {
-                return (
-                    <Color4PropertyTabComponent
-                        key={block.uniqueId}
-                        stateManager={this.props.globalState.stateManager}
-                        inputBlock={block}
-                    ></Color4PropertyTabComponent>
-                );
+                return <Color4PropertyTabComponent key={block.uniqueId} stateManager={this.props.globalState.stateManager} inputBlock={block}></Color4PropertyTabComponent>;
             }
             case ConnectionPointType.Float: {
                 return (

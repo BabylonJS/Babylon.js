@@ -1,20 +1,15 @@
 import * as react from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
-import { TextInputLineComponent } from "@babylonjs/shared-ui-components/lines/textInputLineComponent.js";
-import { TextLineComponent } from "@babylonjs/shared-ui-components/lines/textLineComponent.js";
-import type { IPropertyComponentProps } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import {
-    type BaseBlock,
-    PropertyTypeForEdition,
-    type IEditablePropertyOption,
-    type IPropertyDescriptionForEdition,
-} from "@babylonjs/smart-filters";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent.js";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent.js";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { type BaseBlock, PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "@babylonjs/smart-filters";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponent.js";
-import { FloatLineComponent } from "@babylonjs/shared-ui-components/lines/floatLineComponent.js";
-import { Vector2LineComponent } from "@babylonjs/shared-ui-components/lines/vector2LineComponent.js";
-import { OptionsLine } from "@babylonjs/shared-ui-components/lines/optionsLineComponent.js";
-import { Observable } from "@babylonjs/core/Misc/observable.js";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent.js";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
+import { Observable } from "core/Misc/observable.js";
 import { DynamicOptionsLine } from "../../sharedComponents/dynamicOptionsLineComponent.js";
 import { OutputBlockName } from "../../configuration/constants.js";
 

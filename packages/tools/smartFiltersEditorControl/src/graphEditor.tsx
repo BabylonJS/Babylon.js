@@ -6,34 +6,34 @@ import "./assets/styles/main.scss";
 
 import { Portal } from "./portal.js";
 
-import { MessageDialog } from "@babylonjs/shared-ui-components/components/MessageDialog.js";
-import { GraphCanvasComponent } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphCanvas.js";
+import { MessageDialog } from "shared-ui-components/components/MessageDialog.js";
+import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas.js";
 import { LogComponent, LogEntry } from "./components/log/logComponent.js";
-import { TypeLedger } from "@babylonjs/shared-ui-components/nodeGraphSystem/typeLedger.js";
+import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
 import { BlockTools } from "./blockTools.js";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent.js";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent.js";
 import { createDefaultInput } from "./graphSystem/registerDefaultInput.js";
-import type { INodeData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
-import type { Nullable } from "@babylonjs/core/types";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { Nullable } from "core/types";
 import type { BaseBlock, SmartFilter } from "@babylonjs/smart-filters";
 import { inputsNamespace } from "@babylonjs/smart-filters-blocks";
 import { setEditorData } from "./helpers/serializationTools.js";
-import { SplitContainer } from "@babylonjs/shared-ui-components/split/splitContainer.js";
-import { Splitter } from "@babylonjs/shared-ui-components/split/splitter.js";
-import { ControlledSize, SplitDirection } from "@babylonjs/shared-ui-components/split/splitContext.js";
+import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
+import { Splitter } from "shared-ui-components/split/splitter.js";
+import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext.js";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent.js";
 import { initializePreview } from "./initializePreview.js";
 import { PreviewAreaControlComponent } from "./components/preview/previewAreaControlComponent.js";
-import { CreatePopup } from "@babylonjs/shared-ui-components/popupHelper.js";
-import type { IInspectorOptions } from "@babylonjs/core/Debug/debugLayer.js";
+import { CreatePopup } from "shared-ui-components/popupHelper.js";
+import type { IInspectorOptions } from "core/Debug/debugLayer.js";
 import { decodeBlockKey } from "./helpers/blockKeyConverters.js";
 import { OutputBlockName } from "./configuration/constants.js";
 import type { BlockNodeData } from "./graphSystem/blockNodeData";
-import { DataStorage } from "@babylonjs/core/Misc/dataStorage.js";
+import { DataStorage } from "core/Misc/dataStorage.js";
 import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
-import { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import { ThinEngine } from "core/Engines/thinEngine.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -88,11 +88,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         const { blockType } = decodeBlockKey(blockTypeAndNamespace);
         const nodeType = BlockTools.GetConnectionNodeTypeFromString(blockType);
 
-        const newInputBlock = createDefaultInput(
-            this.props.globalState.smartFilter,
-            nodeType,
-            this.props.globalState.engine
-        );
+        const newInputBlock = createDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine);
 
         return newInputBlock;
     }
@@ -111,9 +107,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this._diagramContainer = this._diagramContainerRef.current!;
-            const canvas = this.props.globalState.hostDocument.getElementById(
-                "sfe-preview-canvas"
-            ) as HTMLCanvasElement;
+            const canvas = this.props.globalState.hostDocument.getElementById("sfe-preview-canvas") as HTMLCanvasElement;
             if (canvas && this.props.globalState.onNewEngine) {
                 const engine = initializePreview(canvas, this.props.globalState.forceWebGL1);
                 const versionToLog = `Babylon.js v${ThinEngine.Version} - WebGL${engine.webGLVersion}`;
@@ -125,8 +119,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         }
 
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
-            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.display =
-                "grid";
+            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.display = "grid";
         }
 
         this.props.globalState.onPopupClosedObservable.addOnce(() => {
@@ -138,9 +131,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             this.props.globalState.onResetRequiredObservable.notifyObservers(false);
         });
 
-        this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(
-            DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue)
-        );
+        this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue));
         this.props.globalState.previewAspectRatio.onChangedObservable.add((newValue: string) => {
             localStorage.setItem(PreviewAspectRatioKey, newValue);
         });
@@ -182,12 +173,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         this._diagramContainerRef = react.createRef();
 
         this.props.globalState.stateManager.onNewBlockRequiredObservable.add(
-            (eventData: {
-                type: string;
-                targetX: number;
-                targetY: number;
-                needRepositioning?: boolean | undefined;
-            }) => {
+            (eventData: { type: string; targetX: number; targetY: number; needRepositioning?: boolean | undefined }) => {
                 let targetX = eventData.targetX;
                 let targetY = eventData.targetY;
 
@@ -237,9 +223,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
             // If one of the selected nodes is an OutputBlock, and the keypress is delete, remove the OutputBlock from the selected list
             if (evt.keyCode === 46 || evt.keyCode === 8) {
-                const indexOfOutputBlock = this._graphCanvas.selectedNodes.findIndex(
-                    (node) => (node.content as BlockNodeData).data.isOutput
-                );
+                const indexOfOutputBlock = this._graphCanvas.selectedNodes.findIndex((node) => (node.content as BlockNodeData).data.isOutput);
                 if (indexOfOutputBlock !== -1) {
                     this._graphCanvas.selectedNodes.splice(indexOfOutputBlock, 1);
 
@@ -363,12 +347,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // First try the block registrations provided to the editor
         if (this.props.globalState.engine && this.props.globalState.blockEditorRegistration) {
-            block = await this.props.globalState.blockEditorRegistration.getBlock(
-                blockType,
-                namespace,
-                this.props.globalState.smartFilter,
-                this.props.globalState.engine
-            );
+            block = await this.props.globalState.blockEditorRegistration.getBlock(blockType, namespace, this.props.globalState.smartFilter, this.props.globalState.engine);
         }
 
         // If we haven't created the block yet, see if it's a standard input block
@@ -378,23 +357,16 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // If we don't have a block yet, display an error
         if (!block) {
-            this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(
-                `Could not create a block of type ${blockTypeAndNamespace}`
-            );
+            this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`Could not create a block of type ${blockTypeAndNamespace}`);
             return;
         }
 
         // Enforce uniqueness if applicable
-        if (
-            this.props.globalState.blockEditorRegistration &&
-            this.props.globalState.blockEditorRegistration.getIsUniqueBlock(block)
-        ) {
+        if (this.props.globalState.blockEditorRegistration && this.props.globalState.blockEditorRegistration.getIsUniqueBlock(block)) {
             const className = block.getClassName();
             for (const other of this._graphCanvas.getCachedData()) {
                 if (other !== block && other.getClassName() === className) {
-                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(
-                        `You can only have one ${className} per graph`
-                    );
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
                     return;
                 }
             }
@@ -420,11 +392,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     dropNewBlock(event: react.DragEvent<HTMLDivElement>) {
         const data = event.dataTransfer.getData("babylonjs-smartfilter-node") as string;
 
-        this.emitNewBlock(
-            data,
-            event.clientX - this._diagramContainer.offsetLeft,
-            event.clientY - this._diagramContainer.offsetTop
-        );
+        this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
     }
 
     handlePopUp = () => {
@@ -445,11 +413,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         );
     };
 
-    initiatePreviewArea = (
-        canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById(
-            "sfe-preview-canvas"
-        ) as HTMLCanvasElement
-    ) => {
+    initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById("sfe-preview-canvas") as HTMLCanvasElement) => {
         if (canvas && this.props.globalState.onNewEngine) {
             const engine = initializePreview(canvas, this.props.globalState.forceWebGL1);
             this.props.globalState.engine = engine;
@@ -495,9 +459,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                     this.createPreviewHost(options, parentControl);
                     if (parentControl) {
                         this.fixPopUpStyles(parentControl.ownerDocument!);
-                        this.initiatePreviewArea(
-                            parentControl.ownerDocument!.getElementById("sfe-preview-canvas") as HTMLCanvasElement
-                        );
+                        this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("sfe-preview-canvas") as HTMLCanvasElement);
                     }
                 }
             },
@@ -589,13 +551,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
 
-                    <Splitter
-                        size={8}
-                        minSize={180}
-                        initialSize={200}
-                        maxSize={350}
-                        controlledSide={ControlledSize.First}
-                    />
+                    <Splitter size={8} minSize={180} initialSize={200} maxSize={350} controlledSide={ControlledSize.First} />
 
                     {/* The node graph diagram */}
                     <SplitContainer
@@ -616,39 +572,18 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                                 return this.appendBlock(nodeData.data as BaseBlock);
                             }}
                         />
-                        <Splitter
-                            size={8}
-                            minSize={40}
-                            initialSize={120}
-                            maxSize={500}
-                            controlledSide={ControlledSize.Second}
-                        />
+                        <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
                         <LogComponent globalState={this.props.globalState} />
                     </SplitContainer>
 
-                    <Splitter
-                        size={8}
-                        minSize={250}
-                        initialSize={300}
-                        maxSize={500}
-                        controlledSide={ControlledSize.Second}
-                    />
+                    <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
 
                     {/* Property tab */}
                     <SplitContainer className="right-panel" direction={SplitDirection.Vertical}>
-                        <PropertyTabComponent
-                            lockObject={this.props.globalState.lockObject}
-                            globalState={this.props.globalState}
-                        />
+                        <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
                         {this.props.globalState.onNewEngine && (
                             <>
-                                <Splitter
-                                    size={8}
-                                    minSize={200}
-                                    initialSize={300}
-                                    maxSize={800}
-                                    controlledSide={ControlledSize.Second}
-                                />
+                                <Splitter size={8} minSize={200} initialSize={300} maxSize={800} controlledSide={ControlledSize.Second} />
                                 <div className="nme-preview-part">
                                     {!this.state.showPreviewPopUp ? (
                                         <PreviewAreaControlComponent
@@ -657,22 +592,13 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                                             allowPreviewFillMode={false}
                                         />
                                     ) : null}
-                                    {!this.state.showPreviewPopUp ? (
-                                        <PreviewAreaComponent
-                                            globalState={this.props.globalState}
-                                            allowPreviewFillMode={false}
-                                        />
-                                    ) : null}
+                                    {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} allowPreviewFillMode={false} /> : null}
                                 </div>
                             </>
                         )}
                     </SplitContainer>
                 </SplitContainer>
-                <MessageDialog
-                    message={this.state.message}
-                    isError={this.state.isError}
-                    onClose={() => this.setState({ message: "" })}
-                />
+                <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Smart Filter Editor only runs on desktops</div>
             </Portal>
         );

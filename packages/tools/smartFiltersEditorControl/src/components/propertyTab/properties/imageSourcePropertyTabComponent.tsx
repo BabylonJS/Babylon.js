@@ -1,18 +1,18 @@
 import * as react from "react";
-import { FileButtonLine } from "@babylonjs/shared-ui-components/lines/fileButtonLineComponent.js";
-import { NumericInput } from "@babylonjs/shared-ui-components/lines/numericInputComponent.js";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent.js";
+import { NumericInput } from "shared-ui-components/lines/numericInputComponent.js";
 import { type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
-import { Tools } from "@babylonjs/core/Misc/tools.js";
+import { Tools } from "core/Misc/tools.js";
 import type { GlobalState, TexturePreset } from "../../../globalState.js";
-import { OptionsLine } from "@babylonjs/shared-ui-components/lines/optionsLineComponent.js";
-import type { IInspectableOptions } from "@babylonjs/core/Misc/iInspectable.js";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
+import type { IInspectableOptions } from "core/Misc/iInspectable.js";
 import { CheckBoxLineComponent } from "../../../sharedComponents/checkBoxLineComponent.js";
 
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { Nullable } from "core/types.js";
 import { getTextureInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
 import { LazyTextInputLineComponent } from "../../../sharedComponents/lazyTextInputLineComponent.js";
 import { debounce } from "../../../helpers/debounce.js";
-import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager.js";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 
 export interface ImageSourcePropertyTabComponentProps {
     stateManager: StateManager;
@@ -78,18 +78,14 @@ export class ImageSourcePropertyTabComponent extends react.Component<ImageSource
                         if (editorData.url?.startsWith("data:")) {
                             return CustomImageOption;
                         }
-                        const url =
-                            editorData.url || this.props.inputBlock.runtimeValue.value?.getInternalTexture()?.url;
+                        const url = editorData.url || this.props.inputBlock.runtimeValue.value?.getInternalTexture()?.url;
                         if (!url) {
                             return CustomImageOption;
                         }
                         const texturePresetIndex = this._imageOptions.findIndex(
-                            (c: IInspectableOptions) =>
-                                (this._texturePresets[c.value as unknown as number]?.url || "") === url
+                            (c: IInspectableOptions) => (this._texturePresets[c.value as unknown as number]?.url || "") === url
                         );
-                        return texturePresetIndex !== -1
-                            ? this._imageOptions[texturePresetIndex]!.value
-                            : CustomImageOption;
+                        return texturePresetIndex !== -1 ? this._imageOptions[texturePresetIndex]!.value : CustomImageOption;
                     }}
                     onSelect={(newSelectionValue: string | number) => {
                         if (newSelectionValue === CustomImageOption || typeof newSelectionValue === "string") {
@@ -165,12 +161,7 @@ export class ImageSourcePropertyTabComponent extends react.Component<ImageSource
                         }
                     }}
                 />
-                <CheckBoxLineComponent
-                    label="FlipY"
-                    target={editorData}
-                    propertyName="flipY"
-                    onValueChanged={() => this._triggerAssetUpdate(true)}
-                />
+                <CheckBoxLineComponent label="FlipY" target={editorData} propertyName="flipY" onValueChanged={() => this._triggerAssetUpdate(true)} />
                 <NumericInput
                     lockObject={(this.props.stateManager.data as GlobalState).lockObject}
                     label="AFL"
