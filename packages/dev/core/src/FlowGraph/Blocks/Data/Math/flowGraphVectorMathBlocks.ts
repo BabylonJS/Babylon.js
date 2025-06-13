@@ -22,7 +22,7 @@ import { _GetClassNameOf } from "core/FlowGraph/utils";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../Maths/math.vector.functions";
-import { Nullable } from "../../../../types";
+import type { Nullable } from "../../../../types";
 
 const AxisCacheName = "cachedOperationAxis";
 const AngleCacheName = "cachedOperationAngle";
