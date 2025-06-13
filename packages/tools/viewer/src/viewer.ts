@@ -1989,6 +1989,7 @@ export class Viewer implements IDisposable {
             normalShadow.light.dispose();
             normalShadow.ground.dispose(true, true);
             this._scene.removeMesh(normalShadow.ground);
+            this._cdfGenerator?.dispose();
         }
 
         if (highShadow) {
