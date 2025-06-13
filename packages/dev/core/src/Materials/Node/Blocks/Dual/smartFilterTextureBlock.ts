@@ -16,6 +16,8 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
  * to represent arbitrary 2D textures to compose, and work similarly.
  */
 export class SmartFilterTextureBlock extends CurrentScreenBlock {
+    private _firstInit: boolean = true;
+
     /**
      * A boolean indicating whether this block should be the main input for the SFE pipeline.
      * If true, it can be used in SFE for auto-disabling.
@@ -44,7 +46,10 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
-        this._samplerName = state._getFreeVariableName(this.name);
+        if (this._firstInit) {
+            this._samplerName = state._getFreeVariableName(this.name);
+            this._firstInit = false;
+        }
     }
 
     protected override _getMainUvName(state: NodeMaterialBuildState): string {
@@ -79,6 +84,10 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
             }
             uvInput.output.connectTo(this.uv);
         }
+    }
+
+    public override _postBuildBlock(): void {
+        this._firstInit = true;
     }
 
     public override serialize(): any {
