@@ -15,10 +15,7 @@ import {
 } from "@babylonjs/smart-filters-editor-control";
 import { SmartFilterRenderer } from "./smartFilterRenderer.js";
 import { CustomBlockManager } from "./customBlockManager.js";
-import {
-    createBlockRegistration,
-    generateCustomBlockRegistrations,
-} from "./blockRegistration/generateCustomBlockEditorRegistrations.js";
+import { createBlockRegistration, generateCustomBlockRegistrations } from "./blockRegistration/generateCustomBlockEditorRegistrations.js";
 import { blockFactory } from "./blockRegistration/blockFactory.js";
 import { loadFromUrl, loadStartingSmartFilter } from "./smartFilterLoadSave/loadStartingSmartFilter.js";
 import { saveToSnippetServer } from "./smartFilterLoadSave/saveToSnipperServer.js";
@@ -46,9 +43,7 @@ async function main(): Promise<void> {
     let currentSmartFilter: Nullable<SmartFilter> = null;
     let renderer: Nullable<SmartFilterRenderer> = null;
     const onSmartFilterLoadedObservable = new Observable<SmartFilter>();
-    const optimizerEnabled = new ObservableProperty<boolean>(
-        localStorage.getItem(LocalStorageOptimizeName) === "true" || false
-    );
+    const optimizerEnabled = new ObservableProperty<boolean>(localStorage.getItem(LocalStorageOptimizeName) === "true" || false);
     const onSaveEditorDataRequiredObservable = new Observable<void>();
     let afterEngineResizerObserver: Nullable<Observer<ThinEngine>> = null;
     const onLogRequiredObservable = new Observable<LogEntry>();
@@ -65,20 +60,8 @@ async function main(): Promise<void> {
 
     // Create the Smart Filter deserializer
     const smartFilterDeserializer = new SmartFilterDeserializer(
-        (
-            smartFilter: SmartFilter,
-            engine: ThinEngine,
-            serializedBlock: ISerializedBlockV1,
-            smartFilterDeserializer: SmartFilterDeserializer
-        ) => {
-            return blockFactory(
-                smartFilter,
-                engine,
-                serializedBlock,
-                customBlockManager,
-                smartFilterDeserializer,
-                builtInBlockRegistrations
-            );
+        (smartFilter: SmartFilter, engine: ThinEngine, serializedBlock: ISerializedBlockV1, smartFilterDeserializer: SmartFilterDeserializer) => {
+            return blockFactory(smartFilter, engine, serializedBlock, customBlockManager, smartFilterDeserializer, builtInBlockRegistrations);
         },
         inputBlockDeserializer
     );
@@ -86,24 +69,11 @@ async function main(): Promise<void> {
     // Create the custom block manager
     const customBlockManager = new CustomBlockManager();
     const customBlockDefinitions = customBlockManager.getCustomBlockDefinitions();
-    const customBlockRegistrations = generateCustomBlockRegistrations(
-        customBlockManager,
-        smartFilterDeserializer,
-        customBlockDefinitions
-    );
+    const customBlockRegistrations = generateCustomBlockRegistrations(customBlockManager, smartFilterDeserializer, customBlockDefinitions);
 
     // Create the block editor registration
-    const allBlockRegistrations: IBlockRegistration[] = [
-        ...customBlockRegistrations,
-        ...editorBlockRegistrations,
-        ...builtInBlockRegistrations,
-    ];
-    const blockEditorRegistration = getBlockEditorRegistration(
-        smartFilterDeserializer,
-        allBlockRegistrations,
-        true,
-        onLogRequiredObservable
-    );
+    const allBlockRegistrations: IBlockRegistration[] = [...customBlockRegistrations, ...editorBlockRegistrations, ...builtInBlockRegistrations];
+    const blockEditorRegistration = getBlockEditorRegistration(smartFilterDeserializer, allBlockRegistrations, true, onLogRequiredObservable);
 
     /**
      * Called when the editor has created a canvas and its associated engine
@@ -128,11 +98,7 @@ async function main(): Promise<void> {
         let justLoadedSmartFilter = false;
         if (!currentSmartFilter) {
             try {
-                currentSmartFilter = await loadStartingSmartFilter(
-                    smartFilterDeserializer,
-                    newEngine,
-                    onLogRequiredObservable
-                );
+                currentSmartFilter = await loadStartingSmartFilter(smartFilterDeserializer, newEngine, onLogRequiredObservable);
                 justLoadedSmartFilter = true;
             } catch (err) {
                 onLogRequiredObservable.notifyObservers(new LogEntry(`Could not load Smart Filter:\n${err}`, true));
@@ -158,16 +124,12 @@ async function main(): Promise<void> {
                     stats.push(`Optimizer: ${Math.floor(renderResult.optimizationTimeMs).toLocaleString()}ms`);
                 }
                 if (renderResult.runtimeCreationTimeMs !== null) {
-                    stats.push(
-                        `Runtime Creation: ${Math.floor(renderResult.runtimeCreationTimeMs).toLocaleString()}ms`
-                    );
+                    stats.push(`Runtime Creation: ${Math.floor(renderResult.runtimeCreationTimeMs).toLocaleString()}ms`);
                 }
                 if (stats.length > 0) {
                     statsString = ` [${stats.join(", ")}]`;
                 }
-                onLogRequiredObservable.notifyObservers(
-                    new LogEntry("Smart Filter built successfully" + statsString, false)
-                );
+                onLogRequiredObservable.notifyObservers(new LogEntry("Smart Filter built successfully" + statsString, false));
             }
         }
     };
@@ -179,9 +141,7 @@ async function main(): Promise<void> {
                 await startRendering();
                 onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
             } else {
-                onLogRequiredObservable.notifyObservers(
-                    new LogEntry("Could not load Smart Filter with that unique URL", true)
-                );
+                onLogRequiredObservable.notifyObservers(new LogEntry("Could not load Smart Filter with that unique URL", true));
             }
         }
     });
@@ -215,13 +175,9 @@ async function main(): Promise<void> {
             if (currentSmartFilter) {
                 try {
                     copySmartFilter(currentSmartFilter);
-                    onLogRequiredObservable.notifyObservers(
-                        new LogEntry("Smart Filter JSON copied to clipboard", false)
-                    );
+                    onLogRequiredObservable.notifyObservers(new LogEntry("Smart Filter JSON copied to clipboard", false));
                 } catch (err: unknown) {
-                    onLogRequiredObservable.notifyObservers(
-                        new LogEntry(`Could not copy Smart Filter to clipboard:\n${err}`, true)
-                    );
+                    onLogRequiredObservable.notifyObservers(new LogEntry(`Could not copy Smart Filter to clipboard:\n${err}`, true));
                 }
             }
             return null;
@@ -233,16 +189,12 @@ async function main(): Promise<void> {
                     if (smartFilter) {
                         currentSmartFilter = smartFilter;
                         onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
-                        onLogRequiredObservable.notifyObservers(
-                            new LogEntry("Smart Filter pasted from clipboard", false)
-                        );
+                        onLogRequiredObservable.notifyObservers(new LogEntry("Smart Filter pasted from clipboard", false));
                         startRendering();
                         return currentSmartFilter;
                     }
                 } catch (err: unknown) {
-                    onLogRequiredObservable.notifyObservers(
-                        new LogEntry(`Could not paste Smart Filter from clipboard:\n${err}`, true)
-                    );
+                    onLogRequiredObservable.notifyObservers(new LogEntry(`Could not paste Smart Filter from clipboard:\n${err}`, true));
                 }
             }
             return null;
@@ -253,9 +205,7 @@ async function main(): Promise<void> {
                     await saveToSnippetServer(currentSmartFilter);
                     onLogRequiredObservable.notifyObservers(new LogEntry("Saved Smart Filter to unique URL", false));
                 } catch (err: unknown) {
-                    onLogRequiredObservable.notifyObservers(
-                        new LogEntry(`Could not save to unique URL:\n${err}`, true)
-                    );
+                    onLogRequiredObservable.notifyObservers(new LogEntry(`Could not save to unique URL:\n${err}`, true));
                 }
             }
         },
@@ -270,17 +220,8 @@ async function main(): Promise<void> {
         addCustomBlock: async (serializedData: string) => {
             try {
                 const blockDefinition = customBlockManager.saveBlockDefinition(serializedData);
-                const blockRegistration = createBlockRegistration(
-                    customBlockManager,
-                    blockDefinition,
-                    smartFilterDeserializer
-                );
-                removeCustomBlockFromBlockEditorRegistration(
-                    blockEditorRegistration,
-                    allBlockRegistrations,
-                    blockRegistration.blockType,
-                    blockRegistration.namespace
-                );
+                const blockRegistration = createBlockRegistration(customBlockManager, blockDefinition, smartFilterDeserializer);
+                removeCustomBlockFromBlockEditorRegistration(blockEditorRegistration, allBlockRegistrations, blockRegistration.blockType, blockRegistration.namespace);
                 addCustomBlockToBlockEditorRegistration(blockEditorRegistration, blockRegistration);
                 allBlockRegistrations.push(blockRegistration);
 
@@ -288,10 +229,7 @@ async function main(): Promise<void> {
                 if (engine && currentSmartFilter) {
                     onSaveEditorDataRequiredObservable.notifyObservers();
                     const serializedSmartFilter = await serializeSmartFilter(currentSmartFilter);
-                    currentSmartFilter = await smartFilterDeserializer.deserialize(
-                        engine,
-                        JSON.parse(serializedSmartFilter)
-                    );
+                    currentSmartFilter = await smartFilterDeserializer.deserialize(engine, JSON.parse(serializedSmartFilter));
                     onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
                 }
                 startRendering();
@@ -304,12 +242,7 @@ async function main(): Promise<void> {
         deleteCustomBlock: (blockRegistration: IBlockRegistration) => {
             const { blockType, namespace } = blockRegistration;
             customBlockManager.deleteBlockDefinition(blockType, namespace);
-            removeCustomBlockFromBlockEditorRegistration(
-                blockEditorRegistration,
-                allBlockRegistrations,
-                blockType,
-                namespace
-            );
+            removeCustomBlockFromBlockEditorRegistration(blockEditorRegistration, allBlockRegistrations, blockType, namespace);
         },
         onLogRequiredObservable,
         onSaveEditorDataRequiredObservable,
