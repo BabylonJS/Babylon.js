@@ -86,7 +86,7 @@ export const PropertiesPane: FunctionComponent<{
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, sectionContent, entity: boundEntity } = props;
+    const { sections, sectionContent, entity } = props;
 
     const [version, setVersion] = useState(0);
 
@@ -94,11 +94,11 @@ export const PropertiesPane: FunctionComponent<{
         // When any of this state changes, we should re-render the Accordion so the defaultOpenItems are re-evaluated.
         setVersion((prev) => prev + 1);
 
-        if (!boundEntity) {
+        if (!entity) {
             return [];
         }
 
-        const applicableContent = sectionContent.filter((content) => content.predicate(boundEntity));
+        const applicableContent = sectionContent.filter((content) => content.predicate(entity));
         return sections
             .map((section) => {
                 // Get a flat list of the section content, preserving the key so it can be used when each component for each section is rendered.
@@ -122,7 +122,7 @@ export const PropertiesPane: FunctionComponent<{
                 };
             })
             .filter((section) => section !== null);
-    }, [sections, sectionContent, boundEntity]);
+    }, [sections, sectionContent, entity]);
 
     return (
         <div className={classes.rootDiv}>
@@ -143,7 +143,7 @@ export const PropertiesPane: FunctionComponent<{
                                 <AccordionPanel>
                                     <div className={classes.panelDiv}>
                                         {section.components.map((component) => {
-                                            return <component.component key={component.key} entity={boundEntity} />;
+                                            return <component.component key={component.key} entity={entity} />;
                                         })}
                                     </div>
                                 </AccordionPanel>
@@ -153,7 +153,7 @@ export const PropertiesPane: FunctionComponent<{
                 </Accordion>
             ) : (
                 <div className={classes.placeholderDiv}>
-                    <Body1Strong italic>{boundEntity ? `Can't show properties for the selected entity type (${boundEntity.toString()})` : "No entity selected."}</Body1Strong>
+                    <Body1Strong italic>{entity ? `Can't show properties for the selected entity type (${entity.toString()})` : "No entity selected."}</Body1Strong>
                 </div>
             )}
         </div>
