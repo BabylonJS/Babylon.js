@@ -1,0 +1,128 @@
+{
+    "version": 1,
+    "name": "Serialized Simple Logo",
+    "comments": "A simple smart filter",
+    "editorData": {
+        "locations": [
+            {
+                "blockId": 1,
+                "x": 1000,
+                "y": 260
+            },
+            {
+                "blockId": 13,
+                "x": 0,
+                "y": 20
+            },
+            {
+                "blockId": 14,
+                "x": 380,
+                "y": 420
+            },
+            {
+                "blockId": 6,
+                "x": 380,
+                "y": 160
+            },
+            {
+                "blockId": 15,
+                "x": 380,
+                "y": 280
+            },
+            {
+                "blockId": 16,
+                "x": 720,
+                "y": 260
+            }
+        ],
+        "x": 75,
+        "y": 116.99998474121094,
+        "zoom": 1
+    },
+    "blocks": [
+        {
+            "name": "output",
+            "uniqueId": 1,
+            "className": "OutputBlock",
+            "comments": ""
+        },
+        {
+            "name": "logo",
+            "uniqueId": 13,
+            "className": "InputBlock",
+            "comments": null,
+            "data": {
+                "inputType": 2,
+                "url": "/assets/logo.png",
+                "urlTypeHint": null,
+                "flipY": true,
+                "anisotropicFilteringLevel": null,
+                "forcedExtension": null
+            }
+        },
+        {
+            "name": "intensity",
+            "uniqueId": 14,
+            "className": "InputBlock",
+            "comments": null,
+            "data": {
+                "inputType": 1,
+                "value": 0.7
+            }
+        },
+        {
+            "name": "disabled",
+            "uniqueId": 6,
+            "className": "InputBlock",
+            "comments": null,
+            "data": {
+                "inputType": 5,
+                "value": false
+            }
+        },
+        {
+            "name": "blackAndWhite",
+            "uniqueId": 15,
+            "className": "BlackAndWhiteBlock",
+            "comments": ""
+        },
+        {
+            "name": "pixelate",
+            "uniqueId": 16,
+            "className": "PixelateBlock",
+            "comments": "Makes it blocky!"
+        }
+    ],
+    "connections": [
+        {
+            "inputBlock": 1,
+            "inputConnectionPoint": "input",
+            "outputBlock": 16,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 15,
+            "inputConnectionPoint": "input",
+            "outputBlock": 13,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 16,
+            "inputConnectionPoint": "intensity",
+            "outputBlock": 14,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 16,
+            "inputConnectionPoint": "disabled",
+            "outputBlock": 6,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 16,
+            "inputConnectionPoint": "input",
+            "outputBlock": 15,
+            "outputConnectionPoint": "output"
+        }
+    ]
+}

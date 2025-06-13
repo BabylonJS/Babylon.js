@@ -42,3 +42,7 @@ playwright/.cache/
 # Smart Filters publish their src files - we copy them during the build - ignore them
 packages/public/@babylonjs/smart-filters/src
 packages/public/@babylonjs/smart-filters-blocks/src
+
+# Smart Filters demo files
+packages/tools/smartFiltersDemo/www/scripts/**
+packages/tools/smartFiltersDemo/www/index.html
