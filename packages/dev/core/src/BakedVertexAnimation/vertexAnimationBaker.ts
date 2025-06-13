@@ -7,6 +7,7 @@ import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
 import type { Nullable } from "core/types";
+import { Logger } from "core/Misc";
 
 /**
  * Class to bake vertex animation textures.
@@ -96,11 +97,17 @@ export class VertexAnimationBaker {
      * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
      * @returns The vertex animation texture to be used with BakedVertexAnimationManager.
      */
-    public textureFromBakedVertexData(vertexData: Float32Array): RawTexture {
+    public textureFromBakedVertexData(vertexData: Float32Array | Uint16Array): RawTexture {
         if (!this._skeleton) {
             throw new Error("No skeleton provided.");
         }
         const boneCount = this._skeleton.bones.length;
+
+        if (vertexData instanceof Uint16Array) {
+            if (!this._scene.getEngine().getCaps().textureHalfFloatRender) {
+                Logger.Warn("VertexAnimationBaker: Half-float textures are not supported on this device");
+            }
+        }
 
         const texture = RawTexture.CreateRGBATexture(
             vertexData,
@@ -110,7 +117,7 @@ export class VertexAnimationBaker {
             false,
             false,
             Texture.NEAREST_NEAREST,
-            Constants.TEXTURETYPE_FLOAT
+            vertexData instanceof Float32Array ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT
         );
         texture.name = "VAT" + this._skeleton.name;
         return texture;
