@@ -26,19 +26,7 @@ module.exports = (env) => {
                 "@babylonjs/smart-filters-editor-control": path.resolve("../../tools/smartFiltersEditorControl/dist"),
             },
         },
-        externals: [
-            function ({ _context, request }, callback) {
-                if (/^core\//.test(request)) {
-                    // Externalize to a commonjs module using the request path
-                    return callback(null, "BABYLON");
-                }
-
-                // Continue without externalizing the import
-                callback();
-            },
-            // TODO add externals for production build vs. serve
-            // React, react dom etc'
-        ],
+        externals: [],
         module: {
             rules: webpackTools.getRules({
                 includeCSS: true,
