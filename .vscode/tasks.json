@@ -255,7 +255,7 @@
             "label": "Playground Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve and watch (Dev)",
+            "dependsOn": ["CDN Serve and watch (Dev)", "Watch Inspector v2"],
             "runOptions": {
                 "instanceLimit": 1
             },

@@ -25,9 +25,24 @@ module.exports = (env) => {
                 loaders: path.resolve("../../dev/loaders/dist"),
             },
         },
-        externals: {
-            "@dev/core": "BABYLON",
-        },
+        externals: [
+            function ({ context, request }, callback) {
+                if (/^@dev\/core$/.test(request)) {
+                    return callback(null, "BABYLON");
+                }
+
+                if (context.includes("inspector-v2")) {
+                    if (/^core\//.test(request)) {
+                        return callback(null, "BABYLON");
+                    } else if (/^loaders\//.test(request)) {
+                        return callback(null, "BABYLON");
+                    }
+                }
+
+                // Continue without externalizing the import
+                callback();
+            },
+        ],
         module: {
             rules: webpackTools.getRules({
                 sideEffects: true,
