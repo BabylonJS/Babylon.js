@@ -24,7 +24,7 @@ import { Geometry } from "./geometry";
 import type { IMeshDataOptions } from "./abstractMesh";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import type { BoundingSphere } from "../Culling/boundingSphere";
+import { BoundingSphere } from "../Culling/boundingSphere";
 import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MultiMaterial } from "../Materials/multiMaterial";
@@ -1116,7 +1116,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const bSphere = boundingSphere || this.getBoundingInfo().boundingSphere;
+        let bSphere = boundingSphere;
+        if (!bSphere) {
+            const { min, max } = this.getHierarchyBoundingVectors();
+            bSphere = new BoundingSphere(min, max);
+        }
 
         const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
         let compareValue = distanceToCamera;
@@ -1152,6 +1156,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     }
 
                     level.mesh._preActivate();
+
                     level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                 }
 
@@ -1166,6 +1171,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this.onLODLevelSelection) {
             this.onLODLevelSelection(compareValue, this, this);
         }
+
         return this;
     }
 
