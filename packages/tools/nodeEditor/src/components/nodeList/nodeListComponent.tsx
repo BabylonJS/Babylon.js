@@ -493,7 +493,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 excludeCategories = ["SFE", "PostProcess", "Particle", "Procedural__Texture", "GaussianSplatting"];
                 break;
             case NodeMaterialModes.SFE:
-                excludeCategories = ["Animation", "Mesh", "Particle", "Procedural__Texture", "PBR", "Scene", "GaussianSplatting"];
+                excludeCategories = ["Animation", "Mesh", "Particle", "Procedural__Texture", "PostProcess", "PBR", "Scene", "GaussianSplatting"];
                 excludeNodes = {
                     Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "ClipPlanesBlock", "FragDepthBlock"],
                     Inputs: [
