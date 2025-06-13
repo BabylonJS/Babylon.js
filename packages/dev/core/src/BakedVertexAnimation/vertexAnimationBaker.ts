@@ -7,6 +7,7 @@ import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
 import type { Nullable } from "core/types";
+import { ToHalfFloat } from "core/Misc/textureTools";
 
 /**
  * Class to bake vertex animation textures.
@@ -31,6 +32,52 @@ export class VertexAnimationBaker {
             this._mesh = meshOrSkeleton;
             this._skeleton = meshOrSkeleton.skeleton;
         }
+    }
+
+    /**
+     *
+     * @param ranges Defines the ranges in the animation that will be baked.
+     * @param halfFloat If true, the vertex data will be returned as half-float (Uint16Array), otherwise as full float (Float32Array).
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array or Uint16Array.
+     */
+    public bakeVertexDataSync(ranges: AnimationRange[], halfFloat: boolean): Float32Array | Uint16Array {
+        if (!this._skeleton) {
+            throw new Error("No skeleton provided.");
+        }
+        const bones = this._skeleton.bones.length;
+        const floatsPerFrame = (bones + 1) * 16;
+        const totalFrames = ranges.reduce((sum, r) => sum + (Math.floor(r.to) - Math.floor(r.from) + 1), 0);
+
+        const vertexData = halfFloat ? new Uint16Array(floatsPerFrame * totalFrames) : new Float32Array(floatsPerFrame * totalFrames);
+
+        let offset = 0;
+        const matrices = this._skeleton.getTransformMatrices(this._mesh);
+
+        this._skeleton.returnToRest();
+
+        if (halfFloat) {
+            for (const { from, to } of ranges) {
+                for (let f = Math.floor(from); f <= Math.floor(to); ++f) {
+                    this._scene.beginAnimation(this._skeleton, f, f, false, 1.0);
+                    this._skeleton.computeAbsoluteMatrices(true);
+                    for (let i = 0; i < floatsPerFrame; ++i) {
+                        vertexData[offset + i] = ToHalfFloat(matrices[i]);
+                    }
+                    offset += floatsPerFrame;
+                }
+            }
+        } else {
+            for (const { from, to } of ranges) {
+                for (let f = Math.floor(from); f <= Math.floor(to); ++f) {
+                    this._scene.beginAnimation(this._skeleton, f, f, false, 1.0);
+                    this._skeleton.computeAbsoluteMatrices(true);
+                    vertexData.set(matrices, offset);
+                    offset += floatsPerFrame;
+                }
+            }
+        }
+
+        return vertexData;
     }
 
     /**
