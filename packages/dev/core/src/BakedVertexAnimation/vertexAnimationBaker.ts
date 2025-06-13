@@ -94,7 +94,8 @@ export class VertexAnimationBaker {
     }
     /**
      * Builds a vertex animation texture given the vertexData in an array.
-     * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
+     * @param vertexData The vertex animation data. You can generate it with bakeVertexData(). You can pass in a Float32Array to return a full precision texture, or a Uint16Array to return a half-float texture.
+     * If you pass in a Uint16Array, make sure your device supports half-float textures.
      * @returns The vertex animation texture to be used with BakedVertexAnimationManager.
      */
     public textureFromBakedVertexData(vertexData: Float32Array | Uint16Array): RawTexture {
