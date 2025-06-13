@@ -1,6 +1,5 @@
 import { FragmentOutputBlock } from "./fragmentOutputBlock";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
@@ -45,11 +44,6 @@ export class SmartFilterFragmentOutputBlock extends FragmentOutputBlock {
             state.sharedData.raiseBuildError("WebGPU is not supported in SmartFilters mode.");
         }
 
-        // Tell FragmentOutputBlock ahead of time to store the final color in a temp variable
-        if (!state._customOutputName && state.target === NodeMaterialBlockTargets.Fragment) {
-            state._customOutputName = "outColor";
-        }
-
         // Annotate uniforms of InputBlocks and bindable blocks with their current values
         if (!state.sharedData.formatConfig.getUniformAnnotation) {
             state.sharedData.formatConfig.getUniformAnnotation = (name: string) => {
@@ -87,7 +81,7 @@ export class SmartFilterFragmentOutputBlock extends FragmentOutputBlock {
         return `// { "autoBind": "outputResolution" }\n`;
     }
 
-    protected _getMainUvName(state: NodeMaterialBuildState): string {
+    private _getMainUvName(state: NodeMaterialBuildState): string {
         // Get the ScreenUVBlock's name, which is required for SFE and should be vUV.
         // NOTE: In the future, when we move to vertex shaders, update this to check for the nearest vec2 varying output.
         const screenUv = state.sharedData.nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "postprocess_uv");
@@ -97,29 +91,30 @@ export class SmartFilterFragmentOutputBlock extends FragmentOutputBlock {
         return screenUv.associatedVariableName;
     }
 
+    protected override _getOutputString(): string {
+        return "outColor";
+    }
+
     protected override _buildBlock(state: NodeMaterialBuildState) {
-        if (!state._injectAtTop) {
-            state._injectAtTop = `// { "smartFilterBlockType": "${state.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Exports" }`;
-        }
-
-        if (!state._customEntryHeader) {
-            state._customEntryHeader += `#ifdef ${SfeModeDefine}\n`;
-            state._customEntryHeader += `vec4 nmeMain(vec2 ${this._getMainUvName(state)}) { // main\n`;
-            state._customEntryHeader += `#else\n`;
-            state._customEntryHeader += `void main(void) {\n`;
-            state._customEntryHeader += `#endif\n`;
-            state._customEntryHeader += `vec4 outColor = vec4(0.0);\n`;
-        }
-
-        if (!state._injectAtEnd) {
-            state._injectAtEnd += `\n#ifndef ${SfeModeDefine}\n`;
-            state._injectAtEnd += `gl_FragColor = outColor;\n`;
-            state._injectAtEnd += `#else\n`;
-            state._injectAtEnd += `return outColor;\n`;
-            state._injectAtEnd += `#endif\n`;
-        }
-
         super._buildBlock(state);
+
+        const outputString = this._getOutputString();
+
+        state._injectAtTop = `// { "smartFilterBlockType": "${state.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Exports" }`;
+
+        state._customEntryHeader += `#ifdef ${SfeModeDefine}\n`;
+        state._customEntryHeader += `vec4 nmeMain(vec2 ${this._getMainUvName(state)}) { // main\n`;
+        state._customEntryHeader += `#else\n`;
+        state._customEntryHeader += `void main(void) {\n`;
+        state._customEntryHeader += `#endif\n`;
+        state._customEntryHeader += `vec4 ${outputString} = vec4(0.0);\n`;
+
+        state.compilationString += `\n#ifndef ${SfeModeDefine}\n`;
+        state.compilationString += `gl_FragColor = ${outputString};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `return ${outputString};\n`;
+        state.compilationString += `#endif\n`;
+
         return this;
     }
 }
