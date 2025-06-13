@@ -40,6 +40,7 @@ uniform Material
 	vec3 vEmissiveColor;
 	vec4 vDiffuseColor;
 	vec3 vAmbientColor;
+	vec4 cameraInfo;
 
     #define ADDITIONAL_UBO_DECLARATION
 };

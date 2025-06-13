@@ -6,7 +6,6 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
-import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 /**
  * Block used to load texture data
  */
@@ -18,7 +17,6 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     /**
      * Gets or sets a boolean indicating that this block should serialize its cached data
      */
-    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public serializedCachedData = false;
 
     /**
@@ -107,6 +105,18 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      */
     public cleanData() {
         this._data = null;
+    }
+
+    /**
+     * Load the texture data from a Float32Array
+     * @param data defines the data to load
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     */
+    public loadTextureFromData(data: Float32Array, width: number, height: number) {
+        this._data = data;
+        this._width = width;
+        this._height = height;
     }
 
     /**

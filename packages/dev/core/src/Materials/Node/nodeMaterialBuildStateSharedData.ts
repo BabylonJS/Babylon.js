@@ -5,7 +5,6 @@ import type { Scene } from "../../scene";
 import type { Immutable, Nullable } from "../../types";
 import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
 import { Logger } from "core/Misc/logger";
-import type { Observable } from "core/Misc/observable";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -143,6 +142,7 @@ export class NodeMaterialBuildStateSharedData {
         emitVertex: false,
         emitFragment: false,
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>(),
+        customErrors: new Array<string>(),
     };
 
     /**
@@ -188,11 +188,20 @@ export class NodeMaterialBuildStateSharedData {
     }
 
     /**
+     * Push a new error to the build state, avoiding exceptions that can break the build process
+     * @param message defines the error message to push
+     */
+    public raiseBuildError(message: string) {
+        if (this.checks.customErrors.indexOf(message) !== -1) {
+            this.checks.customErrors.push(message);
+        }
+    }
+
+    /**
      * Emits console errors and exceptions if there is a failing check
-     * @param errorObservable defines an Observable to send the error message
      * @returns true if all checks pass
      */
-    public emitErrors(errorObservable: Nullable<Observable<string>> = null) {
+    public emitErrors() {
         let errorMessage = "";
 
         if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
@@ -206,13 +215,14 @@ export class NodeMaterialBuildStateSharedData {
                 notConnectedInput.ownerBlock.name
             }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\n`;
         }
+        for (const customError of this.checks.customErrors) {
+            errorMessage += customError + "\n";
+        }
 
         if (errorMessage) {
-            if (errorObservable) {
-                errorObservable.notifyObservers(errorMessage);
-            }
-            Logger.Error("Build of NodeMaterial failed:\n" + errorMessage);
-
+            errorMessage = "Node material build failed: \n" + errorMessage;
+            Logger.Error(errorMessage);
+            this.nodeMaterial.onBuildErrorObservable.notifyObservers(errorMessage);
             return false;
         }
 

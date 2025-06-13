@@ -1,5 +1,5 @@
 {
-    "fromTag": "8.10.1",
+    "fromTag": "8.11.0",
     "changelog": {
         "8.11.0": [
             {
@@ -78,6 +78,541 @@
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
+            }
+        ],
+        "8.12.1": [
+            {
+                "pr": "16745",
+                "title": "Restrict inspector inputs to particle system when node based",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/Node/nodeParticleSystemSet.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "npe"
+                ]
+            },
+            {
+                "pr": "16742",
+                "title": "Inspector v2: Switch some Observable to IReadonlyObservable",
+                "description": "This PR just switches some contracts to expose `IReadonlyObservable` instead of `Observable` (for API clarity, and also to simplify some code since `IReadonlyObservable<T>` is covariant).\r\nAlso small change to `IReadonlyObservable<T>` to make `T = unknown` by default (so for cases where you don't care about the payload, you can just use `IReadonlyObservable` without any type params).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/inspector-v2/src/hooks/observableHooks.ts",
+                    "packages/dev/inspector-v2/src/misc/observableCollection.ts",
+                    "packages/dev/inspector-v2/src/modularity/serviceContainer.ts",
+                    "packages/dev/inspector-v2/src/modularity/serviceDefinition.ts",
+                    "packages/dev/inspector-v2/src/services/panes/scene/nodeExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/sceneContext.ts",
+                    "packages/dev/inspector-v2/src/services/selectionService.ts"
+                ],
+                "tags": [
+                    "inspector",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16741",
+                "title": "Inspector v2: Playground integration",
+                "description": "This is an initial integration of the inspector v2 into Playground. Some notes on this:\r\n\r\n- Using the inspectorv2 query param (distinct from the newux param @georginahalpern is using for the UI overhaul work, so that we can enable/disable these separately).\r\n- In a later PR (probably after a bit more inspector v2 feature work is done), we'll add a button in the Playground toolbar that adds the query param for you.\r\n- Inspector v2 does not have debugLayer integration yet, so the code uses the inspector v2 API directly. Additionally, we'll want Playground to be able to use new inspector v2 APIs (e.g. adding additional Playground specific inspector features), in which case it will need to directly call the inspector v2 APIs anyway.\r\n- This required a change to prevent Fluent focus management from stealing tab keys when focus is in the code editor (which should insert tabs, not move focus!). More details in the comments.\r\n- Inspector v2 does not have \"embed\" mode yet (scene explorer stacked on top of the right pane), so in Playground it shows up as a left pane and a right pane for now.\r\n![image](https://github.com/user-attachments/assets/b831ce14-11bd-4521-9d8b-a049a4ce860b)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/tools/playground/src/components/monacoComponent.tsx",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/tsconfig.build.json",
+                    "packages/tools/playground/webpack.config.js"
+                ],
+                "tags": [
+                    "inspector",
+                    "Playground",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "16743",
+                "title": "Bump brace-expansion from 1.1.11 to 1.1.12",
+                "description": "Bumps [brace-expansion](https://github.com/juliangruber/brace-expansion) from 1.1.11 to 1.1.12.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/juliangruber/brace-expansion/releases\">brace-expansion's releases</a>.</em></p>\n<blockquote>\n<h2>v1.1.12</h2>\n<ul>\n<li>pkg: publish on tag 1.x  c460dbd</li>\n<li>fmt  ccb8ac6</li>\n<li>Fix potential ReDoS Vulnerability or Inefficient Regular Expression (<a href=\"https://redirect.github.com/juliangruber/brace-expansion/issues/65\">#65</a>)  c3c73c8</li>\n</ul>\n<hr />\n<p><a href=\"https://github.com/juliangruber/brace-expansion/compare/v1.1.11...v1.1.12\">https://github.com/juliangruber/brace-expansion/compare/v1.1.11...v1.1.12</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/c85b8ad3f53d1eb65f4996a495cae61949855f7c\"><code>c85b8ad</code></a> 4.0.1</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/5a5cc176c080b2fde292a9815dc6ecd97c870d17\"><code>5a5cc17</code></a> fmt</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/0b6a9781e18e9d2769bb2931f4856d1360243ed2\"><code>0b6a978</code></a> Fix potential ReDoS Vulnerability or Inefficient Regular Expression (<a href=\"https://redirect.github.com/juliangruber/brace-expansion/issues/65\">#65</a>)</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/6a39bdddcf944374b475d99b0e8292d3727c7ebe\"><code>6a39bdd</code></a> 4.0.0</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/dd72a59047e30ea265c4a58695a00ea82e90a437\"><code>dd72a59</code></a> fmt</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/278132b187d4418fe8163da5e81710222f47e3f6\"><code>278132b</code></a> feat: use string replaces instead of splits (<a href=\"https://redirect.github.com/juliangruber/brace-expansion/issues/64\">#64</a>)</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/70e4c1baf9b91c77b1fa303a0c07d35389e9c0a0\"><code>70e4c1b</code></a> add <code>tea.yaml</code></li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/b01a637b0578a7c59acc7d8386f11f8d0710b512\"><code>b01a637</code></a> 3.0.0</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/9e781e913fe323e69248d36acebe29008666ba72\"><code>9e781e9</code></a> node 16 is EOL</li>\n<li><a href=\"https://github.com/juliangruber/brace-expansion/commit/6dad2093f84eac403fb3715a624fede524967cec\"><code>6dad209</code></a> docs</li>\n<li>Additional commits viewable in <a href=\"https://github.com/juliangruber/brace-expansion/compare/1.1.11...v1.1.12\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=brace-expansion&package-manager=npm_and_yarn&previous-version=1.1.11&new-version=1.1.12)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies",
+                    "javascript"
+                ]
+            },
+            {
+                "pr": "16718",
+                "title": "Introducting the Node Particle Editor!",
+                "description": "\r\n- [x] On end trigger\r\n- [x] On start trigger\r\n- [x] support worldMatrix from emitter\r\n- [x] Preview popup\r\n- [x] Flow map\r\n- [x] Expose emitter\r\n- [x] Sprite sheet\r\n- [x] Delay start\r\n- [x] Particle trigger\r\n- [x] Condition\r\n- [x] Simple condition \r\n- [x] Auto expendable blocks\r\n- [x] Basic update\r\n- [x] Snippet & loading API\r\n- [x] Teleport\r\n- [x] Elbow\r\n- [x] Custom Emitter Type\r\n- [x] Trigonometrics\r\n- [x] Converter\r\n\r\n\r\n![image](https://github.com/user-attachments/assets/7c1c1de0-780e-4074-ba48-26282b4a2eff)\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/customParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Conditions/particleConditionBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/boxShapeBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/createParticleBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/customShapeBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/cylinderShapeBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/index.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/pointShapeBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/setupSpriteSheetBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Emitters/sphereShapeBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Teleport/particleTeleportInBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Teleport/particleTeleportOutBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Triggers/particleTriggerBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Triggers/triggerTools.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/basicPositionUpdateBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/basicSpriteUpdateBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updateAngleBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updateColorBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updateDirectionBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updateFlowMapBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updatePositionBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updateScaleBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleConverterBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleDebugBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleElbowBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleGradientBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleGradientValueBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleInputBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleLerpBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleMathBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleRandomBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleSourceTextureBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/particleTrigonometryBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/randomRangeBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/systemBlock.ts",
+                    "packages/dev/core/src/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes.ts",
+                    "packages/dev/core/src/Particles/Node/Enums/nodeParticleContextualSources.ts",
+                    "packages/dev/core/src/Particles/Node/Enums/nodeParticleSystemSources.ts",
+                    "packages/dev/core/src/Particles/Node/index.ts",
+                    "packages/dev/core/src/Particles/Node/nodeParticleBlock.ts",
+                    "packages/dev/core/src/Particles/Node/nodeParticleBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Particles/Node/nodeParticleBuildState.ts",
+                    "packages/dev/core/src/Particles/Node/nodeParticleSystemSet.ts",
+                    "packages/dev/core/src/Particles/Queue/executionQueue.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/flowMap.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/index.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.module.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeData.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/tools.ts",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/node-particle-editor/config.json",
+                    "packages/public/@babylonjs/node-particle-editor/license.md",
+                    "packages/public/@babylonjs/node-particle-editor/package.json",
+                    "packages/public/@babylonjs/node-particle-editor/readme.md",
+                    "packages/public/@babylonjs/node-particle-editor/src/index.ts",
+                    "packages/public/@babylonjs/node-particle-editor/tsconfig.build.json",
+                    "packages/public/@babylonjs/node-particle-editor/tsconfig.json",
+                    "packages/public/@babylonjs/node-particle-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-node-particle-editor/.npmignore",
+                    "packages/public/umd/babylonjs-node-particle-editor/config.json",
+                    "packages/public/umd/babylonjs-node-particle-editor/license.md",
+                    "packages/public/umd/babylonjs-node-particle-editor/package.json",
+                    "packages/public/umd/babylonjs-node-particle-editor/readme.md",
+                    "packages/public/umd/babylonjs-node-particle-editor/src/index.ts",
+                    "packages/public/umd/babylonjs-node-particle-editor/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-node-particle-editor/tsconfig.json",
+                    "packages/public/umd/babylonjs-node-particle-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-testproject/src/index.ts",
+                    "packages/tools/babylonServer/declarationConfigDev.json",
+                    "packages/tools/babylonServer/declarationConfigLTS.json",
+                    "packages/tools/babylonServer/src/nodeParticleEditor/index.ts",
+                    "packages/tools/babylonServer/tsconfig.build.json",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/tsconfig.build.json",
+                    "packages/tools/devHost/webpack.config.js",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeParticleEditor/README-ES6.md",
+                    "packages/tools/nodeParticleEditor/README.md",
+                    "packages/tools/nodeParticleEditor/package.json",
+                    "packages/tools/nodeParticleEditor/public/index.html",
+                    "packages/tools/nodeParticleEditor/public/index.js",
+                    "packages/tools/nodeParticleEditor/src/blockTools.ts",
+                    "packages/tools/nodeParticleEditor/src/components/log/log.scss",
+                    "packages/tools/nodeParticleEditor/src/components/log/logComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16738",
+                "title": "fix missing morphtarget color attribute",
+                "description": "There's one color attribute declaration that is missing and will cause an error.",
+                "author": {
+                    "name": "kmatzen",
+                    "url": "https://github.com/kmatzen"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16737",
+                "title": "Add support for zoomOn with ArcRotateCamera in Orthographic mode",
+                "description": "I am working on a project that uses the ArcRotateCamera in Orthographic mode. I want to use the `ArcRotateCamera.zoomOn` function to zoom to a set of meshes. Unfortunately, the zoomOn function updates only the radius, not the orthographic extents.\r\n\r\nThis PR updates the orthographic extents along with the radius when zooming onto mesh(es) in orthographic mode.\r\n\r\nHere is a demo playground: https://playground.babylonjs.com/#545IZ4\r\n\r\n**Before:**\r\n\r\nhttps://github.com/user-attachments/assets/77b8516e-4ec8-40e0-a4d5-4f9ae0d4104d\r\n\r\n**After:**\r\n\r\nhttps://github.com/user-attachments/assets/876c3b68-3638-48a2-9b71-c909a4ae55ef\r\n",
+                "author": {
+                    "name": "amirt-ms",
+                    "url": "https://github.com/amirt-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16732",
+                "title": "Inspector v2: Test app",
+                "description": "This PR introduces a test app for local development of Inspector v2. It uses webpack, but a newer version than our other tools which is needed for compatibility with the webpack React fast refresh plugin (which is a new local dev only dependency). The simple test app just loads a model, and also enables drag & drop to easily test other models. Inspector is always open, and fast refresh is supported so as you make changes to React components, you immediately see them in the test app, without reloading the page or re-creating the scene. You can run and debug the test app from VSCode by just running the new \"Inspector v2 development (Chrome)\" launch command. This enables a very tight dev loop. Hopefully in the future we can see what it would take to bring fast refresh to other tools, like Sandbox and Playground, but for now this is a low cost solution to help speed up Inspector v2 development.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/test/app/index.html",
+                    "packages/dev/inspector-v2/test/app/index.ts",
+                    "packages/dev/inspector-v2/tsconfig.build.json",
+                    "packages/dev/inspector-v2/tsconfig.common.json",
+                    "packages/dev/inspector-v2/tsconfig.json",
+                    "packages/dev/inspector-v2/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16721",
+                "title": "glTF Exporter: Fix light direction calculation",
+                "description": "The previous light direction calculation didn't account for when the Babylon light direction matched glTF's. This would result NaN values in RotationAxisToRef, as the rotation axis would be (0,0,0), and its length (0) used as a divisor. \r\n\r\nI noticed we already have a function to do what we need for the light direction calculation-- `FromUnitVectorsToRef`-- so I've replaced the whole thing with that. Much simpler.\r\n\r\n(Bonus: I also noticed that the lights in our glTF light export test don't use glTF falloff, so I've earmarked that change in this PR.)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKHRPunctualLightLH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKHRPunctualLightRH.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16734",
+                "title": "FrameGraph: better support for autoCalcDepthBounds in cascaded shadow generator task",
+                "description": "Improved fix for #16710:\r\n* The depth texture to use for min/max reduction is now an input of the CSM task. This means that this depth texture can be shared by multiple tasks. In the previous PR, a new depth texture was always generated internally when `autoCalcDepthBounds` was **true**\r\n* The textures used for min/max reduction are created as part of the frame graph, which means that these textures can be optimized and reused by the graph\r\n\r\nI have also added support for “normalized view depth” as an output of the geometry renderer task, as this is the most optimal type for min/max depth reduction when used in CSM.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseShadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/shadowGeneratorBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/inputBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/csmShadowGeneratorTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/shadowGeneratorTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.geometryrendering.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Misc/minMaxReducer.ts",
+                    "packages/dev/core/src/Misc/thinMinMaxReducer.ts",
+                    "packages/dev/core/src/PostProcesses/postProcessManager.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockPrePass.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/minmaxRedux.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/defaultUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockPrePass.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/minmaxRedux.fragment.fx",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "frame graph"
+                ]
+            },
+            {
+                "pr": "16731",
+                "title": "NME: Bubble up build errors",
+                "description": "Try to catch what-would-be build errors via state-- so they can eventually be bubbled up to the console UI via `onBuildErrorObservable` notifications-- without throwing and breaking the build process.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragCoordBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/frontFacingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/tools/nodeEditor/src/components/log/log.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16733",
+                "title": "Fix adding dominant direction to env",
+                "description": "Looks like the dominant direction wasn't actually getting added to the .env file because the wrong texture was being referenced.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16729",
+                "title": "Introduce interpolation support in NGE texture fetching",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16727",
+                "title": "Fix UI bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16726",
+                "title": "Fix native pbr shader compilation",
+                "description": "cc @CedricGuillemet ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16728",
+                "title": "Fix regression with TargetCamera.setTarget",
+                "description": "See https://forum.babylonjs.com/t/camera-is-getting-a-z-rotation/58855",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16724",
+                "title": "Expose the default render material for GPUPicker",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16722",
+                "title": "Add new features to load EXR without creating a texture",
+                "description": "Demo: https://playground.babylonjs.com/#QNWTE5#5",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts"
+                ],
+                "tags": [
+                    "loaders",
+                    "new feature",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "16725",
+                "title": "NodeMaterial: Allow gathering defines without mesh",
+                "description": "Allow mesh to be optional when preparing defines for blocks in a graph. This avoids the need for a dummy mesh when gathering defines for modes like postprocess, procedural texture, particle, and smart filters.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/iridescenceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/sheenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/instancesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/lightInformationBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/transformBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16717",
+                "title": "Inspector v2: Sandbox integration",
+                "description": "This is an initial integration of the inspector v2 into Sandbox. Some notes on this:\r\n- Using the `inspectorv2` query param (distinct from the `newux` param @georginahalpern is using for the UI overhaul work, so that we can enable/disable these separately).\r\n- In a later PR (probably after a bit more inspector v2 feature work is done), we'll add a button in the Sandbox toolbar that adds the query param for you.\r\n- Inspector v2 does not have debugLayer integration yet, so the code uses the inspector v2 API directly.\r\n- While the code change is small, the inspector v2 integration in sandbox is quite different from v1 in terms of the bundle. For v1, the inspector umd bundle is dynamically loaded (legacy approach). For v2, inspector is an esm sandbox bundle chunk (modern approach).\r\n![image](https://github.com/user-attachments/assets/3f6730da-7c1a-44c4-a217-2ec7309e2398)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/services/creationToolsService.tsx",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/sandbox/src/components/footer.tsx",
+                    "packages/tools/sandbox/src/components/reflectorZone.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/sandbox/src/globalState.ts",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "tsconfig.devpackages.json",
+                    "tsconfig.json"
+                ],
+                "tags": [
+                    "inspector",
+                    "sandbox",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "16723",
+                "title": "Fixed area light specular calculation",
+                "description": "Area lights were not correctly considering the contributions of object's albedo and metallic channel when rendering. We now have those contributions been properly considered and making it render the same way as other light sources. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/areaLightsPBRMaterial.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/areaLightsStandardMaterial.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "8.10.1": [

@@ -261,6 +261,10 @@ export class GraphNode {
                 frame.nodes.push(this);
             }
         });
+
+        content.onInputCountChanged = () => {
+            this._buildInputPorts(true);
+        };
     }
 
     public isOverlappingFrame(frame: GraphFrame) {
@@ -351,7 +355,10 @@ export class GraphNode {
         if (this._displayManager) {
             this._header.innerHTML = this._displayManager.getHeaderText(this.content);
             this._displayManager.updatePreviewContent(this.content, this._content);
-            this._visual.style.background = this._displayManager.getBackgroundColor(this.content);
+            const backgroundColor = this._displayManager.getBackgroundColor(this.content);
+            if (backgroundColor) {
+                this._visual.style.background = backgroundColor;
+            }
             const additionalClass = this._displayManager.getHeaderClass(this.content);
             this._header.classList.value = localStyles.header;
             this._headerContainer.classList.value = localStyles["header-container"];
@@ -687,6 +694,24 @@ export class GraphNode {
         this._refreshLinks();
     }
 
+    private _portUICount = 0;
+    private _buildInputPorts(addOnly = false) {
+        for (const input of this.content.inputs) {
+            if (addOnly) {
+                // Search if the port already exists
+                const existingPort = this._inputPorts.find((p) => p.portData === input);
+                if (existingPort) {
+                    continue;
+                }
+            }
+
+            if (input.directValueDefinition) {
+                this._portUICount++;
+            }
+            this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
+        }
+    }
+
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
@@ -780,7 +805,6 @@ export class GraphNode {
         this._visual.appendChild(this._executionTime);
 
         // Options
-        let portUICount = 0;
         const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;
         if (propStore) {
             const source = this.content.data;
@@ -891,18 +915,13 @@ export class GraphNode {
         }
 
         // Connections
-        for (const input of this.content.inputs) {
-            if (input.directValueDefinition) {
-                portUICount++;
-            }
-            this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
-        }
+        this._buildInputPorts();
 
         for (const output of this.content.outputs) {
             this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
         }
 
-        if (this._visualPropertiesRefresh.length === 0 && portUICount === 0) {
+        if (this._visualPropertiesRefresh.length === 0 && this._portUICount === 0) {
             this._inputsContainer.classList.add(commonStyles.inputsContainerUp);
         }
 

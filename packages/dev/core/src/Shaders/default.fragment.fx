@@ -464,6 +464,10 @@ color.rgb = max(color.rgb, 0.);
 		gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo);
 	#endif
 
+	#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+		gl_FragData[PREPASS_NORMALIZED_VIEW_DEPTH_INDEX] = vec4(vNormViewDepth, 0.0, 0.0, writeGeometryInfo);
+	#endif
+
 	#ifdef PREPASS_NORMAL
 		#ifdef PREPASS_NORMAL_WORLDSPACE
 			gl_FragData[PREPASS_NORMAL_INDEX] =	vec4(normalW, writeGeometryInfo);

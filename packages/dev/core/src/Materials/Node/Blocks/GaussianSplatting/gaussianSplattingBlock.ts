@@ -102,11 +102,15 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
     /**
      * Update defines for shader compilation
-     * @param mesh defines the mesh to be rendered
-     * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param nodeMaterial defines the node material requesting the update
+     * @param mesh defines the mesh to be rendered
      */
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         if (mesh.getClassName() == "GaussianSplattingMesh") {
             defines.setValue("SH_DEGREE", (<GaussianSplattingMesh>mesh).shDegree, true);
         }

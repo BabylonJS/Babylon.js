@@ -19,6 +19,10 @@
 		#ifdef MORPHTARGETS_UV2
 		attribute uv2_{X} : vec2<f32>;
 		#endif
+
+        #ifdef MORPHTARGETS_COLOR
+        attribute color{X} : vec4<f32>;
+        #endif
 	#elif {X} == 0
 		uniform morphTargetCount: i32;
 	#endif
