@@ -2,9 +2,9 @@ import { BlockNodeData } from "./blockNodeData.js";
 import type { ConnectionPoint, SmartFilter, RuntimeData } from "@babylonjs/smart-filters";
 import { InputBlock, ConnectionPointType, createStrongRef, createImageTexture } from "@babylonjs/smart-filters";
 import type { GlobalState } from "../globalState";
-import type { INodeContainer } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData";
-import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager";
+import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import type { ThinEngine } from "core/Engines/thinEngine";
 
 import "@babylonjs/core/Engines/Extensions/engine.dynamicTexture.js";

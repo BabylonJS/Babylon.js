@@ -9,7 +9,7 @@ import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger.js";
 import type { SmartFilter } from "@babylonjs/smart-filters";
 import type { Nullable } from "core/types.js";
 import type { Observable } from "core/Misc/observable.js";
-import { CreatePopup } from "@babylonjs/shared-ui-components/popupHelper.js";
+import { CreatePopup } from "shared-ui-components/popupHelper.js";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import type { LogEntry } from "./components/log/logComponent.js";
 import type { BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";

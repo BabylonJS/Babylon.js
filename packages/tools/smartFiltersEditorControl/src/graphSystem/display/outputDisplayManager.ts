@@ -1,5 +1,5 @@
-import type { IDisplayManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import type { INodeData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class OutputDisplayManager implements IDisplayManager {
     public getHeaderClass() {

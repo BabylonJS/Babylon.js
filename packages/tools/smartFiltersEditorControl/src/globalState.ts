@@ -1,17 +1,17 @@
 import { Observable } from "core/Misc/observable.js";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
-import { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager.js";
-import { LockObject } from "@babylonjs/shared-ui-components/tabs/propertyGrids/lockObject.js";
+import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject.js";
 import { type BaseBlock, type ConnectionPoint, SmartFilter } from "@babylonjs/smart-filters";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport.js";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign.js";
 import type { LogEntry } from "./components/log/logComponent";
-import type { GraphNode } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphNode.js";
+import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode.js";
 import type { BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";
-import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData.js";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData.js";
 import { BlockTools } from "./blockTools.js";
 import { ObservableProperty } from "./helpers/observableProperty.js";
 

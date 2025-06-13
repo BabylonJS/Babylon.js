@@ -1,6 +1,6 @@
 import type { SmartFilter } from "@babylonjs/smart-filters";
 import type { GlobalState } from "../globalState";
-import type { GraphCanvasComponent } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphCanvas";
+import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 
 /**
  * Sets the SmartFilter's stored editor data (block locations, canvas position, zoom) using the current graph canvas state.

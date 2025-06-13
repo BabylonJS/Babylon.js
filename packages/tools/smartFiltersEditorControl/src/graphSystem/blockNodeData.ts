@@ -1,6 +1,6 @@
-import type { INodeContainer } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { INodeData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData.js";
 import * as styles from "../assets/styles/graphSystem/blockNodeData.module.scss";
 import type { BaseBlock } from "@babylonjs/smart-filters";

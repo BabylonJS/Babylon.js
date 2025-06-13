@@ -1,4 +1,4 @@
-import { TypeLedger } from "@babylonjs/shared-ui-components/nodeGraphSystem/typeLedger.js";
+import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
 import { BlockNodeData } from "./blockNodeData.js";
 import { ConnectionPointPortData } from "./connectionPointPortData.js";
 

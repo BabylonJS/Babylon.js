@@ -1,6 +1,6 @@
 import { BlockTools } from "../blockTools.js";
-import type { StateManager } from "@babylonjs/shared-ui-components/nodeGraphSystem/stateManager";
-import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import type { ConnectionPointPortData } from "./connectionPointPortData";
 import { ConnectionPointType } from "@babylonjs/smart-filters";
 

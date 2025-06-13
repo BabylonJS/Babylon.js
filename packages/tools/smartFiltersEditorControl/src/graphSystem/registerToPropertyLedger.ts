@@ -1,4 +1,4 @@
-import { PropertyLedger } from "@babylonjs/shared-ui-components/nodeGraphSystem/propertyLedger.js";
+import { PropertyLedger } from "shared-ui-components/nodeGraphSystem/propertyLedger.js";
 import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent.js";
 import { InputPropertyComponent } from "./properties/inputNodePropertyComponent.js";
 // import { TexturePropertyTabComponent } from "./properties/texturePropertyTabComponent";

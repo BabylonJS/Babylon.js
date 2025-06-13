@@ -1,9 +1,9 @@
 import type { Nullable } from "core/types";
-import type { GraphNode } from "@babylonjs/shared-ui-components/nodeGraphSystem/graphNode";
-import type { INodeContainer } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/portData.js";
-import { TypeLedger } from "@babylonjs/shared-ui-components/nodeGraphSystem/typeLedger.js";
+import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData.js";
+import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
 import type { ConnectionPoint } from "@babylonjs/smart-filters";
 import { getCompatibilityIssueMessage, ConnectionPointDirection } from "@babylonjs/smart-filters";
 
