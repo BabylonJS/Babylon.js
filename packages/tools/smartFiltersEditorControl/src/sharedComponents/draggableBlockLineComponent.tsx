@@ -1,5 +1,6 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import * as react from "react";
-import { getBlockKey } from "../helpers/blockKeyConverters.js";
+import { GetBlockKey } from "../helpers/blockKeyConverters.js";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 
 export interface IDraggableLineWithButtonComponent {
@@ -13,10 +14,12 @@ export interface IDraggableLineWithButtonComponent {
 }
 
 export class DraggableBlockLineComponent extends react.Component<IDraggableLineWithButtonComponent> {
+    // eslint-disable-next-line babylonjs/available
     constructor(props: IDraggableLineWithButtonComponent) {
         super(props);
     }
 
+    // eslint-disable-next-line babylonjs/available
     override render() {
         return (
             <div
@@ -24,10 +27,7 @@ export class DraggableBlockLineComponent extends react.Component<IDraggableLineW
                 title={this.props.block.tooltip}
                 draggable={true}
                 onDragStart={(event) => {
-                    event.dataTransfer.setData(
-                        "babylonjs-smartfilter-node",
-                        getBlockKey(this.props.block.blockType, this.props.block.namespace)
-                    );
+                    event.dataTransfer.setData("babylonjs-smartfilter-node", GetBlockKey(this.props.block.blockType, this.props.block.namespace));
                 }}
             >
                 {this.props.block.blockType.replace("Block", "")}

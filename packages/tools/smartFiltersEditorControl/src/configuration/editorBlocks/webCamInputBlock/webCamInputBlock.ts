@@ -48,13 +48,15 @@ class WebcamSourceManager {
      * Creates a new WebcamSourceManager
      */
     constructor() {
-        this._updateWebcamSources();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._updateWebcamSourcesAsync();
         navigator.mediaDevices?.addEventListener("devicechange", () => {
-            this._updateWebcamSources();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._updateWebcamSourcesAsync();
         });
     }
 
-    private async _updateWebcamSources(): Promise<void> {
+    private async _updateWebcamSourcesAsync(): Promise<void> {
         if (!navigator.mediaDevices) {
             Logger.Warn("Webcam not supported by this browser");
             return;

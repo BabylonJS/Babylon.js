@@ -1,9 +1,10 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import { Component } from "react";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent.js";
 import type { Nullable } from "core/types.js";
 
-export interface FloatSliderComponentProps {
+export interface IFloatSliderComponentProps {
     lockObject: any;
     label: string;
     target: any;
@@ -17,8 +18,9 @@ export interface FloatSliderComponentProps {
 /**
  * A simple float slider component
  */
-export class FloatSliderComponent extends Component<FloatSliderComponentProps> {
-    constructor(props: FloatSliderComponentProps) {
+export class FloatSliderComponent extends Component<IFloatSliderComponentProps> {
+    // eslint-disable-next-line babylonjs/available
+    constructor(props: IFloatSliderComponentProps) {
         super(props);
         this.state = { displaySlider: false };
     }
@@ -27,12 +29,13 @@ export class FloatSliderComponent extends Component<FloatSliderComponentProps> {
      * Trigger update when props change
      * @param prevProps - The previous props
      */
-    override componentDidUpdate(prevProps: FloatSliderComponentProps) {
+    override componentDidUpdate(prevProps: IFloatSliderComponentProps) {
         if (prevProps !== this.props) {
             this.forceUpdate();
         }
     }
 
+    // eslint-disable-next-line babylonjs/available
     override render() {
         const canUseSlider = !this.props.forceSliderOff && this.props.min !== null && this.props.max !== null && this.props.min < this.props.max;
 

@@ -16,7 +16,7 @@ import { LogEntry } from "../components/log/logComponent.js";
  * @param onLogRequiredObservable - If supplied, instead of console errors, log entries will be sent to this observable
  * @returns The block registration
  */
-export function getBlockEditorRegistration(
+export function GetBlockEditorRegistration(
     smartFilterDeserializer: SmartFilterDeserializer,
     allBlockRegistrations: IBlockRegistration[],
     includeCustomBlocksCategory: boolean,
@@ -44,7 +44,7 @@ export function getBlockEditorRegistration(
     });
 
     // Create function to call the right factory for a block given the block type and namespace
-    const getBlock = async (blockType: string, namespace: Nullable<string>, smartFilter: SmartFilter, engine: ThinEngine): Promise<Nullable<BaseBlock>> => {
+    const getBlockAsync = async (blockType: string, namespace: Nullable<string>, smartFilter: SmartFilter, engine: ThinEngine): Promise<Nullable<BaseBlock>> => {
         const registration = allBlockRegistrations.find((r) => r.blockType === blockType && r.namespace === namespace);
         if (registration && registration.factory) {
             try {
@@ -62,8 +62,8 @@ export function getBlockEditorRegistration(
     };
 
     const blockEditorRegistration: BlockEditorRegistration = {
-        getIsUniqueBlock,
-        getBlock,
+        getIsUniqueBlock: GetIsUniqueBlock,
+        getBlock: getBlockAsync,
         allBlocks,
         inputDisplayManager: CustomInputDisplayManager,
     };
@@ -77,6 +77,6 @@ export function getBlockEditorRegistration(
  * @param block - The block to check
  * @returns Whether the block should be unique in the graph
  */
-function getIsUniqueBlock(block: BaseBlock): boolean {
+function GetIsUniqueBlock(block: BaseBlock): boolean {
     return block.getClassName() === OutputBlockName;
 }

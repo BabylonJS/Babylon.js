@@ -9,13 +9,23 @@ import type { IInspectableOptions } from "core/Misc/iInspectable.js";
 import { CheckBoxLineComponent } from "../../../sharedComponents/checkBoxLineComponent.js";
 
 import type { Nullable } from "core/types.js";
-import { getTextureInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
+import { GetTextureInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
 import { LazyTextInputLineComponent } from "../../../sharedComponents/lazyTextInputLineComponent.js";
-import { debounce } from "../../../helpers/debounce.js";
+import { Debounce } from "../../../helpers/debounce.js";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 
-export interface ImageSourcePropertyTabComponentProps {
+/**
+ * Props for the ImageSourcePropertyTabComponent
+ */
+export interface IImageSourcePropertyTabComponentProps {
+    /**
+     * The state manager of the graph
+     */
     stateManager: StateManager;
+
+    /**
+     * The input block to edit (must be of type ConnectionPointType.Texture)
+     */
     inputBlock: InputBlock<ConnectionPointType.Texture>;
 }
 
@@ -26,11 +36,15 @@ const AssetTypeOptions: IInspectableOptions[] = AssetTypeOptionArray.map((value,
 });
 const DataUrlPlaceholder = "";
 
-export class ImageSourcePropertyTabComponent extends react.Component<ImageSourcePropertyTabComponentProps> {
+/**
+ * The UI for editing the properties of a texture input block.
+ */
+export class ImageSourcePropertyTabComponent extends react.Component<IImageSourcePropertyTabComponentProps> {
     private readonly _imageOptions: IInspectableOptions[];
     private readonly _texturePresets: TexturePreset[];
 
-    constructor(props: ImageSourcePropertyTabComponentProps) {
+    // eslint-disable-next-line babylonjs/available
+    constructor(props: IImageSourcePropertyTabComponentProps) {
         super(props);
         this._imageOptions = [{ label: "Custom", value: CustomImageOption }];
         this._texturePresets = (props.stateManager.data as GlobalState).texturePresets;
@@ -46,14 +60,9 @@ export class ImageSourcePropertyTabComponent extends react.Component<ImageSource
         this._imageOptions;
     }
 
-    override componentDidMount() {}
-
-    override componentWillUnmount() {}
-
-    setDefaultValue() {}
-
+    // eslint-disable-next-line babylonjs/available
     override render() {
-        const editorData = getTextureInputBlockEditorData(this.props.inputBlock);
+        const editorData = GetTextureInputBlockEditorData(this.props.inputBlock);
 
         // If the reloadAssets callback wasn't supplied, don't show any properties
         if (!(this.props.stateManager.data as GlobalState).reloadAssets) {
@@ -189,7 +198,7 @@ export class ImageSourcePropertyTabComponent extends react.Component<ImageSource
         if (instant) {
             update();
         } else {
-            debounce(update, 1000)();
+            Debounce(update, 1000)();
         }
     }
 

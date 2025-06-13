@@ -17,6 +17,7 @@ export class WebCamSession implements IDisposable {
     private _mediaStream: MediaStream | undefined;
     private _deviceId: string;
 
+    // eslint-disable-next-line babylonjs/available
     constructor(engine: ThinEngine, textureOutput: RuntimeData<ConnectionPointType.Texture>, deviceId: string) {
         this._engine = engine;
         this._textureOutput = textureOutput;
@@ -26,7 +27,7 @@ export class WebCamSession implements IDisposable {
     /**
      * Loads the WebCam, creates a ThinTexture from it, and sets that texture in textureOutput provided to the constructor.
      */
-    public async load(): Promise<void> {
+    public async loadAsync(): Promise<void> {
         const width = 640;
         const height = 480;
 
@@ -94,6 +95,9 @@ export class WebCamSession implements IDisposable {
         hiddenVideo.srcObject = stream;
     }
 
+    /**
+     * Disposes the webcam session.
+     */
     public dispose(): void {
         this._isDisposed = true;
 

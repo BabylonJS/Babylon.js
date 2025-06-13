@@ -12,7 +12,7 @@ import { DraggableBlockLineComponent } from "../../sharedComponents/draggableBlo
 import deleteButton from "../../assets/imgs/delete.svg";
 import addButton from "../../assets/imgs/add.svg";
 import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent.js";
-import { getBlockKey } from "../../helpers/blockKeyConverters.js";
+import { GetBlockKey } from "../../helpers/blockKeyConverters.js";
 import { CustomBlocksNamespace } from "../../configuration/constants.js";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
@@ -94,7 +94,7 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
                     if (block.isCustom) {
                         return (
                             <DraggableBlockLineComponent
-                                key={getBlockKey(block.blockType, block.namespace)}
+                                key={GetBlockKey(block.blockType, block.namespace)}
                                 block={block}
                                 iconImage={deleteButton}
                                 iconTitle="Delete"
@@ -104,7 +104,7 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
                             />
                         );
                     }
-                    return <DraggableBlockLineComponent key={getBlockKey(block.blockType, block.namespace)} block={block} />;
+                    return <DraggableBlockLineComponent key={GetBlockKey(block.blockType, block.namespace)} block={block} />;
                 });
 
             if (key === CustomBlocksNamespace) {
@@ -141,7 +141,7 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
             if (blockRegistrations && blockRegistrations.length) {
                 for (const blockRegistration of blockRegistrations) {
                     if (!this.state.onlyShowCustomBlocks || blockRegistration.isCustom || blockRegistration.isInput) {
-                        const blockKey = getBlockKey(blockRegistration.blockType, blockRegistration.namespace);
+                        const blockKey = GetBlockKey(blockRegistration.blockType, blockRegistration.namespace);
                         ledger.push(blockKey);
                     }
                 }

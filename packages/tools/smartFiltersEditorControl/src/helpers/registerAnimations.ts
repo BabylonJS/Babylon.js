@@ -10,7 +10,7 @@ import type { ThinEngine } from "core/Engines/thinEngine.js";
  * @param beforeRenderObservable - The before render observable to register animations to
  * @returns A function to unregister the animations
  */
-export function registerAnimations(smartFilter: SmartFilter, engine: ThinEngine, beforeRenderObservable: Observable<void>): () => void {
+export function RegisterAnimations(smartFilter: SmartFilter, engine: ThinEngine, beforeRenderObservable: Observable<void>): () => void {
     const disposeWork: (() => void)[] = [];
 
     for (const block of smartFilter.attachedBlocks) {

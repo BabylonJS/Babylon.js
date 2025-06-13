@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable babylonjs/available */
 import * as react from "react";
 import * as reactDOM from "react-dom";
 
@@ -13,22 +15,22 @@ import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
 import { BlockTools } from "./blockTools.js";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent.js";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent.js";
-import { createDefaultInput } from "./graphSystem/registerDefaultInput.js";
+import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
 import type { BaseBlock, SmartFilter } from "@babylonjs/smart-filters";
 import { inputsNamespace } from "@babylonjs/smart-filters-blocks";
-import { setEditorData } from "./helpers/serializationTools.js";
+import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
 import { Splitter } from "shared-ui-components/split/splitter.js";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext.js";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent.js";
-import { initializePreview } from "./initializePreview.js";
+import { InitializePreview } from "./initializePreview.js";
 import { PreviewAreaControlComponent } from "./components/preview/previewAreaControlComponent.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
 import type { IInspectorOptions } from "core/Debug/debugLayer.js";
-import { decodeBlockKey } from "./helpers/blockKeyConverters.js";
+import { DecodeBlockKey } from "./helpers/blockKeyConverters.js";
 import { OutputBlockName } from "./configuration/constants.js";
 import type { BlockNodeData } from "./graphSystem/blockNodeData";
 import { DataStorage } from "core/Misc/dataStorage.js";
@@ -53,6 +55,10 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
     embedHostWidth?: string;
 }
 
+/**
+ * The main React component for the Smart Filter Editor control.
+ * Draws the whole editor, including the side panels and console, and handles global events.
+ */
 export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditorState> {
     private _graphCanvasRef: react.RefObject<GraphCanvasComponent>;
     private _diagramContainerRef: react.RefObject<HTMLDivElement>;
@@ -85,10 +91,10 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     }
 
     createInputBlock(blockTypeAndNamespace: string) {
-        const { blockType } = decodeBlockKey(blockTypeAndNamespace);
+        const { blockType } = DecodeBlockKey(blockTypeAndNamespace);
         const nodeType = BlockTools.GetConnectionNodeTypeFromString(blockType);
 
-        const newInputBlock = createDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine);
+        const newInputBlock = CreateDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine);
 
         return newInputBlock;
     }
@@ -109,7 +115,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             this._diagramContainer = this._diagramContainerRef.current!;
             const canvas = this.props.globalState.hostDocument.getElementById("sfe-preview-canvas") as HTMLCanvasElement;
             if (canvas && this.props.globalState.onNewEngine) {
-                const engine = initializePreview(canvas, this.props.globalState.forceWebGL1);
+                const engine = InitializePreview(canvas, this.props.globalState.forceWebGL1);
                 const versionToLog = `Babylon.js v${ThinEngine.Version} - WebGL${engine.webGLVersion}`;
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(versionToLog, false));
                 this.props.globalState.engine = engine;
@@ -182,7 +188,8 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                     targetY = targetY - this._diagramContainer.offsetTop;
                 }
 
-                this.emitNewBlock(eventData.type, targetX, targetY);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.emitNewBlockAsync(eventData.type, targetX, targetY);
             }
         );
 
@@ -191,7 +198,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onSaveEditorDataRequiredObservable.add(() => {
-            setEditorData(this.props.globalState.smartFilter, this.props.globalState, this._graphCanvas);
+            SetEditorData(this.props.globalState.smartFilter, this.props.globalState, this._graphCanvas);
         });
 
         this.props.globalState.onResetRequiredObservable.add((isDefault) => {
@@ -340,8 +347,8 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         }
     };
 
-    async emitNewBlock(blockTypeAndNamespace: string, targetX: number, targetY: number) {
-        const { blockType, namespace } = decodeBlockKey(blockTypeAndNamespace);
+    async emitNewBlockAsync(blockTypeAndNamespace: string, targetX: number, targetY: number) {
+        const { blockType, namespace } = DecodeBlockKey(blockTypeAndNamespace);
 
         let block: Nullable<BaseBlock> = null;
 
@@ -392,7 +399,8 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     dropNewBlock(event: react.DragEvent<HTMLDivElement>) {
         const data = event.dataTransfer.getData("babylonjs-smartfilter-node") as string;
 
-        this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.emitNewBlockAsync(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
     }
 
     handlePopUp = () => {
@@ -415,7 +423,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
     initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById("sfe-preview-canvas") as HTMLCanvasElement) => {
         if (canvas && this.props.globalState.onNewEngine) {
-            const engine = initializePreview(canvas, this.props.globalState.forceWebGL1);
+            const engine = InitializePreview(canvas, this.props.globalState.forceWebGL1);
             this.props.globalState.engine = engine;
             this.props.globalState.onNewEngine(engine);
         }

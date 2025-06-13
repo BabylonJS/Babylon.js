@@ -1,12 +1,13 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { InputArrowsComponent } from "shared-ui-components/lines/inputArrowsComponent.js";
 import * as react from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
-export const conflictingValuesPlaceholder = "—";
+export const ConflictingValuesPlaceholder = "—";
 
-type ILazyTextInputLineComponentProps = {
+type LazyTextInputLineComponentProps = {
     // The unique key for the component. Used to control re-renders.
     key: react.Key;
     // The target object to set the property on
@@ -50,7 +51,7 @@ interface ILazyTextInputLineComponentState {
     inputValid: boolean;
 }
 
-function getCurrentNumericValue(value: string, props: ILazyTextInputLineComponentProps) {
+function GetCurrentNumericValue(value: string, props: LazyTextInputLineComponentProps) {
     const numeric = parseFloat(value);
     if (!isNaN(numeric)) {
         return numeric;
@@ -64,7 +65,7 @@ function getCurrentNumericValue(value: string, props: ILazyTextInputLineComponen
     return 0;
 }
 
-function formatValue(value: string, props: ILazyTextInputLineComponentProps) {
+function FormatValue(value: string, props: LazyTextInputLineComponentProps) {
     if (props.numbersOnly) {
         if (!value) {
             value = "0";
@@ -77,7 +78,7 @@ function formatValue(value: string, props: ILazyTextInputLineComponentProps) {
     }
 
     if (props.numeric) {
-        let numericValue = getCurrentNumericValue(value, props);
+        let numericValue = GetCurrentNumericValue(value, props);
         if (props.roundValues) {
             numericValue = Math.round(numericValue);
         }
@@ -92,14 +93,18 @@ function formatValue(value: string, props: ILazyTextInputLineComponentProps) {
     return value;
 }
 
-export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLineComponentProps, ILazyTextInputLineComponentState> {
-    _localChange = false;
-    _lastInvalidSubmission: string | undefined;
+/**
+ * Used to allow the user to input text without updating the source on every keystroke.
+ */
+export class LazyTextInputLineComponent extends react.Component<LazyTextInputLineComponentProps, ILazyTextInputLineComponentState> {
+    private _localChange = false;
+    private _lastInvalidSubmission: string | undefined;
 
-    constructor(props: ILazyTextInputLineComponentProps) {
+    // eslint-disable-next-line babylonjs/available
+    constructor(props: LazyTextInputLineComponentProps) {
         super(props);
 
-        const originalInput = this.getInputValue(props);
+        const originalInput = this._getInputValue(props);
         this.state = {
             input: originalInput,
             originalInput,
@@ -108,19 +113,20 @@ export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLi
         };
     }
 
-    getInputValue = (props: ILazyTextInputLineComponentProps): string => {
+    private _getInputValue = (props: LazyTextInputLineComponentProps): string => {
         const emptyValue = props.numeric ? "0" : "";
         const value = props.target[props.propertyName];
         return props.formatValue?.(value) ?? value ?? emptyValue;
     };
 
-    override shouldComponentUpdate(nextProps: ILazyTextInputLineComponentProps, nextState: { input: string; originalInput: string; dragging: boolean }) {
+    // eslint-disable-next-line babylonjs/available
+    override shouldComponentUpdate(nextProps: LazyTextInputLineComponentProps, nextState: { input: string; originalInput: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
         }
 
-        const newValue = this.getInputValue(nextProps);
+        const newValue = this._getInputValue(nextProps);
         if (newValue !== nextState.originalInput) {
             nextState.originalInput = newValue;
             nextState.input = newValue;
@@ -134,21 +140,21 @@ export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLi
         return false;
     }
 
-    validateInput = (value: string) => {
+    private _validateInput = (value: string) => {
         if (this.props.extractValue) {
             try {
                 this.props.extractValue(value);
-            } catch (e) {
+            } catch {
                 return false;
             }
         }
         return true;
     };
 
-    onSubmit = (value: string) => {
-        value = formatValue(value, this.props);
+    private _onSubmit = (value: string) => {
+        value = FormatValue(value, this.props);
 
-        if (this.validateInput(value) === false) {
+        if (this._validateInput(value) === false) {
             if (this.props.onExtractValueFailed && this._lastInvalidSubmission !== value) {
                 this.props.onExtractValueFailed(value);
             }
@@ -175,7 +181,7 @@ export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLi
         }
     };
 
-    setInput = (input: string) => {
+    private _setInput = (input: string) => {
         if (this.props.disabled) {
             return;
         }
@@ -187,74 +193,81 @@ export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLi
 
         this.setState({
             input,
-            inputValid: this.validateInput(input),
+            inputValid: this._validateInput(input),
         });
     };
 
-    setDragging = (dragging: boolean) => {
+    private _setDragging = (dragging: boolean) => {
         this.setState({ dragging });
     };
 
-    incrementValue = (amount: number) => {
+    private _incrementValue = (amount: number) => {
         if (this.props.step) {
             amount *= this.props.step;
         }
         if (this.props.arrowsIncrement) {
             this.props.arrowsIncrement(amount);
         }
-        const currentValue = getCurrentNumericValue(this.state.input, this.props);
+        const currentValue = GetCurrentNumericValue(this.state.input, this.props);
         const newValue = (currentValue + amount).toFixed(2);
 
-        this.setInput(newValue);
+        this._setInput(newValue);
 
         if (!this.props.arrowsIncrement) {
-            this.onSubmit(newValue);
+            this._onSubmit(newValue);
         }
     };
 
-    onChange = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    private _onChange = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
         this._localChange = true;
-        this.setInput(event.target.value);
+        this._setInput(event.target.value);
     };
 
-    onKeyDown = (event: React.KeyboardEvent) => {
+    private _onKeyDown = (event: React.KeyboardEvent) => {
         if (!this.props.disabled) {
             if (event.key === "Enter") {
-                this.onSubmit(this.state.input);
+                this._onSubmit(this.state.input);
             }
             if (this.props.arrows) {
                 if (event.key === "ArrowUp") {
-                    this.incrementValue(1);
+                    this._incrementValue(1);
                     event.preventDefault();
                 }
                 if (event.key === "ArrowDown") {
-                    this.incrementValue(-1);
+                    this._incrementValue(-1);
                     event.preventDefault();
                 }
             }
         }
     };
 
-    onBlur = () => {
-        this.onSubmit(this.state.input);
+    private _onBlur = () => {
+        this._onSubmit(this.state.input);
         if (this.props.lockObject) {
             this.props.lockObject.lock = false;
         }
     };
 
-    onFocus = () => {
+    private _onFocus = () => {
         if (this.props.lockObject) {
             this.props.lockObject.lock = true;
         }
     };
 
+    /**
+     * If this component is unmounted while editing, ensure we submit the value.
+     */
     override componentWillUnmount() {
-        this.onBlur();
+        this._onBlur();
     }
 
+    /**
+     * Draw the component.
+     * @returns the component's JSX element
+     */
     override render() {
-        const value = this.state.input === conflictingValuesPlaceholder ? "" : this.state.input;
-        const placeholder = this.state.input === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
+        const value = this.state.input === ConflictingValuesPlaceholder ? "" : this.state.input;
+        const placeholder = this.state.input === ConflictingValuesPlaceholder ? ConflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
         const style = { background: this.state.inputValid ? undefined : "lightpink" };
@@ -272,9 +285,9 @@ export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLi
                             className={this.props.disabled ? "disabled" : ""}
                             style={style}
                             value={this.state.input}
-                            onBlur={this.onBlur}
-                            onFocus={this.onFocus}
-                            onChange={this.onChange}
+                            onBlur={this._onBlur}
+                            onFocus={this._onFocus}
+                            onChange={this._onChange}
                             disabled={this.props.disabled}
                         />
                     </>
@@ -287,16 +300,16 @@ export class LazyTextInputLineComponent extends react.Component<ILazyTextInputLi
                             className={this.props.disabled ? "disabled" : ""}
                             style={style}
                             value={value}
-                            onBlur={this.onBlur}
-                            onFocus={this.onFocus}
-                            onChange={this.onChange}
-                            onKeyDown={this.onKeyDown}
+                            onBlur={this._onBlur}
+                            onFocus={this._onFocus}
+                            onChange={this._onChange}
+                            onKeyDown={this._onKeyDown}
                             placeholder={placeholder}
                             type={this.props.numeric ? "number" : "text"}
                             step={step}
                             disabled={this.props.disabled}
                         />
-                        {this.props.arrows && <InputArrowsComponent incrementValue={this.incrementValue} setDragging={this.setDragging} />}
+                        {this.props.arrows && <InputArrowsComponent incrementValue={this._incrementValue} setDragging={this._setDragging} />}
                     </div>
                 )}
                 {this.props.unit}

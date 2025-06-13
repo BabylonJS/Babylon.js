@@ -54,7 +54,8 @@ export class WebCamRuntime implements IDisposable {
 
         if (this._deviceId !== null) {
             this._currentSession = new WebCamSession(this._engine, this._textureOutput, this._deviceId);
-            this._currentSession.load().catch((e: unknown) => {
+            // eslint-disable-next-line github/no-then
+            this._currentSession.loadAsync().catch((e: unknown) => {
                 Logger.Error(`Failed to load webcam ${e}`);
             });
         }

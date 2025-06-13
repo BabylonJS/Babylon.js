@@ -9,7 +9,6 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools.js";
-// import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent.js";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent.js";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent.js";
@@ -22,7 +21,7 @@ import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNo
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ForceWebGL1StorageKey, type GlobalState } from "../../globalState.js";
 import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
-import { SmartFilterCoreVersion, type AnyInputBlock } from "@babylonjs/smart-filters";
+import { SmartFilterCoreVersion } from "@babylonjs/smart-filters";
 import type { Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 
@@ -40,6 +39,9 @@ interface IPropertyTabComponentState {
     optimize: Nullable<boolean>;
 }
 
+/**
+ * The property tab is used to edit the properties of the current node
+ */
 export class PropertyTabComponent extends react.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onResetRequiredObserver?: Observer<boolean>;
     private _onOptimizerEnabledChangedObserver?: Observer<boolean>;
@@ -63,6 +65,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         // this._modeSelect = React.createRef();
     }
 
+    // eslint-disable-next-line babylonjs/available
     override componentDidMount() {
         this.props.globalState.stateManager.onSelectionChangedObservable.add((options: Nullable<ISelectionChangedOptions>) => {
             const { selection } = options || {};
@@ -115,6 +118,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         }
     }
 
+    // eslint-disable-next-line babylonjs/available
     override componentWillUnmount() {
         if (this._onResetRequiredObserver) {
             this._onResetRequiredObserver.remove();
@@ -124,15 +128,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         }
     }
 
-    processInputBlockUpdate(ib: AnyInputBlock) {
-        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
-
-        // if (ib.isConstant) {
-        //     this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-        // }
-    }
-
-    async load(_file: File) {
+    private async _loadAsync(_file: File) {
         if (this.props.globalState.engine && this.props.globalState.loadSmartFilter) {
             const newSmartFilter = await this.props.globalState.loadSmartFilter(_file, this.props.globalState.engine);
             if (newSmartFilter) {
@@ -143,71 +139,38 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         }
     }
 
-    loadFrame(_file: File) {
-        // Tools.ReadFile(
-        //     file,
-        //     (data) => {
-        //         // get Frame Data from file
-        //         const decoder = new TextDecoder("utf-8");
-        //         const frameData = JSON.parse(decoder.decode(data));
-        //         SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
-        //     },
-        //     undefined,
-        //     true
-        // );
-    }
-
-    downloadSmartFilter() {
+    private _downloadSmartFilter() {
         if (this.props.globalState.downloadSmartFilter) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
             this.props.globalState.downloadSmartFilter();
         }
     }
 
-    copySmartFilter() {
+    private _copySmartFilter() {
         if (this.props.globalState.copySmartFilter) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
             this.props.globalState.copySmartFilter();
         }
     }
 
-    async pasteSmartFilter() {
+    private async _pasteSmartFilterAsync() {
         if (this.props.globalState.pasteSmartFilter) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
             await this.props.globalState.pasteSmartFilter();
         }
     }
 
-    async saveToSnippetServer() {
+    private _saveToSnippetServer() {
         this.setState({ uploadInProgress: true });
         try {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
-            await this.props.globalState.saveToSnippetServer!();
+            this.props.globalState.saveToSnippetServer!();
         } finally {
             this.setState({ uploadInProgress: false });
         }
     }
 
-    loadFromSnippet() {
-        // const material = this.props.globalState.nodeMaterial;
-        // const scene = material.getScene();
-        // const snippedId = this.props.globalState.hostDocument.defaultView!.prompt("Please enter the snippet ID to use");
-        // if (!snippedId) {
-        //     return;
-        // }
-        // this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        // NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material)
-        //     .then(() => {
-        //         material.build();
-        //         if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-        //             this.props.globalState.onResetRequiredObservable.notifyObservers(true);
-        //         }
-        //     })
-        //     .catch((err) => {
-        //         this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
-        //     });
-    }
-
+    // eslint-disable-next-line babylonjs/available
     override render() {
         if (this.state.currentNode) {
             return (
@@ -357,12 +320,14 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                         this.props.globalState.pasteSmartFilter ||
                         this.props.globalState.saveToSnippetServer) && (
                         <LineContainerComponent title="FILE">
-                            {this.props.globalState.loadSmartFilter && <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />}
+                            {this.props.globalState.loadSmartFilter && (
+                                <FileButtonLineComponent label="Load" onClick={async (file) => await this._loadAsync(file)} accept=".json" />
+                            )}
                             {this.props.globalState.downloadSmartFilter && (
                                 <ButtonLineComponent
                                     label="Save"
                                     onClick={() => {
-                                        this.downloadSmartFilter();
+                                        this._downloadSmartFilter();
                                     }}
                                 />
                             )}
@@ -370,7 +335,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                 <ButtonLineComponent
                                     label="Copy to Clipboard"
                                     onClick={() => {
-                                        this.copySmartFilter();
+                                        this._copySmartFilter();
                                     }}
                                 />
                             )}
@@ -379,7 +344,8 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                     label="Paste from Clipboard"
                                     onClick={() => {
                                         if (window.confirm("Any unsaved changes will be lost. Do you want to continue?")) {
-                                            this.pasteSmartFilter();
+                                            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                            this._pasteSmartFilterAsync();
                                         }
                                     }}
                                 />
@@ -389,7 +355,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                     label="Save to unique URL"
                                     isDisabled={this.state.uploadInProgress}
                                     onClick={() => {
-                                        this.saveToSnippetServer();
+                                        this._saveToSnippetServer();
                                     }}
                                 />
                             )}

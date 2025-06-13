@@ -8,7 +8,7 @@ import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/
  * @param globalState - State of the editor
  * @param graphCanvas - Graph canvas to pull data from
  */
-export function setEditorData(smartFilter: SmartFilter, globalState: GlobalState, graphCanvas: GraphCanvasComponent) {
+export function SetEditorData(smartFilter: SmartFilter, globalState: GlobalState, graphCanvas: GraphCanvasComponent) {
     smartFilter.editorData = {
         locations: [],
         x: graphCanvas.x,

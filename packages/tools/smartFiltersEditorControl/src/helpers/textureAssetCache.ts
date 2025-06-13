@@ -2,7 +2,7 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
 import type { ConnectionPointType, InputBlock, InputBlockEditorData } from "@babylonjs/smart-filters";
 import type { Observable } from "core/Misc/observable";
-import { loadTextureInputBlockAsset } from "./editorTextureLoaders.js";
+import { LoadTextureInputBlockAsset } from "./editorTextureLoaders.js";
 
 /**
  * An entry in the texture asset cache.
@@ -53,7 +53,7 @@ export class TextureAssetCache {
      * Loads the assets for the given input blocks, using the cache if possible.
      * @param inputBlocks - The input blocks to load assets for.
      */
-    public async loadAssetsForInputBlocks(inputBlocks: InputBlock<ConnectionPointType.Texture>[]) {
+    public async loadAssetsForInputBlocksAsync(inputBlocks: InputBlock<ConnectionPointType.Texture>[]) {
         // Set all entries to be unused
         for (const entry of this._cache) {
             entry.stillUsed = false;
@@ -81,7 +81,8 @@ export class TextureAssetCache {
                 inputBlock.output.runtimeData.value = cacheEntry.texture;
             } else {
                 // Cache miss: try to load the asset
-                const result = await loadTextureInputBlockAsset(inputBlock, this._engine, this._beforeRenderObservable);
+                // eslint-disable-next-line no-await-in-loop
+                const result = await LoadTextureInputBlockAsset(inputBlock, this._engine, this._beforeRenderObservable);
 
                 // If the asset was loaded, add it to the cache
                 if (result) {
@@ -108,6 +109,9 @@ export class TextureAssetCache {
         }
     }
 
+    /**
+     * Disposes the cache and all its assets.
+     */
     public dispose(): void {
         for (const entry of this._cache) {
             entry.dispose();

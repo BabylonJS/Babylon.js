@@ -6,7 +6,14 @@ import type { Nullable } from "core/types";
 import { createImageTexture, type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
 
 export type LoadResult = {
+    /**
+     *  The loaded texture.
+     */
     texture: ThinTexture;
+
+    /**
+     * Dispose the texture and any related resources.
+     */
     dispose: () => void;
 };
 
@@ -18,7 +25,7 @@ export type LoadResult = {
  * @param beforeRenderObservable - Observable which is notified before rendering each frame
  * @returns The texture and dispose function for it, or null if the texture could not be loaded
  */
-export async function loadTextureInputBlockAsset(
+export async function LoadTextureInputBlockAsset(
     inputBlock: InputBlock<ConnectionPointType.Texture>,
     engine: ThinEngine,
     beforeRenderObservable: Observable<void>
@@ -30,7 +37,7 @@ export async function loadTextureInputBlockAsset(
         switch (editorData.urlTypeHint) {
             case "video":
                 {
-                    const { videoTexture, update, disposeVideoElementAndTextures } = await createVideoTextureAsync(engine, editorData.url);
+                    const { videoTexture, update, disposeVideoElementAndTextures } = await CreateVideoTextureAsync(engine, editorData.url);
                     const observer = beforeRenderObservable.add(() => {
                         update();
                     });
@@ -73,8 +80,19 @@ export async function loadTextureInputBlockAsset(
 }
 
 export type EditorLoadedVideoTexture = {
+    /**
+     *  The video texture created from the video element.
+     */
     videoTexture: ThinTexture;
+
+    /**
+     * Function to update the texture with the current video frame.
+     */
     update: () => void;
+
+    /**
+     * Dispose the video element and the texture.
+     */
     disposeVideoElementAndTextures: () => void;
 };
 
@@ -84,8 +102,11 @@ export type EditorLoadedVideoTexture = {
  *
  * @param engine - The ThinEngine to create the texture with
  * @param url - The URL of the video file to create a texture from
+ *
+ *  @returns A promise which resolves to a EditorLoadedVideoTexture
  */
-export function createVideoTextureAsync(engine: ThinEngine, url: string): Promise<EditorLoadedVideoTexture> {
+// eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
+export function CreateVideoTextureAsync(engine: ThinEngine, url: string): Promise<EditorLoadedVideoTexture> {
     return new Promise((resolve, reject) => {
         let hiddenVideo: Nullable<HTMLVideoElement> = document.createElement("video");
         document.body.appendChild(hiddenVideo);
@@ -140,8 +161,10 @@ export function createVideoTextureAsync(engine: ThinEngine, url: string): Promis
 
         hiddenVideo.src = url;
         hiddenVideo.onerror = (error) => {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         };
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         hiddenVideo.play();
     });
 }

@@ -7,9 +7,7 @@ import type { ConnectionPointType, InputBlock, InputBlockEditorData } from "@bab
  * @param inputBlock - The input block to get the editor data for
  * @returns The editor data for the input block
  */
-export function getTextureInputBlockEditorData(
-    inputBlock: InputBlock<ConnectionPointType.Texture>
-): InputBlockEditorData<ConnectionPointType.Texture> {
+export function GetTextureInputBlockEditorData(inputBlock: InputBlock<ConnectionPointType.Texture>): InputBlockEditorData<ConnectionPointType.Texture> {
     if (inputBlock.editorData === null) {
         const internalTexture = inputBlock.runtimeValue.value?.getInternalTexture();
         inputBlock.editorData = {
@@ -33,9 +31,7 @@ export function getTextureInputBlockEditorData(
  * @param inputBlock - The input block to get the editor data for
  * @returns The editor data for the input block
  */
-export function getFloatInputBlockEditorData(
-    inputBlock: InputBlock<ConnectionPointType.Float>
-): InputBlockEditorData<ConnectionPointType.Float> {
+export function GetFloatInputBlockEditorData(inputBlock: InputBlock<ConnectionPointType.Float>): InputBlockEditorData<ConnectionPointType.Float> {
     if (inputBlock.editorData === null) {
         inputBlock.editorData = {
             animationType: null,

@@ -9,7 +9,7 @@ import { WebCamInputBlockName } from "./blockNames.js";
  * @param serializedBlock - The serialized block to create
  * @returns - The instantiated block, or null if the block type is not registered
  */
-export async function inputBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlockV1): Promise<Nullable<BaseBlock>> {
+export async function InputBlockDeserializer(smartFilter: SmartFilter, serializedBlock: ISerializedBlockV1): Promise<Nullable<BaseBlock>> {
     if (serializedBlock.name === WebCamInputBlockName) {
         const module = await import(/* webpackChunkName: "webCamBlock" */ "./webCamInputBlock/webCamInputBlock.js");
         return new module.WebCamInputBlock(smartFilter);
