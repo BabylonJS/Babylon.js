@@ -3,8 +3,8 @@ import type { AbstractMesh } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { useInterceptObservable } from "../../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../../hooks/observableHooks";
+import { useInterceptObservable } from "../../hooks/instrumentationHooks";
+import { useObservableState } from "../../hooks/observableHooks";
 
 export const MeshAdvancedProperties: FunctionComponent<{ entity: AbstractMesh }> = ({ entity: mesh }) => {
     // There is no observable for computeBonesUsingShaders, so we use an interceptor to listen for changes.
