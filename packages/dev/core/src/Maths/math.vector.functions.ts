@@ -1,4 +1,4 @@
-import { DeepImmutable } from "../types";
+import type { DeepImmutable } from "../types";
 import { Clamp } from "./math.scalar.functions";
 import type { Vector2, Vector4 } from "./math.vector";
 import { Quaternion, Vector3 } from "./math.vector";

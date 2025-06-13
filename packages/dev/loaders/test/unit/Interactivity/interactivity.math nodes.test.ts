@@ -1,4 +1,4 @@
-import { IKHRInteractivity_Declaration, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
+import type { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type } from "babylonjs-gltf2interface";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
@@ -59,7 +59,7 @@ describe("Interactivity math nodes", () => {
                     declaration: declarations.length,
                     flows: {
                         out: {
-                            node: declarations.length + 1,
+                            node: nodes.length + 1,
                             socket: "in",
                         },
                     },
@@ -1989,9 +1989,11 @@ describe("Interactivity math nodes", () => {
 
     it("should use math/quatToAxisAngle", async () => {
         const randomQuaternion = Quaternion.FromEulerAngles(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        const graph = await generateSimpleNodeGraph(
-            [{ op: "math/quatToAxisAngle" }],
-            [
+
+        const ig: IKHRInteractivity_Graph = {
+            declarations: [{ op: "math/quatToAxisAngle" }, { op: "event/onStart" }, { op: "flow/log", extension: "BABYLON" }],
+            types: [{ signature: "float4" }],
+            nodes: [
                 {
                     declaration: 0,
                     values: {
@@ -2001,15 +2003,68 @@ describe("Interactivity math nodes", () => {
                         },
                     },
                 },
+                {
+                    declaration: 1,
+                    flows: {
+                        out: {
+                            node: 2,
+                            socket: "in",
+                        },
+                    },
+                },
+                {
+                    declaration: 2,
+                    values: {
+                        axis: {
+                            node: 0,
+                            socket: "axis",
+                        },
+                        angle: {
+                            node: 0,
+                            socket: "angle",
+                        },
+                    },
+                    configuration: {
+                        messageTemplate: {
+                            value: ["{axis}{angle}"],
+                        },
+                    },
+                },
             ],
-            [{ signature: "float4" }]
-        );
-        const logItem = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue).pop();
-        expect(logItem).toBeDefined();
-        const result = logItem!.payload.value;
+        };
+
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
+        const json = i2fg.serializeToFlowGraph();
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const flowGraph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });
+        flowGraph.getContext(0).enableLogging = true;
+        flowGraph.getContext(0).logger!.logToConsole = false;
+
+        coordinator.start();
+
+        const graph = {
+            graph: flowGraph,
+            logger: flowGraph.getContext(0).logger!,
+        };
+
         const expected = randomQuaternion.toAxisAngle();
-        expect(roundArray3(result.axis.asArray())).toEqual(roundArray3(expected.axis.asArray()));
-        expect(round3(result.angle)).toEqual(round3(expected.angle));
+        const logItems = graph.logger.getItemsOfType(FlowGraphAction.GetConnectionValue);
+
+        {
+            const logItem = logItems.pop();
+            expect(logItem).toBeDefined();
+            const angle = logItem!.payload.value;
+            expect(round3(angle)).toEqual(round3(expected.angle));
+        }
+
+        logItems.pop();
+
+        {
+            const logItem = logItems.pop();
+            expect(logItem).toBeDefined();
+            const axis = logItem!.payload.value;
+            expect(roundArray3(axis.asArray())).toEqual(roundArray3(expected.axis.asArray()));
+        }
     });
 
     it("should use math/quatFromDirections", async () => {

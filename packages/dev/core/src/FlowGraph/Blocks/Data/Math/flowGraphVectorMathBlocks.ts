@@ -8,6 +8,7 @@ import {
     RichTypeMatrix,
     getRichTypeByFlowGraphType,
     RichTypeQuaternion,
+    RichTypeBoolean,
 } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
@@ -21,6 +22,11 @@ import { _GetClassNameOf } from "core/FlowGraph/utils";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../Maths/math.vector.functions";
+import { Nullable } from "../../../../types";
+
+const AxisCacheName = "cachedOperationAxis";
+const AngleCacheName = "cachedOperationAngle";
+const CacheExecIdName = "cachedExecutionId";
 
 /**
  * Vector length block.
@@ -256,6 +262,11 @@ export class FlowGraphAxisAngleFromQuaternionBlock extends FlowGraphBlock {
      */
     public readonly angle: FlowGraphDataConnection<number>;
 
+    /**
+     * Output connection: Whether the value is valid.
+     */
+    public readonly isValid: FlowGraphDataConnection<boolean>;
+
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
@@ -263,14 +274,31 @@ export class FlowGraphAxisAngleFromQuaternionBlock extends FlowGraphBlock {
 
         this.axis = this.registerDataOutput("axis", RichTypeVector3);
         this.angle = this.registerDataOutput("angle", RichTypeNumber);
+
+        this.isValid = this.registerDataOutput("isValid", RichTypeBoolean);
     }
 
     /** @override */
     public override _updateOutputs(context: FlowGraphContext) {
-        // REVIEW: do we need to cache?
-        const { axis, angle } = this.a.getValue(context).toAxisAngle();
-        this.axis.setValue(axis, context);
-        this.angle.setValue(angle, context);
+        const cachedExecutionId = context._getExecutionVariable(this, CacheExecIdName, -1);
+        const cachedAxis = context._getExecutionVariable<Nullable<Vector3>>(this, AxisCacheName, null);
+        const cachedAngle = context._getExecutionVariable<Nullable<number>>(this, AngleCacheName, null);
+        if (cachedAxis !== undefined && cachedAxis !== null && cachedAngle !== undefined && cachedAngle !== null && cachedExecutionId === context.executionId) {
+            this.axis.setValue(cachedAxis, context);
+            this.angle.setValue(cachedAngle, context);
+        } else {
+            try {
+                const { axis, angle } = this.a.getValue(context).toAxisAngle();
+                context._setExecutionVariable(this, AxisCacheName, axis);
+                context._setExecutionVariable(this, AngleCacheName, angle);
+                context._setExecutionVariable(this, CacheExecIdName, context.executionId);
+                this.axis.setValue(axis, context);
+                this.angle.setValue(angle, context);
+                this.isValid.setValue(true, context);
+            } catch (e) {
+                this.isValid.setValue(false, context);
+            }
+        }
     }
 
     /** @override */
