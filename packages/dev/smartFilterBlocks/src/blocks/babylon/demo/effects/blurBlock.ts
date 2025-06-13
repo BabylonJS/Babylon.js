@@ -1,7 +1,7 @@
 import { type ConnectionPointType, AggregateBlock, type ConnectionPoint, editableInPropertyPage, PropertyTypeForEdition, SmartFilter } from "@babylonjs/smart-filters";
-import { DirectionalBlurBlock } from "./directionalBlurBlock.js";
-import { blurBlockType } from "../../../blockTypes.js";
-import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
+import { DirectionalBlurBlock } from "./directionalBlurBlock";
+import { blurBlockType } from "../../../blockTypes";
+import { babylonDemoEffectsNamespace } from "../../../blockNamespaces";
 
 const DefaultBlurTextureRatioPerPass = 0.5;
 const DefaultBlurSize = 2;

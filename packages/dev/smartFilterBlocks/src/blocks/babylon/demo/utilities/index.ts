@@ -1,1 +1,1 @@
-export * from "./premultiplyAlphaBlock.block.js";
+export * from "./premultiplyAlphaBlock.block";

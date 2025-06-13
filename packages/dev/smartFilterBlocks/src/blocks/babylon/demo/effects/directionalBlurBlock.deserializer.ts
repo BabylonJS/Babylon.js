@@ -1,5 +1,5 @@
 import type { ISerializedBlockV1, SmartFilter } from "@babylonjs/smart-filters";
-import { DirectionalBlurBlock } from "./directionalBlurBlock.js";
+import { DirectionalBlurBlock } from "./directionalBlurBlock";
 
 /**
  * The definition of the extra data serialized for directional blur blocks.

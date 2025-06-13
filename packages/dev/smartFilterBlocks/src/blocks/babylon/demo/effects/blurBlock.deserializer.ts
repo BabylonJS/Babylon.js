@@ -1,5 +1,5 @@
 import { type SmartFilter, type ISerializedBlockV1 } from "@babylonjs/smart-filters";
-import { BlurBlock } from "./blurBlock.js";
+import { BlurBlock } from "./blurBlock";
 
 /**
  * The definition of the extra data serialized for blur blocks.

@@ -1,1 +1,1 @@
-export * from "./wipeBlock.block.js";
+export * from "./wipeBlock.block";

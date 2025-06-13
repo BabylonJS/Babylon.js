@@ -1,2 +1,2 @@
-export * from "./registration/index.js";
-export * from "./blocks/index.js";
+export * from "./registration/index";
+export * from "./blocks/index";

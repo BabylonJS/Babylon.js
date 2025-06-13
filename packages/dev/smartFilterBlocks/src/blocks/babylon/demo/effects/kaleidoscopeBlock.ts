@@ -11,8 +11,8 @@ import {
     BlockDisableStrategy,
 } from "@babylonjs/smart-filters";
 
-import { kaleidoscopeBlockType } from "../../../blockTypes.js";
-import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
+import { kaleidoscopeBlockType } from "../../../blockTypes";
+import { babylonDemoEffectsNamespace } from "../../../blockNamespaces";
 
 /**
  * This block uses a custom vertex shader, so it defines the ShaderProgram inline

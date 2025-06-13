@@ -37,7 +37,8 @@
         "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
         "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilterBlocks/src', './src', { recursive: true })\"",
         "precompile": "node ../../../dev/smartFilters/dist/utils/buildTools/buildShaders.js ./src/blocks @babylonjs/smart-filters",
-        "compile": "tsc -b tsconfig.build.json"
+        "compile": "tsc -b tsconfig.build.json",
+        "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
         "@babylonjs/core": "npm:@babylonjs/core@8.0.1",

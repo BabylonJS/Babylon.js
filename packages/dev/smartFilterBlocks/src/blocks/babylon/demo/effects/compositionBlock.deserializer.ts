@@ -1,5 +1,5 @@
 import type { ISerializedBlockV1, SmartFilter } from "@babylonjs/smart-filters";
-import { CompositionBlock } from "./compositionBlock.js";
+import { CompositionBlock } from "./compositionBlock";
 
 /**
  * The definition of the extra data serialized for composition blocks.

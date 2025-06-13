@@ -11,8 +11,8 @@ import {
     ShaderBlock,
 } from "@babylonjs/smart-filters";
 
-import { directionalBlurBlockType } from "../../../blockTypes.js";
-import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
+import { directionalBlurBlockType } from "../../../blockTypes";
+import { babylonDemoEffectsNamespace } from "../../../blockNamespaces";
 
 const ShaderProgram: ShaderProgram = {
     fragment: {

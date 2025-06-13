@@ -1,7 +1,7 @@
 import type { IBlockSerializerV1 } from "@babylonjs/smart-filters";
-import { BlurBlockSerializer } from "../blocks/babylon/demo/effects/blurBlock.serializer.js";
-import { DirectionalBlurBlockSerializer } from "../blocks/babylon/demo/effects/directionalBlurBlock.serializer.js";
-import { CompositionBlockSerializer } from "../blocks/babylon/demo/effects/compositionBlock.serializer.js";
+import { BlurBlockSerializer } from "../blocks/babylon/demo/effects/blurBlock.serializer";
+import { DirectionalBlurBlockSerializer } from "../blocks/babylon/demo/effects/directionalBlurBlock.serializer";
+import { CompositionBlockSerializer } from "../blocks/babylon/demo/effects/compositionBlock.serializer";
 import {
     blackAndWhiteBlockType,
     pixelateBlockType,
@@ -17,7 +17,7 @@ import {
     tintBlockType,
     premultiplyAlphaBlockType,
     wipeBlockType,
-} from "../blocks/blockTypes.js";
+} from "../blocks/blockTypes";
 
 /**
  * Any blocks that do not need to make use of ISerializedBlockV1.data can use the default serialization and
