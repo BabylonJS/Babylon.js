@@ -61,6 +61,7 @@ const OutputOptions = [
 const ShadowQualityOptions = [
     { label: "None", value: "none" },
     { label: "Normal", value: "normal" },
+    { label: "High", value: "high" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: ShadowQuality }[];
 
 const ToneMappingOptions = [
