@@ -8,9 +8,7 @@ import { useObservableState } from "../../../../hooks/observableHooks";
 
 export const MeshAdvancedProperties: FunctionComponent<{ entity: AbstractMesh }> = ({ entity: mesh }) => {
     // There is no observable for computeBonesUsingShaders, so we use an interceptor to listen for changes.
-    const computeBonesUsingShadersObservable = useInterceptObservable("property", mesh, "computeBonesUsingShaders");
-    // Use the observable to keep keep state up-to-date and re-render the component when it changes.
-    const computeBonesUsingShaders = useObservableState(() => mesh.computeBonesUsingShaders, computeBonesUsingShadersObservable);
+    const computeBonesUsingShaders = useObservableState(() => mesh.computeBonesUsingShaders, useInterceptObservable("property", mesh, "computeBonesUsingShaders"));
 
     return (
         // TODO: Use the new Fluent property line shared components.
