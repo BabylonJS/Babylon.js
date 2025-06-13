@@ -43,6 +43,6 @@ playwright/.cache/
 packages/public/@babylonjs/smart-filters/src
 packages/public/@babylonjs/smart-filters-blocks/src
 
-# Smart Filters demo files
-packages/tools/smartFiltersDemo/www/scripts/**
-packages/tools/smartFiltersDemo/www/index.html
+# Smart Filters Editor files
+packages/tools/smartFiltersEditor/www/scripts/**
+packages/tools/smartFiltersEditor/www/index.html
