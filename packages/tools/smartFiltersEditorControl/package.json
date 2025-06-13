@@ -1,5 +1,5 @@
 {
-    "name": "@dev/smart-filters-editor-control",
+    "name": "@tools/smart-filters-editor-control",
     "private": true,
     "version": "1.0.0",
     "description": "The editor control used in Smart Filters applications.",

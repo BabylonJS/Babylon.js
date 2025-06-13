@@ -1,10 +1,17 @@
 {
-    "extends": "../../tsconfig.common.build.json",
+    "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "rootDir": "./src",
+        "composite": true,
+        "strict": true,
         "outDir": "./dist",
-        "composite": true
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["../node_modules/core/*"],
+            "@babylonjs/core/*": ["../node_modules/core/*"],
+            "@babylonjs/smart-filters": ["dev/smartFilters/dist"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"]
+        }
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
