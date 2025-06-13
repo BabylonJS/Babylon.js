@@ -1,6 +1,6 @@
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
 import type { SmartFilter, SmartFilterDeserializer } from "@babylonjs/smart-filters";
-import { SnippetUrl } from "./constants.js";
+import { SnippetUrl } from "./constants";
 
 /**
  * Loads a SmartFilter from the provided file.

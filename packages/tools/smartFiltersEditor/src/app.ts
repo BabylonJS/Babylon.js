@@ -1,6 +1,6 @@
-import "@babylonjs/core/Engines/Extensions/engine.rawTexture.js";
+import "@babylonjs/core/Engines/Extensions/engine.rawTexture";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import { Observable, type Observer } from "@babylonjs/core/Misc/observable.js";
+import { Observable, type Observer } from "@babylonjs/core/Misc/observable";
 import type { Nullable } from "@babylonjs/core/types";
 import { SmartFilterDeserializer, type ISerializedBlockV1, type SmartFilter, Logger } from "@babylonjs/smart-filters";
 import { builtInBlockRegistrations, type IBlockRegistration } from "@babylonjs/smart-filters-blocks";
@@ -13,20 +13,20 @@ import {
     SmartFilterEditorControl,
     type SmartFilterEditorOptions,
 } from "@babylonjs/smart-filters-editor-control";
-import { SmartFilterRenderer } from "./smartFilterRenderer.js";
-import { CustomBlockManager } from "./customBlockManager.js";
-import { createBlockRegistration, generateCustomBlockRegistrations } from "./blockRegistration/generateCustomBlockEditorRegistrations.js";
-import { blockFactory } from "./blockRegistration/blockFactory.js";
-import { loadFromUrl, loadStartingSmartFilter } from "./smartFilterLoadSave/loadStartingSmartFilter.js";
-import { saveToSnippetServer } from "./smartFilterLoadSave/saveToSnipperServer.js";
-import { removeCustomBlockFromBlockEditorRegistration } from "./blockRegistration/removeCustomBlockFromBlockEditorRegistration.js";
-import { addCustomBlockToBlockEditorRegistration } from "./blockRegistration/addCustomBlockToBlockEditorRegistration.js";
-import { downloadSmartFilter } from "./smartFilterLoadSave/downloadSmartFilter.js";
-import { copySmartFilter } from "./smartFilterLoadSave/copySmartFilter.js";
-import { loadSmartFilterFromFile } from "./smartFilterLoadSave/loadSmartFilterFromFile.js";
-import { pasteSmartFilter } from "./smartFilterLoadSave/pasteSmartFilter.js";
-import { texturePresets } from "./texturePresets.js";
-import { serializeSmartFilter } from "./smartFilterLoadSave/serializeSmartFilter.js";
+import { SmartFilterRenderer } from "./smartFilterRenderer";
+import { CustomBlockManager } from "./customBlockManager";
+import { createBlockRegistration, generateCustomBlockRegistrations } from "./blockRegistration/generateCustomBlockEditorRegistrations";
+import { blockFactory } from "./blockRegistration/blockFactory";
+import { loadFromUrl, loadStartingSmartFilter } from "./smartFilterLoadSave/loadStartingSmartFilter";
+import { saveToSnippetServer } from "./smartFilterLoadSave/saveToSnipperServer";
+import { removeCustomBlockFromBlockEditorRegistration } from "./blockRegistration/removeCustomBlockFromBlockEditorRegistration";
+import { addCustomBlockToBlockEditorRegistration } from "./blockRegistration/addCustomBlockToBlockEditorRegistration";
+import { downloadSmartFilter } from "./smartFilterLoadSave/downloadSmartFilter";
+import { copySmartFilter } from "./smartFilterLoadSave/copySmartFilter";
+import { loadSmartFilterFromFile } from "./smartFilterLoadSave/loadSmartFilterFromFile";
+import { pasteSmartFilter } from "./smartFilterLoadSave/pasteSmartFilter";
+import { texturePresets } from "./texturePresets";
+import { serializeSmartFilter } from "./smartFilterLoadSave/serializeSmartFilter";
 
 const LocalStorageOptimizeName = "OptimizeSmartFilter";
 

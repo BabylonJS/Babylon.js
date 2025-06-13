@@ -1,5 +1,5 @@
 import type { SmartFilter } from "@babylonjs/smart-filters";
-import { serializeSmartFilter } from "./serializeSmartFilter.js";
+import { serializeSmartFilter } from "./serializeSmartFilter";
 
 /**
  * Copies the Smart Filter to the clipboard as a JSON file.

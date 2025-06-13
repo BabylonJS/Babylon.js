@@ -1,14 +1,7 @@
-import { Observable } from "@babylonjs/core/Misc/observable.js";
+import { Observable } from "@babylonjs/core/Misc/observable";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
 import type { Nullable } from "@babylonjs/core/types";
-import {
-    ConnectionPointType,
-    SmartFilterOptimizer,
-    type InputBlock,
-    type SmartFilter,
-    type SmartFilterRuntime,
-    Logger,
-} from "@babylonjs/smart-filters";
+import { ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "@babylonjs/smart-filters";
 import { RenderTargetGenerator } from "@babylonjs/smart-filters";
 import { LogEntry, registerAnimations, TextureAssetCache } from "@babylonjs/smart-filters-editor-control";
 
@@ -90,10 +83,7 @@ export class SmartFilterRenderer {
      * @param onLogRequiredObservable - The observable to use to notify when a log entry is required
      * @returns A promise that resolves as true if the rendering started successfully, false otherwise
      */
-    public async startRendering(
-        filter: SmartFilter,
-        onLogRequiredObservable: Observable<LogEntry>
-    ): Promise<RenderResult> {
+    public async startRendering(filter: SmartFilter, onLogRequiredObservable: Observable<LogEntry>): Promise<RenderResult> {
         let optimizationTimeMs: Nullable<number> = null;
         let runtimeCreationTimeMs: Nullable<number> = null;
 
@@ -224,8 +214,7 @@ export class SmartFilterRenderer {
         const forceMaxSamplersInFragmentShader = 0;
 
         const optimizer = new SmartFilterOptimizer(smartFilter, {
-            maxSamplersInFragmentShader:
-                forceMaxSamplersInFragmentShader || this.engine.getCaps().maxTexturesImageUnits,
+            maxSamplersInFragmentShader: forceMaxSamplersInFragmentShader || this.engine.getCaps().maxTexturesImageUnits,
             removeDisabledBlocks: false, // False so that we don't have to rerender the graph if uniforms change in the editor
         });
 

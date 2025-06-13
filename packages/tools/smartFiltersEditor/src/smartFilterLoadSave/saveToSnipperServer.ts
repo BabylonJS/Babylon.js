@@ -1,7 +1,7 @@
 import { type SmartFilter } from "@babylonjs/smart-filters";
-import { getSnippet, setSnippet } from "./hashFunctions.js";
-import { SnippetUrl } from "./constants.js";
-import { serializeSmartFilter } from "./serializeSmartFilter.js";
+import { getSnippet, setSnippet } from "./hashFunctions";
+import { SnippetUrl } from "./constants";
+import { serializeSmartFilter } from "./serializeSmartFilter";
 
 /**
  * Saves the provided Smart Filter to the snippet server

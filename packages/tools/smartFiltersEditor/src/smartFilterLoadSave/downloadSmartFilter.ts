@@ -1,6 +1,6 @@
-import { StringTools } from "@babylonjs/shared-ui-components/stringTools.js";
+import { StringTools } from "@babylonjs/shared-ui-components/stringTools";
 import type { SmartFilter } from "@babylonjs/smart-filters";
-import { serializeSmartFilter } from "./serializeSmartFilter.js";
+import { serializeSmartFilter } from "./serializeSmartFilter";
 
 /**
  * Initiates the download of a  Smart Filter as a JSON file.

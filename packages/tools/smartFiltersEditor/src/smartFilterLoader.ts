@@ -1,8 +1,8 @@
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
 import type { SmartFilter, SmartFilterDeserializer } from "@babylonjs/smart-filters";
 import type { SmartFilterRenderer } from "./smartFilterRenderer";
-import { Observable } from "@babylonjs/core/Misc/observable.js";
-import { ReadFile } from "@babylonjs/core/Misc/fileTools.js";
+import { Observable } from "@babylonjs/core/Misc/observable";
+import { ReadFile } from "@babylonjs/core/Misc/fileTools";
 
 /**
  * Indicates the source of a Smart Filter
@@ -118,10 +118,7 @@ export class SmartFilterLoader {
      * @param source - Source of the Smart Filter (see SmartFilterSource)
      * @returns Promise that resolves with the loaded Smart Filter
      */
-    private async _loadSmartFilter(
-        loader: () => Promise<SmartFilter>,
-        source: SmartFilterSource
-    ): Promise<SmartFilter> {
+    private async _loadSmartFilter(loader: () => Promise<SmartFilter>, source: SmartFilterSource): Promise<SmartFilter> {
         this._renderer.beforeRenderObservable.clear();
 
         // Load the Smart Filter using the provided function.
