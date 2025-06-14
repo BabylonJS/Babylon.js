@@ -9,6 +9,7 @@ import type { IShellService } from "../shellService";
 import { DataBarHorizontalRegular } from "@fluentui/react-icons";
 
 import { CountStats } from "../../components/stats/countStats";
+import { FrameStepsStats } from "../../components/stats/frameStepStats";
 import { StatsPane } from "../../components/stats/statsPane";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
@@ -90,6 +91,11 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
                     section: StatsCountSectionIdentity,
                     order: 0,
                     component: CountStats,
+                },
+                {
+                    section: StatsFrameStepsSectionIdentity,
+                    order: 0,
+                    component: FrameStepsStats,
                 },
             ],
         });
