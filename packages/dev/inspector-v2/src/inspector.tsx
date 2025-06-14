@@ -16,8 +16,8 @@ import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materi
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { CommonPropertiesServiceDefinition } from "./services/panes/properties/common/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mesh/meshPropertiesService";
+import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
+import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";

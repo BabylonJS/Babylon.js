@@ -14,6 +14,7 @@ import { Tools } from "core/Misc/tools";
 import { SmartFilterTextureBlock } from "./Blocks/Dual/smartFilterTextureBlock";
 import { Color4 } from "core/Maths/math.color";
 import { AddBlock } from "./Blocks/addBlock";
+import { SmartFilterFragmentOutputBlock } from "./Blocks/Fragment/smartFilterFragmentOutputBlock";
 
 /**
  * Clear the material and set it to a default state for gaussian splatting
@@ -107,7 +108,7 @@ export function SetToDefaultSFE(nodeMaterial: NodeMaterial): void {
     color.connectTo(multiply);
     currentScreen.connectTo(multiply);
 
-    const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+    const fragmentOutput = new SmartFilterFragmentOutputBlock("FragmentOutput");
     multiply.connectTo(fragmentOutput);
 
     nodeMaterial.addOutputNode(fragmentOutput);
