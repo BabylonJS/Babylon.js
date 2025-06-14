@@ -3,7 +3,7 @@ import type { AbstractMesh } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-export const MeshTransformProperties: FunctionComponent<{ entity: AbstractMesh }> = ({ entity: mesh }) => {
+export const MeshTransformProperties: FunctionComponent<{ context: AbstractMesh }> = ({ context: mesh }) => {
     return (
         // TODO: Use the new Fluent property line shared components.
         <>
