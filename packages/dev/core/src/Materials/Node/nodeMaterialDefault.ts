@@ -11,8 +11,10 @@ import type { NodeMaterial } from "./nodeMaterial";
 import { MultiplyBlock } from "./Blocks/multiplyBlock";
 import { Texture } from "../Textures/texture";
 import { Tools } from "core/Misc/tools";
-import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
+import { SmartFilterTextureBlock } from "./Blocks/Dual/smartFilterTextureBlock";
 import { Color4 } from "core/Maths/math.color";
+import { AddBlock } from "./Blocks/addBlock";
+import { SmartFilterFragmentOutputBlock } from "./Blocks/Fragment/smartFilterFragmentOutputBlock";
 
 /**
  * Clear the material and set it to a default state for gaussian splatting
@@ -56,13 +58,19 @@ export function SetToDefaultGaussianSplatting(nodeMaterial: NodeMaterial): void 
     view.connectTo(gs, { input: "view" });
     projection.connectTo(gs, { input: "projection" });
 
+    const addBlock = new AddBlock("Add SH");
+
     // from color to gaussian color
     const gaussian = new GaussianBlock("Gaussian");
     splatReader.connectTo(gaussian, { input: "splatColor", output: "splatColor" });
 
     // fragment and vertex outputs
     const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-    gaussian.connectTo(fragmentOutput);
+
+    gs.SH.connectTo(addBlock.left);
+    gaussian.rgb.connectTo(addBlock.right);
+    addBlock.output.connectTo(fragmentOutput.rgb);
+    gaussian.alpha.connectTo(fragmentOutput.a);
 
     const vertexOutput = new VertexOutputBlock("VertexOutput");
     gs.connectTo(vertexOutput);
@@ -85,8 +93,10 @@ export function SetToDefaultSFE(nodeMaterial: NodeMaterial): void {
 
     const uv = new InputBlock("uv");
     uv.setAsAttribute("postprocess_uv");
+    uv.comments = "Normalized screen position to sample our texture with.";
 
-    const currentScreen = new CurrentScreenBlock("Main Input Texture");
+    const currentScreen = new SmartFilterTextureBlock("Input Texture");
+    currentScreen.comments = "A placeholder that represents the input texture to compose.";
     uv.connectTo(currentScreen);
     const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/nme/currentScreenPostProcess.png");
     currentScreen.texture = new Texture(textureUrl, nodeMaterial.getScene());
@@ -98,7 +108,7 @@ export function SetToDefaultSFE(nodeMaterial: NodeMaterial): void {
     color.connectTo(multiply);
     currentScreen.connectTo(multiply);
 
-    const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+    const fragmentOutput = new SmartFilterFragmentOutputBlock("FragmentOutput");
     multiply.connectTo(fragmentOutput);
 
     nodeMaterial.addOutputNode(fragmentOutput);

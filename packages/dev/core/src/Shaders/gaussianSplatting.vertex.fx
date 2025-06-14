@@ -18,6 +18,7 @@ uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
 uniform vec2 focal;
 uniform float kernelSize;
+uniform vec3 eyePosition;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
@@ -54,9 +55,9 @@ void main () {
     mat3 worldRot = mat3(world);
     mat3 normWorldRot = inverseMat3(worldRot);
 
-    vec3 dir = normalize(normWorldRot * (worldPos.xyz - vEyePosition.xyz));
+    vec3 dir = normalize(normWorldRot * (worldPos.xyz - eyePosition));
     dir *= vec3(1.,1.,-1.); // convert to Babylon Space
-    vColor.xyz = computeSH(splat, splat.color.xyz, dir);
+    vColor.xyz = splat.color.xyz + computeSH(splat, dir);
 #endif
 
     gl_Position = gaussianSplatting(position, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);

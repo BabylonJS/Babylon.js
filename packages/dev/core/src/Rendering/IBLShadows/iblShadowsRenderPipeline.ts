@@ -7,7 +7,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
-
+import type { WebGPUEngine } from "../../Engines/webgpuEngine";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
@@ -594,6 +594,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
+     * Clear the list of shadow-casting meshes. This will remove all meshes from the list
+     */
+    public clearShadowCastingMeshes(): void {
+        this._shadowCastingMeshes.length = 0;
+    }
+
+    /**
      * The exponent of the resolution of the voxel shadow grid. Higher resolutions will result in sharper
      * shadows but are more expensive to compute and require more memory.
      * The resolution is calculated as 2 to the power of this number.
@@ -881,6 +888,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             },
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
+        if (this.engine.isWebGPU) {
+            this._gbufferDebugPass.samples = (this.engine as WebGPUEngine).currentSampleCount ?? 1;
+        }
         this._gbufferDebugPass.autoClear = false;
         this._gbufferDebugPass.onApplyObservable.add((effect) => {
             const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
@@ -1089,6 +1099,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 plugin.isEnabled = false;
             }
         }
+    }
+
+    /**
+     * Clear the list of materials that receive shadows. This will remove all materials from the list
+     */
+    public clearShadowReceivingMaterials() {
+        for (const mat of this._materialsWithRenderPlugin) {
+            const plugin = mat.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);
+            if (plugin) {
+                plugin.isEnabled = false;
+            }
+        }
+        this._materialsWithRenderPlugin.length = 0;
     }
 
     protected _addShadowSupportToMaterial(material: Material) {

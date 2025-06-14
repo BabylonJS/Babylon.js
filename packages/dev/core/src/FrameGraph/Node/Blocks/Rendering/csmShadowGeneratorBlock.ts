@@ -1,9 +1,11 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph } from "core/index";
+import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, FrameGraphTextureHandle, NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCascadedShadowGeneratorTask } from "../../../Tasks/Rendering/csmShadowGeneratorTask";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
+import { DepthTextureType } from "core/Misc/thinMinMaxReducer";
 
 /**
  * Block that generates shadows through a shadow generator
@@ -26,6 +28,16 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
      */
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
+
+        this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+
+        this.geomDepth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth |
+                NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth |
+                NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth
+        );
+
+        this._finalizeInputOutputRegistering();
 
         this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph, scene);
     }
@@ -106,6 +118,16 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         this._frameGraphTask.autoCalcDepthBounds = value;
     }
 
+    /** Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true. */
+    @editableInPropertyPage("Auto-Calc depth bounds refresh rate", PropertyTypeForEdition.Int, "CSM PROPERTIES")
+    public get autoCalcDepthBoundsRefreshRate() {
+        return this._frameGraphTask.autoCalcDepthBoundsRefreshRate;
+    }
+
+    public set autoCalcDepthBoundsRefreshRate(value: number) {
+        this._frameGraphTask.autoCalcDepthBoundsRefreshRate = value;
+    }
+
     /** Gets or sets the maximum shadow Z value. */
     @editableInPropertyPage("Shadow maxZ", PropertyTypeForEdition.Float, "CSM PROPERTIES")
     public get shadowMaxZ() {
@@ -124,6 +146,33 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         return "NodeRenderGraphCascadedShadowGeneratorBlock";
     }
 
+    /**
+     * Gets the geometry (view / normalized view) depth component
+     */
+    public get geomDepth(): NodeRenderGraphConnectionPoint {
+        return this._inputs[3];
+    }
+
+    protected override _buildBlock(state: NodeRenderGraphBuildState) {
+        super._buildBlock(state);
+
+        this._frameGraphTask.depthTexture = this.geomDepth.connectedPoint?.value as FrameGraphTextureHandle;
+
+        if (this.geomDepth.connectedPoint) {
+            switch (this.geomDepth.connectedPoint.type) {
+                case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
+                    this._frameGraphTask.depthTextureType = DepthTextureType.ScreenDepth;
+                    break;
+                case NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth:
+                    this._frameGraphTask.depthTextureType = DepthTextureType.NormalizedViewDepth;
+                    break;
+                case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
+                    this._frameGraphTask.depthTextureType = DepthTextureType.ViewDepth;
+                    break;
+            }
+        }
+    }
+
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.numCascades = ${this.numCascades};`);
@@ -133,6 +182,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         codes.push(`${this._codeVariableName}.cascadeBlendPercentage = ${this.cascadeBlendPercentage};`);
         codes.push(`${this._codeVariableName}.depthClamp = ${this.depthClamp};`);
         codes.push(`${this._codeVariableName}.autoCalcDepthBounds = ${this.autoCalcDepthBounds};`);
+        codes.push(`${this._codeVariableName}.autoCalcDepthBoundsRefreshRate = ${this.autoCalcDepthBoundsRefreshRate};`);
         codes.push(`${this._codeVariableName}.shadowMaxZ = ${this.shadowMaxZ};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
@@ -146,6 +196,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         serializationObject.cascadeBlendPercentage = this.cascadeBlendPercentage;
         serializationObject.depthClamp = this.depthClamp;
         serializationObject.autoCalcDepthBounds = this.autoCalcDepthBounds;
+        serializationObject.autoCalcDepthBoundsRefreshRate = this.autoCalcDepthBoundsRefreshRate;
         serializationObject.shadowMaxZ = this.shadowMaxZ;
         return serializationObject;
     }
@@ -159,6 +210,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
         this.cascadeBlendPercentage = serializationObject.cascadeBlendPercentage;
         this.depthClamp = serializationObject.depthClamp;
         this.autoCalcDepthBounds = serializationObject.autoCalcDepthBounds;
+        this.autoCalcDepthBoundsRefreshRate = serializationObject.autoCalcDepthBoundsRefreshRate ?? 1;
         this.shadowMaxZ = serializationObject.shadowMaxZ;
     }
 }

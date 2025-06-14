@@ -39,16 +39,17 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
         if (this.props.ignoreValue) {
             return null;
         }
+        const title = this.props.tooltip ?? this.props.value ?? this.props.label ?? "";
 
         if (this.props.onLink || this.props.url) {
             return (
-                <div className="link-value" title={this.props.tooltip ?? this.props.label ?? ""} onClick={() => this.onLink()}>
+                <div className="link-value" title={title} onClick={() => this.onLink()}>
                     {this.props.url ? "doc" : this.props.value || "no name"}
                 </div>
             );
         }
         return (
-            <div className="value" title={this.props.tooltip ?? this.props.label ?? ""} style={{ color: this.props.color ? this.props.color : "" }}>
+            <div className="value" title={title} style={{ color: this.props.color ? this.props.color : "" }}>
                 {this.props.value || "no name"}
             </div>
         );

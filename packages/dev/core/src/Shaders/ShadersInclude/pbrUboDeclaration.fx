@@ -89,6 +89,8 @@ uniform Material {
     vec3 vSphericalYZ;
     vec3 vSphericalZX;
 
+    vec4 cameraInfo;
+
     #define ADDITIONAL_UBO_DECLARATION
 };
 

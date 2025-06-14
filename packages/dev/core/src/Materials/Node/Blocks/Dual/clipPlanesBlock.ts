@@ -90,7 +90,11 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
     public override set target(value: NodeMaterialBlockTargets) {}
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         const scene = mesh.getScene();
 
         const useClipPlane1 = (nodeMaterial.clipPlane ?? scene.clipPlane) ? true : false;

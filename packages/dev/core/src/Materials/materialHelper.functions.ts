@@ -192,7 +192,7 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
         const uv2 = manager && manager.supportsUV2s && defines["UV2"];
-        const color = manager && manager.supportsColors && defines["COLOR"];
+        const color = manager && manager.supportsColors && defines["VERTEXCOLOR"];
         for (let index = 0; index < influencers; index++) {
             if (position) {
                 attribs.push(Constants.PositionKind + index);

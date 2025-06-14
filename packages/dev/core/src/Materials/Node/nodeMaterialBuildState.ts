@@ -6,13 +6,10 @@ import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionP
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
-import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { Process } from "core/Engines/Processors/shaderProcessor";
 import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
-
-/** @internal */
-export const SfeModeDefine = "USE_SFE_FRAMEWORK";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to store node based material build state
@@ -81,7 +78,11 @@ export class NodeMaterialBuildState {
     public _varyingTransfer = "";
     /** @internal */
     public _injectAtEnd = "";
-
+    /** @internal */
+    public _injectAtTop = "";
+    /** @internal */
+    public _customEntryHeader = "";
+    /** @internal */
     private _repeatableContentAnchorIndex = 0;
     /** @internal */
     public _builtCompilationString = "";
@@ -104,25 +105,19 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * Gets whether the current compilation should inject SFE syntax or not
-     */
-    public get isSFEMode() {
-        return this.sharedData.nodeMaterial.mode === NodeMaterialModes.SFE;
-    }
-
-    /**
      * Returns the processed, compiled shader code
+     * @param defines defines to use for the shader processing
      * @returns the raw shader code used by the engine
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public getProcessedShaderAsync(): Promise<string> {
+    public async getProcessedShaderAsync(defines: string): Promise<string> {
         if (!this._builtCompilationString) {
-            throw new Error("Shader not built yet.");
+            Logger.Error("getProcessedShaderAsync: Shader not built yet.");
+            return "";
         }
 
         const engine = this.sharedData.nodeMaterial.getScene().getEngine();
         const options: _IProcessingOptions = {
-            defines: [],
+            defines: defines.split("\n"),
             indexParameters: undefined,
             isFragment: this.target === NodeMaterialBlockTargets.Fragment,
             shouldUseHighPrecisionShader: engine._shouldUseHighPrecisionShader,
@@ -142,12 +137,7 @@ export class NodeMaterialBuildState {
             options.processor = new WebGLShaderProcessor();
         }
 
-        // For SFE, use the SFE define to toggle the SFE syntax in the shader
-        if (this.isSFEMode) {
-            options.defines.push(SfeModeDefine);
-        }
-
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             Process(
                 this._builtCompilationString,
                 options,
@@ -168,21 +158,16 @@ export class NodeMaterialBuildState {
         const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
         let entryPointString = `\n${emitComments ? "//Entry point\n" : ""}`;
-        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+        if (this._customEntryHeader) {
+            entryPointString += this._customEntryHeader;
+        } else if (this.shaderLanguage === ShaderLanguage.WGSL) {
             if (isFragmentMode) {
-                entryPointString = `@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.sharedData.varyingInitializationsFragment}`;
+                entryPointString += `@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.sharedData.varyingInitializationsFragment}`;
             } else {
-                entryPointString = `@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n`;
+                entryPointString += `@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n`;
             }
-        } else if (this.isSFEMode) {
-            // SFE: Replace the entry with a helper function
-            entryPointString += `#ifdef ${SfeModeDefine}\n`;
-            entryPointString += `vec4 nmeMain(vec2 vUV) { // main\n`;
-            entryPointString += `#else\n`;
-            entryPointString += `void main(void) {\n`;
-            entryPointString += `#endif\n`;
         } else {
-            entryPointString = `void main(void) {\n`;
+            entryPointString += `void main(void) {\n`;
         }
 
         this.compilationString = entryPointString + this.compilationString;
@@ -239,8 +224,8 @@ export class NodeMaterialBuildState {
             }
         }
 
-        if (this.isSFEMode) {
-            this.compilationString = `\n// { "smartFilterBlockType": "${this.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Test" }\n${this.compilationString}`;
+        if (this._injectAtTop) {
+            this.compilationString = `${this._injectAtTop}\n${this.compilationString}`;
         }
 
         this._builtCompilationString = this.compilationString;
@@ -255,7 +240,7 @@ export class NodeMaterialBuildState {
      * @internal
      */
     public _getFreeVariableName(prefix: string): string {
-        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+        prefix = this.sharedData.formatConfig.formatVariablename(prefix);
 
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
@@ -296,17 +281,20 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, define = "", force = false, annotation?: string) {
+    public _emit2DSampler(name: string, define = "", force = false, annotation?: string, unsignedSampler?: boolean, precision?: string) {
         if (this.samplers.indexOf(name) < 0 || force) {
             if (define) {
                 this._samplerDeclaration += `#if ${define}\n`;
             }
 
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                const unsignedSamplerPrefix = unsignedSampler ? "u" : "f";
                 this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
-                this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d<${unsignedSamplerPrefix}32>;\n`;
             } else {
-                this._samplerDeclaration += `uniform sampler2D ${name}; ${annotation ? annotation : ""}\n`;
+                const unsignedSamplerPrefix = unsignedSampler ? "u" : "";
+                const precisionDecl = precision ?? "";
+                this._samplerDeclaration += `uniform ${precisionDecl} ${unsignedSamplerPrefix}sampler2D ${name}; ${annotation ? annotation : ""}\n`;
             }
 
             if (define) {
@@ -628,7 +616,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false, annotation?: string) {
+    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
         }
@@ -642,8 +630,8 @@ export class NodeMaterialBuildState {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        if (annotation) {
-            this._uniformDeclaration += `${annotation}\n`;
+        if (this.sharedData.formatConfig.getUniformAnnotation) {
+            this._uniformDeclaration += this.sharedData.formatConfig.getUniformAnnotation(name);
         }
         const shaderType = this._getShaderType(type);
         if (this.shaderLanguage === ShaderLanguage.WGSL) {

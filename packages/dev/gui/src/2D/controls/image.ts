@@ -566,8 +566,9 @@ export class Image extends Control {
 
         // Should abstract platform instead of using LastCreatedEngine
         const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
+        // If no engine, skip all other DOM operations.
         if (!engine) {
-            throw new Error("Invalid engine. Unable to create a canvas.");
+            return;
         }
         if (value && Image.SourceImgCache.has(value)) {
             const cachedData = Image.SourceImgCache.get(value)!;

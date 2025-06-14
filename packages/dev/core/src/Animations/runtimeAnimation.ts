@@ -530,7 +530,7 @@ export class RuntimeAnimation {
         let returnValue = true;
         let currentFrame: number;
         const events = this._events;
-        const frameRange = to - from;
+        let frameRange = 0;
 
         if (!this._coreRuntimeAnimation) {
             // Check limits
@@ -541,6 +541,7 @@ export class RuntimeAnimation {
                 to = this._maxFrame;
             }
 
+            frameRange = to - from;
             let offsetValue: any;
 
             // Compute the frame according to the elapsed time and the fps of the animation ("from" and "to" are not factored in!)
@@ -689,6 +690,7 @@ export class RuntimeAnimation {
             this._animationState.highLimitValue = highLimitValue;
             this._animationState.offsetValue = offsetValue;
         } else {
+            frameRange = to - from;
             currentFrame = this._coreRuntimeAnimation.currentFrame;
             this._currentFrame = currentFrame;
             this._animationState.repeatCount = this._coreRuntimeAnimation._animationState.repeatCount;

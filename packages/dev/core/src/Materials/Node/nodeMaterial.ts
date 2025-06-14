@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
-import { Mesh } from "../../Meshes/mesh";
+import type { Mesh } from "../../Meshes/mesh";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
@@ -21,6 +21,7 @@ import type { ImageProcessingConfiguration } from "../imageProcessingConfigurati
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
+import { SfeModeDefine } from "./Blocks/Fragment/smartFilterFragmentOutputBlock";
 import { TransformBlock } from "./Blocks/transformBlock";
 import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
@@ -316,6 +317,7 @@ export class NodeMaterial extends PushMaterial {
             block.getClassName() === "ReflectionBlock" ||
             block.getClassName() === "RefractionBlock" ||
             block.getClassName() === "CurrentScreenBlock" ||
+            block.getClassName() === "SmartFilterTextureBlock" ||
             block.getClassName() === "ParticleTextureBlock" ||
             block.getClassName() === "ImageSourceBlock" ||
             block.getClassName() === "TriPlanarBlock" ||
@@ -782,8 +784,8 @@ export class NodeMaterial extends PushMaterial {
 
                 for (const other of this.attachedBlocks) {
                     if (other.getClassName() === className) {
-                        // eslint-disable-next-line no-throw-literal
-                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                        this._sharedData.raiseBuildError(`Cannot have multiple blocks of type ${className} in the same NodeMaterial`);
+                        return;
                     }
                 }
             }
@@ -913,13 +915,15 @@ export class NodeMaterial extends PushMaterial {
         const allowEmptyVertexProgram = this._mode === NodeMaterialModes.Particle || this._mode === NodeMaterialModes.SFE;
 
         if (this._vertexOutputNodes.length === 0 && !allowEmptyVertexProgram) {
-            // eslint-disable-next-line no-throw-literal
-            throw "You must define at least one vertexOutputNode";
+            this.onBuildErrorObservable.notifyObservers("You must define at least one vertexOutputNode");
+            this._buildIsInProgress = false;
+            return;
         }
 
         if (this._fragmentOutputNodes.length === 0) {
-            // eslint-disable-next-line no-throw-literal
-            throw "You must define at least one fragmentOutputNode";
+            this.onBuildErrorObservable.notifyObservers("You must define at least one fragmentOutputNode");
+            this._buildIsInProgress = false;
+            return;
         }
 
         // Compilation state
@@ -1019,9 +1023,6 @@ export class NodeMaterial extends PushMaterial {
             this._buildId = NodeMaterial._BuildIdGenerator++;
         }
 
-        // Errors
-        const noError = this._sharedData.emitErrors(this.onBuildErrorObservable);
-
         if (verbose) {
             Logger.Log("Vertex shader:");
             Logger.Log(this._vertexCompilationState.compilationString);
@@ -1029,10 +1030,13 @@ export class NodeMaterial extends PushMaterial {
             Logger.Log(this._fragmentCompilationState.compilationString);
         }
 
+        // Errors
+        const noError = this._sharedData.emitErrors();
+
         this._buildIsInProgress = false;
-        this._buildWasSuccessful = true;
         if (noError) {
             this.onBuildObservable.notifyObservers(this);
+            this._buildWasSuccessful = true;
         }
 
         // Wipe defines
@@ -1274,11 +1278,9 @@ export class NodeMaterial extends PushMaterial {
 
         const defines = new NodeMaterialDefines();
 
-        const dummyMesh = new Mesh(tempName + "PostProcess", this.getScene());
-
         let buildId = this._buildId;
 
-        this._processDefines(dummyMesh, defines);
+        this._processDefines(defines);
 
         // If no vertex shader emitted, fallback to default postprocess vertex shader
         const vertexCode = this._sharedData.checks.emitVertex ? this._vertexCompilationState._builtCompilationString : undefined;
@@ -1318,9 +1320,6 @@ export class NodeMaterial extends PushMaterial {
         }
 
         postProcess.nodeMaterialSource = this;
-        postProcess.onDisposeObservable.add(() => {
-            dummyMesh.dispose();
-        });
 
         postProcess.onApplyObservable.add((effect) => {
             if (buildId !== this._buildId) {
@@ -1334,7 +1333,7 @@ export class NodeMaterial extends PushMaterial {
                 buildId = this._buildId;
             }
 
-            const result = this._processDefines(dummyMesh, defines);
+            const result = this._processDefines(defines);
 
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
@@ -1375,13 +1374,8 @@ export class NodeMaterial extends PushMaterial {
 
         const proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
 
-        const dummyMesh = new Mesh(tempName + "Procedural", this.getScene());
-        dummyMesh.reservedDataStore = {
-            hidden: true,
-        };
-
         const defines = new NodeMaterialDefines();
-        const result = this._processDefines(dummyMesh, defines);
+        const result = this._processDefines(defines);
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
 
         let effect = this.getScene().getEngine().createEffect(
@@ -1416,7 +1410,7 @@ export class NodeMaterial extends PushMaterial {
                 buildId = this._buildId;
             }
 
-            const result = this._processDefines(dummyMesh, defines);
+            const result = this._processDefines(defines);
 
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
@@ -1461,7 +1455,6 @@ export class NodeMaterial extends PushMaterial {
         onError?: (effect: Effect, errors: string) => void,
         effect?: Effect,
         defines?: NodeMaterialDefines,
-        dummyMesh?: Nullable<AbstractMesh>,
         particleSystemDefinesJoined = ""
     ) {
         let tempName = this.name + this._buildId + "_" + blendMode;
@@ -1470,23 +1463,13 @@ export class NodeMaterial extends PushMaterial {
             defines = new NodeMaterialDefines();
         }
 
-        if (!dummyMesh) {
-            dummyMesh = this.getScene().getMeshByName(this.name + "Particle");
-            if (!dummyMesh) {
-                dummyMesh = new Mesh(this.name + "Particle", this.getScene());
-                dummyMesh.reservedDataStore = {
-                    hidden: true,
-                };
-            }
-        }
-
         let buildId = this._buildId;
 
         const particleSystemDefines: Array<string> = [];
         let join = particleSystemDefinesJoined;
 
         if (!effect) {
-            const result = this._processDefines(dummyMesh, defines);
+            const result = this._processDefines(defines);
 
             Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, undefined, this.shaderLanguage);
 
@@ -1533,7 +1516,7 @@ export class NodeMaterial extends PushMaterial {
                 join = particleSystemDefinesJoinedCurrent;
             }
 
-            const result = this._processDefines(dummyMesh, defines);
+            const result = this._processDefines(defines);
 
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, undefined, this.shaderLanguage);
@@ -1551,7 +1534,7 @@ export class NodeMaterial extends PushMaterial {
                         particleSystem
                     );
                 particleSystem.setCustomEffect(effect, blendMode);
-                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh, particleSystemDefinesJoined); // add the effect.onBindObservable observer
+                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, particleSystemDefinesJoined); // add the effect.onBindObservable observer
                 return;
             }
 
@@ -1616,8 +1599,8 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _processDefines(
-        mesh: AbstractMesh,
         defines: NodeMaterialDefines,
+        mesh?: AbstractMesh,
         useInstances = false,
         subMesh?: SubMesh
     ): Nullable<{
@@ -1637,11 +1620,11 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared defines
         for (const b of this._sharedData.blocksWithDefines) {
-            b.initializeDefines(mesh, this, defines, useInstances);
+            b.initializeDefines(defines);
         }
 
         for (const b of this._sharedData.blocksWithDefines) {
-            b.prepareDefines(mesh, this, defines, useInstances, subMesh);
+            b.prepareDefines(defines, this, mesh, useInstances, subMesh);
         }
 
         // Need to recompile?
@@ -1654,7 +1637,7 @@ export class NodeMaterial extends PushMaterial {
             this._fragmentCompilationState.compilationString = this._fragmentCompilationState._builtCompilationString;
 
             for (const b of this._sharedData.repeatableContentBlocks) {
-                b.replaceRepeatableContent(this._vertexCompilationState, this._fragmentCompilationState, mesh, defines);
+                b.replaceRepeatableContent(this._vertexCompilationState, defines, mesh);
             }
 
             // Uniforms
@@ -1687,7 +1670,7 @@ export class NodeMaterial extends PushMaterial {
             const fallbacks = new EffectFallbacks();
 
             for (const b of this._sharedData.blocksWithFallbacks) {
-                b.provideFallbacks(mesh, fallbacks);
+                b.provideFallbacks(fallbacks, mesh);
             }
 
             result = {
@@ -1754,7 +1737,7 @@ export class NodeMaterial extends PushMaterial {
             return false;
         }
 
-        const result = this._processDefines(mesh, defines, useInstances, subMesh);
+        const result = this._processDefines(defines, mesh, useInstances, subMesh);
 
         if (result) {
             const previousEffect = subMesh.effect;
@@ -1848,7 +1831,15 @@ export class NodeMaterial extends PushMaterial {
             this.build();
         }
 
-        return await this._fragmentCompilationState.getProcessedShaderAsync();
+        const defines = new NodeMaterialDefines();
+        this._processDefines(defines);
+
+        let processingDefines = defines.toString();
+        if (this.mode === NodeMaterialModes.SFE) {
+            processingDefines += `#define ${SfeModeDefine}\n`;
+        }
+
+        return await this._fragmentCompilationState.getProcessedShaderAsync(processingDefines);
     }
 
     /**

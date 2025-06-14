@@ -10,6 +10,9 @@ import { Observable } from "core/Misc/observable";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 
+import "core/Engines/Extensions/engine.multiRender";
+import "core/Engines/WebGPU/Extensions/engine.multiRender";
+
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
@@ -92,7 +95,7 @@ export class FrameGraph {
         this._scene = scene;
         this._engine = scene.getEngine();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
-        this._passContext = new FrameGraphContext();
+        this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
 
         this._scene.frameGraphs.push(this);

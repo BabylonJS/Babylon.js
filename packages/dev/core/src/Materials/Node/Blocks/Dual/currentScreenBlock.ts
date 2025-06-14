@@ -1,11 +1,9 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { SfeModeDefine } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -19,11 +17,18 @@ import { Constants } from "core/Engines/constants";
  * Base block used as input for post process
  */
 export class CurrentScreenBlock extends NodeMaterialBlock {
-    private _samplerName = "textureSampler";
-    private _linearDefineName: string;
-    private _gammaDefineName: string;
-    private _mainUVName: string;
-    private _tempTextureRead: string;
+    protected _samplerName = "textureSampler";
+    protected _linearDefineName: string;
+    protected _gammaDefineName: string;
+    protected _mainUVName: string;
+    protected _tempTextureRead: string;
+
+    /**
+     * The name of the sampler to read the screen texture from.
+     */
+    public get samplerName(): string {
+        return this._samplerName;
+    }
 
     /**
      * Gets or sets the texture associated with the node
@@ -142,7 +147,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.Fragment;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
     }
@@ -155,7 +160,11 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return true;
     }
 
-    private _injectVertexCode(state: NodeMaterialBuildState) {
+    protected _getMainUvName(state: NodeMaterialBuildState): string {
+        return "vMain" + this.uv.associatedVariableName;
+    }
+
+    protected _injectVertexCode(state: NodeMaterialBuildState) {
         const uvInput = this.uv;
 
         if (uvInput.connectedPoint!.ownerBlock.isInput) {
@@ -181,7 +190,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         }
     }
 
-    private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
+    protected _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
         const uvInput = this.uv;
 
         if (vertexMode) {
@@ -212,7 +221,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureReadFunc} ${this._mainUVName});\n`;
     }
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
+    protected _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
         if (vertexMode) {
             if (state.target === NodeMaterialBlockTargets.Fragment) {
                 return;
@@ -239,6 +248,11 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\n`;
     }
 
+    protected _emitUvAndSampler(state: NodeMaterialBuildState) {
+        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2);
+        state._emit2DSampler(this._samplerName);
+    }
+
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -253,17 +267,12 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         if (state.sharedData.blocksWithDefines.indexOf(this) < 0) {
             state.sharedData.blocksWithDefines.push(this);
         }
+        this._mainUVName = this._getMainUvName(state);
 
-        // SFE: We rely on the default postprocess.vertex shader to supply our varying, which is named vUV.
-        this._mainUVName = state.isSFEMode ? "vUV" : "vMain" + this.uv.associatedVariableName;
-
-        // SFE: Wrap the varying in a define, as it won't be needed there.
-        const define = state.isSFEMode ? SfeModeDefine : undefined;
-        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, define, true);
+        this._emitUvAndSampler(state);
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
-            state._emit2DSampler(this._samplerName);
             this._injectVertexCode(state);
             return;
         }
@@ -272,10 +281,6 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         if (!this._outputs.some((o) => o.isConnectedInFragmentShader)) {
             return;
         }
-
-        // SFE: Append `// main` to denote this as the main input texture to composite.
-        const annotation = state.isSFEMode ? "// main" : undefined;
-        state._emit2DSampler(this._samplerName, undefined, undefined, annotation);
 
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
         this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
