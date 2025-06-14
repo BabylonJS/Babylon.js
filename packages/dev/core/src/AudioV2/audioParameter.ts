@@ -1,46 +1,17 @@
 /**
  * The shape of the audio ramp used to set an audio parameter's value, such as a sound's volume.
  */
-export const enum AudioParamRampShape {
-    /**
-     * The ramp is instantaneous.
-     */
-    None,
+export const enum AudioParameterCurveShape {
     /**
      * The ramp is linear.
      */
-    Linear,
+    LINEAR,
     /**
      * The ramp is exponential.
      */
-    Exponential,
+    EXPONENTIAL,
     /**
      * The ramp is logarithmic.
      */
-    Logarithmic,
-}
-
-/**
- * Options for ramping an audio parameter's value over time.
- */
-export interface IAudioParameterRampOptions {
-    /**
-     * The duration of the ramp in seconds. Defaults to the audio engine's `parameterRampDuration` setting.
-     * - Ignored if the `endTime` option is set.
-     * - @see {@link AudioEngineV2.parameterRampDuration}
-     */
-    duration: number;
-    /**
-     * The end time of the ramp in seconds. Defaults to the current time plus `duration`.
-     */
-    endTime: number;
-    /**
-     * The shape of the ramp used to smoothly transition the parameter's value. Defaults to `AudioParamRampShape.Logarithmic`.
-     * - Ignored if the `shapeCurve` option is set.
-     */
-    shape: AudioParamRampShape;
-    /**
-     * An array of floating-point numbers representing the value curve the audio parameter will change through along the specified duration.
-     */
-    shapeCurve: Array<number>;
+    LOGARITHMIC,
 }

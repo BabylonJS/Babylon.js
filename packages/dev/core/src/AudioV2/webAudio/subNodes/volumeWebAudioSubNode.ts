@@ -1,6 +1,5 @@
-import type { Nullable } from "../../../types";
 import { _VolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
-import type { IAudioParameterRampOptions } from "../../audioParameter";
+import type { AudioParameterCurveShape } from "../../audioParameter";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSubNode } from "../webAudioNode";
 
@@ -49,8 +48,9 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
     }
 
     /** @internal */
-    public override setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
-        this.engine._setAudioParam(this.node.gain, value, options);
+    public override setVolume(value: number, duration: number, curve: AudioParameterCurveShape): void {
+        this._volume = value;
+        this.engine._setAudioParam(this.node.gain, value, duration, curve);
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
