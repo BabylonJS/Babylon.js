@@ -5,13 +5,13 @@ export const enum AudioParameterCurveShape {
     /**
      * The ramp is linear.
      */
-    LINEAR,
+    Linear,
     /**
      * The ramp is exponential.
      */
-    EXPONENTIAL,
+    Exponential,
     /**
      * The ramp is logarithmic.
      */
-    LOGARITHMIC,
+    Logarithmic,
 }

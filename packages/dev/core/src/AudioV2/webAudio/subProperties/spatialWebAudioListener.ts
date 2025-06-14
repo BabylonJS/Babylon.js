@@ -80,9 +80,9 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
 
         const listener = this._audioContext.listener;
 
-        this.engine._setAudioParam(listener.positionX, this.position.x);
-        this.engine._setAudioParam(listener.positionY, this.position.y);
-        this.engine._setAudioParam(listener.positionZ, this.position.z);
+        this.engine._setAudioParam(listener.positionX, this.engine.currentTime, this.position.x);
+        this.engine._setAudioParam(listener.positionY, this.engine.currentTime, this.position.y);
+        this.engine._setAudioParam(listener.positionZ, this.engine.currentTime, this.position.z);
 
         this._lastPosition.copyFrom(this.position);
     }
@@ -104,13 +104,13 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
 
         // NB: The WebAudio API is right-handed.
         Vector3.TransformNormalToRef(Vector3.RightHandedForwardReadOnly, TmpMatrix, TmpVector);
-        this.engine._setAudioParam(listener.forwardX, TmpVector.x);
-        this.engine._setAudioParam(listener.forwardY, TmpVector.y);
-        this.engine._setAudioParam(listener.forwardZ, TmpVector.z);
+        this.engine._setAudioParam(listener.forwardX, this.engine.currentTime, TmpVector.x);
+        this.engine._setAudioParam(listener.forwardY, this.engine.currentTime, TmpVector.y);
+        this.engine._setAudioParam(listener.forwardZ, this.engine.currentTime, TmpVector.z);
 
         Vector3.TransformNormalToRef(Vector3.Up(), TmpMatrix, TmpVector);
-        this.engine._setAudioParam(listener.upX, TmpVector.x);
-        this.engine._setAudioParam(listener.upY, TmpVector.y);
-        this.engine._setAudioParam(listener.upZ, TmpVector.z);
+        this.engine._setAudioParam(listener.upX, this.engine.currentTime, TmpVector.x);
+        this.engine._setAudioParam(listener.upY, this.engine.currentTime, TmpVector.y);
+        this.engine._setAudioParam(listener.upZ, this.engine.currentTime, TmpVector.z);
     }
 }

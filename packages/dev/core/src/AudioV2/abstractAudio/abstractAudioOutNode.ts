@@ -65,9 +65,9 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
      * Sets the audio output volume with optional ramping.
      * @param value The value to set the volume to.
      * @param duration The duration over which to ramp the volume, in seconds. Defaults to 0 (no ramping).
-     * @param curve The shape of the ramp to use for the volume change. Defaults to linear.
+     * @param curve The shape of the ramp to use for the volume change. Defaults to logarithmic when decreasing volume, or linear when increasing volume.
      */
-    public setVolume(value: number, duration: number = 0, curve: AudioParameterCurveShape = AudioParameterCurveShape.LINEAR): void {
+    public setVolume(value: number, duration: number = 0, curve: Nullable<AudioParameterCurveShape> = null): void {
         const node = _GetVolumeAudioSubNode(this._subGraph);
         if (!node) {
             throw new Error("No volume subnode");

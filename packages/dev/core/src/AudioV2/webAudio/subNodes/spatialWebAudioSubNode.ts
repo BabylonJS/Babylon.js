@@ -141,9 +141,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return;
         }
 
-        this.engine._setAudioParam(this.node.positionX, this.position.x);
-        this.engine._setAudioParam(this.node.positionY, this.position.y);
-        this.engine._setAudioParam(this.node.positionZ, this.position.z);
+        this.engine._setAudioParam(this.node.positionX, this.engine.currentTime, this.position.x);
+        this.engine._setAudioParam(this.node.positionY, this.engine.currentTime, this.position.y);
+        this.engine._setAudioParam(this.node.positionZ, this.engine.currentTime, this.position.z);
 
         this._lastPosition.copyFrom(this.position);
     }
@@ -163,9 +163,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
         Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, TmpVector);
 
-        this.engine._setAudioParam(this.node.orientationX, TmpVector.x);
-        this.engine._setAudioParam(this.node.orientationY, TmpVector.y);
-        this.engine._setAudioParam(this.node.orientationZ, TmpVector.z);
+        this.engine._setAudioParam(this.node.orientationX, this.engine.currentTime, TmpVector.x);
+        this.engine._setAudioParam(this.node.orientationY, this.engine.currentTime, TmpVector.y);
+        this.engine._setAudioParam(this.node.orientationZ, this.engine.currentTime, TmpVector.z);
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {

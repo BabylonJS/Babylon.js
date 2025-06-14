@@ -36,7 +36,7 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     /** @internal */
     public set volume(value: number) {
         this._volume = value;
-        this.engine._setAudioParam(this._gainNode.gain, value);
+        this.engine._setAudioParam(this._gainNode.gain, this.engine.currentTime, value);
     }
 
     /** @internal */

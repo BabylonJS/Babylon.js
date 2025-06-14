@@ -33,7 +33,7 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
     /** @internal */
     public set pan(value: number) {
         this._pan = value;
-        this.engine._setAudioParam(this.node.pan, value);
+        this.engine._setAudioParam(this.node.pan, this.engine.currentTime, value);
     }
 
     /** @internal */

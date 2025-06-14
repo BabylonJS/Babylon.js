@@ -34,7 +34,7 @@ export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
     }
 
     /** @internal */
-    public abstract setVolume(value: number, duration?: number, curve?: AudioParameterCurveShape): void;
+    public abstract setVolume(value: number, duration?: number, curve?: Nullable<AudioParameterCurveShape>): void;
 }
 
 /** @internal */

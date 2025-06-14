@@ -13,6 +13,7 @@ import type { AbstractSpatialAudioListener } from "../abstractAudio/subPropertie
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
 import { AudioParameterCurveShape } from "../audioParameter";
+import { _GetAudioParamCurveValues } from "../audioUtils";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -69,60 +70,6 @@ const FormatMimeTypes: { [key: string]: string } = {
     wav: "audio/wav",
     webm: 'audio/webm; codecs="vorbis"',
 };
-
-// const CurveLength = 1000;
-
-// let NormalizedExponentialInCurve: Nullable<Float32Array> = null;
-
-const TmpLinearCurve = [0, 0];
-
-// let NormalizedLogarithmicInCurve: Nullable<Float32Array> = null;
-// let NormalizedLogarithmicOutCurve: Nullable<Float32Array> = null;
-
-// let TempCurve: Float32Array | null = null;
-
-// // y = 0 -> 1
-// // function GetNormalizedExponentialInCurve(): Float32Array {}
-
-// // y = 0 -> 1
-// function GetNormalizedLogarithmicInCurve(): Float32Array {
-//     if (!NormalizedLogarithmicInCurve) {
-//         NormalizedLogarithmicInCurve = new Float32Array(CurveLength);
-
-//         for (let i = 0; i < CurveLength; i++) {
-//             const x = i / CurveLength - 1;
-//             NormalizedLogarithmicInCurve[i] = 2 * (1 - Math.pow(0.5, 2 * x));
-//         }
-//     }
-
-//     return NormalizedLogarithmicInCurve;
-// }
-
-// // y = 1 -> 0
-// function GetNormalizedLogarithmicOutCurve(): Float32Array {
-//     if (!NormalizedLogarithmicOutCurve) {
-//         NormalizedLogarithmicOutCurve = new Float32Array(CurveLength);
-
-//         for (let i = 0; i < CurveLength; i++) {
-//             const x = (CurveLength - 1 - i) / (CurveLength - 1);
-//             NormalizedLogarithmicOutCurve[i] = 2 * (1 - Math.pow(0.5, 2 * x));
-//         }
-//     }
-
-//     return NormalizedLogarithmicOutCurve;
-// }
-
-// function GetScaledCurve(normalizedCurve: Float32Array, min: number, max: number): Float32Array {
-//     if (!TempCurve) {
-//         TempCurve = new Float32Array(CurveLength);
-//     }
-
-//     for (let i = 0; i < normalizedCurve.length; i++) {
-//         TempCurve[i] = min + (max - min) * normalizedCurve[i];
-//     }
-
-//     return TempCurve;
-// }
 
 /** @internal */
 export class _WebAudioEngine extends AudioEngineV2 {
@@ -425,45 +372,29 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public _setAudioParam(
         audioParam: AudioParam,
-        value: number,
+        fromValue: number,
+        toValue: number,
+        startTime: number = this.currentTime,
         duration: number = this.parameterRampDuration,
-        curve: AudioParameterCurveShape = AudioParameterCurveShape.LINEAR
+        curve: AudioParameterCurveShape = AudioParameterCurveShape.Linear
     ): void {
-        if (audioParam.value === value) {
+        const currentValue = audioParam.value;
+        audioParam.cancelScheduledValues(0);
+        console.log(`value before cancel: ${currentValue}`);
+        console.log(`fromValue: ${fromValue}`);
+
+        if (fromValue === toValue) {
             return;
         }
 
-        const startTime = this.currentTime;
+        if (duration <= 0) {
+            audioParam.value = toValue;
+            return;
+        }
 
-        audioParam.cancelScheduledValues(startTime);
-
-        TmpLinearCurve[0] = audioParam.value;
-        TmpLinearCurve[1] = value;
-
-        audioParam.setValueCurveAtTime(TmpLinearCurve, startTime, duration);
-
-        // const linearCurve: number[] = [audioParam.value, value];
-        // const exponentialCurve: number[] = [];
-        // const logarithmicCurve: number[] = [];
-
-        // const shape = options && options.shape !== undefined ? options.shape : AudioParamCurveShape.LOGARITHMIC;
-        // const shapeCurve =
-        //     options?.shapeCurve && typeof options.shapeCurve[Symbol.iterator] === "function"
-        //         ? options.shapeCurve
-        //         : shape === AudioParamCurveShape.LINEAR
-        //           ? linearCurve
-        //           : shape === AudioParamCurveShape.EXPONENTIAL
-        //             ? exponentialCurve
-        //             : shape === AudioParamCurveShape.LOGARITHMIC
-        //               ? logarithmicCurve
-        //               : null;
-
-        // if (shapeCurve) {
-        //     audioParam.cancelScheduledValues(startTime);
-        //     audioParam.setValueCurveAtTime(shapeCurve, startTime, duration);
-        // } else {
-        //     audioParam.setValueAtTime(value, startTime);
-        // }
+        console.log(`from: ${fromValue}, to: ${toValue}, startTime: ${startTime}, duration: ${duration}, curve: ${curve}`);
+        const curveValues = _GetAudioParamCurveValues(curve, fromValue, toValue);
+        audioParam.setValueCurveAtTime(curveValues, startTime, duration);
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {
