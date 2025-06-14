@@ -7,8 +7,7 @@ import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
 import type { Nullable } from "core/types";
-import { Logger } from "core/Misc";
-import { ToHalfFloat } from "core/Misc/textureTools";
+import { Logger, ToHalfFloat } from "core/Misc";
 
 /**
  * Class to bake vertex animation textures.
