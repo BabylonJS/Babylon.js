@@ -19,11 +19,13 @@ export class EngineInstrumentation implements IDisposable {
     private _onBeforeShaderCompilationObserver: Nullable<Observer<AbstractEngine>> = null;
     private _onAfterShaderCompilationObserver: Nullable<Observer<AbstractEngine>> = null;
 
+    private _disposed = false;
+
     // Properties
     /**
      * Gets the perf counter used for GPU frame time
      */
-    public get gpuFrameTimeCounter(): Nullable<PerfCounter> {
+    public get gpuFrameTimeCounter(): PerfCounter {
         return this.engine.getGPUFrameTimeCounter();
     }
 
@@ -104,6 +106,10 @@ export class EngineInstrumentation implements IDisposable {
      * Dispose and release associated resources.
      */
     public dispose() {
+        if (this._disposed) {
+            return;
+        }
+
         this.engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
         this._onBeginFrameObserver = null;
 
@@ -117,5 +123,6 @@ export class EngineInstrumentation implements IDisposable {
         this._onAfterShaderCompilationObserver = null;
 
         (<any>this.engine) = null;
+        this._disposed = true;
     }
 }

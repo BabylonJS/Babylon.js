@@ -66,6 +66,8 @@ export class SceneInstrumentation implements IDisposable {
     private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
     private _onAfterCameraRenderObserver: Nullable<Observer<Camera>> = null;
 
+    private _disposed = false;
+
     // Properties
     /**
      * Gets the perf counter used for active meshes evaluation time
@@ -551,6 +553,10 @@ export class SceneInstrumentation implements IDisposable {
      * Dispose and release associated resources.
      */
     public dispose() {
+        if (this._disposed) {
+            return;
+        }
+
         this.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
         this._onAfterRenderObserver = null;
 
@@ -611,5 +617,6 @@ export class SceneInstrumentation implements IDisposable {
         this._onAfterCameraRenderObserver = null;
 
         (<any>this.scene) = null;
+        this._disposed = true;
     }
 }
