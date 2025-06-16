@@ -20,7 +20,7 @@ export const ToolContext = createContext({ useFluent: false as boolean } as cons
  */
 export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProps>> = (props) => {
     const url = new URL(window.location.href);
-    const enableFluent = url.searchParams.get("newUX") || url.hash.includes("newUX");
+    const enableFluent = url.searchParams.has("newUX") || url.hash.includes("newUX");
 
     return enableFluent ? (
         <FluentProvider theme={props.customTheme || webDarkTheme}>
