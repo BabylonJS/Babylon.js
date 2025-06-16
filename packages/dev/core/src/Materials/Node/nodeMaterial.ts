@@ -21,7 +21,7 @@ import type { ImageProcessingConfiguration } from "../imageProcessingConfigurati
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
-import { SfeModeDefine } from "./Blocks/Dual/smartFilterTextureBlock";
+import { SfeModeDefine } from "./Blocks/Fragment/smartFilterFragmentOutputBlock";
 import { TransformBlock } from "./Blocks/transformBlock";
 import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
