@@ -1,14 +1,16 @@
-import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "../propertiesService";
+import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { IPropertiesService } from "./propertiesService";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 
-import { GeneralPropertiesSectionIdentity } from "../common/commonPropertiesService";
-import { PropertiesServiceIdentity } from "../propertiesService";
-import { MeshGeneralProperties } from "./meshGeneralProperties";
-import { MeshTransformProperties } from "./meshTransformProperties";
+import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
+import { PropertiesServiceIdentity } from "./propertiesService";
+import { MeshAdvancedProperties } from "../../../components/properties/meshAdvancedProperties";
+import { MeshGeneralProperties } from "../../../components/properties/meshGeneralProperties";
+import { MeshTransformProperties } from "../../../components/properties/meshTransformProperties";
 
 export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
+export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
 
 export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Mesh Properties",
@@ -17,6 +19,11 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
         const transformsSectionRegistration = propertiesService.addSection({
             order: 1,
             identity: TransformsPropertiesSectionIdentity,
+        });
+
+        const advancedSectionRegistration = propertiesService.addSection({
+            order: 2,
+            identity: AdvancedPropertiesSectionIdentity,
         });
 
         const contentRegistration = propertiesService.addSectionContent({
@@ -36,6 +43,13 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                     order: 0,
                     component: MeshTransformProperties,
                 },
+
+                // "ADVANCED" section.
+                {
+                    section: AdvancedPropertiesSectionIdentity,
+                    order: 0,
+                    component: MeshAdvancedProperties,
+                },
             ],
         });
 
@@ -43,6 +57,7 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             dispose: () => {
                 contentRegistration.dispose();
                 transformsSectionRegistration.dispose();
+                advancedSectionRegistration.dispose();
             },
         };
     },

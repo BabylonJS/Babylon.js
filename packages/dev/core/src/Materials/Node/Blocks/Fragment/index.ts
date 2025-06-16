@@ -1,4 +1,5 @@
 export * from "./fragmentOutputBlock";
+export * from "./smartFilterFragmentOutputBlock";
 export * from "./imageProcessingBlock";
 export * from "./perturbNormalBlock";
 export * from "./discardBlock";
