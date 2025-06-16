@@ -10,8 +10,8 @@ import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
-import { VectorPropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { VectorPropertyLine } from "../fluent/hoc/vectorPropertyLine";
+import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -261,6 +261,6 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         );
     }
     override render() {
-        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
+        return <ConditionallyUseFluent fluent={() => this.renderFluent()} original={() => this.renderOriginal()} />;
     }
 }
