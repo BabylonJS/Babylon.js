@@ -394,7 +394,24 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         console.log(`from: ${fromValue}, to: ${toValue}, startTime: ${startTime}, duration: ${duration}, curve: ${curve}`);
         const curveValues = _GetAudioParamCurveValues(curve, fromValue, toValue);
-        audioParam.setValueCurveAtTime(curveValues, startTime, duration);
+
+        let attempts = 0;
+        const timerId = setInterval(() => {
+            const delay = this.currentTime - startTime;
+            try {
+                audioParam.setValueCurveAtTime(curveValues, this.currentTime, duration - delay);
+                console.log(`Success setting value curve at time: ${this.currentTime}, duration: ${duration - delay}`);
+                clearInterval(timerId);
+            } catch (e) {
+                console.warn(`Error setting value curve at time:  ${this.currentTime}, duration: ${duration - delay}`);
+            }
+
+            attempts++;
+            if (attempts >= 200) {
+                clearInterval(timerId);
+                console.warn("Exceeded maximum attempts to set audio parameter curve.");
+            }
+        }, 100);
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {
