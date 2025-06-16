@@ -12,7 +12,7 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import type { FlowGraphMathOperationType, FlowGraphNumber } from "core/FlowGraph/utils";
-import { _AreSameIntegerClass, _AreSameMatrixClass, _AreSameVectorClass, _GetClassNameOf, getNumericValue, isNumeric } from "core/FlowGraph/utils";
+import { _AreSameIntegerClass, _AreSameMatrixClass, _AreSameVectorOrQuaternionClass, _GetClassNameOf, getNumericValue, isNumeric } from "core/FlowGraph/utils";
 
 /**
  * A configuration interface  for math blocks
@@ -58,12 +58,9 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMa
     private _polymorphicAdd(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
-        if (_AreSameVectorClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
+        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             // cast to vector3, but any other cast will be fine
             return (a as Vector3).add(b as Vector3);
-        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
-            // this is a simple add, and should be also supported between Quat and Vector4. Therefore -
-            return (a as Quaternion).add(b as Quaternion);
         } else {
             // at this point at least one of the variables is a number.
             if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
@@ -97,11 +94,9 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicSubtract(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
-        if (_AreSameVectorClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName)) {
+        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName)) {
+            // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).subtract(b as Vector3);
-        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
-            // this is a simple subtract, and should be also supported between Quat and Vector4. Therefore -
-            return (a as Quaternion).subtract(b as Quaternion);
         } else {
             // at this point at least one of the variables is a number.
             if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
@@ -132,16 +127,9 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
     private _polymorphicMultiply(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
-        if (_AreSameVectorClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
+        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
+            // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).multiply(b as Vector3);
-        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
-            // this is a simple multiply (per component!), and should be also supported between Quat and Vector4. Therefore -
-            const aClone = (a as Quaternion).clone();
-            aClone.x *= (b as Quaternion).x;
-            aClone.y *= (b as Quaternion).y;
-            aClone.z *= (b as Quaternion).z;
-            aClone.w *= (b as Quaternion).w;
-            return aClone;
         } else if (_AreSameMatrixClass(aClassName, bClassName)) {
             if (this.config?.useMatrixPerComponent) {
                 // this is the definition of multiplication of glTF interactivity
@@ -195,7 +183,7 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
     private _polymorphicDivide(a: FlowGraphMathOperationType, b: FlowGraphMathOperationType) {
         const aClassName = _GetClassNameOf(a);
         const bClassName = _GetClassNameOf(b);
-        if (_AreSameVectorClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
+        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).divide(b as Vector3);
         } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Quaternion) {
@@ -710,7 +698,7 @@ export class FlowGraphEqualityBlock extends FlowGraphBinaryOperationBlock<FlowGr
         if (typeof a !== typeof b) {
             return false;
         }
-        if (_AreSameVectorClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
+        if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             return (a as Vector3).equals(b as Vector3);
         } else {
             return a === b;
