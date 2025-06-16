@@ -1,4 +1,4 @@
-import type { PropsWithChildren, FunctionComponent, ComponentType } from "react";
+import type { PropsWithChildren, FunctionComponent } from "react";
 import { createContext } from "react";
 import type { Theme } from "@fluentui/react-components";
 import { FluentProvider, webDarkTheme } from "@fluentui/react-components";
@@ -29,14 +29,4 @@ export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProp
     ) : (
         props.children
     );
-};
-
-/**
- * A higher-order component that conditionally renders a Fluent component or an original component based on the Fluent context.
- * This is useful for switching to fluent in class-based components that can't use hooks directly.
- * @param props - An object containing the Fluent component and the original component.
- * @returns A component that renders either the Fluent component or the original component based on the Fluent context.
- */
-export const ConditionallyUseFluent: FunctionComponent<{ fluent: ComponentType; original: ComponentType }> = (props) => {
-    return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? <props.fluent /> : <props.original />)}</ToolContext.Consumer>;
 };

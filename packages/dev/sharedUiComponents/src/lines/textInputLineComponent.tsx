@@ -8,7 +8,7 @@ import { InputArrowsComponent } from "./inputArrowsComponent";
 import { PropertyLine } from "../fluent/hoc/propertyLine";
 import { Textarea } from "../fluent/primitives/textarea";
 import { Input } from "../fluent/primitives/input";
-import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 export interface ITextInputLineComponentProps {
     label?: string;
@@ -307,7 +307,10 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
-
-        return <ConditionallyUseFluent fluent={() => this.renderFluent(value, placeholder, step)} original={() => this.renderOriginal(value, placeholder, step)} />;
+        return (
+            <ToolContext.Consumer>
+                {({ useFluent }) => (useFluent ? this.renderFluent(value, placeholder, step) : this.renderOriginal(value, placeholder, step))}
+            </ToolContext.Consumer>
+        );
     }
 }

@@ -6,7 +6,7 @@ import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "./floatLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
-import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { SyncedSliderLine } from "../fluent/hoc/syncedSliderLine";
 
 interface ISliderLineComponentProps {
@@ -205,6 +205,6 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         );
     }
     override render() {
-        return <ConditionallyUseFluent fluent={() => this.renderFluent()} original={() => this.renderOriginal()} />;
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

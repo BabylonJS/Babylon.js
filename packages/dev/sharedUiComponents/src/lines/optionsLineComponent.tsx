@@ -6,7 +6,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 import copyIcon from "../imgs/copy.svg";
 import { PropertyLine } from "../fluent/hoc/propertyLine";
 import { Dropdown } from "../fluent/primitives/dropdown";
-import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -158,6 +158,6 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
         );
     }
     override render() {
-        return <ConditionallyUseFluent fluent={() => this._renderFluent()} original={() => this._renderOriginal()} />;
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this._renderFluent() : this._renderOriginal())}</ToolContext.Consumer>;
     }
 }

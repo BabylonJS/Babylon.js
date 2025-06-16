@@ -11,7 +11,7 @@ import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
 import { VectorPropertyLine } from "../fluent/hoc/vectorPropertyLine";
-import { ConditionallyUseFluent } from "../fluent/hoc/fluentToolWrapper";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -261,6 +261,6 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         );
     }
     override render() {
-        return <ConditionallyUseFluent fluent={() => this.renderFluent()} original={() => this.renderOriginal()} />;
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }
