@@ -1,0 +1,18 @@
+.elbowBlock {
+    width: 40px;
+    grid-template-rows: 0px 40px 0px;
+    border-radius: 40px;
+    transform: translateY(-7px);
+}
+
+.hidden {
+    display: none;
+}
+
+.translatedConnections {
+    transform: translateY(7px);
+}
+
+.roundSelectionBorder {
+    border-radius: 40px;
+}
