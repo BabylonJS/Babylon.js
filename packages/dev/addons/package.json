@@ -13,7 +13,9 @@
         "build": "npm run clean && npm run compile",
         "test": "jest -c ../../../jest.config.ts",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
+        "precompile": "npm run compile:assets",
         "compile": "tsc -b tsconfig.build.json",
+        "compile:assets": "build-tools -c process-assets",
         "watch": "tsc -b tsconfig.build.json -w",
         "watch:dev": "npm run watch"
     },
