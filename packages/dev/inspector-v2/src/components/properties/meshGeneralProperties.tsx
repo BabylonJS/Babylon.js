@@ -5,7 +5,7 @@ import type { FunctionComponent } from "react";
 
 import { useObservableState } from "../../hooks/observableHooks";
 
-export const MeshGeneralProperties: FunctionComponent<{ entity: AbstractMesh }> = ({ entity: mesh }) => {
+export const MeshGeneralProperties: FunctionComponent<{ context: AbstractMesh }> = ({ context: mesh }) => {
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
     const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
 
