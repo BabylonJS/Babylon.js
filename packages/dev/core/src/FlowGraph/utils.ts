@@ -32,13 +32,16 @@ export function _GetClassNameOf(v: any) {
 
 /**
  * @internal
- * Check if two classname are the same and are vector classes.
+ * Check if two classname are the same and are vector or quaternion classes.
  * @param className the first class name
  * @param className2 the second class name
- * @returns whether the two class names are the same and are vector classes.
+ * @returns whether the two class names are the same and are vector or quaternion classes.
  */
-export function _AreSameVectorClass(className: string, className2: string) {
-    return className === className2 && (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4);
+export function _AreSameVectorOrQuaternionClass(className: string, className2: string) {
+    return (
+        className === className2 &&
+        (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4 || className === FlowGraphTypes.Quaternion)
+    );
 }
 
 /**
