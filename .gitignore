@@ -48,4 +48,4 @@ packages/tools/smartFiltersEditor/www/scripts/**
 packages/tools/smartFiltersEditor/www/index.html
 
 # Smart Filter Debugger output
-smartFiltersDebugger/unpackedExtension
+packages/tools/smartFiltersDebugger/unpackedExtension

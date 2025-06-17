@@ -14,7 +14,7 @@ This browser extension is intended to aid in the development of web applications
 
 ### Usage
 
-1. Build: `npm install` then `npm run build -w @tools/smart-filter-debugger`
+1. Build: `npm install` then `npm run build -w @tools/smart-filters-debugger`
 1. Install in Chrome or Edge
     - Go to Manage Extensions
     - Turn on Developer Mode
@@ -36,7 +36,7 @@ This browser extension is intended to aid in the development of web applications
 
 To work on the browser extension:
 
-1. Run `npm run watch:browserExtension` in the root of the repo
+1. Run `npm run watch -w @tools/smart-filters-debugger` in the root of the repo
 1. If you haven't done the installation steps above, do them now (only needs to be done once)
 1. To make changes
     1. Make your change in the code, and confirm your incremental build is green in the terminal
