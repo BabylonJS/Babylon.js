@@ -1,0 +1,24 @@
+{
+    "extends": "../../tsconfig.common.json",
+
+    "compilerOptions": {
+        "rootDir": "../",
+        "outDir": "./dist",
+        "composite": true,
+        "types": [
+            // (various types, e.g. jquery, core-js),
+            "chrome"
+        ],
+        "resolveJsonModule": true
+    },
+    "include": [
+        "./src/**/*.ts",
+        "./src/**/*.tsx",
+        "../blocks/**/*.ts",
+        "../core/src/**/*.ts",
+        "../core/src/**/*.tsx",
+        "../editor/src/**/*.ts",
+        "../editor/src/**/*.tsx"
+    ],
+    "exclude": ["**/node_modules"]
+}
