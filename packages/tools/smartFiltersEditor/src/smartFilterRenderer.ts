@@ -1,9 +1,8 @@
 import { Observable } from "@babylonjs/core/Misc/observable";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
 import type { Nullable } from "@babylonjs/core/types";
-import { ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "@babylonjs/smart-filters";
-import { RenderTargetGenerator } from "@babylonjs/smart-filters";
-import { LogEntry, registerAnimations, TextureAssetCache } from "@babylonjs/smart-filters-editor-control";
+import { RenderTargetGenerator, ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "@babylonjs/smart-filters";
+import { LogEntry, RegisterAnimations, TextureAssetCache } from "@babylonjs/smart-filters-editor-control";
 
 /**
  * Describes the result of rendering a Smart Filter
@@ -144,7 +143,7 @@ export class SmartFilterRenderer {
         }
 
         // Load the assets for the input blocks
-        await this._textureAssetCache.loadAssetsForInputBlocks(inputBlocks);
+        await this._textureAssetCache.loadAssetsForInputBlocksAsync(inputBlocks);
     }
 
     /**
@@ -207,7 +206,7 @@ export class SmartFilterRenderer {
             this._animationDisposeWork();
         }
 
-        this._animationDisposeWork = registerAnimations(smartFilter, this.engine, this.beforeRenderObservable);
+        this._animationDisposeWork = RegisterAnimations(smartFilter, this.engine, this.beforeRenderObservable);
     }
 
     private _optimize(smartFilter: SmartFilter): SmartFilter {

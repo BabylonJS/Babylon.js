@@ -5,9 +5,9 @@ import type { Nullable } from "@babylonjs/core/types";
 import { SmartFilterDeserializer, type ISerializedBlockV1, type SmartFilter, Logger } from "@babylonjs/smart-filters";
 import { builtInBlockRegistrations, type IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import {
-    editorBlockRegistrations,
-    getBlockEditorRegistration,
-    inputBlockDeserializer,
+    EditorBlockRegistrations,
+    GetBlockEditorRegistration,
+    InputBlockDeserializer,
     LogEntry,
     ObservableProperty,
     SmartFilterEditorControl,
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
         (smartFilter: SmartFilter, engine: ThinEngine, serializedBlock: ISerializedBlockV1, smartFilterDeserializer: SmartFilterDeserializer) => {
             return blockFactory(smartFilter, engine, serializedBlock, customBlockManager, smartFilterDeserializer, builtInBlockRegistrations);
         },
-        inputBlockDeserializer
+        InputBlockDeserializer
     );
 
     // Create the custom block manager
@@ -72,8 +72,8 @@ async function main(): Promise<void> {
     const customBlockRegistrations = generateCustomBlockRegistrations(customBlockManager, smartFilterDeserializer, customBlockDefinitions);
 
     // Create the block editor registration
-    const allBlockRegistrations: IBlockRegistration[] = [...customBlockRegistrations, ...editorBlockRegistrations, ...builtInBlockRegistrations];
-    const blockEditorRegistration = getBlockEditorRegistration(smartFilterDeserializer, allBlockRegistrations, true, onLogRequiredObservable);
+    const allBlockRegistrations: IBlockRegistration[] = [...customBlockRegistrations, ...EditorBlockRegistrations, ...builtInBlockRegistrations];
+    const blockEditorRegistration = GetBlockEditorRegistration(smartFilterDeserializer, allBlockRegistrations, true, onLogRequiredObservable);
 
     /**
      * Called when the editor has created a canvas and its associated engine

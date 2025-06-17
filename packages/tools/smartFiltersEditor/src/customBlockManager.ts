@@ -11,7 +11,7 @@ import {
     type SmartFilterDeserializer,
     Logger,
 } from "@babylonjs/smart-filters";
-import { CustomBlocksNamespace, getBlockKey } from "@babylonjs/smart-filters-editor-control";
+import { CustomBlocksNamespace, GetBlockKey } from "@babylonjs/smart-filters-editor-control";
 
 const SavedCustomBlockKeysName = "Custom-Block-List";
 const SavedCustomBlockDefinitionNameSuffix = "-Definition";
@@ -41,7 +41,7 @@ export class CustomBlockManager {
      */
     public getBlockDefinition(blockType: string, namespace: Nullable<string>): Nullable<SerializedBlockDefinition> {
         namespace = namespace || CustomBlocksNamespace;
-        return this._customBlockDefinitions.get(getBlockKey(blockType, namespace)) || null;
+        return this._customBlockDefinitions.get(GetBlockKey(blockType, namespace)) || null;
     }
 
     /**
@@ -63,7 +63,7 @@ export class CustomBlockManager {
         smartFilterDeserializer: SmartFilterDeserializer
     ): Promise<Nullable<BaseBlock>> {
         namespace = namespace || CustomBlocksNamespace;
-        const blockDefinition = this._customBlockDefinitions.get(getBlockKey(blockType, namespace));
+        const blockDefinition = this._customBlockDefinitions.get(GetBlockKey(blockType, namespace));
         if (!blockDefinition) {
             return null;
         }
@@ -89,19 +89,9 @@ export class CustomBlockManager {
     ): Promise<BaseBlock> {
         switch (blockDefinition.format) {
             case "shaderBlockDefinition":
-                return CustomShaderBlock.Create(
-                    smartFilter,
-                    name || this._getDefaultName(blockDefinition),
-                    blockDefinition
-                );
+                return CustomShaderBlock.Create(smartFilter, name || this._getDefaultName(blockDefinition), blockDefinition);
             case "smartFilter":
-                return CustomAggregateBlock.Create(
-                    smartFilter,
-                    engine,
-                    name || this._getDefaultName(blockDefinition),
-                    blockDefinition,
-                    smartFilterDeserializer
-                );
+                return CustomAggregateBlock.Create(smartFilter, engine, name || this._getDefaultName(blockDefinition), blockDefinition, smartFilterDeserializer);
         }
     }
 
@@ -138,10 +128,7 @@ export class CustomBlockManager {
                 if (!blockDefinition.namespace) {
                     blockDefinition.namespace = CustomBlocksNamespace;
                 }
-                this._customBlockDefinitions.set(
-                    getBlockKey(blockDefinition.blockType, blockDefinition.namespace),
-                    blockDefinition
-                );
+                this._customBlockDefinitions.set(GetBlockKey(blockDefinition.blockType, blockDefinition.namespace), blockDefinition);
             }
         }
     }
@@ -154,9 +141,9 @@ export class CustomBlockManager {
     public deleteBlockDefinition(blockType: string, namespace: Nullable<string>) {
         namespace = namespace || CustomBlocksNamespace;
         const blockKeyList = this._readBlockKeysFromLocalStorage();
-        const blockKey = getBlockKey(blockType, namespace);
+        const blockKey = GetBlockKey(blockType, namespace);
 
-        this._customBlockDefinitions.delete(getBlockKey(blockType, namespace));
+        this._customBlockDefinitions.delete(GetBlockKey(blockType, namespace));
 
         const index = blockKeyList.indexOf(blockKey);
         if (index > -1) {
@@ -191,7 +178,7 @@ export class CustomBlockManager {
         }
 
         this.deleteBlockDefinition(blockType, blockDefinition.namespace);
-        const blockKey = getBlockKey(blockType, blockDefinition.namespace);
+        const blockKey = GetBlockKey(blockType, blockDefinition.namespace);
 
         // Add to the stored list of block keys in local storage
         const blockKeyList = this._readBlockKeysFromLocalStorage();
@@ -226,7 +213,7 @@ export class CustomBlockManager {
             .map((blockKey) => {
                 if (blockKey.indexOf("].[") === -1) {
                     updatedAnyKeys = true;
-                    const key = getBlockKey(blockKey, CustomBlocksNamespace);
+                    const key = GetBlockKey(blockKey, CustomBlocksNamespace);
                     const oldDefinition = localStorage.getItem(blockKey + SavedCustomBlockDefinitionNameSuffix);
                     if (oldDefinition) {
                         localStorage.setItem(key + SavedCustomBlockDefinitionNameSuffix, oldDefinition);
