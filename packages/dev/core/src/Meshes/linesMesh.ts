@@ -10,6 +10,7 @@ import { Material } from "../Materials/material";
 import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import type { Effect } from "../Materials/effect";
+import type { MeshCreationOptions } from "./mesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -250,8 +251,15 @@ export class LinesMesh extends Mesh {
      * @param doNotCloneChildren if set to true, none of the mesh children are cloned (false by default)
      * @returns the new mesh
      */
-    public override clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): LinesMesh {
-        return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+    public override clone(name: string, newParent: Nullable<Node> | MeshCreationOptions = null, doNotCloneChildren?: boolean): LinesMesh {
+        if (newParent && (newParent as Node)._addToSceneRootNodes === undefined) {
+            const createOptions = newParent as MeshCreationOptions;
+            createOptions.source = this;
+
+            return new LinesMesh(name, this.getScene(), createOptions.parent, createOptions.source as Nullable<LinesMesh>, createOptions.doNotCloneChildren);
+        }
+
+        return new LinesMesh(name, this.getScene(), newParent as Nullable<Node>, this, doNotCloneChildren);
     }
 
     /**
