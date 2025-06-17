@@ -151,8 +151,12 @@ export class MorphTargetManager implements IDisposable {
      * If you assign a non-zero value to this property, you need to ensure that this value is greater than the maximum number of (active) influencers you'll need for this morph manager.
      * Otherwise, the number of active influencers will be truncated at the value you set for this property, which can lead to unexpected results.
      * Note that this property has no effect if "useTextureToStoreTargets" is false.
+     * Note as well that if MorphTargetManager.ConstantTargetCountForTextureMode is greater than 0, this property will be ignored and the constant value will be used instead.
      */
     public get numMaxInfluencers(): number {
+        if (MorphTargetManager.ConstantTargetCountForTextureMode > 0 && this.isUsingTextureForTargets) {
+            return MorphTargetManager.ConstantTargetCountForTextureMode;
+        }
         return this._numMaxInfluencers;
     }
 
