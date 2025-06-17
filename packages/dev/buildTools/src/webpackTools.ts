@@ -228,12 +228,19 @@ export const commonDevWebpackConfiguration = (
  */
 class CopyMinToMaxWebpackPlugin {
     apply(compiler: Compiler) {
-        compiler.hooks.afterEmit.tapAsync("CopyToMax", (compilation) => {
-            const outputPath = compilation.outputOptions.path;
-            const file = compilation.outputOptions.filename?.toString();
+        compiler.hooks.done.tap("CopyToMax", (stats) => {
+            const outputPath = stats.compilation.outputOptions.path;
+            const file = stats.compilation.outputOptions.filename?.toString();
             if (outputPath && file) {
                 const from = `${outputPath}\\${file}`;
-                const to = `${outputPath}\\${file.replace(/\.js$/, ".max.js")}`;
+                let to;
+                if (file.includes(".min.js")) {
+                    // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
+                    to = `${outputPath}\\${file.replace(/\.min\.js$/, ".js")}`;
+                } else {
+                    // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
+                    to = `${outputPath}\\${file.replace(/\.js$/, ".max.js")}`;
+                }
                 copyFile(from, to);
             }
         });
