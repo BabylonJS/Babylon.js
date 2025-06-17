@@ -236,10 +236,10 @@ class CopyMinToMaxWebpackPlugin {
                 let to;
                 if (file.includes(".min.js")) {
                     // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
-                    to = `${outputPath}\\${file.replace(/\.min\.js$/, ".js")}`;
+                    to = path.join(outputPath, file.replace(/\.min\.js$/, ".js"));
                 } else {
                     // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
-                    to = `${outputPath}\\${file.replace(/\.js$/, ".max.js")}`;
+                    to = path.join(outputPath, file.replace(/\.js$/, ".max.js"));
                 }
                 copyFile(from, to);
             }
