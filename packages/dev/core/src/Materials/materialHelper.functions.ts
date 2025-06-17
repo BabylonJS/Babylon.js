@@ -18,7 +18,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+import { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 // Temps
 const TempFogColor = Color3.Black();
@@ -93,7 +93,7 @@ export function PrepareDefinesAndAttributesForMorphTargets(
     useUV2Morph: boolean,
     useColorMorph: boolean
 ): number {
-    const numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+    const numMorphInfluencers = MorphTargetManager.ConstantTargetCountForTextureMode || morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
     if (numMorphInfluencers <= 0) {
         return 0;
     }
