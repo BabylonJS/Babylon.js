@@ -39,7 +39,6 @@ import { DrawGroup } from "./canvasDrawing";
  * Class responsible for parsing lottie data
  */
 export class LottieParser {
-    private _scaling: number = 1;
     private _processedData: LottieAnimation;
     private _errors = new Array<string>();
     private _childIndex = 1000;
@@ -47,11 +46,8 @@ export class LottieParser {
 
     /**
      * Creates an instance of LottieParser.
-     * @param scaling - The scaling factor to apply to canvas rendering
      */
-    public constructor(scaling: number = 1) {
-        this._scaling = scaling;
-    }
+    public constructor() {}
 
     /**
      * Gets the processed Lottie animation data, if available.
@@ -235,7 +231,7 @@ export class LottieParser {
         newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
         let mesh: Mesh | undefined = undefined;
-        const texture = DrawGroup(newNode.name, rawGroup, this._scaling);
+        const texture = DrawGroup(newNode.name, rawGroup);
 
         if (texture !== undefined) {
             const size = texture.getSize();
@@ -262,8 +258,6 @@ export class LottieParser {
         newNode.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
         newNode.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
         newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
-        newNode.nodeAnchor.scaling.x = 1 / this._scaling;
-        newNode.nodeAnchor.scaling.y = 1 / this._scaling;
 
         newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
         /* End fake sprites debugging */

@@ -10,7 +10,7 @@ type GradientStop = {
     color: string;
 };
 
-export function DrawGroup(name: string, rawGroup: RawGroupShape, scaling: number): Texture | undefined {
+export function DrawGroup(name: string, rawGroup: RawGroupShape): Texture | undefined {
     // eslint-disable-next-line no-console
     console.log(`Drawing group: ${name}`);
 
