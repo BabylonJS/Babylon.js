@@ -10,19 +10,19 @@ var buildConfig = function (env) {
         context: __dirname,
         entry: {
             background: SRC_DIR + "/background.ts",
-            editorLauncher: SRC_DIR + "/editorLauncher.ts"
+            editorLauncher: SRC_DIR + "/editorLauncher.ts",
         },
         performance: {
             maxEntrypointSize: 5120000,
-            maxAssetSize: 5120000
+            maxAssetSize: 5120000,
         },
         output: {
             path: OUTPUT_DIR,
             publicPath: "/",
             filename: "scripts/[name].js",
-            library: {      
-                name: "[name]",      
-                type: 'var'
+            library: {
+                name: "[name]",
+                type: "var",
             },
             devtoolModuleFilenameTemplate: isProd ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
@@ -30,21 +30,20 @@ var buildConfig = function (env) {
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".scss", ".svg"],
             alias: {
-                // "core": path.resolve("node_modules/@babylonjs/core"),
-                // "shared-ui-components": path.resolve("node_modules/@dev/shared-ui-components"),
-                // TODO. React not understood as a module
-                react: path.resolve("../../node_modules/react"),
-                "react-dom": path.resolve("../../node_modules/react-dom"),
+                react: path.resolve("../../../node_modules/react"),
+                "react-dom": path.resolve("../../../node_modules/react-dom"),
+                "@babylonjs/smart-filters-editor-control": path.resolve("../../tools/smartFiltersEditorControl/dist"),
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
             },
         },
         plugins: [
             new CopyPlugin({
-              patterns: [
-                { from: "./src/assets/manifest.json", to: "./manifest.json" },
-                { from: "./src/assets/icons", to: "./icons" },
-              ],
+                patterns: [
+                    { from: "./src/assets/manifest.json", to: "./manifest.json" },
+                    { from: "./src/assets/icons", to: "./icons" },
+                ],
             }),
-          ],
+        ],
         module: {
             rules: [
                 {

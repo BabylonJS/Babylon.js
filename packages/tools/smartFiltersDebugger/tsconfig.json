@@ -1,24 +1,19 @@
 {
-    "extends": "../../tsconfig.common.json",
+    "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "rootDir": "../",
+        "rootDir": "./src",
         "outDir": "./dist",
         "composite": true,
         "types": [
             // (various types, e.g. jquery, core-js),
             "chrome"
         ],
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "paths": {
+            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/dist"]
+        }
     },
-    "include": [
-        "./src/**/*.ts",
-        "./src/**/*.tsx",
-        "../blocks/**/*.ts",
-        "../core/src/**/*.ts",
-        "../core/src/**/*.tsx",
-        "../editor/src/**/*.ts",
-        "../editor/src/**/*.tsx"
-    ],
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
     "exclude": ["**/node_modules"]
 }
