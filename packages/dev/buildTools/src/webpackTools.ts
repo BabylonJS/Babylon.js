@@ -232,7 +232,7 @@ class CopyMinToMaxWebpackPlugin {
             const outputPath = stats.compilation.outputOptions.path;
             const file = stats.compilation.outputOptions.filename?.toString();
             if (outputPath && file) {
-                const from = `${outputPath}\\${file}`;
+                const from = path.join(outputPath, file);
                 let to;
                 if (file.includes(".min.js")) {
                     // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
