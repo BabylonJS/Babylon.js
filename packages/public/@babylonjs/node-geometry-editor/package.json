@@ -1,9 +1,9 @@
 {
     "name": "@babylonjs/node-geometry-editor",
     "version": "8.12.1",
-    "main": "dist/babylon.nodeGeometryEditor.max.js",
-    "module": "dist/babylon.nodeGeometryEditor.max.js",
-    "esnext": "dist/babylon.nodeGeometryEditor.max.js",
+    "main": "dist/babylon.nodeGeometryEditor.js",
+    "module": "dist/babylon.nodeGeometryEditor.js",
+    "esnext": "dist/babylon.nodeGeometryEditor.js",
     "typings": "dist/babylon.nodeGeometryEditor.module.d.ts",
     "files": [
         "dist/**/*.*",
@@ -11,7 +11,7 @@
         "license.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
