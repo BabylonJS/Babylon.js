@@ -97,6 +97,7 @@ module.exports = (env) => {
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
             "nodeGeometryEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
             "nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min": `./src/nodeRenderGraphEditor/index.ts`,
+            "nodeParticleEditor/babylon.nodeParticleEditor.min": `./src/nodeParticleEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
             "addons/babylonjs.addons.min": `./src/addons/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
@@ -117,6 +118,7 @@ module.exports = (env) => {
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
                 "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
                 "node-render-graph-editor": path.resolve(basePathForTools, "nodeRenderGraphEditor", outputDirectoryForAliases),
+                "node-particle-editor": path.resolve(basePathForTools, "nodeParticleEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
                 addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
@@ -224,6 +226,10 @@ module.exports = (env) => {
         {
             from: "/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.d.ts",
             to: "/node-render-graph-editor.d.ts",
+        },
+        {
+            from: "/nodeParticleEditor/babylon.nodeParticleEditor.d.ts",
+            to: "/node-particle-editor.d.ts",
         },
         {
             from: "/guiEditor/babylon.guiEditor.js",

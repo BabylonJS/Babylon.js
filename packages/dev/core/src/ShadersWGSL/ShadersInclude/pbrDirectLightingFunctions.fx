@@ -123,8 +123,8 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     }
 
     #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        fn computeAreaSpecularLighting(info: preLightingInfo, specularColor: vec3f) -> vec3f {
-            var fresnel:vec3f  = ( specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
+        fn computeAreaSpecularLighting(info: preLightingInfo, specularColor: vec3f, reflectance0: vec3f, reflectance90: vec3f) -> vec3f {
+            var fresnel:vec3f  = reflectance0 * specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y * reflectance90;
             return specularColor * fresnel * info.areaLightSpecular;
         }
     #endif

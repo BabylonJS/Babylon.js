@@ -255,7 +255,7 @@
             "label": "Playground Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve and watch (Dev)",
+            "dependsOn": ["CDN Serve and watch (Dev)", "Watch Inspector v2"],
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -309,7 +309,7 @@
             "label": "Sandbox Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve and watch (Dev)",
+            "dependsOn": ["CDN Serve and watch (Dev)", "Watch Inspector v2"],
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -468,6 +468,42 @@
             "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
+            "label": "Node Particle Editor Serve for core (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/node-particle-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "Node Particle Editor Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/node-particle-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
             "label": "VSM Serve for core (Dev)",
             "type": "shell",
             "command": "npm",
@@ -561,6 +597,38 @@
                 "cwd": "${workspaceFolder}"
             },
             "args": ["run", "serve", "-w", "@tools/viewer-configurator"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "Watch Inspector v2",
+            "type": "shell",
+            "command": "npm",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "watch:dev", "-w", "@dev/inspector-v2"],
+            "isBackground": true,
+            "problemMatcher": ["$tsc-watch"]
+        },
+        {
+            "label": "Inspector v2 Test App",
+            "dependsOn": ["Watch all (Dev)"],
+            "type": "shell",
+            "command": "npm",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@dev/inspector-v2"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"

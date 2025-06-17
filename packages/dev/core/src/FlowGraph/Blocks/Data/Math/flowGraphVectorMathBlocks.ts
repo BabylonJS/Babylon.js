@@ -1,14 +1,32 @@
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
-import { RichTypeVector3, FlowGraphTypes, RichTypeNumber, RichTypeAny, RichTypeVector2, RichTypeMatrix, getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
+import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+import {
+    RichTypeVector3,
+    FlowGraphTypes,
+    RichTypeNumber,
+    RichTypeAny,
+    RichTypeVector2,
+    RichTypeMatrix,
+    getRichTypeByFlowGraphType,
+    RichTypeQuaternion,
+    RichTypeBoolean,
+} from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
+import { Quaternion, Vector3, Vector4 } from "core/Maths/math.vector";
+import type { Matrix, Vector2 } from "core/Maths/math.vector";
 import type { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import type { FlowGraphMatrix, FlowGraphVector } from "core/FlowGraph/utils";
 import { _GetClassNameOf } from "core/FlowGraph/utils";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../Maths/math.vector.functions";
+import type { Nullable } from "../../../../types";
+
+const AxisCacheName = "cachedOperationAxis";
+const AngleCacheName = "cachedOperationAngle";
+const CacheExecIdName = "cachedExecutionId";
 
 /**
  * Vector length block.
@@ -114,7 +132,7 @@ RegisterClass(FlowGraphBlockNames.Cross, FlowGraphCrossBlock);
  */
 export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => Vector2.Transform(a, Matrix.RotationZ(b)), FlowGraphBlockNames.Rotate2D, config);
+        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => a.rotate(b), FlowGraphBlockNames.Rotate2D, config);
     }
 }
 RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
@@ -122,17 +140,9 @@ RegisterClass(FlowGraphBlockNames.Rotate2D, FlowGraphRotate2DBlock);
 /**
  * 3D rotation block.
  */
-export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vector3, Vector3, number, Vector3> {
+export class FlowGraphRotate3DBlock extends FlowGraphBinaryOperationBlock<Vector3, Quaternion, Vector3> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(
-            RichTypeVector3,
-            RichTypeVector3,
-            RichTypeNumber,
-            RichTypeVector3,
-            (a, b, c) => Vector3.TransformCoordinates(a, Matrix.RotationAxis(b, c)),
-            FlowGraphBlockNames.Rotate3D,
-            config
-        );
+        super(RichTypeVector3, RichTypeQuaternion, RichTypeVector3, (a, b) => a.applyRotationQuaternion(b), FlowGraphBlockNames.Rotate3D, config);
     }
 }
 RegisterClass(FlowGraphBlockNames.Rotate3D, FlowGraphRotate3DBlock);
@@ -199,3 +209,111 @@ export class FlowGraphTransformCoordinatesBlock extends FlowGraphBinaryOperation
 }
 
 RegisterClass(FlowGraphBlockNames.TransformCoordinates, FlowGraphTransformCoordinatesBlock);
+
+/**
+ * Conjugate the quaternion.
+ */
+export class FlowGraphConjugateBlock extends FlowGraphUnaryOperationBlock<Quaternion, Quaternion> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeQuaternion, RichTypeQuaternion, (a) => a.conjugate(), FlowGraphBlockNames.Conjugate, config);
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.Conjugate, FlowGraphConjugateBlock);
+
+/**
+ * Get the angle between two quaternions.
+ */
+export class FlowGraphAngleBetweenBlock extends FlowGraphBinaryOperationBlock<Quaternion, Quaternion, number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeQuaternion, RichTypeQuaternion, RichTypeNumber, (a, b) => GetAngleBetweenQuaternions(a, b), FlowGraphBlockNames.AngleBetween, config);
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.AngleBetween, FlowGraphAngleBetweenBlock);
+
+/**
+ * Get the quaternion from an axis and an angle.
+ */
+export class FlowGraphQuaternionFromAxisAngleBlock extends FlowGraphBinaryOperationBlock<Vector3, number, Quaternion> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeNumber, RichTypeQuaternion, (a, b) => Quaternion.RotationAxis(a, b), FlowGraphBlockNames.QuaternionFromAxisAngle, config);
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.QuaternionFromAxisAngle, FlowGraphQuaternionFromAxisAngleBlock);
+
+/**
+ * Get the axis and angle from a quaternion.
+ */
+export class FlowGraphAxisAngleFromQuaternionBlock extends FlowGraphBlock {
+    /**
+     * The input of this block.
+     */
+    public readonly a: FlowGraphDataConnection<Quaternion>;
+
+    /**
+     * The output axis of rotation.
+     */
+    public readonly axis: FlowGraphDataConnection<Vector3>;
+
+    /**
+     * The output angle of rotation.
+     */
+    public readonly angle: FlowGraphDataConnection<number>;
+
+    /**
+     * Output connection: Whether the value is valid.
+     */
+    public readonly isValid: FlowGraphDataConnection<boolean>;
+
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+
+        this.a = this.registerDataInput("a", RichTypeQuaternion);
+
+        this.axis = this.registerDataOutput("axis", RichTypeVector3);
+        this.angle = this.registerDataOutput("angle", RichTypeNumber);
+
+        this.isValid = this.registerDataOutput("isValid", RichTypeBoolean);
+    }
+
+    /** @override */
+    public override _updateOutputs(context: FlowGraphContext) {
+        const cachedExecutionId = context._getExecutionVariable(this, CacheExecIdName, -1);
+        const cachedAxis = context._getExecutionVariable<Nullable<Vector3>>(this, AxisCacheName, null);
+        const cachedAngle = context._getExecutionVariable<Nullable<number>>(this, AngleCacheName, null);
+        if (cachedAxis !== undefined && cachedAxis !== null && cachedAngle !== undefined && cachedAngle !== null && cachedExecutionId === context.executionId) {
+            this.axis.setValue(cachedAxis, context);
+            this.angle.setValue(cachedAngle, context);
+        } else {
+            try {
+                const { axis, angle } = this.a.getValue(context).toAxisAngle();
+                context._setExecutionVariable(this, AxisCacheName, axis);
+                context._setExecutionVariable(this, AngleCacheName, angle);
+                context._setExecutionVariable(this, CacheExecIdName, context.executionId);
+                this.axis.setValue(axis, context);
+                this.angle.setValue(angle, context);
+                this.isValid.setValue(true, context);
+            } catch (e) {
+                this.isValid.setValue(false, context);
+            }
+        }
+    }
+
+    /** @override */
+    public override getClassName(): string {
+        return FlowGraphBlockNames.AxisAngleFromQuaternion;
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.AxisAngleFromQuaternion, FlowGraphAxisAngleFromQuaternionBlock);
+
+/**
+ * Get the quaternion from two direction vectors.
+ */
+export class FlowGraphQuaternionFromDirectionsBlock extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Quaternion> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeQuaternion, (a, b) => GetQuaternionFromDirections(a, b), FlowGraphBlockNames.QuaternionFromDirections, config);
+    }
+}

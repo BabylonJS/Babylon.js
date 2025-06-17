@@ -6,7 +6,8 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
-import type { IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
+import { Constants } from "core/Engines/constants";
+import type { IEXTMaterialsSpecularEdgeColor, IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_specular";
@@ -66,6 +67,15 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
+            // Handle the EXT_materials_specular_edge_color sub-extension
+            // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
+            if (extension.extensions && extension.extensions.EXT_materials_specular_edge_color && babylonMaterial instanceof PBRMaterial) {
+                const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
+                if (specularEdgeColorExtension.specularEdgeColorEnabled) {
+                    babylonMaterial.brdf.dielectricSpecularModel = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR;
+                    babylonMaterial.brdf.conductorSpecularModel = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR;
+                }
+            }
             // eslint-disable-next-line github/no-then
             return await Promise.all(promises).then(() => {});
         });

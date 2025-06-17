@@ -89,6 +89,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FragmentOutputBlock: "A mandatory final node for outputing the color of each pixel",
         PrePassOutputBlock: "An optional final node for outputing geometry data on prepass textures",
         VertexOutputBlock: "A mandatory final node for outputing the position of each vertex",
+        SmartFilterFragmentOutputBlock: "A mandatory final node for outputing the color of each pixel in Smart Filters mode",
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         NormalizeBlock: "Remaps the length of a vector or color to 1",
         RemapBlock: "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
@@ -198,6 +199,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StorageWriteBlock: "Block used to write to a loop storage variable",
         MatrixSplitterBlock: "Block used to split a matrix into Vector4",
         DebugBlock: "Block used to render intermediate debug values",
+        SmartFilterTextureBlock: "Block used to add a Smart Filter Effect (SFE) shader interface",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -337,9 +339,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Block types used to create the menu from
-        const allBlocks: any = {
+        const allBlocks: Record<string, string[]> = {
             Custom_Frames: customFrameNames,
             Custom_Blocks: customBlockNames,
+            SFE: ["ScreenUVBlock", "SmartFilterTextureBlock", "SmartFilterFragmentOutputBlock"],
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock", "ColorConverterBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -464,7 +467,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleTextureMaskBlock",
                 "ParticleUVBlock",
             ],
-            SFE: ["ScreenUVBlock"],
             GaussianSplatting: ["GaussianSplattingBlock", "SplatIndexBlock", "SplatReaderBlock", "GaussianBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "IridescenceBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
@@ -484,69 +486,73 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             ],
         };
 
+        let excludeNodes: Record<string, string[]> = {};
+        let excludeCategories: string[] = [];
         switch (this.props.globalState.mode) {
             case NodeMaterialModes.Material:
-                delete allBlocks["SFE"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Particle"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["GaussianSplatting"];
+                excludeCategories = ["SFE", "PostProcess", "Particle", "Procedural__Texture", "GaussianSplatting"];
                 break;
             case NodeMaterialModes.SFE:
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["Particle"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["Animation", "Mesh", "Particle", "Procedural__Texture", "PostProcess", "PBR", "Scene", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "ClipPlanesBlock", "FragDepthBlock"],
+                    Inputs: [
+                        "TextureBlock",
+                        "MaterialAlphaBlock",
+                        "BiPlanarBlock",
+                        "TriPlanarBlock",
+                        "ReflectionTextureBlock",
+                        "ImageSourceBlock",
+                        "DeltaTimeBlock",
+                        "RealTimeBlock",
+                        "MouseInfoBlock",
+                    ],
+                    Matrices: [
+                        "WorldMatrixBlock",
+                        "WorldViewMatrixBlock",
+                        "WorldViewProjectionMatrixBlock",
+                        "ViewMatrixBlock",
+                        "ViewProjectionMatrixBlock",
+                        "ProjectionMatrixBlock",
+                    ],
+                    Misc: ["ShadowMapBlock"],
+                    Math__Vector: ["ScreenSpaceBlock"],
+                };
                 break;
             case NodeMaterialModes.PostProcess:
-                delete allBlocks["SFE"];
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["Particle"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "Particle", "Procedural__Texture", "PBR", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["PrePassOutputBlock"],
+                };
                 break;
             case NodeMaterialModes.ProceduralTexture:
-                delete allBlocks["SFE"];
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["Particle"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "Particle", "PostProcess", "PBR", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["PrePassOutputBlock"],
+                };
                 break;
             case NodeMaterialModes.Particle:
-                delete allBlocks["SFE"];
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "PostProcess", "Procedural__Texture", "PBR", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["VertexOutputBlock", "PrePassOutputBlock"],
+                    Scene: ["FogBlock", "FogColorBlock"],
+                };
                 break;
             case NodeMaterialModes.GaussianSplatting:
-                delete allBlocks["SFE"];
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "PostProcess", "Procedural__Texture", "PBR"];
+                excludeNodes = {
+                    Output_Nodes: ["VertexOutputBlock", "PrePassOutputBlock"],
+                    Scene: ["FogBlock", "FogColorBlock"],
+                };
                 break;
+        }
+        for (const category in excludeNodes) {
+            allBlocks[category] = allBlocks[category].filter((node) => !excludeNodes[category].includes(node));
+        }
+        for (const category of excludeCategories) {
+            if (allBlocks[category]) {
+                delete allBlocks[category];
+            }
         }
 
         // Create node menu

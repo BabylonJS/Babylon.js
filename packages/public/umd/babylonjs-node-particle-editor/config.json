@@ -1,0 +1,7 @@
+{
+    "declarationLibs": ["@tools/node-particle-editor", "@dev/shared-ui-components"],
+    "devPackageName": "nodeParticleEditor",
+    "filename": "babylon.nodeParticleEditor.module.d.ts",
+    "outputDirectory": "./",
+    "fileFilterRegex": "stories"
+}

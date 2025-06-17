@@ -2,6 +2,10 @@
     vertexOutputs.vViewPos = (scene.view * worldPos).rgb;
 #endif
 
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+    vertexOutputs.vNormViewDepth = ((scene.view * worldPos).z - uniforms.cameraInfo.x) / (uniforms.cameraInfo.y - uniforms.cameraInfo.x);
+#endif
+
 #ifdef PREPASS_LOCAL_POSITION
     vertexOutputs.vPosition = positionUpdated.xyz;
 #endif

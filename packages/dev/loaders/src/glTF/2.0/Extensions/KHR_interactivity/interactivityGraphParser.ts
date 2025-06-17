@@ -9,7 +9,6 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
-import type { GLTFLoader } from "../../glTFLoader";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
@@ -51,7 +50,7 @@ export class InteractivityGraphToFlowGraphParser {
     constructor(
         private _interactivityGraph: IKHRInteractivity_Graph,
         private _gltf: IGLTF,
-        public _loader: GLTFLoader
+        public _animationTargetFps: number = 60
     ) {
         // start with types
         this._parseTypes();

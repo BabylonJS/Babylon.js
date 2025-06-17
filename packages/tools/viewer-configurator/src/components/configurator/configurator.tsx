@@ -3,7 +3,7 @@ import "./configurator.scss";
 // eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
 // eslint-disable-next-line import/no-internal-modules
-import type { HotSpot, PostProcessing, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
+import type { HotSpot, ShadowQuality, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -34,6 +34,7 @@ import { Epsilon } from "core/Maths/math.constants";
 import { Vector3 } from "core/Maths/math.vector";
 import { WithinEpsilon } from "core/Maths/math.scalar.functions";
 import { CreateHotSpotQueryForPickingInfo } from "core/Meshes/abstractMesh.hotSpot";
+import { Logger } from "core/Misc/logger";
 
 import { useObservableState } from "../../hooks/observableHooks";
 import { LoadModel, PickModel } from "../../modelLoader";
@@ -57,6 +58,12 @@ const OutputOptions = [
     { label: "JSON", value: "json" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: OutputFormat }[];
 
+const ShadowQualityOptions = [
+    { label: "None", value: "none" },
+    { label: "Normal", value: "normal" },
+    { label: "High", value: "high" },
+] as const satisfies IInspectableOptions[] & { label: string; value: ShadowQuality }[];
+
 const ToneMappingOptions = [
     { label: "Standard", value: "standard" },
     { label: "None", value: "none" },
@@ -68,7 +75,21 @@ const HotSpotTypeOptions = [{ label: "Surface", value: "surface" }] as const sat
 
 const HotSpotsDndModifers = [restrictToVerticalAxis, restrictToParentElement];
 
-function UseConfiguration<T>(
+// This helper function is used in functions that are naturally void returning, but need to call an async Promise returning function.
+// If there is any error (other than AbortError) in the async function, it will be logged.
+function ObservePromise(promise: Promise<unknown>): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    (async () => {
+        try {
+            await promise;
+        } catch (error) {
+            Logger.Error([error]);
+        }
+    })();
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function useConfiguration<T>(
     defaultState: T,
     initialConfiguredState: T,
     get: () => T,
@@ -154,7 +175,7 @@ const HotSpotEntry: FunctionComponent<{
         return {
             transform: CSS.Transform.toString(dndTransform),
             transition: dndTransition,
-        };
+        } as const;
     }, [dndTransform, dndTransition]);
 
     const rootDivRef = useRef<HTMLDivElement>(null);
@@ -367,10 +388,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, []);
     // This is only needed because the select expects to "bind" to an object and a property.
     const outputFormatWrapper = useMemo(() => {
-        return { outputFormat };
+        return { outputFormat } as const;
     }, [outputFormat]);
 
-    const lightingUrlConfig = UseConfiguration(
+    const lightingUrlConfig = useConfiguration(
         "",
         viewerOptions.environmentLighting ?? "",
         () => viewerElement.environment.lighting ?? "",
@@ -379,7 +400,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer.onEnvironmentChanged],
         [viewerElement]
     );
-    const skyboxUrlConfig = UseConfiguration(
+    const skyboxUrlConfig = useConfiguration(
         "",
         viewerOptions.environmentSkybox === viewerOptions.environmentLighting ? "" : (viewerOptions.environmentSkybox ?? ""),
         () => viewerElement.environment.skybox ?? "",
@@ -403,7 +424,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         return !!skyboxUrlConfig.configuredState;
     }, [syncEnvironment, lightingUrlConfig.configuredState, skyboxUrlConfig.configuredState]);
 
-    const skyboxBlurConfig = UseConfiguration(
+    const skyboxBlurConfig = useConfiguration(
         DefaultViewerOptions.environmentConfig.blur,
         viewerOptions.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur,
         () => viewer.environmentConfig.blur,
@@ -413,7 +434,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const environmentIntensityConfig = UseConfiguration(
+    const environmentIntensityConfig = useConfiguration(
         DefaultViewerOptions.environmentConfig.intensity,
         viewerOptions.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity,
         () => viewer.environmentConfig.intensity,
@@ -423,7 +444,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const environmentRotationConfig = UseConfiguration(
+    const environmentRotationConfig = useConfiguration(
         DefaultViewerOptions.environmentConfig.rotation,
         viewerOptions.environmentConfig?.rotation ?? DefaultViewerOptions.environmentConfig.rotation,
         () => viewer.environmentConfig.rotation,
@@ -433,7 +454,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const clearColorConfig = UseConfiguration(
+    const clearColorConfig = useConfiguration(
         viewerDetails.scene.clearColor,
         new Color4(...(viewerOptions.clearColor ? viewerOptions.clearColor : DefaultViewerOptions.clearColor)),
         () => viewerDetails.scene.clearColor,
@@ -444,10 +465,24 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
     // This is only needed because the color picker expects to "bind" to an object and a property.
     const clearColorWrapper = useMemo(() => {
-        return { clearColor: clearColorConfig.configuredState };
+        return { clearColor: clearColorConfig.configuredState } as const;
     }, [clearColorConfig.configuredState]);
 
-    const cameraConfig = UseConfiguration(
+    const shadowQualityConfig = useConfiguration(
+        DefaultViewerOptions.shadowConfig.quality,
+        viewerOptions.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality,
+        () => viewer.shadowConfig.quality,
+        (quality) => ObservePromise(viewer.updateShadows({ quality })),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+    // This is only needed because the select expects to "bind" to an object and a property.
+    const shadowQualityWrapper = useMemo(() => {
+        return { shadowQuality: shadowQualityConfig.configuredState } as const;
+    }, [shadowQualityConfig.configuredState]);
+
+    const cameraConfig = useConfiguration(
         {
             alpha: NaN,
             beta: NaN,
@@ -504,7 +539,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer, viewerDetails.camera, model]
     );
 
-    const toneMappingConfig = UseConfiguration(
+    const toneMappingConfig = useConfiguration(
         DefaultViewerOptions.postProcessing.toneMapping,
         viewerOptions.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
         () => viewer.postProcessing.toneMapping,
@@ -515,10 +550,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     );
     // This is only needed because the select expects to "bind" to an object and a property.
     const toneMappingWrapper = useMemo(() => {
-        return { toneMapping: toneMappingConfig.configuredState };
+        return { toneMapping: toneMappingConfig.configuredState } as const;
     }, [toneMappingConfig.configuredState]);
 
-    const contrastConfig = UseConfiguration(
+    const contrastConfig = useConfiguration(
         DefaultViewerOptions.postProcessing.contrast,
         viewerOptions.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
         () => viewer.postProcessing.contrast,
@@ -528,7 +563,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const exposureConfig = UseConfiguration(
+    const exposureConfig = useConfiguration(
         DefaultViewerOptions.postProcessing.exposure,
         viewerOptions.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
         () => viewer.postProcessing.exposure,
@@ -538,7 +573,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const autoOrbitConfig = UseConfiguration(
+    const autoOrbitConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
         viewerOptions.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
         () => viewer.cameraAutoOrbit.enabled,
@@ -548,7 +583,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const autoOrbitSpeedConfig = UseConfiguration(
+    const autoOrbitSpeedConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.speed,
         viewerOptions.cameraAutoOrbit?.speed ?? DefaultViewerOptions.cameraAutoOrbit.speed,
         () => viewer.cameraAutoOrbit.speed,
@@ -558,7 +593,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const autoOrbitDelayConfig = UseConfiguration(
+    const autoOrbitDelayConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.delay,
         viewerOptions.cameraAutoOrbit?.delay ?? DefaultViewerOptions.cameraAutoOrbit.delay,
         () => viewer.cameraAutoOrbit.delay,
@@ -568,7 +603,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const animationStateConfig = UseConfiguration(
+    const animationStateConfig = useConfiguration(
         {
             animationSpeed: DefaultViewerOptions.animationSpeed,
             selectedAnimation: 0,
@@ -605,7 +640,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
-    const animationAutoPlayConfig = UseConfiguration(
+    const animationAutoPlayConfig = useConfiguration(
         DefaultViewerOptions.animationAutoPlay,
         viewerOptions.animationAutoPlay ?? DefaultViewerOptions.animationAutoPlay,
         () => viewerElement.animationAutoPlay,
@@ -622,7 +657,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer, viewerElement]
     );
 
-    const selectedMaterialVariantConfig = UseConfiguration(
+    const selectedMaterialVariantConfig = useConfiguration(
         "",
         viewerOptions.selectedMaterialVariant ?? "",
         () => viewer.selectedMaterialVariant,
@@ -703,7 +738,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     }, [hotspots]);
 
     // This is all the configured attributes, as an array of strings.
-    const attributes = useMemo(() => {
+    const attributes = useMemo<readonly string[]>(() => {
         const attributes: string[] = [`source="${modelUrl || "[model url]"}"`];
 
         if (syncEnvironment) {
@@ -734,6 +769,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         }
         if (environmentRotationConfig.canReset) {
             attributes.push(`skybox-rotation="${environmentRotationConfig.configuredState}"`);
+        }
+
+        if (shadowQualityConfig.canReset) {
+            attributes.push(`shadow-quality="${shadowQualityConfig.configuredState}"`);
         }
 
         if (toneMappingConfig.canReset) {
@@ -796,6 +835,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         environmentIntensityConfig.configuredState,
         environmentRotationConfig.configuredState,
         clearColorConfig.configuredState,
+        shadowQualityConfig.configuredState,
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
@@ -858,6 +898,28 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             properties.push(`"environmentConfig": {${environmentConfigProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
         }
 
+        const postProcessingProperties: string[] = [];
+        if (toneMappingConfig.canReset) {
+            postProcessingProperties.push(`"toneMapping": ${toneMappingConfig.configuredState}`);
+        }
+        if (contrastConfig.canReset) {
+            postProcessingProperties.push(`"contrast": ${contrastConfig.configuredState.toFixed(1)}`);
+        }
+        if (exposureConfig.canReset) {
+            postProcessingProperties.push(`"exposure": ${exposureConfig.configuredState.toFixed(1)}`);
+        }
+        if (postProcessingProperties.length > 0) {
+            properties.push(`"postProcessing": {${postProcessingProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
+        }
+
+        const shadowProperties: string[] = [];
+        if (shadowQualityConfig.canReset) {
+            shadowProperties.push(`"quality": "${shadowQualityConfig.configuredState}"`);
+        }
+        if (shadowProperties.length > 0) {
+            properties.push(`"shadowConfig": {${shadowProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
+        }
+
         if (cameraConfig.canReset) {
             const {
                 alpha,
@@ -911,6 +973,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         environmentRotationConfig.configuredState,
         skyboxBlurConfig.configuredState,
         clearColorConfig.configuredState,
+        toneMappingConfig.configuredState,
+        contrastConfig.configuredState,
+        exposureConfig.configuredState,
+        shadowQualityConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,
         autoOrbitSpeedConfig.configuredState,
@@ -1050,9 +1116,16 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [setNeedsEnvironmentUpdate, lightingUrlConfig.configuredState, lightingUrlConfig.canReset, lightingUrlConfig.update, lightingUrlConfig.reset, setSyncEnvironment]
     );
 
+    const onShadowQualityChange = useCallback(
+        (value: string | number) => {
+            shadowQualityConfig.update(value as ShadowQuality);
+        },
+        [shadowQualityConfig.update]
+    );
+
     const onToneMappingChange = useCallback(
         (value: string | number) => {
-            toneMappingConfig.update(value as PostProcessing["toneMapping"]);
+            toneMappingConfig.update(value as ToneMapping);
         },
         [toneMappingConfig.update]
     );
@@ -1155,6 +1228,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         environmentIntensityConfig.reset();
         environmentRotationConfig.reset();
         clearColorConfig.reset();
+        shadowQualityConfig.reset();
         toneMappingConfig.reset();
         contrastConfig.reset();
         exposureConfig.reset();
@@ -1174,6 +1248,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         environmentIntensityConfig.reset,
         environmentRotationConfig.reset,
         clearColorConfig.reset,
+        shadowQualityConfig.reset,
         toneMappingConfig.reset,
         contrastConfig.reset,
         exposureConfig.reset,
@@ -1352,6 +1427,22 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         disabled={!clearColorConfig.canReset}
                         onClick={clearColorConfig.reset}
                     />
+                </div>
+            </LineContainerComponent>
+            <LineContainerComponent title="SHADOWS">
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <OptionsLine
+                            label="Quality"
+                            valuesAreStrings={true}
+                            options={ShadowQualityOptions}
+                            target={shadowQualityWrapper}
+                            propertyName={"shadowQuality"}
+                            noDirectUpdate={true}
+                            onSelect={onShadowQualityChange}
+                        />
+                    </div>
+                    <FontAwesomeIconButton title="Reset shadow quality" icon={faTrashCan} disabled={!shadowQualityConfig.canReset} onClick={shadowQualityConfig.reset} />
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="POST PROCESSING">

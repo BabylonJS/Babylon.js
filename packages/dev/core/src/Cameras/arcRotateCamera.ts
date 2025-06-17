@@ -1394,7 +1394,7 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
             this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
         }
-        this._currentTarget = target;
+        this._currentTarget.copyFrom(target);
         return this._viewMatrix;
     }
 
@@ -1451,6 +1451,15 @@ export class ArcRotateCamera extends TargetCamera {
         // If there are defined limits, we need to take them into account
         distance = Math.max(Math.min(distance, this.upperRadiusLimit || Number.MAX_VALUE), this.lowerRadiusLimit || 0);
         this.radius = distance * this.zoomOnFactor;
+
+        if (this.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+            const aspectRatio = this.getScene().getEngine().getAspectRatio(this);
+            const orthoExtent = (distance * this.zoomOnFactor) / 2;
+            this.orthoLeft = -orthoExtent * aspectRatio;
+            this.orthoRight = orthoExtent * aspectRatio;
+            this.orthoBottom = -orthoExtent;
+            this.orthoTop = orthoExtent;
+        }
 
         this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
     }

@@ -43,11 +43,7 @@ describe("Flow Nodes", () => {
             variables,
         };
 
-        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf, {
-            parent: {
-                targetFps: 60,
-            },
-        } as unknown as any);
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });

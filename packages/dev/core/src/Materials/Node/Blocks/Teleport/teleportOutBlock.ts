@@ -75,9 +75,17 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (this.entryPoint) {
-            state.compilationString += state._declareOutput(this.output) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
+        if (!this.entryPoint) {
+            return;
         }
+
+        if (this.entryPoint.isConnectedToUniform) {
+            // We skip the build if the entry point is connected to a uniform
+            this.output.associatedVariableName = this.entryPoint.input.associatedVariableName;
+            return;
+        }
+
+        state.compilationString += state._declareOutput(this.output) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
     }
 
     /**

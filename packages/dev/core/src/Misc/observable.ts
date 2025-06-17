@@ -68,9 +68,20 @@ export class EventState {
 }
 
 /**
- * Represent an Observer registered to a given Observable object.
+ * Represent an observer registered to a given IObservable object.
  */
-export class Observer<T> {
+export interface IObserver {
+    /**
+     * Remove the observer from its observable
+     * @param defer if true, the removal will be deferred to avoid callback skipping (default: false)
+     */
+    remove(defer?: boolean): void;
+}
+
+/**
+ * Represent an observer registered to a given Observable object.
+ */
+export class Observer<T> implements IObserver {
     /** @internal */
     public _willBeUnregistered = false;
     /**
@@ -119,6 +130,29 @@ export class Observer<T> {
 }
 
 /**
+ * An interface that defines the reader side of an Observable (receive notifications).
+ */
+export interface IReadonlyObservable<T = unknown> {
+    /**
+     * Create a new Observer with the specified callback
+     * @param callback the callback that will be executed for that Observer
+     * @param mask the mask used to filter observers
+     * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
+     * @param scope optional scope for the callback to be called from
+     * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
+     * @returns the new observer created for the callback
+     */
+    add(callback: (eventData: T, eventState: EventState) => void, mask?: number, insertFirst?: boolean, scope?: unknown, unregisterOnFirstCall?: boolean): IObserver;
+
+    /**
+     * Create a new Observer with the specified callback and unregisters after the next notification
+     * @param callback the callback that will be executed for that Observer
+     * @returns the new observer created for the callback
+     */
+    addOnce(callback: (eventData: T, eventState: EventState) => void): IObserver;
+}
+
+/**
  * The Observable class is a simple implementation of the Observable pattern.
  *
  * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
@@ -126,7 +160,7 @@ export class Observer<T> {
  * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
  * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
  */
-export class Observable<T> {
+export class Observable<T> implements IReadonlyObservable<T> {
     private _observers = new Array<Observer<T>>();
     private _numObserversMarkedAsDeleted = 0;
     private _hasNotified = false;

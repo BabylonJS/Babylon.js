@@ -16,6 +16,7 @@ import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "../shaderLanguage";
 import { Observable } from "core/Misc/observable";
+import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -500,34 +501,33 @@ export class NodeMaterialBlock {
 
     /**
      * Add potential fallbacks if shader compilation fails
-     * @param mesh defines the mesh to be rendered
      * @param fallbacks defines the current prioritized list of fallbacks
+     * @param mesh defines the mesh to be rendered
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+    public provideFallbacks(fallbacks: EffectFallbacks, mesh?: AbstractMesh) {
         // Do nothing
     }
 
     /**
      * Initialize defines for shader compilation
-     * @param mesh defines the mesh to be rendered
-     * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
-     * @param useInstances specifies that instances should be used
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {}
+    public initializeDefines(defines: NodeMaterialDefines) {
+        // Do nothing
+    }
 
     /**
      * Update defines for shader compilation
-     * @param mesh defines the mesh to be rendered
-     * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param nodeMaterial defines the node material requesting the update
+     * @param mesh defines the mesh to be rendered
      * @param useInstances specifies that instances should be used
      * @param subMesh defines which submesh to render
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
+    public prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh, useInstances: boolean = false, subMesh?: SubMesh) {
         // Do nothing
     }
 
@@ -544,12 +544,11 @@ export class NodeMaterialBlock {
     /**
      * Function called when a block is declared as repeatable content generator
      * @param vertexShaderState defines the current compilation state for the vertex shader
-     * @param fragmentShaderState defines the current compilation state for the fragment shader
-     * @param mesh defines the mesh to be rendered
      * @param defines defines the material defines to update
+     * @param mesh defines the mesh to be rendered
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
+    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, defines: NodeMaterialDefines, mesh?: AbstractMesh) {
         // Do nothing
     }
 
@@ -604,6 +603,11 @@ export class NodeMaterialBlock {
 
         const localBlockIsFragment = state._vertexState != null;
         const otherBlockWasGeneratedInVertexShader = block._buildTarget === NodeMaterialBlockTargets.Vertex && block.target !== NodeMaterialBlockTargets.VertexAndFragment;
+
+        if (block.isTeleportOut && (block as NodeMaterialTeleportOutBlock).entryPoint?.isConnectedToUniform) {
+            // In that case, we skip the context switch as the teleport out block is connected to a uniform
+            return;
+        }
 
         if (
             localBlockIsFragment &&

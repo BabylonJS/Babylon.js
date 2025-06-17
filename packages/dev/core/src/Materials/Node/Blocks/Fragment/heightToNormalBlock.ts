@@ -6,7 +6,6 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
-import { Logger } from "../../../../Misc/logger";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 /**
@@ -109,7 +108,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         const fPrefix = state.fSuffix;
 
         if (!this.generateInWorldSpace && !this.worldTangent.isConnected) {
-            Logger.Error(`You must connect the 'worldTangent' input of the ${this.name} block!`);
+            state.sharedData.raiseBuildError(`You must connect the 'worldTangent' input of the ${this.name} block!`);
         }
 
         const startCode = this.generateInWorldSpace
