@@ -41,7 +41,13 @@ function GetPathVertices(vertices: Vector2[], path: RawPathShape): void {
         vertices.push(new Vector2(vertex[0], vertex[1]));
     }
 
-    // TODO: find the vertices at tangent 0 of the cuve using the derivative
+    vertices.push(...BezierDerivativeAtZero(path.ks.k as RawBezier)); // Add the tangent at t=0
+}
+
+function BezierDerivativeAtZero(bezier: RawBezier): Vector2[] {
+    const points: Vector2[] = [];
+
+    return points;
 }
 
 function GetBoundingBoxFromVertices(vertices: Vector2[]): BoundingBox {
