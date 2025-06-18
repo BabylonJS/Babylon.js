@@ -5,9 +5,8 @@ import type { FunctionComponent } from "react";
 
 import type { ISelectionService } from "../../services/selectionService";
 
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
-import { Switch } from "shared-ui-components/fluent/primitives/switch";
-import { Link } from "shared-ui-components/fluent/primitives/link";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
 
 import { useObservableState } from "../../hooks/observableHooks";
 
@@ -21,13 +20,21 @@ export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; sele
 
     return (
         <>
-            <PropertyLine key="MeshIsEnabled" label="Is enabled" description="Whether the mesh is enabled or not.">
-                <Switch checked={isEnabled} onChange={(_, data) => mesh.setEnabled(data.checked)} />
-            </PropertyLine>
+            <SwitchPropertyLine
+                key="MeshIsEnabled"
+                label="Is enabled"
+                description="Whether the mesh is enabled or not."
+                checked={isEnabled}
+                onChange={(_, data) => mesh.setEnabled(data.checked)}
+            />
             {material && (!material.reservedDataStore || !material.reservedDataStore.hidden) && (
-                <PropertyLine key="Material" label="Material" description={`The material used by the mesh.`}>
-                    <Link onClick={() => (selectionService.selectedEntity = material)}>{material.name}</Link>
-                </PropertyLine>
+                <LinkPropertyLine
+                    key="Material"
+                    label="Material"
+                    description={`The material used by the mesh.`}
+                    value={material.name}
+                    onLink={() => (selectionService.selectedEntity = material)}
+                />
             )}
         </>
     );

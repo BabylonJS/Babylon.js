@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 
 type CommonEntity = {
     id?: number;
@@ -14,25 +14,13 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
 
     return (
         <>
-            {commonEntity.id !== undefined && (
-                <PropertyLine key="EntityId" label="ID" description="The id of the node.">
-                    {commonEntity.id}
-                </PropertyLine>
-            )}
-            {commonEntity.name !== undefined && (
-                <PropertyLine key="EntityName" label="Name" description="The name of the node.">
-                    {commonEntity.name}
-                </PropertyLine>
-            )}
+            {commonEntity.id !== undefined && <TextPropertyLine key="EntityId" label="ID" description="The id of the node." value={commonEntity.id.toString()} />}
+            {commonEntity.name !== undefined && <TextPropertyLine key="EntityName" label="Name" description="The name of the node." value={commonEntity.name} />}
             {commonEntity.uniqueId !== undefined && (
-                <PropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node.">
-                    {commonEntity.uniqueId}
-                </PropertyLine>
+                <TextPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId.toString()} />
             )}
             {commonEntity.getClassName !== undefined && (
-                <PropertyLine key="EntityClassName" label="Class" description="The class of the node.">
-                    {commonEntity.getClassName()}
-                </PropertyLine>
+                <TextPropertyLine key="EntityClassName" label="Class" description="The class of the node." value={commonEntity.getClassName()} />
             )}
         </>
     );
