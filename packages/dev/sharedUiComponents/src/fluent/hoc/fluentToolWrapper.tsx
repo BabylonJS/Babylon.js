@@ -8,9 +8,14 @@ export type ToolHostProps = {
      * Allows host to pass in a theme
      */
     customTheme?: Theme;
+
+    /**
+     * Can be set to true to disable the copy button in the tool's property lines. Default is false (copy enabled)
+     */
+    disableCopy?: boolean;
 };
 
-export const ToolContext = createContext({ useFluent: false as boolean } as const);
+export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean } as const);
 
 /**
  * For tools which are ready to move over the fluent, wrap the root of the tool (or the panel which you want fluentized) with this component
@@ -24,7 +29,7 @@ export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProp
 
     return enableFluent ? (
         <FluentProvider theme={props.customTheme || webDarkTheme}>
-            <ToolContext.Provider value={{ useFluent: true }}>{props.children}</ToolContext.Provider>
+            <ToolContext.Provider value={{ useFluent: true, disableCopy: !!props.disableCopy }}>{props.children}</ToolContext.Provider>
         </FluentProvider>
     ) : (
         props.children
