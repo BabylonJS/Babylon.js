@@ -157,7 +157,7 @@ export class LinesMesh extends Mesh {
     }
 
     public override get material(): Material {
-        return super.material as Material;
+        return this._internalAbstractMeshDataInfo._material as Material;
     }
 
     /**
