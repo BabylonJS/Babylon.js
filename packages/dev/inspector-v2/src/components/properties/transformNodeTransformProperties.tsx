@@ -12,6 +12,7 @@ type Vector3Keys<T> = { [P in keyof T]: T[P] extends Vector3 ? P : never }[keyof
 
 // This helper hook gets the value of a Vector3 property from a target object and causes the component
 // to re-render when the property changes or when the x/y/z components of the Vector3 change.
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: T, propertyKey: K): Vector3 {
     const position = useObservableState(() => target[propertyKey] as Vector3, useInterceptObservable("property", target, propertyKey));
     useObservableState(() => position.x, useInterceptObservable("property", position, "x"));
