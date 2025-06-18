@@ -1,5 +1,7 @@
 import type { FunctionComponent } from "react";
 
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+
 type CommonEntity = {
     id?: number;
     name?: string;
@@ -9,12 +11,27 @@ type CommonEntity = {
 
 export const CommonGeneralProperties: FunctionComponent<{ context: CommonEntity }> = ({ context: commonEntity }) => {
     return (
-        // TODO: Use the new Fluent property line shared components.
         <>
-            {commonEntity.id !== undefined && <div key="EntityId">ID: {commonEntity.id}</div>}
-            {commonEntity.name !== undefined && <div key="EntityName">Name: {commonEntity.name}</div>}
-            {commonEntity.uniqueId !== undefined && <div key="EntityUniqueId">Unique ID: {commonEntity.uniqueId}</div>}
-            {commonEntity.getClassName !== undefined && <div key="EntityClassName">Class: {commonEntity.getClassName()}</div>}
+            {commonEntity.id !== undefined && (
+                <PropertyLine key="EntityId" label="ID" description="The id of the node.">
+                    {commonEntity.id}
+                </PropertyLine>
+            )}
+            {commonEntity.name !== undefined && (
+                <PropertyLine key="EntityName" label="Name" description="The name of the node.">
+                    {commonEntity.name}
+                </PropertyLine>
+            )}
+            {commonEntity.uniqueId !== undefined && (
+                <PropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node.">
+                    {commonEntity.uniqueId}
+                </PropertyLine>
+            )}
+            {commonEntity.getClassName !== undefined && (
+                <PropertyLine key="EntityClassName" label="Class" description="The class of the node.">
+                    {commonEntity.getClassName()}
+                </PropertyLine>
+            )}
         </>
     );
 };

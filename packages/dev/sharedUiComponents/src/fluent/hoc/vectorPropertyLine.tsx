@@ -20,10 +20,10 @@ const VectorSliders: FunctionComponent<VectorSliderProps> = (props) => {
     const { vector, ...sliderProps } = props;
     return (
         <>
-            <SyncedSliderLine label="X" propertyKey="x" target={vector} {...sliderProps} />
-            <SyncedSliderLine label="Y" propertyKey="y" target={vector} {...sliderProps} />
-            <SyncedSliderLine label="Z" propertyKey="z" target={vector} {...sliderProps} />
-            {vector instanceof Vector4 && <SyncedSliderLine label="W" propertyKey="w" target={vector} {...sliderProps} />}
+            <SyncedSliderLine {...sliderProps} label="X" description={undefined} propertyKey="x" target={vector} />
+            <SyncedSliderLine {...sliderProps} label="Y" description={undefined} propertyKey="y" target={vector} />
+            <SyncedSliderLine {...sliderProps} label="Z" description={undefined} propertyKey="z" target={vector} />
+            {vector instanceof Vector4 && <SyncedSliderLine {...sliderProps} label="W" description={undefined} propertyKey="w" target={vector} />}
         </>
     );
 };

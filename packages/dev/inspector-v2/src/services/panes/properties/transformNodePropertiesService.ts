@@ -1,18 +1,16 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { TransformNode } from "core/Meshes/transformNode";
 
-import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { MeshAdvancedProperties } from "../../../components/properties/meshAdvancedProperties";
-import { MeshGeneralProperties } from "../../../components/properties/meshGeneralProperties";
+import { TransformNodeTransformProperties } from "../../../components/properties/transformNodeTransformProperties";
 
 export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
 export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
 
-export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
-    friendlyName: "Mesh Properties",
+export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+    friendlyName: "Transform Node Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
         const transformsSectionRegistration = propertiesService.addSection({
@@ -26,21 +24,14 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
         });
 
         const contentRegistration = propertiesService.addSectionContent({
-            key: "Mesh Properties",
-            predicate: (entity: unknown) => entity instanceof AbstractMesh,
+            key: "Transform Node Properties",
+            predicate: (entity: unknown) => entity instanceof TransformNode,
             content: [
-                // "GENERAL" section.
+                // "TRANSFORMS" section.
                 {
-                    section: GeneralPropertiesSectionIdentity,
-                    order: 1,
-                    component: MeshGeneralProperties,
-                },
-
-                // "ADVANCED" section.
-                {
-                    section: AdvancedPropertiesSectionIdentity,
+                    section: TransformsPropertiesSectionIdentity,
                     order: 0,
-                    component: MeshAdvancedProperties,
+                    component: TransformNodeTransformProperties,
                 },
             ],
         });

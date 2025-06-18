@@ -3,6 +3,9 @@ import type { AbstractMesh } from "core/index";
 
 import type { FunctionComponent } from "react";
 
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { Switch } from "shared-ui-components/fluent/primitives/switch";
+
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
@@ -13,7 +16,9 @@ export const MeshAdvancedProperties: FunctionComponent<{ context: AbstractMesh }
     return (
         // TODO: Use the new Fluent property line shared components.
         <>
-            <div key="ComputeBonesUsingShaders">Compute bones using shaders: {computeBonesUsingShaders.toString()}</div>
+            <PropertyLine label="Compute bones using shaders" description="Whether to compute bones using shaders.">
+                <Switch checked={computeBonesUsingShaders} onChange={(_, data) => (mesh.computeBonesUsingShaders = data.checked)} />
+            </PropertyLine>
         </>
     );
 };
