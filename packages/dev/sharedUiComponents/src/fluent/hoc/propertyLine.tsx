@@ -1,8 +1,9 @@
 import { Body1Strong, Button, InfoLabel, makeStyles, tokens } from "@fluentui/react-components";
 import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
+import { ToolContext } from "./fluentToolWrapper";
 
 const usePropertyLineStyles = makeStyles({
     container: {
@@ -62,6 +63,11 @@ export type PropertyLineProps = {
     expandedContent?: JSX.Element;
 };
 
+export const LineContainer: FunctionComponent<PropsWithChildren> = (props) => {
+    const classes = usePropertyLineStyles();
+    return <div className={classes.container}>{props.children}</div>;
+};
+
 /**
  * A reusable component that renders a property line with a label and child content, and an optional description, copy button, and expandable section.
  *
@@ -75,8 +81,10 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
 
     const { label, description, onCopy, expandedContent, children } = props;
 
+    const { disableCopy } = useContext(ToolContext);
+
     return (
-        <div className={classes.container}>
+        <LineContainer>
             <div className={classes.line}>
                 <InfoLabel className={classes.label} info={description}>
                     <Body1Strong>{label}</Body1Strong>
@@ -96,13 +104,12 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                         />
                     )}
 
-                    {onCopy && (
+                    {onCopy && !disableCopy && (
                         <Button className={classes.button} id="copyProperty" icon={<Copy24Regular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
                     )}
                 </div>
             </div>
-
             {expanded && expandedContent && <div className={classes.expandedContent}>{expandedContent}</div>}
-        </div>
+        </LineContainer>
     );
 };

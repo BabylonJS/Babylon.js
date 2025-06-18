@@ -633,7 +633,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     override render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <FluentToolWrapper>
+                <FluentToolWrapper disableCopy={true}>
                     <SplitContainer
                         id="node-editor-graph-root"
                         direction={SplitDirection.Horizontal}
