@@ -10,17 +10,22 @@ type GradientStop = {
     color: string;
 };
 
-export function DrawGroup(name: string, rawGroup: RawGroupShape): Texture | undefined {
+export type RenderData = {
+    boundingBox: BoundingBox;
+    texture: Texture;
+};
+
+export function DrawGroup(name: string, rawGroup: RawGroupShape): RenderData | undefined {
     // eslint-disable-next-line no-console
     console.log(`Drawing group: ${name}`);
 
-    const bbox = GetBoundingBox(rawGroup);
+    const boundingBox = GetBoundingBox(rawGroup);
 
-    if (bbox.width <= 0 || bbox.height <= 0) {
+    if (boundingBox.width <= 0 || boundingBox.height <= 0) {
         return undefined;
     }
 
-    const texture = new DynamicTexture(`Texture - ${name}`, { width: bbox.width, height: bbox.height });
+    const texture = new DynamicTexture(`Texture - ${name}`, { width: boundingBox.width, height: boundingBox.height });
     const ctx = texture.getContext();
 
     if (!ctx) {
@@ -28,7 +33,7 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape): Texture | unde
     }
 
     ctx.fillStyle = "transparent";
-    ctx.fillRect(0, 0, bbox.width, bbox.height);
+    ctx.fillRect(0, 0, boundingBox.width, boundingBox.height);
 
     if (rawGroup.it) {
         for (const shape of rawGroup.it) {
@@ -37,13 +42,13 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape): Texture | unde
                     DrawRectangle(ctx, shape as RawRectangleShape);
                     break;
                 case "sh":
-                    DrawPath(ctx, shape as RawPathShape, bbox);
+                    DrawPath(ctx, shape as RawPathShape, boundingBox);
                     break;
                 case "fl":
                     DrawFill(ctx, shape as RawFillShape);
                     break;
                 case "gf":
-                    DrawGradientFill(ctx, shape as RawGradientFillShape, bbox);
+                    DrawGradientFill(ctx, shape as RawGradientFillShape, boundingBox);
                     break;
                 case "tr": // Transform
                     break;
@@ -54,7 +59,10 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape): Texture | unde
     }
 
     texture.update();
-    return texture;
+    return {
+        boundingBox,
+        texture,
+    };
 }
 
 function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape): void {
@@ -70,8 +78,8 @@ function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape): 
 
 function DrawPath(ctx: ICanvasRenderingContext, shape: RawPathShape, boundingBox: BoundingBox): void {
     const pathData = shape.ks.k as RawBezier;
-    const xTranslate = boundingBox.width / 2;
-    const yTranslate = boundingBox.height / 2;
+    const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
+    const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
 
     const vertices = pathData.v;
     const inTangents = pathData.i;

@@ -5,6 +5,8 @@ import type { RawBezier, RawGroupShape, RawPathShape, RawRectangleShape } from "
 export type BoundingBox = {
     height: number;
     width: number;
+    centerX: number;
+    centerY: number;
 };
 
 export function GetBoundingBox(rawGroup: RawGroupShape): BoundingBox {
@@ -58,5 +60,7 @@ function GetBoundingBoxFromVertices(vertices: Vector2[]): BoundingBox {
     return {
         width: maxX - minX,
         height: maxY - minY,
+        centerX: (minX + maxX) / 2,
+        centerY: (minY + maxY) / 2,
     };
 }

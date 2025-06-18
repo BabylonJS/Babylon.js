@@ -231,11 +231,10 @@ export class LottieParser {
         newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
         let mesh: Mesh | undefined = undefined;
-        const texture = DrawGroup(newNode.name, rawGroup);
+        const renderData = DrawGroup(newNode.name, rawGroup);
 
-        if (texture !== undefined) {
-            const size = texture.getSize();
-            mesh = MeshBuilder.CreatePlane(`Anchor - ${newNode.name}`, { height: size.height, width: size.width });
+        if (renderData !== undefined) {
+            mesh = MeshBuilder.CreatePlane(`Anchor - ${newNode.name}`, { height: renderData.boundingBox.height, width: renderData.boundingBox.width });
         } else {
             mesh = MeshBuilder.CreatePlane(`Anchor with Fake Texture - ${newNode.name}`, { height: 50, width: 50 });
         }
@@ -243,9 +242,9 @@ export class LottieParser {
         mesh.isVisible = false;
         const material = new StandardMaterial(`Material - ${newNode.name}`);
 
-        if (texture) {
-            texture.hasAlpha = true;
-            material.diffuseTexture = texture;
+        if (renderData) {
+            renderData.texture.hasAlpha = true;
+            material.diffuseTexture = renderData.texture;
             material.useAlphaFromDiffuseTexture = true;
             material.transparencyMode = 2;
         } else {
@@ -255,8 +254,8 @@ export class LottieParser {
         mesh.material = material;
 
         newNode.nodeAnchor = mesh;
-        newNode.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
-        newNode.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
+        newNode.nodeAnchor.position.x = (transform.anchorPoint?.startValue.x ?? 0) + (renderData?.boundingBox.centerX ?? 0);
+        newNode.nodeAnchor.position.y = (transform.anchorPoint?.startValue.y ?? 0) - (renderData?.boundingBox.centerY ?? 0);
         newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
 
         newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
