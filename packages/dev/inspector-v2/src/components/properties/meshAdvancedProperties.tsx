@@ -9,7 +9,9 @@ import { Switch } from "shared-ui-components/fluent/primitives/switch";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
-export const MeshAdvancedProperties: FunctionComponent<{ context: AbstractMesh }> = ({ context: mesh }) => {
+export const MeshAdvancedProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
+    const { mesh } = props;
+
     // There is no observable for computeBonesUsingShaders, so we use an interceptor to listen for changes.
     const computeBonesUsingShaders = useObservableState(() => mesh.computeBonesUsingShaders, useInterceptObservable("property", mesh, "computeBonesUsingShaders"));
 

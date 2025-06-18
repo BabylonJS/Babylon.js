@@ -8,7 +8,9 @@ import { VectorPropertyLine } from "shared-ui-components/fluent/hoc/vectorProper
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
-export const TransformNodeTransformProperties: FunctionComponent<{ context: TransformNode }> = ({ context: transformNode }) => {
+export const TransformNodeTransformProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
+    const { node: transformNode } = props;
+
     const position = useObservableState(() => transformNode.position, useInterceptObservable("property", transformNode, "position"));
     useObservableState(() => position.x, useInterceptObservable("property", position, "x"));
     useObservableState(() => position.y, useInterceptObservable("property", position, "y"));

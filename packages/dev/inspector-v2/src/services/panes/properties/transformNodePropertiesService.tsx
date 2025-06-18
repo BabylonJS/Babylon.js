@@ -31,7 +31,7 @@ export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IP
                 {
                     section: TransformsPropertiesSectionIdentity,
                     order: 0,
-                    component: TransformNodeTransformProperties,
+                    component: ({ context }) => <TransformNodeTransformProperties node={context} />,
                 },
             ],
         });

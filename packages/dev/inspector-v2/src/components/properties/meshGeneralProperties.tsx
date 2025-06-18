@@ -3,13 +3,17 @@ import type { AbstractMesh } from "core/index";
 
 import type { FunctionComponent } from "react";
 
+import type { ISelectionService } from "../../services/selectionService";
+
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { Switch } from "shared-ui-components/fluent/primitives/switch";
 import { Link } from "shared-ui-components/fluent/primitives/link";
 
 import { useObservableState } from "../../hooks/observableHooks";
 
-export const MeshGeneralProperties: FunctionComponent<{ context: AbstractMesh }> = ({ context: mesh }) => {
+export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
+    const { mesh, selectionService } = props;
+
     const isEnabled = useObservableState(() => mesh.isEnabled(false), mesh.onEnabledStateChangedObservable);
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
@@ -22,7 +26,7 @@ export const MeshGeneralProperties: FunctionComponent<{ context: AbstractMesh }>
             </PropertyLine>
             {material && (!material.reservedDataStore || !material.reservedDataStore.hidden) && (
                 <PropertyLine key="Material" label="Material" description={`The material used by the mesh.`}>
-                    <Link>{material.name}</Link>
+                    <Link onClick={() => (selectionService.selectedEntity = material)}>{material.name}</Link>
                 </PropertyLine>
             )}
         </>

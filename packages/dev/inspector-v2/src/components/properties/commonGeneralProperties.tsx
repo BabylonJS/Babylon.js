@@ -9,7 +9,9 @@ type CommonEntity = {
     getClassName?: () => string;
 };
 
-export const CommonGeneralProperties: FunctionComponent<{ context: CommonEntity }> = ({ context: commonEntity }) => {
+export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEntity }> = (props) => {
+    const { commonEntity } = props;
+
     return (
         <>
             {commonEntity.id !== undefined && (
