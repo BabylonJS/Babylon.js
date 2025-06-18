@@ -45,8 +45,6 @@ export class LinesMesh extends Mesh {
      */
     public intersectionThreshold: number;
 
-    private _lineMaterial: Material;
-
     private _isShaderMaterial(shader: Material): shader is ShaderMaterial {
         return shader.getClassName() === "ShaderMaterial";
     }
@@ -144,7 +142,7 @@ export class LinesMesh extends Mesh {
     }
 
     public override isReady() {
-        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
+        if (!this.material.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
             return false;
         }
 
@@ -158,19 +156,16 @@ export class LinesMesh extends Mesh {
         return "LinesMesh";
     }
 
-    /**
-     * @internal
-     */
     public override get material(): Material {
-        return this._lineMaterial;
+        return super.material as Material;
     }
 
     /**
      * @internal
      */
     public override set material(value: Material) {
-        this._lineMaterial = value;
-        this._lineMaterial.fillMode = Material.LineListDrawMode;
+        this._setMaterial(value);
+        this.material.fillMode = Material.LineListDrawMode;
     }
 
     /**
@@ -201,10 +196,10 @@ export class LinesMesh extends Mesh {
         }
 
         // Color
-        if (!this.useVertexColor && this._isShaderMaterial(this._lineMaterial)) {
+        if (!this.useVertexColor && this._isShaderMaterial(this.material)) {
             const { r, g, b } = this.color;
             this._color4.set(r, g, b, this.alpha);
-            this._lineMaterial.setColor4("color", this._color4);
+            this.material.setColor4("color", this._color4);
         }
 
         return this;
@@ -228,20 +223,6 @@ export class LinesMesh extends Mesh {
             engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
         return this;
-    }
-
-    /**
-     * Disposes of the line mesh
-     * @param doNotRecurse If children should be disposed
-     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
-     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
-        if (!doNotDisposeMaterial) {
-            this._lineMaterial.dispose(false, false, true);
-        }
-        super.dispose(doNotRecurse);
     }
 
     /**
