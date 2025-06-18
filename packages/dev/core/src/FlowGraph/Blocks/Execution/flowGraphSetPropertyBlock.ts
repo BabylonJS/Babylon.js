@@ -67,17 +67,41 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         try {
             const target = this.object.getValue(context);
             const value = this.value.getValue(context);
+            const propertyName = this.propertyName.getValue(context);
+
+            this._stopRunningAnimations(context, target, propertyName);
 
             const setFunction = this.customSetFunction.getValue(context);
             if (setFunction) {
-                setFunction(target, this.propertyName.getValue(context), value, context);
+                setFunction(target, propertyName, value, context);
             } else {
-                this._setPropertyValue(target, this.propertyName.getValue(context), value);
+                this._setPropertyValue(target, propertyName, value);
             }
         } catch (e) {
             this._reportError(context, e);
         }
         this.out._activateSignal(context);
+    }
+
+    private _stopRunningAnimations(context: FlowGraphContext, target: any, propertyName: string) {
+        const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
+        for (const uniqueId of currentlyRunningAnimationGroups) {
+            const animationGroup = context.assetsContext.animationGroups.find((animationGroup) => animationGroup.uniqueId === uniqueId);
+            if (animationGroup) {
+                for (const targetedAnimations of animationGroup.targetedAnimations) {
+                    if (targetedAnimations.target === target && targetedAnimations.animation.targetProperty === propertyName) {
+                        animationGroup.stop(true);
+                        animationGroup.dispose();
+
+                        const index = currentlyRunningAnimationGroups.indexOf(uniqueId);
+                        if (index !== -1) {
+                            currentlyRunningAnimationGroups.splice(index, 1);
+                            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private _setPropertyValue(target: AssetType<O>, propertyName: string, value: P): void {

@@ -4,7 +4,7 @@ import type { SwitchOnChangeData, SwitchProps as FluentSwitchProps } from "@flue
 import type { ChangeEvent, FunctionComponent } from "react";
 
 import { makeStyles, Switch as FluentSwitch } from "@fluentui/react-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const useSwitchStyles = makeStyles({
     switch: {
@@ -23,6 +23,12 @@ const useSwitchStyles = makeStyles({
 export const Switch: FunctionComponent<FluentSwitchProps> = (props) => {
     const classes = useSwitchStyles();
     const [checked, setChecked] = useState(() => props.checked ?? false);
+
+    useEffect(() => {
+        if (props.checked != undefined) {
+            setChecked(props.checked); // Update local state when props.checked changes
+        }
+    }, [props.checked]);
 
     const onChange = (event: ChangeEvent<HTMLInputElement>, data: SwitchOnChangeData) => {
         props.onChange && props.onChange(event, data);
