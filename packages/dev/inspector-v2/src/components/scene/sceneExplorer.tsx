@@ -96,6 +96,11 @@ type ToggleCommand<T extends EntityBase> = EntityCommandBase<T> &
          * The function that sets the enabled state of the command on the given entity.
          */
         setEnabled: (scene: Scene, entity: T, enabled: boolean) => void;
+
+        /**
+         * An optional icon component to render when the command is disabled.
+         */
+        disabledIcon?: ComponentType<{ entity: T }>;
     }>;
 
 export type SceneExplorerEntityCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
@@ -155,7 +160,12 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; ent
 
     return (
         <Tooltip content={command.displayName} relationship="label">
-            <ToggleButton icon={<command.icon entity={entity} />} appearance="transparent" checked={checked} onClick={toggle} />
+            <ToggleButton
+                icon={!checked && command.disabledIcon ? <command.disabledIcon entity={entity} /> : <command.icon entity={entity} />}
+                appearance="transparent"
+                checked={checked}
+                onClick={toggle}
+            />
         </Tooltip>
     );
 };

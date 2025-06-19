@@ -4,7 +4,7 @@ import type { IReadonlyObservable, Node, Scene } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { BoxRegular, BranchRegular, CameraRegular, EyeRegular, LightbulbRegular } from "@fluentui/react-icons";
+import { BoxRegular, BranchRegular, CameraRegular, EyeRegular, EyeOffRegular, LightbulbRegular } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
@@ -76,6 +76,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
             },
             displayName: "Show/Hide Mesh",
             icon: () => <EyeRegular />,
+            disabledIcon: () => <EyeOffRegular />,
         });
 
         return {
