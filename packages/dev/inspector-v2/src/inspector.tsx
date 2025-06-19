@@ -18,6 +18,7 @@ import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExpl
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
+import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
@@ -173,6 +174,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             PropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
+            TransformNodePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

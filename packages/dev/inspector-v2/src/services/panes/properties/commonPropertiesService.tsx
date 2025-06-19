@@ -33,7 +33,7 @@ export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 {
                     section: GeneralPropertiesSectionIdentity,
                     order: 0,
-                    component: CommonGeneralProperties,
+                    component: ({ context }) => <CommonGeneralProperties commonEntity={context} />,
                 },
             ],
         });
