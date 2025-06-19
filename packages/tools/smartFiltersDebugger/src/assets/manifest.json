@@ -3,10 +3,7 @@
     "name": "Smart Filter Debugger",
     "version": "0.1.0",
     "description": "Debugger for Babylon.js Smart Filters",
-    "permissions": [
-        "scripting",
-        "activeTab"
-    ],
+    "permissions": ["scripting", "activeTab"],
     "background": {
         "service_worker": "scripts/background.js"
     },

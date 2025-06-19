@@ -19,7 +19,7 @@ This browser extension is intended to aid in the development of web applications
     - Go to Manage Extensions
     - Turn on Developer Mode
     - Click "Load Unpacked"
-    - Browse to packages/tools/smartFiltersDebugger/unpackedExtension
+    - Browse to packages/tools/smartFiltersDebugger/dist
 1. Update the web application you are debugging to set these globals:
     - window.currentSmartFilter to the current SmartFilter instance
     - window.thinEngine to the ThinEngine instance used when creating your SmartFilter
