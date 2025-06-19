@@ -1,26 +1,21 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
+import type { ISelectionService } from "../../selectionService";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
+import { SelectionServiceIdentity } from "../../selectionService";
 import { MeshAdvancedProperties } from "../../../components/properties/meshAdvancedProperties";
 import { MeshGeneralProperties } from "../../../components/properties/meshGeneralProperties";
-import { MeshTransformProperties } from "../../../components/properties/meshTransformProperties";
 
-export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
 export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
 
-export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
-    consumes: [PropertiesServiceIdentity],
-    factory: (propertiesService) => {
-        const transformsSectionRegistration = propertiesService.addSection({
-            order: 1,
-            identity: TransformsPropertiesSectionIdentity,
-        });
-
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, selectionService) => {
         const advancedSectionRegistration = propertiesService.addSection({
             order: 2,
             identity: AdvancedPropertiesSectionIdentity,
@@ -28,27 +23,21 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
 
         const contentRegistration = propertiesService.addSectionContent({
             key: "Mesh Properties",
-            predicate: (entity: unknown) => entity instanceof AbstractMesh,
+            // Meshes without vertices are effectively TransformNodes, so don't add mesh properties for them.
+            predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             content: [
                 // "GENERAL" section.
                 {
                     section: GeneralPropertiesSectionIdentity,
                     order: 1,
-                    component: MeshGeneralProperties,
-                },
-
-                // "TRANSFORMS" section.
-                {
-                    section: TransformsPropertiesSectionIdentity,
-                    order: 0,
-                    component: MeshTransformProperties,
+                    component: ({ context }) => <MeshGeneralProperties mesh={context} selectionService={selectionService} />,
                 },
 
                 // "ADVANCED" section.
                 {
                     section: AdvancedPropertiesSectionIdentity,
                     order: 0,
-                    component: MeshAdvancedProperties,
+                    component: ({ context }) => <MeshAdvancedProperties mesh={context} />,
                 },
             ],
         });
@@ -56,7 +45,6 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
         return {
             dispose: () => {
                 contentRegistration.dispose();
-                transformsSectionRegistration.dispose();
                 advancedSectionRegistration.dispose();
             },
         };
