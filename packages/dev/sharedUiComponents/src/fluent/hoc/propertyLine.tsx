@@ -1,5 +1,6 @@
-import { Body1Strong, Button, InfoLabel, makeStyles, tokens } from "@fluentui/react-components";
-import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
+import { Body1Strong, Button, InfoLabel, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
+import { Collapse } from "@fluentui/react-motion-components-preview";
+import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
 import { useContext, useState } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
@@ -28,16 +29,22 @@ const usePropertyLineStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
+        gap: tokens.spacingHorizontalS,
     },
     button: {
         marginLeft: tokens.spacingHorizontalXXS,
-        width: "100px",
+        margin: 0,
+        padding: 0,
+        border: 0,
     },
     fillRestOfRightContentWidth: {
         flex: 1,
         display: "flex",
         justifyContent: "flex-end",
         alignItems: "center",
+    },
+    expandButton: {
+        margin: 0,
     },
     expandedContent: {
         backgroundColor: tokens.colorNeutralBackground1,
@@ -93,10 +100,11 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                     <div className={classes.fillRestOfRightContentWidth}>{children}</div>
 
                     {expandedContent && (
-                        <Button
-                            appearance="subtle"
-                            icon={expanded ? <Subtract24Filled /> : <Add24Filled />}
+                        <ToggleButton
+                            appearance="transparent"
+                            icon={expanded ? <SubtractFilled /> : <AddFilled />}
                             className={classes.button}
+                            checked={expanded}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setExpanded((expanded) => !expanded);
@@ -105,11 +113,13 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                     )}
 
                     {onCopy && !disableCopy && (
-                        <Button className={classes.button} id="copyProperty" icon={<Copy24Regular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
+                        <Button className={classes.button} id="copyProperty" icon={<CopyRegular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
                     )}
                 </div>
             </div>
-            {expanded && expandedContent && <div className={classes.expandedContent}>{expandedContent}</div>}
+            <Collapse visible={expanded && !!expandedContent}>
+                <div className={classes.expandedContent}>{expandedContent}</div>
+            </Collapse>
         </LineContainer>
     );
 };
