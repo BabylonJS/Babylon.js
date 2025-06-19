@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRMaterial2 } from "core/Materials/PBR/pbrMaterial2";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -81,7 +82,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadVolumePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsVolume): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBRMaterial2)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
