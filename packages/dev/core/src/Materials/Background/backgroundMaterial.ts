@@ -15,7 +15,7 @@ import type { IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import type { ColorCurves } from "../../Materials/colorCurves";
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
+import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -48,11 +48,13 @@ import {
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
 
+class BackgroundMaterialDefinesBase extends MaterialDefines {}
+
 /**
  * Background material defines definition.
  * @internal Mainly internal Use
  */
-class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+class BackgroundMaterialDefines extends ImageProcessingDefinesMixin(BackgroundMaterialDefinesBase) {
     /**
      * True if the diffuse texture is in use.
      */
@@ -134,23 +136,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
      * True if ground projection has been enabled.
      */
     public PROJECTED_GROUND = false;
-
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = 0;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public EXPOSURE = false;
-    public MULTIVIEW = false;
 
     // Reflection.
     public REFLECTION = false;
