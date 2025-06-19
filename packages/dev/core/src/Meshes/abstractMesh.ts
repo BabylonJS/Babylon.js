@@ -1539,27 +1539,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /**
-     * Gets the current world matrix
-     * @returns a Matrix
-     */
-    public override getWorldMatrix(): Matrix {
-        if (this._masterMesh && this.billboardMode === TransformNode.BILLBOARDMODE_NONE) {
-            return this._masterMesh.getWorldMatrix();
-        }
-
-        return super.getWorldMatrix();
-    }
-
-    /** @internal */
-    public override _getWorldMatrixDeterminant(): number {
-        if (this._masterMesh) {
-            return this._masterMesh._getWorldMatrixDeterminant();
-        }
-
-        return super._getWorldMatrixDeterminant();
-    }
-
-    /**
      * Gets a boolean indicating if this mesh is an instance or a regular mesh
      */
     public get isAnInstance(): boolean {

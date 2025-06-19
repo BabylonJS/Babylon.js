@@ -4325,8 +4325,36 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Determine mesh candidates
         const meshes = this.getActiveMeshCandidates().data;
 
+        // Check if any mesh has LOD levels to avoid unnecessary processing
+        let hasLODMeshes = false;
+        for (let i = 0; i < meshes.length; i++) {
+            if ((meshes[i] as Mesh).hasLODLevels) {
+                hasLODMeshes = true;
+                break;
+            }
+        }
+
         // Move meshes with LOD levels to the front of the list for priority processing
-        meshes.sort((a, b) => ((a as Mesh).hasLODLevels ? -1 : (b as Mesh).hasLODLevels ? 1 : 0));
+        if (hasLODMeshes) {
+            meshes.sort((a, b) => ((a as Mesh).hasLODLevels ? -1 : (b as Mesh).hasLODLevels ? 1 : 0));
+        }
+
+        // Build LOD parent map to cache LOD parent relationships
+        const lodParentMap = new Map<AbstractMesh, AbstractMesh>();
+        if (hasLODMeshes) {
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                if (mesh instanceof Mesh && (mesh as Mesh).hasLODLevels) {
+                    const lodLevels = (mesh as Mesh).getLODLevels();
+                    // Map each LOD mesh to its parent
+                    for (const lodLevel of lodLevels) {
+                        if (lodLevel.mesh) {
+                            lodParentMap.set(lodLevel.mesh, mesh);
+                        }
+                    }
+                }
+            }
+        }
 
         // Check each mesh
         const len = meshes.length;
@@ -4386,8 +4414,30 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
 
             // Skip meshes that are not the current LOD level
-            if (meshToRender.parent instanceof Mesh && skippedLODMeshes.includes(meshToRender.parent as Mesh)) {
-                skippedLODMeshes.push(meshToRender);
+            // First, check if this mesh is part of a LOD system via the cache
+            const lodParent = lodParentMap.get(mesh);
+            if (lodParent) {
+                // This mesh is a LOD child, check if it's the current LOD
+                const parentLOD = this.customLODSelector ? this.customLODSelector(lodParent, this.activeCamera) : lodParent.getLOD(this.activeCamera);
+                if (mesh !== parentLOD) {
+                    skippedLODMeshes.push(mesh);
+                    continue;
+                }
+            }
+            
+            // Check if any ancestor is in the skipped list
+            let shouldSkip = false;
+            let ancestor = mesh.parent;
+            while (ancestor) {
+                if (skippedLODMeshes.includes(ancestor as Mesh)) {
+                    shouldSkip = true;
+                    break;
+                }
+                ancestor = ancestor.parent;
+            }
+            
+            if (shouldSkip) {
+                skippedLODMeshes.push(mesh);
                 continue;
             }
 
