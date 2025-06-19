@@ -43,6 +43,7 @@ const usePropertyLineStyles = makeStyles({
         margin: 0,
         padding: 0,
         border: 0,
+        minWidth: 0,
     },
     fillRestOfRightContentWidth: {
         flex: 1,
