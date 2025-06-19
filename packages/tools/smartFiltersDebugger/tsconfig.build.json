@@ -2,11 +2,9 @@
     "extends": "../../../tsconfig.build.json",
 
     "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
         "resolveJsonModule": true,
-        "types": [
-            // (various types, e.g. jquery, core-js),
-            "chrome"
-        ],
         "paths": {
             "core/*": ["../node_modules/core/*"],
             "@babylonjs/core/*": ["../node_modules/core/*"],

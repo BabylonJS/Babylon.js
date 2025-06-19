@@ -13,7 +13,7 @@
         "readme.md"
     ],
     "scripts": {
-        "clean": "rimraf dist && rimraf unpackedExtension && rimraf tsconfig.build.tsbuildinfo",
+        "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
         "build": "npm run clean && npm run compile",
         "compile": "webpack --env=prod",
         "watch": "webpack --env=dev --watch"

@@ -1,40 +1,42 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
+const webpackTools = require("@dev/build-tools").webpackTools;
 
-var SRC_DIR = path.resolve(__dirname, "./src");
-var OUTPUT_DIR = path.resolve(__dirname, "./unpackedExtension");
-
-var buildConfig = function (env) {
-    var isProd = env.prod;
-    return {
-        context: __dirname,
+module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
+    const commonConfig = {
         entry: {
-            background: SRC_DIR + "/background.ts",
-            editorLauncher: SRC_DIR + "/editorLauncher.ts",
+            background: "./src/background.ts",
+            editorLauncher: "./src/editorLauncher.ts",
         },
-        performance: {
-            maxEntrypointSize: 5120000,
-            maxAssetSize: 5120000,
-        },
-        output: {
-            path: OUTPUT_DIR,
-            publicPath: "/",
-            filename: "scripts/[name].js",
-            library: {
-                name: "[name]",
-                type: "var",
-            },
-            devtoolModuleFilenameTemplate: isProd ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
-        devtool: isProd ? false : "inline-source-map",
+        ...webpackTools.commonDevWebpackConfiguration({
+            ...env,
+            outputFilename: "scripts/[name].js",
+            dirName: __dirname,
+        }),
         resolve: {
-            extensions: [".ts", ".tsx", ".js", ".scss", ".svg"],
+            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                react: path.resolve("../../../node_modules/react"),
-                "react-dom": path.resolve("../../../node_modules/react-dom"),
-                "@babylonjs/smart-filters-editor-control": path.resolve("../../tools/smartFiltersEditorControl/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "@babylonjs/core/*": path.resolve("../../../node_modules/core/*"),
+                "@babylonjs/smart-filters": path.resolve("../../dev/smartFilters/dist"),
+                "@babylonjs/smart-filters-blocks": path.resolve("../../dev/smartFilterBlocks/dist"),
+                "@babylonjs/smart-filters-editor-control": path.resolve("../../tools/smartFiltersEditorControl/dist"),
             },
+        },
+        externals: [],
+        module: {
+            rules: webpackTools.getRules({
+                includeCSS: true,
+                includeAssets: true,
+                sideEffects: true,
+                tsOptions: {
+                    compilerOptions: {
+                        rootDir: "../../",
+                    },
+                },
+                mode: production ? "production" : "development",
+            }),
         },
         plugins: [
             new CopyPlugin({
@@ -44,63 +46,6 @@ var buildConfig = function (env) {
                 ],
             }),
         ],
-        module: {
-            rules: [
-                {
-                    test: /\.(png|svg|jpg|jpeg|gif|ttf)$/i,
-                    type: "asset/inline",
-                },
-                {
-                    test: /(?<!module)\.s[ac]ss$/i,
-                    use: [
-                        "style-loader",
-                        {
-                            loader: "css-loader",
-                            options: {
-                                sourceMap: true,
-                                modules: "global",
-                            },
-                        },
-                        {
-                            loader: "sass-loader",
-                            options: {
-                                sourceMap: true,
-                            },
-                        },
-                    ],
-                },
-                {
-                    test: /\.module\.s[ac]ss$/i,
-                    use: [
-                        "style-loader",
-                        {
-                            loader: "css-loader",
-                            options: {
-                                sourceMap: true,
-                                modules: true,
-                            },
-                        },
-                        {
-                            loader: "sass-loader",
-                            options: {
-                                sourceMap: true,
-                            },
-                        },
-                    ],
-                },
-                {
-                    test: /\.tsx?$/,
-                    loader: "ts-loader",
-                },
-                {
-                    test: /\.js$/,
-                    enforce: "pre",
-                    use: ["source-map-loader"],
-                },
-            ],
-        },
-        mode: isProd ? "production" : "development",
     };
+    return commonConfig;
 };
-
-module.exports = buildConfig;
