@@ -45,7 +45,11 @@ export class LinesMesh extends Mesh {
      */
     public intersectionThreshold: number;
 
-    private _isShaderMaterial(shader: Material): shader is ShaderMaterial {
+    private _isShaderMaterial(shader: Nullable<Material>): shader is ShaderMaterial {
+        if (!shader) {
+            return false;
+        }
+
         return shader.getClassName() === "ShaderMaterial";
     }
 
@@ -141,14 +145,6 @@ export class LinesMesh extends Mesh {
         }
     }
 
-    public override isReady() {
-        if (!this.material.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
-            return false;
-        }
-
-        return super.isReady();
-    }
-
     /**
      * @returns the string "LineMesh"
      */
@@ -156,16 +152,18 @@ export class LinesMesh extends Mesh {
         return "LinesMesh";
     }
 
-    public override get material(): Material {
+    public override get material(): Nullable<Material> {
         return this._internalAbstractMeshDataInfo._material as Material;
     }
 
     /**
      * @internal
      */
-    public override set material(value: Material) {
+    public override set material(value: Nullable<Material>) {
         this._setMaterial(value);
-        this.material.fillMode = Material.LineListDrawMode;
+        if (this.material) {
+            this.material.fillMode = Material.LineListDrawMode;
+        }
     }
 
     /**
