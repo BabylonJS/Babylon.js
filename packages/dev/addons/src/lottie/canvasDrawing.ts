@@ -88,36 +88,36 @@ function DrawPath(ctx: ICanvasRenderingContext, shape: RawPathShape, boundingBox
     if (vertices.length > 0) {
         ctx.moveTo(vertices[0][0] + xTranslate, vertices[0][1] + yTranslate);
 
-        for (let i = 1; i < vertices.length; i++) {
-            const prev = vertices[i - 1];
-            const curr = vertices[i];
-            const outTangent = outTangents[i - 1];
-            const inTangent = inTangents[i];
+        for (let i = 0; i < vertices.length - 1; i++) {
+            const start = vertices[i];
+            const end = vertices[i + 1];
+            const outTangent = outTangents[i];
+            const inTangent = inTangents[i + 1];
 
             ctx.bezierCurveTo(
-                prev[0] + xTranslate + outTangent[0],
-                prev[1] + yTranslate + outTangent[1],
-                curr[0] + xTranslate + inTangent[0],
-                curr[1] + yTranslate + inTangent[1],
-                curr[0] + xTranslate,
-                curr[1] + yTranslate
+                start[0] + xTranslate + outTangent[0],
+                start[1] + yTranslate + outTangent[1],
+                end[0] + xTranslate + inTangent[0],
+                end[1] + yTranslate + inTangent[1],
+                end[0] + xTranslate,
+                end[1] + yTranslate
             );
         }
 
         if (pathData.c) {
             // Close path with curve from last to first point
-            const last = vertices[vertices.length - 1];
-            const first = vertices[0];
-            const lastOutTangent = outTangents[vertices.length - 1];
-            const firstInTangent = inTangents[0];
+            const start = vertices[vertices.length - 1];
+            const end = vertices[0];
+            const outTangent = outTangents[vertices.length - 1];
+            const inTangent = inTangents[0];
 
             ctx.bezierCurveTo(
-                last[0] + xTranslate + lastOutTangent[0],
-                last[1] + yTranslate + lastOutTangent[1],
-                first[0] + xTranslate + firstInTangent[0],
-                first[1] + yTranslate + firstInTangent[1],
-                first[0] + xTranslate,
-                first[1] + yTranslate
+                start[0] + xTranslate + outTangent[0],
+                start[1] + yTranslate + outTangent[1],
+                end[0] + xTranslate + inTangent[0],
+                end[1] + yTranslate + inTangent[1],
+                end[0] + xTranslate,
+                end[1] + yTranslate
             );
 
             ctx.closePath();
@@ -146,8 +146,8 @@ function DrawGradientFill(ctx: ICanvasRenderingContext, fill: RawGradientFillSha
 }
 
 function DrawLinearGradientFill(ctx: ICanvasRenderingContext, fill: RawGradientFillShape, boundingBox: BoundingBox): void {
-    const xTranslate = boundingBox.width / 2;
-    const yTranslate = boundingBox.height / 2;
+    const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
+    const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
 
     // Create the gradient
     const startPoint = fill.s.k as number[];
@@ -161,8 +161,8 @@ function DrawLinearGradientFill(ctx: ICanvasRenderingContext, fill: RawGradientF
 }
 
 function DrawRadialGradientFill(ctx: ICanvasRenderingContext, fill: RawGradientFillShape, boundingBox: BoundingBox): void {
-    const xTranslate = boundingBox.width / 2;
-    const yTranslate = boundingBox.height / 2;
+    const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
+    const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
 
     // Create the gradient
     const startPoint = fill.s.k as number[];
