@@ -19,6 +19,7 @@ module.exports = (env) => {
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "serializers" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]Serializer${env.production ? ".min" : ""}.js`;
         },
+        minToMax: true,
     });
     return commonConfig;
 };
