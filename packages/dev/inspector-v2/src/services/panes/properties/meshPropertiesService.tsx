@@ -23,7 +23,8 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
 
         const contentRegistration = propertiesService.addSectionContent({
             key: "Mesh Properties",
-            predicate: (entity: unknown) => entity instanceof AbstractMesh,
+            // Meshes without vertices are effectively TransformNodes, so don't add mesh properties for them.
+            predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             content: [
                 // "GENERAL" section.
                 {

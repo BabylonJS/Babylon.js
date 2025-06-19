@@ -13,14 +13,23 @@ export const MeshAdvancedProperties: FunctionComponent<{ mesh: AbstractMesh }> =
 
     // There is no observable for computeBonesUsingShaders, so we use an interceptor to listen for changes.
     const computeBonesUsingShaders = useObservableState(() => mesh.computeBonesUsingShaders, useInterceptObservable("property", mesh, "computeBonesUsingShaders"));
+    const checkCollisions = useObservableState(() => mesh.checkCollisions, useInterceptObservable("property", mesh, "checkCollisions"));
 
     return (
         <>
+            {mesh.useBones && (
+                <SwitchPropertyLine
+                    label="Compute bones using shaders"
+                    description="Whether to compute bones using shaders."
+                    checked={computeBonesUsingShaders}
+                    onChange={(_, data) => (mesh.computeBonesUsingShaders = data.checked)}
+                />
+            )}
             <SwitchPropertyLine
-                label="Compute bones using shaders"
-                description="Whether to compute bones using shaders."
-                checked={computeBonesUsingShaders}
-                onChange={(_, data) => (mesh.computeBonesUsingShaders = data.checked)}
+                label="Check collisions"
+                description="Whether to check for collisions."
+                checked={checkCollisions}
+                onChange={(_, data) => (mesh.checkCollisions = data.checked)}
             />
         </>
     );
