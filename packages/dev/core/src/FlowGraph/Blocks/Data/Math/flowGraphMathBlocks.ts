@@ -15,7 +15,7 @@ import type { FlowGraphMathOperationType, FlowGraphNumber } from "core/FlowGraph
 import { _AreSameIntegerClass, _AreSameMatrixClass, _AreSameVectorOrQuaternionClass, _GetClassNameOf, getNumericValue, isNumeric } from "core/FlowGraph/utils";
 
 /**
- * A configuration interface  for math blocks
+ * A configuration interface for math blocks
  */
 export interface IFlowGraphMathBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -61,6 +61,10 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<FlowGraphMa
         if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             // cast to vector3, but any other cast will be fine
             return (a as Vector3).add(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Vector4) {
+            return new Vector4((a as Quaternion).x, (a as Quaternion).y, (a as Quaternion).z, (a as Quaternion).w).addInPlace(b as Vector4);
+        } else if (aClassName === FlowGraphTypes.Vector4 || bClassName === FlowGraphTypes.Quaternion) {
+            return (a as Vector4).add(b as Quaternion);
         } else {
             // at this point at least one of the variables is a number.
             if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
@@ -97,6 +101,10 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<FlowGr
         if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName) || _AreSameMatrixClass(aClassName, bClassName)) {
             // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).subtract(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Vector4) {
+            return new Vector4((a as Quaternion).x, (a as Quaternion).y, (a as Quaternion).z, (a as Quaternion).w).subtractInPlace(b as Vector4);
+        } else if (aClassName === FlowGraphTypes.Vector4 || bClassName === FlowGraphTypes.Quaternion) {
+            return (a as Vector4).subtract(b as Quaternion);
         } else {
             // at this point at least one of the variables is a number.
             if (this.config?.preventIntegerFloatArithmetic && typeof a !== typeof b) {
@@ -130,6 +138,10 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<FlowGr
         if (_AreSameVectorOrQuaternionClass(aClassName, bClassName) || _AreSameIntegerClass(aClassName, bClassName)) {
             // cast to vector3, but it can be casted to any vector type
             return (a as Vector3).multiply(b as Vector3);
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Vector4) {
+            return new Vector4((a as Quaternion).x, (a as Quaternion).y, (a as Quaternion).z, (a as Quaternion).w).multiplyInPlace(b as Vector4);
+        } else if (aClassName === FlowGraphTypes.Vector4 || bClassName === FlowGraphTypes.Quaternion) {
+            return (a as Vector4).multiply(b as Quaternion);
         } else if (_AreSameMatrixClass(aClassName, bClassName)) {
             if (this.config?.useMatrixPerComponent) {
                 // this is the definition of multiplication of glTF interactivity
@@ -194,6 +206,10 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<FlowGrap
             aClone.z /= (b as Quaternion).z;
             aClone.w /= (b as Quaternion).w;
             return aClone;
+        } else if (aClassName === FlowGraphTypes.Quaternion || bClassName === FlowGraphTypes.Vector4) {
+            return new Vector4((a as Quaternion).x, (a as Quaternion).y, (a as Quaternion).z, (a as Quaternion).w).divideInPlace(b as Vector4);
+        } else if (aClassName === FlowGraphTypes.Vector4 || bClassName === FlowGraphTypes.Quaternion) {
+            return (a as Vector4).divide(b as Quaternion);
         } else if (_AreSameMatrixClass(aClassName, bClassName)) {
             if (this.config?.useMatrixPerComponent) {
                 // get a's m as array, and divide each component with b's m

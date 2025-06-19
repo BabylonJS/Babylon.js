@@ -45,7 +45,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         }
     }
 
-    public _preparePendingTasks(context: FlowGraphContext): void {
+    public override _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         // check if we are not exceeding the max number of events
         if (observable && observable.hasObservers() && observable.observers.length > FlowGraphCoordinator.MaxEventsPerType) {
@@ -62,7 +62,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         });
         context._setExecutionVariable(this, "_eventObserver", eventObserver);
     }
-    public _cancelPendingTasks(context: FlowGraphContext): void {
+    public override _cancelPendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         if (observable) {
             const eventObserver = context._getExecutionVariable<Nullable<Observer<any[]>>>(this, "_eventObserver", null);

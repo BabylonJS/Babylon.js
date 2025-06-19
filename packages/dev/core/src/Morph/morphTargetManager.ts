@@ -21,6 +21,11 @@ export class MorphTargetManager implements IDisposable {
     /** Maximum number of active morph targets supported in the "vertex attribute" mode (i.e., not the "texture" mode) */
     public static MaxActiveMorphTargetsInVertexAttributeMode = 8;
 
+    /**
+     * When used in texture mode, if greather than 0, this will override the the morph manager numMaxInfluencers value.
+     */
+    public static ConstantTargetCountForTextureMode = 0;
+
     private _targets = new Array<MorphTarget>();
     private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
     private _targetDataLayoutChangedObservers = new Array<Nullable<Observer<void>>>();
@@ -146,8 +151,12 @@ export class MorphTargetManager implements IDisposable {
      * If you assign a non-zero value to this property, you need to ensure that this value is greater than the maximum number of (active) influencers you'll need for this morph manager.
      * Otherwise, the number of active influencers will be truncated at the value you set for this property, which can lead to unexpected results.
      * Note that this property has no effect if "useTextureToStoreTargets" is false.
+     * Note as well that if MorphTargetManager.ConstantTargetCountForTextureMode is greater than 0, this property will be ignored and the constant value will be used instead.
      */
     public get numMaxInfluencers(): number {
+        if (MorphTargetManager.ConstantTargetCountForTextureMode > 0 && this.isUsingTextureForTargets) {
+            return MorphTargetManager.ConstantTargetCountForTextureMode;
+        }
         return this._numMaxInfluencers;
     }
 

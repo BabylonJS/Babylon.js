@@ -796,38 +796,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/compose": {
-        blocks: [FlowGraphBlockNames.MatrixCompose],
-        configuration: {},
-        inputs: {
-            values: {
-                translation: { name: "position", gltfType: "float3" },
-                rotation: { name: "rotationQuaternion", gltfType: "float4" },
-                scale: { name: "scaling", gltfType: "float3" },
-            },
-        },
-        outputs: {
-            values: {
-                value: { name: "output" },
-            },
-        },
-    },
-    "math/decompose": {
-        blocks: [FlowGraphBlockNames.MatrixDecompose],
-        configuration: {},
-        inputs: {
-            values: {
-                a: { name: "input" },
-            },
-        },
-        outputs: {
-            values: {
-                translation: { name: "position" },
-                rotation: { name: "rotationQuaternion" },
-                scale: { name: "scaling" },
-            },
-        },
-    },
     "math/not": {
         blocks: [FlowGraphBlockNames.BitwiseNot],
         inputs: {
@@ -1621,6 +1589,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
     },
 };
+
+// aliases for backwards compatibility
+gltfToFlowGraphMapping["math/compose"] = gltfToFlowGraphMapping["math/matCompose"];
+gltfToFlowGraphMapping["math/decompose"] = gltfToFlowGraphMapping["math/matDecompose"];
 
 function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"], inferType?: boolean): IGLTFToFlowGraphMapping {
     return {

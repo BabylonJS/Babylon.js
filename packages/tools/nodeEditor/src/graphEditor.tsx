@@ -29,6 +29,7 @@ import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interface
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { GlobalState } from "./globalState";
 import { HistoryStack } from "shared-ui-components/historyStack";
+import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -632,65 +633,67 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     override render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <SplitContainer
-                    id="node-editor-graph-root"
-                    direction={SplitDirection.Horizontal}
-                    onPointerMove={(evt) => {
-                        this._mouseLocationX = evt.pageX;
-                        this._mouseLocationY = evt.pageY;
-                    }}
-                    onPointerDown={(evt) => {
-                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
-                            return;
-                        }
-                        this.props.globalState.lockObject.lock = false;
-                    }}
-                >
-                    {/* Node creation menu */}
-                    <NodeListComponent globalState={this.props.globalState} />
-
-                    <Splitter size={8} minSize={180} initialSize={200} maxSize={350} controlledSide={ControlledSize.First} />
-
-                    {/* The node graph diagram */}
+                <FluentToolWrapper disableCopy={true}>
                     <SplitContainer
-                        direction={SplitDirection.Vertical}
-                        className="diagram-container"
-                        containerRef={this._diagramContainerRef}
-                        onDrop={(event) => {
-                            this.dropNewBlock(event);
+                        id="node-editor-graph-root"
+                        direction={SplitDirection.Horizontal}
+                        onPointerMove={(evt) => {
+                            this._mouseLocationX = evt.pageX;
+                            this._mouseLocationY = evt.pageY;
                         }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
+                        onPointerDown={(evt) => {
+                            if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                                return;
+                            }
+                            this.props.globalState.lockObject.lock = false;
                         }}
                     >
-                        <GraphCanvasComponent
-                            ref={this._graphCanvasRef}
-                            stateManager={this.props.globalState.stateManager}
-                            onEmitNewNode={(nodeData) => {
-                                return this.appendBlock(nodeData.data as NodeMaterialBlock);
+                        {/* Node creation menu */}
+                        <NodeListComponent globalState={this.props.globalState} />
+
+                        <Splitter size={8} minSize={180} initialSize={200} maxSize={350} controlledSide={ControlledSize.First} />
+
+                        {/* The node graph diagram */}
+                        <SplitContainer
+                            direction={SplitDirection.Vertical}
+                            className="diagram-container"
+                            containerRef={this._diagramContainerRef}
+                            onDrop={(event) => {
+                                this.dropNewBlock(event);
                             }}
-                        />
-                        <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
-                        <LogComponent globalState={this.props.globalState} />
-                    </SplitContainer>
+                            onDragOver={(event) => {
+                                event.preventDefault();
+                            }}
+                        >
+                            <GraphCanvasComponent
+                                ref={this._graphCanvasRef}
+                                stateManager={this.props.globalState.stateManager}
+                                onEmitNewNode={(nodeData) => {
+                                    return this.appendBlock(nodeData.data as NodeMaterialBlock);
+                                }}
+                            />
+                            <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
+                            <LogComponent globalState={this.props.globalState} />
+                        </SplitContainer>
 
-                    <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
+                        <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
 
-                    {/* Property tab */}
-                    <SplitContainer className="nme-right-panel" direction={SplitDirection.Vertical}>
-                        <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
-                        <Splitter size={8} minSize={200} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
-                        <div className="nme-preview-part">
-                            {!this.state.showPreviewPopUp ? (
-                                <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} />
-                            ) : null}
-                            {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
-                        </div>
+                        {/* Property tab */}
+                        <SplitContainer className="nme-right-panel" direction={SplitDirection.Vertical}>
+                            <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
+                            <Splitter size={8} minSize={200} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
+                            <div className="nme-preview-part">
+                                {!this.state.showPreviewPopUp ? (
+                                    <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} />
+                                ) : null}
+                                {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
+                            </div>
+                        </SplitContainer>
                     </SplitContainer>
-                </SplitContainer>
-                <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                <div className="blocker">Node Material Editor needs a horizontal resolution of at least 900px</div>
-                <div className="wait-screen hidden">Processing...please wait</div>
+                    <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
+                    <div className="blocker">Node Material Editor needs a horizontal resolution of at least 900px</div>
+                    <div className="wait-screen hidden">Processing...please wait</div>
+                </FluentToolWrapper>
             </Portal>
         );
     }
