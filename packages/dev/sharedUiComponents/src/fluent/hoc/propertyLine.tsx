@@ -53,9 +53,7 @@ const usePropertyLineStyles = makeStyles({
     expandButton: {
         margin: 0,
     },
-    expandedContent: {
-        backgroundColor: tokens.colorNeutralBackground1,
-    },
+    expandedContent: {},
 });
 
 export type PropertyLineProps = {

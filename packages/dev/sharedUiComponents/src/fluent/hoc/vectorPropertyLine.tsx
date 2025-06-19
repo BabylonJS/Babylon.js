@@ -37,7 +37,7 @@ const VectorSliders: FunctionComponent<VectorSliderProps> = (props) => {
 export const VectorPropertyLine: FunctionComponent<VectorSliderProps & PropertyLineProps> = (props) => {
     return (
         <PropertyLine {...props} expandedContent={<VectorSliders {...props} />}>
-            <Body1>{props.vector.toString()}</Body1>
+            <Body1>{`X: ${props.vector.x.toFixed(2)} | Y: ${props.vector.y.toFixed(2)} | Z: ${props.vector.z.toFixed(2)}${props.vector instanceof Vector4 ? ` | W: ${props.vector.w.toFixed(2)}` : ""}`}</Body1>
         </PropertyLine>
     );
 };
