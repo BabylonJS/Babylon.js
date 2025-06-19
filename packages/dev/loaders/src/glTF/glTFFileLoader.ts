@@ -401,6 +401,11 @@ abstract class GLTFLoaderOptions {
     public useGltfTextureNames = false;
 
     /**
+     * Load the glTF files using the PBR2 material.
+     */
+    public usePBR2 = false;
+
+    /**
      * Defines if the loader should use range requests when load binary glTF files from HTTP.
      * Enabling will disable offline support and glTF validator.
      * Defaults to false.
