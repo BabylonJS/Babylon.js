@@ -152,6 +152,9 @@ export class LinesMesh extends Mesh {
         return "LinesMesh";
     }
 
+    /**
+     * @internal
+     */
     public override get material(): Nullable<Material> {
         return this._internalAbstractMeshDataInfo._material as Material;
     }
