@@ -38,12 +38,13 @@ export type SyncedSliderProps = Omit<InputProps & SliderProps, "onChange" | "val
  * @returns SyncedSlider component
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
+    const { value: valueProp, ...otherProps } = props;
     const classes = useSyncedSliderStyles();
-    const [value, setValue] = useState<number>(props.value);
+    const [value, setValue] = useState<number>(valueProp);
 
     useEffect(() => {
-        setValue(props.value ?? ""); // Update local state when props.value changes
-    }, [props.value]);
+        setValue(valueProp ?? ""); // Update local state when props.value changes
+    }, [valueProp]);
 
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
         setValue(data.value);
@@ -60,8 +61,8 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
 
     return (
         <div className={classes.syncedSlider}>
-            <Slider {...props} className={classes.slider} value={value} onChange={handleSliderChange} />
-            <Input {...props} type="number" value={value.toString()} onChange={handleInputChange} />
+            {props.min != undefined && props.max != undefined && <Slider {...props} className={classes.slider} value={value} onChange={handleSliderChange} step={undefined} />}
+            <Input {...otherProps} className={classes.input} type="number" appearance="filled-lighter" value={value.toFixed(2)} onChange={handleInputChange} />
         </div>
     );
 };
