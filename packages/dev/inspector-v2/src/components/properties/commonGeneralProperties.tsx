@@ -7,7 +7,7 @@ type CommonEntity = {
     getClassName?: () => string;
 };
 
-export const CommonGeneralProperties: FunctionComponent<{ entity: CommonEntity }> = ({ entity: commonEntity }) => {
+export const CommonGeneralProperties: FunctionComponent<{ context: CommonEntity }> = ({ context: commonEntity }) => {
     return (
         // TODO: Use the new Fluent property line shared components.
         <>

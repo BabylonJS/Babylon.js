@@ -262,6 +262,15 @@ export class Camera extends Node {
     public fov = 0.8;
 
     /**
+     * Sets the camera's field of view in radians based on the focal length and sensor size.
+     * @param value the focal length of the camera in mm.
+     * @param sensorSize the sensor width size of the camera in mm. (default is 36mm, which is a full frame sensor)
+     */
+    public setFocalLength(value: number, sensorSize: number = 36) {
+        this.fov = 2 * Math.atan(sensorSize / (2 * value));
+    }
+
+    /**
      * Projection plane tilt around the X axis (horizontal), set in Radians. (default is 0)
      * Can be used to make vertical lines in world space actually vertical on the screen.
      * See https://forum.babylonjs.com/t/add-vertical-shift-to-3ds-max-exporter-babylon-cameras/17480

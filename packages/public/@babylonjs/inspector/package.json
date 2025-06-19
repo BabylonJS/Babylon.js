@@ -1,8 +1,9 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.12.1",
-    "module": "dist/babylon.inspector.bundle.max.js",
-    "main": "dist/babylon.inspector.bundle.max.js",
+    "version": "8.13.0",
+    "module": "dist/babylon.inspector.bundle.js",
+    "main": "dist/babylon.inspector.bundle.js",
+    "esnext": "dist/babylon.inspector.bundle.js",
     "typings": "dist/babylon.inspector.module.d.ts",
     "files": [
         "dist/**/*.*",
@@ -33,13 +34,13 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/addons": "^8.12.1",
-        "@babylonjs/core": "^8.12.1",
-        "@babylonjs/gui": "^8.12.1",
-        "@babylonjs/gui-editor": "^8.12.1",
-        "@babylonjs/loaders": "^8.12.1",
-        "@babylonjs/materials": "^8.12.1",
-        "@babylonjs/serializers": "^8.12.1",
+        "@babylonjs/addons": "^8.13.0",
+        "@babylonjs/core": "^8.13.0",
+        "@babylonjs/gui": "^8.13.0",
+        "@babylonjs/gui-editor": "^8.13.0",
+        "@babylonjs/loaders": "^8.13.0",
+        "@babylonjs/materials": "^8.13.0",
+        "@babylonjs/serializers": "^8.13.0",
         "@lts/gui": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
@@ -52,7 +53,6 @@
         "babylon.js"
     ],
     "license": "Apache-2.0",
-    "esnext": "dist/babylon.inspector.bundle.max.js",
     "sideEffects": true,
     "homepage": "https://www.babylonjs.com",
     "repository": {

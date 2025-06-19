@@ -88,12 +88,14 @@ export const RichTypeColor4: RichType<Color4> = new RichType(FlowGraphTypes.Colo
 
 export const RichTypeQuaternion: RichType<Quaternion> = new RichType(FlowGraphTypes.Quaternion, Quaternion.Identity(), Constants.ANIMATIONTYPE_QUATERNION);
 RichTypeQuaternion.typeTransformer = (value: any) => {
-    if (value.getClassName && value.getClassName() === FlowGraphTypes.Vector4) {
-        return Quaternion.FromArray(value.asArray());
-    } else if (value.getClassName && value.getClassName() === FlowGraphTypes.Vector3) {
-        return Quaternion.FromEulerVector(value);
-    } else if (value.getClassName && value.getClassName() === FlowGraphTypes.Matrix) {
-        return Quaternion.FromRotationMatrix(value);
+    if (value.getClassName) {
+        if (value.getClassName() === FlowGraphTypes.Vector4) {
+            return Quaternion.FromArray(value.asArray());
+        } else if (value.getClassName() === FlowGraphTypes.Vector3) {
+            return Quaternion.FromEulerVector(value);
+        } else if (value.getClassName() === FlowGraphTypes.Matrix) {
+            return Quaternion.FromRotationMatrix(value);
+        }
     }
     return value;
 };
