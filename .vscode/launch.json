@@ -254,6 +254,20 @@
             "preLaunchTask": "Node Particle Editor Serve (Dev)"
         },
         {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Smart Filter Editor development (Edge)",
+            "url": "http://localhost:1346",
+            "preLaunchTask": "Smart Filter Editor Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Smart Filter Editor development (Chrome)",
+            "url": "http://localhost:1346",
+            "preLaunchTask": "Smart Filter Editor Serve (Dev)"
+        },
+        {
             /*
             Launch the playground to be use to test changes in dev packages
             */

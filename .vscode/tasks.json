@@ -504,6 +504,24 @@
             "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
+            "label": "Smart Filter Editor Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/smart-filters-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
             "label": "VSM Serve for core (Dev)",
             "type": "shell",
             "command": "npm",
