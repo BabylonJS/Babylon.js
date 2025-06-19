@@ -14,7 +14,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration } from "./prePassConfiguration";
 
-import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
+import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { ColorCurves } from "./colorCurves";
 import type { FresnelParameters } from "./fresnelParameters";
@@ -64,8 +64,10 @@ import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrender
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
+class StandardMaterialDefinesBase extends MaterialDefines {}
+
 /** @internal */
-export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+export class StandardMaterialDefines extends ImageProcessingDefinesMixin(StandardMaterialDefinesBase) {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -211,23 +213,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public RGBDREFLECTION = false;
     public RGBDREFRACTION = false;
 
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = 0;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public MULTIVIEW = false;
-    public ORDER_INDEPENDENT_TRANSPARENCY = false;
-    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
@@ -243,7 +228,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
      * @internal
      */
     public IS_REFRACTION_LINEAR = false;
-    public EXPOSURE = false;
 
     public DECAL_AFTER_DETAIL = false;
 
