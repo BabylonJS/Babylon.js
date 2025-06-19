@@ -1,41 +1,52 @@
 {
-    "fromTag": "8.11.0",
+    "fromTag": "8.12.1",
     "changelog": {
-        "8.11.0": [
+        "8.13.0": [
             {
-                "pr": "16714",
-                "title": "SmartFilterTextureBlock: Uniform metadata and multiple block instance handling",
-                "description": "This PR extends the SmartFilterTextureBlock's functionality to permit\r\n- Multiple instances of the block, used for sampling several textures\r\n- Designating a block as the \"main input\", which is used for auto-disabling in SFE\r\n- Annotations for input block and bindable block uniforms, used for specifying default values\r\n- Cleaning up of uniform names, used as display names for connection points in SFE\r\n\r\nSome misc changes include\r\n- Use Logger for errors instead of throwing and breaking the build :)\r\n- Extra WebGPU check for good measure\r\n- Expose ScreenSizeBlock uniform name ",
+                "pr": "16769",
+                "title": "Fix switch, add propertylines for text/link, add checkbox",
+                "description": "Separate components for text vs link, rather than today's joint textlinecomponent\r\n\r\nAdded checkbox component\r\n\r\nFix switch so that it responds to external changes ",
                 "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
-                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/linkPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/textPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/checkbox.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx"
                 ],
                 "tags": []
             },
             {
-                "pr": "16716",
-                "title": "NME SFE: Update block list exclusions",
-                "description": "Remove blocks-- both as categories and individually-- that would break in SFE mode. ",
+                "pr": "16768",
+                "title": "Various fixes for glTF interactivity",
+                "description": "* Added support for operations involving `Quaternion` and `Vector4` types in `FlowGraphAddBlock`, `FlowGraphSubtractBlock`, `FlowGraphMultiplyBlock`, and `FlowGraphDivideBlock`. Returns `Vector4` when the inputs are mixed types.\r\n* Added logic to stop running animations when setting properties in `FlowGraphSetPropertyBlock`, preventing conflicts with ongoing animations. This is buried in [the spec](https://github.com/KhronosGroup/glTF/blob/interactivity/extensions/2.0/Khronos/KHR_interactivity/Specification.adoc) `4.1.4.2.4, step 5` and `4.1.4.2.5, step 8`.\r\n* Fixed incorrect code that causes a script error in `FlowGraphSetVariableBlock` that stop animations targeting the same variable.",
                 "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
                 },
                 "files": [
-                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSetDelayBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "16703",
-                "title": "Add dominant direction to env file",
-                "description": "Not sure how to test this. I'm trying to add the dominant direction of an IBL to the irradiance stored in a .env file.",
+                "pr": "16765",
+                "title": "Load dominant direction from .env",
+                "description": "This adds logic to read the dominant direction of an IBL from the .env file, if it exists.",
                 "author": {
                     "name": "MiiBond",
                     "url": "https://github.com/MiiBond"
@@ -46,38 +57,359 @@
                 "tags": []
             },
             {
-                "pr": "16715",
-                "title": "WebGPU: Fix wrong display in fast snapshot mode",
-                "description": null,
+                "pr": "16766",
+                "title": "Add buttonLine, switchPropertyLine; Introduce noCopy mode for tools",
+                "description": "Introduce switchPropertyLine / buttonLine \r\n![image](https://github.com/user-attachments/assets/f5bce604-6d41-4b93-a96b-91fbceb16d3a)\r\n![image](https://github.com/user-attachments/assets/d8b050ef-fcea-4224-9a99-ea766236d6f8)\r\n\r\n\r\nAlso introduced a 'noCopy' mode tools can use to hide copy button for properties (was done using CSS before)\r\n\r\n",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/buttonLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/fluentToolWrapper.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/switchPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/buttonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
                 ],
                 "tags": [
-                    "bug",
-                    "WebGPU"
+                    "new feature",
+                    "tools"
                 ]
             },
             {
-                "pr": "16708",
-                "title": "glTF Exporter: Fixes and clean-up for camera rotations",
-                "description": "This PR primarily aims to fix exported camera rotation animations ([see most recent forum post](https://forum.babylonjs.com/t/gltfexport-flipped-camera/45986/22)). While in the area, I've also minorly cleaned up the surrounding camera code. \r\n\r\nFixes:\r\n- Fix camera rotation animation export\r\n- Allow camera nodes' transformations to collapse into parents\r\n- Update CollapseChildIntoParent to disregard parent scaling\r\n- Add tests for camera animation export\r\n- Ensure rotation and rotationQuaternion are mutually exclusive in _setNodeTransformation and _setCameraTransformation\r\n\r\nCleanup nits:\r\n- Renames CollapseParentNode -> CollapseChildIntoParent, and IsParentAddedByImporter -> AreCollapsible\r\n- Remove unused RotateNode180Y and ConvertToRightHandedNode\r\n- Use TargetCamera instead of Camera, as Camera doesn't have TRS fields.\r\n- Simplify rotation animation export\r\n- Move camera transformation export into _setCameraTransformation\r\n- Clarify that CollapseChildIntoParent only accepts light and camera-type children\r\n\r\nMisc:\r\n- Allow KHR_punctual_lights to throw a warning for non-shadow lights\r\n- Change usages of .equals() to .equalsWithEpsilon(), using Epsilon constant from math package",
+                "pr": "16764",
+                "title": "Moved to Manifold 3.1.1 (csg2)",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16763",
+                "title": "Add new utility function to set a camera FOV based on focal length",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16762",
+                "title": "Fixing issue when cloning LineMesh with CreationOptions",
+                "description": "When cloning a LineMesh, if the cloning is using MeshCloneOptions, LineMesh will not clone correctly because it will not update the source of the clone, and it will use the parent itself. This updates the function to handle MeshCloneOptions the same way that mesh.ts->clone does, where there are two code paths depending if parent is a Node or MeshCloneOptions.",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16761",
+                "title": "Allow user to globally set the numMaxInfluencers",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16709",
+                "title": "Introduce new fluent shared components; conditionally load them from existing shared components if useFluent context is true",
+                "description": "View shared-ui-components/src/fluent/**readme.md** for a complete overview of these changes and the plan for rolling them out!\r\n\r\nThe changes in this PR can be broken down into the below buckets, with several examples for each. Future PRs will be more incremental, can bring 1 control at a time.\r\n\r\n- shared-ui-components/src/**fluent**: contains new primitives and HOCs (including FluentToolWrapper, which wraps children in FluentProvider and ContextProvider<{useFluent=true}> if the 'newUX' string is present in the QSP or hash)\r\n- shared-ui-components/src/**lines**: existing shared components, updated to conditionally render above fluent components if anywhere upstream is wrapped in a FluentToolWrapper\r\n- examples **enabling fluent in the below tools**  \r\n  - packages/tools/nodeEditor/src/graphEditor.tsx (NME) \r\n  - packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx (inspectorV1 property panel)\r\n  - shared-ui-components/src/fluent/tempInspectorV2 (temp folder to show usage before ryan's changes are merged - u can view them in PR history but won't be checked in with the final merge)\r\n     \r\nMiscellaneous: \r\n- eslint change to allow useFoo to be camelcased (since that is the standard w fluent)\r\n- generateDeclaration.ts change to cast fluent types to any in the d.ts files so that consumers don't need to declare fluent dependency (same thing we do for fontawesome)\r\n\r\nNOTE that introducing fluent introduced some build issues in this PR, which were diagnosed/ resolved in this [test PR](https://github.com/BabylonJS/Babylon.js/pull/16730) and then checked in separately in [this PR](https://github.com/BabylonJS/Babylon.js/pull/16759).",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "package-lock.json",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/fluentToolWrapper.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/syncedSliderLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/dropdown.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/input.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/link.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/text.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/textarea.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/readme.md",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "16759",
+                "title": "Reduce build parallelization; update inspector and gui editor package.json to point to minified bundle",
+                "description": "When introducing fluent dependency in [this PR](https://github.com/BabylonJS/Babylon.js/pull/16709) we saw our build agents running out of memory when running es6/UMD build steps, and we also saw the importing of public inspector package causing heap allocation error in the test app sceneWithInspector test.\r\n\r\nAfter many attempts to solve (branching off onto another [smaller PR](https://github.com/BabylonJS/Babylon.js/pull/16747/) to isolate the causes) the solution we are landing on is to reduce parallelization of build steps (solving OOM during es6/UMD build, and confirmed that it wont slow down our build) and to update the inspector and gui editor package.json to point to the minified bundle (solving heap allocation error, and confirmed via npm link + babylonjs-webpack-es6 test app that inspector loads properly)",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "package.json",
+                    "packages/dev/addons/package.json",
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16755",
+                "title": "Inspector v2: Stub out stats pane",
+                "description": "In this PR, I'm stubbing out a new stats pane, which includes:\r\n1. Factoring out an `AccordionPane` react component from the `PropertiesPane` component. The idea is that we will have several panes that will have the same basic accordion UI, and each can support the same type of extensibility as properties.\r\n2. `PropertiesPane`/`PropertiesService` are slightly more complicated that the other panes in that the \"context\" of the pane can have different types (e.g. a Mesh or a Light). Given this, I kept the predicate stuff specific to Properties. Other panes like Stats can have a single type that is always the same (like Scene) and be a little simpler.\r\n3. Added a new `StatsPane`/`StatsService` that otherwise follow the same model as properties.\r\n\r\nOne other difference that I am trying with `StatsService` is to not bother having separate service definitions for the default/built-in content of the status pane. Instead it is defined directly in the `StatsService`, but new service definitions could be defined to extend the default content of the stats pane. This was based off a suggestion @deltakosh had in the original inspector v2 PR.\r\n\r\n![image](https://github.com/user-attachments/assets/4c177ec7-e988-4eb5-8875-b423d93926c1)",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Instrumentation/engineInstrumentation.ts",
+                    "packages/dev/core/src/Instrumentation/sceneInstrumentation.ts",
+                    "packages/dev/inspector-v2/src/components/accordionPane.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/commonGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshAdvancedProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/propertiesPane.tsx",
+                    "packages/dev/inspector-v2/src/components/stats/countStats.tsx",
+                    "packages/dev/inspector-v2/src/components/stats/frameStepStats.tsx",
+                    "packages/dev/inspector-v2/src/components/stats/statsPane.tsx",
+                    "packages/dev/inspector-v2/src/hooks/pollingHooks.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/propertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/statsService.tsx"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16758",
+                "title": "Cleanup declaration generation",
+                "description": "1. removed unneeded console call\n2. Changed regex to both `core/` and local file reference to stay safe.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16757",
+                "title": "Fix global viewport calculations in AdvancedDynamicTexture",
+                "description": "Adjust viewport calculations to correctly account for hardware scaling, ensuring accurate rendering in different environments.\n\nSee https://forum.babylonjs.com/t/problem-with-adapttodeviceratio-and-adaptivescaling/57373/16?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16739",
+                "title": "Add new Quaternion nodes to flow graph and glTF interactivity",
+                "description": "See https://github.com/KhronosGroup/glTF/pull/2293/commits/b8e8a5a2002b6fa9ab0044db9e68eb68d12b2ba5 for the glTF interactivity spec updates.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVectorMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockFactory.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockNames.ts",
+                    "packages/dev/core/src/FlowGraph/utils.ts",
+                    "packages/dev/core/src/Maths/math.vector.functions.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivity.math nodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16750",
+                "title": "Add option for HalfFloat in vertexAnimationBaker's textureFromBakedVertexData",
+                "description": "For devices that support it and animations whose precision is not affected by the precision of float16, using HalfFloat can cut down memory usage by 50%. Currently have a warning when the engine caps don't include HalfFloat - don't know if might make sense to return null instead since whatever happens down the line will not be supported, likely crazy polygon soup from the VAT shader.",
+                "author": {
+                    "name": "knervous",
+                    "url": "https://github.com/knervous"
+                },
+                "files": [
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16754",
+                "title": "Inspector v2: Factor react components out of service definitions",
+                "description": "Previously there were still some react components that were defined \"inline\" in the service definitions. I'm factoring the bulk of these out in this PR for a few reasons:\r\n1. Had feedback from @georginahalpern and @sebavan that it would be easier to understand/read/maintain if they were separated.\r\n2. React fast refresh **only** works for components that are directly exported from a module. If they are defined as part of an object, or returned from a function, or anything other than a straight component export, fast refresh does not work. So making this the standard pattern will significantly improve the dev workflow.\r\n3. It makes it much easier to re-use the bulk of the react components part of things. For example, if we have a second hierarchy like view for audio (separate from scene explorer, as @docEdub prototyped), or if other tabs (like status and debug) have a similar UX to properties with an accordion view, sections, etc.\r\n\r\nAs part of this, the raw react components got moved to the components folder, and now what is in the services folder is the service definitions that mostly are just managing the service registration and service interactions.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/commonGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshAdvancedProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/propertiesPane.tsx",
+                    "packages/dev/inspector-v2/src/components/scene/sceneExplorer.tsx",
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/commonPropertiesService.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/meshPropertiesService.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/propertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/sceneExplorerService.tsx"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16753",
+                "title": "Inspector v2: Playground integration fixes",
+                "description": "From what I can tell, Playground is setup such that the site itself is bundled, and separately it uses the babylonjs umd bundle for running the actual user code in the Playground. Some the Playground website features themselves seem to use @dev/core, and from what I can tell this is a different copy of the code from core. For the inspector-v2 integration, it was effectively also getting a copy of code from core, so the actual classes inspector v2 was looking at were not the same as the ones coming from the Playground user code (e.g. the objects had different prototype chains). I updated the Playground webpack config to externalize any `import { blah } from \"core/blah\"` to BABYLON for the inspector-v2 and this fixes the problem. That said, it's unclear to me why we don't do this for other features. Why does the Playground site ever need a separate copy of things from core rather than just getting them through the UMD bundle (e.g. BABYLON)? I tried to change it so that all @dev/core and core imports are externalized to BABYLON, but this broke all kinds of things. I don't really understand why, so for now I'm just limiting the externalization to inspector-v2 (e.g. don't change anything was already being packed before adding inspector-v2 to the mix). I'll discuss more with Raanan when he's back.\r\n\r\nAlso added a VSCode task dependency on inspector-v2 watch to make sure inspector v2 code changes are reflected in Playground.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/tasks.json",
+                    "packages/tools/playground/webpack.config.js"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector",
+                    "Playground"
+                ]
+            },
+            {
+                "pr": "16748",
+                "title": "Inspector v2: Add lightweight runtime \"instrumentation\" helpers and a usage example",
+                "description": "One of the problems we currently have in tooling (and especially in inspector v1) is having the UI react to scene state changes. Ideally we'd have observables for every mutable state of a scene, but the runtime overhead would be too high to make this practical. We currently work around this in one of a few ways:\r\n\r\n1. In some of the tools, we use a global observable, where any part of the tool UI that mutates any scene state is supposed to fire the observable. This way all the different parts of the tool UI can communicate state changes that they initiate. \r\n2. When state changes don't come from the tools (e.g. Playground, or really any app that uses Inspector), we just poll for state changes (e.g. continuously re-render react components every ~500ms for example to detect changes).\r\n3. Provide a refresh button, where the user must click the button to see changes.\r\n\r\nThis PR introduces a new idea, which I refer to as \"lightweight runtime instrumentation.\" The idea is to temporarily hook function calls and property setters to produce a transient observable. This would not scale if we tried to hook every property on every object of the scene simultaneously, but in reality only a very small part of the scene state is bound to the inspector UI at any time, e.g.:\r\n1. The properties of a single object (in the properties pane).\r\n2. The names of as many nodes as fit into scene explorer (since it virtualizes, so there are not that many live react components for tree view nodes bound to scene entities).\r\nWhen a different entity is bound to the properties pane, or the scene explorer is scrolled, the temporary hooks are removed and the entity objects are restored to their original state.\r\n\r\nWith this in mind, hooking functions/properties to observe scene state changes specifically for tooling should be quite low overhead, so this PR introduces the idea and has one example of the usage. There are helper functions for \"intercepting\" function calls and property setters, and then a React hook that translates this to React state, e.g.:\r\n`const computeBonesUsingShadersObservable = useInterceptObservable(\"property\", mesh, \"computeBonesUsingShaders\")`\r\nThis observable (and the temporary instrumentation of the `computeBonesUsingShaders` property) is reverted as soon as the consuming react component is unmounted.\r\n\r\nTake a look in this order:\r\n\r\n1. The `useObservableState` in [meshGeneralProperties.tsx](https://github.com/BabylonJS/Babylon.js/pull/16748/files#diff-dca74d1795e7e366439f24e66a2a26fe0b14ef5f3fc4ceb3b05585033b781955R10) - this is just showing an existing concept where given an observable, we can produce React state that the component can use to re-render.\r\n2. The `useInterceptObservable` used along with `useObservableState` in [meshAdvancedProperties.tsx](https://github.com/BabylonJS/Babylon.js/pull/16748/files#diff-1fc176dd99343ae0ff259bf520c6504813ab7c02fbbb06292280310d7a2e588dR11) - this shows using the new `useInterceptObservable` to create a temporary observable that lets us immediately respond to state changes of a property that doesn't actually have an observable.\r\n4. The `useObservableState` implementation in [instrumentationHooks.ts](https://github.com/BabylonJS/Babylon.js/pull/16748/files#diff-92b79d9fbaaf8f9eef52315919e1ae5640553f1262ca2c43618f091ebb29de4dR19).\r\n5. The `InterceptFunction` helper function in [functionInstrumentation.ts](https://github.com/BabylonJS/Babylon.js/pull/16748/files#diff-0124bc224339ce336c700bf1128d94268f9abcc1ad92cebeb171e825e250d07cR20).\r\n6. The `InterceptProperty` helper function in [propertyInstrumentation.ts](https://github.com/BabylonJS/Babylon.js/pull/16748/files#diff-ec2332f5239be4ddf8eab5cb2faa5bb1cf36da855b214cbc44a25f43981a6496R20).\r\n\r\nOpen to feedback on this idea. So far it seems like it works quite well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/hooks/instrumentationHooks.ts",
+                    "packages/dev/inspector-v2/src/instrumentation/functionInstrumentation.ts",
+                    "packages/dev/inspector-v2/src/instrumentation/propertyInstrumentation.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/mesh/meshAdvancedProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/mesh/meshGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/mesh/meshPropertiesService.ts"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16752",
+                "title": "Viewer Configurator: Add support for shadow quality \"high\" (IBL)",
+                "description": "Now that IBL shadows (quality \"high\") are in the Viewer and stable, enabling this option in the configurator.\r\n\r\n![image](https://github.com/user-attachments/assets/4376829a-0d7d-4c19-bb7d-9dde4a8dbc32)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx"
+                ],
+                "tags": [
+                    "viewer"
+                ]
+            },
+            {
+                "pr": "16751",
+                "title": "NME: Add SmartFilterFragmentOutputBlock",
+                "description": "I previously neglected use cases for what we call \"generator\" SmartFilters-- ones that don't sample a texture ever. To keep SFE logic contained in its own blocks, while ensuring it is mandatory, this PR introduces an extension of FragmentOutputBlock. \r\n\r\nNon-texture-related logic is moved out of SmartFilterTextureBlock and into SmartFilterFragmentOutputBlock. ",
                 "author": {
                     "name": "alexchuber",
                     "url": "https://github.com/alexchuber"
                 },
                 "files": [
-                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerCameraRotationAnimation.png",
-                    "packages/tools/tests/test/visualization/config.json"
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/smartFilterFragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "16749",
+                "title": "Add faster synchronous method for VAT baking on vertexAnimationBaker",
+                "description": "Rather than defer to the engine loop, we should be able to \"stop the world\" and render each frame of a given range set to produce a VAT as quickly as possible. Theoretically this could run on a worker with a NullEngine and isolated scene, but figure the overhead might not be worth spinning that up.\r\n\r\nAdd a test to match sandbox from https://playground.babylonjs.com/?BabylonToolkit#CP2RN9#302\r\n\r\nI don't know if @RaggarDK those assets are okay to check in and use in the test suite/be available in the playground?\r\n\r\nAdded some perf logging in the tests with output on my machine\r\n\r\n  console.log\r\n    Synchronous bake took: 34.68687499999987 ms\r\n  console.log\r\n    Asynchronous bake took: 2059.416625 ms\r\n\r\n\r\nIt would be nice to see something like a \"ThinContainerManager\" that can import .babylon,.gltf, etc. and do all the perf things under the hood like create VAT, discard unused skeleton/AG, prime itself to create instances... These benchmarks move towards being able to do something like that in runtime.",
+                "author": {
+                    "name": "knervous",
+                    "url": "https://github.com/knervous"
+                },
+                "files": [
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts",
+                    "packages/dev/core/test/unit/Animations/babylon.vertexAnimationBaker.test.ts",
+                    "packages/tools/playground/public/scenes/arr.babylon"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16746",
+                "title": "NPE: Fix umd package reference in es6 build command",
+                "description": "Looks like the initial changes for NPE the umd package got referenced in the es6 build command. Quick fix for this.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "8.12.1": [
@@ -613,6 +945,85 @@
                 "tags": [
                     "bug"
                 ]
+            }
+        ],
+        "8.11.0": [
+            {
+                "pr": "16714",
+                "title": "SmartFilterTextureBlock: Uniform metadata and multiple block instance handling",
+                "description": "This PR extends the SmartFilterTextureBlock's functionality to permit\r\n- Multiple instances of the block, used for sampling several textures\r\n- Designating a block as the \"main input\", which is used for auto-disabling in SFE\r\n- Annotations for input block and bindable block uniforms, used for specifying default values\r\n- Cleaning up of uniform names, used as display names for connection points in SFE\r\n\r\nSome misc changes include\r\n- Use Logger for errors instead of throwing and breaking the build :)\r\n- Extra WebGPU check for good measure\r\n- Expose ScreenSizeBlock uniform name ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/smartFilterTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16716",
+                "title": "NME SFE: Update block list exclusions",
+                "description": "Remove blocks-- both as categories and individually-- that would break in SFE mode. ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16703",
+                "title": "Add dominant direction to env file",
+                "description": "Not sure how to test this. I'm trying to add the dominant direction of an IBL to the irradiance stored in a .env file.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16715",
+                "title": "WebGPU: Fix wrong display in fast snapshot mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "16708",
+                "title": "glTF Exporter: Fixes and clean-up for camera rotations",
+                "description": "This PR primarily aims to fix exported camera rotation animations ([see most recent forum post](https://forum.babylonjs.com/t/gltfexport-flipped-camera/45986/22)). While in the area, I've also minorly cleaned up the surrounding camera code. \r\n\r\nFixes:\r\n- Fix camera rotation animation export\r\n- Allow camera nodes' transformations to collapse into parents\r\n- Update CollapseChildIntoParent to disregard parent scaling\r\n- Add tests for camera animation export\r\n- Ensure rotation and rotationQuaternion are mutually exclusive in _setNodeTransformation and _setCameraTransformation\r\n\r\nCleanup nits:\r\n- Renames CollapseParentNode -> CollapseChildIntoParent, and IsParentAddedByImporter -> AreCollapsible\r\n- Remove unused RotateNode180Y and ConvertToRightHandedNode\r\n- Use TargetCamera instead of Camera, as Camera doesn't have TRS fields.\r\n- Simplify rotation animation export\r\n- Move camera transformation export into _setCameraTransformation\r\n- Clarify that CollapseChildIntoParent only accepts light and camera-type children\r\n\r\nMisc:\r\n- Allow KHR_punctual_lights to throw a warning for non-shadow lights\r\n- Change usages of .equals() to .equalsWithEpsilon(), using Epsilon constant from math package",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerCameraRotationAnimation.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
             }
         ],
         "8.10.1": [
