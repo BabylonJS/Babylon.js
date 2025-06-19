@@ -21,11 +21,18 @@ const usePropertyLineStyles = makeStyles({
         width: "100%",
     },
     label: {
-        width: "33%",
+        flex: "1 1 0",
+        minWidth: "50px",
         textAlign: "left",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    },
+    labelText: {
+        whiteSpace: "nowrap",
     },
     rightContent: {
-        width: "67%",
+        flex: "0 1 auto",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
@@ -94,7 +101,7 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
         <LineContainer>
             <div className={classes.line}>
                 <InfoLabel className={classes.label} info={description}>
-                    <Body1Strong>{label}</Body1Strong>
+                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
                     <div className={classes.fillRestOfRightContentWidth}>{children}</div>
