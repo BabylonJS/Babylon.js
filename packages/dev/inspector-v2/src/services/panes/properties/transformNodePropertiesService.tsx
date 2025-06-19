@@ -7,7 +7,6 @@ import { PropertiesServiceIdentity } from "./propertiesService";
 import { TransformNodeTransformProperties } from "../../../components/properties/transformNodeTransformProperties";
 
 export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
-export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
 
 export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Transform Node Properties",
@@ -16,11 +15,6 @@ export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IP
         const transformsSectionRegistration = propertiesService.addSection({
             order: 1,
             identity: TransformsPropertiesSectionIdentity,
-        });
-
-        const advancedSectionRegistration = propertiesService.addSection({
-            order: 2,
-            identity: AdvancedPropertiesSectionIdentity,
         });
 
         const contentRegistration = propertiesService.addSectionContent({
@@ -40,7 +34,6 @@ export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IP
             dispose: () => {
                 contentRegistration.dispose();
                 transformsSectionRegistration.dispose();
-                advancedSectionRegistration.dispose();
             },
         };
     },
