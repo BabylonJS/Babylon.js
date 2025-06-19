@@ -67,7 +67,7 @@ import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOut
 import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
-import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
+import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
@@ -91,8 +91,10 @@ export interface INodeMaterialEditorOptions {
     };
 }
 
+class NodeMaterialDefinesBase extends MaterialDefines {}
+
 /** @internal */
-export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMaterialDefinesBase) {
     /** Normal */
     public NORMAL = false;
     /** Tangent */
@@ -176,37 +178,6 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public NUM_MORPH_INFLUENCERS = 0;
     /** Using a texture to store morph target data */
     public MORPHTARGETS_TEXTURE = false;
-
-    /** IMAGE PROCESSING */
-    public IMAGEPROCESSING = false;
-    /** Vignette */
-    public VIGNETTE = false;
-    /** Multiply blend mode for vignette */
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    /** Opaque blend mode for vignette */
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    /** Tone mapping */
-    public TONEMAPPING = 0;
-    /** Contrast */
-    public CONTRAST = false;
-    /** Exposure */
-    public EXPOSURE = false;
-    /** Color curves */
-    public COLORCURVES = false;
-    /** Color grading */
-    public COLORGRADING = false;
-    /** 3D color grading */
-    public COLORGRADING3D = false;
-    /** Sampler green depth */
-    public SAMPLER3DGREENDEPTH = false;
-    /** Sampler for BGR map */
-    public SAMPLER3DBGRMAP = false;
-    /** Dithering */
-    public DITHER = false;
-    /** Using post process for image processing */
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    /** Skip color clamp */
-    public SKIPFINALCOLORCLAMP = false;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
