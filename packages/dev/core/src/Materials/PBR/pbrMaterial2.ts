@@ -15,7 +15,7 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
+import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { EffectFallbacks } from "../effectFallbacks";
 import { AddClipPlaneUniforms } from "../clipPlaneMaterialHelper";
 import {
@@ -53,11 +53,13 @@ import type { SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+
+class PBRMaterial2DefinesBase extends MaterialDefines {}
 /**
  * Manages the defines for the PBR Material.
  * @internal
  */
-export class PBRMaterial2Defines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+export class PBRMaterial2Defines extends ImageProcessingDefinesMixin(PBRMaterial2DefinesBase) {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
@@ -237,25 +239,6 @@ export class PBRMaterial2Defines extends MaterialDefines implements IImageProces
     public MORPHTARGETTEXTURE_HASCOLORS = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
-
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = 0;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public EXPOSURE = false;
-    public MULTIVIEW = false;
-    public ORDER_INDEPENDENT_TRANSPARENCY = false;
-    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;

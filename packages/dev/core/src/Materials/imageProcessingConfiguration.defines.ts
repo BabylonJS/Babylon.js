@@ -22,6 +22,36 @@ export interface IImageProcessingConfigurationDefines {
     SKIPFINALCOLORCLAMP: boolean;
 }
 
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+/**
+ * Mixin to add Image processing defines to your material defines
+ * @internal
+ */
+export function ImageProcessingDefinesMixin<Tbase extends Constructor>(base: Tbase) {
+    return class extends base implements IImageProcessingConfigurationDefines {
+        // Implement all members of IImageProcessingConfigurationDefines here
+        public IMAGEPROCESSING = false;
+        public VIGNETTE = false;
+        public VIGNETTEBLENDMODEMULTIPLY = false;
+        public VIGNETTEBLENDMODEOPAQUE = false;
+        public TONEMAPPING = 0;
+        public CONTRAST = false;
+        public COLORCURVES = false;
+        public COLORGRADING = false;
+        public COLORGRADING3D = false;
+        public SAMPLER3DGREENDEPTH = false;
+        public SAMPLER3DBGRMAP = false;
+        public DITHER = false;
+        public IMAGEPROCESSINGPOSTPROCESS = false;
+        public SKIPFINALCOLORCLAMP = false;
+        public EXPOSURE = false;
+        public MULTIVIEW = false;
+        public ORDER_INDEPENDENT_TRANSPARENCY = false;
+        public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+    };
+}
+
 /**
  * @internal
  */
