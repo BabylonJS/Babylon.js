@@ -1,11 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Nullable, Scene } from "core/index";
+import type { IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
-import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, ToggleButton, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
+import { MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TraverseGraph } from "../../misc/graphUtils";
@@ -47,9 +48,14 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     entityIcon?: ComponentType<{ entity: T }>;
 
     /**
-     * A function that watches for changes in the scene and calls the provided callbacks when entities are added or removed.
+     * A function that returns an array of observables for when entities are added to the scene.
      */
-    watch: (scene: Scene, onAdded: (entity: T) => void, onRemoved: (entity: T) => void) => IDisposable;
+    getEntityAddedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
+
+    /**
+     * A function that returns an array of observables for when entities are removed from the scene.
+     */
+    getEntityRemovedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
 }>;
 
 type EntityCommandBase<T extends EntityBase> = Readonly<{
@@ -106,6 +112,7 @@ type ToggleCommand<T extends EntityBase> = EntityCommandBase<T> &
 export type SceneExplorerEntityCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
 type TreeItemData =
+    | { type: "scene"; scene: Scene }
     | {
           type: "section";
           sectionName: string;
@@ -130,10 +137,13 @@ const useStyles = makeStyles({
         flexDirection: "column",
     },
     tree: {
-        margin: tokens.spacingHorizontalXS,
+        margin: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
         rowGap: 0,
         overflow: "hidden",
         flex: 1,
+    },
+    sceneTreeItemLayout: {
+        padding: 0,
     },
 });
 
@@ -210,11 +220,15 @@ export const SceneExplorer: FunctionComponent<{
             }
         };
 
-        const watchTokens = sections.map((section) => section.watch(scene, onSceneItemAdded, onSceneItemRemoved));
+        const addObservers = sections.flatMap((section) => section.getEntityAddedObservables(scene).map((observable) => observable.add(onSceneItemAdded)));
+        const removeObservers = sections.flatMap((section) => section.getEntityRemovedObservables(scene).map((observable) => observable.add(onSceneItemRemoved)));
 
         return () => {
-            for (const token of watchTokens) {
-                token.dispose();
+            for (const observer of addObservers) {
+                observer.remove();
+            }
+            for (const observer of removeObservers) {
+                observer.remove();
             }
         };
     }, [sections, openItems]);
@@ -222,6 +236,11 @@ export const SceneExplorer: FunctionComponent<{
     const visibleItems = useMemo(() => {
         const visibleItems: TreeItemData[] = [];
         const entityParents = new Map<EntityBase, EntityBase>();
+
+        visibleItems.push({
+            type: "scene",
+            scene: scene,
+        });
 
         for (const section of sections) {
             visibleItems.push({
@@ -283,7 +302,30 @@ export const SceneExplorer: FunctionComponent<{
                     {(index: number) => {
                         const item = visibleItems[index];
 
-                        if (item.type === "section") {
+                        if (item.type === "scene") {
+                            return (
+                                <FlatTreeItem
+                                    key="scene"
+                                    value="scene"
+                                    itemType="leaf"
+                                    parentValue={undefined}
+                                    aria-level={1}
+                                    aria-setsize={1}
+                                    aria-posinset={1}
+                                    onClick={() => setSelectedEntity?.(scene)}
+                                >
+                                    <TreeItemLayout
+                                        iconBefore={<MoviesAndTvRegular />}
+                                        className={classes.sceneTreeItemLayout}
+                                        style={scene === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                                    >
+                                        <Body1Strong wrap={false} truncate>
+                                            Scene
+                                        </Body1Strong>
+                                    </TreeItemLayout>
+                                </FlatTreeItem>
+                            );
+                        } else if (item.type === "section") {
                             return (
                                 <FlatTreeItem
                                     key={item.sectionName}
