@@ -5,7 +5,7 @@ import { PixelateBlock } from "@babylonjs/smart-filters-blocks";
  * Creates a new instance of the default Smart Filter for the Smart Filter Editor
  * @returns The default Smart Filter
  */
-export function createDefaultSmartFilter(): SmartFilter {
+export function CreateDefaultSmartFilter(): SmartFilter {
     const smartFilter = new SmartFilter("Default");
 
     const pixelateBlock = new PixelateBlock(smartFilter, "Pixelate");

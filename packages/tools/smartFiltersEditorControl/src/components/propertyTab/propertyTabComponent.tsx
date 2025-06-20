@@ -129,8 +129,8 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
     }
 
     private async _loadAsync(_file: File) {
-        if (this.props.globalState.engine && this.props.globalState.loadSmartFilter) {
-            const newSmartFilter = await this.props.globalState.loadSmartFilter(_file, this.props.globalState.engine);
+        if (this.props.globalState.engine && this.props.globalState.loadSmartFilterAsync) {
+            const newSmartFilter = await this.props.globalState.loadSmartFilterAsync(_file, this.props.globalState.engine);
             if (newSmartFilter) {
                 this.props.globalState.smartFilter = newSmartFilter;
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
@@ -154,9 +154,9 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
     }
 
     private async _pasteSmartFilterAsync() {
-        if (this.props.globalState.pasteSmartFilter) {
+        if (this.props.globalState.pasteSmartFilterAsync) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
-            await this.props.globalState.pasteSmartFilter();
+            await this.props.globalState.pasteSmartFilterAsync();
         }
     }
 
@@ -314,13 +314,13 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                             />
                         )}
                     </LineContainerComponent>
-                    {(this.props.globalState.loadSmartFilter ||
+                    {(this.props.globalState.loadSmartFilterAsync ||
                         this.props.globalState.downloadSmartFilter ||
                         this.props.globalState.copySmartFilter ||
-                        this.props.globalState.pasteSmartFilter ||
+                        this.props.globalState.pasteSmartFilterAsync ||
                         this.props.globalState.saveToSnippetServer) && (
                         <LineContainerComponent title="FILE">
-                            {this.props.globalState.loadSmartFilter && (
+                            {this.props.globalState.loadSmartFilterAsync && (
                                 <FileButtonLineComponent label="Load" onClick={async (file) => await this._loadAsync(file)} accept=".json" />
                             )}
                             {this.props.globalState.downloadSmartFilter && (
@@ -339,7 +339,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                     }}
                                 />
                             )}
-                            {this.props.globalState.pasteSmartFilter && (
+                            {this.props.globalState.pasteSmartFilterAsync && (
                                 <ButtonLineComponent
                                     label="Paste from Clipboard"
                                     onClick={() => {

@@ -82,7 +82,7 @@ export class SmartFilterRenderer {
      * @param onLogRequiredObservable - The observable to use to notify when a log entry is required
      * @returns A promise that resolves as true if the rendering started successfully, false otherwise
      */
-    public async startRendering(filter: SmartFilter, onLogRequiredObservable: Observable<LogEntry>): Promise<RenderResult> {
+    public async startRenderingAsync(filter: SmartFilter, onLogRequiredObservable: Observable<LogEntry>): Promise<RenderResult> {
         let optimizationTimeMs: Nullable<number> = null;
         let runtimeCreationTimeMs: Nullable<number> = null;
 
@@ -103,7 +103,7 @@ export class SmartFilterRenderer {
 
             // NOTE: Always load assets and animations from the unoptimized filter because it has all the metadata needed to load assets and
             //       shares runtime data with the optimized filter so loading assets for it will work for the optimized filter as well
-            await this.loadAssets(filter);
+            await this.loadAssetsAsync(filter);
             this._loadAnimations(filter);
 
             Logger.Log("Number of render targets created: " + rtg.numTargetsCreated);
@@ -132,7 +132,7 @@ export class SmartFilterRenderer {
      * those assets now.
      * @param smartFilter - The Smart Filter to load assets for
      */
-    public async loadAssets(smartFilter: SmartFilter): Promise<void> {
+    public async loadAssetsAsync(smartFilter: SmartFilter): Promise<void> {
         const inputBlocks: InputBlock<ConnectionPointType.Texture>[] = [];
 
         // Gather all the texture input blocks from the graph
@@ -150,11 +150,11 @@ export class SmartFilterRenderer {
      * Reloads the assets for the most recently rendered Smart Filter.
      * @returns A promise that resolves when the assets are loaded
      */
-    public reloadAssets(): Promise<void> {
+    public async reloadAssetsAsync(): Promise<void> {
         if (!this._lastRenderedSmartFilter) {
             throw new Error("No Smart Filter has been rendered yet");
         }
-        return this.loadAssets(this._lastRenderedSmartFilter);
+        return await this.loadAssetsAsync(this._lastRenderedSmartFilter);
     }
 
     /**

@@ -5,7 +5,7 @@ import { SmartFilterSerializer, type SmartFilter } from "@babylonjs/smart-filter
  * @param smartFilter - The Smart Filter to serialize
  * @returns The serialized Smart Filter
  */
-export async function serializeSmartFilter(smartFilter: SmartFilter): Promise<string> {
+export async function SerializeSmartFilter(smartFilter: SmartFilter): Promise<string> {
     const serializerModule = await import(/* webpackChunkName: "serializers" */ "@babylonjs/smart-filters-blocks/registration/blockSerializers");
     const serializer = new SmartFilterSerializer(serializerModule.blocksUsingDefaultSerialization, serializerModule.additionalBlockSerializers);
 

@@ -8,7 +8,7 @@ import type { BlockEditorRegistration } from "@babylonjs/smart-filters-editor-co
  * @param blockType - The type of the block to remove
  * @param namespace - The namespace of the block to remove
  */
-export function removeCustomBlockFromBlockEditorRegistration(
+export function RemoveCustomBlockFromBlockEditorRegistration(
     blockEditorRegistration: BlockEditorRegistration,
     allBlockRegistrations: IBlockRegistration[],
     blockType: string,

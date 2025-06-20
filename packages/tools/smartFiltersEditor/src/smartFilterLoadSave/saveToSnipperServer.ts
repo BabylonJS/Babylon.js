@@ -1,14 +1,14 @@
 import { type SmartFilter } from "@babylonjs/smart-filters";
-import { getSnippet, setSnippet } from "./hashFunctions";
+import { GetSnippet, SetSnippet } from "./hashFunctions";
 import { SnippetUrl } from "./constants";
-import { serializeSmartFilter } from "./serializeSmartFilter";
+import { SerializeSmartFilter } from "./serializeSmartFilter";
 
 /**
  * Saves the provided Smart Filter to the snippet server
  * @param smartFilter - Smart Filter to save
  */
-export async function saveToSnippetServer(smartFilter: SmartFilter): Promise<void> {
-    const smartFilterJson = await serializeSmartFilter(smartFilter);
+export async function SaveToSnippetServerAsync(smartFilter: SmartFilter): Promise<void> {
+    const smartFilterJson = await SerializeSmartFilter(smartFilter);
 
     const dataToSend = {
         payload: JSON.stringify({
@@ -19,7 +19,7 @@ export async function saveToSnippetServer(smartFilter: SmartFilter): Promise<voi
         tags: "",
     };
 
-    const [snippetToken] = getSnippet();
+    const [snippetToken] = GetSnippet();
 
     const response = await fetch(`${SnippetUrl}/${snippetToken || ""}`, {
         method: "POST",
@@ -37,5 +37,5 @@ export async function saveToSnippetServer(smartFilter: SmartFilter): Promise<voi
     const snippet = await response.json();
 
     // Update the location in the address bar
-    setSnippet(snippet.id, snippet.version, false);
+    SetSnippet(snippet.id, snippet.version, false);
 }

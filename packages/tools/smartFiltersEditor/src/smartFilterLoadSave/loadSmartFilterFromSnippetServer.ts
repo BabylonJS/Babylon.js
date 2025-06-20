@@ -10,7 +10,7 @@ import { SnippetUrl } from "./constants";
  * @param version - Optional version to load
  * @returns Promise that resolves with the loaded SmartFilter
  */
-export async function loadSmartFilterFromSnippetServer(
+export async function LoadSmartFilterFromSnippetServer(
     smartFilterDeserializer: SmartFilterDeserializer,
     engine: ThinEngine,
     snippetToken: string,
@@ -26,5 +26,6 @@ export async function loadSmartFilterFromSnippetServer(
     const snippet = JSON.parse(data.jsonPayload);
     const serializedSmartFilter = JSON.parse(snippet.smartFilter);
 
-    return smartFilterDeserializer.deserialize(engine, serializedSmartFilter);
+    const smartFilter = await smartFilterDeserializer.deserialize(engine, serializedSmartFilter);
+    return smartFilter;
 }

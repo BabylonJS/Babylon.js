@@ -6,10 +6,7 @@ import { CustomBlocksNamespace, type BlockEditorRegistration } from "@babylonjs/
  * @param blockEditorRegistration - The block editor registration to add the custom block to
  * @param blockRegistration - The block registration to add
  */
-export function addCustomBlockToBlockEditorRegistration(
-    blockEditorRegistration: BlockEditorRegistration,
-    blockRegistration: IBlockRegistration
-) {
+export function AddCustomBlockToBlockEditorRegistration(blockEditorRegistration: BlockEditorRegistration, blockRegistration: IBlockRegistration) {
     const namespace = blockRegistration.namespace || CustomBlocksNamespace;
     if (!blockEditorRegistration.allBlocks[namespace]) {
         blockEditorRegistration.allBlocks[namespace] = [];

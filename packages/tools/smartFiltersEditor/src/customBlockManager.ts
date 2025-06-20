@@ -54,7 +54,7 @@ export class CustomBlockManager {
      * @param smartFilterDeserializer - The deserializer to use
      * @returns The instantiated block, or null if the block type is not registered
      */
-    public async createBlockFromBlockTypeAndNamespace(
+    public async createBlockFromBlockTypeAndNamespaceAsync(
         smartFilter: SmartFilter,
         engine: ThinEngine,
         blockType: string,
@@ -68,7 +68,7 @@ export class CustomBlockManager {
             return null;
         }
 
-        return this.createBlockFromBlockDefinition(smartFilter, engine, blockDefinition, name, smartFilterDeserializer);
+        return await this.createBlockFromBlockDefinitionAsync(smartFilter, engine, blockDefinition, name, smartFilterDeserializer);
     }
 
     /**
@@ -80,7 +80,7 @@ export class CustomBlockManager {
      * @param smartFilterDeserializer - The deserializer to use
      * @returns The instantiated block, or null if the block type is not registered
      */
-    public async createBlockFromBlockDefinition(
+    public async createBlockFromBlockDefinitionAsync(
         smartFilter: SmartFilter,
         engine: ThinEngine,
         blockDefinition: SerializedBlockDefinition,
@@ -91,7 +91,7 @@ export class CustomBlockManager {
             case "shaderBlockDefinition":
                 return CustomShaderBlock.Create(smartFilter, name || this._getDefaultName(blockDefinition), blockDefinition);
             case "smartFilter":
-                return CustomAggregateBlock.Create(smartFilter, engine, name || this._getDefaultName(blockDefinition), blockDefinition, smartFilterDeserializer);
+                return await CustomAggregateBlock.Create(smartFilter, engine, name || this._getDefaultName(blockDefinition), blockDefinition, smartFilterDeserializer);
         }
     }
 

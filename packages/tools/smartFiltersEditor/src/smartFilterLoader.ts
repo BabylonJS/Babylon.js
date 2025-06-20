@@ -74,8 +74,8 @@ export class SmartFilterLoader {
      * @param file - File object to load from
      * @returns Promise that resolves with the loaded Smart Filter
      */
-    public async loadFromFile(file: File): Promise<SmartFilter> {
-        return this._loadSmartFilter(async () => {
+    public async loadFromFileAsync(file: File): Promise<SmartFilter> {
+        const smartFilter = await this._loadSmartFilterAsync(async () => {
             // Await (data)
             const data = await new Promise<string>((resolve, reject) => {
                 ReadFile(
@@ -86,8 +86,10 @@ export class SmartFilterLoader {
                     (error) => reject(error)
                 );
             });
-            return this.smartFilterDeserializer.deserialize(this._engine, JSON.parse(data));
+            const smartFilter = await this.smartFilterDeserializer.deserialize(this._engine, JSON.parse(data));
+            return smartFilter;
         }, SmartFilterSource.File);
+        return smartFilter;
     }
 
     /**
@@ -96,8 +98,8 @@ export class SmartFilterLoader {
      * @param version - Version of the snippet to load
      * @returns Promise that resolves with the loaded Smart Filter
      */
-    public async loadFromSnippet(snippetToken: string, version: string | undefined): Promise<SmartFilter> {
-        return this._loadSmartFilter(async () => {
+    public async loadFromSnippetAsync(snippetToken: string, version: string | undefined): Promise<SmartFilter> {
+        const smartFilter = await this._loadSmartFilterAsync(async () => {
             const response = await fetch(`${this.snippetUrl}/${snippetToken}/${version || ""}`);
 
             if (!response.ok) {
@@ -108,8 +110,10 @@ export class SmartFilterLoader {
             const snippet = JSON.parse(data.jsonPayload);
             const serializedSmartFilter = JSON.parse(snippet.smartFilter);
 
-            return this.smartFilterDeserializer.deserialize(this._engine, serializedSmartFilter);
+            const smartFilter = await this.smartFilterDeserializer.deserialize(this._engine, serializedSmartFilter);
+            return smartFilter;
         }, SmartFilterSource.Snippet);
+        return smartFilter;
     }
 
     /**
@@ -118,7 +122,7 @@ export class SmartFilterLoader {
      * @param source - Source of the Smart Filter (see SmartFilterSource)
      * @returns Promise that resolves with the loaded Smart Filter
      */
-    private async _loadSmartFilter(loader: () => Promise<SmartFilter>, source: SmartFilterSource): Promise<SmartFilter> {
+    private async _loadSmartFilterAsync(loader: () => Promise<SmartFilter>, source: SmartFilterSource): Promise<SmartFilter> {
         this._renderer.beforeRenderObservable.clear();
 
         // Load the Smart Filter using the provided function.

@@ -9,7 +9,7 @@ import type { TexturePreset } from "@babylonjs/smart-filters-editor-control";
  * For a URL to an image, you can add the assets to packages/demo/www/assets then add them to this list.
  *
  */
-export const texturePresets: TexturePreset[] = [
+export const TexturePresets: TexturePreset[] = [
     {
         name: "Babylon.js Logo",
         url: "/assets/logo.png",

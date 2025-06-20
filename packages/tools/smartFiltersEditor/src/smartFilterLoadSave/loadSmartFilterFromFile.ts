@@ -9,7 +9,7 @@ import type { SmartFilter, SmartFilterDeserializer } from "@babylonjs/smart-filt
  * @param file - File object to load from
  * @returns Promise that resolves with the loaded Smart Filter
  */
-export async function loadSmartFilterFromFile(smartFilterDeserializer: SmartFilterDeserializer, engine: ThinEngine, file: File): Promise<SmartFilter> {
+export async function LoadSmartFilterFromFile(smartFilterDeserializer: SmartFilterDeserializer, engine: ThinEngine, file: File): Promise<SmartFilter> {
     const data = await new Promise<string>((resolve, reject) => {
         ReadFile(
             file,
@@ -19,5 +19,6 @@ export async function loadSmartFilterFromFile(smartFilterDeserializer: SmartFilt
             (error) => reject(error)
         );
     });
-    return smartFilterDeserializer.deserialize(engine, JSON.parse(data));
+    const smartFilter = await smartFilterDeserializer.deserialize(engine, JSON.parse(data));
+    return smartFilter;
 }

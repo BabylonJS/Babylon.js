@@ -1,12 +1,11 @@
 import type { SmartFilter } from "@babylonjs/smart-filters";
-import { serializeSmartFilter } from "./serializeSmartFilter";
+import { SerializeSmartFilter } from "./serializeSmartFilter";
 
 /**
  * Copies the Smart Filter to the clipboard as a JSON file.
  * @param smartFilter - The Smart Filter to copy
  */
-export async function copySmartFilter(smartFilter: SmartFilter): Promise<void> {
-    serializeSmartFilter(smartFilter).then((serializedSmartFilter) => {
-        navigator.clipboard.writeText(serializedSmartFilter);
-    });
+export async function CopySmartFilter(smartFilter: SmartFilter): Promise<void> {
+    const serializedSmartFilter = await SerializeSmartFilter(smartFilter);
+    await navigator.clipboard.writeText(serializedSmartFilter);
 }

@@ -11,7 +11,7 @@ import { CustomBlocksNamespace } from "@babylonjs/smart-filters-editor-control";
  * @param customBlockDefinitions - The custom block definitions.
  * @returns - The block registrations.
  */
-export function generateCustomBlockRegistrations(
+export function GenerateCustomBlockRegistrations(
     customBlockManager: CustomBlockManager,
     smartFilterDeserializer: SmartFilterDeserializer,
     customBlockDefinitions: SerializedBlockDefinition[]
@@ -20,9 +20,7 @@ export function generateCustomBlockRegistrations(
 
     if (customBlockDefinitions.length > 0) {
         for (const customBlockDefinition of customBlockDefinitions) {
-            blockRegistrations.push(
-                createBlockRegistration(customBlockManager, customBlockDefinition, smartFilterDeserializer)
-            );
+            blockRegistrations.push(CreateBlockRegistration(customBlockManager, customBlockDefinition, smartFilterDeserializer));
         }
     }
 
@@ -36,7 +34,7 @@ export function generateCustomBlockRegistrations(
  * @param deserializer - The Smart Filter deserializer.
  * @returns - The block registration.
  */
-export function createBlockRegistration(
+export function CreateBlockRegistration(
     customBlockManager: CustomBlockManager,
     blockDefinition: SerializedBlockDefinition,
     deserializer: SmartFilterDeserializer
@@ -44,8 +42,9 @@ export function createBlockRegistration(
     return {
         blockType: blockDefinition.blockType,
         namespace: blockDefinition.namespace || CustomBlocksNamespace,
-        factory: (smartFilter: SmartFilter, engine: ThinEngine) => {
-            return customBlockManager.createBlockFromBlockDefinition(
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        factory: async (smartFilter: SmartFilter, engine: ThinEngine) => {
+            return await customBlockManager.createBlockFromBlockDefinitionAsync(
                 smartFilter,
                 engine,
                 blockDefinition,
