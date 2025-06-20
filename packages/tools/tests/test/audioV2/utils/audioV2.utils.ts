@@ -52,7 +52,15 @@ declare global {
             audioNodeType: AudioNodeType,
             source: string | string[],
             options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions> | Partial<BABYLON.IAudioBusOptions>
-        ): Promise<{ sound: { play(): void; stop(): void }; outputNode: { spatial: BABYLON.AbstractSpatialAudio; stereo: BABYLON.AbstractStereoAudio; volume: number } }>;
+        ): Promise<{
+            sound: { play(): void; stop(): void };
+            outputNode: {
+                spatial: BABYLON.AbstractSpatialAudio;
+                stereo: BABYLON.AbstractStereoAudio;
+                volume: number;
+                setVolume: (value: number, duration?: number, curveType?: number) => void;
+            };
+        }>;
         public static CreateAbstractSoundAsync(
             soundType: SoundType,
             source: string | string[],
