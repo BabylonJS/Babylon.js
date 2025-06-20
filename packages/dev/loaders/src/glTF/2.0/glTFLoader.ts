@@ -17,7 +17,7 @@ import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { PBRMaterial2 } from "core/Materials/PBR/pbrMaterial2";
+import { PBR2Material } from "core/Materials/PBR/pbr2Material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -2142,7 +2142,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBRMaterial2)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -2244,7 +2244,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
         let babylonMaterial;
         if (this.parent.usePBR2) {
-            babylonMaterial = new PBRMaterial2(name, this._babylonScene);
+            babylonMaterial = new PBR2Material(name, this._babylonScene);
         } else {
             babylonMaterial = new PBRMaterial(name, this._babylonScene);
         }
@@ -2315,7 +2315,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves when the load is complete
      */
     public loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBRMaterial2)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -2380,7 +2380,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param babylonMaterial The Babylon material
      */
     public loadMaterialAlphaProperties(context: string, material: IMaterial, babylonMaterial: Material): void {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBRMaterial2)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
             throw new Error(`${context}: Material type not supported`);
         }
 

@@ -5,7 +5,7 @@ export * from "./pbrBRDFConfiguration";
 export * from "./pbrClearCoatConfiguration";
 export * from "./pbrIridescenceConfiguration";
 export * from "./pbrMaterial";
-export * from "./pbrMaterial2";
+export * from "./pbr2Material";
 export * from "./pbrMetallicRoughnessMaterial";
 export * from "./pbrSpecularGlossinessMaterial";
 export * from "./pbrSheenConfiguration";
