@@ -68,10 +68,11 @@ import {
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
+import { UVDefinesMixin } from "../uv.defines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-class PBRMaterialDefinesBase extends MaterialDefines {}
+class PBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
 
 /**
  * Manages the defines for the PBR Material.
@@ -83,18 +84,6 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-    public MAINUV1 = false;
-    public MAINUV2 = false;
-    public MAINUV3 = false;
-    public MAINUV4 = false;
-    public MAINUV5 = false;
-    public MAINUV6 = false;
-    public UV1 = false;
-    public UV2 = false;
-    public UV3 = false;
-    public UV4 = false;
-    public UV5 = false;
-    public UV6 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
