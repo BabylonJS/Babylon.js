@@ -1,13 +1,13 @@
 {
     "name": "babylonjs-materials",
-    "version": "8.11.0",
-    "main": "babylonjs.materials.js",
+    "version": "8.13.0",
+    "main": "babylonjs.materials.min.js",
     "types": "babylonjs.materials.module.d.ts",
     "files": [
         "*"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
@@ -15,7 +15,7 @@
         "test:escheck": "es-check es6 ./babylonjs.materials.js"
     },
     "dependencies": {
-        "babylonjs": "^8.11.0"
+        "babylonjs": "^8.13.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

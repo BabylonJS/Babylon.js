@@ -116,6 +116,7 @@ import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyM
 import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
+import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -774,15 +775,17 @@ export class PropertyGridTabComponent extends PaneComponent {
         const entity = this.props.selectedEntity || {};
         const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
         return (
-            <div className="pane">
-                {this.renderContent()}
-                {Tags.HasTags(entity) && (
-                    <LineContainerComponent title="TAGS" selection={this.props.globalState}>
-                        <div className="tagContainer">{this.renderTags()}</div>
-                    </LineContainerComponent>
-                )}
-                {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
-            </div>
+            <FluentToolWrapper>
+                <div className="pane">
+                    {this.renderContent()}
+                    {Tags.HasTags(entity) && (
+                        <LineContainerComponent title="TAGS" selection={this.props.globalState}>
+                            <div className="tagContainer">{this.renderTags()}</div>
+                        </LineContainerComponent>
+                    )}
+                    {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
+                </div>
+            </FluentToolWrapper>
         );
     }
 }

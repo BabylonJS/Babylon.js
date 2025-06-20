@@ -10,6 +10,7 @@ import { Material } from "../Materials/material";
 import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import type { Effect } from "../Materials/effect";
+import type { MeshCreationOptions } from "./mesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -44,9 +45,11 @@ export class LinesMesh extends Mesh {
      */
     public intersectionThreshold: number;
 
-    private _lineMaterial: Material;
+    private _isShaderMaterial(shader: Nullable<Material>): shader is ShaderMaterial {
+        if (!shader) {
+            return false;
+        }
 
-    private _isShaderMaterial(shader: Material): shader is ShaderMaterial {
         return shader.getClassName() === "ShaderMaterial";
     }
 
@@ -142,14 +145,6 @@ export class LinesMesh extends Mesh {
         }
     }
 
-    public override isReady() {
-        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
-            return false;
-        }
-
-        return super.isReady();
-    }
-
     /**
      * @returns the string "LineMesh"
      */
@@ -160,16 +155,18 @@ export class LinesMesh extends Mesh {
     /**
      * @internal
      */
-    public override get material(): Material {
-        return this._lineMaterial;
+    public override get material(): Nullable<Material> {
+        return this._internalAbstractMeshDataInfo._material as Material;
     }
 
     /**
      * @internal
      */
-    public override set material(value: Material) {
-        this._lineMaterial = value;
-        this._lineMaterial.fillMode = Material.LineListDrawMode;
+    public override set material(value: Nullable<Material>) {
+        this._setMaterial(value);
+        if (this.material) {
+            this.material.fillMode = Material.LineListDrawMode;
+        }
     }
 
     /**
@@ -200,10 +197,10 @@ export class LinesMesh extends Mesh {
         }
 
         // Color
-        if (!this.useVertexColor && this._isShaderMaterial(this._lineMaterial)) {
+        if (!this.useVertexColor && this._isShaderMaterial(this.material)) {
             const { r, g, b } = this.color;
             this._color4.set(r, g, b, this.alpha);
-            this._lineMaterial.setColor4("color", this._color4);
+            this.material.setColor4("color", this._color4);
         }
 
         return this;
@@ -230,28 +227,21 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * Disposes of the line mesh
-     * @param doNotRecurse If children should be disposed
-     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
-     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
-        if (!doNotDisposeMaterial) {
-            this._lineMaterial.dispose(false, false, true);
-        }
-        super.dispose(doNotRecurse);
-    }
-
-    /**
      * Returns a new LineMesh object cloned from the current one.
      * @param name defines the cloned mesh name
      * @param newParent defines the new mesh parent
      * @param doNotCloneChildren if set to true, none of the mesh children are cloned (false by default)
      * @returns the new mesh
      */
-    public override clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): LinesMesh {
-        return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+    public override clone(name: string, newParent: Nullable<Node> | MeshCreationOptions = null, doNotCloneChildren?: boolean): LinesMesh {
+        if (newParent && (newParent as Node)._addToSceneRootNodes === undefined) {
+            const createOptions = newParent as MeshCreationOptions;
+            createOptions.source = this;
+
+            return new LinesMesh(name, this.getScene(), createOptions.parent, createOptions.source as Nullable<LinesMesh>, createOptions.doNotCloneChildren);
+        }
+
+        return new LinesMesh(name, this.getScene(), newParent as Nullable<Node>, this, doNotCloneChildren);
     }
 
     /**

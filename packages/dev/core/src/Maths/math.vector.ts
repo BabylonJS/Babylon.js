@@ -5311,6 +5311,37 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return this._x * other._x + this._y * other._y + this._z * other._z + this._w * other._w;
     }
 
+    /**
+     * Converts the current quaternion to an axis angle representation
+     * @returns the axis and angle in radians
+     */
+    public toAxisAngle(): { axis: Vector3; angle: number } {
+        const axis = Vector3.Zero();
+        const angle = this.toAxisAngleToRef(axis);
+        return { axis, angle };
+    }
+
+    /**
+     * Converts the current quaternion to an axis angle representation
+     * @param axis defines the target axis vector
+     * @returns the angle in radians
+     */
+    public toAxisAngleToRef<T extends Vector3>(axis: T): number {
+        let angle = 0;
+        const sinHalfAngle = Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
+        const cosHalfAngle = this._w;
+
+        if (sinHalfAngle > 0) {
+            angle = 2 * Math.atan2(sinHalfAngle, cosHalfAngle);
+            axis.set(this._x / sinHalfAngle, this._y / sinHalfAngle, this._z / sinHalfAngle);
+        } else {
+            angle = 0;
+            axis.set(1, 0, 0);
+        }
+
+        return angle;
+    }
+
     // Statics
 
     /**

@@ -83,8 +83,6 @@ export class NodeMaterialBuildState {
     /** @internal */
     public _customEntryHeader = "";
     /** @internal */
-    public _customOutputName = "";
-    /** @internal */
     private _repeatableContentAnchorIndex = 0;
     /** @internal */
     public _builtCompilationString = "";

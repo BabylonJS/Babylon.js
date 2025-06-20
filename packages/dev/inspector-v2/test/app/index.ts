@@ -21,6 +21,7 @@ const engine = new Engine(canvas, true, {
 });
 
 const scene = new Scene(engine);
+(globalThis as any).scene = scene; // For debugging purposes
 
 let camera: Nullable<ArcRotateCamera> = null;
 
