@@ -5,7 +5,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Defines a block used to debug values going through it
