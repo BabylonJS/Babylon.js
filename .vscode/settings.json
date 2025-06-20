@@ -1,5 +1,19 @@
 {
-    "cSpell.words": ["acumin", "babylonjs", "desaturated", "multilines", "ONEDEF", "Pickable", "smartfilter", "Spector", "spritesheet", "webgl", "webgpu"],
+    "cSpell.words": [
+        "acumin",
+        "babylonjs",
+        "desaturated",
+        "multilines",
+        "ONEDEF",
+        "Pickable",
+        "Premultiplies",
+        "Resizer",
+        "smartfilter",
+        "Spector",
+        "spritesheet",
+        "webgl",
+        "webgpu"
+    ],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": false,

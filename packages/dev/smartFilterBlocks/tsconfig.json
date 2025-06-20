@@ -5,7 +5,7 @@
         "paths": {
             "core/*": ["../node_modules/core/*"],
             "@babylonjs/core/*": ["../node_modules/core/*"],
-            "@babylonjs/smart-filters": ["dev/smartFilters/dist"]
+            "@babylonjs/smart-filters": ["dev/smartFilters/src"]
         }
     }
 }
