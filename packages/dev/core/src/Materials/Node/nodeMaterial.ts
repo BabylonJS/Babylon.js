@@ -72,6 +72,7 @@ import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
+import { UVDefinesMixin } from "../uv.defines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -91,7 +92,7 @@ export interface INodeMaterialEditorOptions {
     };
 }
 
-class NodeMaterialDefinesBase extends MaterialDefines {}
+class NodeMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
 
 /** @internal */
 export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMaterialDefinesBase) {
@@ -101,18 +102,6 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public TANGENT = false;
     /** Vertex color */
     public VERTEXCOLOR_NME = false;
-    /**  Uv1 **/
-    public UV1 = false;
-    /** Uv2 **/
-    public UV2 = false;
-    /** Uv3 **/
-    public UV3 = false;
-    /** Uv4 **/
-    public UV4 = false;
-    /** Uv5 **/
-    public UV5 = false;
-    /** Uv6 **/
-    public UV6 = false;
 
     /** Prepass **/
     public PREPASS = false;
