@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
-import type { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
 
@@ -16,7 +15,6 @@ import { PrePassConfiguration } from "./prePassConfiguration";
 
 import { ImageProcessingDefinesMixin } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
-import type { ColorCurves } from "./colorCurves";
 import type { FresnelParameters } from "./fresnelParameters";
 import type { ICustomShaderNameResolveOptions } from "../Materials/material";
 import { Material } from "../Materials/material";
