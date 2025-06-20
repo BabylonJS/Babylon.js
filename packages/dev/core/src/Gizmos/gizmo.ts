@@ -614,7 +614,6 @@ export class Gizmo implements IGizmo {
             if (pointerInfo.pickInfo) {
                 // If we are dragging and the user presses another button, end the drag.
                 // Otherwise, tracking when the drag should end becomes very complex.
-                // pointerDragBehavior.ts has similar logic.
                 forcePointerUp = dragging && pointerInfo.event.button !== -1 && pointerInfo.event.button !== activeDragButton;
 
                 if (forcePointerUp || pointerInfo.type === PointerEventTypes.POINTERUP) {
