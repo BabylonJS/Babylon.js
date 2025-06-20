@@ -124,14 +124,13 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
+    /** @internal */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
+    /** @internal */
     public onReady(): void {
         this._loader.gltf.nodes?.forEach((node) => {
             if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {

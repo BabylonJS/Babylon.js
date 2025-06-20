@@ -69,12 +69,15 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         delete this._coordinator;
     }
 
+    /** @internal */
     public onReady(): void {
         if (this._coordinator) {
             this._coordinator.start();
         }
     }
 
+    /** @internal */
+    // eslint-disable-next-line no-restricted-syntax
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         if (!this._loader) {
             return null;

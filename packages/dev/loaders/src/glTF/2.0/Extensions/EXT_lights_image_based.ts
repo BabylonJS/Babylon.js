@@ -73,9 +73,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
         }
     }
 
-    /**
-     * @internal
-     */
+    /** @internal */
     // eslint-disable-next-line no-restricted-syntax
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, async (extensionContext, extension) => {

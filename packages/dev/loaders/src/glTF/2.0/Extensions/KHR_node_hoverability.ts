@@ -191,14 +191,13 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
+    /** @internal */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
+    /** @internal */
     public onReady(): void {
         this._loader.gltf.nodes?.forEach((node) => {
             // default is true, so only apply if false

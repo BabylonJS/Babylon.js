@@ -249,9 +249,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         }
     }
 
-    /**
-     * @internal
-     */
+    /** @internal */
     // eslint-disable-next-line no-restricted-syntax
     public _loadMeshPrimitiveAsync(
         context: string,
