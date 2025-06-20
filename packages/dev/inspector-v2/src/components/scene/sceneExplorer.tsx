@@ -5,6 +5,7 @@ import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fl
 import type { ComponentType, FunctionComponent } from "react";
 
 import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, ToggleButton, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import { CubeTreeRegular, BeachRegular, BoardRegular, BoxMultipleRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -106,6 +107,7 @@ type ToggleCommand<T extends EntityBase> = EntityCommandBase<T> &
 export type SceneExplorerEntityCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
 type TreeItemData =
+    | { type: "scene"; scene: Scene }
     | {
           type: "section";
           sectionName: string;
@@ -130,10 +132,13 @@ const useStyles = makeStyles({
         flexDirection: "column",
     },
     tree: {
-        margin: tokens.spacingHorizontalXS,
+        margin: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
         rowGap: 0,
         overflow: "hidden",
         flex: 1,
+    },
+    sceneTreeItemLayout: {
+        padding: 0,
     },
 });
 
@@ -223,6 +228,11 @@ export const SceneExplorer: FunctionComponent<{
         const visibleItems: TreeItemData[] = [];
         const entityParents = new Map<EntityBase, EntityBase>();
 
+        visibleItems.push({
+            type: "scene",
+            scene: scene,
+        });
+
         for (const section of sections) {
             visibleItems.push({
                 type: "section",
@@ -283,7 +293,30 @@ export const SceneExplorer: FunctionComponent<{
                     {(index: number) => {
                         const item = visibleItems[index];
 
-                        if (item.type === "section") {
+                        if (item.type === "scene") {
+                            return (
+                                <FlatTreeItem
+                                    key="scene"
+                                    value="scene"
+                                    itemType="leaf"
+                                    parentValue={undefined}
+                                    aria-level={1}
+                                    aria-setsize={1}
+                                    aria-posinset={1}
+                                    onClick={() => setSelectedEntity?.(scene)}
+                                >
+                                    <TreeItemLayout
+                                        iconBefore={<MoviesAndTvRegular />}
+                                        className={classes.sceneTreeItemLayout}
+                                        style={scene === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                                    >
+                                        <Body1Strong wrap={false} truncate>
+                                            Scene
+                                        </Body1Strong>
+                                    </TreeItemLayout>
+                                </FlatTreeItem>
+                            );
+                        } else if (item.type === "section") {
                             return (
                                 <FlatTreeItem
                                     key={item.sectionName}
