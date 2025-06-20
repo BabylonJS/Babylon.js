@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
+import { expandToProperty } from "../../Misc/decorators";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
@@ -69,6 +68,7 @@ import {
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
+import { ImageProcessingMixin } from "../imageProcessing";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -296,6 +296,7 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     }
 }
 
+class PBRBaseMaterialBase extends ImageProcessingMixin(PushMaterial) {}
 /**
  * The Physically based material base class of BJS.
  *
@@ -305,7 +306,7 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
  * @see [WebGL](https://playground.babylonjs.com/#CGHTSM#1)
  * @see [WebGPU](https://playground.babylonjs.com/#CGHTSM#2)
  */
-export abstract class PBRBaseMaterial extends PushMaterial {
+export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
     /**
      * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
      */
@@ -814,46 +815,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @internal
      */
     public _enableSpecularAntiAliasing = false;
-
-    /**
-     * Default configuration related to image processing available in the PBR Material.
-     */
-    @serializeAsImageProcessingConfiguration()
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-
-    /**
-     * Keep track of the image processing observer to allow dispose and replace.
-     */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>> = null;
-
-    /**
-     * Attaches a new image processing configuration to the PBR Material.
-     * @param configuration
-     */
-    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
-        if (configuration === this._imageProcessingConfiguration) {
-            return;
-        }
-
-        // Detaches observer.
-        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-        }
-
-        // Pick the scene configuration if needed.
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-        } else {
-            this._imageProcessingConfiguration = configuration;
-        }
-
-        // Attaches observer.
-        if (this._imageProcessingConfiguration) {
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._markAllSubMeshesAsImageProcessingDirty();
-            });
-        }
-    }
 
     /**
      * Stores the available render targets.
