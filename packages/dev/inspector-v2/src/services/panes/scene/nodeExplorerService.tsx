@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IReadonlyObservable, Node, Scene } from "core/index";
-
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
@@ -34,44 +31,28 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
                 ) : (
                     <></>
                 ),
-            watch: (scene, onAdded, onRemoved) => {
-                const observers = [
-                    ...(
-                        [
-                            scene.onNewMeshAddedObservable,
-                            scene.onNewTransformNodeAddedObservable,
-                            scene.onNewCameraAddedObservable,
-                            scene.onNewLightAddedObservable,
-                        ] as IReadonlyObservable<Node>[]
-                    ).map((observable) => observable.add((node) => onAdded(node))),
-                    ...(
-                        [
-                            scene.onMeshRemovedObservable,
-                            scene.onTransformNodeRemovedObservable,
-                            scene.onCameraRemovedObservable,
-                            scene.onLightRemovedObservable,
-                        ] as IReadonlyObservable<Node>[]
-                    ).map((observable) => observable.add((node) => onRemoved(node))),
-                ] as const;
-
-                return {
-                    dispose: () => {
-                        for (const observer of observers) {
-                            observer.remove();
-                        }
-                    },
-                };
-            },
+            getEntityAddedObservables: (scene) => [
+                scene.onNewMeshAddedObservable,
+                scene.onNewTransformNodeAddedObservable,
+                scene.onNewCameraAddedObservable,
+                scene.onNewLightAddedObservable,
+            ],
+            getEntityRemovedObservables: (scene) => [
+                scene.onMeshRemovedObservable,
+                scene.onTransformNodeRemovedObservable,
+                scene.onCameraRemovedObservable,
+                scene.onLightRemovedObservable,
+            ],
         });
 
         const visibilityCommandRegistration = sceneExplorerService.addCommand({
             type: "toggle",
             order: 0,
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
-            isEnabled: (scene: Scene, mesh: AbstractMesh) => {
+            isEnabled: (scene, mesh) => {
                 return mesh.isVisible;
             },
-            setEnabled: (scene: Scene, mesh: AbstractMesh, enabled: boolean) => {
+            setEnabled: (scene, mesh, enabled) => {
                 mesh.isVisible = enabled;
             },
             displayName: "Show/Hide Mesh",

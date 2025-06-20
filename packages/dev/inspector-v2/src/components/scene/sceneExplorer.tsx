@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, Nullable, Scene } from "core/index";
+import type { IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
@@ -48,9 +48,14 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     entityIcon?: ComponentType<{ entity: T }>;
 
     /**
-     * A function that watches for changes in the scene and calls the provided callbacks when entities are added or removed.
+     * A function that returns an array of observables for when entities are added to the scene.
      */
-    watch: (scene: Scene, onAdded: (entity: T) => void, onRemoved: (entity: T) => void) => IDisposable;
+    getEntityAddedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
+
+    /**
+     * A function that returns an array of observables for when entities are removed from the scene.
+     */
+    getEntityRemovedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
 }>;
 
 type EntityCommandBase<T extends EntityBase> = Readonly<{
@@ -215,11 +220,15 @@ export const SceneExplorer: FunctionComponent<{
             }
         };
 
-        const watchTokens = sections.map((section) => section.watch(scene, onSceneItemAdded, onSceneItemRemoved));
+        const addObservers = sections.flatMap((section) => section.getEntityAddedObservables(scene).map((observable) => observable.add(onSceneItemAdded)));
+        const removeObservers = sections.flatMap((section) => section.getEntityRemovedObservables(scene).map((observable) => observable.add(onSceneItemRemoved)));
 
         return () => {
-            for (const token of watchTokens) {
-                token.dispose();
+            for (const observer of addObservers) {
+                observer.remove();
+            }
+            for (const observer of removeObservers) {
+                observer.remove();
             }
         };
     }, [sections, openItems]);
