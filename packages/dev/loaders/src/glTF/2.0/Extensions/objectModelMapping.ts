@@ -44,7 +44,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         globalMatrix: IObjectAccessor<GLTFTargetType, BabylonTargetType, Matrix>;
         weights: {
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
-            __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
+            __array__: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
         extensions: {
             EXT_lights_ies?: {
@@ -304,21 +304,33 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 type: "number",
                 get: (node: INode) => node._numMorphTargets,
                 getTarget: (node: INode) => node._babylonTransformNode,
-                getPropertyName: [() => "influence"],
             },
             __array__: {
-                __target__: true,
                 type: "number",
-                get: (node: INode, index?: number) => (index !== undefined ? node._primitiveBabylonMeshes?.[0].morphTargetManager?.getTarget(index).influence : undefined),
-                // set: (value: number, node: INode, index?: number) => node._babylonTransformNode?.getMorphTargetManager()?.getTarget(index)?.setInfluence(value),
+                get: (node: INode, arrayIndex?: number) => node._primitiveBabylonMeshes![0].morphTargetManager!.getTarget(arrayIndex!).influence,
+                set: (value: number, node: INode, arrayIndex?: number) => {
+                    for (const primitive of node._primitiveBabylonMeshes!) {
+                        const target = primitive.morphTargetManager!.getTarget(arrayIndex!);
+                        if (target) {
+                            target.influence = value;
+                        }
+                    }
+                },
                 getTarget: (node: INode) => node._babylonTransformNode,
-                getPropertyName: [() => "influence"],
             },
             type: "number[]",
-            get: (node: INode, index?: number) => [0], // TODO: get the weights correctly
-            // set: (value: number, node: INode, index?: number) => node._babylonTransformNode?.getMorphTargetManager()?.getTarget(index)?.setInfluence(value),
+            get: (node: INode) => Array.from({ length: node._numMorphTargets! }, (_, index) => node._primitiveBabylonMeshes![0].morphTargetManager!.getTarget(index).influence!),
+            set: (value: number[], node: INode) => {
+                for (const primitive of node._primitiveBabylonMeshes!) {
+                    for (let i = 0; i < value.length; i++) {
+                        const target = primitive.morphTargetManager!.getTarget(i);
+                        if (target) {
+                            target.influence = value[i];
+                        }
+                    }
+                }
+            },
             getTarget: (node: INode) => node._babylonTransformNode,
-            getPropertyName: [() => "influence"],
         },
         // readonly!
         matrix: {

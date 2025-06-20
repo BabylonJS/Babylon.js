@@ -11,7 +11,8 @@ import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interac
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
-import type { IAnimation } from "../glTFLoaderInterfaces";
+import type { IAnimation, IScene } from "../glTFLoaderInterfaces";
+import { Nullable } from "core/types";
 
 const NAME = "KHR_interactivity";
 
@@ -39,13 +40,17 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
+    private readonly _pathConverter: GLTFPathToObjectConverter<any, any, any>;
+
+    private _loader?: GLTFLoader;
+    private _coordinator?: FlowGraphCoordinator;
 
     /**
      * @internal
      * @param _loader
      */
-    constructor(private _loader: GLTFLoader) {
+    constructor(_loader: GLTFLoader) {
+        this._loader = _loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
         this._pathConverter = GetPathToObjectConverter(this._loader.gltf);
         // avoid starting animations automatically.
@@ -60,32 +65,47 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     }
 
     public dispose() {
-        (this._loader as any) = null;
-        delete this._pathConverter;
+        delete this._loader;
+        delete this._coordinator;
     }
 
-    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-misused-promises
-    public async onReady(): Promise<void> {
-        if (!this._loader.babylonScene || !this._pathConverter) {
-            return;
+    public onReady(): void {
+        if (this._coordinator) {
+            this._coordinator.start();
         }
-        const scene = this._loader.babylonScene;
-        const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
-        if (!interactivityDefinition) {
-            // This can technically throw, but it's not a critical error
-            return;
+    }
+
+    public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
+        if (!this._loader) {
+            return null;
         }
 
-        const coordinator = new FlowGraphCoordinator({ scene });
-        coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
-        const graphs = interactivityDefinition.graphs.map((graph) => {
-            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
-            return parser.serializeToFlowGraph();
+        return this._loader.loadSceneAsync(context, scene).then(() => {
+            if (!this._loader) {
+                return;
+            }
+
+            const scene = this._loader.babylonScene;
+            const gltf = this._loader.gltf;
+            const targetFps = this._loader.parent.targetFps;
+            const interactivityDefinition = gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+            if (!interactivityDefinition) {
+                // This can technically throw, but it's not a critical error
+                return;
+            }
+
+            const coordinator = new FlowGraphCoordinator({ scene });
+            coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
+
+            const graphs = interactivityDefinition.graphs.map((graph) => {
+                const parser = new InteractivityGraphToFlowGraphParser(graph, gltf, targetFps);
+                return parser.serializeToFlowGraph();
+            });
+
+            return Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter }))).then(() => {
+                this._coordinator = coordinator;
+            });
         });
-        // parse each graph async
-        await Promise.all(graphs.map(async (graph) => await ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
-
-        coordinator.start();
     }
 }
 

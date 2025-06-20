@@ -1,12 +1,15 @@
 /**
  * A container with an original object and information about that object.
- * on some other object.
  */
 export interface IObjectInfo<T, O = any> {
     /**
      * The original object.
      */
     object: O;
+    /**
+     * The index of the array in question when applicable.
+     */
+    index?: number;
     /**
      * Information about the object.
      */
