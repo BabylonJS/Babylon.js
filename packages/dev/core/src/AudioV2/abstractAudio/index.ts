@@ -1,6 +1,7 @@
 /* eslint-disable import/no-internal-modules */
 export * from "./abstractAudioBus";
 export * from "./abstractAudioNode";
+export * from "./abstractAudioOutNode";
 export * from "./abstractSound";
 export * from "./audioBus";
 export * from "./audioEngineV2";

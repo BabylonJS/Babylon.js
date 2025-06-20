@@ -22,7 +22,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
             expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
         });
 
-        test("Setting `volume` to 0.5 should play sound at 0.5x volume ", async ({ page }) => {
+        test("Setting `volume` to 0.5 should play sound at 0.5x volume", async ({ page }) => {
             await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                 await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
                 const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile);
@@ -39,7 +39,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
             expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
         });
 
-        test("Setting `volume` to 2 should play sound at 2x volume ", async ({ page }) => {
+        test("Setting `volume` to 2 should play sound at 2x volume", async ({ page }) => {
             await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                 await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
                 const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile);
@@ -54,6 +54,59 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
             expect(volumes[Channel.L]).toBeCloseTo(2, 0);
+        });
+
+        test("Calling `setVolume` with value 0.5 should play sound at 0.5x volume", async ({ page }) => {
+            await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
+                await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
+                const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile);
+
+                outputNode.setVolume(0.5);
+                sound.play();
+                await AudioV2Test.WaitAsync(1, () => {
+                    sound.stop();
+                });
+            });
+
+            const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
+
+            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+        });
+
+        test("Calling `setVolume` with value 2 should play sound at 2x volume", async ({ page }) => {
+            await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
+                await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
+                const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile);
+
+                outputNode.setVolume(2);
+                sound.play();
+                await AudioV2Test.WaitAsync(1, () => {
+                    sound.stop();
+                });
+            });
+
+            const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
+
+            expect(volumes[Channel.L]).toBeCloseTo(2, VolumePrecision);
+        });
+
+        test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear curve", async ({ page }) => {
+            await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
+                await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
+                const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
+                    volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
+                });
+
+                outputNode.setVolume(1, 1);
+                sound.play();
+                await AudioV2Test.WaitAsync(1, () => {
+                    sound.stop();
+                });
+            });
+
+            const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
+
+            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
         });
     });
 };

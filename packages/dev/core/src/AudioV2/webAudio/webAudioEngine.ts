@@ -12,6 +12,7 @@ import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/st
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
+import type { AudioParameterRampShape } from "../audioParameter";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -73,7 +74,6 @@ const FormatMimeTypes: { [key: string]: string } = {
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _invalidFormats = new Set<string>();
-    private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
     private readonly _listenerAutoUpdate: boolean = true;
     private readonly _listenerMinUpdateTime: number = 0;
@@ -91,6 +91,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public readonly _audioContext: AudioContext;
+
+    /** @internal */
+    public readonly _isUsingOfflineAudioContext: boolean = false;
 
     /** @internal */
     public readonly isReadyPromise: Promise<void> = new Promise((resolve) => {
@@ -348,6 +351,15 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
+    public override setVolume(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
+        if (this._mainOut) {
+            this._mainOut.setVolume(value, duration, curve);
+        } else {
+            throw new Error("Main output not initialized yet.");
+        }
+    }
+
+    /** @internal */
     public override _addMainBus(mainBus: MainAudioBus): void {
         super._addMainBus(mainBus);
     }
@@ -365,11 +377,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public override _removeNode(node: AbstractNamedAudioNode): void {
         super._removeNode(node);
-    }
-
-    /** @internal */
-    public _setAudioParam(audioParam: AudioParam, value: number) {
-        audioParam.linearRampToValueAtTime(value, this.currentTime + this.parameterRampDuration);
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {
