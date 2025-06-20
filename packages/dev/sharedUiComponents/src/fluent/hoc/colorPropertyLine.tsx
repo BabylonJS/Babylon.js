@@ -6,21 +6,10 @@ import { SyncedSliderLine } from "./syncedSliderLine";
 
 import type { Color3 } from "core/Maths/math.color";
 import { Color4 } from "core/Maths/math.color";
+import { ColorPickerPopup } from "../primitives/colorPicker";
+import type { ColorPickerProps } from "../primitives/colorPicker";
 
-type ColorSliderProps = {
-    color: Color3 | Color4;
-};
-
-const ColorSliders: FunctionComponent<ColorSliderProps> = (props) => {
-    return (
-        <>
-            <SyncedSliderLine label="R" propertyKey="r" target={props.color} min={0} max={255} />
-            <SyncedSliderLine label="G" propertyKey="g" target={props.color} min={0} max={255} />
-            <SyncedSliderLine label="B" propertyKey="b" target={props.color} min={0} max={255} />
-            {props.color instanceof Color4 && <SyncedSliderLine label="A" propertyKey="a" target={props.color} min={0} max={1} />}
-        </>
-    );
-};
+export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & PropertyLineProps;
 
 /**
  * Reusable component which renders a color property line containing a label, colorPicker popout, and expandable RGBA values
@@ -28,13 +17,24 @@ const ColorSliders: FunctionComponent<ColorSliderProps> = (props) => {
  * @param props - PropertyLine props, replacing children with a color object so that we can properly display the color
  * @returns Component wrapping a colorPicker component (coming soon) with a property line
  */
-export const ColorPropertyLine: FunctionComponent<ColorSliderProps & PropertyLineProps> = (props) => {
+const ColorPropertyLine: FunctionComponent<ColorPropertyLineProps> = (props) => {
     return (
         <PropertyLine {...props} expandedContent={<ColorSliders {...props} />}>
-            {
-                props.color.toString()
-                // Will replace with colorPicker in future PR
-            }
+            <ColorPickerPopup {...props} />
         </PropertyLine>
     );
 };
+
+const ColorSliders: FunctionComponent<{ value: Color3 | Color4 }> = (props) => {
+    return (
+        <>
+            <SyncedSliderLine label="R" propertyKey="r" target={props.value} min={0} max={255} />
+            <SyncedSliderLine label="G" propertyKey="g" target={props.value} min={0} max={255} />
+            <SyncedSliderLine label="B" propertyKey="b" target={props.value} min={0} max={255} />
+            {props.value instanceof Color4 && <SyncedSliderLine label="A" propertyKey="a" target={props.value} min={0} max={1} />}
+        </>
+    );
+};
+
+export const Color3PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color3> & PropertyLineProps>;
+export const Color4PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color4> & PropertyLineProps>;

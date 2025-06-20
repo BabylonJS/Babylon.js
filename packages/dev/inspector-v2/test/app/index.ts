@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Nullable } from "core/index";
-
+import { Color3, CreateSphere, type ArcRotateCamera, type Nullable } from "core/index";
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { Scene } from "core/scene";
@@ -22,6 +21,10 @@ const engine = new Engine(canvas, true, {
 
 const scene = new Scene(engine);
 (globalThis as any).scene = scene; // For debugging purposes
+
+const sphere = CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
+sphere.position.x = 3;
+sphere.overlayColor = new Color3(1, 1, 0.5);
 
 let camera: Nullable<ArcRotateCamera> = null;
 

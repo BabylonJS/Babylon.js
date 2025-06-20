@@ -81,6 +81,13 @@ export const LineContainer: FunctionComponent<PropsWithChildren> = (props) => {
     return <div className={classes.container}>{props.children}</div>;
 };
 
+export type BaseComponentProps<T> = {
+    value: T;
+    onChange: (value: T) => void;
+    disabled?: boolean;
+    className?: string;
+};
+
 /**
  * A reusable component that renders a property line with a label and child content, and an optional description, copy button, and expandable section.
  *
