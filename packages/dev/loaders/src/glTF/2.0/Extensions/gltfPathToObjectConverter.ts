@@ -60,8 +60,8 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
         for (const part of parts) {
             if (infoTree[part]) {
                 infoTree = infoTree[part];
-            } else if (infoTree.__array__) {
-                infoTree = infoTree.__array__;
+            } else if (infoTree["{}"]) {
+                infoTree = infoTree["{}"];
                 if (target) {
                     index = parseInt(part, 10);
                 }

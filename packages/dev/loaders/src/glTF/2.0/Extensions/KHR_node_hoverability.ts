@@ -4,7 +4,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import type { INode } from "../glTFLoaderInterfaces";
-import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessor } from "./objectModelMapping";
 
 const NAME = "KHR_node_hoverability";
 
@@ -156,7 +156,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
     },
 });
 
-AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_hoverability/hoverable", {
+AddObjectAccessor("/nodes/{}/extensions/KHR_node_hoverability/hoverable", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.pointerOverDisableMeshTesting !== undefined) {

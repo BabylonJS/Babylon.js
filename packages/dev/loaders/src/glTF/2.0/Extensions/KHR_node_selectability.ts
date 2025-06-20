@@ -4,7 +4,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import type { INode } from "../glTFLoaderInterfaces";
-import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessor } from "./objectModelMapping";
 
 const NAME = "KHR_node_selectability";
 
@@ -90,7 +90,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
 });
 
 // object model extension for selectable
-AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_selectability/selectable", {
+AddObjectAccessor("/nodes/{}/extensions/KHR_node_selectability/selectable", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.isPickable !== undefined) {

@@ -25,17 +25,17 @@ export interface IGLTFObjectModelTree {
     extensions: IGLTFObjectModelTreeExtensionsObject;
     animations: {
         length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
-        __array__: {};
+        "{}": {};
     };
     meshes: {
         length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
-        __array__: {};
+        "{}": {};
     };
 }
 
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
     length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], number>;
-    __array__: {
+    "{}": {
         __target__: boolean;
         translation: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
         rotation: IObjectAccessor<GLTFTargetType, BabylonTargetType, Quaternion>;
@@ -44,7 +44,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         globalMatrix: IObjectAccessor<GLTFTargetType, BabylonTargetType, Matrix>;
         weights: {
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
-            __array__: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
+            "{}": IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
         extensions: {
             EXT_lights_ies?: {
@@ -56,7 +56,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
 }
 
 export interface IGLTFObjectModelTreeCamerasObject {
-    __array__: {
+    "{}": {
         __target__: boolean;
         orthographic: {
             xmag: IObjectAccessor<ICamera, ICamera, Vector2>;
@@ -74,7 +74,7 @@ export interface IGLTFObjectModelTreeCamerasObject {
 }
 
 export interface IGLTFObjectModelTreeMaterialsObject {
-    __array__: {
+    "{}": {
         __target__: boolean;
         pbrMetallicRoughness: {
             baseColorFactor: IObjectAccessor<IMaterial, PBRMaterial, Color4>;
@@ -240,7 +240,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
     KHR_lights_punctual: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
-            __array__: {
+            "{}": {
                 __target__: boolean;
                 color: IObjectAccessor<IKHRLightsPunctual_Light, Light, Color3>;
                 intensity: IObjectAccessor<IKHRLightsPunctual_Light, Light, number>;
@@ -259,7 +259,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
     };
     EXT_lights_image_based: {
         lights: {
-            __array__: {
+            "{}": {
                 __target__: boolean;
                 intensity: IObjectAccessor<IEXTLightsImageBased_LightImageBased, BaseTexture, number>;
                 rotation: IObjectAccessor<IEXTLightsImageBased_LightImageBased, BaseTexture, Quaternion>;
@@ -276,7 +276,7 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         getTarget: (nodes: INode[]) => nodes.map((node) => node._babylonTransformNode!),
         getPropertyName: [() => "length"],
     },
-    __array__: {
+    "{}": {
         __target__: true,
         translation: {
             type: "Vector3",
@@ -305,7 +305,7 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 get: (node: INode) => node._numMorphTargets,
                 getTarget: (node: INode) => node._babylonTransformNode,
             },
-            __array__: {
+            "{}": {
                 type: "number",
                 get: (node: INode, arrayIndex?: number) => node._primitiveBabylonMeshes![0].morphTargetManager!.getTarget(arrayIndex!).influence,
                 set: (value: number, node: INode, arrayIndex?: number) => {
@@ -409,7 +409,7 @@ const animationsTree = {
         getTarget: (animations: IAnimation[]) => animations.map((animation) => animation._babylonAnimationGroup!),
         getPropertyName: [() => "length"],
     },
-    __array__: {},
+    "{}": {},
 };
 
 const meshesTree = {
@@ -419,11 +419,11 @@ const meshesTree = {
         getTarget: (meshes: IMesh[]) => meshes.map((mesh) => mesh.primitives[0]._instanceData?.babylonSourceMesh),
         getPropertyName: [() => "length"],
     },
-    __array__: {},
+    "{}": {},
 };
 
 const camerasTree: IGLTFObjectModelTreeCamerasObject = {
-    __array__: {
+    "{}": {
         __target__: true,
         orthographic: {
             xmag: {
@@ -521,7 +521,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
 };
 
 const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
-    __array__: {
+    "{}": {
         __target__: true,
         emissiveFactor: {
             type: "Color3",
@@ -873,7 +873,7 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 getTarget: (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!),
                 getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
             },
-            __array__: {
+            "{}": {
                 __target__: true,
                 color: {
                     type: "Color3",
@@ -933,7 +933,7 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 getTarget: (lights) => lights.map((light) => light._babylonTexture!),
                 getPropertyName: [(_lights) => "length"],
             },
-            __array__: {
+            "{}": {
                 __target__: true,
                 intensity: {
                     type: "number",
@@ -1030,6 +1030,40 @@ const objectModelMapping: IGLTFObjectModelTree = {
     meshes: meshesTree,
 };
 
+function GetMapping(path: string): any {
+    if (!path.startsWith("/")) {
+        throw new Error(`Path "${path}" must start with a slash (/)`);
+    }
+
+    const parts = path.split("/");
+    let current = objectModelMapping as any;
+    for (let index = 1; index < parts.length; index++) {
+        current = current[parts[index]];
+    }
+
+    return current;
+}
+
+function EnsureMapping(path: string): any {
+    if (!path.startsWith("/")) {
+        throw new Error(`Path "${path}" must start with a slash (/)`);
+    }
+
+    const keyParts = path.split("/");
+    let current = objectModelMapping as any;
+    for (let index = 1; index < keyParts.length; index++) {
+        const key = keyParts[index];
+        current[key] ||= {};
+        current = current[key];
+    }
+
+    return current;
+}
+
+function IsObjectAccessor(current: any): current is IObjectAccessor {
+    return current && current.type && current.get;
+}
+
 /**
  * get a path-to-object converter for the given glTF tree
  * @param gltf the glTF tree to use
@@ -1040,81 +1074,53 @@ export function GetPathToObjectConverter(gltf: IGLTF) {
 }
 
 /**
- * This function will return the object accessor for the given key in the object model
- * If the key is not found, it will return undefined
- * @param key the key to get the mapping for, for example /materials/\{\}/emissiveFactor
+ * This function will return the object accessor for the given path in the object model
+ * @param path the path for the object accessor
  * @returns an object accessor for the given key, or undefined if the key is not found
  */
-export function GetMappingForKey(key: string): IObjectAccessor | undefined {
-    // replace every `{}` in key with __array__ to match the object model
-    const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
-    let current = objectModelMapping as any;
-    for (const part of keyParts) {
-        // make sure part is not empty
-        if (!part) {
-            continue;
-        }
-        current = current[part];
-    }
-    // validate that current is an object accessor
-    if (current && current.type && current.get) {
-        return current;
-    }
-    return undefined;
+export function GetObjectAccessor(path: string): IObjectAccessor | undefined {
+    const current = GetMapping(path);
+    return IsObjectAccessor(current) ? current : undefined;
 }
 
 /**
- * Set interpolation for a specific key in the object model
- * @param key the key to set, for example /materials/\{\}/emissiveFactor
- * @param interpolation the interpolation elements array
+ * This will set a new target object in the object model at the given path.
+ * @param path the path to set as the target object.
  */
-export function SetInterpolationForKey(key: string, interpolation?: IInterpolationPropertyInfo[]): void {
-    // replace every `{}` in key with __array__ to match the object model
-    const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
-    let current = objectModelMapping as any;
-    for (const part of keyParts) {
-        // make sure part is not empty
-        if (!part) {
-            continue;
-        }
-        current = current[part];
-    }
-    // validate that the current object is an object accessor
-    if (current && current.type && current.get) {
-        (current as IObjectAccessor).interpolation = interpolation;
-    }
+export function SetTargetObject(path: string): void {
+    const current = EnsureMapping(path);
+    current.__target__ = true;
 }
 
 /**
- * This will ad a new object accessor in the object model at the given key.
- * Note that this will NOT change the typescript types. To do that you will need to change the interface itself (extending it in the module that uses it)
- * @param key the key to add the object accessor at. For example /cameras/\{\}/perspective/aspectRatio
+ * This will set a new object accessor in the object model at the given path.
+ * @param path the path for the object accessor
  * @param accessor the object accessor to add
  */
-export function AddObjectAccessorToKey<GLTFTargetType = any, BabylonTargetType = any, BabylonValueType = any>(
-    key: string,
-    accessor: IObjectAccessor<GLTFTargetType, BabylonTargetType, BabylonValueType>
-): void {
-    // replace every `{}` in key with __array__ to match the object model
-    const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
-    let current = objectModelMapping as any;
-    for (const part of keyParts) {
-        // make sure part is not empty
-        if (!part) {
-            continue;
-        }
-        if (!current[part]) {
-            if (part === "?") {
-                current.__ignoreObjectTree__ = true;
-                continue;
-            }
-            current[part] = {};
-            // if the part is __array__ then add the __target__ property
-            if (part === "__array__") {
-                current[part].__target__ = true;
-            }
-        }
-        current = current[part];
+export function AddObjectAccessor(path: string, accessor: IObjectAccessor): void {
+    const current = EnsureMapping(path);
+    if (IsObjectAccessor(current)) {
+        throw new Error(`Path "${path}" already points to a valid object accessor.`);
     }
     Object.assign(current, accessor);
+}
+
+/**
+ * Set the interpolation for a object accessor in the object model
+ * @param path the object accessor path for the interpolation
+ * @param interpolation the interpolation elements array
+ */
+export function AddInterpolation(path: string, interpolation: IInterpolationPropertyInfo[]): void {
+    const current = EnsureMapping(path);
+
+    // TODO: don't throw for now because we don't have object accessors for all the extensions yet
+    // if (!IsObjectAccessor(current)) {
+    //     throw new Error(`Path "${path}" does not point to a valid object accessor.`);
+    // }
+
+    if (current.interpolation) {
+        throw new Error(`Path "${path}" already has an interpolation defined.`);
+    }
+
+    current.interpolation = interpolation;
 }

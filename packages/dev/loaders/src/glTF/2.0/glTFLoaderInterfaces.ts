@@ -7,6 +7,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Camera } from "core/Cameras/camera";
 import type { Light } from "core/Lights/light";
+import type { Scene } from "core/scene";
 
 import type * as GLTF2 from "babylonjs-gltf2interface";
 
@@ -311,4 +312,10 @@ export interface IKHRLightsPunctual_Light extends GLTF2.IKHRLightsPunctual_Light
 export interface IEXTLightsIES_Light extends GLTF2.IEXTLightsIES_Light, IArrayItem {
     /** @hidden */
     _babylonLight?: Light;
+}
+
+/** @internal */
+export interface IKHRInteractivity extends GLTF2.IKHRInteractivity {
+    /** @hidden */
+    _babylonScene?: Scene;
 }
