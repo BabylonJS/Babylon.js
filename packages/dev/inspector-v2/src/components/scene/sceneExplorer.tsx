@@ -4,7 +4,7 @@ import type { IDisposable, Nullable, Scene } from "core/index";
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
-import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, ToggleButton, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -52,7 +52,7 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     watch: (scene: Scene, onAdded: (entity: T) => void, onRemoved: (entity: T) => void) => IDisposable;
 }>;
 
-export type SceneExplorerEntityCommand<T extends EntityBase> = Readonly<{
+type EntityCommandBase<T extends EntityBase> = Readonly<{
     /**
      * An optional order for the section, relative to other commands.
      * Defaults to 0.
@@ -65,11 +65,6 @@ export type SceneExplorerEntityCommand<T extends EntityBase> = Readonly<{
     predicate: (entity: unknown) => entity is T;
 
     /**
-     * The function that executes the command on the given entity.
-     */
-    execute: (scene: Scene, entity: T) => void;
-
-    /**
      * The display name of the command (e.g. "Delete", "Rename", etc.).
      */
     displayName: string;
@@ -79,6 +74,36 @@ export type SceneExplorerEntityCommand<T extends EntityBase> = Readonly<{
      */
     icon: ComponentType<{ entity: T }>;
 }>;
+
+type ActionCommand<T extends EntityBase> = EntityCommandBase<T> &
+    Readonly<{
+        type: "action";
+        /**
+         * The function that executes the command on the given entity.
+         */
+        execute: (scene: Scene, entity: T) => void;
+    }>;
+
+type ToggleCommand<T extends EntityBase> = EntityCommandBase<T> &
+    Readonly<{
+        type: "toggle";
+        /**
+         * A boolean indicating if the command is enabled.
+         */
+        isEnabled: (scene: Scene, entity: T) => boolean;
+
+        /**
+         * The function that sets the enabled state of the command on the given entity.
+         */
+        setEnabled: (scene: Scene, entity: T, enabled: boolean) => void;
+
+        /**
+         * An optional icon component to render when the command is disabled.
+         */
+        disabledIcon?: ComponentType<{ entity: T }>;
+    }>;
+
+export type SceneExplorerEntityCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
 type TreeItemData =
     | {
@@ -111,6 +136,39 @@ const useStyles = makeStyles({
         flex: 1,
     },
 });
+
+const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; entity: EntityBase; scene: Scene }> = (props) => {
+    const { command, entity, scene } = props;
+
+    return (
+        <Tooltip key={command.displayName} content={command.displayName} relationship="label">
+            <Button icon={<command.icon entity={entity} />} appearance="subtle" onClick={() => command.execute(scene, entity)} />
+        </Tooltip>
+    );
+};
+
+const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase; scene: Scene }> = (props) => {
+    const { command, entity, scene } = props;
+    const [checked, setChecked] = useState(command.isEnabled(scene, entity));
+    const toggle = useCallback(() => {
+        setChecked((prev) => {
+            const enabled = !prev;
+            command.setEnabled(scene, entity, enabled);
+            return enabled;
+        });
+    }, [setChecked]);
+
+    return (
+        <Tooltip content={command.displayName} relationship="label">
+            <ToggleButton
+                icon={!checked && command.disabledIcon ? <command.disabledIcon entity={entity} /> : <command.icon entity={entity} />}
+                appearance="transparent"
+                checked={checked}
+                onClick={toggle}
+            />
+        </Tooltip>
+    );
+};
 
 export const SceneExplorer: FunctionComponent<{
     sections: readonly SceneExplorerSection<EntityBase>[];
@@ -260,11 +318,13 @@ export const SceneExplorer: FunctionComponent<{
                                         style={item.entity === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                                         actions={commands
                                             .filter((command) => command.predicate(item.entity))
-                                            .map((command) => (
-                                                <Tooltip key={command.displayName} content={command.displayName} relationship="label">
-                                                    <Button icon={<command.icon entity={item.entity} />} appearance="subtle" onClick={() => command.execute(scene, item.entity)} />
-                                                </Tooltip>
-                                            ))}
+                                            .map((command) =>
+                                                command.type === "action" ? (
+                                                    <ActionCommand key={command.displayName} command={command} entity={item.entity} scene={scene} />
+                                                ) : (
+                                                    <ToggleCommand key={command.displayName} command={command} entity={item.entity} scene={scene} />
+                                                )
+                                            )}
                                     >
                                         <Body1 wrap={false} truncate>
                                             {item.title.substring(0, 100)}
