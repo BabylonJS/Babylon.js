@@ -6,11 +6,11 @@
         "paths": {
             "core/*": ["../node_modules/core/*"],
             "@babylonjs/core/*": ["../node_modules/core/*"],
-            "@babylonjs/smart-filters": ["dev/smartFilters/dist"],
-            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/dist"],
-            "@babylonjs/smart-filters-blocks/*": ["dev/smartFilterBlocks/dist/*"],
-            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/dist"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"]
+            "@babylonjs/smart-filters": ["dev/smartFilters/src"],
+            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/src"],
+            "@babylonjs/smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
+            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
         }
     },
 
