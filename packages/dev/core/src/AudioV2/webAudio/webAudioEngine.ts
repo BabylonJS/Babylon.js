@@ -12,8 +12,6 @@ import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/st
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
-import { AudioParameterCurveShape } from "../audioParameter";
-import { _GetAudioParamCurveValues } from "../audioUtils";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -367,51 +365,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public override _removeNode(node: AbstractNamedAudioNode): void {
         super._removeNode(node);
-    }
-
-    /** @internal */
-    public _setAudioParam(
-        audioParam: AudioParam,
-        fromValue: number,
-        toValue: number,
-        startTime: number = this.currentTime,
-        duration: number = this.parameterRampDuration,
-        curve: AudioParameterCurveShape = AudioParameterCurveShape.Linear
-    ): void {
-        const currentValue = audioParam.value;
-        audioParam.cancelScheduledValues(0);
-        console.log(`value before cancel: ${currentValue}`);
-        console.log(`fromValue: ${fromValue}`);
-
-        if (fromValue === toValue) {
-            return;
-        }
-
-        if (duration <= 0) {
-            audioParam.value = toValue;
-            return;
-        }
-
-        console.log(`from: ${fromValue}, to: ${toValue}, startTime: ${startTime}, duration: ${duration}, curve: ${curve}`);
-        const curveValues = _GetAudioParamCurveValues(curve, fromValue, toValue);
-
-        let attempts = 0;
-        const timerId = setInterval(() => {
-            const delay = this.currentTime - startTime;
-            try {
-                audioParam.setValueCurveAtTime(curveValues, this.currentTime, duration - delay);
-                console.log(`Success setting value curve at time: ${this.currentTime}, duration: ${duration - delay}`);
-                clearInterval(timerId);
-            } catch (e) {
-                console.warn(`Error setting value curve at time:  ${this.currentTime}, duration: ${duration - delay}`);
-            }
-
-            attempts++;
-            if (attempts >= 200) {
-                clearInterval(timerId);
-                console.warn("Exceeded maximum attempts to set audio parameter curve.");
-            }
-        }, 100);
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {

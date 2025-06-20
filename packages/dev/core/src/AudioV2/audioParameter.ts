@@ -1,7 +1,7 @@
 /**
  * The shape of the audio ramp used to set an audio parameter's value, such as a sound's volume.
  */
-export const enum AudioParameterCurveShape {
+export const enum AudioParameterRampShape {
     /**
      * The ramp is linear.
      */

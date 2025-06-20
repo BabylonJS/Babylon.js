@@ -1,4 +1,5 @@
 import { _MainAudioOut } from "../abstractAudio/mainAudioOut";
+import { _WebAudioParameterComponent } from "./components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode } from "./webAudioNode";
 
@@ -6,7 +7,7 @@ import type { IWebAudioInNode } from "./webAudioNode";
 export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     private _destinationNode: AudioDestinationNode;
     private _gainNode: GainNode;
-    private _volume: number = 1;
+    private _volume: _WebAudioParameterComponent;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -21,6 +22,17 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
         this._destinationNode = audioContext.destination;
 
         this._gainNode.connect(this._destinationNode);
+
+        this._volume = new _WebAudioParameterComponent(this.engine, this._gainNode.gain);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._volume.dispose();
+        this._gainNode.disconnect();
+        this._destinationNode.disconnect();
     }
 
     /** @internal */
@@ -30,21 +42,12 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
 
     /** @internal */
     public get volume(): number {
-        return this._volume;
+        return this._volume.targetValue;
     }
 
     /** @internal */
     public set volume(value: number) {
-        this._volume = value;
-        this.engine._setAudioParam(this._gainNode.gain, this.engine.currentTime, value);
-    }
-
-    /** @internal */
-    public override dispose(): void {
-        super.dispose();
-
-        this._gainNode.disconnect();
-        this._destinationNode.disconnect();
+        this._volume.targetValue = value;
     }
 
     /** @internal */

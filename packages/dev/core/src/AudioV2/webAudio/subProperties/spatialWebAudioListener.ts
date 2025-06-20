@@ -1,6 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
 import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TmpMatrix = Matrix.Zero();
@@ -18,11 +19,20 @@ export function _CreateSpatialAudioListener(engine: _WebAudioEngine, autoUpdate:
  * @internal
  */
 class _SpatialWebAudioListener extends _SpatialAudioListener {
-    private _audioContext: AudioContext;
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
     private _lastRotationQuaternion: Quaternion = new Quaternion();
     private _updaterComponent: _SpatialWebAudioUpdaterComponent;
+
+    private _forwardX: _WebAudioParameterComponent;
+    private _forwardY: _WebAudioParameterComponent;
+    private _forwardZ: _WebAudioParameterComponent;
+    private _positionX: _WebAudioParameterComponent;
+    private _positionY: _WebAudioParameterComponent;
+    private _positionZ: _WebAudioParameterComponent;
+    private _upX: _WebAudioParameterComponent;
+    private _upY: _WebAudioParameterComponent;
+    private _upZ: _WebAudioParameterComponent;
 
     /** @internal */
     public readonly engine: _WebAudioEngine;
@@ -40,8 +50,36 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
 
         this.engine = engine;
 
-        this._audioContext = engine._audioContext;
         this._updaterComponent = new _SpatialWebAudioUpdaterComponent(this, autoUpdate, minUpdateTime);
+
+        const listener = engine._audioContext.listener;
+        this._forwardX = new _WebAudioParameterComponent(engine, listener.forwardX);
+        this._forwardY = new _WebAudioParameterComponent(engine, listener.forwardY);
+        this._forwardZ = new _WebAudioParameterComponent(engine, listener.forwardZ);
+        this._positionX = new _WebAudioParameterComponent(engine, listener.positionX);
+        this._positionY = new _WebAudioParameterComponent(engine, listener.positionY);
+        this._positionZ = new _WebAudioParameterComponent(engine, listener.positionZ);
+        this._upX = new _WebAudioParameterComponent(engine, listener.upX);
+        this._upY = new _WebAudioParameterComponent(engine, listener.upY);
+        this._upZ = new _WebAudioParameterComponent(engine, listener.upZ);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._forwardX.dispose();
+        this._forwardY.dispose();
+        this._forwardZ.dispose();
+        this._positionX.dispose();
+        this._positionY.dispose();
+        this._positionZ.dispose();
+        this._upX.dispose();
+        this._upY.dispose();
+        this._upZ.dispose();
+
+        this._updaterComponent.dispose();
+        this._updaterComponent = null!;
     }
 
     /** @internal */
@@ -52,14 +90,6 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
     /** @internal */
     public set minUpdateTime(value: number) {
         this._updaterComponent.minUpdateTime = value;
-    }
-
-    /** @internal */
-    public override dispose(): void {
-        super.dispose();
-
-        this._updaterComponent.dispose();
-        this._updaterComponent = null!;
     }
 
     /** @internal */
@@ -78,11 +108,9 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
             return;
         }
 
-        const listener = this._audioContext.listener;
-
-        this.engine._setAudioParam(listener.positionX, this.engine.currentTime, this.position.x);
-        this.engine._setAudioParam(listener.positionY, this.engine.currentTime, this.position.y);
-        this.engine._setAudioParam(listener.positionZ, this.engine.currentTime, this.position.z);
+        this._positionX.targetValue = this.position.x;
+        this._positionY.targetValue = this.position.y;
+        this._positionZ.targetValue = this.position.z;
 
         this._lastPosition.copyFrom(this.position);
     }
@@ -100,17 +128,16 @@ class _SpatialWebAudioListener extends _SpatialAudioListener {
         }
 
         Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
-        const listener = this._audioContext.listener;
 
         // NB: The WebAudio API is right-handed.
         Vector3.TransformNormalToRef(Vector3.RightHandedForwardReadOnly, TmpMatrix, TmpVector);
-        this.engine._setAudioParam(listener.forwardX, this.engine.currentTime, TmpVector.x);
-        this.engine._setAudioParam(listener.forwardY, this.engine.currentTime, TmpVector.y);
-        this.engine._setAudioParam(listener.forwardZ, this.engine.currentTime, TmpVector.z);
+        this._forwardX.targetValue = TmpVector.x;
+        this._forwardY.targetValue = TmpVector.y;
+        this._forwardZ.targetValue = TmpVector.z;
 
         Vector3.TransformNormalToRef(Vector3.Up(), TmpMatrix, TmpVector);
-        this.engine._setAudioParam(listener.upX, this.engine.currentTime, TmpVector.x);
-        this.engine._setAudioParam(listener.upY, this.engine.currentTime, TmpVector.y);
-        this.engine._setAudioParam(listener.upZ, this.engine.currentTime, TmpVector.z);
+        this._upX.targetValue = TmpVector.x;
+        this._upY.targetValue = TmpVector.y;
+        this._upZ.targetValue = TmpVector.z;
     }
 }

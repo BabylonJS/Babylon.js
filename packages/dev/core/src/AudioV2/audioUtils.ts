@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import { AudioParameterCurveShape } from "./audioParameter";
+import { AudioParameterRampShape } from "./audioParameter";
 
 export const _FileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
 
@@ -48,20 +48,20 @@ function GetLogCurve(): Float32Array {
 }
 
 /** @internal */
-export function _GetAudioParamCurveValues(curve: AudioParameterCurveShape, from: number, to: number): Float32Array {
+export function _GetAudioParamCurveValues(curve: AudioParameterRampShape, from: number, to: number): Float32Array {
     if (!TmpCurveValues) {
         TmpCurveValues = new Float32Array(CurveLength);
     }
 
     let normalizedCurve: Float32Array;
 
-    if (curve === AudioParameterCurveShape.Linear) {
+    if (curve === AudioParameterRampShape.Linear) {
         TmpLineValues[0] = from;
         TmpLineValues[1] = to;
         return TmpLineValues;
-    } else if (curve === AudioParameterCurveShape.Exponential) {
+    } else if (curve === AudioParameterRampShape.Exponential) {
         normalizedCurve = GetExpCurve();
-    } else if (curve === AudioParameterCurveShape.Logarithmic) {
+    } else if (curve === AudioParameterRampShape.Logarithmic) {
         normalizedCurve = GetLogCurve();
     } else {
         throw new Error(`Unknown curve shape: ${curve}`);
