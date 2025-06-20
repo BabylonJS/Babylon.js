@@ -3,9 +3,8 @@ import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } fr
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Color3 } from "../../Maths/math.color";
-import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import type { ColorCurves } from "../../Materials/colorCurves";
+import { Color3, Color4 } from "../../Maths/math.color";
+import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
@@ -14,8 +13,8 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { MaterialDefines } from "../../Materials/materialDefines";
-import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
+import { MaterialDefines } from "../materialDefines";
+import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
 import { EffectFallbacks } from "../effectFallbacks";
 import { AddClipPlaneUniforms } from "../clipPlaneMaterialHelper";
 import {
@@ -48,35 +47,69 @@ import { PrePassConfiguration } from "../prePassConfiguration";
 import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialFlags } from "../materialFlags";
-import { Texture } from "../../Materials/Textures/texture";
+import { Texture } from "../Textures/texture";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
+import { UVDefinesMixin } from "../uv.defines";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-class PBRMaterial2DefinesBase extends MaterialDefines {}
+/**
+ * Defines a property for the PBR2Material.
+ */
+class Property<T> {
+    /**
+     * Creates a new Property instance.
+     * @param name The name of the property in the shader
+     * @param defaultValue The default value of the property
+     * @param value The current value of the property, defaults to defaultValue
+     */
+    constructor(
+        public name: string,
+        public defaultValue: T,
+        public value: T = defaultValue
+    ) {}
+
+    /**
+     * Returns the number of components of the property based on its type.
+     */
+    public get numComponents(): number {
+        if (typeof this.defaultValue === "number") {
+            return 1; // Single float
+        } else if (this.defaultValue instanceof Color3) {
+            return 3;
+        } else if (this.defaultValue instanceof Color4) {
+            return 4;
+        } else if (this.defaultValue instanceof Vector2) {
+            return 2;
+        } else if (this.defaultValue instanceof Vector3) {
+            return 3;
+        } else if (this.defaultValue instanceof Vector4) {
+            return 4;
+        }
+        return 0; // Default size for unsupported types
+    }
+}
+
+class Sampler {
+    constructor(
+        public name: string, // Name in the shader
+        public value: Nullable<BaseTexture> = null // Texture value, default to null
+    ) {}
+}
+
+class PBR2MaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
 /**
  * Manages the defines for the PBR Material.
  * @internal
  */
-export class PBRMaterial2Defines extends ImageProcessingDefinesMixin(PBRMaterial2DefinesBase) {
+export class PBR2MaterialDefines extends ImageProcessingDefinesMixin(PBR2MaterialDefinesBase) {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-    public MAINUV1 = false;
-    public MAINUV2 = false;
-    public MAINUV3 = false;
-    public MAINUV4 = false;
-    public MAINUV5 = false;
-    public MAINUV6 = false;
-    public UV1 = false;
-    public UV2 = false;
-    public UV3 = false;
-    public UV4 = false;
-    public UV5 = false;
-    public UV6 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
@@ -84,9 +117,7 @@ export class PBRMaterial2Defines extends ImageProcessingDefinesMixin(PBRMaterial
     public VERTEXCOLOR = false;
 
     public BASE_WEIGHT = false;
-    public BASE_WEIGHTDIRECTUV = 0;
     public BASE_DIFFUSE_ROUGHNESS = false;
-    public BASE_DIFFUSE_ROUGHNESSDIRECTUV = 0;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
@@ -288,6 +319,7 @@ export class PBRMaterial2Defines extends ImageProcessingDefinesMixin(PBRMaterial
     }
 }
 
+// class PBR2MaterialBase extends ImageProcessingMixin(PBRBaseMaterial) {}
 /**
  * The Physically based material of BJS.
  *
@@ -295,24 +327,24 @@ export class PBRMaterial2Defines extends ImageProcessingDefinesMixin(PBRMaterial
  * For more information, please refer to the documentation :
  * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
  */
-export class PBRMaterial2 extends PBRBaseMaterial {
+export class PBR2Material extends PBRBaseMaterial {
     /**
-     * PBRMaterial2TransparencyMode: No transparency mode, Alpha channel is not use.
+     * PBR2MaterialTransparencyMode: No transparency mode, Alpha channel is not use.
      */
     public static override readonly PBRMATERIAL_OPAQUE = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
 
     /**
-     * PBRMaterial2TransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+     * PBR2MaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
      */
     public static override readonly PBRMATERIAL_ALPHATEST = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
 
     /**
-     * PBRMaterial2TransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+     * PBR2MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      */
     public static override readonly PBRMATERIAL_ALPHABLEND = PBRBaseMaterial.PBRMATERIAL_ALPHABLEND;
 
     /**
-     * PBRMaterial2TransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+     * PBR2MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      * They are also discarded below the alpha cutoff threshold to improve performances.
      */
     public static override readonly PBRMATERIAL_ALPHATESTANDBLEND = PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
@@ -322,6 +354,28 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      * (point spot...).
      */
     public static override DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+
+    /**
+     * Base Color uniform property.
+     */
+    get baseColor(): Color3 {
+        return this._baseColor.value;
+    }
+    set baseColor(color: Color3) {
+        this._baseColor.value = color;
+    }
+    private _baseColor: Property<Color3> = new Property<Color3>("baseColor", Color3.White());
+
+    /**
+     * Base Color Texture property.
+     */
+    get baseColorTexture(): Nullable<BaseTexture> {
+        return this._baseColorTexture.value;
+    }
+    set baseColorTexture(texture: Nullable<BaseTexture>) {
+        this._baseColorTexture.value = texture;
+    }
+    private _baseColorTexture: Sampler = new Sampler("baseColor");
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -404,7 +458,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial2.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+    public ambientTextureImpactOnAnalyticalLights: number = PBR2Material.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
      * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
@@ -935,128 +989,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
     public applyDecalMapAfterDetailMap = false;
 
     /**
-     * Gets the image processing configuration used either in this material.
-     */
-    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
-        return this._imageProcessingConfiguration;
-    }
-
-    /**
-     * Sets the Default image processing configuration used either in the this material.
-     *
-     * If sets to null, the scene one is in use.
-     */
-    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
-        this._attachImageProcessingConfiguration(value);
-
-        // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsImageProcessingDirty();
-    }
-
-    /**
-     * Gets whether the color curves effect is enabled.
-     */
-    public get cameraColorCurvesEnabled(): boolean {
-        return this.imageProcessingConfiguration.colorCurvesEnabled;
-    }
-    /**
-     * Sets whether the color curves effect is enabled.
-     */
-    public set cameraColorCurvesEnabled(value: boolean) {
-        this.imageProcessingConfiguration.colorCurvesEnabled = value;
-    }
-
-    /**
-     * Gets whether the color grading effect is enabled.
-     */
-    public get cameraColorGradingEnabled(): boolean {
-        return this.imageProcessingConfiguration.colorGradingEnabled;
-    }
-    /**
-     * Gets whether the color grading effect is enabled.
-     */
-    public set cameraColorGradingEnabled(value: boolean) {
-        this.imageProcessingConfiguration.colorGradingEnabled = value;
-    }
-
-    /**
-     * Gets whether tonemapping is enabled or not.
-     */
-    public get cameraToneMappingEnabled(): boolean {
-        return this._imageProcessingConfiguration.toneMappingEnabled;
-    }
-    /**
-     * Sets whether tonemapping is enabled or not
-     */
-    public set cameraToneMappingEnabled(value: boolean) {
-        this._imageProcessingConfiguration.toneMappingEnabled = value;
-    }
-
-    /**
-     * The camera exposure used on this material.
-     * This property is here and not in the camera to allow controlling exposure without full screen post process.
-     * This corresponds to a photographic exposure.
-     */
-    public get cameraExposure(): number {
-        return this._imageProcessingConfiguration.exposure;
-    }
-    /**
-     * The camera exposure used on this material.
-     * This property is here and not in the camera to allow controlling exposure without full screen post process.
-     * This corresponds to a photographic exposure.
-     */
-    public set cameraExposure(value: number) {
-        this._imageProcessingConfiguration.exposure = value;
-    }
-
-    /**
-     * Gets The camera contrast used on this material.
-     */
-    public get cameraContrast(): number {
-        return this._imageProcessingConfiguration.contrast;
-    }
-
-    /**
-     * Sets The camera contrast used on this material.
-     */
-    public set cameraContrast(value: number) {
-        this._imageProcessingConfiguration.contrast = value;
-    }
-
-    /**
-     * Gets the Color Grading 2D Lookup Texture.
-     */
-    public get cameraColorGradingTexture(): Nullable<BaseTexture> {
-        return this._imageProcessingConfiguration.colorGradingTexture;
-    }
-    /**
-     * Sets the Color Grading 2D Lookup Texture.
-     */
-    public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
-        this._imageProcessingConfiguration.colorGradingTexture = value;
-    }
-
-    /**
-     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
-     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-     */
-    public get cameraColorCurves(): Nullable<ColorCurves> {
-        return this._imageProcessingConfiguration.colorCurves;
-    }
-    /**
-     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
-     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-     */
-    public set cameraColorCurves(value: Nullable<ColorCurves>) {
-        this._imageProcessingConfiguration.colorCurves = value;
-    }
-
-    /**
-     * Instantiates a new PBRMaterial2 instance.
+     * Instantiates a new PBR2Material instance.
      *
      * @param name The material name
      * @param scene The scene the material will be use in.
@@ -1064,7 +997,6 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene, forceGLSL);
-
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
     }
 
@@ -1072,7 +1004,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      * @returns the name of this material class.
      */
     public override getClassName(): string {
-        return "PBRMaterial2";
+        return "gi";
     }
 
     /**
@@ -1082,8 +1014,8 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      * @param rootUrl defines the root URL to use to load textures
      * @returns cloned material instance
      */
-    public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): PBRMaterial2 {
-        const clone = SerializationHelper.Clone(() => new PBRMaterial2(name, this.getScene()), this, { cloneTexturesOnlyOnce });
+    public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): PBR2Material {
+        const clone = SerializationHelper.Clone(() => new PBR2Material(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         clone.id = name;
         clone.name = name;
@@ -1101,7 +1033,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      */
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.customType = "BABYLON.PBRMaterial2";
+        serializationObject.customType = "BABYLON.PBR2Material";
 
         return serializationObject;
     }
@@ -1112,10 +1044,10 @@ export class PBRMaterial2 extends PBRBaseMaterial {
      * @param source - Serialized object.
      * @param scene - BJS scene instance.
      * @param rootUrl - url for the scene object
-     * @returns - PBRMaterial2
+     * @returns - PBR2Material
      */
-    public static override Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial2 {
-        const material = SerializationHelper.Parse(() => new PBRMaterial2(source.name, scene), source, scene, rootUrl);
+    public static override Parse(source: any, scene: Scene, rootUrl: string): PBR2Material {
+        const material = SerializationHelper.Parse(() => new PBR2Material(source.name, scene), source, scene, rootUrl);
 
         if (source.stencil) {
             material.stencil.parse(source.stencil, scene, rootUrl);
@@ -1168,7 +1100,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
             if (this._breakShaderLoadedCheck2) {
                 return;
             }
-            const defines = new PBRMaterial2Defines(this._eventInfo.defineNames);
+            const defines = new PBR2MaterialDefines(this._eventInfo.defineNames);
             const effect = this._prepareEffect2(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -1212,10 +1144,10 @@ export class PBRMaterial2 extends PBRBaseMaterial {
 
         if (!subMesh.materialDefines) {
             this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-            subMesh.materialDefines = new PBRMaterial2Defines(this._eventInfo.defineNames);
+            subMesh.materialDefines = new PBR2MaterialDefines(this._eventInfo.defineNames);
         }
 
-        const defines = <PBRMaterial2Defines>subMesh.materialDefines;
+        const defines = <PBR2MaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1359,7 +1291,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
 
         if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             mesh.createNormals(true);
-            Logger.Warn("PBRMaterial2: Normals have been created for the mesh: " + mesh.name);
+            Logger.Warn("PBR2Material: Normals have been created for the mesh: " + mesh.name);
         }
 
         const previousEffect = subMesh.effect;
@@ -1408,7 +1340,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
 
     private _prepareEffect2(
         mesh: AbstractMesh,
-        defines: PBRMaterial2Defines,
+        defines: PBR2MaterialDefines,
         onCompiled: Nullable<(effect: Effect) => void> = null,
         onError: Nullable<(effect: Effect, errors: string) => void> = null,
         useInstances: Nullable<boolean> = null,
@@ -1723,7 +1655,7 @@ export class PBRMaterial2 extends PBRBaseMaterial {
 
     private _prepareDefines2(
         mesh: AbstractMesh,
-        defines: PBRMaterial2Defines,
+        defines: PBR2MaterialDefines,
         useInstances: Nullable<boolean> = null,
         useClipPlane: Nullable<boolean> = null,
         useThinInstances: boolean = false
@@ -1756,8 +1688,6 @@ export class PBRMaterial2 extends PBRBaseMaterial {
             }
             if (scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
-                defines.BASE_WEIGHTDIRECTUV = 0;
-                defines.BASE_DIFFUSE_ROUGHNESSDIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
                 defines.OPACITYDIRECTUV = 0;
                 defines.EMISSIVEDIRECTUV = 0;
@@ -2118,4 +2048,4 @@ export class PBRMaterial2 extends PBRBaseMaterial {
     private _breakShaderLoadedCheck2 = false;
 }
 
-RegisterClass("BABYLON.PBRMaterial2", PBRMaterial2);
+RegisterClass("BABYLON.PBR2Material", PBR2Material);
