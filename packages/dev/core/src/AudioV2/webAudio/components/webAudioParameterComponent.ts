@@ -1,7 +1,8 @@
-import type { Nullable } from "../../../types";
-import type { _WebAudioEngine } from "../webAudioEngine";
-import { AudioParameterRampShape } from "../../audioParameter";
 import { _GetAudioParamCurveValues } from "core/AudioV2/audioUtils";
+import { Logger } from "../../../Misc/logger";
+import type { Nullable } from "../../../types";
+import { AudioParameterRampShape } from "../../audioParameter";
+import type { _WebAudioEngine } from "../webAudioEngine";
 
 /**
  * Maximum time in seconds to wait for an active ramp to finish before starting a new ramp.
@@ -11,10 +12,10 @@ import { _GetAudioParamCurveValues } from "core/AudioV2/audioUtils";
  * This is needed because short ramps are used to avoid pops and clicks when setting audio parameters, and we
  * don't want to throw an error if a short ramp is active.
  *
- * This constant is set to 10 milliseconds, which is short enough to avoid perceptual differences in most cases, but
+ * This constant is set to 11 milliseconds, which is short enough to avoid perceptual differences in most cases, but
  * long enough to allow for short ramps to be completed in a reasonable time frame.
  */
-const MaxWaitTime = 0.01;
+const MaxWaitTime = 0.011;
 
 /**
  * Minimum duration in seconds for a ramp to be considered valid.
@@ -30,7 +31,6 @@ export class _WebAudioParameterComponent {
     private _engine: _WebAudioEngine;
     private _param: AudioParam;
     private _targetValue: number;
-    private _timerId: any = null;
 
     /** @internal */
     constructor(engine: _WebAudioEngine, param: AudioParam) {
@@ -55,10 +55,6 @@ export class _WebAudioParameterComponent {
 
     /** @internal */
     public dispose(): void {
-        if (this._timerId) {
-            clearTimeout(this._timerId);
-            this._timerId = null;
-        }
         this._param = null!;
         this._engine = null!;
     }
@@ -67,14 +63,12 @@ export class _WebAudioParameterComponent {
      * Sets the target value of the audio parameter with an optional ramping duration and curve.
      *
      * If a ramp is close to finishing, it will wait for the ramp to finish before setting the new value; otherwise it
-     * will throw an error. We are required to throw an error because of a bug in Firefox that prevents active ramps
-     * from being cancelled with `cancelScheduledValues`. See https://bugzilla.mozilla.org/show_bug.cgi?id=1752775.
-     *
-     * Firefox also has an issue when queuing a new ramp immediately after an active ramp ends. Deferring the call to
-     * `setValueCurveAtTime` with a `setTimeout` works around this issue.
+     * will throw an error because of a bug in Firefox that prevents active ramps from being cancelled with
+     * `cancelScheduledValues`. See https://bugzilla.mozilla.org/show_bug.cgi?id=1752775. Other browsers do not have
+     * this issue, but we throw an error in all browsers to ensure consistent behavior.
      *
      * There are other similar WebAudio APIs for ramping parameters, (e.g. `linearRampToValueAtTime` and
-     * `exponentialRampToValueAtTime`) but they are currently not usable in Firefox and Meta Quest Chrome.
+     * `exponentialRampToValueAtTime`) but they don't work in Firefox and Meta Quest Chrome.
      *
      * It may be better in the long run to implement our own ramping logic with a WASM audio worklet instead of using
      * `setValueCurveAtTime`.
@@ -82,29 +76,25 @@ export class _WebAudioParameterComponent {
      * @internal
      */
     public setTargetValue(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
-        const startTime = this._engine.currentTime;
+        if (this._targetValue === value) {
+            return;
+        }
+
+        let startTime = this._engine.currentTime;
+
+        Logger.Log("---");
+        Logger.Log(`Try audio parameter curve @ ${startTime}, from: ${this._targetValue}, to: ${value}, duration: ${duration}.`);
 
         if (startTime < this._rampEndTime) {
-            const timeRemaining = this._rampEndTime - startTime;
+            const timeLeft = this._rampEndTime - startTime;
+            Logger.Log(`... time left: ${timeLeft}.`);
 
-            if (MaxWaitTime < timeRemaining) {
+            if (MaxWaitTime < timeLeft) {
                 throw new Error("Audio parameter not set. Wait for current ramp to finish.");
-            } else if (!this._engine._isUsingOfflineAudioContext) {
-                // Firefox requires a `setTimeout` call to occur after setValueCurveAtTime finishes its ramp, otherwise
-                // it does not apply the new ramp correctly.
-
-                // Note that we're not doing this for the offline audio context used for tests, so it is assumed that
-                // the tests will not use an offline audio context with Firefox (the tests currently use only Chrome).
-
-                if (this._timerId) {
-                    clearTimeout(this._timerId);
-                }
-                this._timerId = setTimeout(() => {
-                    this.setTargetValue(value, duration - timeRemaining, curve);
-                    this._timerId = null;
-                }, timeRemaining * 1000);
-
-                return;
+            } else {
+                Logger.Log(`Fit audio parameter curve, timeLeft: ${timeLeft}.`);
+                duration -= timeLeft;
+                startTime = this._rampEndTime;
             }
         }
 
@@ -117,8 +107,11 @@ export class _WebAudioParameterComponent {
             curve = AudioParameterRampShape.Linear;
         }
 
+        Logger.Log(`Set audio parameter curve @ ${startTime}, from: ${this._targetValue}, to: ${value}, duration: ${duration}.`);
+        Logger.Log("---");
+
         this._param.cancelScheduledValues(startTime);
-        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(curve, this.value, (this._targetValue = value)), startTime, duration);
+        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(curve, this._targetValue, (this._targetValue = value)), startTime, duration);
 
         this._rampEndTime = startTime + duration;
     }
