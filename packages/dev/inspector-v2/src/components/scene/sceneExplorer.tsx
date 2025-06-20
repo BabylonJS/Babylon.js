@@ -2,6 +2,7 @@
 import type { IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import type { ScrollToInterface } from "@fluentui/react-components/unstable";
 import type { ComponentType, FunctionComponent } from "react";
 
 import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
@@ -191,11 +192,16 @@ export const SceneExplorer: FunctionComponent<{
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, commands, scene, selectedEntity, setSelectedEntity } = props;
+    const { sections, commands, scene, selectedEntity } = props;
 
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
-
     const [sceneVersion, setSceneVersion] = useState(0);
+    const scrollViewRef = useRef<ScrollToInterface>(null);
+    const previousSelectedEntity = useRef(selectedEntity);
+    const setSelectedEntity = (entity: unknown) => {
+        previousSelectedEntity.current = entity;
+        props.setSelectedEntity?.(entity);
+    };
 
     // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
     // Then just reverse the array of nodes before returning it.
@@ -308,11 +314,15 @@ export const SceneExplorer: FunctionComponent<{
         },
         [scene, openItems, sections]
     );
+
+    // We only want the effect below to execute when the selectedEntity changes, so we use a ref to keep the latest version of getParentStack.
     const getParentStackRef = useRef(getParentStack);
     getParentStackRef.current = getParentStack;
 
+    const [isScrollToPending, setIsScrollToPending] = useState(false);
+
     useEffect(() => {
-        if (selectedEntity) {
+        if (selectedEntity && selectedEntity !== previousSelectedEntity.current) {
             const entity = selectedEntity as EntityBase;
             if (entity.uniqueId != undefined) {
                 const parentStack = getParentStackRef.current(entity);
@@ -322,10 +332,21 @@ export const SceneExplorer: FunctionComponent<{
                         newOpenItems.add(parent);
                     }
                     setOpenItems(newOpenItems);
+                    setIsScrollToPending(true);
                 }
             }
         }
-    }, [selectedEntity, setOpenItems]);
+    }, [selectedEntity, setOpenItems, setIsScrollToPending]);
+
+    useEffect(() => {
+        if (isScrollToPending) {
+            const selectedItemIndex = visibleItems.findIndex((item) => item.type === "entity" && item.entity === selectedEntity);
+            if (selectedItemIndex >= 0 && scrollViewRef.current) {
+                scrollViewRef.current.scrollTo(selectedItemIndex, "smooth");
+                setIsScrollToPending(false);
+            }
+        }
+    }, [isScrollToPending, selectedEntity, visibleItems]);
 
     const onOpenChange = useCallback(
         (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
@@ -340,7 +361,7 @@ export const SceneExplorer: FunctionComponent<{
     return (
         <div className={classes.rootDiv}>
             <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
-                <VirtualizerScrollView numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
+                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
                     {(index: number) => {
                         const item = visibleItems[index];
 
