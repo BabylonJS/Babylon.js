@@ -61,19 +61,14 @@ import {
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
 import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrendering";
+import { UVDefinesMixin } from "./uv.defines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-class StandardMaterialDefinesBase extends MaterialDefines {}
+class StandardMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
 
 /** @internal */
 export class StandardMaterialDefines extends ImageProcessingDefinesMixin(StandardMaterialDefinesBase) {
-    public MAINUV1 = false;
-    public MAINUV2 = false;
-    public MAINUV3 = false;
-    public MAINUV4 = false;
-    public MAINUV5 = false;
-    public MAINUV6 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
@@ -113,12 +108,6 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public FRESNEL = false;
     public NORMAL = false;
     public TANGENT = false;
-    public UV1 = false;
-    public UV2 = false;
-    public UV3 = false;
-    public UV4 = false;
-    public UV5 = false;
-    public UV6 = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
     public NUM_BONE_INFLUENCERS = 0;
