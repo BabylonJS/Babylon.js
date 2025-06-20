@@ -12,6 +12,7 @@ import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/st
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
+import type { AudioParameterRampShape } from "../audioParameter";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -347,6 +348,15 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         this._resumePromise = this._audioContext.resume();
         return this._resumePromise;
+    }
+
+    /** @internal */
+    public override setVolume(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
+        if (this._mainOut) {
+            this._mainOut.setVolume(value, duration, curve);
+        } else {
+            throw new Error("Main output not initialized yet.");
+        }
     }
 
     /** @internal */

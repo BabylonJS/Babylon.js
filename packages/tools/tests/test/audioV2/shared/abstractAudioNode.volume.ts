@@ -92,8 +92,10 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
         test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear curve", async ({ page }) => {
             await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
-                const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, { volume: 0 });
+                await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
+                const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
+                    volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
+                });
 
                 outputNode.setVolume(1, 1);
                 sound.play();
