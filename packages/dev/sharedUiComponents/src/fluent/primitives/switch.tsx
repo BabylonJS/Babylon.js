@@ -11,7 +11,7 @@ const useSwitchStyles = makeStyles({
         marginLeft: "auto",
     },
     indicator: {
-        marginRight: 0, // Remove the default right margin so the switch aligns well on the right side inside panels like the properties pane.
+        margin: 0, // Remove the default right margin so the switch aligns well on the right side inside panels like the properties pane.
     },
 });
 

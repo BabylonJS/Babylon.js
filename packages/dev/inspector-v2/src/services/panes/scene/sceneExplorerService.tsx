@@ -19,7 +19,7 @@ import { ShellServiceIdentity } from "../../shellService";
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 
 /**
- * Provides a scene explorer pane that enables browsing the scene graph and executing commands on entities.
+ * Allows new sections or commands to be added to the scene explorer pane.
  */
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
     /**
@@ -35,6 +35,9 @@ export interface ISceneExplorerService extends IService<typeof SceneExplorerServ
     addCommand<T extends EntityBase>(command: SceneExplorerEntityCommand<T>): IDisposable;
 }
 
+/**
+ * Provides a scene explorer pane that enables browsing the scene graph and executing commands on entities.
+ */
 export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerService], [ISceneContext, IShellService, ISelectionService]> = {
     friendlyName: "Scene Explorer",
     produces: [SceneExplorerServiceIdentity],
