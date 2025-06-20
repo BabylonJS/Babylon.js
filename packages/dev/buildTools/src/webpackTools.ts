@@ -224,24 +224,27 @@ export const commonDevWebpackConfiguration = (
  * Originally our build commands for our tools were running both dev and prod, outputted an unminified max.js file during CI. This impacted memory usage during
  * build and is not necessary for debugging since we offer source maps. We have since removed the dev step from our builds, but in order to preserve
  * backwards compatibility for users who may have been referencing the .max.js file directly, we now copy the minified file to a .max.js file
- * after the build is complete. This plugin will only run if the `copyMinToMax` option is set to true in the webpack configuration.
+ * after the build is complete. This plugin will only run if the `minToMax` option is set to true in the webpack configuration.
  */
 class CopyMinToMaxWebpackPlugin {
     apply(compiler: Compiler) {
         compiler.hooks.done.tap("CopyToMax", (stats) => {
             const outputPath = stats.compilation.outputOptions.path;
-            const file = stats.compilation.outputOptions.filename?.toString();
-            if (outputPath && file) {
-                const from = path.join(outputPath, file);
-                let to;
-                if (file.includes(".min.js")) {
-                    // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
-                    to = path.join(outputPath, file.replace(/\.min\.js$/, ".js"));
-                } else {
-                    // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
-                    to = path.join(outputPath, file.replace(/\.js$/, ".max.js"));
+            if (outputPath) {
+                for (const chunk of stats.compilation.chunks) {
+                    for (const file of chunk.files) {
+                        const from = path.join(outputPath, file);
+                        let to;
+                        if (file.includes(".min.js")) {
+                            // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
+                            to = path.join(outputPath, file.replace(/\.min\.js$/, ".js"));
+                        } else {
+                            // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
+                            to = path.join(outputPath, file.replace(/\.js$/, ".max.js"));
+                        }
+                        copyFile(from, to);
+                    }
                 }
-                copyFile(from, to);
             }
         });
     }
