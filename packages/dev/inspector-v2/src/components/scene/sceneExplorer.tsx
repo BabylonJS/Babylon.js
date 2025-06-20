@@ -8,7 +8,7 @@ import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, ToggleB
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { MoviesAndTvRegular } from "@fluentui/react-icons";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
@@ -36,6 +36,8 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      * An optional function that returns the children of a given entity.
      */
     getEntityChildren?: (entity: T) => readonly T[];
+
+    getEntityParent?: (entity: T) => Nullable<T>;
 
     /**
      * A function that returns the display name for a given entity.
@@ -122,7 +124,7 @@ type TreeItemData =
           type: "entity";
           entity: EntityBase;
           depth: number;
-          parent: Nullable<TreeItemValue>;
+          parent: TreeItemValue;
           hasChildren: boolean;
           title: string;
           icon?: ComponentType<{ entity: EntityBase }>;
@@ -235,7 +237,7 @@ export const SceneExplorer: FunctionComponent<{
 
     const visibleItems = useMemo(() => {
         const visibleItems: TreeItemData[] = [];
-        const entityParents = new Map<EntityBase, EntityBase>();
+        const entityParents = new Map<number, TreeItemValue>();
 
         visibleItems.push({
             type: "scene",
@@ -243,23 +245,25 @@ export const SceneExplorer: FunctionComponent<{
         });
 
         for (const section of sections) {
+            const rootEntities = section.getRootEntities(scene);
+
             visibleItems.push({
                 type: "section",
                 sectionName: section.displayName,
-                hasChildren: section.getRootEntities(scene).length > 0,
+                hasChildren: rootEntities.length > 0,
             });
 
             if (openItems.has(section.displayName)) {
                 let depth = 1;
                 TraverseGraph(
-                    section.getRootEntities(scene),
+                    rootEntities,
                     (entity) => {
                         if (openItems.has(entity.uniqueId) && section.getEntityChildren) {
                             const children = section.getEntityChildren(entity);
                             for (const child of children) {
-                                entityParents.set(child, entity);
+                                entityParents.set(child.uniqueId, entity.uniqueId);
                             }
-                            return section.getEntityChildren(entity);
+                            return children;
                         }
                         return null;
                     },
@@ -269,7 +273,7 @@ export const SceneExplorer: FunctionComponent<{
                             type: "entity",
                             entity,
                             depth,
-                            parent: entityParents.get(entity)?.uniqueId ?? section.displayName,
+                            parent: entityParents.get(entity.uniqueId) ?? section.displayName,
                             hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
                             title: section.getEntityDisplayName(entity),
                             icon: section.entityIcon,
@@ -284,6 +288,44 @@ export const SceneExplorer: FunctionComponent<{
 
         return visibleItems;
     }, [scene, sceneVersion, sections, openItems, itemsFilter]);
+
+    const getParentStack = useCallback(
+        (entity: EntityBase) => {
+            const parentStack: TreeItemValue[] = [];
+
+            for (const section of sections) {
+                for (let parent = section.getEntityParent?.(entity); parent; parent = section.getEntityParent?.(parent)) {
+                    parentStack.push(parent.uniqueId);
+                }
+
+                if (parentStack.length > 0 || section.getRootEntities(scene).includes(entity)) {
+                    parentStack.push(section.displayName);
+                    break;
+                }
+            }
+
+            return parentStack;
+        },
+        [scene, openItems, sections]
+    );
+    const getParentStackRef = useRef(getParentStack);
+    getParentStackRef.current = getParentStack;
+
+    useEffect(() => {
+        if (selectedEntity) {
+            const entity = selectedEntity as EntityBase;
+            if (entity.uniqueId != undefined) {
+                const parentStack = getParentStackRef.current(entity);
+                if (parentStack.length > 0) {
+                    const newOpenItems = new Set<TreeItemValue>(openItems);
+                    for (const parent of parentStack) {
+                        newOpenItems.add(parent);
+                    }
+                    setOpenItems(newOpenItems);
+                }
+            }
+        }
+    }, [selectedEntity, setOpenItems]);
 
     const onOpenChange = useCallback(
         (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
