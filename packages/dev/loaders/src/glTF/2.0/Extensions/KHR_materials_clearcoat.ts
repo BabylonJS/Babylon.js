@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { PBRMaterial2 } from "core/Materials/PBR/pbrMaterial2";
+import { PBR2Material } from "core/Materials/PBR/pbr2Material";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -73,7 +73,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadClearCoatPropertiesAsync(context: string, properties: IKHRMaterialsClearcoat, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBRMaterial2)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
