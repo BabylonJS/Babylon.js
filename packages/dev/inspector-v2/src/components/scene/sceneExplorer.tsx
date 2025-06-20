@@ -5,7 +5,7 @@ import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fl
 import type { ComponentType, FunctionComponent } from "react";
 
 import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, ToggleButton, Tooltip, TreeItemLayout } from "@fluentui/react-components";
-import { CubeTreeRegular, BeachRegular, BoardRegular, BoxMultipleRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
+import { MoviesAndTvRegular } from "@fluentui/react-icons";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
