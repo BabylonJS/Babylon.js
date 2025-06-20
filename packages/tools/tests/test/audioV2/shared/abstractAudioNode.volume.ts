@@ -95,7 +95,6 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 await AudioV2Test.CreateAudioEngineAsync(audioNodeType);
                 const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, { volume: 0 });
 
-                debugger;
                 outputNode.setVolume(1, 1);
                 sound.play();
                 await AudioV2Test.WaitAsync(1, () => {
