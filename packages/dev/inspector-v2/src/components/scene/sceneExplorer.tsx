@@ -38,6 +38,9 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      */
     getEntityChildren?: (entity: T) => readonly T[];
 
+    /**
+     * An optional function that returns the parent of a given entity.
+     */
     getEntityParent?: (entity: T) => Nullable<T>;
 
     /**
@@ -197,6 +200,7 @@ export const SceneExplorer: FunctionComponent<{
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [sceneVersion, setSceneVersion] = useState(0);
     const scrollViewRef = useRef<ScrollToInterface>(null);
+    // We only want to scroll to the selected item if it was externally selected (outside of SceneExplorer).
     const previousSelectedEntity = useRef(selectedEntity);
     const setSelectedEntity = (entity: unknown) => {
         previousSelectedEntity.current = entity;
@@ -336,8 +340,11 @@ export const SceneExplorer: FunctionComponent<{
                 }
             }
         }
+
+        previousSelectedEntity.current = selectedEntity;
     }, [selectedEntity, setOpenItems, setIsScrollToPending]);
 
+    // We need to wait for a render to complete before we can scroll to the item, hence the isScrollToPending.
     useEffect(() => {
         if (isScrollToPending) {
             const selectedItemIndex = visibleItems.findIndex((item) => item.type === "entity" && item.entity === selectedEntity);
