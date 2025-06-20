@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { BoxRegular, BranchRegular, CameraRegular, EyeRegular, EyeOffRegular, LightbulbRegular } from "@fluentui/react-icons";
+import { BoxRegular, BranchRegular, CameraRegular, EyeOffRegular, EyeRegular, LightbulbRegular } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
