@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
+import { expandToProperty } from "../../Misc/decorators";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
@@ -16,7 +15,7 @@ import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
+import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
@@ -68,31 +67,23 @@ import {
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
+import { UVDefinesMixin } from "../uv.defines";
+import { ImageProcessingMixin } from "../imageProcessing";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+
+class PBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
 
 /**
  * Manages the defines for the PBR Material.
  * @internal
  */
-export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialDefinesBase) {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-    public MAINUV1 = false;
-    public MAINUV2 = false;
-    public MAINUV3 = false;
-    public MAINUV4 = false;
-    public MAINUV5 = false;
-    public MAINUV6 = false;
-    public UV1 = false;
-    public UV2 = false;
-    public UV3 = false;
-    public UV4 = false;
-    public UV5 = false;
-    public UV6 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
@@ -256,25 +247,6 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
 
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = 0;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public EXPOSURE = false;
-    public MULTIVIEW = false;
-    public ORDER_INDEPENDENT_TRANSPARENCY = false;
-    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
-
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
     public TWOSIDEDLIGHTING = false;
@@ -323,6 +295,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     }
 }
 
+class PBRBaseMaterialBase extends ImageProcessingMixin(PushMaterial) {}
 /**
  * The Physically based material base class of BJS.
  *
@@ -332,7 +305,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
  * @see [WebGL](https://playground.babylonjs.com/#CGHTSM#1)
  * @see [WebGPU](https://playground.babylonjs.com/#CGHTSM#2)
  */
-export abstract class PBRBaseMaterial extends PushMaterial {
+export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
     /**
      * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
      */
@@ -841,46 +814,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @internal
      */
     public _enableSpecularAntiAliasing = false;
-
-    /**
-     * Default configuration related to image processing available in the PBR Material.
-     */
-    @serializeAsImageProcessingConfiguration()
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-
-    /**
-     * Keep track of the image processing observer to allow dispose and replace.
-     */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>> = null;
-
-    /**
-     * Attaches a new image processing configuration to the PBR Material.
-     * @param configuration
-     */
-    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
-        if (configuration === this._imageProcessingConfiguration) {
-            return;
-        }
-
-        // Detaches observer.
-        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-        }
-
-        // Pick the scene configuration if needed.
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-        } else {
-            this._imageProcessingConfiguration = configuration;
-        }
-
-        // Attaches observer.
-        if (this._imageProcessingConfiguration) {
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._markAllSubMeshesAsImageProcessingDirty();
-            });
-        }
-    }
 
     /**
      * Stores the available render targets.
