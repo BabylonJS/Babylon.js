@@ -103,9 +103,9 @@ SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/baseColorTexture/exte
 SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/rotation", baseColorTextureInterpolation.rotation);
 
 const metallicRoughnessTextureInterpolation = getTextureTransformTree("metallicTexture");
-SetInterpolationForKey("//materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/scale", metallicRoughnessTextureInterpolation.scale);
-SetInterpolationForKey("//materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/offset", metallicRoughnessTextureInterpolation.offset);
-SetInterpolationForKey("//materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/rotation", metallicRoughnessTextureInterpolation.rotation);
+SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/scale", metallicRoughnessTextureInterpolation.scale);
+SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/offset", metallicRoughnessTextureInterpolation.offset);
+SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/rotation", metallicRoughnessTextureInterpolation.rotation);
 
 SetInterpolationForKey("/materials/{}/emissiveFactor", [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3, () => 3)]);
 const normalTextureInterpolation = getTextureTransformTree("bumpTexture");
