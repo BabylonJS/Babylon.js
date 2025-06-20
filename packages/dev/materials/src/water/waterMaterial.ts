@@ -13,7 +13,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { ImageProcessingDefinesMixin } from "core/Materials/imageProcessingConfiguration.defines";
+import type { IImageProcessingConfigurationDefines } from "core/Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
@@ -47,9 +47,7 @@ import {
 
 import "core/Rendering/boundingBoxRenderer";
 
-class WaterMaterialDefinesBase extends MaterialDefines {}
-
-class WaterMaterialDefines extends ImageProcessingDefinesMixin(WaterMaterialDefinesBase) {
+class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
     public REFLECTION = false;
     public CLIPPLANE = false;
@@ -78,6 +76,22 @@ class WaterMaterialDefines extends ImageProcessingDefinesMixin(WaterMaterialDefi
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;
     public USE_WORLD_COORDINATES = false;
+
+    public IMAGEPROCESSING = false;
+    public VIGNETTE = false;
+    public VIGNETTEBLENDMODEMULTIPLY = false;
+    public VIGNETTEBLENDMODEOPAQUE = false;
+    public TONEMAPPING = 0;
+    public CONTRAST = false;
+    public EXPOSURE = false;
+    public COLORCURVES = false;
+    public COLORGRADING = false;
+    public COLORGRADING3D = false;
+    public SAMPLER3DGREENDEPTH = false;
+    public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
