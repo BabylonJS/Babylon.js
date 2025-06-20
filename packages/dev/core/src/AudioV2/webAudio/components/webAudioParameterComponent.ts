@@ -63,7 +63,24 @@ export class _WebAudioParameterComponent {
         this._engine = null!;
     }
 
-    /** @internal */
+    /**
+     * Sets the target value of the audio parameter with an optional ramping duration and curve.
+     *
+     * If a ramp is close to finishing, it will wait for the ramp to finish before setting the new value; otherwise it
+     * will throw an error. We are required to throw an error because of a bug in Firefox that prevents active ramps
+     * from being cancelled with `cancelScheduledValues`. See https://bugzilla.mozilla.org/show_bug.cgi?id=1752775.
+     *
+     * Firefox also has an issue when queuing a new ramp immediately after an active ramp ends. Deferring the call to
+     * `setValueCurveAtTime` with a `setTimeout` works around this issue.
+     *
+     * There are other similar WebAudio APIs for ramping parameters, (e.g. `linearRampToValueAtTime` and
+     * `exponentialRampToValueAtTime`) but they are currently not usable in Firefox and Meta Quest Chrome.
+     *
+     * It may be better in the long run to implement our own ramping logic with a WASM audio worklet instead of using
+     * `setValueCurveAtTime`.
+     *
+     * @internal
+     */
     public setTargetValue(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
         const startTime = this._engine.currentTime;
 
@@ -72,7 +89,13 @@ export class _WebAudioParameterComponent {
 
             if (MaxWaitTime < timeRemaining) {
                 throw new Error("Audio parameter not set. Wait for current ramp to finish.");
-            } else {
+            } else if (!this._engine._isUsingOfflineAudioContext) {
+                // Firefox requires a `setTimeout` call to occur after setValueCurveAtTime finishes its ramp, otherwise
+                // it does not apply the new ramp correctly.
+
+                // Note that we're not doing this for the offline audio context used for tests, so it is assumed that
+                // the tests will not use an offline audio context with Firefox (the tests currently use only Chrome).
+
                 if (this._timerId) {
                     clearTimeout(this._timerId);
                 }
@@ -80,6 +103,7 @@ export class _WebAudioParameterComponent {
                     this.setTargetValue(value, duration - timeRemaining, curve);
                     this._timerId = null;
                 }, timeRemaining * 1000);
+
                 return;
             }
         }
@@ -93,6 +117,7 @@ export class _WebAudioParameterComponent {
             curve = AudioParameterRampShape.Linear;
         }
 
+        this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(curve, this.value, (this._targetValue = value)), startTime, duration);
 
         this._rampEndTime = startTime + duration;
