@@ -5,6 +5,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Defines a block used to debug values going through it
@@ -65,6 +66,11 @@ export class ParticleDebugBlock extends NodeParticleBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Observable raised when data is collected
+     */
+    public onDataCollectedObservable = new Observable<ParticleDebugBlock>(undefined, true);
+
     public override _build(state: NodeParticleBuildState) {
         if (!this.input.isConnected) {
             this.output._storedFunction = null;
@@ -100,6 +106,8 @@ export class ParticleDebugBlock extends NodeParticleBlock {
                     break;
             }
 
+            this.onDataCollectedObservable.notifyObservers(this);
+
             return input;
         };
 
@@ -122,6 +130,11 @@ export class ParticleDebugBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
 
         this.stackSize = serializationObject.stackSize;
+    }
+
+    public override dispose(): void {
+        this.onDataCollectedObservable.clear();
+        super.dispose();
     }
 }
 
