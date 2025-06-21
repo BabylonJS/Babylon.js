@@ -559,6 +559,8 @@ export class ThinEngine extends AbstractEngine {
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
             disableMorphTargetTexture: false,
             textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
+            blendParametersPerTarget: false,
+            dualSourceBlending: false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -622,6 +624,21 @@ export class ThinEngine extends AbstractEngine {
             this._gl.RGB16_SNORM_EXT = 0x8f9a;
             this._gl.RGBA16_SNORM_EXT = 0x8f9b;
         }
+
+        const oesDrawBuffersIndexed = this._gl.getExtension("OES_draw_buffers_indexed");
+        this._caps.blendParametersPerTarget = oesDrawBuffersIndexed ? true : false;
+
+        if (oesDrawBuffersIndexed) {
+            this._gl.blendEquationSeparateIndexed = oesDrawBuffersIndexed.blendEquationSeparateiOES.bind(oesDrawBuffersIndexed);
+            this._gl.blendEquationIndexed = oesDrawBuffersIndexed.blendEquationiOES.bind(oesDrawBuffersIndexed);
+            this._gl.blendFuncSeparateIndexed = oesDrawBuffersIndexed.blendFuncSeparateiOES.bind(oesDrawBuffersIndexed);
+            this._gl.blendFuncIndexed = oesDrawBuffersIndexed.blendFunciOES.bind(oesDrawBuffersIndexed);
+            this._gl.colorMaskIndexed = oesDrawBuffersIndexed.colorMaskiOES.bind(oesDrawBuffersIndexed);
+            this._gl.disableIndexed = oesDrawBuffersIndexed.disableiOES.bind(oesDrawBuffersIndexed);
+            this._gl.enableIndexed = oesDrawBuffersIndexed.enableiOES.bind(oesDrawBuffersIndexed);
+        }
+
+        this._caps.dualSourceBlending = this._gl.getExtension("WEBGL_blend_func_extended") ? true : false;
 
         // Compressed formats
         if (this._caps.astc) {
@@ -2715,7 +2732,7 @@ export class ThinEngine extends AbstractEngine {
     public applyStates() {
         this._depthCullingState.apply(this._gl);
         this._stencilStateComposer.apply(this._gl);
-        this._alphaState.apply(this._gl);
+        this._alphaState.apply(this._gl, this._currentRenderTarget ? this._currentRenderTarget.textures!.length : 1);
 
         if (this._colorWriteChanged) {
             this._colorWriteChanged = false;
@@ -2754,8 +2771,7 @@ export class ThinEngine extends AbstractEngine {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
 
             this._alphaState.reset();
-            this._alphaMode = Constants.ALPHA_ADD;
-            this._alphaEquation = Constants.ALPHA_DISABLE;
+            this._resetAlphaMode();
 
             this._colorWrite = true;
             this._colorWriteChanged = true;

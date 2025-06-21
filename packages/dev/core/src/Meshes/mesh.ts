@@ -2571,7 +2571,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Alpha mode
         if (enableAlphaMode) {
-            engine.setAlphaMode(this._internalMeshDataInfo._effectiveMaterial.alphaMode);
+            const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
+            if (effectiveMaterial.alphaModes.length === 1) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            } else {
+                for (let i = 0; i < effectiveMaterial.alphaModes.length; i++) {
+                    const alphaMode = effectiveMaterial.alphaModes[i];
+                    engine.setAlphaMode(alphaMode !== undefined ? alphaMode : Constants.ALPHA_COMBINE, false, i);
+                }
+            }
         }
 
         let drawWrapper: Nullable<DrawWrapper>;

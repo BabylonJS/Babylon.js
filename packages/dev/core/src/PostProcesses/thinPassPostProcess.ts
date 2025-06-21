@@ -4,6 +4,17 @@ import { EffectWrapper } from "core/Materials/effectRenderer";
 import { Engine } from "../Engines/engine";
 
 /**
+ * Options used to create a ThinPassPostProcess.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface ThinPassPostProcessOptions extends EffectWrapperCreationOptions {
+    /**
+     * If dual source blending should be enabled (default: false)
+     */
+    enableDualSourceBlending?: boolean;
+}
+
+/**
  * PassPostProcess which produces an output the same as it's input
  */
 export class ThinPassPostProcess extends EffectWrapper {
@@ -29,14 +40,16 @@ export class ThinPassPostProcess extends EffectWrapper {
      * @param engine Engine to use to render the effect. If not provided, the last created engine will be used
      * @param options Options to configure the effect
      */
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPassPostProcessOptions) {
         super({
-            ...options,
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinPassPostProcess.FragmentUrl,
+            samplers: ["textureSampler2"],
+            defines: options?.enableDualSourceBlending ? "#define DUAL_SOURCE_BLENDING" : "",
+            ...options,
         });
     }
 }

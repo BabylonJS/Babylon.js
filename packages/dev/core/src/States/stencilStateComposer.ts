@@ -21,6 +21,11 @@ export class StencilStateComposer {
     protected _opDepthFail: number;
     protected _opStencilDepthPass: number;
 
+    protected _backFunc: number;
+    protected _backOpStencilFail: number;
+    protected _backOpDepthFail: number;
+    protected _backOpStencilDepthPass: number;
+
     public stencilGlobal: IStencilState;
     public stencilMaterial: IStencilState | undefined;
 
@@ -40,6 +45,19 @@ export class StencilStateComposer {
         }
 
         this._func = value;
+        this._isStencilFuncDirty = true;
+    }
+
+    public get backFunc(): number {
+        return this._func;
+    }
+
+    public set backFunc(value: number) {
+        if (this._backFunc === value) {
+            return;
+        }
+
+        this._backFunc = value;
         this._isStencilFuncDirty = true;
     }
 
@@ -108,6 +126,45 @@ export class StencilStateComposer {
         this._isStencilOpDirty = true;
     }
 
+    public get backOpStencilFail(): number {
+        return this._backOpStencilFail;
+    }
+
+    public set backOpStencilFail(value: number) {
+        if (this._backOpStencilFail === value) {
+            return;
+        }
+
+        this._backOpStencilFail = value;
+        this._isStencilOpDirty = true;
+    }
+
+    public get backOpDepthFail(): number {
+        return this._backOpDepthFail;
+    }
+
+    public set backOpDepthFail(value: number) {
+        if (this._backOpDepthFail === value) {
+            return;
+        }
+
+        this._backOpDepthFail = value;
+        this._isStencilOpDirty = true;
+    }
+
+    public get backOpStencilDepthPass(): number {
+        return this._backOpStencilDepthPass;
+    }
+
+    public set backOpStencilDepthPass(value: number) {
+        if (this._backOpStencilDepthPass === value) {
+            return;
+        }
+
+        this._backOpStencilDepthPass = value;
+        this._isStencilOpDirty = true;
+    }
+
     public get mask(): number {
         return this._mask;
     }
@@ -160,11 +217,15 @@ export class StencilStateComposer {
 
         this.enabled = stencilMaterialEnabled ? this.stencilMaterial!.enabled : this.stencilGlobal.enabled;
         this.func = stencilMaterialEnabled ? this.stencilMaterial!.func : this.stencilGlobal.func;
+        this.backFunc = stencilMaterialEnabled ? this.stencilMaterial!.backFunc : this.stencilGlobal.backFunc;
         this.funcRef = stencilMaterialEnabled ? this.stencilMaterial!.funcRef : this.stencilGlobal.funcRef;
         this.funcMask = stencilMaterialEnabled ? this.stencilMaterial!.funcMask : this.stencilGlobal.funcMask;
         this.opStencilFail = stencilMaterialEnabled ? this.stencilMaterial!.opStencilFail : this.stencilGlobal.opStencilFail;
         this.opDepthFail = stencilMaterialEnabled ? this.stencilMaterial!.opDepthFail : this.stencilGlobal.opDepthFail;
         this.opStencilDepthPass = stencilMaterialEnabled ? this.stencilMaterial!.opStencilDepthPass : this.stencilGlobal.opStencilDepthPass;
+        this.backOpStencilFail = stencilMaterialEnabled ? this.stencilMaterial!.backOpStencilFail : this.stencilGlobal.backOpStencilFail;
+        this.backOpDepthFail = stencilMaterialEnabled ? this.stencilMaterial!.backOpDepthFail : this.stencilGlobal.backOpDepthFail;
+        this.backOpStencilDepthPass = stencilMaterialEnabled ? this.stencilMaterial!.backOpStencilDepthPass : this.stencilGlobal.backOpStencilDepthPass;
         this.mask = stencilMaterialEnabled ? this.stencilMaterial!.mask : this.stencilGlobal.mask;
 
         if (!this.isDirty) {
@@ -189,13 +250,15 @@ export class StencilStateComposer {
 
         // Stencil func
         if (this._isStencilFuncDirty) {
-            gl.stencilFunc(this.func, this.funcRef, this.funcMask);
+            gl.stencilFuncSeparate(gl.FRONT, this.func, this.funcRef, this.funcMask);
+            gl.stencilFuncSeparate(gl.BACK, this.backFunc, this.funcRef, this.funcMask);
             this._isStencilFuncDirty = false;
         }
 
         // Stencil op
         if (this._isStencilOpDirty) {
-            gl.stencilOp(this.opStencilFail, this.opDepthFail, this.opStencilDepthPass);
+            gl.stencilOpSeparate(gl.FRONT, this.opStencilFail, this.opDepthFail, this.opStencilDepthPass);
+            gl.stencilOpSeparate(gl.BACK, this.backOpStencilFail, this.backOpDepthFail, this.backOpStencilDepthPass);
             this._isStencilOpDirty = false;
         }
     }

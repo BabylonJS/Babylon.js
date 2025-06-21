@@ -25,7 +25,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     /**
      * The target texture where the objects will be rendered.
      */
-    public targetTexture: FrameGraphTextureHandle;
+    public targetTexture: FrameGraphTextureHandle | FrameGraphTextureHandle[];
 
     /**
      * The depth attachment texture where the objects will be rendered (optional).
@@ -159,17 +159,19 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._renderer.particleSystemList = this.objectList.particleSystems;
         this._renderer.disableImageProcessing = this.disableImageProcessing;
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.targetTexture);
+        const targetTextures = Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
+
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(targetTextures[0]);
 
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
-            if (this.depthTexture === backbufferDepthStencilTextureHandle && this.targetTexture !== backbufferColorTextureHandle) {
+            if (this.depthTexture === backbufferDepthStencilTextureHandle && (targetTextures[0] !== backbufferColorTextureHandle || targetTextures.length > 1)) {
                 throw new Error(
                     `FrameGraphObjectRendererTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
                 );
             }
-            if (this.depthTexture !== backbufferDepthStencilTextureHandle && this.targetTexture === backbufferColorTextureHandle) {
+            if (this.depthTexture !== backbufferDepthStencilTextureHandle && targetTextures[0] === backbufferColorTextureHandle) {
                 throw new Error(
                     `FrameGraphObjectRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the target is the back buffer color`
                 );
@@ -183,7 +185,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             depthEnabled = true;
         }
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
+        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, targetTextures[0]);
         if (this.depthTexture !== undefined) {
             this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
@@ -195,7 +197,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.setRenderTarget(this.targetTexture);
+        pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
@@ -211,7 +213,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-            passDisabled.setRenderTarget(this.targetTexture);
+            passDisabled.setRenderTarget(targetTextures);
             passDisabled.setRenderTargetDepth(this.depthTexture);
             passDisabled.setExecuteFunc((_context) => {});
         }

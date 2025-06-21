@@ -2,6 +2,8 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
+import copyIcon from "../imgs/copy.svg";
 
 interface IHexLineComponentProps {
     label: string;
@@ -137,6 +139,19 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
         }
     }
 
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         let valueAsHex: string;
         if (this._propertyChange) {
@@ -175,6 +190,9 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
                                     this.updateValue(this.state.value, true);
                                 }}
                             />
+                        </div>
+                        <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                            <img src={copyIcon} alt="Copy" />
                         </div>
                     </div>
                 )}

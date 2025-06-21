@@ -35,7 +35,9 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
-        if (this.targetTexture === backbufferColorTextureHandle || this.depthTexture === backbufferDepthStencilTextureHandle) {
+        const targetTextures = Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
+
+        if (targetTextures[0] === backbufferColorTextureHandle || this.depthTexture === backbufferDepthStencilTextureHandle) {
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the back buffer color/depth textures are not allowed. Use regular textures instead.`);
         }
 
@@ -43,7 +45,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.targetTexture);
+        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(targetTextures[0]);
 
         let depthEnabled = false;
 
@@ -120,11 +122,11 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             if (!this.postProcess.disabled) {
                 context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
                     this.postProcess.bind();
-                    context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", this.targetTexture);
+                    context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", targetTextures[0]);
                     context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "historySampler", pingPongHandle);
                 });
             } else {
-                context.copyTexture(this.targetTexture);
+                context.copyTexture(targetTextures[0]);
             }
         });
 
@@ -133,7 +135,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setRenderTargetDepth(this.depthTexture);
         passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.targetTexture);
+            context.copyTexture(targetTextures[0]);
         });
 
         return pass;
