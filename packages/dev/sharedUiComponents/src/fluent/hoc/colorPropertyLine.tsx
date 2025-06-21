@@ -26,12 +26,14 @@ const ColorPropertyLine: FunctionComponent<ColorPropertyLineProps> = (props) => 
 };
 
 const ColorSliders: FunctionComponent<{ value: Color3 | Color4 }> = (props) => {
+    const { value: color } = props;
+
     return (
         <>
-            <SyncedSliderLine label="R" propertyKey="r" target={props.value} min={0} max={255} />
-            <SyncedSliderLine label="G" propertyKey="g" target={props.value} min={0} max={255} />
-            <SyncedSliderLine label="B" propertyKey="b" target={props.value} min={0} max={255} />
-            {props.value instanceof Color4 && <SyncedSliderLine label="A" propertyKey="a" target={props.value} min={0} max={1} />}
+            <SyncedSliderLine label="R" propertyKey="r" target={color} min={0} max={1} step={0.01} onChange={(value) => (color.r = value)} />
+            <SyncedSliderLine label="G" propertyKey="g" target={color} min={0} max={1} step={0.01} onChange={(value) => (color.g = value)} />
+            <SyncedSliderLine label="B" propertyKey="b" target={color} min={0} max={1} step={0.01} onChange={(value) => (color.b = value)} />
+            {color instanceof Color4 && <SyncedSliderLine label="A" propertyKey="a" target={color} min={0} max={1} step={0.01} onChange={(value) => (color.a = value)} />}
         </>
     );
 };

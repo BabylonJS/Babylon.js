@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
-import { Color3, CreateSphere, type ArcRotateCamera, type Nullable } from "core/index";
+import type { ArcRotateCamera, Nullable } from "core/index";
+
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { Scene } from "core/scene";
@@ -8,6 +9,8 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ShowInspector } from "../../src/inspector";
 
 import "core/Helpers/sceneHelpers";
+// For testing the Outline & Overlay section
+import "core/Rendering/outlineRenderer";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -21,10 +24,6 @@ const engine = new Engine(canvas, true, {
 
 const scene = new Scene(engine);
 (globalThis as any).scene = scene; // For debugging purposes
-
-const sphere = CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
-sphere.position.x = 3;
-sphere.overlayColor = new Color3(1, 1, 0.5);
 
 let camera: Nullable<ArcRotateCamera> = null;
 

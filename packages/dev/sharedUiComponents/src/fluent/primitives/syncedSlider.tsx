@@ -57,7 +57,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     return (
         <div className={classes.syncedSlider}>
             {props.min != undefined && props.max != undefined && <Slider {...props} className={classes.slider} value={value} onChange={handleSliderChange} step={props.step} />}
-            <Input className={classes.input} type="number" value={value.toFixed(2)} onChange={handleInputChange} />
+            <Input className={classes.input} type="number" value={value.toFixed(2)} onChange={handleInputChange} step={props.step} />
         </div>
     );
 };

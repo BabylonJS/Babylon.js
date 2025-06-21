@@ -13,7 +13,7 @@ import { MeshGeneralProperties } from "../../../components/properties/meshGenera
 import { MeshOutlineOverlayProperties } from "../../../components/properties/meshOutlineOverlayProperties";
 
 export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
-export const OutlineOverlayPropertiesSectionItentity = Symbol("OutlineAndOverlay");
+export const OutlineOverlayPropertiesSectionItentity = Symbol("Outline & Overlay");
 
 export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",

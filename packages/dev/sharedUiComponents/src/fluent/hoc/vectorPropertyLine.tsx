@@ -26,13 +26,13 @@ const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Ve
 };
 
 const VectorSliders: FunctionComponent<{ value: Vector3 | Vector4 }> = (props) => {
-    const { value } = props;
+    const { value: vector } = props;
     return (
         <>
-            <SyncedSliderLine label="X" propertyKey="x" target={value} />
-            <SyncedSliderLine label="Y" propertyKey="y" target={value} />
-            <SyncedSliderLine label="Z" propertyKey="z" target={value} />
-            {value instanceof Vector4 && <SyncedSliderLine label="W" propertyKey="w" target={value} />}
+            <SyncedSliderLine label="X" propertyKey="x" target={vector} onChange={(value) => (vector.x = value)} />
+            <SyncedSliderLine label="Y" propertyKey="y" target={vector} onChange={(value) => (vector.y = value)} />
+            <SyncedSliderLine label="Z" propertyKey="z" target={vector} onChange={(value) => (vector.z = value)} />
+            {vector instanceof Vector4 && <SyncedSliderLine label="W" propertyKey="w" target={vector} onChange={(value) => (vector.w = value)} />}
         </>
     );
 };
