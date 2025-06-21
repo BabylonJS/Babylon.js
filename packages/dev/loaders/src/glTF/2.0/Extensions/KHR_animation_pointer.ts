@@ -97,26 +97,29 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
             throw new Error(`${extensionContext}: Pointer is missing`);
         }
 
+        let obj: { object: any; info: any };
         try {
-            const obj = this._pathToObjectConverter.convert(pointer);
-            if (!obj.info.interpolation) {
-                throw new Error(`${extensionContext}/pointer: Interpolation is missing`);
-            }
-            return this._loader._loadAnimationChannelFromTargetInfoAsync(
-                context,
-                animationContext,
-                animation,
-                channel,
-                {
-                    object: obj.object,
-                    info: obj.info.interpolation,
-                },
-                onLoad
-            );
+            obj = this._pathToObjectConverter.convert(pointer);
         } catch (e) {
             Logger.Warn(`${extensionContext}/pointer: Invalid pointer (${pointer}) skipped`);
             return null;
         }
+
+        if (!obj.info.interpolation) {
+            throw new Error(`${extensionContext}/pointer: Interpolation is missing`);
+        }
+
+        return this._loader._loadAnimationChannelFromTargetInfoAsync(
+            context,
+            animationContext,
+            animation,
+            channel,
+            {
+                object: obj.object,
+                info: obj.info.interpolation,
+            },
+            onLoad
+        );
     }
 }
 
