@@ -4424,7 +4424,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     continue;
                 }
             }
-            
+
             // Check if any ancestor is in the skipped list
             let shouldSkip = false;
             let ancestor = mesh.parent;
@@ -4435,7 +4435,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 }
                 ancestor = ancestor.parent;
             }
-            
+
             if (shouldSkip) {
                 skippedLODMeshes.push(mesh);
                 continue;
