@@ -10,7 +10,7 @@ import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interac
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import type { IAnimation, IScene, IKHRInteractivity } from "../glTFLoaderInterfaces";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 const NAME = "KHR_interactivity";
 
