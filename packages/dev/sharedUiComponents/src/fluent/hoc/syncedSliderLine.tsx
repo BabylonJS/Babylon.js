@@ -4,7 +4,7 @@ import { SyncedSliderInput } from "../primitives/syncedSlider";
 import type { SyncedSliderProps } from "../primitives/syncedSlider";
 
 export type SyncedSliderLineProps<O, K> = PropertyLineProps &
-    Omit<SyncedSliderProps, "value" | "onChange"> & {
+    Omit<SyncedSliderProps, "value"> & {
         /**
          * String key
          */
@@ -13,10 +13,6 @@ export type SyncedSliderLineProps<O, K> = PropertyLineProps &
          * target where O[K] is a number
          */
         target: O;
-        /**
-         * Callback when either the slider or input value changes
-         */
-        onChange?: (value: number) => void;
     };
 
 /**
@@ -32,14 +28,7 @@ export type SyncedSliderLineProps<O, K> = PropertyLineProps &
 export const SyncedSliderLine = <O extends Record<K, number>, K extends PropertyKey>(props: SyncedSliderLineProps<O, K>): React.ReactElement => {
     return (
         <PropertyLine {...props}>
-            <SyncedSliderInput
-                {...props}
-                value={props.target[props.propertyKey]}
-                onChange={(val) => {
-                    props.target[props.propertyKey] = val as O[K];
-                    props.onChange?.(val);
-                }}
-            />
+            <SyncedSliderInput {...props} value={props.target[props.propertyKey]} />
         </PropertyLine>
     );
 };

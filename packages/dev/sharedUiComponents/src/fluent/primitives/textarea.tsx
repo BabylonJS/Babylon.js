@@ -1,10 +1,15 @@
 import type { TextareaProps as FluentTextareaProps } from "@fluentui/react-components";
 import { Textarea as FluentTextarea, makeStyles } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
+import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useInputStyles = makeStyles({
     textarea: {},
 });
+
+export type InputProps = BaseComponentProps<string> & {
+    placeholder?: string;
+};
 
 /**
  * This is a texarea box that stops propagation of change/keydown events

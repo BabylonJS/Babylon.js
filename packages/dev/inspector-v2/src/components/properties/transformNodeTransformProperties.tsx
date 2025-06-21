@@ -3,7 +3,7 @@ import type { TransformNode, Vector3 } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { VectorPropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -30,9 +30,9 @@ export const TransformNodeTransformProperties: FunctionComponent<{ node: Transfo
 
     return (
         <>
-            <VectorPropertyLine key="PositionTransform" label="Position" description="The position of the transform node." vector={position} />
-            <VectorPropertyLine key="RotationTransform" label="Rotation" description="The rotation of the transform node." vector={rotation} />
-            <VectorPropertyLine key="ScalingTransform" label="Scaling" description="The scaling of the transform node." vector={scaling} />
+            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (transformNode.position = val)} />
+            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (transformNode.scaling = val)} />
+            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (transformNode.scaling = val)} />
         </>
     );
 };

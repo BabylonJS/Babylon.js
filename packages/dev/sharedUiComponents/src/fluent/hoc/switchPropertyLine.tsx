@@ -1,9 +1,8 @@
-import type { SwitchProps } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
 import { Switch } from "../primitives/switch";
-
+import type { SwitchProps } from "../primitives/switch";
 /**
  * Wraps a switch in a property line
  * @param props - The properties for the switch and property line

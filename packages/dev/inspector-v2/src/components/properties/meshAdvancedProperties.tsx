@@ -21,15 +21,15 @@ export const MeshAdvancedProperties: FunctionComponent<{ mesh: AbstractMesh }> =
                 <SwitchPropertyLine
                     label="Compute bones using shaders"
                     description="Whether to compute bones using shaders."
-                    checked={computeBonesUsingShaders}
-                    onChange={(_, data) => (mesh.computeBonesUsingShaders = data.checked)}
+                    value={computeBonesUsingShaders}
+                    onChange={(checked) => (mesh.computeBonesUsingShaders = checked)}
                 />
             )}
             <SwitchPropertyLine
                 label="Check collisions"
                 description="Whether to check for collisions."
-                checked={checkCollisions}
-                onChange={(_, data) => (mesh.checkCollisions = data.checked)}
+                value={checkCollisions}
+                onChange={(checked) => (mesh.checkCollisions = checked)}
             />
         </>
     );

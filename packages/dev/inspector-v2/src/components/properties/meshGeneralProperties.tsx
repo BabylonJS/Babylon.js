@@ -24,8 +24,8 @@ export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; sele
                 key="MeshIsEnabled"
                 label="Is enabled"
                 description="Whether the mesh is enabled or not."
-                checked={isEnabled}
-                onChange={(_, data) => mesh.setEnabled(data.checked)}
+                value={isEnabled}
+                onChange={(checked) => mesh.setEnabled(checked)}
             />
             {material && (!material.reservedDataStore || !material.reservedDataStore.hidden) && (
                 <LinkPropertyLine
