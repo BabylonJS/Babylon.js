@@ -12,14 +12,15 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
+import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
+import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
+import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
-import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
-import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
@@ -173,6 +174,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
+            NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
             TransformNodePropertiesServiceDefinition,
 

@@ -18,6 +18,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
             order: 0,
             getRootEntities: (scene) => scene.rootNodes,
             getEntityChildren: (node) => node.getChildren(),
+            getEntityParent: (node) => node.parent,
             getEntityDisplayName: (node) => node.name,
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (

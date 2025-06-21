@@ -22,11 +22,11 @@ function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: 
 }
 
 export const TransformNodeTransformProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
-    const { node: transformNode } = props;
+    const { node } = props;
 
-    const position = useVector3Property(transformNode, "position");
-    const rotation = useVector3Property(transformNode, "rotation");
-    const scaling = useVector3Property(transformNode, "scaling");
+    const position = useVector3Property(node, "position");
+    const rotation = useVector3Property(node, "rotation");
+    const scaling = useVector3Property(node, "scaling");
 
     return (
         <>
