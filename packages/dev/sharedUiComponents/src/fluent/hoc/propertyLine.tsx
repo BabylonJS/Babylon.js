@@ -1,7 +1,7 @@
 import { Body1Strong, Button, InfoLabel, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
-import type { FunctionComponent, PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { useContext, useState, forwardRef } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
 import { ToolContext } from "./fluentToolWrapper";
