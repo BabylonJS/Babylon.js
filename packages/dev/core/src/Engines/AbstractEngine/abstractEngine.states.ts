@@ -73,6 +73,12 @@ declare module "../../Engines/abstractEngine" {
         getStencilOperationPass(): number;
 
         /**
+         * Gets the current back stencil operation when stencil passes
+         * @returns a number defining back stencil operation to use when stencil passes
+         */
+        getStencilBackOperationPass(): number;
+
+        /**
          * Gets a boolean indicating if stencil buffer is enabled
          * @returns the current stencil buffer state
          */
@@ -102,6 +108,12 @@ declare module "../../Engines/abstractEngine" {
         getStencilFunction(): number;
 
         /**
+         * Gets the current back stencil function
+         * @returns a number defining the back stencil function to use
+         */
+        getStencilBackFunction(): number;
+
+        /**
          * Gets the current stencil reference value
          * @returns a number defining the stencil reference value to use
          */
@@ -118,6 +130,12 @@ declare module "../../Engines/abstractEngine" {
          * @param stencilFunc defines the new stencil function to use
          */
         setStencilFunction(stencilFunc: number): void;
+
+        /**
+         * Sets the current back stencil function
+         * @param stencilFunc defines the new back stencil function to use
+         */
+        setStencilBackFunction(stencilFunc: number): void;
 
         /**
          * Sets the current stencil reference
@@ -138,10 +156,22 @@ declare module "../../Engines/abstractEngine" {
         getStencilOperationFail(): number;
 
         /**
+         * Gets the current back stencil operation when stencil fails
+         * @returns a number defining back stencil operation to use when stencil fails
+         */
+        getStencilBackOperationFail(): number;
+
+        /**
          * Gets the current stencil operation when depth fails
          * @returns a number defining stencil operation to use when depth fails
          */
         getStencilOperationDepthFail(): number;
+
+        /**
+         * Gets the current back stencil operation when depth fails
+         * @returns a number defining back stencil operation to use when depth fails
+         */
+        getStencilBackOperationDepthFail(): number;
 
         /**
          * Sets the stencil operation to use when stencil fails
@@ -150,16 +180,34 @@ declare module "../../Engines/abstractEngine" {
         setStencilOperationFail(operation: number): void;
 
         /**
+         * Sets the back stencil operation to use when stencil fails
+         * @param operation defines the back stencil operation to use when stencil fails
+         */
+        setStencilBackOperationFail(operation: number): void;
+
+        /**
          * Sets the stencil operation to use when depth fails
          * @param operation defines the stencil operation to use when depth fails
          */
         setStencilOperationDepthFail(operation: number): void;
 
         /**
+         * Sets the back stencil operation to use when depth fails
+         * @param operation defines the back stencil operation to use when depth fails
+         */
+        setStencilBackOperationDepthFail(operation: number): void;
+
+        /**
          * Sets the stencil operation to use when stencil passes
          * @param operation defines the stencil operation to use when stencil passes
          */
         setStencilOperationPass(operation: number): void;
+
+        /**
+         * Sets the back stencil operation to use when stencil passes
+         * @param operation defines the back stencil operation to use when stencil passes
+         */
+        setStencilBackOperationPass(operation: number): void;
 
         /**
          * Caches the state of the stencil buffer
@@ -183,15 +231,17 @@ declare module "../../Engines/abstractEngine" {
         /**
          * Gets the current alpha mode
          * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+         * @param targetIndex defines the index of the target to get the alpha mode for (default is 0)
          * @returns the current alpha mode
          */
-        getAlphaMode(): number;
+        getAlphaMode(targetIndex?: number): number;
 
         /**
          * Gets the current alpha equation.
+         * @param targetIndex defines the index of the target to get the alpha equation for (default is 0)
          * @returns the current alpha equation
          */
-        getAlphaEquation(): number;
+        getAlphaEquation(targetIndex?: number): number;
     }
 }
 
@@ -250,6 +300,10 @@ AbstractEngine.prototype.getStencilFunction = function (): number {
     return this._stencilState.stencilFunc;
 };
 
+AbstractEngine.prototype.getStencilBackFunction = function (): number {
+    return this._stencilState.stencilBackFunc;
+};
+
 AbstractEngine.prototype.getStencilFunctionReference = function (): number {
     return this._stencilState.stencilFuncRef;
 };
@@ -260,6 +314,10 @@ AbstractEngine.prototype.getStencilFunctionMask = function (): number {
 
 AbstractEngine.prototype.setStencilFunction = function (stencilFunc: number) {
     this._stencilState.stencilFunc = stencilFunc;
+};
+
+AbstractEngine.prototype.setStencilBackFunction = function (stencilFunc: number) {
+    this._stencilState.stencilBackFunc = stencilFunc;
 };
 
 AbstractEngine.prototype.setStencilFunctionReference = function (reference: number): void {
@@ -274,24 +332,48 @@ AbstractEngine.prototype.getStencilOperationFail = function (): number {
     return this._stencilState.stencilOpStencilFail;
 };
 
+AbstractEngine.prototype.getStencilBackOperationFail = function (): number {
+    return this._stencilState.stencilBackOpStencilFail;
+};
+
 AbstractEngine.prototype.getStencilOperationDepthFail = function (): number {
     return this._stencilState.stencilOpDepthFail;
+};
+
+AbstractEngine.prototype.getStencilBackOperationDepthFail = function (): number {
+    return this._stencilState.stencilBackOpDepthFail;
 };
 
 AbstractEngine.prototype.getStencilOperationPass = function (): number {
     return this._stencilState.stencilOpStencilDepthPass;
 };
 
+AbstractEngine.prototype.getStencilBackOperationPass = function (): number {
+    return this._stencilState.stencilBackOpStencilDepthPass;
+};
+
 AbstractEngine.prototype.setStencilOperationFail = function (operation: number): void {
     this._stencilState.stencilOpStencilFail = operation;
+};
+
+AbstractEngine.prototype.setStencilBackOperationFail = function (operation: number): void {
+    this._stencilState.stencilBackOpStencilFail = operation;
 };
 
 AbstractEngine.prototype.setStencilOperationDepthFail = function (operation: number): void {
     this._stencilState.stencilOpDepthFail = operation;
 };
 
+AbstractEngine.prototype.setStencilBackOperationDepthFail = function (operation: number): void {
+    this._stencilState.stencilBackOpDepthFail = operation;
+};
+
 AbstractEngine.prototype.setStencilOperationPass = function (operation: number): void {
     this._stencilState.stencilOpStencilDepthPass = operation;
+};
+
+AbstractEngine.prototype.setStencilBackOperationPass = function (operation: number): void {
+    this._stencilState.stencilBackOpStencilDepthPass = operation;
 };
 
 AbstractEngine.prototype.cacheStencilState = function (): void {
@@ -318,10 +400,10 @@ AbstractEngine.prototype.setAlphaConstants = function (r: number, g: number, b: 
     this._alphaState.setAlphaBlendConstants(r, g, b, a);
 };
 
-AbstractEngine.prototype.getAlphaMode = function (): number {
-    return this._alphaMode;
+AbstractEngine.prototype.getAlphaMode = function (targetIndex = 0): number {
+    return this._alphaMode[targetIndex];
 };
 
-AbstractEngine.prototype.getAlphaEquation = function (): number {
-    return this._alphaEquation;
+AbstractEngine.prototype.getAlphaEquation = function (targetIndex = 0): number {
+    return this._alphaEquation[targetIndex];
 };

@@ -111,6 +111,20 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /**
+     * Clears all attachments (color(s) + depth/stencil) of the current render target
+     * @param color Defines the color to use
+     * @param attachments The attachments to clear
+     * @param backBuffer Defines if the back buffer must be cleared
+     * @param depth Defines if the depth buffer must be cleared
+     * @param stencil Defines if the stencil buffer must be cleared
+     */
+    public clearAttachments(color: Nullable<IColor4Like>, attachments: number[], backBuffer: boolean, depth: boolean, stencil?: boolean): void {
+        this._applyRenderTarget();
+        this._engine.bindAttachments(attachments);
+        this._engine.clear(color, backBuffer, depth, stencil);
+    }
+
+    /**
      * Binds the attachments to the current render target
      * @param attachments The attachments to bind
      */
