@@ -1,4 +1,5 @@
 import type { FunctionComponent } from "react";
+import { forwardRef } from "react";
 
 import type { PropertyLineProps } from "./propertyLine";
 import { PropertyLine } from "./propertyLine";
@@ -17,13 +18,13 @@ export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & Propert
  * @param props - PropertyLine props, replacing children with a color object so that we can properly display the color
  * @returns Component wrapping a colorPicker component (coming soon) with a property line
  */
-const ColorPropertyLine: FunctionComponent<ColorPropertyLineProps> = (props) => {
+const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((props, ref) => {
     return (
-        <PropertyLine {...props} expandedContent={<ColorSliders {...props} />}>
+        <PropertyLine ref={ref} {...props} expandedContent={<ColorSliders {...props} />}>
             <ColorPickerPopup {...props} />
         </PropertyLine>
     );
-};
+});
 
 const ColorSliders: FunctionComponent<{ value: Color3 | Color4 }> = (props) => {
     const { value: color } = props;

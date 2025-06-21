@@ -2,7 +2,7 @@ import { Body1Strong, Button, InfoLabel, ToggleButton, makeStyles, tokens } from
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
-import { useContext, useState } from "react";
+import { useContext, useState, forwardRef } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
 import { ToolContext } from "./fluentToolWrapper";
 
@@ -76,10 +76,14 @@ export type PropertyLineProps = {
     expandedContent?: JSX.Element;
 };
 
-export const LineContainer: FunctionComponent<PropsWithChildren> = (props) => {
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren>((props, ref) => {
     const classes = usePropertyLineStyles();
-    return <div className={classes.container}>{props.children}</div>;
-};
+    return (
+        <div ref={ref} className={classes.container}>
+            {props.children}
+        </div>
+    );
+});
 
 export type BaseComponentProps<T> = {
     value: T;
@@ -95,7 +99,7 @@ export type BaseComponentProps<T> = {
  * @returns A React element representing the property line.
  *
  */
-export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps>> = (props) => {
+export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps>>((props, ref) => {
     const classes = usePropertyLineStyles();
     const [expanded, setExpanded] = useState(false);
 
@@ -104,7 +108,7 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
     const { disableCopy } = useContext(ToolContext);
 
     return (
-        <LineContainer>
+        <LineContainer ref={ref}>
             <div className={classes.line}>
                 <InfoLabel className={classes.label} info={description}>
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
@@ -135,4 +139,4 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
             </Collapse>
         </LineContainer>
     );
-};
+});
