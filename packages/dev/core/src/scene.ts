@@ -80,7 +80,7 @@ import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { MultiMaterial } from "./Materials/multiMaterial";
 import type { Effect } from "./Materials/effect";
 import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
-import { Mesh } from "./Meshes/mesh";
+import type { Mesh } from "./Meshes/mesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
@@ -4344,7 +4344,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (hasLODMeshes) {
             for (let i = 0; i < meshes.length; i++) {
                 const mesh = meshes[i];
-                if (mesh instanceof Mesh && (mesh as Mesh).hasLODLevels) {
+                if ((mesh as Mesh).hasLODLevels) {
                     const lodLevels = (mesh as Mesh).getLODLevels();
                     // Map each LOD mesh to its parent
                     for (const lodLevel of lodLevels) {
