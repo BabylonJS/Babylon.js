@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { TransformNode } from "core/index";
+import type { Node } from "core/index";
 
 import type { FunctionComponent } from "react";
 
@@ -8,7 +8,7 @@ import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLi
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
-export const TransformNodeGeneralProperties: FunctionComponent<{ node: TransformNode; setSelectedEntity: (entity: unknown) => void }> = (props) => {
+export const NodeGeneralProperties: FunctionComponent<{ node: Node; setSelectedEntity: (entity: unknown) => void }> = (props) => {
     const { node, setSelectedEntity } = props;
 
     const parent = useObservableState(() => node.parent, useInterceptObservable("property", node, "parent"));
