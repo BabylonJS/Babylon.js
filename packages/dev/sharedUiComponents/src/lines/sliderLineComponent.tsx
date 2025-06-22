@@ -146,8 +146,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return (
             <SyncedSliderLine
                 label={this.props.label}
-                target={this.state}
-                propertyKey={"value"}
+                value={this.state.value}
                 onChange={(val) => this.onChange(val)}
                 step={this.props.step}
                 min={this.props.minimum}

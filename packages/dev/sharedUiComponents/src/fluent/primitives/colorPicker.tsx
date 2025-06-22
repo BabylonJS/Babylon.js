@@ -86,8 +86,12 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     const [popoverOpen, setPopoverOpen] = useState(false);
 
     useEffect(() => {
-        props.onChange(color);
+        props.onChange(color); // Ensures the parent is notified when color changes from within colorPicker
     }, [color]);
+
+    useEffect(() => {
+        setColor(props.value); // Ensures the trigger color updates when props.value changes
+    }, [props.value]);
 
     const handleChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
         let color: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);

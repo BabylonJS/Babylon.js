@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 
-import type { PropertyLineProps } from "./propertyLine";
+import type { BaseComponentProps, PropertyLineProps } from "./propertyLine";
 import { PropertyLine } from "./propertyLine";
 import { SyncedSliderLine } from "./syncedSliderLine";
 
@@ -19,22 +19,39 @@ export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & Propert
  * @returns Component wrapping a colorPicker component (coming soon) with a property line
  */
 const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((props, ref) => {
+    const [color, setColor] = useState(props.value);
+    const onChange = (value: Color3 | Color4) => {
+        setColor(value);
+        props.onChange(value);
+    };
     return (
-        <PropertyLine ref={ref} {...props} expandedContent={<ColorSliders {...props} />}>
-            <ColorPickerPopup {...props} />
+        <PropertyLine ref={ref} {...props} expandedContent={<ColorSliders {...props} value={color} onChange={onChange} />}>
+            <ColorPickerPopup {...props} value={color} />
         </PropertyLine>
     );
 });
 
-const ColorSliders: FunctionComponent<{ value: Color3 | Color4 }> = (props) => {
-    const { value: color } = props;
+const ColorSliders: FunctionComponent<BaseComponentProps<Color3 | Color4>> = (props) => {
+    const [color, setColor] = useState(props.value);
+    const onChange = (value: number, key: "r" | "g" | "b" | "a") => {
+        let newColor;
+        if (key === "a") {
+            newColor = Color4.FromColor3(color, value);
+        } else {
+            newColor = color.clone();
+            newColor[key] = value / 255.0;
+        }
+
+        setColor(newColor); // Create a new object to trigger re-render
+        props.onChange(newColor);
+    };
 
     return (
         <>
-            <SyncedSliderLine label="R" value={color.r * 255.0} min={0} max={255} step={1} onChange={(value) => (color.r = value / 255.0)} />
-            <SyncedSliderLine label="G" value={color.g * 255.0} min={0} max={255} step={1} onChange={(value) => (color.g = value / 255.0)} />
-            <SyncedSliderLine label="B" value={color.b * 255.0} min={0} max={255} step={1} onChange={(value) => (color.b = value / 255.0)} />
-            {color instanceof Color4 && <SyncedSliderLine label="A" value={color.a} min={0} max={1} step={0.01} onChange={(value) => (color.a = value)} />}
+            <SyncedSliderLine label="R" value={color.r * 255.0} min={0} max={255} step={1} onChange={(value) => onChange(value, "r")} />
+            <SyncedSliderLine label="G" value={color.g * 255.0} min={0} max={255} step={1} onChange={(value) => onChange(value, "g")} />
+            <SyncedSliderLine label="B" value={color.b * 255.0} min={0} max={255} step={1} onChange={(value) => onChange(value, "b")} />
+            {color instanceof Color4 && <SyncedSliderLine label="A" value={color.a} min={0} max={1} step={0.01} onChange={(value) => onChange(value, "a")} />}
         </>
     );
 };
