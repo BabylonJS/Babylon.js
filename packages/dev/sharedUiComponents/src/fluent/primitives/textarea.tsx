@@ -7,7 +7,7 @@ const useInputStyles = makeStyles({
     textarea: {},
 });
 
-export type InputProps = BaseComponentProps<string> & {
+export type TextareaProps = BaseComponentProps<string> & {
     placeholder?: string;
 };
 
