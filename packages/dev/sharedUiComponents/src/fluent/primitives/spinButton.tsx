@@ -1,4 +1,4 @@
-import { makeStyles, tokens, SpinButton as FluentSpinButton } from "@fluentui/react-components";
+import { makeStyles, SpinButton as FluentSpinButton } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 import { useCallback, useState } from "react";
@@ -8,12 +8,6 @@ const useSpinStyles = makeStyles({
     base: {
         display: "flex",
         flexDirection: "column",
-        maxWidth: "500px",
-
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "> label": {
-            marginBottom: tokens.spacingVerticalXXS,
-        },
     },
 });
 

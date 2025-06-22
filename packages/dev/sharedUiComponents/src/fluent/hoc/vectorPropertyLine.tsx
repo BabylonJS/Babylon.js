@@ -29,10 +29,10 @@ const VectorSliders: FunctionComponent<{ value: Vector3 | Vector4 }> = (props) =
     const { value: vector } = props;
     return (
         <>
-            <SyncedSliderLine label="X" propertyKey="x" target={vector} onChange={(value) => (vector.x = value)} />
-            <SyncedSliderLine label="Y" propertyKey="y" target={vector} onChange={(value) => (vector.y = value)} />
-            <SyncedSliderLine label="Z" propertyKey="z" target={vector} onChange={(value) => (vector.z = value)} />
-            {vector instanceof Vector4 && <SyncedSliderLine label="W" propertyKey="w" target={vector} onChange={(value) => (vector.w = value)} />}
+            <SyncedSliderLine label="X" value={vector.x} onChange={(value) => (vector.x = value)} />
+            <SyncedSliderLine label="Y" value={vector.y} onChange={(value) => (vector.y = value)} />
+            <SyncedSliderLine label="Z" value={vector.z} onChange={(value) => (vector.z = value)} />
+            {vector instanceof Vector4 && <SyncedSliderLine label="W" value={vector.w} onChange={(value) => (vector.w = value)} />}
         </>
     );
 };

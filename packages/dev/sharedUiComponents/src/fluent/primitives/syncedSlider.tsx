@@ -1,5 +1,5 @@
 import type { SliderOnChangeData } from "@fluentui/react-components";
-import { makeStyles, Slider } from "@fluentui/react-components";
+import { makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { Input } from "./input";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ const useSyncedSliderStyles = makeStyles({
     syncedSlider: {
         display: "flex",
         alignItems: "center",
-        gap: "1rem",
+        gap: tokens.spacingHorizontalXXS, // 2px
         width: "100%", // Only fill available space
     },
     slider: {
@@ -56,8 +56,10 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
 
     return (
         <div className={classes.syncedSlider}>
-            {props.min != undefined && props.max != undefined && <Slider {...props} className={classes.slider} value={value} onChange={handleSliderChange} step={props.step} />}
-            <Input className={classes.input} type="number" value={value.toFixed(2)} onChange={handleInputChange} step={props.step} />
+            {props.min != undefined && props.max != undefined && (
+                <Slider {...props} size="small" className={classes.slider} value={value} onChange={handleSliderChange} step={undefined} />
+            )}
+            <Input {...props} className={classes.input} type="number" value={value} onChange={handleInputChange} step={props.step} />
         </div>
     );
 };

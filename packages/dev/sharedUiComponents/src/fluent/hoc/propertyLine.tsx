@@ -86,9 +86,21 @@ export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren>((prop
 });
 
 export type BaseComponentProps<T> = {
+    /**
+     * The value of the property to be displayed and modified.
+     */
     value: T;
+    /**
+     * Callback function to handle changes to the value
+     */
     onChange: (value: T) => void;
+    /**
+     * Optional flag to disable the component, preventing any interaction.
+     */
     disabled?: boolean;
+    /**
+     * Optional class name to apply custom styles to the component.
+     */
     className?: string;
 };
 

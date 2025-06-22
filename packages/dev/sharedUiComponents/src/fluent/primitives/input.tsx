@@ -19,6 +19,8 @@ export type InputProps = BaseComponentProps<string | number> & {
     step?: number;
     placeholder?: string;
     type?: "number" | "text";
+    min?: number;
+    max?: number;
 };
 /**
  * This is an input text box that stops propagation of change events and sets its width based on the type of input (text or number)
@@ -43,5 +45,14 @@ export const Input: FunctionComponent<InputProps> = (props) => {
         event.stopPropagation(); // Prevent event propagation
     };
 
-    return <FluentInput {...props} value={value.toString()} className={props.type === "number" ? classes.float : classes.text} onChange={handleChange} onKeyDown={handleKeyDown} />;
+    return (
+        <FluentInput
+            {...props}
+            size="small"
+            value={value.toString()}
+            className={props.type === "number" ? classes.float : classes.text}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+        />
+    );
 };

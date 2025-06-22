@@ -201,7 +201,7 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
                 <Color3PropertyLine
                     label={this.props.label}
                     value={this._toColor3(this.state.color)}
-                    linearHint={this.props.isLinear}
+                    isLinearMode={this.props.isLinear}
                     onChange={(color) => this.setColorFromString(color.toHexString())}
                 />
             );
@@ -210,7 +210,7 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
                 <Color4PropertyLine
                     label={this.props.label}
                     value={this.state.color}
-                    linearHint={this.props.isLinear}
+                    isLinearMode={this.props.isLinear}
                     onChange={(color) => this.setColorFromString(color.toHexString())}
                 />
             );
