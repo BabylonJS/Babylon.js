@@ -21,7 +21,7 @@ import {
     Body1Strong,
 } from "@fluentui/react-components";
 import type { SpinButtonChangeEvent, SpinButtonOnChangeData, ColorPickerProps as FluentColorPickerProps, InputOnChangeData } from "@fluentui/react-components";
-import { Color3, Color4 } from "core/Maths";
+import { Color3, Color4 } from "core/Maths/math.color";
 import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useColorPickerStyles = makeStyles({

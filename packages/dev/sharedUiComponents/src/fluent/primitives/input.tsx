@@ -15,7 +15,7 @@ const useInputStyles = makeStyles({
     },
 });
 
-export type InputProps = BaseComponentProps<string | number> & {
+type InputProps = BaseComponentProps<string | number> & {
     step?: number;
     placeholder?: string;
     type?: "number" | "text";
