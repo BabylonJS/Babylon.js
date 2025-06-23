@@ -1,10 +1,10 @@
 import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "../propertiesService";
 
-import { PointLight } from "core/Lights/pointLight";
+import { SpotLight } from "core/Lights/spotLight";
 
 import { PropertiesServiceIdentity } from "../propertiesService";
-import { PointLightSetupProperties } from "../../../../components/properties/lights/pointLightSetupProperties";
+import { SpotLightSetupProperties } from "../../../../components/properties/lights/spotLightSetupProperties";
 
 export const SetupPropertiesSectionIdentity = Symbol("Setup");
 
@@ -19,13 +19,13 @@ export const SpotLightPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
 
         const contentRegistration = propertiesService.addSectionContent({
             key: "Spot Light Properties",
-            predicate: (entity: unknown) => entity instanceof PointLight,
+            predicate: (entity: unknown) => entity instanceof SpotLight,
             content: [
                 // "SETUP" section.
                 {
                     section: SetupPropertiesSectionIdentity,
                     order: 0,
-                    component: PointLightSetupProperties,
+                    component: SpotLightSetupProperties,
                 },
             ],
         });
