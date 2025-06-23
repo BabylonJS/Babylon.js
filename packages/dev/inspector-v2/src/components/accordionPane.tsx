@@ -63,6 +63,7 @@ const useStyles = makeStyles({
     },
     accordion: {
         overflowY: "auto",
+        overflowX: "hidden",
         paddingBottom: tokens.spacingVerticalM,
         display: "flex",
         flexDirection: "column",
@@ -120,7 +121,7 @@ export function AccordionPane<ContextT = unknown>(props: {
     }, [sections, sectionContent, context]);
 
     return (
-        <div className={classes.rootDiv}>
+        <div className={classes.rootDiv} id="accordionPane">
             {visibleSections.length > 0 && (
                 <Accordion
                     key={version}
