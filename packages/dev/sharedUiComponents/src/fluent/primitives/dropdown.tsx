@@ -34,6 +34,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     const classes = useDropdownStyles();
     return (
         <FluentDropdown
+            size="small"
             className={classes.dropdownOption}
             onOptionSelect={(evt, data) => {
                 data.optionValue != undefined && props.onChange(props.options.find((o) => o.value?.toString() === data.optionValue) as DropdownOption);
