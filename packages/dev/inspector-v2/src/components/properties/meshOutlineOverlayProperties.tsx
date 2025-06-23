@@ -9,7 +9,6 @@ import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
-import { BoundPropertyLine } from "./boundPropertyLine";
 
 type Color3Keys<T> = { [P in keyof T]: T[P] extends Color3 ? P : never }[keyof T];
 
