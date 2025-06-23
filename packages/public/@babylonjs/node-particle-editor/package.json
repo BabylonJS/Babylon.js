@@ -1,9 +1,9 @@
 {
     "name": "@babylonjs/node-particle-editor",
-    "version": "8.11.1",
-    "main": "dist/babylon.nodeParticleEditor.max.js",
-    "module": "dist/babylon.nodeParticleEditor.max.js",
-    "esnext": "dist/babylon.nodeParticleEditor.max.js",
+    "version": "8.12.0",
+    "main": "dist/babylon.nodeParticleEditor.js",
+    "module": "dist/babylon.nodeParticleEditor.js",
+    "esnext": "dist/babylon.nodeParticleEditor.js",
     "typings": "dist/babylon.nodeParticleEditor.module.d.ts",
     "files": [
         "dist/**/*.*",
@@ -11,7 +11,7 @@
         "license.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
@@ -23,7 +23,7 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^8.12.1",
+        "@babylonjs/core": "^8.13.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },

@@ -1,21 +1,21 @@
 {
     "name": "babylonjs-accessibility",
-    "version": "8.12.1",
-    "main": "babylon.accessibility.max.js",
+    "version": "8.13.0",
+    "main": "babylon.accessibility.js",
     "types": "babylon.accessibility.module.d.ts",
     "files": [
         "*"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^8.12.1",
-        "babylonjs-gui": "^8.12.1"
+        "babylonjs": "^8.13.0",
+        "babylonjs-gui": "^8.13.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

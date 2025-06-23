@@ -24,7 +24,7 @@ type PropertiesSectionContent<EntityT> = {
 } & AccordionSectionContent<EntityT>;
 
 /**
- * Provides a properties pane that enables displaying and editing properties of an entity such as a mesh or a texture.
+ * Allows new sections or content to be added to the properties pane.
  */
 export interface IPropertiesService extends IService<typeof PropertiesServiceIdentity> {
     /**
@@ -40,6 +40,9 @@ export interface IPropertiesService extends IService<typeof PropertiesServiceIde
     addSectionContent<EntityT>(content: PropertiesSectionContent<EntityT>): IDisposable;
 }
 
+/**
+ * Provides a properties pane that enables displaying and editing properties of an entity such as a mesh or a texture.
+ */
 export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService], [IShellService, ISelectionService]> = {
     friendlyName: "Properties Editor",
     produces: [PropertiesServiceIdentity],

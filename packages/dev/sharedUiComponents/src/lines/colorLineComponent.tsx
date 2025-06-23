@@ -10,6 +10,8 @@ import { ColorPickerLine } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
+import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 const EmptyColor = new Color4(0, 0, 0, 0);
 
@@ -193,7 +195,29 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
         }
     }
 
-    override render() {
+    renderFluent() {
+        if (this.props.disableAlpha) {
+            return (
+                <Color3PropertyLine
+                    label={this.props.label}
+                    value={this._toColor3(this.state.color)}
+                    isLinearMode={this.props.isLinear}
+                    onChange={(color) => this.setColorFromString(color.toHexString())}
+                />
+            );
+        } else {
+            return (
+                <Color4PropertyLine
+                    label={this.props.label}
+                    value={this.state.color}
+                    isLinearMode={this.props.isLinear}
+                    onChange={(color) => this.setColorFromString(color.toHexString())}
+                />
+            );
+        }
+    }
+
+    renderOriginal() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
@@ -260,5 +284,9 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
                 )}
             </div>
         );
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

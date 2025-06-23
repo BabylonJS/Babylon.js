@@ -40,7 +40,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         this.lastDelayIndex = this.registerDataOutput("lastDelayIndex", RichTypeFlowGraphInteger, new FlowGraphInteger(-1));
     }
 
-    public _preparePendingTasks(context: FlowGraphContext): void {
+    public override _preparePendingTasks(context: FlowGraphContext): void {
         const duration = this.duration.getValue(context);
         if (duration < 0 || isNaN(duration) || !isFinite(duration)) {
             return this._reportError(context, "Invalid duration in SetDelay block");
@@ -72,7 +72,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         this._updateGlobalTimers(context);
     }
 
-    public _cancelPendingTasks(context: FlowGraphContext): void {
+    public override _cancelPendingTasks(context: FlowGraphContext): void {
         const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
         for (const timer of timers) {
             timer?.dispose();

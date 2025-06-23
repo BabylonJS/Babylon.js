@@ -11,9 +11,10 @@ module.exports = (env) => {
         alias: {
             addons: path.resolve(__dirname, "../../../dev/addons/src"),
         },
-        overrideFilename: (pathData) => {
+        overrideFilename: () => {
             return `babylonjs.[name]${env.production ? ".min" : ""}.js`;
         },
+        minToMax: true,
     });
     return commonConfig;
 };
