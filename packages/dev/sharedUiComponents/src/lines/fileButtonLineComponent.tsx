@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FileButtonLine as FluentFileButtonLine } from "../fluent/hoc/fileButtonLine";
+import { FileUploadLine } from "../fluent/hoc/fileUploadLine";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 interface IFileButtonLineProps {
@@ -30,7 +30,7 @@ export class FileButtonLine extends React.Component<IFileButtonLineProps> {
     }
 
     renderFluent() {
-        return <FluentFileButtonLine {...this.props} />;
+        return <FileUploadLine {...this.props} />;
     }
 
     renderOriginal() {

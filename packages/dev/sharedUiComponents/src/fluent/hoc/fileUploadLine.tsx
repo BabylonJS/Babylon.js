@@ -3,12 +3,12 @@ import type { FunctionComponent } from "react";
 import { ButtonLine } from "./buttonLine";
 import type { ButtonLineProps } from "./buttonLine";
 
-type FileButtonLineProps = Omit<ButtonLineProps, "onClick"> & {
+type FileUploadLineProps = Omit<ButtonLineProps, "onClick"> & {
     onClick: (file: File) => void;
     accept: string;
 };
 
-export const FileButtonLine: FunctionComponent<FileButtonLineProps> = (props) => {
+export const FileUploadLine: FunctionComponent<FileUploadLineProps> = (props) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleButtonClick = () => {
