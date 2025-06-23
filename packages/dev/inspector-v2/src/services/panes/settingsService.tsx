@@ -4,11 +4,49 @@ import type { IShellService } from "../shellService";
 import { SettingsRegular } from "@fluentui/react-icons";
 
 import { ShellServiceIdentity } from "../shellService";
+import { SettingsContextIdentity, type ISettingsContext } from "../settingsContext";
+import { Observable } from "core/Misc/observable";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { DataStorage } from "core/Misc/dataStorage";
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
-export const SettingsServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext], [IShellService]> = {
     friendlyName: "Settings",
     consumes: [ShellServiceIdentity],
+    produces: [SettingsContextIdentity],
     factory: (shellService) => {
+        let useDegrees = DataStorage.ReadBoolean("settings_useDegrees", false);
+        let ignoreBackfacesForPicking = DataStorage.ReadBoolean("settings_ignoreBackfacesForPicking", false);
+        const settings = {
+            get useDegrees() {
+                return useDegrees;
+            },
+            set useDegrees(value: boolean) {
+                if (useDegrees === value) {
+                    return; // No change, no need to notify
+                }
+                useDegrees = value;
+
+                DataStorage.WriteBoolean("settings_useDegrees", useDegrees);
+
+                this.settingsChangedObservable.notifyObservers(this);
+            },
+            get ignoreBackfacesForPicking() {
+                return ignoreBackfacesForPicking;
+            },
+            set ignoreBackfacesForPicking(value: boolean) {
+                if (ignoreBackfacesForPicking === value) {
+                    return; // No change, no need to notify
+                }
+                ignoreBackfacesForPicking = value;
+
+                DataStorage.WriteBoolean("settings_ignoreBackfacesForPicking", ignoreBackfacesForPicking);
+                this.settingsChangedObservable.notifyObservers(this);
+            },
+            settingsChangedObservable: new Observable<ISettingsContext>(),
+            dispose: () => {},
+        };
+
         const registration = shellService.addSidePane({
             key: "Settings",
             title: "Settings",
@@ -16,12 +54,33 @@ export const SettingsServiceDefinition: ServiceDefinition<[], [IShellService]> =
             horizontalLocation: "right",
             suppressTeachingMoment: true,
             content: () => {
-                return <>Not yet implemented.</>;
+                return (
+                    <Accordion>
+                        <AccordionSection title="User settings">
+                            <SwitchPropertyLine
+                                label="Use Degrees"
+                                description="Using degrees instead of radians."
+                                value={settings.useDegrees}
+                                onChange={(checked) => {
+                                    settings.useDegrees = checked;
+                                }}
+                            />
+                            <SwitchPropertyLine
+                                label="Ignore backfaces for picking"
+                                description="Ignore backfaces when picking."
+                                value={settings.ignoreBackfacesForPicking}
+                                onChange={(checked) => {
+                                    settings.ignoreBackfacesForPicking = checked;
+                                }}
+                            />
+                        </AccordionSection>
+                    </Accordion>
+                );
             },
         });
 
-        return {
-            dispose: () => registration.dispose(),
-        };
+        settings.dispose = () => registration.dispose();
+
+        return settings;
     },
 };
