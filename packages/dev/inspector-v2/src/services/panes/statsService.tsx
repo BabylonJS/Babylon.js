@@ -16,6 +16,7 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 import { PerformanceStats } from "../../components/stats/performanceStats";
+import { SystemStats } from "../../components/stats/systemStats";
 
 export const StatsServiceIdentity = Symbol("StatsService");
 export const StatsPerformanceSectionIdentity = Symbol("Performance");
@@ -98,13 +99,18 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
                 },
                 {
                     section: StatsCountSectionIdentity,
-                    order: 0,
+                    order: 1,
                     component: CountStats,
                 },
                 {
                     section: StatsFrameStepsSectionIdentity,
-                    order: 0,
+                    order: 2,
                     component: FrameStepsStats,
+                },
+                {
+                    section: StatsSystemInfoSectionIdentity,
+                    order: 3,
+                    component: SystemStats,
                 },
             ],
         });
