@@ -3,26 +3,30 @@ import type { IPropertiesService } from "./propertiesService";
 import type { ISelectionService } from "../../selectionService";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes";
 
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { MeshAdvancedProperties } from "../../../components/properties/meshAdvancedProperties";
 import { MeshGeneralProperties } from "../../../components/properties/meshGeneralProperties";
+import { MeshOutlineOverlayProperties } from "../../../components/properties/meshOutlineOverlayProperties";
 
 export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
+export const OutlineOverlayPropertiesSectionItentity = Symbol("Outline & Overlay");
 
 export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService, selectionService) => {
+        // Abstract Mesh
         const advancedSectionRegistration = propertiesService.addSection({
             order: 2,
             identity: AdvancedPropertiesSectionIdentity,
         });
 
-        const contentRegistration = propertiesService.addSectionContent({
-            key: "Mesh Properties",
+        const abstractMeshContentRegistration = propertiesService.addSectionContent({
+            key: "Abstract Mesh Properties",
             // Meshes without vertices are effectively TransformNodes, so don't add mesh properties for them.
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             content: [
@@ -42,10 +46,30 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             ],
         });
 
+        const outlineOverlaySectionRegistration = propertiesService.addSection({
+            order: 0,
+            identity: OutlineOverlayPropertiesSectionItentity,
+        });
+
+        const meshPropertiesContentRegistration = propertiesService.addSectionContent({
+            key: "Mesh Properties",
+            predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh,
+            content: [
+                // "OUTLINES & OVERLAYS" section.
+                {
+                    section: OutlineOverlayPropertiesSectionItentity,
+                    order: 0,
+                    component: ({ context }) => <MeshOutlineOverlayProperties mesh={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
-                contentRegistration.dispose();
+                abstractMeshContentRegistration.dispose();
+                meshPropertiesContentRegistration.dispose();
                 advancedSectionRegistration.dispose();
+                outlineOverlaySectionRegistration.dispose();
             },
         };
     },
