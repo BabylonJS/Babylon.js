@@ -6,7 +6,7 @@ import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPrope
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { useVector3Property, useColor3Property } from "./shadered";
+import { useVector3Property, useColor3Property } from "../shadered";
 
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
