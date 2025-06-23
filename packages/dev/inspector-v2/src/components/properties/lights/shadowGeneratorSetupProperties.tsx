@@ -30,7 +30,7 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
                 label="Create Generator"
                 onClick={() => {
                     if (!shadowLight.getShadowGenerator()) {
-                        const shadowGenerator = new ShadowGenerator(Number(shadowGeneratorSetting.mapSize), shadowLight);
+                        new ShadowGenerator(Number(shadowGeneratorSetting.mapSize), shadowLight);
                         return;
                     }
                 }}

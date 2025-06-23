@@ -23,6 +23,7 @@ import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mes
 import { HemisphericLightPropertiesServiceDefinition } from "./services/panes/properties/lights/hemisphericLightPropertiesServices";
 import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
 import { PointLightPropertiesServiceDefinition } from "./services/panes/properties/lights/pointLightPropertiesServices";
+import { ShadowLightPropertiesServiceDefinition } from "./services/panes/properties/lights/shadowLightPropertiesServices";
 import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
 import { SpotLightPropertiesServiceDefinition } from "./services/panes/properties/lights/spotLightPropertiesServices";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
@@ -189,6 +190,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             PointLightPropertiesServiceDefinition,
             DirectionalLightPropertiesServiceDefinition,
             SpotLightPropertiesServiceDefinition,
+            ShadowLightPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
