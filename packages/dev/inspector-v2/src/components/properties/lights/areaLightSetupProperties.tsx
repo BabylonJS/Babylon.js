@@ -23,8 +23,8 @@ export const AreaLightSetupProperties: FunctionComponent<{ context: RectAreaLigh
             <Color3PropertyLine key="LightColor" label="Diffuse" value={diffuseColor} onChange={(val) => (areaLight.diffuse = val)} />
             <Color3PropertyLine key="LightSpecularColor" label="Specular" value={specularColor} onChange={(val) => (areaLight.specular = val)} />
             <Vector3PropertyLine key="LightPosition" label="Position" value={position} onChange={(val) => (areaLight.position = val)} />
-            <SyncedSliderLine label="Width" value={width} min={0} max={10} step={0.1} onChange={(value) => (areaLight.width = value)} />
-            <SyncedSliderLine label="Height" value={height} min={0} max={10} step={0.1} onChange={(value) => (areaLight.height = value)} />
+            <FloatInputPropertyLine label="Width" value={width} onChange={(value) => (areaLight.width = value)} />
+            <FloatInputPropertyLine label="Height" value={height} onChange={(value) => (areaLight.height = value)} />
             <FloatInputPropertyLine label="Intensity" value={intensity} onChange={(value) => (areaLight.intensity = value)} />
         </>
     );
