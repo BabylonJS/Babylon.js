@@ -10,14 +10,12 @@ import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import type { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
-import type { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
@@ -73,6 +71,7 @@ import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
+import { ImageProcessingMixin } from "../imageProcessing";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -232,10 +231,11 @@ export type NodeMaterialTextureBlocks =
     | BiPlanarBlock
     | PrePassTextureBlock;
 
+class NodeMaterialBase extends ImageProcessingMixin(PushMaterial) {}
 /**
  * Class used to create a node based material built by assembling shader blocks
  */
-export class NodeMaterial extends PushMaterial {
+export class NodeMaterial extends NodeMaterialBase {
     private static _BuildIdGenerator: number = 0;
     private _options: INodeMaterialOptions;
     private _vertexCompilationState: NodeMaterialBuildState;
@@ -377,30 +377,6 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Default configuration related to image processing available in the standard Material.
-     */
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-
-    /**
-     * Gets the image processing configuration used either in this material.
-     */
-    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
-        return this._imageProcessingConfiguration;
-    }
-
-    /**
-     * Sets the Default image processing configuration used either in the this material.
-     *
-     * If sets to null, the scene one is in use.
-     */
-    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
-        this._attachImageProcessingConfiguration(value);
-
-        // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsTexturesDirty();
-    }
-
-    /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
     public attachedBlocks: NodeMaterialBlock[] = [];
@@ -471,40 +447,6 @@ export class NodeMaterial extends PushMaterial {
      */
     public override getClassName(): string {
         return "NodeMaterial";
-    }
-
-    /**
-     * Keep track of the image processing observer to allow dispose and replace.
-     */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
-
-    /**
-     * Attaches a new image processing configuration to the Standard Material.
-     * @param configuration
-     */
-    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
-        if (configuration === this._imageProcessingConfiguration) {
-            return;
-        }
-
-        // Detaches observer.
-        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-        }
-
-        // Pick the scene configuration if needed.
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-        } else {
-            this._imageProcessingConfiguration = configuration;
-        }
-
-        // Attaches observer.
-        if (this._imageProcessingConfiguration) {
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._markAllSubMeshesAsImageProcessingDirty();
-            });
-        }
     }
 
     /**

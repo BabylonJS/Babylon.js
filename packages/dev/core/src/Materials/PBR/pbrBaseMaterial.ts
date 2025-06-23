@@ -15,25 +15,25 @@ import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 
-import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
-import { Material } from "../../Materials/material";
+import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
+import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
+import type { Effect, IEffectCreationOptions } from "../effect";
+import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../material";
+import { Material } from "../material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
-import { MaterialDefines } from "../../Materials/materialDefines";
-import { PushMaterial } from "../../Materials/pushMaterial";
+import { MaterialDefines } from "../materialDefines";
+import { PushMaterial } from "../pushMaterial";
 
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Texture } from "../../Materials/Textures/texture";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
+import type { BaseTexture } from "../Textures/baseTexture";
+import { Texture } from "../Textures/texture";
+import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
+import type { CubeTexture } from "../Textures/cubeTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 
-import "../../Materials/Textures/baseTexture.polynomial";
+import "../Textures/baseTexture.polynomial";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
