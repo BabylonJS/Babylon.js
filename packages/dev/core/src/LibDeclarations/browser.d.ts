@@ -34,7 +34,7 @@ interface PressureRecord {
 
 // Not available in Firefox, Safari
 interface PressureObserver {
-    observe(source: PressureSource): void;
+    observe(source: PressureSource): Promise<void>;
     unobserve(source: PressureSource): void;
     disconnect(): void;
     takeRecords(): Array<PressureRecord>;

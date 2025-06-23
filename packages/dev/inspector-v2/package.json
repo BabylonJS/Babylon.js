@@ -27,6 +27,8 @@
         "react-refresh": "^0.17.0",
         "react-refresh-typescript": "^2.0.10",
         "usehooks-ts": "^3.1.1",
+        "sass-loader": "^16.0.0",
+        "css-loader": "^7.1.0",
         "webpack": "^5.98.0",
         "webpack-cli": "^5.1.0"
     }

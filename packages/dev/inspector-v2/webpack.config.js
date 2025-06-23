@@ -21,7 +21,7 @@ module.exports = (env) => {
         ),
 
         resolve: {
-            extensions: [".ts", ".tsx", ".js", ".jsx"],
+            extensions: [".ts", ".tsx", ".js", ".jsx", ".svg", ".scss"],
             alias: {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
@@ -46,6 +46,30 @@ module.exports = (env) => {
                         },
                     ],
                     exclude: /node_modules/,
+                },
+                {
+                    test: /\.(jpe?g|png|ttf|woff|eot|svg?)(\?[a-z0-9=&.]+)?$/,
+                    type: "asset/inline",
+                },
+                {
+                    test: /(?<!module)\.s[ac]ss$/i,
+                    use: [
+                        "style-loader",
+                        {
+                            loader: "css-loader",
+                            options: {
+                                sourceMap: true,
+                                modules: false,
+                            },
+                        },
+                        {
+                            loader: "sass-loader",
+                            options: {
+                                api: "modern",
+                                sourceMap: true,
+                            },
+                        },
+                    ],
                 },
             ],
         },

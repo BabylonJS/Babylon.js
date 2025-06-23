@@ -15,6 +15,7 @@ import { useObservableCollection, useObservableState, useOrderedObservableCollec
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
+import { PerformanceStats } from "../../components/stats/performanceStats";
 
 export const StatsServiceIdentity = Symbol("StatsService");
 export const StatsPerformanceSectionIdentity = Symbol("Performance");
@@ -51,8 +52,8 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
         const sectionContentCollection = new ObservableCollection<AccordionSectionContent<Scene>>();
 
         const registration = shellService.addSidePane({
-            key: "Stats",
-            title: "Stats",
+            key: "Statistics",
+            title: "Statistics",
             icon: DataBarHorizontalRegular,
             horizontalLocation: "right",
             suppressTeachingMoment: true,
@@ -90,6 +91,11 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
         sectionContentCollection.add({
             key: "DefaultStats",
             content: [
+                {
+                    section: StatsPerformanceSectionIdentity,
+                    order: 0,
+                    component: PerformanceStats,
+                },
                 {
                     section: StatsCountSectionIdentity,
                     order: 0,
