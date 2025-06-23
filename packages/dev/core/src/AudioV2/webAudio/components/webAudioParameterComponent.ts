@@ -70,7 +70,8 @@ export class _WebAudioParameterComponent {
      * `exponentialRampToValueAtTime`) but they don't work in Firefox and Meta Quest Chrome.
      *
      * It may be better in the long run to implement our own ramping logic with a WASM audio worklet instead of using
-     * `setValueCurveAtTime`.
+     * `setValueCurveAtTime`. Another alternative is to use `setValueAtTime` wtih a custom curve, but that will
+     * probably be a performance hit to maintain quality at audio rates.
      *
      * @internal
      */
