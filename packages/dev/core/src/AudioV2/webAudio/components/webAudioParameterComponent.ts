@@ -103,7 +103,7 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        if (typeof curve !== "number") {
+        if (typeof curve !== "string") {
             curve = AudioParameterRampShape.Linear;
         }
 
