@@ -153,19 +153,21 @@ export class LottieParser {
 
         this._processedData.nodes.set(newNode.index, newNode);
 
+        const scalingFactor = new Vector2((transform.scale?.startValue.x ?? 100) / 100, (transform.scale?.startValue.x ?? 100) / 100);
+        //const scalingFactor = new Vector2(1, 1);
         if (rawLayer.shapes && rawLayer.shapes.length > 0) {
-            this._processRawLottieShapes(newNode, rawLayer.shapes);
+            this._processRawLottieShapes(newNode, rawLayer.shapes, scalingFactor);
         }
     }
 
-    private _processRawLottieShapes(parent: LottieNode, shapes: RawGraphicElement[]): void {
+    private _processRawLottieShapes(parent: LottieNode, shapes: RawGraphicElement[], scalingFactor: Vector2): void {
         for (const shape of shapes) {
             if (shape.hd === true) {
                 continue; // Ignore hidden shapes
             }
 
             if (shape.ty === "gr") {
-                this._processGroupShape(parent, shape as RawGroupShape);
+                this._processGroupShape(parent, shape as RawGroupShape, scalingFactor);
             } else {
                 this._errors.push(`${ShapeUnsupportedTopLevelType} - Name: ${shape.nm} Type: ${shape.ty}`);
                 continue;
@@ -173,7 +175,7 @@ export class LottieParser {
         }
     }
 
-    private _processGroupShape(parent: LottieNode, rawGroup: RawGroupShape): void {
+    private _processGroupShape(parent: LottieNode, rawGroup: RawGroupShape, scalingFactor: Vector2): void {
         if (!rawGroup.it) {
             // No shapes in the group
             return;
@@ -183,7 +185,7 @@ export class LottieParser {
         for (const shape of rawGroup.it) {
             if (shape.ty === "gr") {
                 // TODO: deal with children inside of children
-                this._errors.push(`Group ${rawGroup.nm} contains another shape ${shape.nm} which is a group. Nested groups are not yet supported`);
+                this._errors.push(`Group ${rawGroup.nm} contains another shape ${shape.nm} which is a group. Nested groups are not supported`);
             } else if (shape.ty === "tr") {
                 this._validateNonAnimatedTransform(transform); // We do not support animated transforms for groups
                 transform = this._processLottieTransformShape(shape as RawTransformShape);
@@ -231,7 +233,7 @@ export class LottieParser {
         newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
         let mesh: Mesh | undefined = undefined;
-        const renderData = DrawGroup(newNode.name, rawGroup);
+        const renderData = DrawGroup(newNode.name, rawGroup, scalingFactor);
 
         if (renderData !== undefined) {
             mesh = MeshBuilder.CreatePlane(`Anchor - ${newNode.name}`, { height: renderData.boundingBox.height, width: renderData.boundingBox.width });

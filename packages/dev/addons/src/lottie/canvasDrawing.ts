@@ -4,6 +4,7 @@ import { type ICanvasRenderingContext } from "core/Engines";
 import type { RawPathShape, RawFillShape, RawRectangleShape, RawBezier, RawGradientFillShape, RawGroupShape } from "./types/rawLottie";
 import { GetBoundingBox, type BoundingBox } from "./boundingBox";
 import { DynamicTexture, type Texture } from "core/Materials";
+import { type Vector2 } from "core/Maths";
 
 type GradientStop = {
     offset: number;
@@ -15,7 +16,7 @@ export type RenderData = {
     texture: Texture;
 };
 
-export function DrawGroup(name: string, rawGroup: RawGroupShape): RenderData | undefined {
+export function DrawGroup(name: string, rawGroup: RawGroupShape, scalingFactor: Vector2): RenderData | undefined {
     // eslint-disable-next-line no-console
     console.log(`Drawing group: ${name}`);
 
@@ -25,7 +26,10 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape): RenderData | u
         return undefined;
     }
 
-    const texture = new DynamicTexture(`Texture - ${name}`, { width: boundingBox.width, height: boundingBox.height });
+    const width = Math.ceil(boundingBox.width * scalingFactor.x);
+    const height = Math.ceil(boundingBox.height * scalingFactor.y);
+
+    const texture = new DynamicTexture(`Texture - ${name}`, { width: width, height: height });
     const ctx = texture.getContext();
 
     if (!ctx) {
@@ -33,16 +37,17 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape): RenderData | u
     }
 
     ctx.fillStyle = "transparent";
-    ctx.fillRect(0, 0, boundingBox.width, boundingBox.height);
+    ctx.fillRect(0, 0, width, height);
+    ctx.scale(scalingFactor.x, scalingFactor.y);
 
     if (rawGroup.it) {
         for (const shape of rawGroup.it) {
             switch (shape.ty) {
                 case "rc":
-                    DrawRectangle(ctx, shape as RawRectangleShape);
+                    DrawRectangle(ctx, shape as RawRectangleShape, scalingFactor);
                     break;
                 case "sh":
-                    DrawPath(ctx, shape as RawPathShape, boundingBox);
+                    DrawPath(ctx, shape as RawPathShape, boundingBox, scalingFactor);
                     break;
                 case "fl":
                     DrawFill(ctx, shape as RawFillShape);
@@ -65,7 +70,7 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape): RenderData | u
     };
 }
 
-function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape): void {
+function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape, scalingFactor: Vector2): void {
     const size = shape.s.k as number[];
     const radius = shape.r.k as number;
 
@@ -76,7 +81,7 @@ function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape): 
     }
 }
 
-function DrawPath(ctx: ICanvasRenderingContext, shape: RawPathShape, boundingBox: BoundingBox): void {
+function DrawPath(ctx: ICanvasRenderingContext, shape: RawPathShape, boundingBox: BoundingBox, scalingFactor: Vector2): void {
     const pathData = shape.ks.k as RawBezier;
     const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
     const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
