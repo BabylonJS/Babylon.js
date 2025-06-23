@@ -46,8 +46,9 @@ declare global {
     let audioTestResult: AudioTestResult;
 
     class AudioV2Test {
-        public static AfterEachAsync(): Promise<void>;
-        public static BeforeEachAsync(): Promise<void>;
+        public static ErrorMessage: string;
+        public static AfterEach(): void;
+        public static BeforeEach(): void;
         public static CreateAbstractSoundAndOutputNodeAsync(
             audioNodeType: AudioNodeType,
             source: string | string[],
@@ -75,6 +76,7 @@ declare global {
         public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
         public static CreateSoundSourceAsync(source: string, options?: Partial<BABYLON.ISoundSourceOptions>): Promise<BABYLON.AbstractSoundSource>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
+        public static GetErrorMessageAsync(): Promise<string>;
         public static GetPulseCountsAsync(): Promise<number[][]>;
         public static GetResultAsync(): Promise<AudioTestResult>;
         public static GetVolumesAtTimeAsync(time: number): Promise<number[]>;
@@ -111,6 +113,10 @@ export const InitAudioV2Tests = () => {
             },
             { config: new AudioTestConfig() }
         );
+
+        await page.evaluate(() => {
+            AudioV2Test.BeforeEach();
+        });
     });
 
     test.afterEach(async ({ page }) => {
@@ -122,13 +128,19 @@ export const InitAudioV2Tests = () => {
             SaveAudioTestResult(test.info(), result);
         }
 
-        await page.evaluate(async () => {
-            await AudioV2Test.AfterEachAsync();
+        await page.evaluate(() => {
+            AudioV2Test.AfterEach();
         });
 
         // await page.close();
     });
 };
+
+export async function EvaluateErrorMessageAsync(page: Page): Promise<string> {
+    return await page.evaluate(async () => {
+        return await AudioV2Test.GetErrorMessageAsync();
+    });
+}
 
 /**
  * Gets the pulse counts of the given result's samples.

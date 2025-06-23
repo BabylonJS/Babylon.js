@@ -7,6 +7,7 @@ var audioTestResult;
 var audioTestSounds = [];
 var audioTestSuspendTime = 0;
 var BABYLON;
+var error;
 
 const SilenceAudioOutput = true;
 
@@ -20,6 +21,8 @@ const PulseTrainLengthInSamples = 90;
 const PulseVolumeThreshold = 0.05;
 
 class AudioV2Test {
+    static ErrorMessage = "";
+
     static #AddSound(sound) {
         audioTestSounds.push(sound);
 
@@ -48,7 +51,7 @@ class AudioV2Test {
         return sourceUrl;
     }
 
-    static async AfterEachAsync() {
+    static AfterEach() {
         audioContext = null;
         audioRecorder = null;
         audioRecorderDestination = null;
@@ -59,6 +62,10 @@ class AudioV2Test {
 
         audioEngine?.dispose();
         audioEngine = null;
+    }
+
+    static BeforeEach() {
+        AudioV2Test.ErrorMessage = "No error";
     }
 
     static async CreateAudioEngineAsync(contextType, duration, options = {}) {
@@ -421,6 +428,11 @@ class AudioV2Test {
         return new Promise((resolve) => {
             resolve(audioTestResult);
         });
+    }
+
+    static async GetErrorMessageAsync() {
+        await AudioV2Test.GetResultAsync();
+        return AudioV2Test.ErrorMessage;
     }
 
     static async WaitAsync(seconds, callback) {
