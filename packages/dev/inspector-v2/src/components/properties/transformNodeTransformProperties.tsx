@@ -22,17 +22,17 @@ function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: 
 }
 
 export const TransformNodeTransformProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
-    const { node: transformNode } = props;
+    const { node } = props;
 
-    const position = useVector3Property(transformNode, "position");
-    const rotation = useVector3Property(transformNode, "rotation");
-    const scaling = useVector3Property(transformNode, "scaling");
+    const position = useVector3Property(node, "position");
+    const rotation = useVector3Property(node, "rotation");
+    const scaling = useVector3Property(node, "scaling");
 
     return (
         <>
-            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (transformNode.position = val)} />
-            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (transformNode.scaling = val)} />
-            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (transformNode.scaling = val)} />
+            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (node.position = val)} />
+            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (node.scaling = val)} />
+            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (node.scaling = val)} />
         </>
     );
 };

@@ -33,7 +33,7 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                 // "GENERAL" section.
                 {
                     section: GeneralPropertiesSectionIdentity,
-                    order: 1,
+                    order: 2,
                     component: ({ context }) => <MeshGeneralProperties mesh={context} selectionService={selectionService} />,
                 },
 
