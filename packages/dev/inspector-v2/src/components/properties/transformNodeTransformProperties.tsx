@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { TransformNode, Vector3 } from "core/index";
 
-import { useEffect, type FunctionComponent } from "react";
+import { type FunctionComponent } from "react";
 
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
