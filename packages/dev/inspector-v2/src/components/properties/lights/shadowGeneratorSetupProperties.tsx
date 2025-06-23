@@ -2,26 +2,29 @@
 import type { ShadowLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { Dropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { useVector3Property, useColor3Property } from "../observableUtils";
+const ShadowGeneratorOptions: DropdownOption[] = [{ label: "Shadow Generator", value: "Shadow Generator" }];
 
-export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: ShadowLight }> = ({ context: pointLight }) => {
-    const position = useVector3Property(pointLight, "position");
-    const diffuseColor = useColor3Property(pointLight, "diffuse");
-    const groundColor = useColor3Property(pointLight, "specular");
-    const intensity = useObservableState(() => pointLight.intensity, useInterceptObservable("property", pointLight, "intensity"));
+const MapSizeOptions: DropdownOption[] = [
+    { label: "4096x4096", value: "4096x4096" },
+    { label: "2048x2048", value: "2048x2048" },
+    { label: "1024x1024", value: "1024x1024" },
+    { label: "512x512", value: "512x512" },
+    { label: "256x256", value: "256x256" },
+];
 
+export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: ShadowLight }> = ({ context: shadowLight }) => {
+    const shadowGeneratorSetting: any = {}; // Placeholder for shadow generator settings logic
     return (
         <>
-            <Color3PropertyLine key="LightColor" label="Diffuse" value={diffuseColor} onChange={(val) => (pointLight.diffuse = val)} />
-            <Color3PropertyLine key="LightSpecularColor" label="Specular" value={groundColor} onChange={(val) => (pointLight.specular = val)} />
-            <Vector3PropertyLine key="LightPosition" label="Position" value={position} onChange={(val) => (pointLight.position = val)} />
-            <FloatInputPropertyLine label="Intensity" value={intensity} onChange={(value) => (pointLight.intensity = value)} />
+            <PropertyLine label="Type">
+                <Dropdown options={ShadowGeneratorOptions} onSelect={(value) => (shadowGeneratorSetting.type = value)} defaultValue={ShadowGeneratorOptions[0]} />
+            </PropertyLine>
+            <PropertyLine label="Map Size">
+                <Dropdown options={MapSizeOptions} onSelect={(value) => (shadowGeneratorSetting.mapSize = value)} defaultValue={MapSizeOptions[0]} />
+            </PropertyLine>
         </>
     );
 };
