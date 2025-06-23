@@ -8,7 +8,6 @@ import { SettingsContextIdentity, type ISettingsContext } from "../settingsConte
 import { Observable } from "core/Misc/observable";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { DataStorage } from "core/Misc/dataStorage";
-import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext], [IShellService]> = {
     friendlyName: "Settings",
@@ -55,26 +54,24 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext], [I
             suppressTeachingMoment: true,
             content: () => {
                 return (
-                    <Accordion>
-                        <AccordionSection title="User settings">
-                            <SwitchPropertyLine
-                                label="Use Degrees"
-                                description="Using degrees instead of radians."
-                                value={settings.useDegrees}
-                                onChange={(checked) => {
-                                    settings.useDegrees = checked;
-                                }}
-                            />
-                            <SwitchPropertyLine
-                                label="Ignore backfaces for picking"
-                                description="Ignore backfaces when picking."
-                                value={settings.ignoreBackfacesForPicking}
-                                onChange={(checked) => {
-                                    settings.ignoreBackfacesForPicking = checked;
-                                }}
-                            />
-                        </AccordionSection>
-                    </Accordion>
+                    <Pane>
+                        <SwitchPropertyLine
+                            label="Use Degrees"
+                            description="Using degrees instead of radians."
+                            value={settings.useDegrees}
+                            onChange={(checked) => {
+                                settings.useDegrees = checked;
+                            }}
+                        />
+                        <SwitchPropertyLine
+                            label="Ignore backfaces for picking"
+                            description="Ignore backfaces when picking."
+                            value={settings.ignoreBackfacesForPicking}
+                            onChange={(checked) => {
+                                settings.ignoreBackfacesForPicking = checked;
+                            }}
+                        />
+                    </Pane>
                 );
             },
         });
