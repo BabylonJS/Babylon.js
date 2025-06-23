@@ -62,13 +62,6 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
     },
-    accordion: {
-        overflowY: "auto",
-        paddingBottom: tokens.spacingVerticalM,
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
     panelDiv: {
         display: "flex",
         flexDirection: "column",

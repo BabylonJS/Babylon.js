@@ -35,7 +35,7 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
     const { children, ...rest } = props;
 
     return (
-        <FluentAccordion collapsible multiple defaultOpenItems={Array.from({ length: Children.count(children) }, (_, index) => index)} {...rest}>
+        <FluentAccordion className={classes.accordion} collapsible multiple defaultOpenItems={Array.from({ length: Children.count(children) }, (_, index) => index)} {...rest}>
             {Children.map(children, (child, index) => {
                 if (isValidElement(child)) {
                     return (
