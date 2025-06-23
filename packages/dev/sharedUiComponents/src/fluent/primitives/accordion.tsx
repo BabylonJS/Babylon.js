@@ -2,15 +2,7 @@ import type { FunctionComponent, PropsWithChildren } from "react";
 
 import { Children, isValidElement } from "react";
 
-import {
-    Accordion as FluentAccordion,
-    AccordionItem as FluentAccordionItem,
-    AccordionHeader as FluentAccordionHeader,
-    AccordionPanel as FluentAccordionPanel,
-    Subtitle1,
-    makeStyles,
-    tokens,
-} from "@fluentui/react-components";
+import { Accordion as FluentAccordion, AccordionItem, AccordionHeader, AccordionPanel, Subtitle1, makeStyles, tokens } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
     accordion: {
@@ -47,14 +39,14 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
             {Children.map(children, (child, index) => {
                 if (isValidElement(child)) {
                     return (
-                        <FluentAccordionItem key={index} value={index}>
-                            <FluentAccordionHeader expandIconPosition="end">
+                        <AccordionItem key={child.props.title} value={index}>
+                            <AccordionHeader expandIconPosition="end">
                                 <Subtitle1>{child.props.title}</Subtitle1>
-                            </FluentAccordionHeader>
-                            <FluentAccordionPanel>
+                            </AccordionHeader>
+                            <AccordionPanel>
                                 <div className={classes.panelDiv}>{child}</div>
-                            </FluentAccordionPanel>
-                        </FluentAccordionItem>
+                            </AccordionPanel>
+                        </AccordionItem>
                     );
                 }
             })}
