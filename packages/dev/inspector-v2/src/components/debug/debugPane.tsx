@@ -2,7 +2,6 @@
 import { AccordionPane } from "../accordionPane";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { FontAsset } from "addons/msdfText/fontAsset";
-import type { Nullable } from "core/types";
 import { TextRenderer } from "addons/msdfText/textRenderer";
 import { Matrix } from "core/Maths/math.vector";
 import "core/Physics/physicsEngineComponent";
@@ -18,48 +17,27 @@ import { Tools } from "core/Misc/tools";
 import { Color3 } from "core/Maths/math.color";
 import { Texture } from "core/Materials/Textures/texture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { useObservableState } from "../../hooks/observableHooks";
 import type { Scene } from "core/scene";
-import { useInterceptObservable } from "../../hooks/instrumentationHooks";
-import type { ComponentType } from "react";
-import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLine";
 import { MaterialFlags } from "core/Materials/materialFlags";
-
-let _FontAsset: Nullable<FontAsset> = null;
-let _NamesViewerEnabled = false;
-let _PhysicsViewersEnabled = false;
-let _GridMesh: Nullable<AbstractMesh> = null;
-
-export type BoundPropertyProps<T, P extends object> = Omit<P, "value" | "onChange"> & {
-    component: ComponentType<P & BaseComponentProps<T>>;
-    target: any;
-    propertyKey: PropertyKey;
-};
-
-export function BoundPropertyLine<T, P extends object>(props: BoundPropertyProps<T, P>) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { target, propertyKey, component: Component, ...rest } = props;
-    const value = useObservableState(() => target[propertyKey], useInterceptObservable("property", target, propertyKey));
-
-    return <Component {...(rest as P)} value={value} onChange={(val: T) => (target[propertyKey] = val)} />;
-}
+import { BoundPropertyLine } from "../properties/boundPropertyLine";
 
 const SwitchGrid = function (renderScene: Scene) {
     const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
-    if (!_GridMesh) {
+    if (!scene.reservedDataStore.gridMesh) {
         const extend = renderScene.getWorldExtends();
         const width = (extend.max.x - extend.min.x) * 5.0;
         const depth = (extend.max.z - extend.min.z) * 5.0;
 
-        _GridMesh = CreateGround("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, scene);
-        if (!_GridMesh.reservedDataStore) {
-            _GridMesh.reservedDataStore = {};
+        scene.reservedDataStore.gridMesh = CreateGround("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, scene);
+        const gridMesh = scene.reservedDataStore.gridMesh as AbstractMesh;
+        if (!gridMesh.reservedDataStore) {
+            gridMesh.reservedDataStore = {};
         }
-        _GridMesh.scaling.x = Math.max(width, depth);
-        _GridMesh.scaling.z = _GridMesh.scaling.x;
-        _GridMesh.reservedDataStore.isInspectorGrid = true;
-        _GridMesh.isPickable = false;
+        gridMesh.scaling.x = Math.max(width, depth);
+        gridMesh.scaling.z = gridMesh.scaling.x;
+        gridMesh.reservedDataStore.isInspectorGrid = true;
+        gridMesh.isPickable = false;
 
         const groundMaterial = new GridMaterial("GridMaterial", scene);
         groundMaterial.majorUnitFrequency = 10;
@@ -73,18 +51,16 @@ const SwitchGrid = function (renderScene: Scene) {
         const textureUrl = Tools.GetAssetUrl("https://assets.babylonjs.com/core/environments/backgroundGround.png");
         groundMaterial.opacityTexture = new Texture(textureUrl, scene);
 
-        _GridMesh.material = groundMaterial;
+        gridMesh.material = groundMaterial;
         return;
     }
-
-    _GridMesh.dispose(true, true);
-    _GridMesh = null;
+    const gridMesh = scene.reservedDataStore.gridMesh as AbstractMesh;
+    gridMesh.dispose(true, true);
+    scene.reservedDataStore.gridMesh = null;
 };
 
 const SwitchPhysicsViewers = function (scene: Scene) {
-    _PhysicsViewersEnabled = !_PhysicsViewersEnabled;
-
-    if (_PhysicsViewersEnabled) {
+    if (!scene.reservedDataStore.physicsViewer) {
         const physicsViewer = new PhysicsViewer(scene);
         scene.reservedDataStore.physicsViewer = physicsViewer;
 
@@ -119,24 +95,20 @@ const SwitchPhysicsViewers = function (scene: Scene) {
     } else {
         scene.reservedDataStore.physicsViewer.dispose();
         scene.reservedDataStore.physicsViewer = null;
-        _FontAsset?.dispose();
-        _FontAsset = null;
     }
 };
 
 const SwitchNameViewerAsync = async function (scene: Scene) {
-    _NamesViewerEnabled = !_NamesViewerEnabled;
-
-    if (_NamesViewerEnabled) {
+    if (!scene.reservedDataStore.textRenderersHook) {
         scene.reservedDataStore.textRenderers = [];
-        if (!_FontAsset) {
+        if (!scene.reservedDataStore.fontAsset) {
             const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
             // eslint-disable-next-line require-atomic-updates
-            _FontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
+            scene.reservedDataStore.fontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
         }
 
         const textRendererPromises = scene.meshes.map(async (mesh) => {
-            const textRenderer = await TextRenderer.CreateTextRendererAsync(_FontAsset!, scene.getEngine());
+            const textRenderer = await TextRenderer.CreateTextRendererAsync(scene.reservedDataStore.fontAsset!, scene.getEngine());
 
             textRenderer.addParagraph(mesh.name);
             textRenderer.isBillboard = true;
@@ -177,24 +149,35 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
 
     // Making sure we clean up when the scene is disposed
     scene.onDisposeObservable.addOnce(() => {
-        if (_PhysicsViewersEnabled) {
+        if (scene.reservedDataStore.physicsViewer) {
             SwitchPhysicsViewers(scene);
         }
 
-        if (_NamesViewerEnabled) {
+        if (scene.reservedDataStore.textRenderersHook) {
             void SwitchNameViewerAsync(scene);
+            scene.reservedDataStore.fontAsset?.dispose();
         }
 
-        if (_GridMesh) {
+        if (scene.reservedDataStore.gridMesh) {
             SwitchGrid(scene);
         }
     });
 
     return (
         <div style={{ overflowY: "auto", overflowX: "hidden" }}>
-            <SwitchPropertyLine label="Grid" description="Display a ground grid." value={_GridMesh !== null} onChange={() => SwitchGrid(scene)} />
-            <SwitchPropertyLine label="Physics" description="Display physic debug info." value={_PhysicsViewersEnabled} onChange={() => SwitchPhysicsViewers(scene)} />
-            <SwitchPropertyLine label="Names" description="Display mesh names." value={_NamesViewerEnabled} onChange={() => void SwitchNameViewerAsync(scene)} />
+            <SwitchPropertyLine label="Grid" description="Display a ground grid." value={!!scene.reservedDataStore.gridMesh} onChange={() => SwitchGrid(scene)} />
+            <SwitchPropertyLine
+                label="Physics"
+                description="Display physic debug info."
+                value={!!scene.reservedDataStore.physicsViewer}
+                onChange={() => SwitchPhysicsViewers(scene)}
+            />
+            <SwitchPropertyLine
+                label="Names"
+                description="Display mesh names."
+                value={!!scene.reservedDataStore.textRenderersHook}
+                onChange={() => void SwitchNameViewerAsync(scene)}
+            />
 
             <BoundPropertyLine component={SwitchPropertyLine} key="Diffuse" label="Diffuse" target={StandardMaterial} propertyKey="DiffuseTextureEnabled" />
             <BoundPropertyLine component={SwitchPropertyLine} key="Ambient" label="Ambient" target={StandardMaterial} propertyKey="AmbientTextureEnabled" />
