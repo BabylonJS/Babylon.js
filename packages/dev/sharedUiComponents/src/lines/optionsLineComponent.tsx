@@ -126,9 +126,13 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
                 <Dropdown
                     options={this.props.options}
                     onChange={(val: DropdownOption) => {
-                        val.value !== undefined && this.updateValue(val.value.toString());
+                        if (val.value === null || val.value === undefined) {
+                            this.updateValue(Null_Value.toString());
+                        } else {
+                            this.updateValue(val.value.toString());
+                        }
                     }}
-                    value={this.props.options.find((o) => o.value === this.state.value || o.selected) || this.props.options[0]}
+                    value={this.props.options.find((o) => o.value === this.state.value || o.selected) || ({ label: "Default", value: null } as DropdownOption)}
                 />
             </PropertyLine>
         );

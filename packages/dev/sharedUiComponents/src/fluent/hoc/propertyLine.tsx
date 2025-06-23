@@ -1,4 +1,4 @@
-import { Body1, Body1Strong, Button, InfoLabel, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Body1Strong, Button, InfoLabel, Link, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
@@ -74,6 +74,11 @@ export type PropertyLineProps = {
      * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
      */
     expandedContent?: JSX.Element;
+
+    /**
+     * Link to the documentation for this property, available from the info icon either linked from the description (if provided) or defalt 'docs' text
+     */
+    docLink?: string;
 };
 
 export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren>((props, ref) => {
@@ -115,9 +120,11 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const classes = usePropertyLineStyles();
     const [expanded, setExpanded] = useState(false);
 
-    const { label, description, onCopy, expandedContent, children } = props;
+    const { label, onCopy, expandedContent, children } = props;
 
     const { disableCopy } = useContext(ToolContext);
+
+    const description = props.description ?? (props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description);
 
     return (
         <LineContainer ref={ref}>
