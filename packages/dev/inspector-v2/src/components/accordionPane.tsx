@@ -2,7 +2,7 @@
 
 import type { ComponentType } from "react";
 
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles } from "@fluentui/react-components";
 import { useMemo, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
