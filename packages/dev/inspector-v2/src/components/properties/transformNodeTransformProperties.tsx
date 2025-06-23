@@ -30,9 +30,9 @@ export const TransformNodeTransformProperties: FunctionComponent<{ node: Transfo
 
     return (
         <>
-            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (transformNode.position = val)} />
-            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (transformNode.scaling = val)} />
-            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (transformNode.scaling = val)} />
+            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (node.position = val)} />
+            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (node.scaling = val)} />
+            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (node.scaling = val)} />
         </>
     );
 };
