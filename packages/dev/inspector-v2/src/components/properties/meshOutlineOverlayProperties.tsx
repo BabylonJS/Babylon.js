@@ -9,6 +9,7 @@ import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
+import { BoundPropertyLine } from "./boundPropertyLine";
 
 type Color3Keys<T> = { [P in keyof T]: T[P] extends Color3 ? P : never }[keyof T];
 
@@ -25,7 +26,6 @@ export const MeshOutlineOverlayProperties: FunctionComponent<{ mesh: Mesh }> = (
     const { mesh } = props;
 
     // There is no observable for colors, so we use an interceptor to listen for changes.
-    const renderOverlay = useObservableState(() => mesh.renderOverlay, useInterceptObservable("property", mesh, "renderOverlay"));
     const overlayColor = useColor3Property(mesh, "overlayColor");
 
     const renderOutline = useObservableState(() => mesh.renderOutline, useInterceptObservable("property", mesh, "renderOutline"));
@@ -33,8 +33,8 @@ export const MeshOutlineOverlayProperties: FunctionComponent<{ mesh: Mesh }> = (
 
     return (
         <>
-            <SwitchPropertyLine key="RenderOverlay" label="Render Overlay" value={renderOverlay} onChange={(checked) => (mesh.renderOverlay = checked)} />
-            <Collapse visible={renderOverlay}>
+            <BoundPropertyLine component={SwitchPropertyLine} key="RenderOverlay" label="Render Overlay" target={mesh} propertyKey="renderOverlay" />
+            <Collapse visible={mesh.renderOverlay}>
                 <Color3PropertyLine
                     key="OverlayColor"
                     label="Overlay Color"

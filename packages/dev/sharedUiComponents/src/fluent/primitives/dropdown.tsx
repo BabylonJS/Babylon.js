@@ -1,5 +1,6 @@
 import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
+import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useDropdownStyles = makeStyles({
     dropdownOption: {
@@ -20,7 +21,9 @@ export type DropdownOption = {
     value: string | number;
 };
 
-type DropdownProps = { options: readonly DropdownOption[]; onSelect: (o: string) => void; defaultValue?: DropdownOption };
+export type DropdownProps = BaseComponentProps<DropdownOption> & {
+    options: readonly DropdownOption[];
+};
 
 /**
  * Renders a fluent UI dropdown with a calback for selection and a required default value
@@ -33,10 +36,10 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
         <FluentDropdown
             className={classes.dropdownOption}
             onOptionSelect={(evt, data) => {
-                data.optionValue != undefined && props.onSelect(data.optionValue);
+                data.optionValue != undefined && props.onChange(props.options.find((o) => o.value.toString() === data.optionValue) as DropdownOption);
             }}
-            defaultValue={props.defaultValue?.label}
-            defaultSelectedOptions={props.defaultValue && [props.defaultValue.value.toString()]}
+            defaultValue={props.value.label}
+            defaultSelectedOptions={[props.value.value.toString()]}
         >
             {props.options.map((option: DropdownOption) => (
                 <Option className={classes.optionsLine} key={option.label} value={option.value.toString()} disabled={false}>
