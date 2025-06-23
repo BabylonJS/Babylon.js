@@ -8,7 +8,7 @@ import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPro
 
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
-import { useVector3Property, useColor3Property } from "../shadered";
+import { useVector3Property, useColor3Property } from "../observableUtils";
 
 export const PointLightSetupProperties: FunctionComponent<{ context: PointLight }> = ({ context: pointLight }) => {
     const position = useVector3Property(pointLight, "position");

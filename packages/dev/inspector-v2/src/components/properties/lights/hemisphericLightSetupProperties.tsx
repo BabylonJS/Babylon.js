@@ -8,7 +8,7 @@ import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPro
 
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
-import { useVector3Property, useColor3Property } from "../shadered";
+import { useVector3Property, useColor3Property } from "../observableUtils";
 
 export const HemisphericLightSetupProperties: FunctionComponent<{ context: HemisphericLight }> = ({ context: hemisphericLight }) => {
     const direction = useVector3Property(hemisphericLight, "direction");

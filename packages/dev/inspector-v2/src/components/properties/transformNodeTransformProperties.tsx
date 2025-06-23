@@ -4,7 +4,7 @@ import type { TransformNode } from "core/index";
 import type { FunctionComponent } from "react";
 
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-import { useVector3Property } from "./shadered";
+import { useVector3Property } from "./observableUtils";
 
 export const TransformNodeTransformProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
     const { node } = props;
