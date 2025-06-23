@@ -9,7 +9,6 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchProper
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
 
 import { useObservableState } from "../../hooks/observableHooks";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 
 export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -37,13 +36,6 @@ export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; sele
                     onLink={() => (selectionService.selectedEntity = material)}
                 />
             )}
-            <PlaceholderPropertyLine
-                key="PlaceholderQuaternion"
-                label="Rotation"
-                value={mesh.rotationQuaternion}
-                onChange={(val) => (mesh.rotationQuaternion = val)}
-                description="This is a placeholder for Quaternion line component "
-            />
         </>
     );
 };
