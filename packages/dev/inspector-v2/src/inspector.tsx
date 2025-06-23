@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
+import { Sprite, type IDisposable, type IInspectorOptions, type Nullable, type Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
@@ -20,6 +20,8 @@ import { TransformNodePropertiesServiceDefinition } from "./services/panes/prope
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
@@ -169,6 +171,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
             MaterialExplorerServiceDefinition,
+            SpriteManagerHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
@@ -177,6 +180,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
             TransformNodePropertiesServiceDefinition,
+            SpritePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

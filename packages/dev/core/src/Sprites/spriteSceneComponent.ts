@@ -31,6 +31,16 @@ declare module "../scene" {
         spriteManagers?: Array<ISpriteManager>;
 
         /**
+         * An event triggered when a sprite manager is added to the scene
+         */
+        onNewSpriteManagerAddedObservable: Observable<ISpriteManager>;
+
+        /**
+         * An event triggered when a sprite manager is removed from the scene
+         */
+        onSpriteManagerRemovedObservable: Observable<ISpriteManager>;
+
+        /**
          * An event triggered when sprites rendering is about to start
          * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
          */
@@ -277,6 +287,9 @@ export class SpriteSceneComponent implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
         this.scene.spriteManagers = [] as ISpriteManager[];
+        this.scene.onNewSpriteManagerAddedObservable = new Observable<ISpriteManager>();
+        this.scene.onSpriteManagerRemovedObservable = new Observable<ISpriteManager>();
+        // This ray is used to pick sprites in the scene
         this.scene._tempSpritePickingRay = Ray ? Ray.Zero() : null;
         this.scene.onBeforeSpritesRenderingObservable = new Observable<Scene>();
         this.scene.onAfterSpritesRenderingObservable = new Observable<Scene>();

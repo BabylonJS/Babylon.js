@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Nullable } from "core/index";
+import { Sprite, SpriteManager, type ArcRotateCamera, type Nullable } from "core/index";
 
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -37,6 +37,7 @@ function createCamera() {
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
+
     createCamera();
 
     engine.runRenderLoop(() => {
