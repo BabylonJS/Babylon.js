@@ -1,7 +1,11 @@
 // eslint-disable-next-line import/no-internal-modules
 
-import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, makeStyles, Subtitle1, tokens } from "@fluentui/react-components";
-import { useMemo, useState, type ComponentType } from "react";
+import type { ComponentType } from "react";
+
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { useMemo, useState } from "react";
+
+import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 export type AccordionSection = Readonly<{
     /**
@@ -57,9 +61,6 @@ const useStyles = makeStyles({
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-    },
-    placeholderDiv: {
-        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
     },
     accordion: {
         overflowY: "auto",
@@ -122,27 +123,14 @@ export function AccordionPane<ContextT = unknown>(props: {
     return (
         <div className={classes.rootDiv}>
             {visibleSections.length > 0 && (
-                <Accordion
-                    key={version}
-                    className={classes.accordion}
-                    collapsible
-                    multiple
-                    defaultOpenItems={visibleSections.filter((section) => !section.collapseByDefault).map((section) => section.identity.description)}
-                >
+                <Accordion key={version}>
                     {visibleSections.map((section) => {
                         return (
-                            <AccordionItem key={section.identity.description} value={section.identity.description}>
-                                <AccordionHeader expandIconPosition="end">
-                                    <Subtitle1>{section.identity.description}</Subtitle1>
-                                </AccordionHeader>
-                                <AccordionPanel>
-                                    <div className={classes.panelDiv}>
-                                        {section.components.map((component) => {
-                                            return <component.component key={component.key} context={context} />;
-                                        })}
-                                    </div>
-                                </AccordionPanel>
-                            </AccordionItem>
+                            <AccordionSection key={section.identity.description} title={section.identity.description!}>
+                                {section.components.map((component) => {
+                                    return <component.component key={component.key} context={context} />;
+                                })}
+                            </AccordionSection>
                         );
                     })}
                 </Accordion>

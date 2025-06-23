@@ -1,0 +1,63 @@
+import type { FunctionComponent, PropsWithChildren } from "react";
+
+import { Children, isValidElement } from "react";
+
+import {
+    Accordion as FluentAccordion,
+    AccordionItem as FluentAccordionItem,
+    AccordionHeader as FluentAccordionHeader,
+    AccordionPanel as FluentAccordionPanel,
+    Subtitle1,
+    makeStyles,
+    tokens,
+} from "@fluentui/react-components";
+
+const useStyles = makeStyles({
+    accordion: {
+        overflowY: "auto",
+        paddingBottom: tokens.spacingVerticalM,
+        display: "flex",
+        flexDirection: "column",
+        rowGap: tokens.spacingVerticalM,
+    },
+    panelDiv: {
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+    },
+});
+
+export type AccordionSectionProps = {
+    title: string;
+};
+
+export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSectionProps>> = (props) => {
+    const classes = useStyles();
+
+    return <div className={classes.panelDiv}>{props.children}</div>;
+};
+
+export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
+    const classes = useStyles();
+
+    const { children, ...rest } = props;
+
+    return (
+        <FluentAccordion collapsible multiple defaultOpenItems={Array.from({ length: Children.count(children) }, (_, index) => index)} {...rest}>
+            {Children.map(children, (child, index) => {
+                if (isValidElement(child)) {
+                    return (
+                        <FluentAccordionItem key={index} value={index}>
+                            <FluentAccordionHeader expandIconPosition="end">
+                                <Subtitle1>{child.props.title}</Subtitle1>
+                            </FluentAccordionHeader>
+                            <FluentAccordionPanel>
+                                <div className={classes.panelDiv}>{child}</div>
+                            </FluentAccordionPanel>
+                        </FluentAccordionItem>
+                    );
+                }
+            })}
+        </FluentAccordion>
+    );
+};
