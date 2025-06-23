@@ -37,6 +37,7 @@ module.exports = (env) => {
                         {
                             loader: "ts-loader",
                             options: {
+                                configFile: "tsconfig.build.json",
                                 getCustomTransformers: () => ({
                                     before: [ReactRefreshTypeScript()].filter(Boolean),
                                 }),
@@ -45,10 +46,6 @@ module.exports = (env) => {
                         },
                     ],
                     exclude: /node_modules/,
-                },
-                {
-                    test: /\.css$/,
-                    use: ["style-loader", "css-loader"],
                 },
             ],
         },

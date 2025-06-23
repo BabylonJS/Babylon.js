@@ -4,8 +4,8 @@ import transformer from "./pathTransform.js";
 import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping.js";
 import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
 import * as path from "path";
-import { camelize } from "./utils.js";
-import type { RuleSetRule, Configuration } from "webpack";
+import { camelize, copyFile } from "./utils.js";
+import type { RuleSetRule, Configuration, Compiler } from "webpack";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
@@ -220,6 +220,36 @@ export const commonDevWebpackConfiguration = (
     };
 };
 
+/**
+ * Originally our build commands for our tools were running both dev and prod, outputted an unminified max.js file during CI. This impacted memory usage during
+ * build and is not necessary for debugging since we offer source maps. We have since removed the dev step from our builds, but in order to preserve
+ * backwards compatibility for users who may have been referencing the .max.js file directly, we now copy the minified file to a .max.js file
+ * after the build is complete. This plugin will only run if the `minToMax` option is set to true in the webpack configuration.
+ */
+class CopyMinToMaxWebpackPlugin {
+    apply(compiler: Compiler) {
+        compiler.hooks.done.tap("CopyToMax", (stats) => {
+            const outputPath = stats.compilation.outputOptions.path;
+            if (outputPath) {
+                for (const chunk of stats.compilation.chunks) {
+                    for (const file of chunk.files) {
+                        const from = path.join(outputPath, file);
+                        let to;
+                        if (file.includes(".min.js")) {
+                            // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
+                            to = path.join(outputPath, file.replace(/\.min\.js$/, ".js"));
+                        } else {
+                            // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
+                            to = path.join(outputPath, file.replace(/\.js$/, ".max.js"));
+                        }
+                        copyFile(from, to);
+                    }
+                }
+            }
+        });
+    }
+}
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const commonUMDWebpackConfiguration = (options: {
     entryPoints?: { [name: string]: string };
@@ -235,6 +265,7 @@ export const commonUMDWebpackConfiguration = (options: {
     es6Mode?: boolean;
     maxMode?: boolean; // if true filename will have .max for the dev version and nothing for the prod version
     extraExternals?: Configuration["externals"]; // see https://webpack.js.org/configuration/externals/#combining-syntaxes
+    minToMax?: boolean; // if true, will copy the minified file to a file with max.js suffix. This is for back-compat reasons in case users reference .max.js output directly. For debugging purposes, we expose the sourcemap
 }) => {
     const packageMapping = getPackageMappingByDevName(options.devPackageName);
     const packageName = getPublicPackageName(options.es6Mode ? packageMapping.es6 : packageMapping.umd);
@@ -248,6 +279,7 @@ export const commonUMDWebpackConfiguration = (options: {
         entry: options.entryPoints ?? "./src/index.ts",
         devtool: options.mode === "production" ? "source-map" : "inline-cheap-module-source-map",
         mode: options.mode || "development",
+        plugins: options.minToMax && options.mode === "production" ? [new CopyMinToMaxWebpackPlugin()] : [],
         output: {
             path: options.outputPath || path.resolve("./dist"),
             filename: (typeof options.overrideFilename === "function" && options.overrideFilename) || filename,
@@ -277,7 +309,6 @@ export const commonUMDWebpackConfiguration = (options: {
                 tsOptions: {
                     getCustomTransformers: (_program: ts.Program) => {
                         // webpack program
-                        console.log("generating transformers...");
                         return {
                             after: [
                                 transformer(_program, {

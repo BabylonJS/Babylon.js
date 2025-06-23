@@ -1,14 +1,15 @@
-import type { InputProps, SliderOnChangeData, SliderProps } from "@fluentui/react-components";
-import { makeStyles, Slider } from "@fluentui/react-components";
+import type { SliderOnChangeData } from "@fluentui/react-components";
+import { makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { Input } from "./input";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState } from "react";
+import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useSyncedSliderStyles = makeStyles({
     syncedSlider: {
         display: "flex",
         alignItems: "center",
-        gap: "1rem",
+        gap: tokens.spacingHorizontalXXS, // 2px
         width: "100%", // Only fill available space
     },
     slider: {
@@ -21,15 +22,10 @@ const useSyncedSliderStyles = makeStyles({
     },
 });
 
-export type SyncedSliderProps = Omit<InputProps & SliderProps, "onChange" | "value"> & {
-    /**
-     * Callback to notify parent of value change, override both of the slider/input handlers
-     */
-    onChange: (value: number) => void;
-    /**
-     * Controlled value for the slider and input
-     */
-    value: number;
+export type SyncedSliderProps = BaseComponentProps<number> & {
+    min?: number;
+    max?: number;
+    step?: number;
 };
 
 /**
@@ -50,8 +46,8 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
         props.onChange(data.value); // Notify parent
     };
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const newValue = Number(e.target.value);
+    const handleInputChange = (value: string | number) => {
+        const newValue = Number(value);
         if (!isNaN(newValue)) {
             setValue(newValue);
             props.onChange(newValue); // Notify parent
@@ -60,8 +56,10 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
 
     return (
         <div className={classes.syncedSlider}>
-            <Slider {...props} className={classes.slider} value={value} onChange={handleSliderChange} />
-            <Input {...props} type="number" value={value.toString()} onChange={handleInputChange} />
+            {props.min != undefined && props.max != undefined && (
+                <Slider {...props} size="small" className={classes.slider} value={value} onChange={handleSliderChange} step={undefined} />
+            )}
+            <Input {...props} className={classes.input} value={value} onChange={handleInputChange} step={props.step} />
         </div>
     );
 };

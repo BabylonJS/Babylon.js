@@ -1,13 +1,13 @@
 {
     "name": "babylonjs",
-    "version": "8.12.1",
+    "version": "8.13.0",
     "main": "babylon.js",
     "types": "babylon.module.d.ts",
     "files": [
         "*"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "postbuild": "node ./scripts/checkNoChunks.js",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",

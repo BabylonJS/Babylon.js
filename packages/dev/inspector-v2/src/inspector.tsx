@@ -12,6 +12,8 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
@@ -174,7 +176,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
+            NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
+            TransformNodePropertiesServiceDefinition,
 
             // Lights properties services.
             HemisphericLightPropertiesServiceDefinition,

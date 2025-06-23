@@ -23,7 +23,7 @@ export const StatsFrameStepsSectionIdentity = Symbol("Frame Steps Duration");
 export const StatsSystemInfoSectionIdentity = Symbol("System Info");
 
 /**
- * Provides a scene stats pane.
+ * Allows new sections or content to be added to the stats pane.
  */
 export interface IStatsService extends IService<typeof StatsServiceIdentity> {
     /**
@@ -39,6 +39,9 @@ export interface IStatsService extends IService<typeof StatsServiceIdentity> {
     addSectionContent(content: AccordionSectionContent<Scene>): IDisposable;
 }
 
+/**
+ * Provides a scene stats pane.
+ */
 export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellService, ISceneContext]> = {
     friendlyName: "Stats",
     produces: [StatsServiceIdentity],

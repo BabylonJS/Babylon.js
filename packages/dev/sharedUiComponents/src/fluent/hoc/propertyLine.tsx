@@ -1,8 +1,10 @@
-import { Body1Strong, Button, InfoLabel, makeStyles, tokens } from "@fluentui/react-components";
-import { Add24Filled, Copy24Regular, Subtract24Filled } from "@fluentui/react-icons";
+import { Body1, Body1Strong, Button, InfoLabel, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
+import { Collapse } from "@fluentui/react-motion-components-preview";
+import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
-import { useState } from "react";
+import { useContext, useState, forwardRef } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
+import { ToolContext } from "./fluentToolWrapper";
 
 const usePropertyLineStyles = makeStyles({
     container: {
@@ -19,18 +21,29 @@ const usePropertyLineStyles = makeStyles({
         width: "100%",
     },
     label: {
-        width: "33%",
+        flex: "1 1 0",
+        minWidth: "50px",
         textAlign: "left",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    },
+    labelText: {
+        whiteSpace: "nowrap",
     },
     rightContent: {
-        width: "67%",
+        flex: "0 1 auto",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
+        gap: tokens.spacingHorizontalS,
     },
     button: {
         marginLeft: tokens.spacingHorizontalXXS,
-        width: "100px",
+        margin: 0,
+        padding: 0,
+        border: 0,
+        minWidth: 0,
     },
     fillRestOfRightContentWidth: {
         flex: 1,
@@ -38,9 +51,10 @@ const usePropertyLineStyles = makeStyles({
         justifyContent: "flex-end",
         alignItems: "center",
     },
-    expandedContent: {
-        backgroundColor: tokens.colorNeutralBackground1,
+    expandButton: {
+        margin: 0,
     },
+    expandedContent: {},
 });
 
 export type PropertyLineProps = {
@@ -62,6 +76,34 @@ export type PropertyLineProps = {
     expandedContent?: JSX.Element;
 };
 
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren>((props, ref) => {
+    const classes = usePropertyLineStyles();
+    return (
+        <div ref={ref} className={classes.container}>
+            {props.children}
+        </div>
+    );
+});
+
+export type BaseComponentProps<T> = {
+    /**
+     * The value of the property to be displayed and modified.
+     */
+    value: T;
+    /**
+     * Callback function to handle changes to the value
+     */
+    onChange: (value: T) => void;
+    /**
+     * Optional flag to disable the component, preventing any interaction.
+     */
+    disabled?: boolean;
+    /**
+     * Optional class name to apply custom styles to the component.
+     */
+    className?: string;
+};
+
 /**
  * A reusable component that renders a property line with a label and child content, and an optional description, copy button, and expandable section.
  *
@@ -69,26 +111,29 @@ export type PropertyLineProps = {
  * @returns A React element representing the property line.
  *
  */
-export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps>> = (props) => {
+export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps>>((props, ref) => {
     const classes = usePropertyLineStyles();
     const [expanded, setExpanded] = useState(false);
 
     const { label, description, onCopy, expandedContent, children } = props;
 
+    const { disableCopy } = useContext(ToolContext);
+
     return (
-        <div className={classes.container}>
+        <LineContainer ref={ref}>
             <div className={classes.line}>
                 <InfoLabel className={classes.label} info={description}>
-                    <Body1Strong>{label}</Body1Strong>
+                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
                     <div className={classes.fillRestOfRightContentWidth}>{children}</div>
 
                     {expandedContent && (
-                        <Button
-                            appearance="subtle"
-                            icon={expanded ? <Subtract24Filled /> : <Add24Filled />}
+                        <ToggleButton
+                            appearance="transparent"
+                            icon={expanded ? <SubtractFilled /> : <AddFilled />}
                             className={classes.button}
+                            checked={expanded}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setExpanded((expanded) => !expanded);
@@ -96,13 +141,22 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                         />
                     )}
 
-                    {onCopy && (
-                        <Button className={classes.button} id="copyProperty" icon={<Copy24Regular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
+                    {onCopy && !disableCopy && (
+                        <Button className={classes.button} id="copyProperty" icon={<CopyRegular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
                     )}
                 </div>
             </div>
+            <Collapse visible={expanded && !!expandedContent}>
+                <div className={classes.expandedContent}>{expandedContent}</div>
+            </Collapse>
+        </LineContainer>
+    );
+});
 
-            {expanded && expandedContent && <div className={classes.expandedContent}>{expandedContent}</div>}
-        </div>
+export const PlaceholderPropertyLine: FunctionComponent<BaseComponentProps<any> & PropertyLineProps> = (props) => {
+    return (
+        <PropertyLine {...props}>
+            <Body1>{props.value}</Body1>
+        </PropertyLine>
     );
 };

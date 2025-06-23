@@ -8,6 +8,7 @@ module.exports = (env) => {
         devPackageAliasPath: `../../../tools/nodeParticleEditor/dist`,
         namespace: "NODEPARTICLEEDITOR",
         maxMode: true,
+        minToMax: true,
         outputPath: path.resolve(__dirname),
         alias: {
             "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),

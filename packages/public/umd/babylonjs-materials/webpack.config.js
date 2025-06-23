@@ -30,6 +30,7 @@ module.exports = (env) => {
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "materials" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]Material${env.production ? ".min" : ""}.js`;
         },
+        minToMax: true,
     });
     return commonConfig;
 };
