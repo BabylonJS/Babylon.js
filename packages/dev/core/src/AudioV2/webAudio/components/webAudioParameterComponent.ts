@@ -1,5 +1,4 @@
 import { _GetAudioParamCurveValues } from "core/AudioV2/audioUtils";
-import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
 import { AudioParameterRampShape } from "../../audioParameter";
 import type { _WebAudioEngine } from "../webAudioEngine";
@@ -82,17 +81,12 @@ export class _WebAudioParameterComponent {
 
         let startTime = this._engine.currentTime;
 
-        Logger.Log("---");
-        Logger.Log(`Try audio parameter curve @ ${startTime}, from: ${this._targetValue}, to: ${value}, duration: ${duration}.`);
-
         if (startTime < this._rampEndTime) {
             const timeLeft = this._rampEndTime - startTime;
-            Logger.Log(`... time left: ${timeLeft}.`);
 
             if (MaxWaitTime < timeLeft) {
                 throw new Error("Audio parameter not set. Wait for current ramp to finish.");
             } else {
-                Logger.Log(`Fit audio parameter curve, timeLeft: ${timeLeft}.`);
                 duration -= timeLeft;
                 startTime = this._rampEndTime;
             }
@@ -106,9 +100,6 @@ export class _WebAudioParameterComponent {
         if (typeof curve !== "string") {
             curve = AudioParameterRampShape.Linear;
         }
-
-        Logger.Log(`Set audio parameter curve @ ${startTime}, from: ${this._targetValue}, to: ${value}, duration: ${duration}.`);
-        Logger.Log("---");
 
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(curve, this._targetValue, (this._targetValue = value)), startTime, duration);
