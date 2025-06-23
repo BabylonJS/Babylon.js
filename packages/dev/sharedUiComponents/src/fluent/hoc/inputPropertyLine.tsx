@@ -9,7 +9,7 @@ type InputPropertyLineProps = InputProps<string | number> & PropertyLineProps;
 /**
  * Wraps an input in a property line
  * @param props - PropertyLineProps and InputProps
- * @returns property-line wrapped link
+ * @returns property-line wrapped input component
  */
 const InputPropertyLine: FunctionComponent<InputPropertyLineProps> = (props) => {
     return (
