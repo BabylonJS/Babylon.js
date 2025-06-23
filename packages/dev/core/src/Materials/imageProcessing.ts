@@ -3,8 +3,12 @@ import { serializeAsImageProcessingConfiguration } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { Observer } from "../Misc/observable";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { ColorCurves } from "../Materials/colorCurves";
+import type { BaseTexture } from "./Textures/baseTexture";
+import type { ColorCurves } from "./colorCurves";
+
+// Explicit re-export of types to help TypeScript resolve them in declaration files
+export type { Observer } from "../Misc/observable";
+export type { ColorCurves } from "./colorCurves";
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
