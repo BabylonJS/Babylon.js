@@ -49,6 +49,7 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
                         </AccordionItem>
                     );
                 }
+                return null;
             })}
         </FluentAccordion>
     );
