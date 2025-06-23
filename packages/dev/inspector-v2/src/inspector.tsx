@@ -18,6 +18,8 @@ import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExpl
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
+import { HemisphericLightPropertiesServiceDefinition } from "./services/panes/properties/lights/hemisphericLightPropertiesServices";
+import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
@@ -173,6 +175,10 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             PropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
+
+            // Lights properties services.
+            HemisphericLightPropertiesServiceDefinition,
+            AreaLightPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
