@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "../propertiesService";
 
-import { AreaLight } from "core/Lights/areaLight";
+import { RectAreaLight } from "core/Lights/rectAreaLight";
 
 import { PropertiesServiceIdentity } from "../propertiesService";
 import { AreaLightSetupProperties } from "../../../../components/properties/lights/areaLightSetupProperties";
@@ -19,7 +19,7 @@ export const AreaLightPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
 
         const contentRegistration = propertiesService.addSectionContent({
             key: "Area Light Properties",
-            predicate: (entity: unknown) => entity instanceof AreaLight,
+            predicate: (entity: unknown) => entity instanceof RectAreaLight,
             content: [
                 // "SETUP" section.
                 {
