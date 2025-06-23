@@ -5,7 +5,7 @@ import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Color3, Color4 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
