@@ -39,7 +39,7 @@ module.exports = (env) => {
                     } else if (/^loaders\//.test(request)) {
                         return callback(null, "BABYLON");
                     } else if (/^addons\//.test(request)) {
-                        return callback(null, "BABYLON");
+                        return callback(null, "ADDONS");
                     } else if (/^materials\//.test(request)) {
                         return callback(null, "BABYLON");
                     }
