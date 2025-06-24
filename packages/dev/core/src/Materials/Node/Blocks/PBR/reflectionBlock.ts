@@ -7,7 +7,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
 import type { BaseTexture } from "../../../Textures/baseTexture";
@@ -195,8 +194,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this._scene.environmentTexture;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
+    public override prepareDefines(defines: NodeMaterialDefines) {
+        super.prepareDefines(defines);
 
         const reflectionTexture = this._getTexture();
         const reflection = reflectionTexture && reflectionTexture.getTextureMatrix;

@@ -60,16 +60,16 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
         // check if there is an animation(group) running on this variable. If there is, stop the animation - a value was force-set.
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         for (const animationUniqueId of currentlyRunningAnimationGroups) {
-            const animation = context.assetsContext.animationGroups[animationUniqueId];
-            // check if there is a target animation that has the target set to be the context
-            for (const targetAnimation of animation.targetedAnimations) {
-                if (targetAnimation.target === context) {
+            const animationGroup = context.assetsContext.animationGroups.find((animationGroup) => animationGroup.uniqueId == animationUniqueId);
+            if (animationGroup) {
+                // check if there is a target animation that has the target set to be the context
+                for (const targetAnimation of animationGroup.targetedAnimations) {
                     // check if the target property is the variable we are setting
                     if (targetAnimation.target === context) {
                         // check the variable name
                         if (targetAnimation.animation.targetProperty === variableName) {
                             // stop the animation
-                            animation.stop();
+                            animationGroup.stop();
                             // remove the animation from the currently running animations
                             const index = currentlyRunningAnimationGroups.indexOf(animationUniqueId);
                             if (index > -1) {

@@ -7,6 +7,8 @@ import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
 import type { Nullable } from "core/types";
+import { ToHalfFloat } from "../Misc/textureTools";
+import { Logger } from "../Misc/logger";
 
 /**
  * Class to bake vertex animation textures.
@@ -31,6 +33,49 @@ export class VertexAnimationBaker {
             this._mesh = meshOrSkeleton;
             this._skeleton = meshOrSkeleton.skeleton;
         }
+    }
+
+    /**
+     *
+     * @param ranges Defines the ranges in the animation that will be baked.
+     * @param halfFloat If true, the vertex data will be returned as half-float (Uint16Array), otherwise as full float (Float32Array).
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array or Uint16Array.
+     */
+    public bakeVertexDataSync(ranges: AnimationRange[], halfFloat: boolean): Float32Array | Uint16Array {
+        if (!this._skeleton) {
+            throw new Error("No skeleton provided.");
+        }
+        const bones = this._skeleton.bones.length;
+        const floatsPerFrame = (bones + 1) * 16;
+        const totalFrames = ranges.reduce((sum, r) => sum + (Math.floor(r.to) - Math.floor(r.from) + 1), 0);
+
+        const vertexData = halfFloat ? new Uint16Array(floatsPerFrame * totalFrames) : new Float32Array(floatsPerFrame * totalFrames);
+
+        let frameIdx = 0;
+
+        this._skeleton.returnToRest();
+
+        for (const range of ranges) {
+            for (let f = Math.floor(range.from); f <= Math.floor(range.to); f++) {
+                this._scene.beginAnimation(this._skeleton, f, f, false, 1.0);
+                this._scene.render();
+                this._skeleton.computeAbsoluteMatrices(true);
+                const matrices = this._skeleton.getTransformMatrices(this._mesh);
+                const base = frameIdx * floatsPerFrame;
+                if (halfFloat) {
+                    matrices.forEach((val, i) => {
+                        vertexData[base + i] = ToHalfFloat(val);
+                    });
+                } else {
+                    matrices.forEach((val, i) => {
+                        vertexData[base + i] = val;
+                    });
+                }
+                frameIdx++;
+            }
+        }
+
+        return vertexData;
     }
 
     /**
@@ -93,14 +138,21 @@ export class VertexAnimationBaker {
     }
     /**
      * Builds a vertex animation texture given the vertexData in an array.
-     * @param vertexData The vertex animation data. You can generate it with bakeVertexData().
+     * @param vertexData The vertex animation data. You can generate it with bakeVertexData(). You can pass in a Float32Array to return a full precision texture, or a Uint16Array to return a half-float texture.
+     * If you pass in a Uint16Array, make sure your device supports half-float textures
      * @returns The vertex animation texture to be used with BakedVertexAnimationManager.
      */
-    public textureFromBakedVertexData(vertexData: Float32Array): RawTexture {
+    public textureFromBakedVertexData(vertexData: Float32Array | Uint16Array): RawTexture {
         if (!this._skeleton) {
             throw new Error("No skeleton provided.");
         }
         const boneCount = this._skeleton.bones.length;
+
+        if (vertexData instanceof Uint16Array) {
+            if (!this._scene.getEngine().getCaps().textureHalfFloatRender) {
+                Logger.Warn("VertexAnimationBaker: Half-float textures are not supported on this device");
+            }
+        }
 
         const texture = RawTexture.CreateRGBATexture(
             vertexData,
@@ -110,7 +162,7 @@ export class VertexAnimationBaker {
             false,
             false,
             Texture.NEAREST_NEAREST,
-            Constants.TEXTURETYPE_FLOAT
+            vertexData instanceof Float32Array ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT
         );
         texture.name = "VAT" + this._skeleton.name;
         return texture;

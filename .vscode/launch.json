@@ -240,6 +240,20 @@
             "preLaunchTask": "Node Render Graph Editor Serve (Dev)"
         },
         {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Node Particle Editor development (Edge)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Node Particle Editor Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Node Particle Editor development (Chrome)",
+            "url": "http://localhost:1345",
+            "preLaunchTask": "Node Particle Editor Serve (Dev)"
+        },
+        {
             /*
             Launch the playground to be use to test changes in dev packages
             */
@@ -512,15 +526,18 @@
             "preLaunchTask": "Viewer Test App (Web)"
         },
         {
-            /*
-            Viewer configurator development - meant for development of the playground
-            It doesn't set any source code watchers!
-            */
             "type": "chrome",
             "request": "launch",
             "name": "Viewer Configurator development (Chrome)",
             "url": "http://localhost:3003",
             "preLaunchTask": "Viewer Configurator Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Inspector v2 development (Chrome)",
+            "url": "http://localhost:9001",
+            "preLaunchTask": "Inspector v2 Test App"
         }
     ],
     "inputs": [

@@ -1174,7 +1174,8 @@ export class UniformBuffer {
                 this._buffer = dataBuffer;
                 this._createBufferOnWrite = false;
                 this._currentEffect = undefined as any;
-                if (this._buffers[b][1]) {
+                // Note that if _buffers.length == 1, we don't copy _bufferData into _buffers[_bufferIndex][1] (see the update() method), and _bufferData already contains the right data
+                if (this._buffers.length > 1 && this._buffers[b][1]) {
                     this._bufferData.set(this._buffers[b][1]!);
                 }
                 this._valueCache = {};

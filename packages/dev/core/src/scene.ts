@@ -1457,6 +1457,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (value) {
             this._currentCustomRenderFunction = this.customRenderFunction;
             this.customRenderFunction = this._renderWithFrameGraph;
+            this.activeCamera = null;
         }
     }
 
@@ -1890,6 +1891,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     private _geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
 
+    private _uniqueId = 0;
+
+    /**
+     * Gets the unique id of the scene
+     */
+    public get uniqueId() {
+        return this._uniqueId;
+    }
+
     /**
      * Creates a new Scene
      * @param engine defines the engine to use to render this scene
@@ -1897,6 +1907,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     constructor(engine: AbstractEngine, options?: SceneOptions) {
         this.activeCameras = [] as Camera[];
+
+        this._uniqueId = this.getUniqueId();
 
         const fullOptions = {
             useGeometryUniqueIdsMap: true,
@@ -4880,6 +4892,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        this.onBeforeRenderObservable.notifyObservers(this);
+
         // We must keep these steps because the procedural texture component relies on them.
         // TODO: move the procedural texture component to the frame graph.
         for (const step of this._beforeClearStage) {
@@ -5030,8 +5044,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        // Before render
-        this.onBeforeRenderObservable.notifyObservers(this);
         // Custom render function?
         if (this.customRenderFunction) {
             this._renderId++;
@@ -5039,6 +5051,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
+            // Before render
+            this.onBeforeRenderObservable.notifyObservers(this);
+
             // Customs render targets
             this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
 

@@ -39,8 +39,10 @@ export class NodeRenderGraphBaseShadowGeneratorBlock extends NodeRenderGraphBloc
         this.registerInput("light", NodeRenderGraphBlockConnectionPointTypes.ShadowLight);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this._addDependenciesInput();
+    }
 
+    protected _finalizeInputOutputRegistering() {
+        this._addDependenciesInput();
         this.registerOutput("generator", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.Texture);
     }

@@ -107,6 +107,7 @@ export class PostProcessManager {
      * @param faceIndex defines the face to render to if a cubemap is defined as the target
      * @param lodLevel defines which lod of the texture to render to
      * @param doNotBindFrambuffer If set to true, assumes that the framebuffer has been bound previously
+     * @param numPostsProcesses The number of post processes to render. Defaults to the length of the postProcesses array.
      */
     public directRender(
         postProcesses: PostProcess[],
@@ -114,11 +115,12 @@ export class PostProcessManager {
         forceFullscreenViewport = false,
         faceIndex = 0,
         lodLevel = 0,
-        doNotBindFrambuffer = false
+        doNotBindFrambuffer = false,
+        numPostsProcesses = postProcesses.length
     ): void {
         const engine = this._scene.getEngine();
 
-        for (let index = 0; index < postProcesses.length; index++) {
+        for (let index = 0; index < numPostsProcesses; index++) {
             if (index < postProcesses.length - 1) {
                 postProcesses[index + 1].activate(this._scene.activeCamera || this._scene, targetTexture?.texture);
             } else {

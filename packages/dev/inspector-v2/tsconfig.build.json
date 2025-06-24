@@ -1,0 +1,28 @@
+{
+    "extends": ["../../../tsconfig.build.json", "./tsconfig.common.json"],
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+
+    "references": [
+        {
+            "path": "../core/tsconfig.build.json"
+        },
+        {
+            "path": "../loaders/tsconfig.build.json"
+        },
+        {
+            "path": "../sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "../addons/tsconfig.build.json"
+        },
+        {
+            "path": "../materials/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./src/**/*"]
+}

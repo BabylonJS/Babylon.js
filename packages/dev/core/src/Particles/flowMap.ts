@@ -1,6 +1,8 @@
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { Particle } from "../Particles/particle";
 import type { IVector3Like } from "../Maths/math.like";
+import type { Texture } from "core/Materials/Textures/texture";
+import { TextureTools } from "core/Misc/textureTools";
 
 const FlowVector = new Vector3(0, 0, 0);
 const ScaledFlowVector = new Vector3(0, 0, 0);
@@ -114,6 +116,37 @@ export class FlowMap {
 
                 resolve(new FlowMap(flowCanvas.width, flowCanvas.height, flowImageData.data));
             };
+        });
+    }
+
+    /**
+     * Load from a texture
+     * @param texture defines the source texture
+     * @returns a promise fulfilled when image data is loaded
+     */
+    public static async ExtractFromTextureAsync(texture: Texture) {
+        return await new Promise<FlowMap>((resolve, reject) => {
+            if (!texture.isReady()) {
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                texture.onLoadObservable.addOnce(async () => {
+                    try {
+                        const result = await this.ExtractFromTextureAsync(texture);
+                        resolve(result);
+                    } catch (e) {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject(e);
+                    }
+                });
+                return;
+            }
+            const size = texture.getSize();
+            TextureTools.GetTextureDataAsync(texture, size.width, size.height)
+                // eslint-disable-next-line github/no-then
+                .then((data) => {
+                    resolve(new FlowMap(size.width, size.height, new Uint8ClampedArray(data)));
+                })
+                // eslint-disable-next-line github/no-then
+                .catch(reject);
         });
     }
 }

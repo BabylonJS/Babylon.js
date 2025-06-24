@@ -132,7 +132,7 @@ export class Observer<T> implements IObserver {
 /**
  * An interface that defines the reader side of an Observable (receive notifications).
  */
-export interface IReadonlyObservable<T> {
+export interface IReadonlyObservable<T = unknown> {
     /**
      * Create a new Observer with the specified callback
      * @param callback the callback that will be executed for that Observer

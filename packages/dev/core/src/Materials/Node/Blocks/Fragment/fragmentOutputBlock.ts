@@ -5,7 +5,6 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Effect } from "../../../effect";
@@ -32,6 +31,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     private _linearDefineName: string;
     private _gammaDefineName: string;
     private _additionalColorDefineName: string;
+    protected _outputString: string;
 
     /**
      * Create a new FragmentOutputBlock
@@ -134,7 +134,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return this._inputs[3];
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    protected _getOutputString(state: NodeMaterialBuildState): string {
+        return state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentOutputsColor" : "gl_FragColor";
+    }
+
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
@@ -176,12 +180,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
-        let outputString = "gl_FragColor";
-        if (state._customOutputName) {
-            outputString = state._customOutputName;
-        } else if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            state.compilationString += `var fragmentOutputsColor : vec4<f32>;\r\n`;
-            outputString = "fragmentOutputsColor";
+        const outputString = this._getOutputString(state);
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            state.compilationString += `var ${outputString} : vec4<f32>;\r\n`;
         }
 
         const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -237,7 +238,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             state.compilationString += `#if !defined(PREPASS)\r\n`;
-            state.compilationString += `fragmentOutputs.color = fragmentOutputsColor;\r\n`;
+            state.compilationString += `fragmentOutputs.color = ${outputString};\r\n`;
             state.compilationString += `#endif\r\n`;
         }
 

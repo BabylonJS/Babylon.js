@@ -9,6 +9,7 @@ module.exports = (env) => {
         namespace: "INSPECTOR",
         outputPath: path.resolve(__dirname),
         maxMode: true,
+        minToMax: true,
         alias: {
             "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),
         },
