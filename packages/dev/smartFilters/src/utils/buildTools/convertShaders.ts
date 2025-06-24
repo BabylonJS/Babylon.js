@@ -6,15 +6,36 @@ import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock";
 
 /**
  * Converts all GLSL files in a path into blocks for use in the build system.
- * @param shaderPath - The path to the .glsl files to convert.
+ * @param shaderPath - The path to the .glsl files to convert, or a single .glsl file.
  * @param importPath - The path to import the ShaderProgram type from.
  */
 export function ConvertShaders(shaderPath: string, importPath: string) {
-    // Get all files in the path
-    const allFiles = fs.readdirSync(shaderPath, { withFileTypes: true, recursive: true });
+    const stats = fs.statSync(shaderPath);
 
-    // Find all shaders (files with .fragment.glsl or .block.glsl extensions)
-    const shaderFiles = allFiles.filter((file) => file.isFile() && (file.name.endsWith(".fragment.glsl") || file.name.endsWith(".block.glsl")));
+    let shaderFiles: fs.Dirent[];
+
+    if (stats.isFile()) {
+        // If it's a file, create a Dirent-like object for consistency
+        const fileName = path.basename(shaderPath);
+        const dirPath = path.dirname(shaderPath);
+        shaderFiles = [
+            {
+                name: fileName,
+                path: dirPath,
+                isFile: () => true,
+                isDirectory: () => false,
+            } as fs.Dirent,
+        ];
+    } else if (stats.isDirectory()) {
+        // Get all files in the directory
+        const allFiles = fs.readdirSync(shaderPath, { withFileTypes: true, recursive: true });
+
+        // Find all shaders (files with .fragment.glsl or .block.glsl extensions)
+        shaderFiles = allFiles.filter((file) => file.isFile() && (file.name.endsWith(".fragment.glsl") || file.name.endsWith(".block.glsl")));
+    } else {
+        Logger.Log(`Error: ${shaderPath} is neither a file nor a directory.`);
+        return;
+    }
 
     // Convert all shaders
     for (const shaderFile of shaderFiles) {

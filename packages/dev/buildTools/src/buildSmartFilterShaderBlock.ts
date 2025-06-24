@@ -1,4 +1,5 @@
-import { ConvertShader } from "../../../dev/smartFilters/dist/utils/buildTools/convertShaders.js";
+/* eslint-disable no-console */
+import * as childProcess from "child_process";
 
 /**
  * Calls into the shader converter build tool that lives in \@dev/smart-filters to convert a .glsl file into a .ts file.
@@ -6,5 +7,13 @@ import { ConvertShader } from "../../../dev/smartFilters/dist/utils/buildTools/c
  * @param filePath
  */
 export function BuildSmartFilterShaderBlock(filePath: string) {
-    ConvertShader(filePath, "@babylonjs/smart-filters");
+    try {
+        childProcess.execSync(`node ./packages/dev/smartFilters/dist/utils/buildTools/buildShaders.js ${filePath} @babylonjs/smart-filters`, {
+            stdio: "inherit",
+            encoding: "utf8",
+        });
+    } catch (error) {
+        console.error("Error running shader conversion:", error);
+        throw error;
+    }
 }

@@ -8,7 +8,7 @@ import { OutputBlock } from "./blockFoundation/outputBlock";
 import { InternalSmartFilterRuntime } from "./runtime/smartFilterRuntime";
 import { RenderTargetGenerator } from "./runtime/renderTargetGenerator";
 import { AggregateBlock } from "./blockFoundation/aggregateBlock";
-import type { IEditorData } from "@babylonjs/shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { IDisposable } from "./IDisposable";
 import { ShaderBlock } from "./blockFoundation/shaderBlock";
 import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
