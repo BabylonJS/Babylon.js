@@ -16,14 +16,12 @@
         "build": "npm run compile",
         "test": "jest -c ../../../jest.config.ts --passWithNoTests",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf --glob ./src/blocks/**/*.block.ts && rimraf --glob ./src/blocks/**/*.fragment.ts",
-        "precompile": "node ../smartFilters/dist/utils/buildTools/buildShaders.js ./src/blocks @babylonjs/smart-filters",
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
         "watch": "concurrently \"npm run watch:shaders\" && \" npm run watch:buildTools\"",
         "watch:shaders": "node ../core/dist/utils/buildTools/watchShaders.js ./src/blocks @babylonjs/smart-filters",
         "watch:buildTools": "build-tools -c dev-watch --packages \"smart-filters-blocks\" -wa",
-        "watch:source": "tsc -b tsconfig.build.json -w",
-        "postcompile": "build-tools -c add-js-to-es6"
+        "watch:source": "tsc -b tsconfig.build.json -w"
     },
     "devDependencies": {
         "core": "npm:@babylonjs/core@8.0.1",

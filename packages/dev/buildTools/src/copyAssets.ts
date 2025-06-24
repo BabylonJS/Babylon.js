@@ -5,6 +5,7 @@ import { copyFile, checkArgs } from "./utils.js";
 import * as chokidar from "chokidar";
 import type { DevPackageName } from "./packageMapping.js";
 import { BuildShader } from "./buildShaders.js";
+import { BuildSmartFilterShaderBlock } from "./buildSmartFilterShaderBlock.js";
 
 const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {
     if (!options.outputDir) {
@@ -12,6 +13,9 @@ const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?
     }
     if (path.extname(file) === ".fx") {
         BuildShader(file, options.basePackageName, options.isCore);
+    } else if (file.endsWith(".fragment.glsl") || file.endsWith(".block.glsl")) {
+        // Smart Filters converts these files into .ts files
+        BuildSmartFilterShaderBlock(file);
     } else {
         if (options.pathPrefix) {
             const regex = new RegExp(`${options.pathPrefix.replace(/\//g, "\\/")}src([/\\\\])`);
@@ -23,7 +27,7 @@ const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const processAssets = (options: { extensions: string[] } = { extensions: ["png", "jpg", "jpeg", "gif", "svg", "scss", "css", "html", "json", "fx"] }) => {
+export const processAssets = (options: { extensions: string[] } = { extensions: ["png", "jpg", "jpeg", "gif", "svg", "scss", "css", "html", "json", "fx", "glsl"] }) => {
     const global = checkArgs("--global", true);
     const fileTypes = checkArgs(["--file-types", "-ft"], false, true);
     const extensions = fileTypes && typeof fileTypes === "string" ? fileTypes.split(",") : options.extensions;

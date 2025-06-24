@@ -18,8 +18,7 @@
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa",
-        "postcompile": "build-tools -c add-js-to-es6"
+        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa"
     },
     "sideEffects": [
         "./dist/utils/buildTools/**"

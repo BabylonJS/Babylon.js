@@ -3,11 +3,13 @@
 
     "compilerOptions": {
         "target": "es2017",
-        "module": "CommonJS",
+        "module": "ESNext",
+        "moduleResolution": "node",
         "outDir": "./dist",
         "rootDir": "./src",
         "resolveJsonModule": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     },
 
     "include": ["./src/**/*"]

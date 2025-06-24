@@ -4,6 +4,7 @@
     "main": "dist/index",
     "module": "dist/index",
     "types": "dist/index",
+    "type": "module",
     "private": true,
     "files": [
         "dist"
