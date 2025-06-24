@@ -2,7 +2,10 @@ import type { Nullable } from "@dev/core/types";
 import { test, Page, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
-export type AudioContextType = "Realtime" | "Offline";
+export enum AudioContextType {
+    Realtime = "Realtime",
+    Offline = "Offline",
+}
 export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "SoundSource" | "StaticSound" | "StreamingSound";
 export type SoundType = "StaticSound" | "StreamingSound";
 
@@ -42,6 +45,7 @@ export class AudioTestResult {
 
 // Declarations for babylonServer/public/audiov2-test.js
 declare global {
+    let audioContext: AudioContext | OfflineAudioContext;
     let audioTestConfig: AudioTestConfig;
     let audioTestResult: AudioTestResult;
 
@@ -132,7 +136,7 @@ export const InitAudioV2Tests = () => {
             AudioV2Test.AfterEach();
         });
 
-        // await page.close();
+        await page.close();
     });
 };
 
@@ -265,4 +269,16 @@ export function SaveAudioTestResult(testInfo: TestInfo, result: AudioTestResult)
             });
         }
     }
+}
+
+export async function EvaluateAudioContextType(page: Page): Promise<AudioContextType> {
+    return (await page.evaluate(() => {
+        if (audioContext instanceof OfflineAudioContext) {
+            return "Offline";
+        } else if (audioContext instanceof AudioContext) {
+            return "Realtime";
+        } else {
+            throw new Error("Unknown audio context type");
+        }
+    })) as AudioContextType;
 }

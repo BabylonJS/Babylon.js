@@ -52,19 +52,19 @@ class AudioV2Test {
     }
 
     static AfterEach() {
+        audioEngine?.dispose();
+        audioEngine = null;
+        audioTestConfig = null;
+    }
+
+    static BeforeEach() {
         audioContext = null;
         audioRecorder = null;
         audioRecorderDestination = null;
-        audioTestConfig = null;
         audioTestResult = null;
         audioTestSounds.length = 0;
         audioTestSuspendTime = 0;
 
-        audioEngine?.dispose();
-        audioEngine = null;
-    }
-
-    static BeforeEach() {
         AudioV2Test.ErrorMessage = "No error";
     }
 
