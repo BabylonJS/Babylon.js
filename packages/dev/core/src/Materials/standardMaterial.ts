@@ -23,7 +23,6 @@ import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { RegisterClass } from "../Misc/typeStore";
@@ -41,6 +40,7 @@ import {
     BindLogDepth,
     BindMorphTargetParameters,
     BindTextureMatrix,
+    BindIBLParameters,
     HandleFallbacksForShadows,
     PrepareAttributesForBakedVertexAnimation,
     PrepareAttributesForBones,
@@ -49,12 +49,15 @@ import {
     PrepareDefinesForAttributes,
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForLights,
+    PrepareDefinesForIBL,
     PrepareDefinesForMergedUV,
     PrepareDefinesForMisc,
     PrepareDefinesForMultiview,
     PrepareDefinesForOIT,
     PrepareDefinesForPrePass,
+    PrepareUniformsAndSamplersForIBL,
     PrepareUniformsAndSamplersList,
+    PrepareUniformLayoutForIBL,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -226,25 +229,6 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     constructor(externalProperties?: { [name: string]: { type: string; default: any } }) {
         super(externalProperties);
         this.rebuild();
-    }
-
-    public setReflectionMode(modeToEnable: string) {
-        const modes = [
-            "REFLECTIONMAP_CUBIC",
-            "REFLECTIONMAP_EXPLICIT",
-            "REFLECTIONMAP_PLANAR",
-            "REFLECTIONMAP_PROJECTION",
-            "REFLECTIONMAP_PROJECTION",
-            "REFLECTIONMAP_SKYBOX",
-            "REFLECTIONMAP_SPHERICAL",
-            "REFLECTIONMAP_EQUIRECTANGULAR",
-            "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
-            "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED",
-        ];
-
-        for (const mode of modes) {
-            (<any>this)[mode] = mode === modeToEnable;
-        }
     }
 }
 
@@ -843,60 +827,9 @@ export class StandardMaterial extends StandardMaterialBase {
                 } else {
                     defines.OPACITY = false;
                 }
-
-                if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                    if (!this._reflectionTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    } else {
-                        defines._needNormals = true;
-                        defines.REFLECTION = true;
-
-                        defines.ROUGHNESS = this._roughness > 0;
-                        defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
-                        defines.INVERTCUBICMAP = this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
-                        defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
-                        defines.REFLECTIONMAP_OPPOSITEZ =
-                            defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
-                        defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
-
-                        switch (this._reflectionTexture.coordinatesMode) {
-                            case Texture.EXPLICIT_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_EXPLICIT");
-                                break;
-                            case Texture.PLANAR_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_PLANAR");
-                                break;
-                            case Texture.PROJECTION_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_PROJECTION");
-                                break;
-                            case Texture.SKYBOX_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_SKYBOX");
-                                break;
-                            case Texture.SPHERICAL_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_SPHERICAL");
-                                break;
-                            case Texture.EQUIRECTANGULAR_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_EQUIRECTANGULAR");
-                                break;
-                            case Texture.FIXED_EQUIRECTANGULAR_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_EQUIRECTANGULAR_FIXED");
-                                break;
-                            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
-                                defines.setReflectionMode("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
-                                break;
-                            case Texture.CUBIC_MODE:
-                            case Texture.INVCUBIC_MODE:
-                            default:
-                                defines.setReflectionMode("REFLECTIONMAP_CUBIC");
-                                break;
-                        }
-
-                        defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>this._reflectionTexture).boundingBoxSize ? true : false;
-                    }
-                } else {
-                    defines.REFLECTION = false;
-                    defines.REFLECTIONMAP_OPPOSITEZ = false;
-                }
+                defines.ROUGHNESS = this._roughness > 0;
+                defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
+                PrepareDefinesForIBL(scene, this._reflectionTexture, defines);
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                     if (!this._emissiveTexture.isReadyOrNotBlocking()) {
@@ -1204,7 +1137,6 @@ export class StandardMaterial extends StandardMaterialBase {
                 "vDiffuseInfos",
                 "vAmbientInfos",
                 "vOpacityInfos",
-                "vReflectionInfos",
                 "vEmissiveInfos",
                 "vSpecularInfos",
                 "vBumpInfos",
@@ -1214,7 +1146,6 @@ export class StandardMaterial extends StandardMaterialBase {
                 "diffuseMatrix",
                 "ambientMatrix",
                 "opacityMatrix",
-                "reflectionMatrix",
                 "emissiveMatrix",
                 "specularMatrix",
                 "bumpMatrix",
@@ -1230,8 +1161,6 @@ export class StandardMaterial extends StandardMaterialBase {
                 "emissiveRightColor",
                 "refractionLeftColor",
                 "refractionRightColor",
-                "vReflectionPosition",
-                "vReflectionSize",
                 "vRefractionPosition",
                 "vRefractionSize",
                 "logarithmicDepthConstant",
@@ -1263,6 +1192,7 @@ export class StandardMaterial extends StandardMaterialBase {
                 "areaLightsLTC2Sampler",
             ];
 
+            PrepareUniformsAndSamplersForIBL(uniforms, samplers, false);
             const uniformBuffers = ["Material", "Scene", "Mesh"];
 
             const indexParameters = { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS };
@@ -1399,9 +1329,6 @@ export class StandardMaterial extends StandardMaterialBase {
         ubo.addUniform("vDiffuseInfos", 2);
         ubo.addUniform("vAmbientInfos", 2);
         ubo.addUniform("vOpacityInfos", 2);
-        ubo.addUniform("vReflectionInfos", 2);
-        ubo.addUniform("vReflectionPosition", 3);
-        ubo.addUniform("vReflectionSize", 3);
         ubo.addUniform("vEmissiveInfos", 2);
         ubo.addUniform("vLightmapInfos", 2);
         ubo.addUniform("vSpecularInfos", 2);
@@ -1410,7 +1337,6 @@ export class StandardMaterial extends StandardMaterialBase {
         ubo.addUniform("diffuseMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
-        ubo.addUniform("reflectionMatrix", 16);
         ubo.addUniform("emissiveMatrix", 16);
         ubo.addUniform("lightmapMatrix", 16);
         ubo.addUniform("specularMatrix", 16);
@@ -1427,6 +1353,8 @@ export class StandardMaterial extends StandardMaterialBase {
         ubo.addUniform("vDiffuseColor", 4);
         ubo.addUniform("vAmbientColor", 3);
         ubo.addUniform("cameraInfo", 4);
+
+        PrepareUniformLayoutForIBL(ubo, false, true);
 
         super.buildUniformLayout();
     }
@@ -1542,19 +1470,7 @@ export class StandardMaterial extends StandardMaterialBase {
                         ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
-                    if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        ubo.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
-                        ubo.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
-
-                        if ((<any>this._reflectionTexture).boundingBoxSize) {
-                            const cubeTexture = <CubeTexture>this._reflectionTexture;
-
-                            ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
-                            ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
-                        }
-                    } else {
-                        ubo.updateFloat2("vReflectionInfos", 0.0, this.roughness);
-                    }
+                    BindIBLParameters(scene, defines, ubo, this._reflectionTexture);
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                         ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
