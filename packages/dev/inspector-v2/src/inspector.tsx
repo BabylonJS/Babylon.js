@@ -17,6 +17,7 @@ import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mes
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
@@ -177,6 +178,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
             TransformNodePropertiesServiceDefinition,
+            PhysicsPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
