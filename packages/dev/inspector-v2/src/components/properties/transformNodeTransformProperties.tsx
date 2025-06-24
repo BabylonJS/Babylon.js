@@ -3,7 +3,7 @@ import type { TransformNode, Vector3 } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { VectorPropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -22,17 +22,17 @@ function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: 
 }
 
 export const TransformNodeTransformProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
-    const { node: transformNode } = props;
+    const { node } = props;
 
-    const position = useVector3Property(transformNode, "position");
-    const rotation = useVector3Property(transformNode, "rotation");
-    const scaling = useVector3Property(transformNode, "scaling");
+    const position = useVector3Property(node, "position");
+    const rotation = useVector3Property(node, "rotation");
+    const scaling = useVector3Property(node, "scaling");
 
     return (
         <>
-            <VectorPropertyLine key="PositionTransform" label="Position" description="The position of the transform node." vector={position} />
-            <VectorPropertyLine key="RotationTransform" label="Rotation" description="The rotation of the transform node." vector={rotation} />
-            <VectorPropertyLine key="ScalingTransform" label="Scaling" description="The scaling of the transform node." vector={scaling} />
+            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (node.position = val)} />
+            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (node.scaling = val)} />
+            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (node.scaling = val)} />
         </>
     );
 };

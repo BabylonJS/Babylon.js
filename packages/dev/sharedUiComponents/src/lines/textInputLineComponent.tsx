@@ -200,33 +200,9 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         return (
             <PropertyLine label={this.props.label || ""}>
                 {this.props.multilines ? (
-                    <Textarea
-                        value={this.state.value}
-                        onChange={(evt) => this.updateValue(evt.target.value)}
-                        onKeyDown={(evt) => {
-                            if (evt.keyCode !== 13) {
-                                return;
-                            }
-                            this.updateValue(this.state.value);
-                        }}
-                        onBlur={(evt) => {
-                            this.updateValue(evt.target.value, evt.target.value);
-                        }}
-                        disabled={this.props.disabled}
-                    />
+                    <Textarea value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} disabled={this.props.disabled} />
                 ) : (
-                    <Input
-                        value={value}
-                        onBlur={(evt) => {
-                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "", evt.target.value);
-                        }}
-                        onChange={(evt) => this.updateValue(evt.target.value)}
-                        onKeyDown={(evt) => this.onKeyDown(evt)}
-                        placeholder={placeholder}
-                        type={this.props.numeric ? "number" : "text"}
-                        step={step}
-                        disabled={this.props.disabled}
-                    />
+                    <Input value={value} onChange={(val) => this.updateValue(val.toString())} step={step} disabled={this.props.disabled} />
                 )}
             </PropertyLine>
         );

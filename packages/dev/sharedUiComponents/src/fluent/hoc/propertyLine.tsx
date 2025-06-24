@@ -1,8 +1,8 @@
-import { Body1Strong, Button, InfoLabel, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Body1Strong, Button, InfoLabel, Link, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, PropsWithChildren } from "react";
-import { useContext, useState } from "react";
+import { useContext, useState, forwardRef } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
 import { ToolContext } from "./fluentToolWrapper";
 
@@ -74,11 +74,39 @@ export type PropertyLineProps = {
      * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
      */
     expandedContent?: JSX.Element;
+
+    /**
+     * Link to the documentation for this property, available from the info icon either linked from the description (if provided) or defalt 'docs' text
+     */
+    docLink?: string;
 };
 
-export const LineContainer: FunctionComponent<PropsWithChildren> = (props) => {
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren>((props, ref) => {
     const classes = usePropertyLineStyles();
-    return <div className={classes.container}>{props.children}</div>;
+    return (
+        <div ref={ref} className={classes.container}>
+            {props.children}
+        </div>
+    );
+});
+
+export type BaseComponentProps<T> = {
+    /**
+     * The value of the property to be displayed and modified.
+     */
+    value: T;
+    /**
+     * Callback function to handle changes to the value
+     */
+    onChange: (value: T) => void;
+    /**
+     * Optional flag to disable the component, preventing any interaction.
+     */
+    disabled?: boolean;
+    /**
+     * Optional class name to apply custom styles to the component.
+     */
+    className?: string;
 };
 
 /**
@@ -88,16 +116,18 @@ export const LineContainer: FunctionComponent<PropsWithChildren> = (props) => {
  * @returns A React element representing the property line.
  *
  */
-export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps>> = (props) => {
+export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps>>((props, ref) => {
     const classes = usePropertyLineStyles();
     const [expanded, setExpanded] = useState(false);
 
-    const { label, description, onCopy, expandedContent, children } = props;
+    const { label, onCopy, expandedContent, children } = props;
 
     const { disableCopy } = useContext(ToolContext);
 
+    const description = props.description ?? (props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description);
+
     return (
-        <LineContainer>
+        <LineContainer ref={ref}>
             <div className={classes.line}>
                 <InfoLabel className={classes.label} info={description}>
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
@@ -127,5 +157,13 @@ export const PropertyLine: FunctionComponent<PropsWithChildren<PropertyLineProps
                 <div className={classes.expandedContent}>{expandedContent}</div>
             </Collapse>
         </LineContainer>
+    );
+});
+
+export const PlaceholderPropertyLine: FunctionComponent<BaseComponentProps<any> & PropertyLineProps> = (props) => {
+    return (
+        <PropertyLine {...props}>
+            <Body1>{props.value}</Body1>
+        </PropertyLine>
     );
 };
