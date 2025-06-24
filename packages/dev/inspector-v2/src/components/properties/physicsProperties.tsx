@@ -5,10 +5,22 @@ import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import type { FunctionComponent } from "react";
 import { Dropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { useInterceptObservable } from "../../hooks/instrumentationHooks";
+import { useObservableState } from "../../hooks/observableHooks";
+import type { Vector3 } from "core/Maths/math.vector";
 
-import { useVector3Property, useColor3Property } from "../observableUtils";
+type Vector3Keys<T> = { [P in keyof T]: T[P] extends Vector3 ? P : never }[keyof T];
 
-const MotionTypesOptions: DropdownOption[] = [{ label: "Motion Type", value: "Motion Type" }];
+// This helper hook gets the value of a Vector3 property from a target object and causes the component
+// to re-render when the property changes or when the x/y/z components of the Vector3 change.
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: T, propertyKey: K): Vector3 {
+    const position = useObservableState(() => target[propertyKey] as Vector3, useInterceptObservable("property", target, propertyKey));
+    useObservableState(() => position.x, useInterceptObservable("property", position, "x"));
+    useObservableState(() => position.y, useInterceptObservable("property", position, "y"));
+    useObservableState(() => position.z, useInterceptObservable("property", position, "z"));
+    return position;
+}
 
 const MotionOptions: DropdownOption[] = [
     { label: "Static", value: PhysicsMotionType.STATIC },
@@ -34,26 +46,30 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
         return <></>;
     }
 
-    const massProps = node.physicsBody.getMassProperties();
+    const massProps = node.physicsBody.getMassProperties() as any;
     const centerOfMass = useVector3Property(massProps, "centerOfMass");
     const inertia = useVector3Property(massProps, "inertia");
 
     return (
         <>
-            <Dropdown
-                options={MotionTypesOptions}
-                onSelect={(value) => {
-                    node.physicsBody?.setMotionType(value as unknown as PhysicsMotionType);
-                }}
-                defaultValue={MotionOptions[0]}
-            />
-            <Dropdown
-                options={PrestepOptions}
-                onSelect={(value) => {
-                    node.physicsBody?.setPrestepType(value as unknown as PhysicsPrestepType);
-                }}
-                defaultValue={PrestepOptions.find((opt) => opt.value === (node.physicsBody as any)._prestepType) ?? PrestepOptions[0]}
-            />
+            <PropertyLine label="Motion Type">
+                <Dropdown
+                    options={MotionOptions}
+                    value={MotionOptions.find((opt) => opt.value === (node.physicsBody as any)._motionType) ?? MotionOptions[0]}
+                    onChange={(option) => {
+                        return node.physicsBody?.setMotionType(option.value as PhysicsMotionType);
+                    }}
+                />
+            </PropertyLine>
+            <PropertyLine label="Prestep Type">
+                <Dropdown
+                    options={PrestepOptions}
+                    value={PrestepOptions.find((opt) => opt.value === (node.physicsBody as any)._prestepType) ?? PrestepOptions[0]}
+                    onChange={(option) => {
+                        return node.physicsBody?.setPrestepType(option.value as PhysicsPrestepType);
+                    }}
+                />
+            </PropertyLine>
             {/* Physics Mass Properties Controls */}
             {massProps && (
                 <PropertyLine label="Mass">
@@ -68,7 +84,6 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
                                 onChange={(e) => {
                                     massProps.mass = parseFloat(e.target.value);
                                     node.physicsBody?.setMassProperties(massProps);
-                                    // Optionally trigger a re-render or update
                                 }}
                             />
                         </label>
@@ -79,7 +94,6 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
                             onChange={(v) => {
                                 massProps.centerOfMass = v;
                                 node.physicsBody?.setMassProperties(massProps);
-                                // Optionally trigger a re-render or update
                             }}
                         />
                         <Vector3PropertyLine
@@ -88,7 +102,6 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
                             onChange={(v) => {
                                 massProps.inertia = v;
                                 node.physicsBody?.setMassProperties(massProps);
-                                // Optionally trigger a re-render or update
                             }}
                         />
                     </div>
