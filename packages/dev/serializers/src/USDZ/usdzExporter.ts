@@ -388,30 +388,46 @@ function BuildTexture(
 }
 
 function ExtractTextureInformations(material: Material) {
+    const defaults = {
+        diffuseMap: null,
+        diffuse: null,
+        alphaCutOff: 0,
+        emissiveMap: null,
+        emissive: null,
+        normalMap: null,
+        roughnessMap: null,
+        roughnessChannel: "a",
+        roughness: 0,
+        metalnessMap: null,
+        metalnessChannel: "r",
+        metalness: 0,
+        aoMap: null,
+        aoMapChannel: "rgb",
+        aoMapIntensity: 0,
+        alphaMap: null,
+        ior: 1,
+        clearCoatEnabled: false,
+        clearCoat: 0,
+        clearCoatMap: null,
+        clearCoatRoughness: 0,
+        clearCoatRoughnessMap: null,
+    };
+
     if (material instanceof StandardMaterial) {
         return {
+            ...defaults,
             diffuseMap: material.diffuseTexture,
             diffuse: material.diffuseColor,
             alphaCutOff: material.alphaCutOff,
             emissiveMap: material.emissiveTexture,
             emissive: material.emissiveColor,
-            roughnessMap: null,
-            normalMap: null,
-            metalnessMap: null,
             roughness: 1,
-            metalness: 0,
-            aoMap: null,
-            aoMapIntensity: 0,
-            alphaMap: (material as StandardMaterial).opacityTexture,
-            ior: 1,
-            clearCoat: 0,
-            clearCoatMap: null,
-            clearCoatRoughness: 0,
-            clearCoatRoughnessMap: null,
+            alphaMap: material.opacityTexture,
         };
     }
     if (material instanceof PBRBaseMaterial) {
         return {
+            ...defaults,
             diffuseMap: material._albedoTexture,
             diffuse: material._albedoColor,
             alphaCutOff: material._alphaCutOff,
@@ -420,10 +436,10 @@ function ExtractTextureInformations(material: Material) {
             normalMap: material._bumpTexture,
             roughnessMap: material._metallicTexture,
             roughnessChannel: material._useRoughnessFromMetallicTextureAlpha ? "a" : "g",
-            roughness: material._roughness || 1,
+            roughness: material._roughness ?? 1,
             metalnessMap: material._metallicTexture,
             metalnessChannel: material._useMetallnessFromMetallicTextureBlue ? "b" : "r",
-            metalness: material._metallic || 0,
+            metalness: material._metallic ?? 0,
             aoMap: material._ambientTexture,
             aoMapChannel: material._useAmbientInGrayScale ? "r" : "rgb",
             aoMapIntensity: material._ambientTextureStrength,
@@ -436,22 +452,7 @@ function ExtractTextureInformations(material: Material) {
             clearCoatRoughnessMap: material.clearCoat.useRoughnessFromMainTexture ? material.clearCoat.texture : material.clearCoat.textureRoughness,
         };
     }
-    return {
-        diffuseMap: null,
-        diffuse: null,
-        emissiveMap: null,
-        emissemissiveiveColor: null,
-        normalMap: null,
-        roughnessMap: null,
-        metalnessMap: null,
-        alphaCutOff: 0,
-        roughness: 0,
-        metalness: 0,
-        aoMap: null,
-        aoMapIntensity: 0,
-        alphaMap: null,
-        ior: 1,
-    };
+    return defaults;
 }
 
 function BuildMaterial(material: Material, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
