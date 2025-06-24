@@ -67,7 +67,7 @@ import type { IAnimatable } from "../../Animations/animatable.interface";
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
- * Defines a property for the PBR2Material.
+ * Defines a property for the OpenPBRMaterial.
  */
 class Property<T> {
     /**
@@ -110,12 +110,12 @@ class Sampler {
     ) {}
 }
 
-class PBR2MaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
+class OpenPBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
 /**
  * Manages the defines for the PBR Material.
  * @internal
  */
-export class PBR2MaterialDefines extends ImageProcessingDefinesMixin(PBR2MaterialDefinesBase) {
+export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRMaterialDefinesBase) {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
@@ -330,8 +330,7 @@ export class PBR2MaterialDefines extends ImageProcessingDefinesMixin(PBR2Materia
     }
 }
 
-class PBR2BaseMaterial extends ImageProcessingMixin(PushMaterial) {}
-// class PBR2MaterialBase extends ImageProcessingMixin(PBRBaseMaterial) {}
+class OpenPBRMaterialBase extends ImageProcessingMixin(PushMaterial) {}
 /**
  * The Physically based material of BJS.
  *
@@ -339,24 +338,24 @@ class PBR2BaseMaterial extends ImageProcessingMixin(PushMaterial) {}
  * For more information, please refer to the documentation :
  * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
  */
-export class PBR2Material extends PBR2BaseMaterial {
+export class OpenPBRMaterial extends OpenPBRMaterialBase {
     /**
-     * PBR2MaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+     * OpenPBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
      */
     public static readonly PBRMATERIAL_OPAQUE = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
 
     /**
-     * PBR2MaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+     * OpenPBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
      */
     public static readonly PBRMATERIAL_ALPHATEST = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
 
     /**
-     * PBR2MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+     * OpenPBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      */
     public static readonly PBRMATERIAL_ALPHABLEND = PBRBaseMaterial.PBRMATERIAL_ALPHABLEND;
 
     /**
-     * PBR2MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+     * OpenPBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      * They are also discarded below the alpha cutoff threshold to improve performances.
      */
     public static readonly PBRMATERIAL_ALPHATESTANDBLEND = PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
@@ -470,7 +469,7 @@ export class PBR2Material extends PBR2BaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTextureImpactOnAnalyticalLights: number = PBR2Material.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+    public ambientTextureImpactOnAnalyticalLights: number = OpenPBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
      * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
@@ -1488,7 +1487,7 @@ export class PBR2Material extends PBR2BaseMaterial {
     protected _cacheHasRenderTargetTextures = false;
 
     /**
-     * Instantiates a new PBR2Material instance.
+     * Instantiates a new OpenPBRMaterial instance.
      *
      * @param name The material name
      * @param scene The scene the material will be use in.
@@ -1540,7 +1539,7 @@ export class PBR2Material extends PBR2BaseMaterial {
      * @returns the name of the material class.
      */
     public override getClassName(): string {
-        return "PBR2Material";
+        return "OpenPBRMaterial";
     }
 
     /**
@@ -1604,8 +1603,8 @@ export class PBR2Material extends PBR2BaseMaterial {
      * @param rootUrl defines the root URL to use to load textures
      * @returns cloned material instance
      */
-    public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): PBR2Material {
-        const clone = SerializationHelper.Clone(() => new PBR2Material(name, this.getScene()), this, { cloneTexturesOnlyOnce });
+    public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): OpenPBRMaterial {
+        const clone = SerializationHelper.Clone(() => new OpenPBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         clone.id = name;
         clone.name = name;
@@ -1623,7 +1622,7 @@ export class PBR2Material extends PBR2BaseMaterial {
      */
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.customType = "BABYLON.PBR2Material";
+        serializationObject.customType = "BABYLON.OpenPBRMaterial";
 
         return serializationObject;
     }
@@ -1634,10 +1633,10 @@ export class PBR2Material extends PBR2BaseMaterial {
      * @param source - Serialized object.
      * @param scene - BJS scene instance.
      * @param rootUrl - url for the scene object
-     * @returns - PBR2Material
+     * @returns - OpenPBRMaterial
      */
-    public static override Parse(source: any, scene: Scene, rootUrl: string): PBR2Material {
-        const material = SerializationHelper.Parse(() => new PBR2Material(source.name, scene), source, scene, rootUrl);
+    public static override Parse(source: any, scene: Scene, rootUrl: string): OpenPBRMaterial {
+        const material = SerializationHelper.Parse(() => new OpenPBRMaterial(source.name, scene), source, scene, rootUrl);
 
         if (source.stencil) {
             material.stencil.parse(source.stencil, scene, rootUrl);
@@ -1670,7 +1669,7 @@ export class PBR2Material extends PBR2BaseMaterial {
             if (this._breakShaderLoadedCheck) {
                 return;
             }
-            const defines = new PBR2MaterialDefines(this._eventInfo.defineNames);
+            const defines = new OpenPBRMaterialDefines(this._eventInfo.defineNames);
             const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -1714,10 +1713,10 @@ export class PBR2Material extends PBR2BaseMaterial {
 
         if (!subMesh.materialDefines) {
             this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-            subMesh.materialDefines = new PBR2MaterialDefines(this._eventInfo.defineNames);
+            subMesh.materialDefines = new OpenPBRMaterialDefines(this._eventInfo.defineNames);
         }
 
-        const defines = <PBR2MaterialDefines>subMesh.materialDefines;
+        const defines = <OpenPBRMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1861,7 +1860,7 @@ export class PBR2Material extends PBR2BaseMaterial {
 
         if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             mesh.createNormals(true);
-            Logger.Warn("PBR2Material: Normals have been created for the mesh: " + mesh.name);
+            Logger.Warn("OpenPBRMaterial: Normals have been created for the mesh: " + mesh.name);
         }
 
         const previousEffect = subMesh.effect;
@@ -1967,7 +1966,7 @@ export class PBR2Material extends PBR2BaseMaterial {
     public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
-        const defines = <PBR2MaterialDefines>subMesh.materialDefines;
+        const defines = <OpenPBRMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -2522,7 +2521,7 @@ export class PBR2Material extends PBR2BaseMaterial {
 
     private _prepareEffect(
         mesh: AbstractMesh,
-        defines: PBR2MaterialDefines,
+        defines: OpenPBRMaterialDefines,
         onCompiled: Nullable<(effect: Effect) => void> = null,
         onError: Nullable<(effect: Effect, errors: string) => void> = null,
         useInstances: Nullable<boolean> = null,
@@ -2790,9 +2789,9 @@ export class PBR2Material extends PBR2BaseMaterial {
                     ? undefined
                     : async () => {
                           if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                              await Promise.all([import("../../ShadersWGSL/pbr2.vertex"), import("../../ShadersWGSL/pbr2.fragment")]);
+                              await Promise.all([import("../../ShadersWGSL/openpbr.vertex"), import("../../ShadersWGSL/openpbr.fragment")]);
                           } else {
-                              await Promise.all([import("../../Shaders/pbr2.vertex"), import("../../Shaders/pbr2.fragment")]);
+                              await Promise.all([import("../../Shaders/openpbr.vertex"), import("../../Shaders/openpbr.fragment")]);
                           }
 
                           this._shadersLoaded = true;
@@ -2808,7 +2807,7 @@ export class PBR2Material extends PBR2BaseMaterial {
 
     private _prepareDefines(
         mesh: AbstractMesh,
-        defines: PBR2MaterialDefines,
+        defines: OpenPBRMaterialDefines,
         useInstances: Nullable<boolean> = null,
         useClipPlane: Nullable<boolean> = null,
         useThinInstances: boolean = false
@@ -3088,4 +3087,4 @@ export class PBR2Material extends PBR2BaseMaterial {
     }
 }
 
-RegisterClass("BABYLON.PBR2Material", PBR2Material);
+RegisterClass("BABYLON.OpenPBRMaterial", OpenPBRMaterial);
