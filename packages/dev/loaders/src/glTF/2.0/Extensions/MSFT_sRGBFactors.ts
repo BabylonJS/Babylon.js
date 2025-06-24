@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { PBR2Material } from "core/Materials/PBR/pbr2Material";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -48,7 +48,7 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
             if (extra) {
-                if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
+                if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
                     throw new Error(`${extraContext}: Material type not supported`);
                 }
 
