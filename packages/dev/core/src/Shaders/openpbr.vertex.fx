@@ -95,6 +95,7 @@ varying vec3 vPositionW;
 varying vec4 vColor;
 #endif
 
+// This is just including TBN, if needed. "Bump" isn't really a great name.
 #include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
