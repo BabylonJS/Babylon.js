@@ -5,8 +5,6 @@ import type { IExtensionFeed, ExtensionMetadata, ExtensionModule } from "./exten
 
 import { Logger } from "core/Misc/logger";
 
-import { Assert } from "../misc/assert";
-
 /**
  * Represents a loaded extension.
  */
