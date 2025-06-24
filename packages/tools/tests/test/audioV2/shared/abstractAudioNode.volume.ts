@@ -87,7 +87,13 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            expect(volumes[Channel.L]).toBeCloseTo(2, VolumePrecision);
+            if ((await EvaluateAudioContextType(page)) === AudioContextType.Offline) {
+                expect(volumes[Channel.L]).toBeCloseTo(2, VolumePrecision);
+            } else {
+                // Expect larger range due to timing variations.
+                expect(volumes[Channel.L]).toBeGreaterThanOrEqual(2);
+                expect(volumes[Channel.L]).toBeLessThanOrEqual(2.1);
+            }
         });
 
         test.describe("Default ramp", () => {
