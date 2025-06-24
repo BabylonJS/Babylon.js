@@ -50,6 +50,14 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
     const centerOfMass = useVector3Property(massProps, "centerOfMass");
     const inertia = useVector3Property(massProps, "inertia");
 
+    // Get current damping values
+    const linearDamping = node.physicsBody.getLinearDamping();
+    const angularDamping = node.physicsBody.getAngularDamping();
+
+    // Get current velocities (read-only)
+    const linearVelocity = node.physicsBody.getLinearVelocity();
+    const angularVelocity = node.physicsBody.getAngularVelocity();
+
     return (
         <>
             <PropertyLine label="Motion Type">
@@ -69,6 +77,40 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
                         return node.physicsBody?.setPrestepType(option.value as PhysicsPrestepType);
                     }}
                 />
+            </PropertyLine>
+            {/* Linear Damping */}
+            <PropertyLine label="Linear Damping">
+                <input
+                    type="number"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={linearDamping}
+                    onChange={(e) => {
+                        node.physicsBody!.setLinearDamping(parseFloat(e.target.value));
+                    }}
+                />
+            </PropertyLine>
+            {/* Angular Damping */}
+            <PropertyLine label="Angular Damping">
+                <input
+                    type="number"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={angularDamping}
+                    onChange={(e) => {
+                        node.physicsBody!.setAngularDamping(parseFloat(e.target.value));
+                    }}
+                />
+            </PropertyLine>
+            {/* Linear Velocity (display only) */}
+            <PropertyLine label="Linear Velocity">
+                <Vector3PropertyLine label="" value={linearVelocity} onChange={() => {}} />
+            </PropertyLine>
+            {/* Angular Velocity (display only) */}
+            <PropertyLine label="Angular Velocity">
+                <Vector3PropertyLine label="" value={angularVelocity} onChange={() => {}} />
             </PropertyLine>
             {/* Physics Mass Properties Controls */}
             {massProps && (
