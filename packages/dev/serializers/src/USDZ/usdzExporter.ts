@@ -15,6 +15,7 @@ import { DumpTools } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { FloatArray, Nullable } from "core/types";
+import { IsNoopNode } from "serializers/exportUtils";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
@@ -228,6 +229,30 @@ function BuildUSDFileAsString(dataToInsert: string) {
     return fflate.strToU8(output);
 }
 
+function GetMeshWorldMatrix(mesh: Mesh) {
+    const matrix = mesh.getWorldMatrix().clone();
+
+    // If there's a LH->RH __root__ conversion node, cancel out its effect
+    const useRightHandedSystem = mesh.getScene().useRightHandedSystem;
+    if (!useRightHandedSystem) {
+        let current = mesh.parent;
+        while (current) {
+            const parentMatrix = current.getWorldMatrix();
+            if (IsNoopNode(current, useRightHandedSystem)) {
+                matrix.multiplyToRef(parentMatrix.invertToRef(parentMatrix), matrix);
+                break;
+            }
+            current = current.parent;
+        }
+    }
+
+    if (matrix.determinant() < 0) {
+        Tools.Warn(`Exporting mesh ${mesh.name} with negative scale. Result may look incorrect in destination engine.`);
+    }
+
+    return matrix;
+}
+
 function BuildMatrix(matrix: Matrix) {
     const array = matrix.m as number[];
 
@@ -240,11 +265,7 @@ function BuildMatrixRow(array: number[], offset: number) {
 
 function BuildXform(mesh: Mesh) {
     const name = "Object_" + mesh.uniqueId;
-    const matrix = mesh.getWorldMatrix().clone();
-
-    if (matrix.determinant() < 0) {
-        Tools.Warn(`Exporting mesh ${mesh.name} with negative scale. Result may look incorrect in destination engine.`);
-    }
+    const matrix = GetMeshWorldMatrix(mesh);
     const transform = BuildMatrix(matrix);
 
     return `def Xform "${name}" (
