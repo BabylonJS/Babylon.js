@@ -16,7 +16,6 @@ import { PushMaterial } from "../../Materials/pushMaterial";
 import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Texture } from "../../Materials/Textures/texture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
@@ -32,16 +31,21 @@ import {
     BindLights,
     BindLogDepth,
     BindTextureMatrix,
+    BindIBLParameters,
+    BindIBLSamplers,
     HandleFallbacksForShadows,
     PrepareAttributesForBones,
     PrepareAttributesForInstances,
     PrepareDefinesForAttributes,
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForLights,
+    PrepareDefinesForIBL,
     PrepareDefinesForMergedUV,
     PrepareDefinesForMisc,
     PrepareDefinesForMultiview,
     PrepareUniformsAndSamplersList,
+    PrepareUniformsAndSamplersForIBL,
+    PrepareUniformLayoutForIBL,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
@@ -597,57 +601,14 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                 }
 
                 const reflectionTexture = this._reflectionTexture;
+                PrepareDefinesForIBL(scene, reflectionTexture, defines);
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (!reflectionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
-
-                    defines.REFLECTION = true;
-                    defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
-                    defines.RGBDREFLECTION = reflectionTexture.isRGBD;
-                    defines.REFLECTIONBLUR = this._reflectionBlur > 0;
-                    defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
                     defines.REFLECTIONBGR = this.switchToBGR;
-
-                    if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
-                        defines.INVERTCUBICMAP = true;
-                    }
-
-                    defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
-                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
-
-                    switch (reflectionTexture.coordinatesMode) {
-                        case Texture.EXPLICIT_MODE:
-                            defines.REFLECTIONMAP_EXPLICIT = true;
-                            break;
-                        case Texture.PLANAR_MODE:
-                            defines.REFLECTIONMAP_PLANAR = true;
-                            break;
-                        case Texture.PROJECTION_MODE:
-                            defines.REFLECTIONMAP_PROJECTION = true;
-                            break;
-                        case Texture.SKYBOX_MODE:
-                            defines.REFLECTIONMAP_SKYBOX = true;
-                            break;
-                        case Texture.SPHERICAL_MODE:
-                            defines.REFLECTIONMAP_SPHERICAL = true;
-                            break;
-                        case Texture.EQUIRECTANGULAR_MODE:
-                            defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
-                            break;
-                        case Texture.FIXED_EQUIRECTANGULAR_MODE:
-                            defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
-                            break;
-                        case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
-                            defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
-                            break;
-                        case Texture.CUBIC_MODE:
-                        case Texture.INVCUBIC_MODE:
-                        default:
-                            defines.REFLECTIONMAP_CUBIC = true;
-                            break;
-                    }
+                    defines.REFLECTIONBLUR = this._reflectionBlur > 0;
 
                     if (this.reflectionFresnel) {
                         defines.REFLECTIONFRESNEL = true;
@@ -662,25 +623,9 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                         defines.REFLECTIONFALLOFF = false;
                     }
                 } else {
-                    defines.REFLECTION = false;
                     defines.REFLECTIONFRESNEL = false;
                     defines.REFLECTIONFALLOFF = false;
                     defines.REFLECTIONBLUR = false;
-                    defines.REFLECTIONMAP_3D = false;
-                    defines.REFLECTIONMAP_SPHERICAL = false;
-                    defines.REFLECTIONMAP_PLANAR = false;
-                    defines.REFLECTIONMAP_CUBIC = false;
-                    defines.REFLECTIONMAP_PROJECTION = false;
-                    defines.REFLECTIONMAP_SKYBOX = false;
-                    defines.REFLECTIONMAP_EXPLICIT = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-                    defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-                    defines.INVERTCUBICMAP = false;
-                    defines.REFLECTIONMAP_OPPOSITEZ = false;
-                    defines.LODINREFLECTIONALPHA = false;
-                    defines.GAMMAREFLECTION = false;
-                    defines.RGBDREFLECTION = false;
                 }
             }
 
@@ -779,9 +724,6 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
 
                 "vPrimaryColor",
                 "vPrimaryColorShadow",
-                "vReflectionInfos",
-                "reflectionMatrix",
-                "vReflectionMicrosurfaceInfos",
                 "fFovMultiplier",
 
                 "shadowLevel",
@@ -798,7 +740,8 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
             ];
 
             AddClipPlaneUniforms(uniforms);
-            const samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
+            const samplers = ["diffuseSampler"];
+            PrepareUniformsAndSamplersForIBL(uniforms, samplers, false);
             const uniformBuffers = ["Material", "Scene"];
 
             if (ImageProcessingConfiguration) {
@@ -908,10 +851,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
         this._uniformBuffer.addUniform("vPrimaryColor", 4);
         this._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
         this._uniformBuffer.addUniform("vDiffuseInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionInfos", 2);
         this._uniformBuffer.addUniform("diffuseMatrix", 16);
-        this._uniformBuffer.addUniform("reflectionMatrix", 16);
-        this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("fFovMultiplier", 1);
         this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("shadowLevel", 1);
@@ -919,6 +859,8 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
         this._uniformBuffer.addUniform("vBackgroundCenter", 3);
         this._uniformBuffer.addUniform("vReflectionControl", 4);
         this._uniformBuffer.addUniform("projectedGroundInfos", 2);
+
+        PrepareUniformLayoutForIBL(this._uniformBuffer, true, false, false);
 
         this._uniformBuffer.create();
     }
@@ -987,17 +929,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                         BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                     }
 
-                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                        this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-                        this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
-
-                        this._uniformBuffer.updateFloat3(
-                            "vReflectionMicrosurfaceInfos",
-                            reflectionTexture.getSize().width,
-                            reflectionTexture.lodGenerationScale,
-                            reflectionTexture.lodGenerationOffset
-                        );
-                    }
+                    BindIBLParameters(scene, defines, this._uniformBuffer, reflectionTexture);
                 }
 
                 if (this.shadowLevel > 0) {
@@ -1027,15 +959,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                 }
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                    if (defines.REFLECTIONBLUR && defines.TEXTURELODSUPPORT) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                    } else if (!defines.REFLECTIONBLUR) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                    } else {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
-                    }
+                    BindIBLSamplers(scene, defines, this._uniformBuffer, reflectionTexture);
 
                     if (defines.REFLECTIONFRESNEL) {
                         this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
