@@ -8,7 +8,6 @@ import { Pane } from "../pane";
 
 export const StatsPane: typeof AccordionPane<Scene> = (props) => {
     const scene = props.context;
-    // const classes = useStyles();
     const engine = scene.getEngine();
     const fps = useObservableState(() => Math.round(engine.getFps()), engine.onBeginFrameObservable);
 

@@ -11,6 +11,7 @@ export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: sc
     const resolution = useObservableState(() => engine.getRenderWidth() + "x" + engine.getRenderHeight(), engine.onResizeObservable);
     const hardwareScalingLevel = useObservableState(() => engine.getHardwareScalingLevel(), engine.onResizeObservable);
 
+    // TODO: replace these references to PlaceholderPropertyLine with BooleanPropertyLine when it is available
     return (
         <>
             <TextPropertyLine key="Resolution" label="Resolution" value={resolution} />
