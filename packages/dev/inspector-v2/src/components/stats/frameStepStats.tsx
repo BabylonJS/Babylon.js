@@ -6,9 +6,11 @@ import { useEffect, useRef } from "react";
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 import "core/Engines/AbstractEngine/abstractEngine.timeQuery";
-import "core/Engines/Extensions/engine.query";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
+
+// TODO: Dynamically import the right engine.query module based on the type of engine?
+import "core/Engines/Extensions/engine.query";
 
 export const FrameStepsStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const pollingObservable = usePollingObservable(500);

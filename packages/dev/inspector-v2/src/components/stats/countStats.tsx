@@ -4,7 +4,6 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLi
 import { useEffect, useRef, type FunctionComponent } from "react";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
-// import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 
 export const CountStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {

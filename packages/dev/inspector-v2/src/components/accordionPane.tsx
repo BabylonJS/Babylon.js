@@ -121,7 +121,7 @@ export function AccordionPane<ContextT = unknown>(props: {
     }, [sections, sectionContent, context]);
 
     return (
-        <div className={classes.rootDiv} id="accordionPane">
+        <div className={classes.rootDiv}>
             {visibleSections.length > 0 && (
                 <Accordion
                     key={version}
