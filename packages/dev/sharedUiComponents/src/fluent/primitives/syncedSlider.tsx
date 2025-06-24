@@ -4,6 +4,7 @@ import { Input } from "./input";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState } from "react";
 import type { BaseComponentProps } from "../hoc/propertyLine";
+import { Tools } from "core/Misc/tools";
 
 const useSyncedSliderStyles = makeStyles({
     syncedSlider: {
@@ -26,6 +27,7 @@ export type SyncedSliderProps = BaseComponentProps<number> & {
     min?: number;
     max?: number;
     step?: number;
+    useDegrees?: boolean; // Optional prop to use degrees instead of radians
 };
 
 /**
@@ -42,22 +44,39 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     }, [props.value]);
 
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
-        setValue(data.value);
-        props.onChange(data.value); // Notify parent
+        let value = data.value;
+        if (props.useDegrees) {
+            // Convert degrees to radians if necessary
+            value = Tools.ToRadians(value);
+        }
+        setValue(value);
+        props.onChange(value); // Notify parent
     };
 
     const handleInputChange = (value: string | number) => {
-        const newValue = Number(value);
+        let newValue = Number(value);
         if (!isNaN(newValue)) {
+            if (props.useDegrees) {
+                // Convert degrees to radians if necessary
+                newValue = Tools.ToRadians(newValue);
+            }
+
             setValue(newValue);
             props.onChange(newValue); // Notify parent
         }
     };
 
+    const min = props.min ?? (props.useDegrees ? 0 : undefined);
+    const max = props.max ?? (props.useDegrees ? 360 : undefined);
+
+    const convertedValue = props.useDegrees ? Tools.ToDegrees(value) : value;
+
     return (
         <div className={classes.syncedSlider}>
-            {props.min != undefined && props.max != undefined && <Slider {...props} size="small" className={classes.slider} value={value} onChange={handleSliderChange} />}
-            <Input {...props} className={classes.input} value={value} onChange={handleInputChange} step={props.step} />
+            {min !== undefined && max !== undefined && (
+                <Slider {...props} min={min} max={max} size="small" className={classes.slider} value={convertedValue} onChange={handleSliderChange} />
+            )}
+            <Input {...props} className={classes.input} value={convertedValue} onChange={handleInputChange} step={props.step} />
         </div>
     );
 };
