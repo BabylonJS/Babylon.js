@@ -32,12 +32,14 @@ import {
     PrepareDefinesForAttributes,
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForLights,
+    PrepareDefinesForIBL,
     PrepareDefinesForMergedUV,
     PrepareDefinesForMisc,
     PrepareDefinesForMultiview,
     PrepareDefinesForOIT,
     PrepareDefinesForPrePass,
     PrepareUniformsAndSamplersList,
+    PrepareUniformsAndSamplersForIBL,
 } from "../materialHelper.functions";
 import { Constants } from "../../Engines/constants";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -47,7 +49,6 @@ import { PrePassConfiguration } from "../prePassConfiguration";
 import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialFlags } from "../materialFlags";
-import { Texture } from "../Textures/texture";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
@@ -1483,7 +1484,6 @@ export class PBR2Material extends PBRBaseMaterial {
             "vMetallicReflectanceFactors",
             "vEmissiveColor",
             "visibility",
-            "vReflectionColor",
             "vFogInfos",
             "vFogColor",
             "pointSize",
@@ -1492,12 +1492,8 @@ export class PBR2Material extends PBRBaseMaterial {
             "vBaseDiffuseRoughnessInfos",
             "vAmbientInfos",
             "vOpacityInfos",
-            "vReflectionInfos",
-            "vReflectionPosition",
-            "vReflectionSize",
             "vEmissiveInfos",
             "vReflectivityInfos",
-            "vReflectionFilteringInfo",
             "vMetallicReflectanceInfos",
             "vReflectanceInfos",
             "vMicroSurfaceSamplerInfos",
@@ -1509,7 +1505,6 @@ export class PBR2Material extends PBRBaseMaterial {
             "baseDiffuseRoughnessMatrix",
             "ambientMatrix",
             "opacityMatrix",
-            "reflectionMatrix",
             "emissiveMatrix",
             "reflectivityMatrix",
             "normalMatrix",
@@ -1520,26 +1515,6 @@ export class PBR2Material extends PBRBaseMaterial {
             "reflectanceMatrix",
             "vLightingIntensity",
             "logarithmicDepthConstant",
-            "vSphericalX",
-            "vSphericalY",
-            "vSphericalZ",
-            "vSphericalXX_ZZ",
-            "vSphericalYY_ZZ",
-            "vSphericalZZ",
-            "vSphericalXY",
-            "vSphericalYZ",
-            "vSphericalZX",
-            "vSphericalL00",
-            "vSphericalL1_1",
-            "vSphericalL10",
-            "vSphericalL11",
-            "vSphericalL2_2",
-            "vSphericalL2_1",
-            "vSphericalL20",
-            "vSphericalL21",
-            "vSphericalL22",
-            "vReflectionMicrosurfaceInfos",
-            "vReflectionDominantDirection",
             "vTangentSpaceParams",
             "boneTextureWidth",
             "vDebugMode",
@@ -1558,10 +1533,6 @@ export class PBR2Material extends PBRBaseMaterial {
             "bumpSampler",
             "lightmapSampler",
             "opacitySampler",
-            "reflectionSampler",
-            "reflectionSamplerLow",
-            "reflectionSamplerHigh",
-            "irradianceSampler",
             "microSurfaceSampler",
             "environmentBrdfSampler",
             "boneSampler",
@@ -1570,10 +1541,11 @@ export class PBR2Material extends PBRBaseMaterial {
             "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
-            "icdfSampler",
             "areaLightsLTC1Sampler",
             "areaLightsLTC2Sampler",
         ];
+
+        PrepareUniformsAndSamplersForIBL(uniforms, samplers, true);
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1736,126 +1708,13 @@ export class PBR2Material extends PBRBaseMaterial {
                 }
 
                 const reflectionTexture = this._getReflectionTexture2();
-                if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                    defines.REFLECTION = true;
-                    defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
-                    defines.RGBDREFLECTION = reflectionTexture.isRGBD;
-                    defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
-                    defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
-                    defines.USEIRRADIANCEMAP = false;
-
-                    if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
-                        defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
-                        if (engine._features.needTypeSuffixInShaderConstants) {
-                            defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
-                        }
-
-                        defines.REALTIME_FILTERING = true;
-                        if (this.getScene().iblCdfGenerator) {
-                            defines.IBL_CDF_FILTERING = true;
-                        }
-                    } else {
-                        defines.REALTIME_FILTERING = false;
-                    }
-
-                    defines.INVERTCUBICMAP = reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
-                    defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
-                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
-
-                    defines.REFLECTIONMAP_CUBIC = false;
-                    defines.REFLECTIONMAP_EXPLICIT = false;
-                    defines.REFLECTIONMAP_PLANAR = false;
-                    defines.REFLECTIONMAP_PROJECTION = false;
-                    defines.REFLECTIONMAP_SKYBOX = false;
-                    defines.REFLECTIONMAP_SPHERICAL = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-                    defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-
-                    switch (reflectionTexture.coordinatesMode) {
-                        case Texture.EXPLICIT_MODE:
-                            defines.REFLECTIONMAP_EXPLICIT = true;
-                            break;
-                        case Texture.PLANAR_MODE:
-                            defines.REFLECTIONMAP_PLANAR = true;
-                            break;
-                        case Texture.PROJECTION_MODE:
-                            defines.REFLECTIONMAP_PROJECTION = true;
-                            break;
-                        case Texture.SKYBOX_MODE:
-                            defines.REFLECTIONMAP_SKYBOX = true;
-                            break;
-                        case Texture.SPHERICAL_MODE:
-                            defines.REFLECTIONMAP_SPHERICAL = true;
-                            break;
-                        case Texture.EQUIRECTANGULAR_MODE:
-                            defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
-                            break;
-                        case Texture.FIXED_EQUIRECTANGULAR_MODE:
-                            defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
-                            break;
-                        case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
-                            defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
-                            break;
-                        case Texture.CUBIC_MODE:
-                        case Texture.INVCUBIC_MODE:
-                        default:
-                            defines.REFLECTIONMAP_CUBIC = true;
-                            defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
-                            break;
-                    }
-
-                    if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
-                        if (reflectionTexture.irradianceTexture) {
-                            defines.USEIRRADIANCEMAP = true;
-                            defines.USESPHERICALFROMREFLECTIONMAP = false;
-                            defines.USESPHERICALINVERTEX = false;
-                            if (reflectionTexture.irradianceTexture._dominantDirection) {
-                                defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
-                            }
-                        }
-                        // Assume using spherical polynomial if the reflection texture is a cube map
-                        else if (reflectionTexture.isCube) {
-                            defines.USESPHERICALFROMREFLECTIONMAP = true;
-                            defines.USEIRRADIANCEMAP = false;
-                            defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
-                            if (
-                                this._forceIrradianceInFragment ||
-                                this.realTimeFiltering ||
-                                this._twoSidedLighting ||
-                                engine.getCaps().maxVaryingVectors <= 8 ||
-                                this._baseDiffuseRoughnessTexture
-                            ) {
-                                defines.USESPHERICALINVERTEX = false;
-                            } else {
-                                defines.USESPHERICALINVERTEX = true;
-                            }
-                        }
-                    }
-                } else {
-                    defines.REFLECTION = false;
-                    defines.REFLECTIONMAP_3D = false;
-                    defines.REFLECTIONMAP_SPHERICAL = false;
-                    defines.REFLECTIONMAP_PLANAR = false;
-                    defines.REFLECTIONMAP_CUBIC = false;
-                    defines.USE_LOCAL_REFLECTIONMAP_CUBIC = false;
-                    defines.REFLECTIONMAP_PROJECTION = false;
-                    defines.REFLECTIONMAP_SKYBOX = false;
-                    defines.REFLECTIONMAP_EXPLICIT = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-                    defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-                    defines.INVERTCUBICMAP = false;
-                    defines.USESPHERICALFROMREFLECTIONMAP = false;
-                    defines.USEIRRADIANCEMAP = false;
-                    defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
-                    defines.USESPHERICALINVERTEX = false;
-                    defines.REFLECTIONMAP_OPPOSITEZ = false;
-                    defines.LODINREFLECTIONALPHA = false;
-                    defines.GAMMAREFLECTION = false;
-                    defines.RGBDREFLECTION = false;
-                    defines.LINEARSPECULARREFLECTION = false;
-                }
+                const useSHInFragment: boolean =
+                    this._forceIrradianceInFragment ||
+                    this.realTimeFiltering ||
+                    this._twoSidedLighting ||
+                    engine.getCaps().maxVaryingVectors <= 8 ||
+                    this._baseDiffuseRoughnessTexture != null;
+                PrepareDefinesForIBL(scene, reflectionTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                     PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
