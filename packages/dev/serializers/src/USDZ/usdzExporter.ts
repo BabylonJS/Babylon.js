@@ -3,7 +3,7 @@ import { VertexBuffer } from "core/Buffers/buffer";
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
 import type { Material } from "core/Materials/material";
-import { PBRBaseMaterial } from "core/Materials";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
@@ -15,7 +15,7 @@ import { DumpTools } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { FloatArray, Nullable } from "core/types";
-import { IsNoopNode } from "serializers/exportUtils";
+import { IsNoopNode } from "../exportUtils";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
