@@ -67,8 +67,8 @@ uniform Material {
     vec3 vReflectionPosition;
     vec3 vReflectionSize;
     vec2 vReflectionFilteringInfo;
-    vec3 vReflectionColor;
     vec3 vReflectionDominantDirection;
+    vec3 vReflectionColor;
     
     vec3 vSphericalL00;
     vec3 vSphericalL1_1;

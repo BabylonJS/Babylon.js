@@ -42,8 +42,8 @@ uniform vReflectionMicrosurfaceInfos: vec3f;
 uniform vReflectionPosition: vec3f;
 uniform vReflectionSize: vec3f;
 uniform vReflectionFilteringInfo: vec2f;
-uniform vReflectionColor: vec3f;
 uniform vReflectionDominantDirection: vec3f;
+uniform vReflectionColor: vec3f;
 
 uniform vSphericalL00: vec3f;
 uniform vSphericalL1_1: vec3f;
