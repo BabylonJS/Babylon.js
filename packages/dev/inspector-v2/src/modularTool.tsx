@@ -21,7 +21,9 @@ import {
     ListItem,
     makeStyles,
     Spinner,
+    tokens,
 } from "@fluentui/react-components";
+import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { useTernaryDarkMode } from "usehooks-ts";
@@ -35,9 +37,7 @@ import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-//import { DarkTheme, LightTheme } from "./themes/babylonTheme";
-import { webDarkTheme as DarkTheme, webLightTheme as LightTheme, tokens } from "@fluentui/react-components";
-import { ErrorCircleRegular } from "@fluentui/react-icons";
+import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
