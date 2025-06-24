@@ -127,8 +127,8 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
                         {/* Top Row: Preview, Gamma Hex, Linear Hex */}
                         <div className={classes.row}>
                             <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
-                            <InputHexField label="Gamma Hex" color={color} isLinearMode={props.isLinearMode} onChange={setColor} />
-                            <InputHexField label="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} color={color} onChange={setColor} />
+                            <InputHexField label="Gamma Hex" value={color} isLinearMode={props.isLinearMode} onChange={setColor} />
+                            <InputHexField label="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} value={color} onChange={setColor} />
                         </div>
 
                         {/* Middle Row: Red, Green, Blue, Alpha */}
@@ -153,10 +153,8 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
 };
 
 type HsvKey = "h" | "s" | "v";
-type InputHexProps = {
+export type InputHexProps = BaseComponentProps<Color3 | Color4> & {
     label?: string;
-    color: Color3 | Color4;
-    onChange: (color: Color3 | Color4) => void;
     linearHex?: boolean;
     isLinearMode?: boolean;
 };
@@ -168,10 +166,10 @@ type InputHexProps = {
  * @param props - The properties for the InputHexField component.
  * @returns
  */
-const InputHexField: FunctionComponent<InputHexProps> = (props) => {
+export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
     const id = useId("hex-input");
     const styles = useColorPickerStyles();
-    const { label, color, onChange, linearHex, isLinearMode } = props;
+    const { label, value, onChange, linearHex, isLinearMode } = props;
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>, _: InputOnChangeData) => {
         // If linearHint (aka PBR material, ensure the other values are displayed in gamma even if linear hex changes)
@@ -216,7 +214,7 @@ const InputHexField: FunctionComponent<InputHexProps> = (props) => {
             <Input
                 disabled={linearHex ? !isLinearMode : false}
                 className={styles.input}
-                value={linearHex ? color.toLinearSpace().toHexString() : color.toHexString()}
+                value={linearHex ? value.toLinearSpace().toHexString() : value.toHexString()}
                 id={id}
                 onChange={handleChange}
             />
