@@ -1,0 +1,158 @@
+$buttonHeight: 30px;
+$squareSize: 18px;
+
+#performance-viewer {
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 300px 1fr;
+    font-family: "acumin-pro";
+
+    .performancePlayheadButton {
+        grid-area: liveButton;
+        height: $buttonHeight;
+        width: 100px;
+        justify-self: right;
+        background-color: #dcdfe1;
+        color: #2e3f47;
+        outline: 2px #2e3f47;
+        margin: 5px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    #performance-viewer-sidebar {
+        display: flex;
+        flex-direction: column;
+        overflow-y: scroll;
+
+        border: 2px solid gray;
+
+        .sidebar-item {
+            display: grid;
+            width: 100%;
+            height: 30px;
+            font-size: 14px;
+            padding: 2.5px 0px;
+            align-items: center;
+        }
+
+        .header {
+            color: white;
+            grid-template-columns: 10px 9fr 1fr 10px;
+
+            .category {
+                grid-column: 2;
+            }
+
+            .value {
+                grid-column: 3;
+            }
+        }
+
+        .version-header {
+            background-color: #2e3f47;
+            color: white;
+            grid-template-columns: 10px 1fr 1fr 10px;
+            font-size: 14px;
+            height: 35px; // with padding, we get 40px
+
+            .category {
+                grid-column: 2;
+            }
+
+            .value {
+                grid-column: 3;
+                display: flex;
+                justify-content: end;
+            }
+        }
+
+        // mid-dark color
+        .category-header {
+            background-color: #4a5960;
+            text-transform: uppercase;
+            font-size: 14px;
+            height: 30px;
+
+            .checkBoxLine {
+                color: #dcdfe1;
+            }
+        }
+
+        .measure {
+            color: black;
+            grid-template-columns: $squareSize 6fr 1fr;
+            font-family: "acumin-pro-condensed";
+
+            .category {
+                display: grid;
+                grid-template-columns: $squareSize 7px $squareSize 10px 1fr;
+                grid-column: 2;
+                align-items: center;
+
+                .color-picker {
+                    grid-column: 3;
+                }
+
+                .sidebar-item-label {
+                    grid-column: 5;
+                }
+            }
+
+            .value {
+                grid-column: 3;
+            }
+        }
+
+        //darker color
+        .measure:nth-child(odd) {
+            background-color: #dcdfe1;
+        }
+
+        // lighter color
+        .measure:nth-child(even) {
+            background-color: #ebedee;
+        }
+
+        .checkBoxLine {
+            color: #4a5960;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            .disabled {
+                color: lightgray;
+            }
+        }
+
+        .color-picker {
+            width: 100%;
+
+            .color-rect {
+                height: $squareSize;
+                width: $squareSize;
+                cursor: pointer;
+            }
+
+            .color-picker-cover {
+                position: fixed;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                left: 0px;
+                z-index: 100;
+            }
+
+            .color-picker-float {
+                position: absolute;
+
+                .color-picker-container {
+                    width: 200px;
+                }
+            }
+        }
+    }
+}

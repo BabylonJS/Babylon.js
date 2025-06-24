@@ -10,6 +10,8 @@ import { PerformancePlayheadButtonComponent } from "./performancePlayheadButtonC
 import { CanvasGraphComponent } from "../../misc/graph/canvasGraphComponent";
 import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "../../misc/graph/graphSupportingTypes";
 
+import "./scss/performanceViewer.scss";
+
 interface IPerformanceViewerPopupComponentProps {
     scene: Scene;
     layoutObservable: Observable<IPerfLayoutSize>;

@@ -30,48 +30,23 @@ module.exports = (env) => {
         },
 
         module: {
-            rules: [
-                {
-                    test: /\.tsx?$/,
-                    use: [
-                        {
-                            loader: "ts-loader",
-                            options: {
-                                configFile: "tsconfig.build.json",
-                                getCustomTransformers: () => ({
-                                    before: [ReactRefreshTypeScript()].filter(Boolean),
-                                }),
-                                transpileOnly: true,
-                            },
-                        },
-                    ],
-                    exclude: /node_modules/,
+            rules: webpackTools.getRules({
+                sideEffects: true,
+                includeCSS: true,
+                extraRules: [
+                    {
+                        test: /\.svg$/,
+                        type: "asset/inline",
+                    },
+                ],
+                tsOptions: {
+                    configFile: "tsconfig.build.json",
+                    getCustomTransformers: () => ({
+                        before: [ReactRefreshTypeScript()].filter(Boolean),
+                    }),
+                    transpileOnly: true,
                 },
-                {
-                    test: /\.(jpe?g|png|ttf|woff|eot|svg?)(\?[a-z0-9=&.]+)?$/,
-                    type: "asset/inline",
-                },
-                {
-                    test: /(?<!module)\.s[ac]ss$/i,
-                    use: [
-                        "style-loader",
-                        {
-                            loader: "css-loader",
-                            options: {
-                                sourceMap: true,
-                                modules: false,
-                            },
-                        },
-                        {
-                            loader: "sass-loader",
-                            options: {
-                                api: "modern",
-                                sourceMap: true,
-                            },
-                        },
-                    ],
-                },
-            ],
+            }),
         },
 
         plugins: [new ReactRefreshWebpackPlugin()].filter(Boolean),
