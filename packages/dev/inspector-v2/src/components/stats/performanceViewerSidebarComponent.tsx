@@ -6,7 +6,7 @@ import { ColorPickerLine } from "shared-ui-components/lines/colorPickerComponent
 import { faSquare, faCheckSquare } from "@fortawesome/free-solid-svg-icons";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import type { Observable } from "core/Misc/observable";
-import type { IPerfMinMax, IVisibleRangeChangedObservableProps } from "../../misc/graph/graphSupportingTypes";
+import type { IPerfMinMax, IVisibleRangeChangedObservableProps } from "./graph/graphSupportingTypes";
 import { Engine } from "core/Engines/engine";
 
 interface IPerformanceViewerSidebarComponentProps {

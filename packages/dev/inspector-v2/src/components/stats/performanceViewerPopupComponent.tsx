@@ -7,8 +7,8 @@ import { Observable } from "core/Misc/observable";
 import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarComponent";
 import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerformancePlayheadButtonComponent } from "./performancePlayheadButtonComponent";
-import { CanvasGraphComponent } from "../../misc/graph/canvasGraphComponent";
-import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "../../misc/graph/graphSupportingTypes";
+import { CanvasGraphComponent } from "./graph/canvasGraphComponent";
+import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graph/graphSupportingTypes";
 
 import "./scss/performanceViewer.scss";
 

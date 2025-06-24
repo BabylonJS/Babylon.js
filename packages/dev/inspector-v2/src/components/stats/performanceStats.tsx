@@ -8,7 +8,7 @@ import { PerformanceViewerPopupComponent } from "./performanceViewerPopupCompone
 import { Tools } from "core/Misc/tools";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
-import type { IPerfLayoutSize } from "../../misc/graph/graphSupportingTypes";
+import type { IPerfLayoutSize } from "./graph/graphSupportingTypes";
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 

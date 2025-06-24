@@ -236,8 +236,6 @@ export function HideInspector() {
 export interface IPersistentPopupConfiguration {
     props: IPopupComponentProps;
     children: React.ReactNode;
-    closeWhenSceneExplorerCloses?: boolean;
-    closeWhenActionTabsCloses?: boolean;
 }
 
 export class Inspector {
@@ -265,13 +263,6 @@ export class Inspector {
         this._PersistentPopupRoot = createRoot(this._PersistentPopupHost);
         const popupElement = createElement(PopupComponent, config.props, config.children);
         this._PersistentPopupRoot.render(popupElement);
-
-        // if (config.closeWhenSceneExplorerCloses) {
-        //     this._OnSceneExplorerClosedObserver = this._GlobalState.onSceneExplorerClosedObservable.add(() => this._ClosePersistentPopup());
-        // }
-        // if (config.closeWhenActionTabsCloses) {
-        //     this._OnActionTabsClosedObserver = this._GlobalState.onActionTabsClosedObservable.add(() => this._ClosePersistentPopup());
-        // }
     }
 
     public static _ClosePersistentPopup() {
@@ -281,13 +272,5 @@ export class Inspector {
             this._PersistentPopupHost = null;
             this._PersistentPopupRoot = null;
         }
-        // if (this._OnSceneExplorerClosedObserver) {
-        //     this._GlobalState.onSceneExplorerClosedObservable.remove(this._OnSceneExplorerClosedObserver);
-        //     this._OnSceneExplorerClosedObserver = null;
-        // }
-        // if (this._OnActionTabsClosedObserver) {
-        //     this._GlobalState.onActionTabsClosedObservable.remove(this._OnActionTabsClosedObserver);
-        //     this._OnActionTabsClosedObserver = null;
-        // }
     }
 }
