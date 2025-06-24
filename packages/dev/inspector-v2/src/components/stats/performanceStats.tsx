@@ -4,11 +4,11 @@ import { useEffect, useState, type FunctionComponent } from "react";
 import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import { Observable } from "core/Misc/observable";
 import { Inspector } from "../../inspector";
-import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
+import { PerformanceViewerPopupComponent } from "./performanceViewer/performanceViewerPopupComponent";
 import { Tools } from "core/Misc/tools";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
-import type { IPerfLayoutSize } from "./graph/graphSupportingTypes";
+import type { IPerfLayoutSize } from "./performanceViewer/graph/graphSupportingTypes";
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 
