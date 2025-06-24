@@ -15,6 +15,9 @@
         },
         {
             "path": "../sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "../serializers/tsconfig.build.json"
         }
     ],
 

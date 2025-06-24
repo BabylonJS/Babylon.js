@@ -26,6 +26,7 @@ module.exports = (env) => {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+                serializers: path.resolve("../../dev/serializers/dist"),
             },
         },
 

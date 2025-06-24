@@ -23,7 +23,7 @@ import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExpl
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
-import { ToolsServiceDefinition } from "./services/panes/toolsService";
+import { ToolsServiceDefinition } from "./services/panes/tools/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
