@@ -7,6 +7,7 @@ import type { BaseComponentProps } from "../hoc/propertyLine";
 const useInputStyles = makeStyles({
     text: {
         height: "auto",
+        textAlign: "right",
     },
     float: {
         height: "auto",
@@ -15,10 +16,9 @@ const useInputStyles = makeStyles({
     },
 });
 
-type InputProps = BaseComponentProps<string | number> & {
+export type InputProps<T extends string | number> = BaseComponentProps<T> & {
     step?: number;
     placeholder?: string;
-    type?: "number" | "text";
     min?: number;
     max?: number;
 };
@@ -27,7 +27,7 @@ type InputProps = BaseComponentProps<string | number> & {
  * @param props
  * @returns
  */
-export const Input: FunctionComponent<InputProps> = (props) => {
+export const Input: FunctionComponent<InputProps<string | number>> = (props) => {
     const classes = useInputStyles();
     const [value, setValue] = useState(props.value ?? "");
 
@@ -48,9 +48,10 @@ export const Input: FunctionComponent<InputProps> = (props) => {
     return (
         <FluentInput
             {...props}
+            type={typeof props.value === "number" ? "number" : "text"}
             size="small"
             value={value.toString()}
-            className={props.type === "number" ? classes.float : classes.text}
+            className={typeof props.value === "number" ? classes.float : classes.text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
         />
