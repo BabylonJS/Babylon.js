@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { PBR2Material } from "core/Materials/PBR/pbr2Material";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -71,7 +71,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     }
 
     private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 

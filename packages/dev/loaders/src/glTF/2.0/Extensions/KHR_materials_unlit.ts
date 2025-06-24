@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { PBR2Material } from "core/Materials/PBR/pbr2Material";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -69,7 +69,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof PBR2Material)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
