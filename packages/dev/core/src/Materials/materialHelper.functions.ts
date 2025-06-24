@@ -276,6 +276,11 @@ export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer):
  * @param ubo The uniform buffer to update
  * @param reflectionTexture The IBL texture
  * @param realTimeFiltering Whether realtime filtering of IBL texture is being used
+ * @param supportTextureInfo Whether the texture info is supported
+ * @param supportLocalProjection Whether local projection is supported
+ * @param usePBR Whether PBR is being used
+ * @param supportSH Whether spherical harmonics are supported
+ * @param useColor Whether to use the reflection color
  * @param reflectionColor The color to use for the reflection
  */
 export function BindIBLParameters(
@@ -284,6 +289,11 @@ export function BindIBLParameters(
     ubo: UniformBuffer,
     reflectionTexture: Nullable<BaseTexture> = null,
     realTimeFiltering: boolean = false,
+    supportTextureInfo: boolean = false,
+    supportLocalProjection: boolean = false,
+    usePBR: boolean = false,
+    supportSH: boolean = false,
+    useColor: boolean = false,
     reflectionColor: Color3 = Color3.White()
 ): void {
     if (scene.texturesEnabled) {
@@ -291,7 +301,7 @@ export function BindIBLParameters(
             ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
             ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0);
 
-            if ((<any>reflectionTexture).boundingBoxSize) {
+            if (supportLocalProjection && (<any>reflectionTexture).boundingBoxSize) {
                 const cubeTexture = <CubeTexture>reflectionTexture;
 
                 ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
@@ -303,7 +313,7 @@ export function BindIBLParameters(
                 ubo.updateFloat2("vReflectionFilteringInfo", width, Math.log2(width));
             }
 
-            if (!defines.USEIRRADIANCEMAP) {
+            if (supportSH && !defines.USEIRRADIANCEMAP) {
                 const polynomials = reflectionTexture.sphericalPolynomial;
                 if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
                     if (defines.SPHERICAL_HARMONICS) {
@@ -329,17 +339,21 @@ export function BindIBLParameters(
                         ubo.updateFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
                     }
                 }
-            } else {
+            } else if (usePBR) {
                 // If we're using an irradiance map with a dominant direction assigned, set it.
                 if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION) {
                     ubo.updateVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture!._dominantDirection!);
                 }
             }
 
-            ubo.updateFloat3("vReflectionMicrosurfaceInfos", reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+            if (supportTextureInfo) {
+                ubo.updateFloat3("vReflectionMicrosurfaceInfos", reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+            }
         }
     }
-    ubo.updateColor3("vReflectionColor", reflectionColor);
+    if (useColor) {
+        ubo.updateColor3("vReflectionColor", reflectionColor);
+    }
 }
 
 /**
@@ -1468,15 +1482,17 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
  * @param ubo Add uniforms to UBO
  * @param supportTextureInfo Add uniforms for texture info if true
  * @param supportLocalProjection Add uniforms for local projection if true
- * @param useAdvanced Add advanced uniforms for IBL if true
+ * @param usePBR Add uniforms for IBL if true
  * @param supportSH Add uniforms for spherical harmonics if true
+ * @param useColor Add uniforms for reflection color if true
  */
 export function PrepareUniformLayoutForIBL(
     ubo: UniformBuffer,
     supportTextureInfo: boolean = false,
     supportLocalProjection: boolean = false,
-    useAdvanced: boolean = false,
-    supportSH: boolean = false
+    usePBR: boolean = false,
+    supportSH: boolean = false,
+    useColor: boolean = false
 ): void {
     ubo.addUniform("vReflectionInfos", 2);
     ubo.addUniform("reflectionMatrix", 16);
@@ -1489,10 +1505,13 @@ export function PrepareUniformLayoutForIBL(
         ubo.addUniform("vReflectionSize", 3);
     }
 
-    if (useAdvanced) {
+    if (usePBR) {
         ubo.addUniform("vReflectionFilteringInfo", 2);
-        ubo.addUniform("vReflectionColor", 3);
         ubo.addUniform("vReflectionDominantDirection", 3);
+    }
+
+    if (useColor) {
+        ubo.addUniform("vReflectionColor", 3);
     }
 
     if (supportSH) {

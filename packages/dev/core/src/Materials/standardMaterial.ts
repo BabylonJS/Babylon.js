@@ -1467,7 +1467,7 @@ export class StandardMaterial extends StandardMaterialBase {
                         ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
-                    BindIBLParameters(scene, defines, ubo, this._reflectionTexture);
+                    BindIBLParameters(scene, defines, ubo, this._reflectionTexture, false, true, true);
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                         ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);

@@ -1910,7 +1910,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         ubo.addUniform("reflectanceMatrix", 16);
 
         ubo.addUniform("cameraInfo", 4);
-        PrepareUniformLayoutForIBL(ubo, true, true, true);
+        PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
         super.buildUniformLayout();
     }
 
@@ -2057,7 +2057,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                     }
                 }
 
-                BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, this._reflectionColor);
+                BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
 
                 // Point size
                 if (this.pointsCloud) {
