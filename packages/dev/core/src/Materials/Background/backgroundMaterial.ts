@@ -941,7 +941,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                         BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                     }
 
-                    BindIBLParameters(scene, defines, this._uniformBuffer, reflectionTexture);
+                    BindIBLParameters(scene, defines, this._uniformBuffer, reflectionTexture, false, true);
                 }
 
                 if (this.shadowLevel > 0) {
