@@ -507,7 +507,7 @@
             "label": "Smart Filter Editor Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve and watch (Dev)",
+            "dependsOn": "Watch all (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
