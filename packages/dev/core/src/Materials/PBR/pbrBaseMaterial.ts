@@ -15,23 +15,23 @@ import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 
-import { ImageProcessingDefinesMixin } from "../imageProcessingConfiguration.defines";
-import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
-import type { Effect, IEffectCreationOptions } from "../effect";
-import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../material";
-import { Material } from "../material";
+import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
+import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
+import { Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
-import { MaterialDefines } from "../materialDefines";
-import { PushMaterial } from "../pushMaterial";
+import { MaterialDefines } from "../../Materials/materialDefines";
+import { PushMaterial } from "../../Materials/pushMaterial";
 
-import type { BaseTexture } from "../Textures/baseTexture";
-import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 
-import "../Textures/baseTexture.polynomial";
+import "../../Materials/Textures/baseTexture.polynomial";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
