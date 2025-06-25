@@ -4,13 +4,13 @@ import type { IExtensionFeed, ExtensionMetadata, IExtensionMetadataQuery, Extens
 // well-known at build time and the extension is "downloaded" by simply doing a dynamic import. This is different
 // from future extension types that are built and published apart from the inspector, and are downloaded as an isolated script.
 
-const CreationToolsExtensionMetadata = {
-    name: "Asset Creation",
+const CreateToolsExtensionMetadata = {
+    name: "Creation Tools",
     description: "Adds new features to enable creating Babylon assets such as node materials, flow graphs, and more.",
     keywords: ["creation"],
 } as const;
 
-const Extensions: readonly ExtensionMetadata[] = [CreationToolsExtensionMetadata];
+const Extensions: readonly ExtensionMetadata[] = [CreateToolsExtensionMetadata];
 
 /**
  * @internal
@@ -29,8 +29,8 @@ export class BuiltInsExtensionFeed implements IExtensionFeed {
     }
 
     public async getExtensionModuleAsync(name: string): Promise<ExtensionModule | undefined> {
-        if (name === CreationToolsExtensionMetadata.name) {
-            return await import("../services/creationToolsService");
+        if (name === CreateToolsExtensionMetadata.name) {
+            return await import("../services/JasonsCreateToolService");
         }
         return undefined;
     }

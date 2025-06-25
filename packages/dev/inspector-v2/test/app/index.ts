@@ -29,14 +29,16 @@ let camera: Nullable<ArcRotateCamera> = null;
 
 function createCamera() {
     camera?.dispose();
-    scene.createDefaultCameraOrLight(true, true, true);
+    // scene.createDefaultCameraOrLight(true, true, true);
+    scene.createDefaultCamera(true, true, true);
     camera = scene.activeCamera as ArcRotateCamera;
-    camera.alpha = Math.PI / 2;
+    camera.alpha = -0.5;
+    camera.beta = 1.2;
 }
 
 (async () => {
-    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
-    assetContainer.addAllToScene();
+    // let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
+    // assetContainer.addAllToScene();
     createCamera();
 
     engine.runRenderLoop(() => {
@@ -55,9 +57,9 @@ function createCamera() {
                 event.preventDefault();
                 isDropping = true;
                 try {
-                    assetContainer.removeAllFromScene();
-                    assetContainer = await LoadAssetContainerAsync(file, scene);
-                    assetContainer.addAllToScene();
+                    // assetContainer.removeAllFromScene();
+                    // assetContainer = await LoadAssetContainerAsync(file, scene);
+                    // assetContainer.addAllToScene();
                     createCamera();
                 } finally {
                     isDropping = false;
