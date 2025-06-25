@@ -5,7 +5,7 @@ import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3, Color4, TmpColors } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
-import type { BaseTexture } from "../Textures/baseTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
@@ -166,7 +166,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public MICROSURFACEMAP = false;
     public MICROSURFACEMAPDIRECTUV = 0;
 
-    public METALLICWORKFLOW = false;
+    public METALLICWORKFLOW = true;
     public ROUGHNESSSTOREINMETALMAPALPHA = false;
     public ROUGHNESSSTOREINMETALMAPGREEN = false;
     public METALLNESSSTOREINMETALMAPBLUE = false;
@@ -2121,8 +2121,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     TmpColors.Color4[0].a = f0;
                     ubo.updateDirectColor4("vReflectivityColor", TmpColors.Color4[0]);
                     ubo.updateColor4("vMetallicReflectanceFactors", this._metallicReflectanceColor, this._metallicF0Factor);
-                } else {
-                    ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
                 }
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
