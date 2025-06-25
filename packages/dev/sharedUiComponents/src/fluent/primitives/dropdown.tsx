@@ -36,10 +36,10 @@ export type DropdownProps = BaseComponentProps<AcceptedDropdownValue | undefined
  */
 export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     const classes = useDropdownStyles();
-    const [options] = useState<DropdownOption[]>(props.includeUndefined ? [{ label: "<Not defined>", value: Number.MAX_SAFE_INTEGER }, ...props.options] : props.options);
-    const [defaultVal, setDefaultVal] = useState(props.includeUndefined && props.value === undefined ? Number.MAX_SAFE_INTEGER : props.value);
+    const [options] = useState<DropdownOption[]>(props.includeUndefined ? [{ label: "<Not defined>", value: Number.NaN }, ...props.options] : props.options);
+    const [defaultVal, setDefaultVal] = useState(props.includeUndefined && props.value === undefined ? Number.NaN : props.value);
     useEffect(() => {
-        setDefaultVal(props.includeUndefined && props.value === undefined ? Number.MAX_SAFE_INTEGER : props.value);
+        setDefaultVal(props.includeUndefined && props.value === undefined ? Number.NaN : props.value);
     }, [props.value]);
 
     return (
@@ -49,7 +49,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
             onOptionSelect={(evt, data) => {
                 let value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
                 setDefaultVal(value);
-                if (props.includeUndefined && value === Number.MAX_SAFE_INTEGER.toString()) {
+                if (props.includeUndefined && value === Number.NaN.toString()) {
                     value = undefined;
                 }
                 props.onChange(value);

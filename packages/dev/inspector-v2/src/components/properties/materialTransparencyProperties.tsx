@@ -6,8 +6,9 @@ import type { FunctionComponent } from "react";
 
 import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { BoundProperty } from "./boundProperty";
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-const TransparencyModeOptions = [
+const TransparencyModeOptions: DropdownOption[] = [
     { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
     { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
     { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },

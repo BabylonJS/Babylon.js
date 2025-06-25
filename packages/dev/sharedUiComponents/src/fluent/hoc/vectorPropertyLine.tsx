@@ -1,4 +1,5 @@
-import { useState, type FunctionComponent } from "react";
+import { useState } from "react";
+import type { FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
@@ -23,7 +24,7 @@ export type VectorPropertyLineProps<V extends Vector3 | Vector4> = BaseComponent
         /**
          * If passed, the UX will use the conversion functions to display/update values
          */
-        valConverter?: {
+        valueConverter?: {
             /**
              * Will call from(val) before displaying in the UX
              */
@@ -42,14 +43,14 @@ export type VectorPropertyLineProps<V extends Vector3 | Vector4> = BaseComponent
  * @returns
  */
 const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Vector4>> = (props) => {
-    const converted = (val: number) => (props.valConverter ? props.valConverter.from(val) : val);
+    const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
     const formatted = (val: number) => converted(val).toFixed(2);
 
     const [vector, setVector] = useState(props.value);
     const { min, max } = props;
 
     const onChange = (val: number, key: "x" | "y" | "z" | "w") => {
-        const value = props.valConverter ? props.valConverter.to(val) : val;
+        const value = props.valueConverter ? props.valueConverter.to(val) : val;
         const newVector = vector.clone();
         (newVector as Vector4)[key] = value; // The syncedSlider for 'w' is only rendered when vector is a Vector4, so this is safe
 
@@ -85,7 +86,7 @@ const ToDegreesConverter = { from: Tools.ToDegrees, to: Tools.ToRadians };
 export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropertyLineProps> = (props) => {
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
-    return <Vector3PropertyLine {...props} valConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
+    return <Vector3PropertyLine {...props} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
 };
 
 export const Vector3PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector3>>;
