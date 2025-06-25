@@ -5,7 +5,10 @@
         "composite": true,
         "strict": true,
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["node_modules/core/*"]
+        }
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
