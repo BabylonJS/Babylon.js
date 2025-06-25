@@ -3,11 +3,27 @@ import type { IDisposable } from "core/index";
 
 import type { ComponentType, FunctionComponent } from "react";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
-import type { IExtension } from "./extensibility/extensionManager";
+import type { IExtension, InstallFailedInfo } from "./extensibility/extensionManager";
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
 
-import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
+import {
+    Body1,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    FluentProvider,
+    List,
+    ListItem,
+    makeStyles,
+    Spinner,
+    tokens,
+} from "@fluentui/react-components";
+import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { useTernaryDarkMode } from "usehooks-ts";
@@ -21,8 +37,7 @@ import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-//import { DarkTheme, LightTheme } from "./themes/babylonTheme";
-import { webDarkTheme as DarkTheme, webLightTheme as LightTheme } from "@fluentui/react-components";
+import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -39,6 +54,15 @@ const useStyles = makeStyles({
             from: { opacity: 0 },
             to: { opacity: 1 },
         },
+    },
+    extensionErrorTitleDiv: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    extensionErrorIcon: {
+        color: tokens.colorPaletteRedForeground1,
     },
 });
 
@@ -78,6 +102,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const { isDarkMode } = useTernaryDarkMode();
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
+        const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
         const [rootComponent, setRootComponent] = useState<ComponentType>();
 
@@ -116,7 +141,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 await serviceContainer.addServicesAsync(...serviceDefinitions);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
-                const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds);
+                const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds, setExtensionInstallError);
 
                 // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);
@@ -182,6 +207,10 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             requiredExtensionsDeferred?.resolve(false);
         }, [setRequiredExtensions, requiredExtensionsDeferred]);
 
+        const onAcknowledgedExtensionInstallError = useCallback(() => {
+            setExtensionInstallError(undefined);
+        }, [setExtensionInstallError]);
+
         // Show a spinner until a main view has been set.
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const Content: ComponentType = rootComponent ?? (() => <Spinner className={classes.spinner} />);
@@ -204,6 +233,33 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                                         </Button>
                                         <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
                                             No Thanks
+                                        </Button>
+                                    </DialogActions>
+                                </DialogBody>
+                            </DialogSurface>
+                        </Dialog>
+                        <Dialog open={!!extensionInstallError} modalType="alert">
+                            <DialogSurface>
+                                <DialogBody>
+                                    <DialogTitle>
+                                        <div className={classes.extensionErrorTitleDiv}>
+                                            Extension Install Error
+                                            <ErrorCircleRegular className={classes.extensionErrorIcon} />
+                                        </div>
+                                    </DialogTitle>
+                                    <DialogContent>
+                                        <List>
+                                            <ListItem>
+                                                <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
+                                            </ListItem>
+                                            <ListItem>
+                                                <Body1>{`${extensionInstallError?.error}`}</Body1>
+                                            </ListItem>
+                                        </List>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
+                                            Close
                                         </Button>
                                     </DialogActions>
                                 </DialogBody>
