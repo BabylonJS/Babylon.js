@@ -3,7 +3,9 @@ import { PhysicsMotionType, PhysicsPrestepType, type TransformNode } from "core/
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 
 import type { FunctionComponent } from "react";
-import { Dropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -60,78 +62,62 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
 
     return (
         <>
-            <PropertyLine label="Motion Type">
-                <Dropdown
-                    options={MotionOptions}
-                    value={MotionOptions.find((opt) => opt.value === (node.physicsBody as any)._motionType) ?? MotionOptions[0]}
-                    onChange={(option) => {
-                        return node.physicsBody?.setMotionType(option.value as PhysicsMotionType);
-                    }}
-                />
-            </PropertyLine>
-            <PropertyLine label="Prestep Type">
-                <Dropdown
-                    options={PrestepOptions}
-                    value={PrestepOptions.find((opt) => opt.value === (node.physicsBody as any)._prestepType) ?? PrestepOptions[0]}
-                    onChange={(option) => {
-                        return node.physicsBody?.setPrestepType(option.value as PhysicsPrestepType);
-                    }}
-                />
-            </PropertyLine>
+            <DropdownPropertyLine
+                label="Motion Type"
+                options={MotionOptions}
+                value={MotionOptions.find((opt) => opt.value === (node.physicsBody as any)._motionType) ?? MotionOptions[0]}
+                onChange={(option) => {
+                    return node.physicsBody?.setMotionType(option.value as PhysicsMotionType);
+                }}
+            />
+            <DropdownPropertyLine
+                label="Prestep Type"
+                options={PrestepOptions}
+                value={PrestepOptions.find((opt) => opt.value === (node.physicsBody as any)._prestepType) ?? PrestepOptions[0]}
+                onChange={(option) => {
+                    return node.physicsBody?.setPrestepType(option.value as PhysicsPrestepType);
+                }}
+            />
             {/* Linear Damping */}
-            <PropertyLine label="Linear Damping">
-                <input
-                    type="number"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={linearDamping}
-                    onChange={(e) => {
-                        node.physicsBody!.setLinearDamping(parseFloat(e.target.value));
-                    }}
-                />
-            </PropertyLine>
+            <FloatInputPropertyLine
+                label="Linear Damping"
+                min={0}
+                max={1}
+                step={0.01}
+                value={linearDamping}
+                onChange={(e) => {
+                    node.physicsBody!.setLinearDamping(e);
+                }}
+            />
             {/* Angular Damping */}
-            <PropertyLine label="Angular Damping">
-                <input
-                    type="number"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={angularDamping}
-                    onChange={(e) => {
-                        node.physicsBody!.setAngularDamping(parseFloat(e.target.value));
-                    }}
-                />
-            </PropertyLine>
-            {/* Linear Velocity (display only) */}
-            <PropertyLine label="Linear Velocity">
-                <Vector3PropertyLine label="" value={linearVelocity} onChange={() => {}} />
-            </PropertyLine>
-            {/* Angular Velocity (display only) */}
-            <PropertyLine label="Angular Velocity">
-                <Vector3PropertyLine label="" value={angularVelocity} onChange={() => {}} />
-            </PropertyLine>
+            <FloatInputPropertyLine
+                label="Angular Damping"
+                min={0}
+                max={1}
+                step={0.01}
+                value={angularDamping}
+                onChange={(e) => {
+                    node.physicsBody!.setAngularDamping(e);
+                }}
+            />
+            <Vector3PropertyLine label="Linear Velocity" value={linearVelocity} onChange={() => {}} />
+            <Vector3PropertyLine label="Angular Velocity" value={angularVelocity} onChange={() => {}} />
             {/* Physics Mass Properties Controls */}
             {massProps && (
                 <PropertyLine label="Mass">
                     <div style={{ marginTop: 12 }}>
-                        <label>
-                            Mass:
-                            <input
-                                type="number"
-                                value={massProps.mass ?? ""}
-                                min={0}
-                                step={0.01}
-                                onChange={(e) => {
-                                    massProps.mass = parseFloat(e.target.value);
-                                    node.physicsBody?.setMassProperties(massProps);
-                                }}
-                            />
-                        </label>
-                        <br />
+                        <FloatInputPropertyLine
+                            label="Value"
+                            value={massProps.mass ?? ""}
+                            min={0}
+                            step={0.01}
+                            onChange={(e) => {
+                                massProps.mass = e;
+                                node.physicsBody?.setMassProperties(massProps);
+                            }}
+                        />
                         <Vector3PropertyLine
-                            label="Center of Mass"
+                            label="Center"
                             value={centerOfMass}
                             onChange={(v) => {
                                 massProps.centerOfMass = v;
