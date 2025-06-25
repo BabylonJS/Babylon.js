@@ -63,7 +63,7 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
 
     /**
      * Sets the audio output volume with optional ramping.
-     * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given curve.
+     * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given shape.
      * If a ramp is already in progress then the volume is not set and an error is thrown.
      * @param value The value to set the volume to.
      * @param options The options to use for ramping the volume change.

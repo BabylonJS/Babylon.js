@@ -28,5 +28,5 @@ export interface IAudioParameterRampOptions {
     /**
      * The shape of the ramp to use for the parameter change. Defaults to {@link AudioParameterRampShape.Linear}.
      */
-    curve: AudioParameterRampShape;
+    shape: AudioParameterRampShape;
 }

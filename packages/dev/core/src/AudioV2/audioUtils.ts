@@ -12,7 +12,7 @@ let ExpCurve: Nullable<Float32Array> = null;
 let LogCurve: Nullable<Float32Array> = null;
 
 /**
- * @returns A Float32Array representing an exponential curve from (0, 0) to (1, 1).
+ * @returns A Float32Array representing an exponential ramp from (0, 0) to (1, 1).
  */
 function GetExpCurve(): Float32Array {
     if (!ExpCurve) {
@@ -30,7 +30,7 @@ function GetExpCurve(): Float32Array {
 }
 
 /**
- * @returns A Float32Array representing a logarithmic curve from (0, 0) to (1, 1).
+ * @returns A Float32Array representing a logarithmic ramp from (0, 0) to (1, 1).
  */
 function GetLogCurve(): Float32Array {
     if (!LogCurve) {
@@ -48,23 +48,23 @@ function GetLogCurve(): Float32Array {
 }
 
 /** @internal */
-export function _GetAudioParamCurveValues(curve: AudioParameterRampShape, from: number, to: number): Float32Array {
+export function _GetAudioParamCurveValues(shape: AudioParameterRampShape, from: number, to: number): Float32Array {
     if (!TmpCurveValues) {
         TmpCurveValues = new Float32Array(CurveLength);
     }
 
     let normalizedCurve: Float32Array;
 
-    if (curve === AudioParameterRampShape.Linear) {
+    if (shape === AudioParameterRampShape.Linear) {
         TmpLineValues[0] = from;
         TmpLineValues[1] = to;
         return TmpLineValues;
-    } else if (curve === AudioParameterRampShape.Exponential) {
+    } else if (shape === AudioParameterRampShape.Exponential) {
         normalizedCurve = GetExpCurve();
-    } else if (curve === AudioParameterRampShape.Logarithmic) {
+    } else if (shape === AudioParameterRampShape.Logarithmic) {
         normalizedCurve = GetLogCurve();
     } else {
-        throw new Error(`Unknown curve shape: ${curve}`);
+        throw new Error(`Unknown ramp shape: ${shape}`);
     }
 
     const range = to - from;
