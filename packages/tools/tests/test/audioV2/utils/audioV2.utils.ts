@@ -45,9 +45,9 @@ declare global {
     let audioContext: AudioContext | OfflineAudioContext;
     let audioTestConfig: AudioTestConfig;
     let audioTestResult: AudioTestResult;
+    let errorMessage: string;
 
     class AudioV2Test {
-        public static ErrorMessage: string;
         public static AfterEach(): void;
         public static BeforeEach(): void;
         public static CreateAbstractSoundAndOutputNodeAsync(

@@ -581,15 +581,15 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         try {
                             outputNode.setVolume(1, { duration: 1 });
                         } catch (e) {
-                            AudioV2Test.ErrorMessage = e.message;
+                            errorMessage = e.message;
                         }
                         sound.stop();
                     });
                 });
 
-                const errorMessage = await EvaluateErrorMessageAsync(page);
+                const message = await EvaluateErrorMessageAsync(page);
 
-                expect(errorMessage).toBe("Audio parameter not set. Wait for current ramp to finish.");
+                expect(message).toBe("Audio parameter not set. Wait for current ramp to finish.");
             });
 
             test("Non-overlapping ramps should not throw an error", async ({ page }) => {
@@ -606,15 +606,15 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         try {
                             outputNode.setVolume(1, { duration: 1 });
                         } catch (e) {
-                            AudioV2Test.ErrorMessage = e.message;
+                            errorMessage = e.message;
                         }
                         sound.stop();
                     });
                 });
 
-                const errorMessage = await EvaluateErrorMessageAsync(page);
+                const message = await EvaluateErrorMessageAsync(page);
 
-                expect(errorMessage).toBe("No error");
+                expect(message).toBe("No error");
             });
         });
     });

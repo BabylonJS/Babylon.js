@@ -7,7 +7,7 @@ var audioTestResult;
 var audioTestSounds = [];
 var audioTestSuspendTime = 0;
 var BABYLON;
-var error;
+var errorMessage;
 
 const SilenceAudioOutput = true;
 
@@ -21,8 +21,6 @@ const PulseTrainLengthInSamples = 90;
 const PulseVolumeThreshold = 0.05;
 
 class AudioV2Test {
-    static ErrorMessage = "";
-
     static #AddSound(sound) {
         audioTestSounds.push(sound);
 
@@ -65,7 +63,7 @@ class AudioV2Test {
         audioTestSounds.length = 0;
         audioTestSuspendTime = 0;
 
-        AudioV2Test.ErrorMessage = "No error";
+        errorMessage = "No error";
     }
 
     static async CreateAudioEngineAsync(contextType, duration, options = {}) {
@@ -432,7 +430,7 @@ class AudioV2Test {
 
     static async GetErrorMessageAsync() {
         await AudioV2Test.GetResultAsync();
-        return AudioV2Test.ErrorMessage;
+        return errorMessage;
     }
 
     static async WaitAsync(seconds, callback) {
