@@ -1,9 +1,10 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { IReadonlyObservable, Nullable } from "core/index";
+import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
 
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { Observable } from "core/Misc/observable";
+import { InterceptFunction } from "../instrumentation/functionInstrumentation";
 
 export const SelectionServiceIdentity = Symbol("PropertiesService");
 
@@ -28,10 +29,22 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
     factory: () => {
         let selectedEntityState: Nullable<unknown> = null;
         const selectedEntityObservable = new Observable<void>();
+        let disposedHook: Nullable<IDisposable> = null;
+
         const setSelectedItem = (item: Nullable<unknown>) => {
             if (item !== selectedEntityState) {
+                disposedHook?.dispose();
+                disposedHook = null;
+
                 selectedEntityState = item;
                 selectedEntityObservable.notifyObservers();
+
+                if (item) {
+                    const disposable = item as Partial<IDisposable>;
+                    if (disposable.dispose) {
+                        disposedHook = InterceptFunction(disposable, "dispose", { afterCall: () => setSelectedItem(null) });
+                    }
+                }
             }
         };
 

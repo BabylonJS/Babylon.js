@@ -7,6 +7,7 @@ import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPrope
 
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
+import type { ISettingsContext } from "../../services/settingsContext";
 
 type Vector3Keys<T> = { [P in keyof T]: T[P] extends Vector3 ? P : never }[keyof T];
 export type Transform = { position: Vector3; rotation: Vector3; scaling: Vector3 };
@@ -22,18 +23,20 @@ function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: 
     return position;
 }
 
-export const TransformProperties: FunctionComponent<{ transform: Transform }> = (props) => {
-    const { transform: node } = props;
+export const TransformProperties: FunctionComponent<{ transform: Transform; settings: ISettingsContext }> = (props) => {
+    const { transform, settings } = props;
 
-    const position = useVector3Property(node, "position");
-    const rotation = useVector3Property(node, "rotation");
-    const scaling = useVector3Property(node, "scaling");
+    const position = useVector3Property(transform, "position");
+    const rotation = useVector3Property(transform, "rotation");
+    const scaling = useVector3Property(transform, "scaling");
+
+    const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
 
     return (
         <>
-            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (node.position = val)} />
-            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (node.scaling = val)} />
-            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (node.scaling = val)} />
+            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (transform.position = val)} />
+            <Vector3PropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (transform.rotation = val)} useDegrees={useDegrees} />
+            <Vector3PropertyLine key="ScalingTransform" label="Scaling" value={scaling} onChange={(val) => (transform.scaling = val)} />
         </>
     );
 };

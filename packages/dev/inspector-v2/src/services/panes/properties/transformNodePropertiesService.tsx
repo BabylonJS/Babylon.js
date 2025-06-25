@@ -5,13 +5,14 @@ import { TransformNode } from "core/Meshes/transformNode";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { TransformProperties } from "../../../components/properties/transformProperties";
+import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
 
 export const TransformPropertiesSectionIdentity = Symbol("Transform");
 
-export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Transform Node Properties",
-    consumes: [PropertiesServiceIdentity],
-    factory: (propertiesService) => {
+    consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
+    factory: (propertiesService, settingsContent) => {
         const transformSectionRegistration = propertiesService.addSection({
             order: 1,
             identity: TransformPropertiesSectionIdentity,
@@ -25,7 +26,7 @@ export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IP
                 {
                     section: TransformPropertiesSectionIdentity,
                     order: 0,
-                    component: ({ context }) => <TransformProperties transform={context} />,
+                    component: ({ context }) => <TransformProperties transform={context} settings={settingsContent} />,
                 },
             ],
         });

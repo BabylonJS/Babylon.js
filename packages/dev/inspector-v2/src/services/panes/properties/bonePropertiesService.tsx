@@ -9,13 +9,14 @@ import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { BoneGeneralProperties } from "../../../components/properties/boneProperties";
 import { TransformProperties } from "../../../components/properties/transformProperties";
+import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
 
 const TransformPropertiesSectionIdentity = Symbol("Transform");
 
-export const BonePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
+export const BonePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
     friendlyName: "Bone Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
-    factory: (propertiesService, selectionService) => {
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
+    factory: (propertiesService, selectionService, settingsContent) => {
         const generalContentRegistration = propertiesService.addSectionContent({
             key: "Bone General Properties",
             predicate: (entity) => entity instanceof Bone,
@@ -42,7 +43,7 @@ export const BonePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                 {
                     section: TransformPropertiesSectionIdentity,
                     order: 0,
-                    component: ({ context }) => <TransformProperties transform={context} />,
+                    component: ({ context }) => <TransformProperties transform={context} settings={settingsContent} />,
                 },
             ],
         });
