@@ -48,7 +48,6 @@ import {
     GetAttributeType,
     GetMinMax,
     GetPrimitiveMode,
-    IsNoopNode,
     IsTriangleFillMode,
     IsChildCollapsible,
     FloatsNeed16BitInteger,
@@ -61,6 +60,7 @@ import {
     DefaultScale,
     DefaultRotation,
 } from "./glTFUtilities";
+import { IsNoopNode } from "../../exportUtils";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
 import { MultiMaterial } from "core/Materials/multiMaterial";
