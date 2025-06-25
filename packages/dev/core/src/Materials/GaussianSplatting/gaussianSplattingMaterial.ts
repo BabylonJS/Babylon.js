@@ -201,6 +201,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 "focal",
                 "eyePosition",
                 "kernelSize",
+                "viewDirectionFactor",
             ];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
             const uniformBuffers = ["Scene", "Mesh"];
@@ -292,6 +293,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
+        effect.setVector3("viewDirectionFactor", gsMesh.viewDirectionFactor);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
         scene.bindEyePosition(effect, "eyePosition", true);
 
