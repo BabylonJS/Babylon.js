@@ -26,6 +26,7 @@ export const DebugServiceDefinition: ServiceDefinition<[], [IShellService, IScen
             title: "Debug",
             icon: BugRegular,
             horizontalLocation: "right",
+            order: 200,
             suppressTeachingMoment: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
@@ -33,6 +34,25 @@ export const DebugServiceDefinition: ServiceDefinition<[], [IShellService, IScen
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 return <>{scene && <DebugPane sections={sections} sectionContent={sectionContent} context={scene} />}</>;
             },
+        });
+
+        sectionsCollection.add({
+            identity: CoreTextureSectionIdentity,
+        });
+
+        sectionContentCollection.add({
+            key: "Stuff stuff",
+            content: [
+                {
+                    section: CoreTextureSectionIdentity,
+                    component: () => (
+                        <div>
+                            <h3>Core Texture Channels</h3>
+                            <p>This section is for testing purposes.</p>
+                        </div>
+                    ),
+                },
+            ],
         });
 
         return {

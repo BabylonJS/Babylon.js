@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import { AccordionPane } from "../accordionPane";
+import { AccordionPane, AccordionPaneSection } from "../accordionPane";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";
@@ -163,8 +162,8 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
 
     return (
         <>
-            <Accordion>
-                <AccordionSection title="Helpers">
+            <AccordionPane {...props}>
+                <AccordionPaneSection title="Helpers">
                     <SwitchPropertyLine label="Grid" description="Display a ground grid." value={!!scene.reservedDataStore.gridMesh} onChange={() => SwitchGrid(scene)} />
                     <SwitchPropertyLine
                         label="Physics"
@@ -178,7 +177,7 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                         value={!!scene.reservedDataStore.textRenderersHook}
                         onChange={() => void SwitchNameViewerAsync(scene)}
                     />
-                </AccordionSection>
+                </AccordionPaneSection>
                 <AccordionSection title="Core texture channels">
                     <BoundPropertyLine component={SwitchPropertyLine} key="Diffuse" label="Diffuse" target={StandardMaterial} propertyKey="DiffuseTextureEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Ambient" label="Ambient" target={StandardMaterial} propertyKey="AmbientTextureEnabled" />
@@ -216,8 +215,7 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                     <BoundPropertyLine component={SwitchPropertyLine} key="Skeletons" label="Skeletons" target={scene} propertyKey="skeletonsEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Sprites" label="Sprites" target={scene} propertyKey="spritesEnabled" />
                 </AccordionSection>
-            </Accordion>
-            <AccordionPane {...props} />
+            </AccordionPane>
         </>
     );
 };
