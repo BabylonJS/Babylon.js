@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Nullable } from "core/index";
+import { type ArcRotateCamera, type Nullable } from "core/index";
 
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -9,8 +9,6 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ShowInspector } from "../../src/inspector";
 
 import "core/Helpers/sceneHelpers";
-// For testing the Outline & Overlay section
-import "core/Rendering/outlineRenderer";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();

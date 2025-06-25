@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import { useState, type FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
@@ -10,14 +10,13 @@ import { Vector4 } from "core/Maths/math.vector";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
-export type DegreesLineProps = {
-    /**
-     * Do we want to use angles with degrees instead of radians?
-     */
-    useDegrees?: boolean;
-};
-
-export type VectorPropertyLineProps<V extends Vector3 | Vector4> = BaseComponentProps<V> & PropertyLineProps & DegreesLineProps;
+export type VectorPropertyLineProps<V extends Vector3 | Vector4> = BaseComponentProps<V> &
+    PropertyLineProps & {
+        /**
+         * Display angles as degrees instead of radians
+         */
+        useDegrees?: boolean;
+    };
 
 /**
  * Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
@@ -39,14 +38,29 @@ const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Ve
     );
 };
 
-const VectorSliders: FunctionComponent<{ value: Vector3 | Vector4; useDegrees?: boolean }> = (props) => {
-    const { value: vector } = props;
+const VectorSliders: FunctionComponent<VectorPropertyLineProps<Vector3 | Vector4>> = (props) => {
+    const [vector, setVector] = useState(props.value);
+
+    const min = props.useDegrees ? 0 : undefined;
+    const max = props.useDegrees ? 360 : undefined;
+
+    const onChange = (val: number, key: "x" | "y" | "z" | "w") => {
+        const value = props.useDegrees ? Tools.ToRadians(val) : val;
+        const newVector = vector.clone();
+        (newVector as Vector4)[key] = value; // The syncedSlider for 'w' is only rendered when vector is a Vector4, so this is safe
+
+        setVector(newVector);
+        props.onChange(newVector);
+    };
+
+    const converted = (val: number) => (props.useDegrees ? Tools.ToDegrees(val) : val);
+
     return (
         <>
-            <SyncedSliderLine label="X" useDegrees={props.useDegrees} value={vector.x} onChange={(value) => (vector.x = value)} />
-            <SyncedSliderLine label="Y" useDegrees={props.useDegrees} value={vector.y} onChange={(value) => (vector.y = value)} />
-            <SyncedSliderLine label="Z" useDegrees={props.useDegrees} value={vector.z} onChange={(value) => (vector.z = value)} />
-            {vector instanceof Vector4 && <SyncedSliderLine label="W" useDegrees={props.useDegrees} value={vector.w} onChange={(value) => (vector.w = value)} />}
+            <SyncedSliderLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} />
+            <SyncedSliderLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} />
+            <SyncedSliderLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />
+            {vector instanceof Vector4 && <SyncedSliderLine label="W" value={vector.w} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
         </>
     );
 };
