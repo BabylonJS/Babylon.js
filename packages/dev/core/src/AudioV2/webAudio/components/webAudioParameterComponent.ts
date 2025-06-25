@@ -1,6 +1,7 @@
-import { _GetAudioParamCurveValues } from "core/AudioV2/audioUtils";
 import type { Nullable } from "../../../types";
-import { AudioParameterRampShape, type IAudioParameterRampOptions } from "../../audioParameter";
+import type { IAudioParameterRampOptions } from "../../audioParameter";
+import { AudioParameterRampShape } from "../../audioParameter";
+import { _GetAudioParamCurveValues } from "../../audioUtils";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 /**

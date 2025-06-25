@@ -1,5 +1,6 @@
 import { AudioNodeType } from "./abstractAudioNode";
-import { AbstractAudioOutNode, type IAbstractAudioOutNodeOptions } from "./abstractAudioOutNode";
+import type { IAbstractAudioOutNodeOptions } from "./abstractAudioOutNode";
+import { AbstractAudioOutNode } from "./abstractAudioOutNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
 
 /** @internal */
