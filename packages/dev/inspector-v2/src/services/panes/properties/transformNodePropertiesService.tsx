@@ -4,28 +4,28 @@ import type { IPropertiesService } from "./propertiesService";
 import { TransformNode } from "core/Meshes/transformNode";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { TransformNodeTransformProperties } from "../../../components/properties/transformNodeTransformProperties";
+import { TransformProperties } from "../../../components/properties/transformProperties";
 
-export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
+export const TransformPropertiesSectionIdentity = Symbol("Transform");
 
 export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Transform Node Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
-        const transformsSectionRegistration = propertiesService.addSection({
+        const transformSectionRegistration = propertiesService.addSection({
             order: 1,
-            identity: TransformsPropertiesSectionIdentity,
+            identity: TransformPropertiesSectionIdentity,
         });
 
         const contentRegistration = propertiesService.addSectionContent({
-            key: "Transform Node Properties",
+            key: "Transform Properties",
             predicate: (entity: unknown) => entity instanceof TransformNode,
             content: [
-                // "TRANSFORMS" section.
+                // "TRANSFORM" section.
                 {
-                    section: TransformsPropertiesSectionIdentity,
+                    section: TransformPropertiesSectionIdentity,
                     order: 0,
-                    component: ({ context }) => <TransformNodeTransformProperties node={context} />,
+                    component: ({ context }) => <TransformProperties transform={context} />,
                 },
             ],
         });
@@ -33,7 +33,7 @@ export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IP
         return {
             dispose: () => {
                 contentRegistration.dispose();
-                transformsSectionRegistration.dispose();
+                transformSectionRegistration.dispose();
             },
         };
     },

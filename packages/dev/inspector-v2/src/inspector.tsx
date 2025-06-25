@@ -27,6 +27,9 @@ import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { BonePropertiesServiceDefinition } from "./services/panes/properties/bonePropertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -169,6 +172,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
             MaterialExplorerServiceDefinition,
+            SkeletonHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
@@ -177,6 +181,8 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
             TransformNodePropertiesServiceDefinition,
+            SkeletonPropertiesServiceDefinition,
+            BonePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

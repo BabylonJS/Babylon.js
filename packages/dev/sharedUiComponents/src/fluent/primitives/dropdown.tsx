@@ -38,8 +38,8 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
             onOptionSelect={(evt, data) => {
                 data.optionValue != undefined && props.onChange(props.options.find((o) => o.value.toString() === data.optionValue) as DropdownOption);
             }}
-            defaultValue={props.value.label}
-            defaultSelectedOptions={[props.value.value.toString()]}
+            value={props.value.label}
+            selectedOptions={[props.value.value.toString()]}
         >
             {props.options.map((option: DropdownOption) => (
                 <Option className={classes.optionsLine} key={option.label} value={option.value.toString()} disabled={false}>

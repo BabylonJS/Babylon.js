@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { TransformNode, Vector3 } from "core/index";
+import type { Vector3 } from "core/index";
 
 import type { FunctionComponent } from "react";
 
@@ -9,6 +9,7 @@ import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
 type Vector3Keys<T> = { [P in keyof T]: T[P] extends Vector3 ? P : never }[keyof T];
+export type Transform = { position: Vector3; rotation: Vector3; scaling: Vector3 };
 
 // This helper hook gets the value of a Vector3 property from a target object and causes the component
 // to re-render when the property changes or when the x/y/z components of the Vector3 change.
@@ -21,8 +22,8 @@ function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: 
     return position;
 }
 
-export const TransformNodeTransformProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
-    const { node } = props;
+export const TransformProperties: FunctionComponent<{ transform: Transform }> = (props) => {
+    const { transform: node } = props;
 
     const position = useVector3Property(node, "position");
     const rotation = useVector3Property(node, "rotation");
