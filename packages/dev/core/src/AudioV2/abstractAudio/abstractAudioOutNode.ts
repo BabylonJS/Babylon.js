@@ -13,7 +13,7 @@ import { _AudioAnalyzer } from "./subProperties/audioAnalyzer";
 export interface IAbstractAudioOutNodeOptions extends IAudioAnalyzerOptions, IVolumeAudioOptions {}
 
 /**
- * Abstract class representing and audio output node with volume control.
+ * Abstract class representing and audio output node with an analyzer and volume control.
  */
 export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
     private _analyzer: Nullable<AbstractAudioAnalyzer> = null;
