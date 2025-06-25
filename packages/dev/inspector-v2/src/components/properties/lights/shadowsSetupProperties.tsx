@@ -6,13 +6,12 @@ import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPro
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { Checkbox } from "shared-ui-components/fluent/primitives/checkbox";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
 
 export const ShadowsSetupProperties: FunctionComponent<{ context: ShadowLight }> = ({ context: shadowLight }) => {
-    const shadowsEnabled = useObservableState(() => shadowLight.shadowEnabled, useInterceptObservable("property", shadowLight, "shadowEnabled"));
-    const shadowsMaxZ = useObservableState(() => shadowLight.shadowMaxZ, useInterceptObservable("property", shadowLight, "shadowMaxZ"));
-    const shadowsMinZ = useObservableState(() => shadowLight.shadowMinZ, useInterceptObservable("property", shadowLight, "shadowMinZ"));
+    const shadowsEnabled = useProperty(shadowLight, "shadowEnabled");
+    const shadowsMinZ = useProperty(shadowLight, "shadowMinZ");
+    const shadowsMaxZ = useProperty(shadowLight, "shadowMaxZ");
 
     return (
         <>

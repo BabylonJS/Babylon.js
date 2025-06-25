@@ -4,8 +4,8 @@ import type { TransformNode } from "core/index";
 import type { FunctionComponent } from "react";
 
 import { RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-import { useVector3Property } from "./observableUtils";
 
+import { useVector3Property } from "../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 import type { ISettingsContext } from "../../services/settingsContext";
 

@@ -3,8 +3,8 @@ import type { IPropertiesService } from "../propertiesService";
 
 import { RectAreaLight } from "core/Lights/rectAreaLight";
 
-import { PropertiesServiceIdentity } from "../propertiesService";
 import { AreaLightSetupProperties } from "../../../../components/properties/lights/areaLightSetupProperties";
+import { PropertiesServiceIdentity } from "../propertiesService";
 
 export const SetupPropertiesSectionIdentity = Symbol("Setup");
 

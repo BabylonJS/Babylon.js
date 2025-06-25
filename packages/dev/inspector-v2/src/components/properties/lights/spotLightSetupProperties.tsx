@@ -2,23 +2,21 @@
 import { type SpotLight, Tools } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { useVector3Property, useColor3Property } from "../observableUtils";
+import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useColor3Property, useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 
 export const SpotLightSetupProperties: FunctionComponent<{ context: SpotLight }> = ({ context: spotLight }) => {
     const position = useVector3Property(spotLight, "position");
     const direction = useVector3Property(spotLight, "direction");
     const diffuseColor = useColor3Property(spotLight, "diffuse");
     const groundColor = useColor3Property(spotLight, "specular");
-    const angle = useObservableState(() => spotLight.angle, useInterceptObservable("property", spotLight, "angle"));
-    const innerAngle = useObservableState(() => spotLight.innerAngle, useInterceptObservable("property", spotLight, "innerAngle"));
-    const exponent = useObservableState(() => spotLight.exponent, useInterceptObservable("property", spotLight, "exponent"));
+    const angle = useProperty(spotLight, "angle");
+    const innerAngle = useProperty(spotLight, "innerAngle");
+    const exponent = useProperty(spotLight, "exponent");
 
     return (
         <>

@@ -3,9 +3,9 @@ import type { IPropertiesService } from "../propertiesService";
 
 import { ShadowLight } from "core/Lights/shadowLight";
 
-import { PropertiesServiceIdentity } from "../propertiesService";
-import { ShadowsSetupProperties } from "../../../../components/properties/lights/shadowsSetupProperties";
 import { ShadowGeneratorSetupProperties } from "../../../../components/properties/lights/shadowGeneratorSetupProperties";
+import { ShadowsSetupProperties } from "../../../../components/properties/lights/shadowsSetupProperties";
+import { PropertiesServiceIdentity } from "../propertiesService";
 
 export const ShadowsSetupPropertiesSectionIdentity = Symbol("Shadows");
 export const ShadowGeneratorSetupPropertiesSectionIdentity = Symbol("Shadow Generator");

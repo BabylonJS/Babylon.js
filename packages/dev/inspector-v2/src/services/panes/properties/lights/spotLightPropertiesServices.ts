@@ -3,8 +3,8 @@ import type { IPropertiesService } from "../propertiesService";
 
 import { SpotLight } from "core/Lights/spotLight";
 
-import { PropertiesServiceIdentity } from "../propertiesService";
 import { SpotLightSetupProperties } from "../../../../components/properties/lights/spotLightSetupProperties";
+import { PropertiesServiceIdentity } from "../propertiesService";
 
 export const SetupPropertiesSectionIdentity = Symbol("Setup");
 

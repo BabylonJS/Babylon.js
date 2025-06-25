@@ -2,19 +2,17 @@
 import type { PointLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { useVector3Property, useColor3Property } from "../observableUtils";
+import { useColor3Property, useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 
 export const PointLightSetupProperties: FunctionComponent<{ context: PointLight }> = ({ context: pointLight }) => {
     const position = useVector3Property(pointLight, "position");
     const diffuseColor = useColor3Property(pointLight, "diffuse");
     const groundColor = useColor3Property(pointLight, "specular");
-    const intensity = useObservableState(() => pointLight.intensity, useInterceptObservable("property", pointLight, "intensity"));
+    const intensity = useProperty(pointLight, "intensity");
 
     return (
         <>

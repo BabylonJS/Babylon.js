@@ -3,8 +3,8 @@ import type { IPropertiesService } from "../propertiesService";
 
 import { DirectionalLight } from "core/Lights/directionalLight";
 
-import { PropertiesServiceIdentity } from "../propertiesService";
 import { DirectionalLightSetupProperties } from "../../../../components/properties/lights/directionalLightSetupProperties";
+import { PropertiesServiceIdentity } from "../propertiesService";
 
 export const SetupPropertiesSectionIdentity = Symbol("Setup");
 

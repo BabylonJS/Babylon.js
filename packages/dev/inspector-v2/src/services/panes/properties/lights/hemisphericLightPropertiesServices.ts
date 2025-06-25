@@ -3,8 +3,8 @@ import type { IPropertiesService } from "../propertiesService";
 
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 
-import { PropertiesServiceIdentity } from "../propertiesService";
 import { HemisphericLightSetupProperties } from "../../../../components/properties/lights/hemisphericLightSetupProperties";
+import { PropertiesServiceIdentity } from "../propertiesService";
 
 export const SetupPropertiesSectionIdentity = Symbol("Setup");
 

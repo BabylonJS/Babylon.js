@@ -2,20 +2,18 @@
 import type { DirectionalLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { useVector3Property, useColor3Property } from "../observableUtils";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useColor3Property, useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 
 export const DirectionalLightSetupProperties: FunctionComponent<{ context: DirectionalLight }> = ({ context: directionalLight }) => {
     const position = useVector3Property(directionalLight, "position");
     const direction = useVector3Property(directionalLight, "direction");
     const diffuseColor = useColor3Property(directionalLight, "diffuse");
     const specularColor = useColor3Property(directionalLight, "specular");
-    const intensity = useObservableState(() => directionalLight.intensity, useInterceptObservable("property", directionalLight, "intensity"));
+    const intensity = useProperty(directionalLight, "intensity");
 
     return (
         <>

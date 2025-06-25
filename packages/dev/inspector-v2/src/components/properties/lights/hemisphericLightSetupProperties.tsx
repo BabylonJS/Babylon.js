@@ -2,19 +2,17 @@
 import type { HemisphericLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { useVector3Property, useColor3Property } from "../observableUtils";
+import { useColor3Property, useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 
 export const HemisphericLightSetupProperties: FunctionComponent<{ context: HemisphericLight }> = ({ context: hemisphericLight }) => {
     const direction = useVector3Property(hemisphericLight, "direction");
     const diffuseColor = useColor3Property(hemisphericLight, "diffuse");
     const groundColor = useColor3Property(hemisphericLight, "groundColor");
-    const intensity = useObservableState(() => hemisphericLight.intensity, useInterceptObservable("property", hemisphericLight, "intensity"));
+    const intensity = useProperty(hemisphericLight, "intensity");
 
     return (
         <>

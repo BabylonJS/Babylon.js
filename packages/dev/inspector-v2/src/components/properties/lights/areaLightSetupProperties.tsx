@@ -2,21 +2,20 @@
 import type { RectAreaLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { useVector3Property, useColor3Property } from "../observableUtils";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
+import { useColor3Property, useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 
 export const AreaLightSetupProperties: FunctionComponent<{ context: RectAreaLight }> = ({ context: areaLight }) => {
     const position = useVector3Property(areaLight, "position");
     const diffuseColor = useColor3Property(areaLight, "diffuse");
     const specularColor = useColor3Property(areaLight, "specular");
-    const width = useObservableState(() => areaLight.width, useInterceptObservable("property", areaLight, "width"));
-    const height = useObservableState(() => areaLight.height, useInterceptObservable("property", areaLight, "height"));
-    const intensity = useObservableState(() => areaLight.intensity, useInterceptObservable("property", areaLight, "intensity"));
+    const width = useProperty(areaLight, "width");
+    const height = useProperty(areaLight, "height");
+    const intensity = useProperty(areaLight, "intensity");
+
     return (
         <>
             <Color3PropertyLine key="LightColor" label="Diffuse" value={diffuseColor} onChange={(val) => (areaLight.diffuse = val)} />
