@@ -9,8 +9,6 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ShowInspector } from "../../src/inspector";
 
 import "core/Helpers/sceneHelpers";
-// For testing the Outline & Overlay section
-import "core/Rendering/outlineRenderer";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();

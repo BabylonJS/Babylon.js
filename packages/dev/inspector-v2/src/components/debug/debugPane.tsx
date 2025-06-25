@@ -16,7 +16,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Scene } from "core/scene";
 import { MaterialFlags } from "core/Materials/materialFlags";
-import { BoundPropertyLine } from "../properties/boundPropertyLine";
+import { BoundProperty } from "../properties/boundProperty";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 const SwitchGrid = function (renderScene: Scene) {
@@ -180,41 +180,35 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                     />
                 </AccordionSection>
                 <AccordionSection title="Core texture channels">
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Diffuse" label="Diffuse" target={StandardMaterial} propertyKey="DiffuseTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Ambient" label="Ambient" target={StandardMaterial} propertyKey="AmbientTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Specular" label="Specular" target={StandardMaterial} propertyKey="SpecularTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Emissive" label="Emissive" target={StandardMaterial} propertyKey="EmissiveTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Bump" label="Bump" target={StandardMaterial} propertyKey="BumpTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Opacity" label="Opacity" target={StandardMaterial} propertyKey="OpacityTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Reflection" label="Reflection" target={StandardMaterial} propertyKey="ReflectionTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="ColorGrading" label="Color Grading" target={StandardMaterial} propertyKey="ColorGradingTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Lightmap" label="Lightmap" target={StandardMaterial} propertyKey="LightmapTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Fresnel" label="Fresnel" target={StandardMaterial} propertyKey="FresnelEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Detail" label="Detail" target={MaterialFlags} propertyKey="DetailTextureEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Decal" label="Decal" target={MaterialFlags} propertyKey="DecalMapEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Diffuse" label="Diffuse" target={StandardMaterial} propertyKey="DiffuseTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Ambient" label="Ambient" target={StandardMaterial} propertyKey="AmbientTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Specular" label="Specular" target={StandardMaterial} propertyKey="SpecularTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Emissive" label="Emissive" target={StandardMaterial} propertyKey="EmissiveTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Bump" label="Bump" target={StandardMaterial} propertyKey="BumpTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Opacity" label="Opacity" target={StandardMaterial} propertyKey="OpacityTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Reflection" label="Reflection" target={StandardMaterial} propertyKey="ReflectionTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="ColorGrading" label="Color Grading" target={StandardMaterial} propertyKey="ColorGradingTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Lightmap" label="Lightmap" target={StandardMaterial} propertyKey="LightmapTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Fresnel" label="Fresnel" target={StandardMaterial} propertyKey="FresnelEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Detail" label="Detail" target={MaterialFlags} propertyKey="DetailTextureEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Decal" label="Decal" target={MaterialFlags} propertyKey="DecalMapEnabled" />
                 </AccordionSection>
                 <AccordionSection title="Features">
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Animations" label="Animations" target={scene} propertyKey="animationsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Physics" label="Physics" target={scene} propertyKey="physicsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Collisions" label="Collisions" target={scene} propertyKey="collisionsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Fog" label="Fog" target={scene} propertyKey="fogEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Lens flares" label="Lens flares" target={scene} propertyKey="lensFlaresEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Lights" label="Lights" target={scene} propertyKey="lightsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Particles" label="Particles" target={scene} propertyKey="particlesEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Post-processes" label="Post-processes" target={scene} propertyKey="postProcessesEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Probes" label="Probes" target={scene} propertyKey="probesEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Textures" label="Textures" target={scene} propertyKey="texturesEnabled" />
-                    <BoundPropertyLine
-                        component={SwitchPropertyLine}
-                        key="Procedural textures"
-                        label="Procedural textures"
-                        target={scene}
-                        propertyKey="proceduralTexturesEnabled"
-                    />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Render targets" label="Render targets" target={scene} propertyKey="renderTargetsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Shadows" label="Shadows" target={scene} propertyKey="shadowsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Skeletons" label="Skeletons" target={scene} propertyKey="skeletonsEnabled" />
-                    <BoundPropertyLine component={SwitchPropertyLine} key="Sprites" label="Sprites" target={scene} propertyKey="spritesEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Animations" label="Animations" target={scene} propertyKey="animationsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Physics" label="Physics" target={scene} propertyKey="physicsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Collisions" label="Collisions" target={scene} propertyKey="collisionsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Fog" label="Fog" target={scene} propertyKey="fogEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Lens flares" label="Lens flares" target={scene} propertyKey="lensFlaresEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Lights" label="Lights" target={scene} propertyKey="lightsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Particles" label="Particles" target={scene} propertyKey="particlesEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Post-processes" label="Post-processes" target={scene} propertyKey="postProcessesEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Probes" label="Probes" target={scene} propertyKey="probesEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Textures" label="Textures" target={scene} propertyKey="texturesEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Procedural textures" label="Procedural textures" target={scene} propertyKey="proceduralTexturesEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Render targets" label="Render targets" target={scene} propertyKey="renderTargetsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Shadows" label="Shadows" target={scene} propertyKey="shadowsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Skeletons" label="Skeletons" target={scene} propertyKey="skeletonsEnabled" />
+                    <BoundProperty component={SwitchPropertyLine} key="Sprites" label="Sprites" target={scene} propertyKey="spritesEnabled" />
                 </AccordionSection>
             </Accordion>
             <AccordionPane {...props} />
