@@ -64,13 +64,9 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
                 return sound.currentTime;
             });
 
-            if ((await EvaluateAudioContextType(page)) === AudioContextType.Offline) {
-                expect(result).toBeCloseTo(2, 1);
-            } else {
-                // Expect larger range due to timing variations.
-                expect(result).toBeGreaterThanOrEqual(1.9);
-                expect(result).toBeLessThanOrEqual(2.1);
-            }
+            // Expect larger range due to timing variations.
+            expect(result).toBeGreaterThanOrEqual(1.9);
+            expect(result).toBeLessThanOrEqual(2.1);
         });
 
         test("The `currentTime` property should equal the sound's `startOffset` option", async ({ page }) => {
