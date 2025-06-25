@@ -6,6 +6,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 import copyIcon from "../imgs/copy.svg";
 import { PropertyLine } from "../fluent/hoc/propertyLine";
 import { Dropdown } from "../fluent/primitives/dropdown";
+import type { AcceptedDropdownValue } from "../fluent/primitives/dropdown";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -124,10 +125,10 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
             <PropertyLine label={this.props.label} onCopy={() => this.onCopyClickStr()}>
                 <Dropdown
                     options={this.props.options}
-                    onSelect={(val: string) => {
-                        val !== undefined && this.updateValue(val);
+                    onChange={(val: AcceptedDropdownValue | undefined) => {
+                        val !== undefined && this.updateValue(val.toString());
                     }}
-                    defaultValue={this.props.options.find((o) => o.value === this.state.value || o.selected)}
+                    value={this.state.value}
                 />
             </PropertyLine>
         );

@@ -1,5 +1,4 @@
 import { Body1, Button, makeStyles, tokens } from "@fluentui/react-components";
-import type { ButtonProps as FluentButtonProps } from "@fluentui/react-components";
 import { LineContainer } from "./propertyLine";
 import type { FunctionComponent } from "react";
 
@@ -9,8 +8,12 @@ const useButtonLineStyles = makeStyles({
     },
 });
 
-type ButtonLineProps = FluentButtonProps & {
+export type ButtonLineProps = {
     label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    icon?: string;
+    title?: string;
 };
 
 /**

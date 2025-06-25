@@ -21,6 +21,8 @@ module.exports = (env) => {
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
                 "inspector-v2": path.resolve("../../dev/inspector-v2/dist"),
+                addons: path.resolve("../../dev/addons/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
             },
@@ -35,6 +37,10 @@ module.exports = (env) => {
                     if (/^core\//.test(request)) {
                         return callback(null, "BABYLON");
                     } else if (/^loaders\//.test(request)) {
+                        return callback(null, "BABYLON");
+                    } else if (/^addons\//.test(request)) {
+                        return callback(null, "ADDONS");
+                    } else if (/^materials\//.test(request)) {
                         return callback(null, "BABYLON");
                     }
                 }

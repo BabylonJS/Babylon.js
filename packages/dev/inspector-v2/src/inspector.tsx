@@ -33,6 +33,7 @@ import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -183,6 +184,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
             TransformNodePropertiesServiceDefinition,
+            MaterialPropertiesServiceDefinition,
 
             // Lights properties services.
             HemisphericLightPropertiesServiceDefinition,
