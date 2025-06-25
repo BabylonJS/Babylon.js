@@ -1,19 +1,19 @@
-import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
-import "core/Engines/Extensions/engine.renderTarget";
+import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import "core/Engines/Extensions/engine.renderTarget.js";
 
-import type { InitializationData, SmartFilter } from "../smartFilter";
-import type { ShaderProgram } from "../utils/shaderCodeUtils";
-import type { ShaderBinding } from "../runtime/shaderRuntime";
-import type { ConnectionPoint } from "../connection/connectionPoint";
-import { ShaderRuntime } from "../runtime/shaderRuntime";
-import { ConnectionPointType } from "../connection/connectionPointType";
-import { CreateCommand } from "../command/command";
-import { UndecorateSymbol } from "../utils/shaderCodeUtils";
-import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils";
-import { BaseBlock } from "./baseBlock";
-import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions";
-import { EditableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage";
-import type { Nullable } from "core/types";
+import type { InitializationData, SmartFilter } from "../smartFilter.js";
+import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
+import type { ShaderBinding } from "../runtime/shaderRuntime.js";
+import type { ConnectionPoint } from "../connection/connectionPoint.js";
+import { ShaderRuntime } from "../runtime/shaderRuntime.js";
+import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { CreateCommand } from "../command/command.js";
+import { UndecorateSymbol } from "../utils/shaderCodeUtils.js";
+import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
+import { BaseBlock } from "./baseBlock.js";
+import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions.js";
+import { EditableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
+import type { Nullable } from "core/types.js";
 
 const OutputTexturePropertiesGroupName = "OUTPUT TEXTURE PROPERTIES";
 

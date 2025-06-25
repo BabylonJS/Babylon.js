@@ -1,13 +1,13 @@
-import type { InitializationData, SmartFilter } from "../smartFilter";
-import { ConnectionPointType } from "../connection/connectionPointType";
-import { BaseBlock } from "./baseBlock";
-import { ShaderBinding, ShaderRuntime } from "../runtime/shaderRuntime";
-import type { Nullable } from "core/types";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils";
-import type { RuntimeData } from "../connection/connectionPoint";
-import type { Effect } from "core/Materials/effect";
-import type { ShaderProgram } from "../utils/shaderCodeUtils";
+import type { InitializationData, SmartFilter } from "../smartFilter.js";
+import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { BaseBlock } from "./baseBlock.js";
+import { ShaderBinding, ShaderRuntime } from "../runtime/shaderRuntime.js";
+import type { Nullable } from "core/types.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
+import type { RuntimeData } from "../connection/connectionPoint.js";
+import type { Effect } from "core/Materials/effect.js";
+import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
 
 /**
  * The shader program for the block.

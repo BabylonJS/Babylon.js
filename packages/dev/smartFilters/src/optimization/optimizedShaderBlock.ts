@@ -1,12 +1,12 @@
-import type { Effect } from "core/Materials/effect";
-import type { Nullable } from "core/types";
+import type { Effect } from "core/Materials/effect.js";
+import type { Nullable } from "core/types.js";
 
-import type { SmartFilter } from "../smartFilter";
-import type { ShaderProgram } from "../utils/shaderCodeUtils";
-import type { RuntimeData } from "../connection/connectionPoint";
-import { ShaderBlock } from "../blockFoundation/shaderBlock";
-import { ShaderBinding } from "../runtime/shaderRuntime";
-import { ConnectionPointType } from "../connection/connectionPointType";
+import type { SmartFilter } from "../smartFilter.js";
+import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
+import type { RuntimeData } from "../connection/connectionPoint.js";
+import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
+import { ShaderBinding } from "../runtime/shaderRuntime.js";
+import { ConnectionPointType } from "../connection/connectionPointType.js";
 
 /**
  * The shader bindings for the OptimizedShader block.

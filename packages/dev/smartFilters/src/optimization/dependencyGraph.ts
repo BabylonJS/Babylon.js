@@ -1,4 +1,4 @@
-import { Logger } from "core/Misc/logger";
+import { Logger } from "core/Misc/logger.js";
 
 /**
  * Implementation of a dependency graph.

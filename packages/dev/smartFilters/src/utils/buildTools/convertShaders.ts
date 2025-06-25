@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Logger } from "core/Misc/logger";
-import { ConvertGlslIntoShaderProgram } from "./convertGlslIntoShaderProgram";
-import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock";
+import { ConvertGlslIntoShaderProgram } from "./convertGlslIntoShaderProgram.js";
+import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock.js";
 
 /**
  * Converts all GLSL files in a path into blocks for use in the build system.

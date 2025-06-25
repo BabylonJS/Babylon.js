@@ -10,7 +10,7 @@
  */
 
 import * as fs from "fs";
-import { ConvertShaders, ConvertShader } from "./convertShaders";
+import { ConvertShaders, ConvertShader } from "./convertShaders.js";
 
 const ExternalArguments = process.argv.slice(2);
 if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {

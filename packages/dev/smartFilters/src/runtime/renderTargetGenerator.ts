@@ -1,16 +1,16 @@
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { Nullable } from "core/types";
-import { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture";
-import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture.js";
+import type { Nullable } from "core/types.js";
+import { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
 
-import type { BaseBlock } from "../blockFoundation/baseBlock";
-import type { InitializationData, SmartFilter } from "../smartFilter";
-import type { InternalSmartFilterRuntime } from "./smartFilterRuntime";
-import { ShaderBlock } from "../blockFoundation/shaderBlock";
-import { CreateStrongRef } from "./strongRef";
-import { ConnectionPointType } from "../connection/connectionPointType";
-import type { OutputTextureOptions } from "../blockFoundation/textureOptions";
-import { GetBlockOutputTextureSize } from "../utils/textureUtils";
+import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import type { InitializationData, SmartFilter } from "../smartFilter.js";
+import type { InternalSmartFilterRuntime } from "./smartFilterRuntime.js";
+import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
+import { CreateStrongRef } from "./strongRef.js";
+import { ConnectionPointType } from "../connection/connectionPointType.js";
+import type { OutputTextureOptions } from "../blockFoundation/textureOptions.js";
+import { GetBlockOutputTextureSize } from "../utils/textureUtils.js";
 
 /**
  * @internal

@@ -1,5 +1,5 @@
-import type { BaseBlock } from "../../blockFoundation/baseBlock";
-import type { ISerializedBlockV1, SerializeBlockV1 } from "./smartFilterSerialization.types";
+import type { BaseBlock } from "../../blockFoundation/baseBlock.js";
+import type { ISerializedBlockV1, SerializeBlockV1 } from "./smartFilterSerialization.types.js";
 
 /**
  * The default V1 block serializer which can be used for any block that relies only on ConnectionPoints

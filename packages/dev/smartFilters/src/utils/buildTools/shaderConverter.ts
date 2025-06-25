@@ -1,8 +1,8 @@
-import type { Nullable } from "core/types";
-import { Logger } from "core/Misc/logger";
-import type { ShaderCode, ShaderFunction } from "./shaderCode.types";
-import { ConnectionPointType } from "../../connection/connectionPointType";
-import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock";
+import type { Nullable } from "core/types.js";
+import { Logger } from "core/Misc/logger.js";
+import type { ShaderCode, ShaderFunction } from "./shaderCode.types.js";
+import { ConnectionPointType } from "../../connection/connectionPointType.js";
+import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";
 
 // Note: creating a global RegExp object is risky, because it holds state (e.g. lastIndex) that has to be
 // cleared at the right time to ensure correctness, which is easy to forget to do.

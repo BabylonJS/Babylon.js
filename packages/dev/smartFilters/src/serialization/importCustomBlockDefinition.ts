@@ -1,8 +1,8 @@
-import { ConnectionPointType } from "../connection/connectionPointType";
-import { HasGlslHeader, ParseFragmentShader } from "../utils/buildTools/shaderConverter";
-import type { SerializedBlockDefinition } from "./serializedBlockDefinition";
-import type { SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition";
-import type { InputAutoBindV1, SerializedInputConnectionPointV1 } from "./v1/shaderBlockSerialization.types";
+import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { HasGlslHeader, ParseFragmentShader } from "../utils/buildTools/shaderConverter.js";
+import type { SerializedBlockDefinition } from "./serializedBlockDefinition.js";
+import type { SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
+import type { InputAutoBindV1, SerializedInputConnectionPointV1 } from "./v1/shaderBlockSerialization.types.js";
 
 /**
  * Imports a serialized custom block definition. Supports either serialized CustomShaderBlock definitions or

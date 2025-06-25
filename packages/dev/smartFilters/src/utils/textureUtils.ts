@@ -1,7 +1,7 @@
-import type { TextureSize } from "core/Materials/Textures/textureCreationOptions";
-import type { OutputTextureOptions } from "../blockFoundation/textureOptions";
-import type { SmartFilter } from "../smartFilter";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import type { TextureSize } from "core/Materials/Textures/textureCreationOptions.js";
+import type { OutputTextureOptions } from "../blockFoundation/textureOptions.js";
+import type { SmartFilter } from "../smartFilter.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 
 /**
  * Determines the output texture size for a given shader block

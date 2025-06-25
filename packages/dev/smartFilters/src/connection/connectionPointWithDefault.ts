@@ -1,7 +1,7 @@
-import type { BaseBlock } from "../blockFoundation/baseBlock";
-import { ConnectionPoint, type RuntimeData } from "./connectionPoint";
-import type { ConnectionPointDirection } from "./connectionPointDirection";
-import type { ConnectionPointType } from "./connectionPointType";
+import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import { ConnectionPoint, type RuntimeData } from "./connectionPoint.js";
+import type { ConnectionPointDirection } from "./connectionPointDirection.js";
+import type { ConnectionPointType } from "./connectionPointType.js";
 
 /**
  * A ConnectionPoint whose runtimeData is never null - if not hooked up to a connection, it will use a default value.

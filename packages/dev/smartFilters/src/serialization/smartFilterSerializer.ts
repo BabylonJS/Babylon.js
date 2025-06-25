@@ -1,12 +1,12 @@
-import type { SmartFilter } from "../smartFilter";
-import type { BaseBlock } from "../blockFoundation/baseBlock";
-import { InputBlockSerializer } from "../blockFoundation/inputBlock.serializer";
-import type { ConnectionPoint } from "../connection/connectionPoint";
-import { DefaultBlockSerializer } from "./v1/defaultBlockSerializer";
-import { OutputBlock } from "../blockFoundation/outputBlock";
-import type { IBlockSerializerV1, ISerializedBlockV1, ISerializedConnectionV1, SerializeBlockV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types";
-import { CustomShaderBlock } from "../blockFoundation/customShaderBlock";
-import { CustomAggregateBlock } from "../blockFoundation/customAggregateBlock";
+import type { SmartFilter } from "../smartFilter.js";
+import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import { InputBlockSerializer } from "../blockFoundation/inputBlock.serializer.js";
+import type { ConnectionPoint } from "../connection/connectionPoint.js";
+import { DefaultBlockSerializer } from "./v1/defaultBlockSerializer.js";
+import { OutputBlock } from "../blockFoundation/outputBlock.js";
+import type { IBlockSerializerV1, ISerializedBlockV1, ISerializedConnectionV1, SerializeBlockV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types.js";
+import { CustomShaderBlock } from "../blockFoundation/customShaderBlock.js";
+import { CustomAggregateBlock } from "../blockFoundation/customAggregateBlock.js";
 
 /**
  * Determines if two serialized connection points are equivalent to each other

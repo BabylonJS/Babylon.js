@@ -4,9 +4,9 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { Nullable } from "core/types";
-import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType";
-import type { ShaderProgram } from "../../utils/shaderCodeUtils";
+import type { Nullable } from "core/types.js";
+import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType.js";
+import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
 
 /**
  * The V1 definition of a serialized shader block. This block definition is loaded by a CustomShaderBlock and defines how a

@@ -1,4 +1,4 @@
-import type { Command } from "./command";
+import type { Command } from "./command.js";
 
 /**
  * Represents the action to run when calling `visitCommands` on a @see CommandBuffer.

@@ -1,14 +1,14 @@
-import type { Effect } from "core/Materials/effect";
-import { ConnectionPointType } from "../connection/connectionPointType";
-import { ShaderBinding } from "../runtime/shaderRuntime";
-import { CreateStrongRef } from "../runtime/strongRef";
-import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition";
-import type { SerializedInputConnectionPointV1 } from "../serialization/v1/shaderBlockSerialization.types";
-import type { SmartFilter } from "../smartFilter";
-import type { ShaderProgram } from "../utils/shaderCodeUtils";
-import { ShaderBlock } from "./shaderBlock";
-import type { RuntimeData } from "../connection/connectionPoint";
-import type { Nullable } from "core/types";
+import type { Effect } from "core/Materials/effect.js";
+import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { ShaderBinding } from "../runtime/shaderRuntime.js";
+import { CreateStrongRef } from "../runtime/strongRef.js";
+import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
+import type { SerializedInputConnectionPointV1 } from "../serialization/v1/shaderBlockSerialization.types.js";
+import type { SmartFilter } from "../smartFilter.js";
+import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
+import { ShaderBlock } from "./shaderBlock.js";
+import type { RuntimeData } from "../connection/connectionPoint.js";
+import type { Nullable } from "core/types.js";
 
 /**
  * The binding for a CustomShaderBlock

@@ -1,4 +1,4 @@
-export * from "./defaultBlockSerializer";
+export * from "./defaultBlockSerializer.js";
 // Back compat for when camelCase was used
-export { DefaultBlockSerializer as defaultBlockSerializer } from "./defaultBlockSerializer";
-export * from "./smartFilterSerialization.types";
+export { DefaultBlockSerializer as defaultBlockSerializer } from "./defaultBlockSerializer.js";
+export * from "./smartFilterSerialization.types.js";

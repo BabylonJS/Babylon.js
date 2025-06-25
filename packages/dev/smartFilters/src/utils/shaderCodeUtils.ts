@@ -1,5 +1,5 @@
-import type { Effect } from "core/Materials/effect";
-import type { ShaderCode } from "./buildTools/shaderCode.types";
+import type { Effect } from "core/Materials/effect.js";
+import type { ShaderCode } from "./buildTools/shaderCode.types.js";
 
 /**
  * The shader code decorator.

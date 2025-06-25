@@ -1,13 +1,13 @@
-import type { BaseBlock } from "../blockFoundation/baseBlock";
-import type { SerializedSmartFilter } from "./serializedSmartFilter";
-import { SmartFilter } from "../smartFilter";
-import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer";
-import { OutputBlock } from "../blockFoundation/outputBlock";
-import type { ThinEngine } from "core/Engines/thinEngine";
-import { InputBlock } from "../blockFoundation/inputBlock";
-import type { ISerializedBlockV1, ISerializedConnectionV1, OptionalBlockDeserializerV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types";
-import { UniqueIdGenerator } from "../utils/uniqueIdGenerator";
-import type { Nullable } from "core/types";
+import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import type { SerializedSmartFilter } from "./serializedSmartFilter.js";
+import { SmartFilter } from "../smartFilter.js";
+import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer.js";
+import { OutputBlock } from "../blockFoundation/outputBlock.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
+import { InputBlock } from "../blockFoundation/inputBlock.js";
+import type { ISerializedBlockV1, ISerializedConnectionV1, OptionalBlockDeserializerV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types.js";
+import { UniqueIdGenerator } from "../utils/uniqueIdGenerator.js";
+import type { Nullable } from "core/types.js";
 
 /**
  * A function that creates a block instance of the given class block type, or return null if it cannot.

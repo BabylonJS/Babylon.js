@@ -1,3 +1,3 @@
-export * from "./editableInPropertyPage";
+export * from "./editableInPropertyPage.js";
 // Back compat for when camelCase was used
-export { EditableInPropertyPage as editableInPropertyPage } from "./editableInPropertyPage";
+export { EditableInPropertyPage as editableInPropertyPage } from "./editableInPropertyPage.js";

@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
-import { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState";
-import { ConnectionPointDirection } from "./connectionPointDirection";
-import type { BaseBlock } from "../blockFoundation/baseBlock";
-import type { ConnectionPointType, ConnectionPointValue } from "./connectionPointType";
-import type { StrongRef } from "../runtime/strongRef";
+import type { Nullable } from "core/types.js";
+import { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
+import { ConnectionPointDirection } from "./connectionPointDirection.js";
+import type { BaseBlock } from "../blockFoundation/baseBlock.js";
+import type { ConnectionPointType, ConnectionPointValue } from "./connectionPointType.js";
+import type { StrongRef } from "../runtime/strongRef.js";
 
 /**
  * This represents a strong reference to the data being passed through a connection point.

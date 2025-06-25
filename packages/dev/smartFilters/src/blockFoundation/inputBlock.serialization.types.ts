@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { ConnectionPointType } from "../connection/connectionPointType";
-import type { IColor3Like, IColor4Like, IVector2Like } from "core/Maths/math.like";
+import type { Nullable } from "core/types.js";
+import type { ConnectionPointType } from "../connection/connectionPointType.js";
+import type { IColor3Like, IColor4Like, IVector2Like } from "core/Maths/math.like.js";
 
 /**
  * Data that all serialized InputBlocks share

@@ -1,8 +1,8 @@
-import { EffectRenderer } from "core/Materials/effectRenderer";
-import type { ThinEngine } from "core/Engines/thinEngine";
-import { CommandBuffer } from "../command/commandBuffer";
-import type { IDisposable } from "../IDisposable";
-import type { Command } from "../command/command";
+import { EffectRenderer } from "core/Materials/effectRenderer.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
+import { CommandBuffer } from "../command/commandBuffer.js";
+import type { IDisposable } from "../IDisposable.js";
+import type { Command } from "../command/command.js";
 
 /**
  * A runtime is a snapshot of a smart filter containing all the
