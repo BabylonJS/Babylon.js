@@ -1,5 +1,5 @@
 import { AddSharedAbstractSoundCurrentTimeTests } from "./shared/abstractSound.currentTime";
-import { InitAudioV2Tests } from "./utils/audioV2.utils";
+import { AudioContextType, InitAudioV2Tests } from "./utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -9,7 +9,7 @@ AddSharedAbstractSoundCurrentTimeTests("StaticSound");
 test.describe("StaticSound currentTime", () => {
     test("The `currentTime` property should equal the `play` function's `waitTime` parameter", async ({ page }) => {
         const result = await page.evaluate(async () => {
-            await AudioV2Test.CreateAudioEngineAsync("Realtime");
+            await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
             const sound = await AudioV2Test.CreateSoundAsync(audioTestConfig.pulsed3CountSoundFile);
 
             sound.play({ waitTime: 1 });
