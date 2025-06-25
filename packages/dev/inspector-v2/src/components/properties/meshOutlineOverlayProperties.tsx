@@ -10,6 +10,9 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchProper
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
+// Ensures that the outlineRenderer properties exist on the prototype of the Mesh
+import "core/Rendering/outlineRenderer";
+
 type Color3Keys<T> = { [P in keyof T]: T[P] extends Color3 ? P : never }[keyof T];
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

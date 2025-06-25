@@ -1,6 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { _SpatialAudioListener } from "../../abstractAudio/subProperties/spatialAudioListener";
 import { _SpatialWebAudioUpdaterComponent } from "../components/spatialWebAudioUpdaterComponent";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 const TmpMatrix = Matrix.Zero();
@@ -132,20 +133,45 @@ abstract class _AbstractSpatialWebAudioListener extends _SpatialAudioListener {
  * @internal
  */
 class _SpatialWebAudioListener extends _AbstractSpatialWebAudioListener {
+    private _forwardX: _WebAudioParameterComponent;
+    private _forwardY: _WebAudioParameterComponent;
+    private _forwardZ: _WebAudioParameterComponent;
+    private _positionX: _WebAudioParameterComponent;
+    private _positionY: _WebAudioParameterComponent;
+    private _positionZ: _WebAudioParameterComponent;
+    private _upX: _WebAudioParameterComponent;
+    private _upY: _WebAudioParameterComponent;
+    private _upZ: _WebAudioParameterComponent;
+
+    public constructor(engine: _WebAudioEngine, autoUpdate: boolean, minUpdateTime: number) {
+        super(engine, autoUpdate, minUpdateTime);
+
+        const listener = engine._audioContext.listener;
+        this._forwardX = new _WebAudioParameterComponent(engine, listener.forwardX);
+        this._forwardY = new _WebAudioParameterComponent(engine, listener.forwardY);
+        this._forwardZ = new _WebAudioParameterComponent(engine, listener.forwardZ);
+        this._positionX = new _WebAudioParameterComponent(engine, listener.positionX);
+        this._positionY = new _WebAudioParameterComponent(engine, listener.positionY);
+        this._positionZ = new _WebAudioParameterComponent(engine, listener.positionZ);
+        this._upX = new _WebAudioParameterComponent(engine, listener.upX);
+        this._upY = new _WebAudioParameterComponent(engine, listener.upY);
+        this._upZ = new _WebAudioParameterComponent(engine, listener.upZ);
+    }
+
     protected override _setWebAudioPosition(position: Vector3): void {
-        this.engine._setAudioParam(this._listener.positionX, position.x);
-        this.engine._setAudioParam(this._listener.positionY, position.y);
-        this.engine._setAudioParam(this._listener.positionZ, position.z);
+        this._positionX.targetValue = position.x;
+        this._positionY.targetValue = position.y;
+        this._positionZ.targetValue = position.z;
     }
 
     protected override _setWebAudioOrientation(forward: Vector3, up: Vector3): void {
-        this.engine._setAudioParam(this._listener.forwardX, forward.x);
-        this.engine._setAudioParam(this._listener.forwardY, forward.y);
-        this.engine._setAudioParam(this._listener.forwardZ, forward.z);
+        this._forwardX.targetValue = forward.x;
+        this._forwardY.targetValue = forward.y;
+        this._forwardZ.targetValue = forward.z;
 
-        this.engine._setAudioParam(this._listener.upX, up.x);
-        this.engine._setAudioParam(this._listener.upY, up.y);
-        this.engine._setAudioParam(this._listener.upZ, up.z);
+        this._upX.targetValue = up.x;
+        this._upY.targetValue = up.y;
+        this._upZ.targetValue = up.z;
     }
 }
 
@@ -164,7 +190,7 @@ class _SpatialWebAudioListener extends _AbstractSpatialWebAudioListener {
  */
 class _SpatialWebAudioListenerFallback extends _AbstractSpatialWebAudioListener {
     protected override _setWebAudioPosition(position: Vector3): void {
-        this._listener.setPosition(this.position.x, this.position.y, this.position.z);
+        this._listener.setPosition(position.x, position.y, position.z);
     }
 
     protected override _setWebAudioOrientation(forward: Vector3, up: Vector3): void {
