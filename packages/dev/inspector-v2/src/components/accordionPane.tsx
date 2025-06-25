@@ -73,13 +73,16 @@ const useStyles = makeStyles({
 
 export type AccordionPaneSectionProps = {
     identity: symbol;
-    collapseByDefault?: boolean;
 };
 
 export const AccordionPaneSection: FunctionComponent<PropsWithChildren<AccordionSectionProps | AccordionPaneSectionProps>> = (props) => {
-    const { title, identity, children } = props as PropsWithChildren<Partial<AccordionSectionProps> & Partial<AccordionPaneSectionProps>>;
+    const { title, identity, collapseByDefault, children } = props as PropsWithChildren<Partial<AccordionSectionProps> & Partial<AccordionPaneSectionProps>>;
 
-    return <AccordionSection title={title ?? identity?.description ?? ""}>{children}</AccordionSection>;
+    return (
+        <AccordionSection title={title ?? identity?.description ?? ""} collapseByDefault={collapseByDefault}>
+            {children}
+        </AccordionSection>
+    );
 };
 
 export function AccordionPane<ContextT = unknown>(
@@ -96,7 +99,7 @@ export function AccordionPane<ContextT = unknown>(
     const defaultSections = useMemo(() => {
         const defaultSections: AccordionSection[] = [];
         if (children) {
-            Children.forEach(children, (child, index) => {
+            Children.forEach(children, (child) => {
                 if (isValidElement(child)) {
                     const childProps = child.props as Partial<AccordionSectionProps> & Partial<AccordionPaneSectionProps>;
                     defaultSections.push({
@@ -174,7 +177,11 @@ export function AccordionPane<ContextT = unknown>(
                 <Accordion key={version}>
                     {...visibleSections.map((section) => {
                         return (
-                            <AccordionSection key={section.identity.description} title={section.identity.description ?? section.identity.toString()}>
+                            <AccordionSection
+                                key={section.identity.description}
+                                title={section.identity.description ?? section.identity.toString()}
+                                collapseByDefault={section.collapseByDefault}
+                            >
                                 {section.components}
                             </AccordionSection>
                         );
