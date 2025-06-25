@@ -1,5 +1,5 @@
 import { EvaluatePulseCountTestAsync, EvaluateTestAsync } from "../utils/abstractSound.utils";
-import { AudioContextType, Channel, EvaluateAudioContextType, SoundType } from "../utils/audioV2.utils";
+import { Channel, SoundType } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -7,7 +7,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
     test.describe(`${soundType} currentTime`, () => {
         test("The `currentTime` property should equal the current playback time while playing", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -21,7 +21,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal 0 when stopped", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -36,7 +36,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the paused time of the sound in seconds while paused", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -51,7 +51,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the current playback time when paused and played again", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile);
 
                 sound.play();
@@ -75,7 +75,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the sound's `startOffset` option", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { startOffset: 1 });
 
                 sound.play();
@@ -90,7 +90,7 @@ export const AddSharedAbstractSoundCurrentTimeTests = (soundType: SoundType) => 
 
         test("The `currentTime` property should equal the most recently started instance's current time", async ({ page }) => {
             const result = await EvaluateTestAsync(page, soundType, async ({ soundType }) => {
-                await AudioV2Test.CreateAudioEngineAsync(AudioContextType.Realtime);
+                await AudioV2Test.CreateAudioEngineAsync("Realtime");
                 const sound = await AudioV2Test.CreateAbstractSoundAsync(soundType, audioTestConfig.pulsed3CountSoundFile, { preloadCount: 2 });
 
                 sound.play();

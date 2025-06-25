@@ -2,10 +2,7 @@ import type { Nullable } from "@dev/core/types";
 import { test, Page, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
-export enum AudioContextType {
-    Realtime = "Realtime",
-    Offline = "Offline",
-}
+export type AudioContextType = "Realtime" | "Offline";
 export type AudioNodeType = "AudioBus" | "AudioEngineV2" | "MainAudioBus" | "SoundSource" | "StaticSound" | "StreamingSound";
 export type SoundType = "StaticSound" | "StreamingSound";
 

@@ -1,6 +1,6 @@
 import { EvaluateAbstractAudioNodeTestAsync } from "../utils/abstractAudioNode.utils";
 import type { AudioNodeType } from "../utils/audioV2.utils";
-import { AudioContextType, Channel, EvaluateAudioContextType, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, VolumePrecision } from "../utils/audioV2.utils";
+import { Channel, EvaluateAudioContextType, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, VolumePrecision } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -87,7 +87,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            if ((await EvaluateAudioContextType(page)) === AudioContextType.Offline) {
+            if ((await EvaluateAudioContextType(page)) === "Offline") {
                 expect(volumes[Channel.L]).toBeCloseTo(2, VolumePrecision);
             } else {
                 // Expect larger range due to timing variations.
