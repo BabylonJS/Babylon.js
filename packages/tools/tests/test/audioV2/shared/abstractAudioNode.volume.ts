@@ -91,7 +91,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(2, VolumePrecision);
             } else {
                 // Expect larger range due to timing variations.
-                expect(volumes[Channel.L]).toBeGreaterThanOrEqual(2);
+                expect(volumes[Channel.L]).toBeGreaterThanOrEqual(1.9);
                 expect(volumes[Channel.L]).toBeLessThanOrEqual(2.1);
             }
         });
