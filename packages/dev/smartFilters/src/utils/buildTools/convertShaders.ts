@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "core/Misc/logger";
+import { Logger } from "core/Misc/logger.js";
 import { ConvertGlslIntoShaderProgram } from "./convertGlslIntoShaderProgram.js";
 import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock.js";
 

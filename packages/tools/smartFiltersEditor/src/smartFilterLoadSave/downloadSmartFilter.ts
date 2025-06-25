@@ -1,4 +1,4 @@
-import { StringTools } from "@babylonjs/shared-ui-components/stringTools";
+import { StringTools } from "shared-ui-components/stringTools.js";
 import type { SmartFilter } from "@babylonjs/smart-filters";
 import { SerializeSmartFilter } from "./serializeSmartFilter";
 
