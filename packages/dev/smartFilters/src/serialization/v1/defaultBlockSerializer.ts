@@ -1,3 +1,4 @@
+import { ShaderBlock } from "../../blockFoundation/shaderBlock.js";
 import type { BaseBlock } from "../../blockFoundation/baseBlock.js";
 import type { ISerializedBlockV1, SerializeBlockV1 } from "./smartFilterSerialization.types.js";
 
@@ -15,5 +16,6 @@ export const DefaultBlockSerializer: SerializeBlockV1 = (block: BaseBlock): ISer
         namespace: block.namespace,
         comments: block.comments,
         data: undefined,
+        outputTextureOptions: block instanceof ShaderBlock ? block.outputTextureOptions : undefined,
     };
 };

@@ -1,6 +1,7 @@
 import type { BaseBlock } from "../blockFoundation/baseBlock.js";
 import type { SerializedSmartFilter } from "./serializedSmartFilter.js";
 import { SmartFilter } from "../smartFilter.js";
+import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
 import { InputBlockDeserializer } from "../blockFoundation/inputBlock.deserializer.js";
 import { OutputBlock } from "../blockFoundation/outputBlock.js";
 import type { ThinEngine } from "core/Engines/thinEngine.js";
@@ -172,6 +173,11 @@ export class SmartFilterDeserializer {
         // blocks, and so each deserializer doesn't have to remember to do it.
         newBlock.uniqueId = serializedBlock.uniqueId;
         newBlock.comments = serializedBlock.comments;
+
+        // Deserializers are also not responsible for deserializing the outputTextureOptions of ShaderBlocks.
+        if (serializedBlock.outputTextureOptions && newBlock instanceof ShaderBlock) {
+            newBlock.outputTextureOptions = serializedBlock.outputTextureOptions;
+        }
 
         // We need to ensure any uniqueIds generated in the future (e.g. a new block is added to the SmartFilter)
         // are higher than this one.

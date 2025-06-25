@@ -4,6 +4,7 @@ import type { SmartFilter } from "../../smartFilter.js";
 import type { ThinEngine } from "core/Engines/thinEngine.js";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo.js";
 import type { SmartFilterDeserializer } from "../smartFilterDeserializer.js";
+import type { OutputTextureOptions } from "../../blockFoundation/textureOptions.js";
 
 /**
  * ----------------------------------------------------------------------------
@@ -59,6 +60,9 @@ export interface ISerializedBlockV1 {
 
     /** The comments for the block */
     comments: Nullable<string>;
+
+    /** The OutputTextureOptions for serialized ShaderBlocks */
+    outputTextureOptions?: OutputTextureOptions;
 
     /** Block specific serialized data */
     data: any;
