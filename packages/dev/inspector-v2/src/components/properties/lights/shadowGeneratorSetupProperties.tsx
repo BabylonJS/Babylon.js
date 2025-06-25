@@ -1,25 +1,30 @@
 // eslint-disable-next-line import/no-internal-modules
-import { DirectionalLight, ShadowGenerator, CascadedShadowGenerator, type ShadowLight } from "core/index";
+import type { ShadowLight } from "core/index";
+
 import type { FunctionComponent } from "react";
 
-import { Dropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
+import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { Dropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 const DefaultShadowGeneratorOptions: DropdownOption[] = [{ label: "Shadow Generator", value: "0" }];
 
-const DirectionalLightGeneratorOptions: DropdownOption[] = [
+const DirectionalLightGeneratorOptions = [
     { label: "Shadow Generator", value: "0" },
     { label: "Cascaded Shadow Generator", value: "1" },
-];
+] as const satisfies DropdownOption[];
 
-const MapSizeOptions: DropdownOption[] = [
+const MapSizeOptions = [
     { label: "4096x4096", value: "4096" },
     { label: "2048x2048", value: "2048" },
     { label: "1024x1024", value: "1024" },
     { label: "512x512", value: "512" },
     { label: "256x256", value: "256" },
-];
+] as const satisfies DropdownOption[];
 
 type ShadowGeneratorSettings = {
     generatorType: string; // Type of shadow generator
@@ -48,8 +53,15 @@ function CreateShadowGenerator(shadowLight: ShadowLight, settings: ShadowGenerat
 export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: ShadowLight }> = ({ context: shadowLight }) => {
     const shadowGeneratorSetting: ShadowGeneratorSettings = { generatorType: "0", mapSize: "4096" };
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
+
     return (
         <>
+            {/* <DropdownPropertyLine
+                label="Type"
+                options={shadowGeneratorOptions}
+                onChange={(value) => (shadowGeneratorSetting.generatorType = value ?? )}
+                value={shadowGeneratorOptions[0]}
+            />
             <PropertyLine label="Type">
                 <Dropdown options={shadowGeneratorOptions} onSelect={(value: string) => (shadowGeneratorSetting.generatorType = value)} defaultValue={shadowGeneratorOptions[0]} />
             </PropertyLine>
@@ -64,7 +76,7 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
                         return;
                     }
                 }}
-            />
+            /> */}
         </>
     );
 };
