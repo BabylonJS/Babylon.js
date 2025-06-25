@@ -60,7 +60,7 @@ export class _WebAudioParameterComponent {
     }
 
     /**
-     * Sets the target value of the audio parameter with an optional ramping duration and curve.
+     * Sets the target value of the audio parameter with an optional ramping duration and shape.
      *
      * If a ramp is close to finishing, it will wait for the ramp to finish before setting the new value; otherwise it
      * will throw an error because of a bug in Firefox that prevents active ramps from being cancelled with
@@ -71,7 +71,7 @@ export class _WebAudioParameterComponent {
      * `exponentialRampToValueAtTime`) but they don't work in Firefox and Meta Quest Chrome.
      *
      * It may be better in the long run to implement our own ramping logic with a WASM audio worklet instead of using
-     * `setValueCurveAtTime`. Another alternative is to use `setValueAtTime` wtih a custom curve, but that will
+     * `setValueCurveAtTime`. Another alternative is to use `setValueAtTime` wtih a custom shape, but that will
      * probably be a performance hit to maintain quality at audio rates.
      *
      * @internal
@@ -81,7 +81,7 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        const curve = typeof options?.curve === "string" ? options.curve : AudioParameterRampShape.Linear;
+        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
 
         let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
         let startTime = this._engine.currentTime;
@@ -103,7 +103,7 @@ export class _WebAudioParameterComponent {
         }
 
         this._param.cancelScheduledValues(startTime);
-        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(curve, this._targetValue, (this._targetValue = value)), startTime, duration);
+        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
 
         this._rampEndTime = startTime + duration;
     }
