@@ -237,9 +237,8 @@ function GetMeshWorldMatrix(mesh: Mesh) {
     if (!useRightHandedSystem) {
         let current = mesh.parent;
         while (current) {
-            const parentMatrix = current.getWorldMatrix();
             if (IsNoopNode(current, useRightHandedSystem)) {
-                matrix.multiplyToRef(parentMatrix.invertToRef(parentMatrix), matrix);
+                matrix.multiplyToRef(current.getWorldMatrix().invert(), matrix);
                 break;
             }
             current = current.parent;
