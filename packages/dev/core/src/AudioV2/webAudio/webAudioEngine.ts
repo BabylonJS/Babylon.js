@@ -74,6 +74,7 @@ const FormatMimeTypes: { [key: string]: string } = {
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _invalidFormats = new Set<string>();
+    private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
     private readonly _listenerAutoUpdate: boolean = true;
     private readonly _listenerMinUpdateTime: number = 0;
@@ -91,9 +92,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public readonly _audioContext: AudioContext;
-
-    /** @internal */
-    public readonly _isUsingOfflineAudioContext: boolean = false;
 
     /** @internal */
     public readonly isReadyPromise: Promise<void> = new Promise((resolve) => {
