@@ -1,22 +1,26 @@
-import { AccordionPane, AccordionPaneSection } from "../accordionPane";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+// eslint-disable-next-line import/no-internal-modules
+import type { AbstractMesh, Mesh, Scene } from "core/index";
+
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";
-import { Matrix } from "core/Maths/math.vector";
 import { PhysicsViewer } from "core/Debug/physicsViewer";
-import type { Mesh } from "core/Meshes/mesh";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
-import { CreateGround } from "core/Meshes/Builders/groundBuilder";
-import { GridMaterial } from "materials/grid/gridMaterial";
-import { Tools } from "core/Misc/tools";
-import { Color3 } from "core/Maths/math.color";
 import { Texture } from "core/Materials/Textures/texture";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import type { Scene } from "core/scene";
 import { MaterialFlags } from "core/Materials/materialFlags";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Color3 } from "core/Maths/math.color";
+import { Matrix } from "core/Maths/math.vector";
+import { CreateGround } from "core/Meshes/Builders/groundBuilder";
+import { Tools } from "core/Misc/tools";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { GridMaterial } from "materials/grid/gridMaterial";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+
+import { AccordionPane, AccordionPaneSection } from "../accordionPane";
 import { BoundPropertyLine } from "../properties/boundPropertyLine";
-import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+
+export const HelpersDebugSectionIdentity = Symbol("Helpers");
+export const TextureChannelsDebugSectionIdentity = Symbol("Texture Channels");
+export const FeaturesDebugSectionIdentity = Symbol("Features");
 
 const SwitchGrid = function (renderScene: Scene) {
     const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
@@ -163,7 +167,7 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
     return (
         <>
             <AccordionPane {...props}>
-                <AccordionPaneSection title="Helpers">
+                <AccordionPaneSection identity={HelpersDebugSectionIdentity}>
                     <SwitchPropertyLine label="Grid" description="Display a ground grid." value={!!scene.reservedDataStore.gridMesh} onChange={() => SwitchGrid(scene)} />
                     <SwitchPropertyLine
                         label="Physics"
@@ -178,7 +182,7 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                         onChange={() => void SwitchNameViewerAsync(scene)}
                     />
                 </AccordionPaneSection>
-                <AccordionSection title="Core texture channels">
+                <AccordionPaneSection identity={TextureChannelsDebugSectionIdentity}>
                     <BoundPropertyLine component={SwitchPropertyLine} key="Diffuse" label="Diffuse" target={StandardMaterial} propertyKey="DiffuseTextureEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Ambient" label="Ambient" target={StandardMaterial} propertyKey="AmbientTextureEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Specular" label="Specular" target={StandardMaterial} propertyKey="SpecularTextureEnabled" />
@@ -191,8 +195,8 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                     <BoundPropertyLine component={SwitchPropertyLine} key="Fresnel" label="Fresnel" target={StandardMaterial} propertyKey="FresnelEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Detail" label="Detail" target={MaterialFlags} propertyKey="DetailTextureEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Decal" label="Decal" target={MaterialFlags} propertyKey="DecalMapEnabled" />
-                </AccordionSection>
-                <AccordionSection title="Features">
+                </AccordionPaneSection>
+                <AccordionPaneSection identity={FeaturesDebugSectionIdentity}>
                     <BoundPropertyLine component={SwitchPropertyLine} key="Animations" label="Animations" target={scene} propertyKey="animationsEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Physics" label="Physics" target={scene} propertyKey="physicsEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Collisions" label="Collisions" target={scene} propertyKey="collisionsEnabled" />
@@ -214,7 +218,7 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                     <BoundPropertyLine component={SwitchPropertyLine} key="Shadows" label="Shadows" target={scene} propertyKey="shadowsEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Skeletons" label="Skeletons" target={scene} propertyKey="skeletonsEnabled" />
                     <BoundPropertyLine component={SwitchPropertyLine} key="Sprites" label="Sprites" target={scene} propertyKey="spritesEnabled" />
-                </AccordionSection>
+                </AccordionPaneSection>
             </AccordionPane>
         </>
     );

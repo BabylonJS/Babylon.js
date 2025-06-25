@@ -36,25 +36,6 @@ export const DebugServiceDefinition: ServiceDefinition<[], [IShellService, IScen
             },
         });
 
-        sectionsCollection.add({
-            identity: CoreTextureSectionIdentity,
-        });
-
-        sectionContentCollection.add({
-            key: "Stuff stuff",
-            content: [
-                {
-                    section: CoreTextureSectionIdentity,
-                    component: () => (
-                        <div>
-                            <h3>Core Texture Channels</h3>
-                            <p>This section is for testing purposes.</p>
-                        </div>
-                    ),
-                },
-            ],
-        });
-
         return {
             dispose: () => registration.dispose(),
         };
