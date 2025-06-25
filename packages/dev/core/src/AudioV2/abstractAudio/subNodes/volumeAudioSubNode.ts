@@ -1,5 +1,5 @@
 import type { Nullable } from "../../../types";
-import type { AudioParameterRampShape } from "../../audioParameter";
+import type { IAudioParameterRampOptions } from "../../audioParameter";
 import type { AudioEngineV2 } from "../audioEngineV2";
 import { _AbstractAudioSubNode } from "../subNodes/abstractAudioSubNode";
 import { AudioSubNode } from "../subNodes/audioSubNode";
@@ -34,7 +34,7 @@ export abstract class _VolumeAudioSubNode extends _AbstractAudioSubNode {
     }
 
     /** @internal */
-    public abstract setVolume(value: number, duration?: number, curve?: Nullable<AudioParameterRampShape>): void;
+    public abstract setVolume(value: number, options?: Nullable<Partial<IAudioParameterRampOptions>>): void;
 }
 
 /** @internal */

@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AudioParameterRampShape } from "../audioParameter";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "./audioBus";
@@ -243,10 +243,9 @@ export abstract class AudioEngineV2 {
      * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given curve.
      * If a ramp is already in progress then the volume is not set and an error is thrown.
      * @param value The value to set the volume to.
-     * @param duration The duration over which to ramp the volume, in seconds. Defaults to 0.
-     * @param curve The shape of the ramp to use for the volume change. Defaults to linear.
+     * @param options The options to use for ramping the volume change.
      */
-    public abstract setVolume(value: number, duration: number, curve?: Nullable<AudioParameterRampShape>): void;
+    public abstract setVolume(value: number, options?: Partial<IAudioParameterRampOptions>): void;
 
     /**
      * Unlocks the audio engine if it is locked.

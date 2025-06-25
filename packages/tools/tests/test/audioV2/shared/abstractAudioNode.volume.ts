@@ -104,7 +104,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1);
+                    outputNode.setVolume(1, { duration: 1 });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -123,7 +123,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1);
+                    outputNode.setVolume(1, { duration: 1 });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -142,7 +142,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1);
+                    outputNode.setVolume(1, { duration: 1 });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -161,7 +161,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1);
+                    outputNode.setVolume(0, { duration: 1 });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -180,7 +180,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1);
+                    outputNode.setVolume(0, { duration: 1 });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -199,7 +199,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1);
+                    outputNode.setVolume(0, { duration: 1 });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -220,7 +220,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Linear);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -239,7 +239,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Linear);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -258,7 +258,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Linear);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -277,7 +277,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Linear);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -296,7 +296,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Linear);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -315,7 +315,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Linear);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -336,7 +336,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Exponential);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -355,7 +355,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Exponential);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -374,7 +374,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Exponential);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -393,7 +393,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Exponential);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -412,7 +412,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Exponential);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -431,7 +431,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Exponential);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -440,7 +440,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                if ((await EvaluateAudioContextType(page)) === AudioContextType.Offline) {
+                if ((await EvaluateAudioContextType(page)) === "Offline") {
                     expect(volumes[Channel.L]).toBeCloseTo(0.7, VolumePrecision);
                 } else {
                     // Expect larger range due to timing variations.
@@ -458,7 +458,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Logarithmic);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -477,7 +477,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Logarithmic);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -496,7 +496,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, 1, BABYLON.AudioParameterRampShape.Logarithmic);
+                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -515,7 +515,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Logarithmic);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -534,7 +534,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Logarithmic);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -553,7 +553,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1, BABYLON.AudioParameterRampShape.Logarithmic);
+                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -574,12 +574,12 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1);
+                    outputNode.setVolume(0, { duration: 1 });
                     sound.play();
 
                     await AudioV2Test.WaitAsync(0.5, () => {
                         try {
-                            outputNode.setVolume(1, 1);
+                            outputNode.setVolume(1, { duration: 1 });
                         } catch (e) {
                             AudioV2Test.ErrorMessage = e.message;
                         }
@@ -599,12 +599,12 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, 1);
+                    outputNode.setVolume(0, { duration: 1 });
                     sound.play();
 
                     await AudioV2Test.WaitAsync(1.5, () => {
                         try {
-                            outputNode.setVolume(1, 1);
+                            outputNode.setVolume(1, { duration: 1 });
                         } catch (e) {
                             AudioV2Test.ErrorMessage = e.message;
                         }

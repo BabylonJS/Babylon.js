@@ -15,3 +15,18 @@ export const enum AudioParameterRampShape {
      */
     Logarithmic = "logarithmic",
 }
+
+/**
+ * Options for ramping an audio parameter's value.
+ */
+export interface IAudioParameterRampOptions {
+    /**
+     * The ramp time, in seconds. Must be greater than 0. Defaults to 0.01 seconds.
+     * The audio parameter's value will reach the target value at the end of the duration.
+     */
+    duration: number;
+    /**
+     * The shape of the ramp to use for the parameter change. Default to {@link AudioParameterRampShape.Linear}.
+     */
+    curve: AudioParameterRampShape;
+}

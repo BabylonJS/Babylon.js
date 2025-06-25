@@ -1,6 +1,6 @@
 import { _GetAudioParamCurveValues } from "core/AudioV2/audioUtils";
 import type { Nullable } from "../../../types";
-import { AudioParameterRampShape } from "../../audioParameter";
+import { AudioParameterRampShape, type IAudioParameterRampOptions } from "../../audioParameter";
 import type { _WebAudioEngine } from "../webAudioEngine";
 
 /**
@@ -75,11 +75,14 @@ export class _WebAudioParameterComponent {
      *
      * @internal
      */
-    public setTargetValue(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
+    public setTargetValue(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
         if (this._targetValue === value) {
             return;
         }
 
+        const curve = typeof options?.curve === "string" ? options.curve : AudioParameterRampShape.Linear;
+
+        let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
         let startTime = this._engine.currentTime;
 
         if (startTime < this._rampEndTime) {
@@ -96,10 +99,6 @@ export class _WebAudioParameterComponent {
         if ((duration = Math.max(this._engine.parameterRampDuration, duration)) < MinRampDuration) {
             this._param.setValueAtTime((this._targetValue = value), startTime);
             return;
-        }
-
-        if (typeof curve !== "string") {
-            curve = AudioParameterRampShape.Linear;
         }
 
         this._param.cancelScheduledValues(startTime);

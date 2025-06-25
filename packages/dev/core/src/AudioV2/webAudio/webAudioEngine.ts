@@ -12,7 +12,7 @@ import type { IStreamingSoundOptions, StreamingSound } from "../abstractAudio/st
 import type { AbstractSpatialAudioListener } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import { _HasSpatialAudioListenerOptions } from "../abstractAudio/subProperties/abstractSpatialAudioListener";
 import type { _SpatialAudioListener } from "../abstractAudio/subProperties/spatialAudioListener";
-import type { AudioParameterRampShape } from "../audioParameter";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import { _CreateSpatialAudioListener } from "./subProperties/spatialWebAudioListener";
 import { _WebAudioMainOut } from "./webAudioMainOut";
 import { _WebAudioUnmuteUI } from "./webAudioUnmuteUI";
@@ -351,9 +351,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public override setVolume(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
+    public setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
         if (this._mainOut) {
-            this._mainOut.setVolume(value, duration, curve);
+            this._mainOut.setVolume(value, options);
         } else {
             throw new Error("Main output not initialized yet.");
         }

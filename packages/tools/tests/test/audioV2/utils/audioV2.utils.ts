@@ -60,7 +60,7 @@ declare global {
                 spatial: BABYLON.AbstractSpatialAudio;
                 stereo: BABYLON.AbstractStereoAudio;
                 volume: number;
-                setVolume: (value: number, duration?: number, curveType?: string) => void;
+                setVolume: (value: number, options?: Partial<BABYLON.IAudioParameterRampOptions>) => void;
             };
         }>;
         public static CreateAbstractSoundAsync(

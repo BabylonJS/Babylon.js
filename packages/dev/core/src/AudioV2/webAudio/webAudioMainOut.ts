@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
 import { _MainAudioOut } from "../abstractAudio/mainAudioOut";
-import type { AudioParameterRampShape } from "../audioParameter";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import { _WebAudioParameterComponent } from "./components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "./webAudioEngine";
 import type { IWebAudioInNode } from "./webAudioNode";
@@ -58,7 +58,7 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     }
 
     /** @internal */
-    public setVolume(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
-        this._volume.setTargetValue(value, duration, curve);
+    public setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
+        this._volume.setTargetValue(value, options);
     }
 }

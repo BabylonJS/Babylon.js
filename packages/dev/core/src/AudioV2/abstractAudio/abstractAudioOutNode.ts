@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AudioParameterRampShape } from "../audioParameter";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import type { AudioNodeType } from "./abstractAudioNode";
 import { AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { AudioEngineV2 } from "./audioEngineV2";
@@ -66,15 +66,14 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
      * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given curve.
      * If a ramp is already in progress then the volume is not set and an error is thrown.
      * @param value The value to set the volume to.
-     * @param duration The duration over which to ramp the volume, in seconds. Defaults to 0.
-     * @param curve The shape of the ramp to use for the volume change. Defaults to linear.
+     * @param options The options to use for ramping the volume change.
      */
-    public setVolume(value: number, duration: number = 0, curve: Nullable<AudioParameterRampShape> = null): void {
+    public setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
         const node = _GetVolumeAudioSubNode(this._subGraph);
         if (!node) {
             throw new Error("No volume subnode");
         }
 
-        node.setVolume(value, duration, curve);
+        node.setVolume(value, options);
     }
 }
