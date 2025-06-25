@@ -1,4 +1,4 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import type { SmartFilter, SmartFilterDeserializer, ISerializedBlockV1, BaseBlock } from "@babylonjs/smart-filters";
 
 /**

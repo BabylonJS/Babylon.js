@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect";
+import type { Effect } from "@babylonjs/core/Materials/effect.js";
 
 import {
     type ShaderProgram,
@@ -11,8 +11,8 @@ import {
     ShaderBlock,
 } from "@babylonjs/smart-filters";
 
-import { directionalBlurBlockType } from "../../../blockTypes";
-import { babylonDemoEffectsNamespace } from "../../../blockNamespaces";
+import { directionalBlurBlockType } from "../../../blockTypes.js";
+import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 
 const ShaderProgram: ShaderProgram = {
     fragment: {

@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect";
+import type { Effect } from "@babylonjs/core/Materials/effect.js";
 
 import {
     type ShaderProgram,
@@ -11,8 +11,8 @@ import {
     BlockDisableStrategy,
 } from "@babylonjs/smart-filters";
 
-import { kaleidoscopeBlockType } from "../../../blockTypes";
-import { babylonDemoEffectsNamespace } from "../../../blockNamespaces";
+import { kaleidoscopeBlockType } from "../../../blockTypes.js";
+import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 
 /**
  * This block uses a custom vertex shader, so it defines the ShaderProgram inline
