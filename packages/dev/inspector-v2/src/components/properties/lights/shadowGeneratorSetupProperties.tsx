@@ -9,7 +9,7 @@ import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { useObservableState } from "../../../hooks/observableHooks";
 
 type ShadowGeneratorType = "Default" | "Cascade";
@@ -78,13 +78,13 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
         <>
             {!hasShadowGenerator && (
                 <>
-                    <DropdownPropertyLine
+                    <StringDropdownPropertyLine
                         label="Type"
                         options={shadowGeneratorOptions}
                         value={shadowGeneratorSettings.generatorType}
                         onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, generatorType: String(value) as ShadowGeneratorType }))}
                     />
-                    <DropdownPropertyLine
+                    <NumberDropdownPropertyLine
                         label="Map Size"
                         options={MapSizeOptions}
                         value={shadowGeneratorSettings.mapSize}
