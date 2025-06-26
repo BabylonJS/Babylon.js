@@ -1,5 +1,34 @@
 # Changelog
 
+## 8.14.0
+
+## 8.13.1
+
+### Core
+
+- Add audio `setVolume` method with ramp duration and curve shape options - [_New Feature_] by [docEdub](https://github.com/docEdub) ([#16781](https://github.com/BabylonJS/Babylon.js/pull/16781))
+- GS SH View Direction - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16804](https://github.com/BabylonJS/Babylon.js/pull/16804))
+- Fix NME PBR default setup - by [sebavan](https://github.com/sebavan) ([#16806](https://github.com/BabylonJS/Babylon.js/pull/16806))
+- Added allowOtherButtonsDuringDrag flag to PointerDragBehavior - by [AmoebaChant](https://github.com/AmoebaChant) ([#16805](https://github.com/BabylonJS/Babylon.js/pull/16805))
+- Fix legacyTransluceny typo - by [sebavan](https://github.com/sebavan) ([#16803](https://github.com/BabylonJS/Babylon.js/pull/16803))
+- Refactor pointer selection logic to use continue instead of return - by [RaananW](https://github.com/RaananW) ([#16802](https://github.com/BabylonJS/Babylon.js/pull/16802))
+- Bounding box Gizmo + non uniform scaling + rotation - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16801](https://github.com/BabylonJS/Babylon.js/pull/16801))
+- Add WebAudio listener fallback implementation - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16797](https://github.com/BabylonJS/Babylon.js/pull/16797))
+- Fix logic for mesh matrices in bakeVertexDataSync - by [knervous](https://github.com/knervous) ([#16775](https://github.com/BabylonJS/Babylon.js/pull/16775))
+- Removing custom material variable inside of LineMesh - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#16767](https://github.com/BabylonJS/Babylon.js/pull/16767))
+
+### Loaders
+
+- GS SH View Direction - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16804](https://github.com/BabylonJS/Babylon.js/pull/16804))
+
+### Playground
+
+- Add support for DebugPane and Settings pane for Inspector v2 - by [deltakosh](https://github.com/deltakosh) ([#16792](https://github.com/BabylonJS/Babylon.js/pull/16792))
+
+### Serializers
+
+- USDZ Exporter: Cancel __root__ transform and and ignore disabled clearcoat - by [alexchuber](https://github.com/alexchuber) ([#16808](https://github.com/BabylonJS/Babylon.js/pull/16808))
+
 ## 8.13.0
 
 ### Core
