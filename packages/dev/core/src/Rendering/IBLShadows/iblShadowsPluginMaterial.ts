@@ -10,6 +10,7 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 /**
  * @internal
  */
@@ -72,7 +73,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         return true;
     }
 
-    constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
+    constructor(material: Material | StandardMaterial | PBRBaseMaterial | OpenPBRMaterial) {
         super(material, IBLShadowsPluginMaterial.Name, 310, new MaterialIBLShadowsRenderDefines());
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -160,6 +161,27 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
+            } else if (this._material instanceof OpenPBRMaterial) {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
+                #ifdef RENDER_WITH_IBL_SHADOWS
+                    #ifndef UNLIT
+                        #ifdef REFLECTION
+                            #ifdef COLORED_IBL_SHADOWS
+                                var shadowValue: vec3f = computeIndirectShadow();
+                                finalIrradiance *= shadowValue;
+                                finalRadianceScaled *= mix(vec3f(1.0), shadowValue, roughness);
+                            #else
+                                var shadowValue: vec2f = computeIndirectShadow();
+                                finalIrradiance *= vec3f(shadowValue.x);
+                                finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
+                            #endif
+                        #endif
+                    #else
+                        finalDiffuse *= computeIndirectShadow().x;
+                    #endif
+                #endif
+            `;
             } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
@@ -197,6 +219,27 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
             };
 
             if (this._material instanceof PBRBaseMaterial) {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
+                #ifdef RENDER_WITH_IBL_SHADOWS
+                    #ifndef UNLIT
+                        #ifdef REFLECTION
+                            #ifdef COLORED_IBL_SHADOWS
+                                vec3 shadowValue = computeIndirectShadow();
+                                finalIrradiance.rgb *= shadowValue.rgb;
+                                finalRadianceScaled *= mix(vec3(1.0), shadowValue.rgb, roughness);
+                            #else
+                                vec2 shadowValue = computeIndirectShadow();
+                                finalIrradiance *= shadowValue.x;
+                                finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
+                            #endif
+                        #endif
+                    #else
+                        finalDiffuse *= computeIndirectShadow().x;
+                    #endif
+                #endif
+            `;
+            } else if (this._material instanceof OpenPBRMaterial) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
