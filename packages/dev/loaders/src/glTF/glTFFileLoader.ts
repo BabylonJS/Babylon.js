@@ -206,7 +206,7 @@ abstract class GLTFLoaderOptions {
             this.compileShadowGenerators = options.compileShadowGenerators ?? this.compileShadowGenerators;
             this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
-            this.usePBR2 = options.usePBR2 ?? this.usePBR2;
+            this.useOpenPBR = options.useOpenPBR ?? this.useOpenPBR;
             this.createInstances = options.createInstances ?? this.createInstances;
             this.alwaysComputeBoundingBox = options.alwaysComputeBoundingBox ?? this.alwaysComputeBoundingBox;
             this.loadAllMaterials = options.loadAllMaterials ?? this.loadAllMaterials;
@@ -298,7 +298,7 @@ abstract class GLTFLoaderOptions {
     /**
      * Load the glTF files using the PBR2 material.
      */
-    public usePBR2 = false;
+    public useOpenPBR = false;
 
     /**
      * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
