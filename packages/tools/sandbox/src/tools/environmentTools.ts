@@ -8,6 +8,7 @@ import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { EngineStore } from "core/Engines/engineStore";
 import { EXRCubeTexture } from "core/Materials/Textures/exrCubeTexture";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 export class EnvironmentTools {
     public static SkyboxPath = "";
@@ -61,7 +62,7 @@ export class EnvironmentTools {
 
         currentScene.environmentTexture = this.LoadSkyboxPathTexture(currentScene);
         for (let i = 0; i < currentScene.materials.length; i++) {
-            const material = currentScene.materials[i] as StandardMaterial | PBRMaterial;
+            const material = currentScene.materials[i] as StandardMaterial | PBRMaterial | OpenPBRMaterial;
             if (material.name === "skyBox") {
                 const reflectionTexture = material.reflectionTexture;
                 if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {

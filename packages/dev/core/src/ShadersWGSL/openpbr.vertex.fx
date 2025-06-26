@@ -1,6 +1,6 @@
 #define PBR_VERTEX_SHADER
 
-#include<pbrUboDeclaration>
+#include<openPbrUboDeclaration>
 
 #define CUSTOM_VERTEX_BEGIN
 

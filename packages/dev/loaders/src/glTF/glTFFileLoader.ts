@@ -348,6 +348,7 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
             this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
             this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
             this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
+            this.useOpenPBR = options.useOpenPBR ?? this.useOpenPBR;
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
             this.validate = options.validate ?? this.validate;
@@ -433,6 +434,11 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
      * @returns Async url to load
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
+
+    /**
+     * Load the glTF files using the OpenPBR material.
+     */
+    public useOpenPBR = false;
 }
 
 /**

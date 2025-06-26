@@ -11,7 +11,7 @@
 #endif
 
 // Declaration
-#include<pbrUboDeclaration>
+#include<openPbrUboDeclaration>
 
 #include<pbrFragmentExtraDeclaration>
 #include<lightUboDeclaration>[0..maxSimultaneousLights]

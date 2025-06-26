@@ -2243,7 +2243,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
         let babylonMaterial;
-        if (this.parent.usePBR2) {
+        if (this.parent.useOpenPBR) {
             babylonMaterial = new OpenPBRMaterial(name, this._babylonScene);
         } else {
             babylonMaterial = new PBRMaterial(name, this._babylonScene);
