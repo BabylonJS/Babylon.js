@@ -1,4 +1,4 @@
-import { ConnectionPointType, CustomShaderBlock, importCustomBlockDefinition, InputBlock, type ShaderBlock, SmartFilter, SmartFilterOptimizer } from "../../src/";
+import { ConnectionPointType, CustomShaderBlock, importCustomBlockDefinition, InputBlock, type ShaderBlock, SmartFilter, SmartFilterOptimizer } from "../../src/index.js";
 
 const testBlockWithOverloadsAnnotatedGlsl = `
 /*

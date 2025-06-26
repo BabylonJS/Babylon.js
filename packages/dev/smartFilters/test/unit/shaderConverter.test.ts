@@ -1,4 +1,4 @@
-import { ParseFragmentShader } from "../../src/utils/buildTools/shaderConverter";
+import { ParseFragmentShader } from "../../src/utils/buildTools/shaderConverter.js";
 
 const decorator = "_";
 function decorated(name: string) {

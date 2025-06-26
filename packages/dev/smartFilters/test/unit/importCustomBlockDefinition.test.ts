@@ -1,10 +1,10 @@
-import { ImportCustomBlockDefinition } from "../../src/serialization/importCustomBlockDefinition";
-import { CustomShaderBlock } from "../../src/blockFoundation/customShaderBlock";
-import { SmartFilter } from "../../src/smartFilter";
-import { InputBlock } from "../../src/blockFoundation/inputBlock";
-import { ConnectionPointType } from "../../src/connection/connectionPointType";
-import { SmartFilterOptimizer } from "../../src/optimization/smartFilterOptimizer";
-import { SerializedShaderBlockDefinition } from "../../src/serialization/serializedShaderBlockDefinition";
+import { ImportCustomBlockDefinition } from "../../src/serialization/importCustomBlockDefinition.js";
+import { CustomShaderBlock } from "../../src/blockFoundation/customShaderBlock.js";
+import { SmartFilter } from "../../src/smartFilter.js";
+import { InputBlock } from "../../src/blockFoundation/inputBlock.js";
+import { ConnectionPointType } from "../../src/connection/connectionPointType.js";
+import { SmartFilterOptimizer } from "../../src/optimization/smartFilterOptimizer.js";
+import { SerializedShaderBlockDefinition } from "../../src/serialization/serializedShaderBlockDefinition.js";
 
 const annotatedFragmentGeneral = `
 // { "smartFilterBlockType": "GeneralBlock", "namespace": "UnitTests" }
