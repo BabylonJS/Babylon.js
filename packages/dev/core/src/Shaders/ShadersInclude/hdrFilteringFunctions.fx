@@ -262,7 +262,6 @@
                         float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
                         float l = log4(omegaS) - log4(omegaP) + log4(K);
                         float mipLevel = clamp(l, 0., maxLevel);
-                        vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
                         #ifdef CUSTOM_IRRADIANCE_FILTERING_FUNCTION
                             CUSTOM_IRRADIANCE_FILTERING_FUNCTION
                         #else
