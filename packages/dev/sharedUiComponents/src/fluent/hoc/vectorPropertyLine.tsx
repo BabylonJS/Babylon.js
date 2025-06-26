@@ -11,7 +11,7 @@ import { Quaternion, Vector4 } from "core/Maths/math.vector";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
-export type VectorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = BaseComponentProps<V> &
+export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = BaseComponentProps<V> &
     PropertyLineProps & {
         /**
          * If passed, all sliders will use this for the min value
@@ -42,7 +42,7 @@ export type VectorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = 
  * @param props
  * @returns
  */
-const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Vector4 | Quaternion>> = (props) => {
+const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector3 | Vector4 | Quaternion>> = (props) => {
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
     const formatted = (val: number) => converted(val).toFixed(2);
 
@@ -75,7 +75,7 @@ const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Ve
     );
 };
 
-type RotationVectorPropertyLineProps = VectorPropertyLineProps<Vector3> & {
+type RotationVectorPropertyLineProps = TensorPropertyLineProps<Vector3> & {
     /**
      * Display angles as degrees instead of radians
      */
@@ -89,14 +89,14 @@ export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropert
     return <Vector3PropertyLine {...props} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
 };
 
-type QuaternionPropertyLineProps = VectorPropertyLineProps<Quaternion> & {
+type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
     /**
      * Display angles as degrees instead of radians
      */
     useDegrees?: boolean;
 };
 
-const QuaternionPropertyLineInternal = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Quaternion>>;
+const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
 export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
@@ -118,5 +118,5 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
     );
 };
 
-export const Vector3PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector3>>;
-export const Vector4PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector4>>;
+export const Vector3PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector3>>;
+export const Vector4PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector4>>;
