@@ -97,7 +97,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
         });
 
         test.describe("Default ramp", () => {
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.1x volume at 0.1 seconds with default linear curve", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.1x volume at 0.1 seconds with default linear shape", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -116,7 +116,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.1, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear curve", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear shape", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -135,7 +135,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.9x volume at 0.9 seconds with default linear curve", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.9x volume at 0.9 seconds with default linear shape", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -154,7 +154,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.9x volume at 0.1 seconds with default linear curve", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.9x volume at 0.1 seconds with default linear shape", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -173,7 +173,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear curve", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear shape", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -192,7 +192,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.1x volume at 0.9 seconds with default linear curve", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.1x volume at 0.9 seconds with default linear shape", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -213,14 +213,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
         });
 
         test.describe("Linear ramp", () => {
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.1x volume at 0.1 seconds curve set to linear", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.1x volume at 0.1 seconds shape set to linear", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -232,14 +232,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.1, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with curve set to linear", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with shape set to linear", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -251,14 +251,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.9x volume at 0.9 seconds with curve set to linear", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.9x volume at 0.9 seconds with shape set to linear", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -270,14 +270,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.9x volume at 0.1 seconds with curve set to linear", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.9x volume at 0.1 seconds with shape set to linear", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -289,14 +289,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.75, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.5 seconds with curve set to linear", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.5 seconds with shape set to linear", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -308,14 +308,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.1x volume at 0.9 seconds with curve set to linear", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.1x volume at 0.9 seconds with shape set to linear", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Linear });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Linear });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -329,14 +329,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
         });
 
         test.describe("Exponential ramp", () => {
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.1 seconds curve set to exponential", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.1 seconds shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -348,14 +348,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.0, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.5 seconds with curve set to exponential", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.5 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -367,14 +367,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.3x volume at 0.9 seconds with curve set to exponential", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.3x volume at 0.9 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -386,14 +386,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.1 seconds with curve set to exponential", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -405,14 +405,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.5 seconds with curve set to exponential", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.5 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -424,14 +424,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.7x volume at 0.9 seconds with curve set to exponential", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.7x volume at 0.9 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Exponential });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Exponential });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -451,14 +451,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
         });
 
         test.describe("Logarithmic ramp", () => {
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.1 seconds curve set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.1 seconds shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -470,14 +470,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.5 seconds with curve set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.5 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -489,14 +489,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.85, VolumePrecision);
             });
 
-            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.3x volume at 0.9 seconds with curve set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 0 to 1 over 1 second should play sound at 0.3x volume at 0.9 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: audioNodeType === "AudioEngineV2" ? 0 : 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: audioNodeType !== "AudioEngineV2" ? 0 : 1,
                     });
 
-                    outputNode.setVolume(1, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
+                    outputNode.setVolume(1, { duration: 1, shape: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -508,14 +508,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.1 seconds with curve set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.1 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -527,14 +527,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.5 seconds with curve set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.5 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();
@@ -546,14 +546,14 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.15, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.7x volume at 0.9 seconds with curve set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.7x volume at 0.9 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
                         volume: 1,
                     });
 
-                    outputNode.setVolume(0, { duration: 1, curve: BABYLON.AudioParameterRampShape.Logarithmic });
+                    outputNode.setVolume(0, { duration: 1, shape: BABYLON.AudioParameterRampShape.Logarithmic });
                     sound.play();
                     await AudioV2Test.WaitAsync(1, () => {
                         sound.stop();

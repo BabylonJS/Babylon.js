@@ -157,7 +157,17 @@
         //
         //
 
-        fn irradiance(inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f, diffuseRoughness: f32, surfaceAlbedo: vec3f, inputV: vec3f
+        fn irradiance(
+        #ifdef CUSTOM_IRRADIANCE_FILTERING_INPUT
+            CUSTOM_IRRADIANCE_FILTERING_INPUT
+        #else
+            inputTexture: texture_cube<f32>, inputSampler: sampler,
+        #endif
+            inputN: vec3f,
+            filteringInfo: vec2f,
+            diffuseRoughness: f32,
+            surfaceAlbedo: vec3f,
+            inputV: vec3f
         #ifdef IBL_CDF_FILTERING
             , icdfSampler: texture_2d<f32>, icdfSamplerSampler: sampler
         #endif
@@ -221,7 +231,11 @@
                         var omegaS: f32 = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
                         var l: f32 = log4(omegaS) - log4(omegaP) + log4(K);
                         var mipLevel: f32 = clamp(l, 0.0, maxLevel);
-                        var c: vec3f = textureSampleLevel(inputTexture, inputSampler, tbn * Ls, mipLevel).rgb;
+                        #ifdef CUSTOM_IRRADIANCE_FILTERING_FUNCTION
+                            CUSTOM_IRRADIANCE_FILTERING_FUNCTION
+                        #else
+                            var c: vec3f = textureSampleLevel(inputTexture, inputSampler, tbn * Ls, mipLevel).rgb;
+                        #endif
                     #endif
                     #ifdef GAMMA_INPUT
                         c = toLinearSpaceVec3(c);
