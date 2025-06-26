@@ -521,10 +521,11 @@ export class GLTFExporter {
     }
 
     public async generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
-        const binaryBuffer = await this._generateBinaryAsync();
-
         this._extensionsOnExporting();
+
+        const binaryBuffer = await this._generateBinaryAsync();
         const jsonText = this._generateJSON(binaryBuffer.byteLength, glTFPrefix, true);
+
         const bin = new Blob([binaryBuffer], { type: "application/octet-stream" });
 
         const glTFFileName = glTFPrefix + ".gltf";
@@ -563,17 +564,18 @@ export class GLTFExporter {
     }
 
     public async generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
+        this._extensionsOnExporting();
+
         this._shouldUseGlb = true;
         const binaryBuffer = await this._generateBinaryAsync();
-
-        this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength);
+
         const glbFileName = glTFPrefix + ".glb";
         const headerLength = 12;
         const chunkLengthPrefix = 8;
         let jsonLength = jsonText.length;
         let encodedJsonText;
-        // make use of TextEncoder when available
+        // Make use of TextEncoder when available
         if (typeof TextEncoder !== "undefined") {
             const encoder = new TextEncoder();
             encodedJsonText = encoder.encode(jsonText);
