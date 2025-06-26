@@ -14,7 +14,7 @@ export const PropertyInvalidVector2Length = "Vector2 property must have exactly 
 export type VectorType = "Scale" | "Position" | "AnchorPoint";
 
 /* eslint-disable jsdoc/require-jsdoc */
-export type LottieAnimation = {
+export type LottieAnimationData = {
     startFrame: number; // Frame number where the animation starts
     endFrame: number; // Frame number where the animation ends
     frameRate: number; // Frame rate of the animation

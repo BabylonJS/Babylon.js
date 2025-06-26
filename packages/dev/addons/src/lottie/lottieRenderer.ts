@@ -1,19 +1,19 @@
 import type { IDisposable } from "core/scene";
-import type { LottieAnimation, LottieNode } from "./types/processedLottie";
+import type { LottieAnimationData, LottieNode } from "./types/processedLottie";
 import { Mesh } from "core/Meshes";
 
 /**
  * Class responsible for rendering lottie animations.
  */
 export class LottieRenderer implements IDisposable {
-    private _animation: LottieAnimation | null;
+    private _animation: LottieAnimationData | null;
     private _currentFrame: number;
 
     /**
      * Creates an instance of LottieRenderer.
      * @param animation The LottieAnimation to be rendered.
      */
-    public constructor(animation: LottieAnimation) {
+    public constructor(animation: LottieAnimationData) {
         this._animation = animation;
         this._currentFrame = 0;
     }
@@ -48,17 +48,18 @@ export class LottieRenderer implements IDisposable {
 
         // Update all nodes transforms
         for (const layer of this._animation.nodes.values()) {
-            this._updatNode(layer);
+            this._updateNode(layer);
         }
 
         this._currentFrame++;
     }
 
-    private _updatNode(layer: LottieNode): void {
+    private _updateNode(layer: LottieNode): void {
         this._updatePosition(layer);
         this._updateRotation(layer);
         this._updateScale(layer);
         this._updateAnchor(layer);
+        this._updateOpacity(layer);
     }
 
     private _updatePosition(node: LottieNode): void {
@@ -197,6 +198,45 @@ export class LottieRenderer implements IDisposable {
 
                         node.nodeAnchor!.position.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
                         node.nodeAnchor!.position.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private _updateOpacity(node: LottieNode): void {
+        if (node.transform) {
+            if (node.transform.opacity?.keyframes !== undefined && node.transform.opacity.keyframes.length > 0) {
+                // We have keyframes, so the position is animated
+                if (this._currentFrame < node.transform.opacity.keyframes[0].time) {
+                    return; // Animation not started yet
+                }
+
+                for (let i = 0; i < node.transform.opacity.keyframes.length - 1; i++) {
+                    const currentFrame = node.transform.opacity.keyframes[i];
+                    const nextFrame = node.transform.opacity.keyframes[i + 1];
+
+                    // Find the right keyframe we are currently in
+                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
+                        const startTime = currentFrame.time;
+                        const startValue = currentFrame.value;
+
+                        const endTime = nextFrame.time;
+                        const endValue = nextFrame.value;
+
+                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
+                        const easeGradientFactor = currentFrame.easeFunction?.ease(gradient) ?? gradient;
+                        const alpha = this._lerp(startValue, endValue, easeGradientFactor) / 100;
+
+                        const children = node.nodeAnchor && node.nodeAnchor.getChildMeshes(false);
+                        if (children && children.length > 0) {
+                            for (const child of children) {
+                                child.material && (child.material.alpha = alpha);
+                            }
+                        }
 
                         break;
                     }

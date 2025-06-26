@@ -21,7 +21,7 @@ import {
     ShapeUnsupportedChildType,
     ShapeUnsupportedTopLevelType,
     type VectorType,
-    type LottieAnimation,
+    type LottieAnimationData,
     type LottieNode,
     type ScalarKeyframe,
     type ScalarProperty,
@@ -39,7 +39,7 @@ import { DrawGroup } from "./canvasDrawing";
  * Class responsible for parsing lottie data
  */
 export class LottieParser {
-    private _processedData: LottieAnimation;
+    private _processedData: LottieAnimationData;
     private _errors = new Array<string>();
     private _childIndex = 1000;
     private _zIndex = 0;
@@ -52,7 +52,7 @@ export class LottieParser {
     /**
      * Gets the processed Lottie animation data, if available.
      */
-    public get animation(): LottieAnimation | undefined {
+    public get animation(): LottieAnimationData | undefined {
         return this._processedData;
     }
 
