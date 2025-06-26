@@ -1,43 +1,46 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { ShadowLight } from "core/index";
 
-import type { FunctionComponent } from "react";
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+
+import { useEffect, useState, type FunctionComponent } from "react";
 
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
-import { Dropdown, type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { useObservableState } from "../../../hooks/observableHooks";
 
-const DefaultShadowGeneratorOptions: DropdownOption[] = [{ label: "Shadow Generator", value: "0" }];
+type ShadowGeneratorType = "Default" | "Cascade";
+
+const DefaultShadowGeneratorOptions = [{ label: "Shadow Generator", value: "Default" satisfies ShadowGeneratorType }] as const satisfies DropdownOption[];
 
 const DirectionalLightGeneratorOptions = [
-    { label: "Shadow Generator", value: "0" },
-    { label: "Cascaded Shadow Generator", value: "1" },
+    ...DefaultShadowGeneratorOptions,
+    { label: "Cascaded Shadow Generator", value: "Cascade" satisfies ShadowGeneratorType },
 ] as const satisfies DropdownOption[];
 
 const MapSizeOptions = [
-    { label: "4096x4096", value: "4096" },
-    { label: "2048x2048", value: "2048" },
-    { label: "1024x1024", value: "1024" },
-    { label: "512x512", value: "512" },
-    { label: "256x256", value: "256" },
+    { label: "4096 x 4096", value: 4096 },
+    { label: "2048 x 2048", value: 2048 },
+    { label: "1024 x 1024", value: 1024 },
+    { label: "512 x 512", value: 512 },
+    { label: "256 x 256", value: 256 },
 ] as const satisfies DropdownOption[];
 
 type ShadowGeneratorSettings = {
-    generatorType: string; // Type of shadow generator
-    mapSize: string; // Size of the shadow map
+    generatorType: ShadowGeneratorType; // Type of shadow generator
+    mapSize: number; // Size of the shadow map
 };
 
 function CreateShadowGenerator(shadowLight: ShadowLight, settings: ShadowGeneratorSettings): void {
     const light = shadowLight;
     const scene = light.getScene();
     const internals = settings;
-    const generatorType = Number(internals.generatorType);
-    const mapSize = Number(internals.mapSize);
-    const generator = generatorType === 0 ? new ShadowGenerator(mapSize, light) : new CascadedShadowGenerator(mapSize, light as DirectionalLight);
+    const generatorType = internals.generatorType;
+    const mapSize = internals.mapSize;
+    const generator = generatorType === "Default" ? new ShadowGenerator(mapSize, light) : new CascadedShadowGenerator(mapSize, light as DirectionalLight);
 
     for (const m of scene.meshes) {
         if (m.infiniteDistance) {
@@ -51,32 +54,46 @@ function CreateShadowGenerator(shadowLight: ShadowLight, settings: ShadowGenerat
 }
 
 export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: ShadowLight }> = ({ context: shadowLight }) => {
-    const shadowGeneratorSetting: ShadowGeneratorSettings = { generatorType: "0", mapSize: "4096" };
+    const defaultGeneratorType = DefaultShadowGeneratorOptions[0].value;
+    const defaultMapSize = MapSizeOptions[0].value;
+    const [shadowGeneratorSettings, setShadowGeneratorSettings] = useState<Readonly<ShadowGeneratorSettings>>({ generatorType: defaultGeneratorType, mapSize: defaultMapSize });
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
+    const camera = useObservableState(() => shadowLight.getScene().activeCamera, shadowLight.getScene().onActiveCameraChanged);
+    const shadowGenerator = shadowLight.getShadowGenerator(camera) ?? shadowLight.getShadowGenerators()?.values().next().value;
+    const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGenerator);
+
+    useEffect(() => {
+        setHasShadowGenerator(!!shadowGenerator);
+    }, [shadowGenerator]);
 
     return (
         <>
-            {/* <DropdownPropertyLine
-                label="Type"
-                options={shadowGeneratorOptions}
-                onChange={(value) => (shadowGeneratorSetting.generatorType = value ?? )}
-                value={shadowGeneratorOptions[0]}
-            />
-            <PropertyLine label="Type">
-                <Dropdown options={shadowGeneratorOptions} onSelect={(value: string) => (shadowGeneratorSetting.generatorType = value)} defaultValue={shadowGeneratorOptions[0]} />
-            </PropertyLine>
-            <PropertyLine label="Map Size">
-                <Dropdown options={MapSizeOptions} onSelect={(value: string) => (shadowGeneratorSetting.mapSize = value)} defaultValue={MapSizeOptions[0]} />
-            </PropertyLine>
-            <ButtonLine
-                label="Create Generator"
-                onClick={() => {
-                    if (!shadowLight.getShadowGenerator()) {
-                        CreateShadowGenerator(shadowLight, shadowGeneratorSetting);
-                        return;
-                    }
-                }}
-            /> */}
+            {!hasShadowGenerator && (
+                <>
+                    <DropdownPropertyLine
+                        key="Type"
+                        label="Type"
+                        options={shadowGeneratorOptions}
+                        value={shadowGeneratorSettings.generatorType}
+                        onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, generatorType: String(value) as ShadowGeneratorType }))}
+                    />
+                    <DropdownPropertyLine
+                        key="Map Size"
+                        label="Map Size"
+                        options={MapSizeOptions}
+                        value={shadowGeneratorSettings.mapSize}
+                        onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, mapSize: Number(value) }))}
+                    />
+                    <ButtonLine
+                        key="Create Generator"
+                        label="Create Generator"
+                        onClick={() => {
+                            CreateShadowGenerator(shadowLight, shadowGeneratorSettings);
+                            setHasShadowGenerator(true);
+                        }}
+                    />
+                </>
+            )}
         </>
     );
 };
