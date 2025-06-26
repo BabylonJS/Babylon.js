@@ -12,28 +12,28 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
+import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
+import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
+import { HemisphericLightPropertiesServiceDefinition } from "./services/panes/properties/lights/hemisphericLightPropertiesServices";
+import { PointLightPropertiesServiceDefinition } from "./services/panes/properties/lights/pointLightPropertiesServices";
+import { ShadowLightPropertiesServiceDefinition } from "./services/panes/properties/lights/shadowLightPropertiesServices";
+import { SpotLightPropertiesServiceDefinition } from "./services/panes/properties/lights/spotLightPropertiesServices";
+import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
+import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
-import { HemisphericLightPropertiesServiceDefinition } from "./services/panes/properties/lights/hemisphericLightPropertiesServices";
-import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
-import { PointLightPropertiesServiceDefinition } from "./services/panes/properties/lights/pointLightPropertiesServices";
-import { ShadowLightPropertiesServiceDefinition } from "./services/panes/properties/lights/shadowLightPropertiesServices";
-import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
-import { SpotLightPropertiesServiceDefinition } from "./services/panes/properties/lights/spotLightPropertiesServices";
-import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
-import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -185,8 +185,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             MeshPropertiesServiceDefinition,
             TransformNodePropertiesServiceDefinition,
             MaterialPropertiesServiceDefinition,
-
-            // Lights properties services.
             HemisphericLightPropertiesServiceDefinition,
             AreaLightPropertiesServiceDefinition,
             PointLightPropertiesServiceDefinition,
