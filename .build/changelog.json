@@ -1,6 +1,662 @@
 {
-    "fromTag": "8.12.1",
+    "fromTag": "8.13.0",
     "changelog": {
+        "8.13.1": [
+            {
+                "pr": "16814",
+                "title": "Custom irradiance shader hooks",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16811",
+                "title": "Move useDegrees into RotationVectorPropertyLine; update how dropdown accepts undefined; rename BoundProperty",
+                "description": "- Rename BoundPropertyLine to BoundProperty\r\n- Move the useDegrees concept outside of syncedslider/vectorpropertyline and keep it only within RotationVectorPropertyLine\r\n- Change how dropdown accepts undefined values -- the component will supply the 'undefined' value directly\r\n- Add stub for transparentmaterial in iv2 to test the above dropdown logic\r\n- Remove the colorsliders/vectorsliders components and just render the fragment directly within the propertylines to reduce complexity ",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/debug/debugPane.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/materialTransparencyProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshOutlineOverlayProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/transformNodeTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/materialPropertiesService.tsx",
+                    "packages/dev/inspector-v2/test/app/index.ts",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/dropdown.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16808",
+                "title": "USDZ Exporter: Cancel __root__ transform and and ignore disabled clearcoat",
+                "description": "- Cancel out a __root__ transform's negative scaling in a node's world matrix, when applicable\r\n  - Steal a func for this from gltfExporter\r\n- Don't export a clearcoat value when clearcoat isn't enabled :)\r\n- Simplify ExtractTextureInformations",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts",
+                    "packages/dev/serializers/src/exportUtils.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16812",
+                "title": "Rename audio parameter `curve` option to `shape`",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioOutNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/audioParameter.ts",
+                    "packages/dev/core/src/AudioV2/audioUtils.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/components/webAudioParameterComponent.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.volume.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16810",
+                "title": "Fix audio parameter doc comment",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/audioParameter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16781",
+                "title": "Add audio `setVolume` method with ramp duration and curve shape options",
+                "description": "Adds the ability to set the volume of sounds and buses using a ramp (a.k.a. a fade).\r\n\r\nNote that due to a limitation in Firefox, ramps are not allowed to overlap on the timeline, and this change causes and error to be thrown if a volume ramp duration is set on a sound or bus that is already ramping.\r\n\r\nThis change also moves common functionality into a new base class named `AbstractAudioOutNode` and improves audio testing to handle error cases and fixes flaky tests.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioBus.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractAudioOutNode.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/audioEngineV2.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/index.ts",
+                    "packages/dev/core/src/AudioV2/abstractAudio/subNodes/volumeAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/audioParameter.ts",
+                    "packages/dev/core/src/AudioV2/audioUtils.ts",
+                    "packages/dev/core/src/AudioV2/index.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/components/webAudioParameterComponent.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/spatialWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/stereoWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subNodes/volumeWebAudioSubNode.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioMainOut.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioStaticSound.ts",
+                    "packages/tools/babylonServer/public/audiov2-test.js",
+                    "packages/tools/tests/test/audioV2/shared/abstractAudioNode.volume.ts",
+                    "packages/tools/tests/test/audioV2/shared/abstractSound.currentTime.ts",
+                    "packages/tools/tests/test/audioV2/utils/abstractAudioNode.utils.ts",
+                    "packages/tools/tests/test/audioV2/utils/audioV2.utils.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "16804",
+                "title": "GS SH View Direction",
+                "description": "Change space for compressed PLY and flip SH direction.\r\nfollowup https://forum.babylonjs.com/t/gaussian-splatting-seems-to-not-work-since-version-8/57903/37",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16806",
+                "title": "Fix NME PBR default setup",
+                "description": "https://playground.babylonjs.com/#T7FXR8#78 should render both sides in a similar way.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16807",
+                "title": "Inspector v2: Handle extension install errors",
+                "description": "A few people recently got hung up on extension install errors not currently being handled, particularly in the case where a previously installed extension can no longer be installed (such as the name changing). This PR adds error handling for these scenarios that works for our dev workflow as well as users.\r\n\r\nAlso unrelated, but I updated the theme with a color ramp generated from the color used for icons in inspector v1. We can continue to tune of course, I just wanted to put something in place that is slightly closer to the Babylon colors.\r\n\r\n![image](https://github.com/user-attachments/assets/e3d66afd-c4f0-472d-82d6-92cf5cb56caa)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/extensibility/extensionManager.ts",
+                    "packages/dev/inspector-v2/src/modularTool.tsx",
+                    "packages/dev/inspector-v2/src/services/extensionsListService.tsx",
+                    "packages/dev/inspector-v2/src/themes/babylonTheme.ts"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16805",
+                "title": "Added allowOtherButtonsDuringDrag flag to PointerDragBehavior",
+                "description": "By default, the PointerDragBehavior cancels a drag if another button on the same pointer is pressed. To allow for overriding this behavior, a new flag has been added: allowOtherButtonsDuringDrag",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16803",
+                "title": "Fix legacyTransluceny typo",
+                "description": "https://forum.babylonjs.com/t/typo-in-legacytransluceny/59098/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16792",
+                "title": "Add support for DebugPane and Settings pane for Inspector v2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/components/debug/debugPane.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/transformNodeTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/debugService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/transformNodePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/settingsService.tsx",
+                    "packages/dev/inspector-v2/src/services/settingsContext.ts",
+                    "packages/dev/inspector-v2/tsconfig.build.json",
+                    "packages/dev/inspector-v2/webpack.config.js",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx",
+                    "packages/tools/playground/webpack.config.js"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16802",
+                "title": "Refactor pointer selection logic to use continue instead of return",
+                "description": "Move to for instead of forEach required changing the return statements to continue.\r\nSee https://forum.babylonjs.com/t/webxr-controller-ray/59069?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16801",
+                "title": "Bounding box Gizmo + non uniform scaling + rotation",
+                "description": "follow up https://forum.babylonjs.com/t/attaching-bounding-box-gizmo-to-mesh-causes-its-scale-to-change/58595/8",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": [
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "16797",
+                "title": "Add WebAudio listener fallback implementation",
+                "description": "Firefox does not implement the audio context listener `forwardX/Y/Z`, `positionX/Y/Z` and `upX/Y/Z` properties, so the deprecated `setPosition` and `setOrientation` methods must be used.\r\n\r\nThis change detects when the newer properties are not available and falls back to the deprecated methods if needed.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/webAudio/subProperties/spatialWebAudioListener.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "16796",
+                "title": "Inspector v2: Add Pane component for common styling of panes",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    ".vscode/settings.json",
+                    "packages/dev/inspector-v2/src/components/pane.tsx"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16794",
+                "title": "Add new propertyLines, allow for null dropdown, fix colorProperty renderOverlay",
+                "description": null,
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/meshOutlineOverlayProperties.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/buttonLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/checkboxPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/fileUploadLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/hexLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/colorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/dropdown.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/fileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16795",
+                "title": "Inspector v2: Clear the selected item when it is disposed",
+                "description": "This just uses the instrumentation helpers to hook the `dispose` function on the selected entity to clear the selected item if it is disposed.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/services/selectionService.ts"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16789",
+                "title": "Fluent: Add accordion primitive",
+                "description": "This is a simple accordion primitive wrapper on top of the Fluent accordion.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/accordionPane.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/accordion.tsx"
+                ],
+                "tags": [
+                    "tools"
+                ]
+            },
+            {
+                "pr": "16788",
+                "title": "Add boundproperty, add dropdownpropertyline",
+                "description": null,
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/boundPropertyLine.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshOutlineOverlayProperties.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/dropdownPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/dropdown.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16787",
+                "title": "Update contributing.md",
+                "description": "Removed the Gitpod example as it is sunsetting in fall 2025",
+                "author": {
+                    "name": "thomlucc",
+                    "url": "https://github.com/thomlucc"
+                },
+                "files": [
+                    "contributing.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16786",
+                "title": "InputPropertyLine for text and number",
+                "description": "Simple helper to create a property line with either a text or number input",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/inputPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/input.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16776",
+                "title": "Allow debug node for NPE to refresh automatically",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/Node/Blocks/particleDebugBlock.ts",
+                    "packages/tools/nodeParticleEditor/src/graphSystem/properties/debugNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "16784",
+                "title": "Inspector v2: Scene explorer expand tree for selected item and scroll to it if needed",
+                "description": "- When an entity is selected (for example from the property pane), the scene explorer tree is now expanded to include that item.\r\n- If the entity was externally selected (not from within scene explorer itself), we scroll to that item to make sure it is visible.\r\n- Also added the parent link property for Node to further test these changes.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/nodeGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/transformNodeTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/scene/sceneExplorer.tsx",
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/meshPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/nodePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/nodeExplorerService.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16783",
+                "title": "Add OutlineAndOverlay section to InspectorV2; Add ColorPicker component; Various cleanup",
+                "description": "- Add outline/overlay mesh property section\r\n- First iteration of colorpicker\r\n- Update primitives to take in value/onChange and not export the fluent props\r\n- Remove the property indexing in syncedslider so that all components use the simple value / onchange API. That way we can bring back boundproperties all together",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/meshAdvancedProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshOutlineOverlayProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/transformNodeTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/meshPropertiesService.tsx",
+                    "packages/dev/inspector-v2/test/app/index.ts",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/switchPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/syncedSliderLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/checkbox.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/colorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/input.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/spinButton.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/text.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/textarea.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16770",
+                "title": "Remove build dev from non-tooling UMD packages and copy their minified files into the expected .js or max.js file",
+                "description": "Following the same rational as [this PR](https://github.com/BabylonJS/Babylon.js/pull/16760), modifying the remaining packages in UMD directory. Had to change the logic slightly in the webpack plugin because of how some packages were overriding filename.\r\n\r\nI do still believe we will need further changes to fix memory pressure as I am still hitting high memory usage when building locally.",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-accessibility/webpack.config.js",
+                    "packages/public/umd/babylonjs-addons/package.json",
+                    "packages/public/umd/babylonjs-addons/webpack.config.js",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-gui/webpack.config.js",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json",
+                    "packages/public/umd/babylonjs-ktx2decoder/webpack.config.js",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-loaders/webpack.config.js",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-materials/webpack.config.js",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-post-process/webpack.config.js",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/webpack.config.js",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-serializers/webpack.config.js",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/public/umd/babylonjs/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16777",
+                "title": "Inspector v2: Add scene node to scene explorer",
+                "description": "Two things in this PR:\r\n1. Add a top level scene node to scene explorer.\r\n2. Replace the scene explorer section \"watch\" function with just an array of observables. This is what I originally wanted to do, but it was hard to do because of the lack of covariance in Observable<T>. It's now easy to do with the covariant IReadonlyObservable<T>.\r\n\r\n![image](https://github.com/user-attachments/assets/ba8b106e-3afa-4907-8b03-0ec6f8506362)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/scene/sceneExplorer.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/commonPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/materialExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/nodeExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/texturesExplorerService.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16779",
+                "title": "Increase node memory limit to 8gb when running any commands via npm",
+                "description": "By putting this in a `.npmrc` file, it sets the node memory limit to 8gb for *any* command run via npm (e.g. `npm run lint`, `npm run watch:dev`, etc.).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".npmrc"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16775",
+                "title": "Fix logic for mesh matrices in bakeVertexDataSync",
+                "description": "I hadn't fully validated this in the pipeline after making some adjustments for performance - the piece that was missing was grabbing the mesh matrices for each frame.\r\nHere is a prototype shim of the exact logic working in a PG:\r\n\r\nhttps://playground.babylonjs.com/?BabylonToolkit#CP2RN9#304",
+                "author": {
+                    "name": "knervous",
+                    "url": "https://github.com/knervous"
+                },
+                "files": [
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16772",
+                "title": "Inspector v2: Add support for toggle commands in scene explorer",
+                "description": "This change allows for \"toggle\" commands in addition to \"action\" commands in scene explorer and implements one visibility toggle command.\r\n\r\n![image](https://github.com/user-attachments/assets/94701303-b201-4180-9f38-2cc4d94f3877)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/scene/sceneExplorer.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/propertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/nodeExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/sceneExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/statsService.tsx"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16774",
+                "title": "Various minor style cleanups",
+                "description": "- Remove default vertical margin from Switch so PropertyLines have uniform heights\r\n- Allow PropertyLine label to use extra space unused by the main content\r\n- Disallow PropertyLine label from wrapping (truncate instead)\r\n- Improve horizontal alignment of the expand button for the \"expandedContent\" of a PropertyLine\r\n- Use the Fluent Collapse component to animate the expand/collapse of the \"expandedContent\" of a PropertyLine\r\n- Use ToggleButton for the expand/collapse button for the \"expandedContent\" of a PropertyLine\r\n- Use fixed precision of 2 for VectorPropertyLine\r\n- Hide sliders in VectorPropertyLine when no min/max is specified\r\n- Use a more subtle appearance for the text input part of the VectorPropertyLine\r\n\r\n![image](https://github.com/user-attachments/assets/47b6d025-4e90-49dd-9776-f308365de05f)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/accordionPane.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "16767",
+                "title": "Removing custom material variable inside of LineMesh",
+                "description": "LineMesh uses its own private variable to hold the material of the mesh. The problem with this, is that Mesh has logic related to materials and LineMesh while inheriting from Mesh, is missing all this logic.\r\n\r\nI have removed the custom variable inside of LineMesh and adjusted the code to use the Material of the Mesh class instead. I have maintained the LineMesh interface where get/set material returns Material instead of Nullable<Material> like Mesh does.",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "16771",
+                "title": "Inspector v2: Start using new Fluent components from shared-ui-components",
+                "description": "- Minor changes to webpack and tsconfig for inspector v2 to consume shared-ui-components\r\n- Use new Fluent common components in the property pane\r\n- Make transform related properties applicable to TransformNode (not specific to Mesh)\r\n- Don't show mesh properties for meshes without vertices (same as inspector v1)\r\n- Explicitly set the description prop on the individual sliders to undefined so we don't pass through the top level description (otherwise, the top level description gets shown for each x/y/z line)\r\n\r\n![image](https://github.com/user-attachments/assets/11771390-6e64-4e8e-a1c9-053dc4a2cf06)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/commonGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshAdvancedProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/meshTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/transformNodeTransformProperties.tsx",
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/commonPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/meshPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/transformNodePropertiesService.tsx",
+                    "packages/dev/inspector-v2/test/app/index.ts",
+                    "packages/dev/inspector-v2/tsconfig.build.json",
+                    "packages/dev/inspector-v2/webpack.config.js",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/vectorPropertyLine.tsx"
+                ],
+                "tags": [
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "16760",
+                "title": "Remove dev step from tooling builds (reducing memory pressure) and copy the minified file to a max.js file for backwards compat",
+                "description": "Originally our build commands for our tools were running both dev and prod, outputted an unminified max.js file during CI. This impacted memory usage during build and is not necessary for debugging since we offer source maps. \r\n\r\nThis PR removes the dev step from our builds, so we won't be outputting the unminified max.js files anymore. But in order to preserve backwards compatibility for users who may have been referencing the .max.js file directly, we now copy the minified file to a .max.js file after the build is complete. This plugin will only run if the `minToMax` option is set to true in the webpack configuration.",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/gui-editor/webpack.config.js",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/@babylonjs/inspector/webpack.config.js",
+                    "packages/public/@babylonjs/node-editor/package.json",
+                    "packages/public/@babylonjs/node-editor/webpack.config.js",
+                    "packages/public/@babylonjs/node-geometry-editor/package.json",
+                    "packages/public/@babylonjs/node-geometry-editor/webpack.config.js",
+                    "packages/public/@babylonjs/node-particle-editor/package.json",
+                    "packages/public/@babylonjs/node-particle-editor/webpack.config.js",
+                    "packages/public/@babylonjs/node-render-graph-editor/package.json",
+                    "packages/public/@babylonjs/node-render-graph-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-inspector/webpack.config.js",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-node-particle-editor/package.json",
+                    "packages/public/umd/babylonjs-node-particle-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/package.json",
+                    "packages/public/umd/babylonjs-node-render-graph-editor/webpack.config.js"
+                ],
+                "tags": []
+            }
+        ],
         "8.13.0": [
             {
                 "pr": "16769",
