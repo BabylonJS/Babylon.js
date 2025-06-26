@@ -310,6 +310,17 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public DEBUGMODE = 0;
 
+    // BRDF defines
+    BRDF_V_HEIGHT_CORRELATED = true;
+    MS_BRDF_ENERGY_CONSERVATION = true;
+    SPHERICAL_HARMONICS = true;
+    SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = true;
+    MIX_IBL_RADIANCE_WITH_IRRADIANCE = true;
+    LEGACY_SPECULAR_ENERGY_CONSERVATION = false;
+    BASE_DIFFUSE_MODEL = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+    DIELECTRIC_SPECULAR_MODEL = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR;
+    CONDUCTOR_SPECULAR_MODEL = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR;
+
     /**
      * Initializes the PBR Material defines.
      * @param externalProperties The external properties
@@ -2646,7 +2657,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         PrepareAttributesForMorphTargets(attribs, mesh, defines);
         PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
-        let shaderName = "pbr2";
+        let shaderName = "openpbr";
 
         const uniforms = [
             "world",
