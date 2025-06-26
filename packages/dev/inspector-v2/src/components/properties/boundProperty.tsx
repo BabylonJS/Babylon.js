@@ -5,13 +5,13 @@ import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propert
 
 /**
  * This enables type safety when using a BoundProperty
- * Generic types O and K ensure that target[propertyKey] has the same type as the value/onChange of the BaseComponent>
- * Generic type P ensures that the BoundProperty component accepts only the props of the underlying ComponentType
+ * Generic types TargetT and PropertyKeyT ensure that target[propertyKey] has the same type as the value/onChange of the BaseComponent
+ * Generic type PropsT ensures that the BoundProperty component accepts only the props of the underlying ComponentType
  */
-export type BoundPropertyProps<O extends object, K extends keyof O, P extends object> = Omit<P, "value" | "onChange"> & {
-    component: ComponentType<P & BaseComponentProps<O[K]>>;
-    target: O;
-    propertyKey: K;
+export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object> = Omit<PropsT, "value" | "onChange"> & {
+    component: ComponentType<PropsT & BaseComponentProps<TargetT[PropertyKeyT]>>;
+    target: TargetT;
+    propertyKey: PropertyKeyT;
 };
 
 /**
@@ -20,16 +20,16 @@ export type BoundPropertyProps<O extends object, K extends keyof O, P extends ob
  * @param props
  * @returns
  */
-export function BoundProperty<O extends object, K extends keyof O, P extends object>(props: BoundPropertyProps<O, K, P>) {
+export function BoundProperty<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object>(props: BoundPropertyProps<TargetT, PropertyKeyT, PropsT>) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { target, propertyKey, component: Component, ...rest } = props;
     const value = useObservableState(() => target[propertyKey], useInterceptObservable("property", target, propertyKey));
 
     return (
         <Component
-            {...(rest as P)}
+            {...(rest as PropsT)}
             value={value}
-            onChange={(val: O[K]) => {
+            onChange={(val: TargetT[PropertyKeyT]) => {
                 target[propertyKey] = val;
             }}
         />
