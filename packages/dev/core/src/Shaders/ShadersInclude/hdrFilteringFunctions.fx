@@ -185,9 +185,18 @@
         //
 
         #define inline
-        vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo, float diffuseRoughness, vec3 surfaceAlbedo, vec3 inputV
+        vec3 irradiance(
+        #ifdef CUSTOM_IRRADIANCE_FILTERING_INPUT
+            CUSTOM_IRRADIANCE_FILTERING_INPUT
+        #else
+            samplerCube inputTexture,
+        #endif
+            vec3 inputN, vec2 filteringInfo,
+            float diffuseRoughness,
+            vec3 surfaceAlbedo,
+            vec3 inputV
         #if IBL_CDF_FILTERING
-        , sampler2D icdfSampler
+            , sampler2D icdfSampler
         #endif
         )
         {
@@ -254,6 +263,11 @@
                         float l = log4(omegaS) - log4(omegaP) + log4(K);
                         float mipLevel = clamp(l, 0., maxLevel);
                         vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
+                        #ifdef CUSTOM_IRRADIANCE_FILTERING_FUNCTION
+                            CUSTOM_IRRADIANCE_FILTERING_FUNCTION
+                        #else
+                            vec3 c = textureCubeLodEXT(inputTexture, tbn * Ls, mipLevel).rgb;
+                        #endif
                     #endif
                     #if GAMMA_INPUT
                         c = toLinearSpace(c);
