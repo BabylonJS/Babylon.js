@@ -20,10 +20,10 @@ export const SpotLightSetupProperties: FunctionComponent<{ context: SpotLight }>
 
     return (
         <>
-            <Color3PropertyLine key="LightColor" label="Diffuse" value={diffuseColor} onChange={(val) => (spotLight.diffuse = val)} />
-            <Color3PropertyLine key="LightSpecularColor" label="Specular" value={groundColor} onChange={(val) => (spotLight.specular = val)} />
-            <Vector3PropertyLine key="LightDirection" label="Direction" value={direction} onChange={(val) => (spotLight.direction = val)} />
-            <Vector3PropertyLine key="LightPosition" label="Position" value={position} onChange={(val) => (spotLight.position = val)} />
+            <Color3PropertyLine label="Diffuse" value={diffuseColor} onChange={(val) => (spotLight.diffuse = val)} />
+            <Color3PropertyLine label="Specular" value={groundColor} onChange={(val) => (spotLight.specular = val)} />
+            <Vector3PropertyLine label="Direction" value={direction} onChange={(val) => (spotLight.direction = val)} />
+            <Vector3PropertyLine label="Position" value={position} onChange={(val) => (spotLight.position = val)} />
             <SyncedSliderLine label="Angle" value={Tools.ToDegrees(angle)} min={0} max={90} step={0.1} onChange={(value) => (spotLight.angle = Tools.ToRadians(value))} />
             <SyncedSliderLine
                 label="Inner Angle"

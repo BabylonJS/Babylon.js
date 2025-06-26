@@ -79,21 +79,18 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
             {!hasShadowGenerator && (
                 <>
                     <DropdownPropertyLine
-                        key="Type"
                         label="Type"
                         options={shadowGeneratorOptions}
                         value={shadowGeneratorSettings.generatorType}
                         onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, generatorType: String(value) as ShadowGeneratorType }))}
                     />
                     <DropdownPropertyLine
-                        key="Map Size"
                         label="Map Size"
                         options={MapSizeOptions}
                         value={shadowGeneratorSettings.mapSize}
                         onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, mapSize: Number(value) }))}
                     />
                     <ButtonLine
-                        key="Create Generator"
                         label="Create Generator"
                         onClick={() => {
                             CreateShadowGenerator(shadowLight, shadowGeneratorSettings);
@@ -106,7 +103,6 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
                 <>
                     TODO: Not Implemented
                     <ButtonLine
-                        key="Dispose Generator"
                         label="Dispose Generator"
                         onClick={() => {
                             DisposeShadowGenerator(camera, shadowLight);

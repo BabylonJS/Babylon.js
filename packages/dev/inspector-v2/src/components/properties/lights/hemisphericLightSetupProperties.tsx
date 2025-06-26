@@ -6,20 +6,20 @@ import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropert
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
-import { useColor3Property, useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
+import { useColor3Property, useVector3Property } from "../../../hooks/compoundPropertyHooks";
+import { BoundProperty } from "../boundProperty";
 
 export const HemisphericLightSetupProperties: FunctionComponent<{ context: HemisphericLight }> = ({ context: hemisphericLight }) => {
     const direction = useVector3Property(hemisphericLight, "direction");
     const diffuseColor = useColor3Property(hemisphericLight, "diffuse");
     const groundColor = useColor3Property(hemisphericLight, "groundColor");
-    const intensity = useProperty(hemisphericLight, "intensity");
 
     return (
         <>
-            <Vector3PropertyLine key="LightDirection" label="Direction" value={direction} onChange={(val) => (hemisphericLight.direction = val)} />
-            <Color3PropertyLine key="LightColor" label="Diffuse" value={diffuseColor} onChange={(val) => (hemisphericLight.diffuse = val)} />
-            <Color3PropertyLine key="LightGroundColor" label="Ground" value={groundColor} onChange={(val) => (hemisphericLight.groundColor = val)} />
-            <FloatInputPropertyLine label="Intensity" value={intensity} onChange={(value) => (hemisphericLight.intensity = value)} />
+            <Vector3PropertyLine label="Direction" value={direction} onChange={(val) => (hemisphericLight.direction = val)} />
+            <Color3PropertyLine label="Diffuse" value={diffuseColor} onChange={(val) => (hemisphericLight.diffuse = val)} />
+            <Color3PropertyLine label="Ground" value={groundColor} onChange={(val) => (hemisphericLight.groundColor = val)} />
+            <BoundProperty component={FloatInputPropertyLine} label="Intensity" target={hemisphericLight} propertyKey="intensity" />
         </>
     );
 };
