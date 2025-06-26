@@ -224,6 +224,7 @@ abstract class GLTFLoaderOptions {
             this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
             this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
             this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
+            this.useOpenPBR = options.useOpenPBR ?? this.useOpenPBR;
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
             this.validate = options.validate ?? this.validate;
@@ -401,9 +402,9 @@ abstract class GLTFLoaderOptions {
     public useGltfTextureNames = false;
 
     /**
-     * Load the glTF files using the PBR2 material.
+     * Load the glTF files using the OpenPBR material.
      */
-    public usePBR2 = false;
+    public useOpenPBR = false;
 
     /**
      * Defines if the loader should use range requests when load binary glTF files from HTTP.
