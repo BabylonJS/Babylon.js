@@ -1,14 +1,16 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Scene } from "core/index";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
-import { type FunctionComponent } from "react";
-import { useObservableState } from "../../hooks/observableHooks";
+
+import type { FunctionComponent } from "react";
+
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { useObservableState } from "../../hooks/observableHooks";
 
 export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const engine = scene.getEngine();
     const caps = engine.getCaps();
-    const resolution = useObservableState(() => engine.getRenderWidth() + "x" + engine.getRenderHeight(), engine.onResizeObservable);
+    const resolution = useObservableState(() => `${engine.getRenderWidth()} x ${engine.getRenderHeight()}`, engine.onResizeObservable);
     const hardwareScalingLevel = useObservableState(() => engine.getHardwareScalingLevel(), engine.onResizeObservable);
 
     // TODO: replace these references to PlaceholderPropertyLine with BooleanPropertyLine when it is available

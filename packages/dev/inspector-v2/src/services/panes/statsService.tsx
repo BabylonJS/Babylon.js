@@ -10,13 +10,13 @@ import { DataBarHorizontalRegular } from "@fluentui/react-icons";
 
 import { CountStats } from "../../components/stats/countStats";
 import { FrameStepsStats } from "../../components/stats/frameStepStats";
+import { PerformanceStats } from "../../components/stats/performanceStats";
 import { StatsPane } from "../../components/stats/statsPane";
+import { SystemStats } from "../../components/stats/systemStats";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
-import { PerformanceStats } from "../../components/stats/performanceStats";
-import { SystemStats } from "../../components/stats/systemStats";
 
 export const StatsServiceIdentity = Symbol("StatsService");
 export const StatsPerformanceSectionIdentity = Symbol("Performance");

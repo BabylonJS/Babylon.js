@@ -1,23 +1,25 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Scene } from "core/index";
-import { useEffect, useState, type FunctionComponent } from "react";
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import type { PerformanceViewerCollector, Scene } from "core/index";
+
+import type { FunctionComponent } from "react";
+import type { IPerfLayoutSize } from "./performanceViewer/graph/graphSupportingTypes";
+
+import { useEffect, useState } from "react";
+
 import { Observable } from "core/Misc/observable";
-import { Inspector } from "../../inspector";
-import { PerformanceViewerPopupComponent } from "./performanceViewer/performanceViewerPopupComponent";
-import { Tools } from "core/Misc/tools";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
-import type { IPerfLayoutSize } from "./performanceViewer/graph/graphSupportingTypes";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { Inspector } from "../../inspector";
+import { PerformanceViewerPopupComponent } from "./performanceViewer/performanceViewerPopupComponent";
 
 // arbitrary window size
 const InitialWindowSize = { width: 1024, height: 512 };
 const InitialGraphSize = { width: 724, height: 512 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export enum IPerfMetadataCategory {
+const enum PerfMetadataCategory {
     Count = "Count",
     FrameSteps = "Frame Steps Duration",
 }
@@ -25,28 +27,28 @@ export enum IPerfMetadataCategory {
 // list of strategies to add to perf graph automatically.
 const DefaultStrategiesList = [
     { strategyCallback: PerfCollectionStrategy.FpsStrategy() },
-    { strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveIndicesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveBonesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ActiveParticlesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalLightsStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalVerticesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalMaterialsStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.TotalTexturesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.AbsoluteFpsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.MeshesSelectionStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.RenderTargetsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.ParticlesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.SpritesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.AnimationsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.PhysicsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.RenderStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.FrameTotalStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.InterFrameStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-    { strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
-];
+    { strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveIndicesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveBonesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveParticlesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalLightsStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalVerticesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalMaterialsStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalTexturesStrategy(), category: PerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.AbsoluteFpsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.MeshesSelectionStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.RenderTargetsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ParticlesStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.SpritesStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.AnimationsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.PhysicsStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.RenderStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.FrameTotalStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.InterFrameStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
+] as const;
 
 export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -158,7 +160,7 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
             // });
             perfCollector.addCollectionStrategies({
                 strategyCallback: PerfCollectionStrategy.PressureStrategy(),
-                category: IPerfMetadataCategory.FrameSteps,
+                category: PerfMetadataCategory.FrameSteps,
                 hidden: true,
             });
         }
