@@ -20,8 +20,10 @@ const DropdownPropertyLine: FunctionComponent<DropdownProps<AcceptedDropdownValu
     );
 };
 
-const NullableDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => <DropdownPropertyLine {...props} includeNullAs="null" />;
-const UndefinedDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => <DropdownPropertyLine {...props} includeNullAs="undefined" />;
+export const NullableDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => (
+    <DropdownPropertyLine {...props} includeNullAs="null" />
+);
+const OptionalDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => <DropdownPropertyLine {...props} includeNullAs="undefined" />;
 
 /**
  * Dropdown component for explicitly defined number values.
@@ -48,8 +50,8 @@ export const NullableStringDropdownPropertyLine = NullableDropdownPropertyLine a
 /**
  * Dropdown component for number | undefined values
  */
-export const OptionalNumberDropdownPropertyLine = UndefinedDropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<number | undefined>>;
+export const OptionalNumberDropdownPropertyLine = OptionalDropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<number | undefined>>;
 /**
  * Dropdown component for string | undefined values
  */
-export const OptionalStringDropdownPropertyLine = UndefinedDropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<string | undefined>>;
+export const OptionalStringDropdownPropertyLine = OptionalDropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<string | undefined>>;

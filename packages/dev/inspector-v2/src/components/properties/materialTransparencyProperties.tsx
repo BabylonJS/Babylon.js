@@ -4,9 +4,9 @@ import type { Material } from "core/Materials/material";
 
 import type { FunctionComponent } from "react";
 
-import { NullableNumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { BoundProperty } from "./boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { NullableNumberDropdownPropertyLine } from "../../../../sharedUiComponents/src/fluent/hoc/dropdownPropertyLine";
 
 const TransparencyModeOptions: DropdownOption[] = [
     { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
