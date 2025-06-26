@@ -6,7 +6,7 @@ import type { FunctionComponent } from "react";
 
 import { BoundProperty } from "./boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { NullableNumberDropdownPropertyLine } from "../../../../sharedUiComponents/src/fluent/hoc/dropdownPropertyLine";
+import { NullableNumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 
 const TransparencyModeOptions: DropdownOption[] = [
     { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
