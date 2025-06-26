@@ -8,7 +8,7 @@ import type { IShellService } from "./services/shellService";
 import { makeStyles } from "@fluentui/react-components";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
-import { createElement, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
@@ -34,9 +34,6 @@ import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
-import { type IPopupComponentProps, PopupComponent } from "./components/popupComponent";
-import { createRoot } from "react-dom/client";
-import type { Root } from "react-dom/client";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -247,11 +244,6 @@ export function HideInspector() {
     CurrentInspectorToken = null;
 }
 
-export interface IPersistentPopupConfiguration {
-    props: IPopupComponentProps;
-    children: React.ReactNode;
-}
-
 export class Inspector {
     public static get IsVisible(): boolean {
         return IsInspectorVisible();
@@ -263,28 +255,5 @@ export class Inspector {
 
     public static Hide() {
         HideInspector();
-    }
-
-    private static _PersistentPopupHost: Nullable<HTMLElement>;
-    private static _PersistentPopupRoot: Nullable<Root>;
-
-    public static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement) {
-        if (this._PersistentPopupHost) {
-            this._ClosePersistentPopup();
-        }
-
-        this._PersistentPopupHost = hostElement.ownerDocument.createElement("div");
-        this._PersistentPopupRoot = createRoot(this._PersistentPopupHost);
-        const popupElement = createElement(PopupComponent, config.props, config.children);
-        this._PersistentPopupRoot.render(popupElement);
-    }
-
-    public static _ClosePersistentPopup() {
-        if (this._PersistentPopupHost && this._PersistentPopupRoot) {
-            this._PersistentPopupRoot.unmount();
-            this._PersistentPopupHost.remove();
-            this._PersistentPopupHost = null;
-            this._PersistentPopupRoot = null;
-        }
     }
 }

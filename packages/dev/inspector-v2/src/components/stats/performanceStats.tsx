@@ -2,22 +2,14 @@
 import type { PerformanceViewerCollector, Scene } from "core/index";
 
 import type { FunctionComponent } from "react";
-import type { IPerfLayoutSize } from "./performanceViewer/graph/graphSupportingTypes";
 
 import { useEffect, useState } from "react";
 
-import { Observable } from "core/Misc/observable";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
 import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
-import { Inspector } from "../../inspector";
-import { PerformanceViewerPopupComponent } from "./performanceViewer/performanceViewerPopupComponent";
-
-// arbitrary window size
-const InitialWindowSize = { width: 1024, height: 512 };
-const InitialGraphSize = { width: 724, height: 512 };
 
 const enum PerfMetadataCategory {
     Count = "Count",
@@ -54,17 +46,6 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
     const [isOpen, setIsOpen] = useState(false);
     const [isLoadedFromCsv, setIsLoadedFromCsv] = useState(false);
     const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
-    const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
-    const [returnToLiveObservable] = useState(new Observable<void>());
-
-    // do cleanup when the window is closed
-    const onClosePerformanceViewer = (window: Window | null) => {
-        if (window) {
-            window.close();
-        }
-        setIsLoadedFromCsv(false);
-        setIsOpen(false);
-    };
 
     useEffect(() => {
         if (!isLoadedFromCsv) {
@@ -78,27 +59,7 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
 
     const startPerformanceViewerPopup = () => {
         if (performanceCollector) {
-            Inspector._CreatePersistentPopup(
-                {
-                    props: {
-                        id: "performance-viewer",
-                        title: "Realtime Performance Viewer",
-                        onClose: onClosePerformanceViewer,
-                        onResize: onResize,
-                        size: InitialWindowSize,
-                    },
-                    children: (
-                        <PerformanceViewerPopupComponent
-                            scene={scene}
-                            layoutObservable={layoutObservable}
-                            returnToLiveObservable={returnToLiveObservable}
-                            performanceCollector={performanceCollector}
-                            initialGraphSize={InitialGraphSize}
-                        />
-                    ),
-                },
-                document.body
-            );
+            // TODO
         }
     };
 
@@ -127,12 +88,6 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
 
     const onExportClick = () => {
         performanceCollector?.exportDataToCsv();
-    };
-
-    const onResize = (window: Window) => {
-        const width = window?.innerWidth ?? 0;
-        const height = window?.innerHeight ?? 0;
-        layoutObservable.notifyObservers({ width, height });
     };
 
     const onToggleRecording = () => {

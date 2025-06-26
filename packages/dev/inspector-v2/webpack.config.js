@@ -21,7 +21,7 @@ module.exports = (env) => {
         ),
 
         resolve: {
-            extensions: [".ts", ".tsx", ".js", ".jsx", ".svg", ".scss"],
+            extensions: [".ts", ".tsx", ".js", ".jsx"],
             alias: {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
@@ -34,13 +34,7 @@ module.exports = (env) => {
         module: {
             rules: webpackTools.getRules({
                 sideEffects: true,
-                includeCSS: true,
-                extraRules: [
-                    {
-                        test: /\.svg$/,
-                        type: "asset/inline",
-                    },
-                ],
+                includeCSS: false,
                 tsOptions: {
                     configFile: "tsconfig.build.json",
                     getCustomTransformers: () => ({
