@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ShadowLight } from "core/index";
+import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
 
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
@@ -34,6 +34,10 @@ type ShadowGeneratorSettings = {
     mapSize: number; // Size of the shadow map
 };
 
+function GetShadowGenerator(camera: Nullable<Camera>, shadowLight: ShadowLight): Nullable<IShadowGenerator> {
+    return shadowLight.getShadowGenerator(camera) ?? shadowLight.getShadowGenerators()?.values().next().value ?? null;
+}
+
 function CreateShadowGenerator(shadowLight: ShadowLight, settings: ShadowGeneratorSettings): void {
     const light = shadowLight;
     const scene = light.getScene();
@@ -53,13 +57,17 @@ function CreateShadowGenerator(shadowLight: ShadowLight, settings: ShadowGenerat
     }
 }
 
+function DisposeShadowGenerator(camera: Nullable<Camera>, shadowLight: ShadowLight): void {
+    GetShadowGenerator(camera, shadowLight)?.dispose();
+}
+
 export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: ShadowLight }> = ({ context: shadowLight }) => {
     const defaultGeneratorType = DefaultShadowGeneratorOptions[0].value;
     const defaultMapSize = MapSizeOptions[0].value;
     const [shadowGeneratorSettings, setShadowGeneratorSettings] = useState<Readonly<ShadowGeneratorSettings>>({ generatorType: defaultGeneratorType, mapSize: defaultMapSize });
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
     const camera = useObservableState(() => shadowLight.getScene().activeCamera, shadowLight.getScene().onActiveCameraChanged);
-    const shadowGenerator = shadowLight.getShadowGenerator(camera) ?? shadowLight.getShadowGenerators()?.values().next().value;
+    const shadowGenerator = GetShadowGenerator(camera, shadowLight);
     const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGenerator);
 
     useEffect(() => {
@@ -90,6 +98,19 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
                         onClick={() => {
                             CreateShadowGenerator(shadowLight, shadowGeneratorSettings);
                             setHasShadowGenerator(true);
+                        }}
+                    />
+                </>
+            )}
+            {shadowGenerator && (
+                <>
+                    TODO: Not Implemented
+                    <ButtonLine
+                        key="Dispose Generator"
+                        label="Dispose Generator"
+                        onClick={() => {
+                            DisposeShadowGenerator(camera, shadowLight);
+                            setHasShadowGenerator(false);
                         }}
                     />
                 </>
