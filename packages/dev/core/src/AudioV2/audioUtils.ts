@@ -67,7 +67,7 @@ export function _GetAudioParamCurveValues(shape: AudioParameterRampShape, from: 
         throw new Error(`Unknown ramp shape: ${shape}`);
     }
 
-    const direction = to - from < 0 ? -1 : 1;
+    const direction = Math.sign(to - from);
     const range = Math.abs(to - from);
 
     if (direction === 1) {
