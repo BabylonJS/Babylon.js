@@ -56,6 +56,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             title: "Properties",
             icon: DocumentTextRegular,
             horizontalLocation: "right",
+            order: 100,
             suppressTeachingMoment: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);

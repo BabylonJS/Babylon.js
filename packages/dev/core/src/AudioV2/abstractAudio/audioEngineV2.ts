@@ -1,4 +1,5 @@
 import type { Nullable } from "../../types";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "./audioBus";
@@ -118,6 +119,10 @@ export abstract class AudioEngineV2 {
 
     /**
      * The smoothing duration to use when changing audio parameters, in seconds. Defaults to `0.01` (10 milliseconds).
+     *
+     * Due to limitations in some browsers, it is not recommended to set this value to longer than `0.01` seconds.
+     *
+     * Setting this value to longer than `0.01` seconds may result in errors being throw when setting audio parameters.
      */
     public get parameterRampDuration(): number {
         return this._parameterRampDuration;
@@ -232,6 +237,15 @@ export abstract class AudioEngineV2 {
      * @returns A promise that resolves when the audio engine is running.
      */
     public abstract resumeAsync(): Promise<void>;
+
+    /**
+     * Sets the audio output volume with optional ramping.
+     * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given shape.
+     * If a ramp is already in progress then the volume is not set and an error is thrown.
+     * @param value The value to set the volume to.
+     * @param options The options to use for ramping the volume change.
+     */
+    public abstract setVolume(value: number, options?: Partial<IAudioParameterRampOptions>): void;
 
     /**
      * Unlocks the audio engine if it is locked.

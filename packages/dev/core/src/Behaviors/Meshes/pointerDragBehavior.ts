@@ -150,6 +150,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public useObjectOrientationForDragging = true;
 
+    /**
+     * Normally a drag is canceled when the user presses another button on the same pointer. If this is set to true,
+     * the drag will continue even if another button is pressed on the same pointer.
+     */
+    public allowOtherButtonsDuringDrag = false;
+
     private _options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 };
 
     /**
@@ -271,7 +277,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 this.dragging &&
                 this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
                 pointerInfo.event.button !== -1 &&
-                pointerInfo.event.button !== this._activeDragButton
+                pointerInfo.event.button !== this._activeDragButton &&
+                !this.allowOtherButtonsDuringDrag
             ) {
                 this.releaseDrag();
                 return;

@@ -47,6 +47,7 @@ interface IParsedPLY {
     hasVertexColors?: boolean;
     sh?: Uint8Array[];
     trainedWithAntialiasing?: boolean;
+    compressed?: boolean;
 }
 
 /**
@@ -380,6 +381,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
                                     gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
+                                    if (parsedPLY.compressed) {
+                                        gaussianSplatting.viewDirectionFactor.set(-1, -1, 1);
+                                    }
                                 }
                                 break;
                             case Mode.PointCloud:
@@ -577,7 +581,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // early exit for chunked/quantized ply
             if (chunkCount) {
                 return await new Promise((resolve) => {
-                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false });
+                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false, compressed: true });
                 });
             }
             // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
@@ -599,7 +603,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return await new Promise((resolve) => {
-                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount });
+                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount, compressed: false });
             });
         });
     }

@@ -25,6 +25,8 @@ module.exports = (env) => {
             alias: {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
+                addons: path.resolve("../../dev/addons/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },
         },
