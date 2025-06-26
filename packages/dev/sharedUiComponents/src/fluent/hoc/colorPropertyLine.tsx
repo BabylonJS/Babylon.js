@@ -22,7 +22,7 @@ const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((pr
     const [color, setColor] = useState(props.value);
 
     const onSliderChange = (value: number, key: "r" | "g" | "b" | "a") => {
-        let newColor;
+        let newColor: Color3 | Color4;
         if (key === "a") {
             newColor = Color4.FromColor3(color, value);
         } else {

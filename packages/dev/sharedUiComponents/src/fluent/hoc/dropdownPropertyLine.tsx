@@ -1,5 +1,6 @@
+import type { Nullable } from "core/types";
 import { Dropdown } from "../primitives/dropdown";
-import type { DropdownProps } from "../primitives/dropdown";
+import type { AcceptedDropdownValue, DropdownProps } from "../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
@@ -9,10 +10,13 @@ import type { FunctionComponent } from "react";
  * @param props - PropertyLineProps and DropdownProps
  * @returns property-line wrapped dropdown
  */
-export const DropdownPropertyLine: FunctionComponent<PropertyLineProps & DropdownProps> = (props) => {
+const DropdownPropertyLine: FunctionComponent<DropdownProps<AcceptedDropdownValue> & PropertyLineProps> = (props) => {
     return (
         <PropertyLine {...props}>
             <Dropdown {...props} />
         </PropertyLine>
     );
 };
+
+export const NumberDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownProps<Nullable<number>> & PropertyLineProps>;
+export const StringDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownProps<Nullable<string>> & PropertyLineProps>;

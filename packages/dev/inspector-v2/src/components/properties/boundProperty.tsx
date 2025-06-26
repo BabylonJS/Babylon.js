@@ -3,10 +3,15 @@ import { useObservableState } from "../../hooks/observableHooks";
 import type { ComponentType } from "react";
 import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLine";
 
-export type BoundPropertyProps<T, P extends object> = Omit<P, "value" | "onChange"> & {
-    component: ComponentType<P & BaseComponentProps<T>>;
-    target: any;
-    propertyKey: PropertyKey;
+/**
+ * This enables type safety when using a BoundProperty
+ * Generic types O and K ensure that target[propertyKey] has the same type as the value/onChange of the BaseComponent>
+ * Generic type P ensures that the BoundProperty component accepts only the props of the underlying ComponentType
+ */
+export type BoundPropertyProps<O extends object, K extends keyof O, P extends object> = Omit<P, "value" | "onChange"> & {
+    component: ComponentType<P & BaseComponentProps<O[K]>>;
+    target: O;
+    propertyKey: K;
 };
 
 /**
@@ -15,10 +20,18 @@ export type BoundPropertyProps<T, P extends object> = Omit<P, "value" | "onChang
  * @param props
  * @returns
  */
-export function BoundProperty<T, P extends object>(props: BoundPropertyProps<T, P>) {
+export function BoundProperty<O extends object, K extends keyof O, P extends object>(props: BoundPropertyProps<O, K, P>) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { target, propertyKey, component: Component, ...rest } = props;
     const value = useObservableState(() => target[propertyKey], useInterceptObservable("property", target, propertyKey));
 
-    return <Component {...(rest as P)} value={value} onChange={(val: T) => (target[propertyKey] = val)} />;
+    return (
+        <Component
+            {...(rest as P)}
+            value={value}
+            onChange={(val: O[K]) => {
+                target[propertyKey] = val;
+            }}
+        />
+    );
 }

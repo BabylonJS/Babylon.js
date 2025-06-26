@@ -4,7 +4,7 @@ import type { Material } from "core/Materials/material";
 
 import type { FunctionComponent } from "react";
 
-import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { BoundProperty } from "./boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
@@ -21,7 +21,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
     return (
         <>
             <BoundProperty
-                component={DropdownPropertyLine}
+                component={NumberDropdownPropertyLine}
                 key="Transparency mode"
                 label="Transparency mode"
                 target={material}

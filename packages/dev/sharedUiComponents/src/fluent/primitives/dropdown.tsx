@@ -2,6 +2,7 @@ import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-
 import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { Nullable } from "core/types";
 
 const useDropdownStyles = makeStyles({
     dropdownOption: {
@@ -11,7 +12,8 @@ const useDropdownStyles = makeStyles({
     optionsLine: {},
 });
 
-export type AcceptedDropdownValue = string | number;
+type DropdownOptionValue = string | number;
+export type AcceptedDropdownValue = Nullable<DropdownOptionValue> | undefined;
 export type DropdownOption = {
     /**
      * Defines the visible part of the option
@@ -20,10 +22,10 @@ export type DropdownOption = {
     /**
      * Defines the value part of the option
      */
-    value: AcceptedDropdownValue;
+    value: DropdownOptionValue;
 };
 
-export type DropdownProps = BaseComponentProps<AcceptedDropdownValue | undefined> & {
+export type DropdownProps<V extends AcceptedDropdownValue> = BaseComponentProps<V> & {
     options: DropdownOption[];
 
     includeUndefined?: boolean; // If true, adds an option with label 'Not Defined' and value undefined
@@ -34,12 +36,13 @@ export type DropdownProps = BaseComponentProps<AcceptedDropdownValue | undefined
  * @param props
  * @returns dropdown component
  */
-export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
+export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
     const classes = useDropdownStyles();
-    const [options] = useState<DropdownOption[]>(props.includeUndefined ? [{ label: "<Not defined>", value: Number.NaN }, ...props.options] : props.options);
-    const [defaultVal, setDefaultVal] = useState(props.includeUndefined && props.value === undefined ? Number.NaN : props.value);
+
+    const [options] = useState<DropdownOption[]>(props.includeUndefined ? [{ label: "<Not defined>", value: Number.MAX_SAFE_INTEGER }, ...props.options] : props.options);
+    const [defaultVal, setDefaultVal] = useState(props.includeUndefined && (props.value === undefined || props.value === null) ? Number.MAX_SAFE_INTEGER : props.value);
     useEffect(() => {
-        setDefaultVal(props.includeUndefined && props.value === undefined ? Number.NaN : props.value);
+        setDefaultVal(props.includeUndefined && (props.value === undefined || props.value === null) ? Number.MAX_SAFE_INTEGER : props.value);
     }, [props.value]);
 
     return (
@@ -49,11 +52,12 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
             onOptionSelect={(evt, data) => {
                 let value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
                 setDefaultVal(value);
-                if (props.includeUndefined && value === Number.NaN.toString()) {
+                if (props.includeUndefined && value === Number.MAX_SAFE_INTEGER.toString()) {
                     value = undefined;
                 }
                 props.onChange(value);
             }}
+            selectedOptions={[defaultVal!.toString()]}
             value={options.find((o) => o.value === defaultVal)?.label}
         >
             {options.map((option: DropdownOption) => (
