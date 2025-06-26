@@ -28,21 +28,23 @@ export type DropdownOption = {
 export type DropdownProps<V extends AcceptedDropdownValue> = BaseComponentProps<V> & {
     options: DropdownOption[];
 
-    includeUndefined?: boolean; // If true, adds an option with label 'Not Defined' and value undefined
+    includeNullAs?: "null" | "undefined"; // If supplied, adds an option with label 'Not Defined' and value either null or undefined
 };
 
 /**
- * Renders a fluent UI dropdown component for the options passed in, and an additional 'Not Defined' option if includeUndefined is set to true
+ * Renders a fluent UI dropdown component for the options passed in, and an additional 'Not Defined' option if null is set to true
+ * This component can handle both null and undefined values
  * @param props
  * @returns dropdown component
  */
 export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
     const classes = useDropdownStyles();
-
-    const [options] = useState<DropdownOption[]>(props.includeUndefined ? [{ label: "<Not defined>", value: Number.MAX_SAFE_INTEGER }, ...props.options] : props.options);
-    const [defaultVal, setDefaultVal] = useState(props.includeUndefined && (props.value === undefined || props.value === null) ? Number.MAX_SAFE_INTEGER : props.value);
+    // This component can handle both null and undefined values, so '==' null is intentionally used throughout to check for both cases.
+    const nullSetter = props.includeNullAs === "null" ? null : undefined;
+    const [options] = useState<DropdownOption[]>(props.includeNullAs ? [{ label: "<Not defined>", value: Number.MAX_SAFE_INTEGER }, ...props.options] : props.options);
+    const [defaultVal, setDefaultVal] = useState(props.value == null ? Number.MAX_SAFE_INTEGER : props.value);
     useEffect(() => {
-        setDefaultVal(props.includeUndefined && (props.value === undefined || props.value === null) ? Number.MAX_SAFE_INTEGER : props.value);
+        setDefaultVal(props.value == null ? Number.MAX_SAFE_INTEGER : props.value);
     }, [props.value]);
 
     return (
@@ -50,18 +52,17 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
             size="small"
             className={classes.dropdownOption}
             onOptionSelect={(evt, data) => {
-                let value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
-                setDefaultVal(value);
-                if (props.includeUndefined && value === Number.MAX_SAFE_INTEGER.toString()) {
-                    value = undefined;
+                const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
+                if (value !== undefined) {
+                    setDefaultVal(value);
+                    value === Number.MAX_SAFE_INTEGER ? props.onChange(nullSetter) : props.onChange(value);
                 }
-                props.onChange(value);
             }}
-            selectedOptions={[defaultVal!.toString()]}
+            selectedOptions={[defaultVal.toString()]}
             value={options.find((o) => o.value === defaultVal)?.label}
         >
             {options.map((option: DropdownOption) => (
-                <Option className={classes.optionsLine} key={option.label} value={option.value?.toString()} disabled={false}>
+                <Option className={classes.optionsLine} key={option.label} value={option.value.toString()} disabled={false}>
                     {option.label}
                 </Option>
             ))}
