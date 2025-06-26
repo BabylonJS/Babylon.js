@@ -386,7 +386,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.3x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -402,10 +402,16 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+                if ((await EvaluateAudioContextType(page)) === "Offline") {
+                    expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
+                } else {
+                    // Expect larger range due to timing variations.
+                    expect(volumes[Channel.L]).toBeGreaterThan(0.25);
+                    expect(volumes[Channel.L]).toBeLessThan(0.36);
+                }
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.5 seconds with shape set to exponential", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at close to 0 volume at 0.5 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -421,10 +427,10 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.7x volume at 0.9 seconds with shape set to exponential", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at close to 0 volume at 0.9 seconds with shape set to exponential", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -440,13 +446,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                if ((await EvaluateAudioContextType(page)) === "Offline") {
-                    expect(volumes[Channel.L]).toBeCloseTo(0.7, VolumePrecision);
-                } else {
-                    // Expect larger range due to timing variations.
-                    expect(volumes[Channel.L]).toBeGreaterThan(0.65);
-                    expect(volumes[Channel.L]).toBeLessThan(0.76);
-                }
+                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
             });
         });
 
@@ -524,10 +524,10 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.5 seconds with shape set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.85x volume at 0.5 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -543,10 +543,10 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.15, VolumePrecision);
+                expect(volumes[Channel.L]).toBeCloseTo(0.85, VolumePrecision);
             });
 
-            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.7x volume at 0.9 seconds with shape set to logarithmic", async ({ page }) => {
+            test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.9 seconds with shape set to logarithmic", async ({ page }) => {
                 await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
                     await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
                     const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
@@ -562,7 +562,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
             });
         });
 
