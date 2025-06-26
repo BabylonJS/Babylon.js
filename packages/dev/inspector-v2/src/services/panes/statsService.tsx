@@ -55,6 +55,7 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
             title: "Stats",
             icon: DataBarHorizontalRegular,
             horizontalLocation: "right",
+            order: 300,
             suppressTeachingMoment: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);

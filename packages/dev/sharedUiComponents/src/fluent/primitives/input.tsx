@@ -31,14 +31,17 @@ export const Input: FunctionComponent<InputProps<string | number>> = (props) => 
     const classes = useInputStyles();
     const [value, setValue] = useState(props.value ?? "");
 
+    const type = typeof props.value === "number" ? "number" : "text";
+
     useEffect(() => {
         setValue(props.value ?? ""); // Update local state when props.value changes
     }, [props.value]);
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>, _: unknown) => {
         event.stopPropagation(); // Prevent event propagation
-        props.onChange(event.target.value); // Call the original onChange handler passed as prop
-        setValue(event.target.value); // Update local state with the new value
+        const value = type === "number" ? Number(event.target.value) : String(event.target.value);
+        props.onChange(value); // Call the original onChange handler passed as prop
+        setValue(value); // Update local state with the new value
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -48,7 +51,7 @@ export const Input: FunctionComponent<InputProps<string | number>> = (props) => 
     return (
         <FluentInput
             {...props}
-            type={typeof props.value === "number" ? "number" : "text"}
+            type={type}
             size="small"
             value={value.toString()}
             className={typeof props.value === "number" ? classes.float : classes.text}

@@ -4,7 +4,6 @@ import { Input } from "./input";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState } from "react";
 import type { BaseComponentProps } from "../hoc/propertyLine";
-import { Tools } from "core/Misc/tools";
 
 const useSyncedSliderStyles = makeStyles({
     syncedSlider: {
@@ -27,7 +26,6 @@ export type SyncedSliderProps = BaseComponentProps<number> & {
     min?: number;
     max?: number;
     step?: number;
-    useDegrees?: boolean; // Optional prop to use degrees instead of radians
 };
 
 /**
@@ -39,44 +37,37 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     const classes = useSyncedSliderStyles();
     const [value, setValue] = useState<number>(props.value);
 
+    // NOTE: The Fluent slider will add tick marks if the step prop is anything other than undefined.
+    // To avoid this, we scale the min/max based on the step so we can always make step undefined.
+    // The actual step size in the Fluent slider is 1 when it is ste to undefined.
+    const min = props.min ?? 0;
+    const max = props.max ?? 100;
+    const step = props.step ?? 1;
+
     useEffect(() => {
         setValue(props.value ?? ""); // Update local state when props.value changes
     }, [props.value]);
 
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
-        let value = data.value;
-        if (props.useDegrees) {
-            // Convert degrees to radians if necessary
-            value = Tools.ToRadians(value);
-        }
+        const value = data.value * step;
         setValue(value);
         props.onChange(value); // Notify parent
     };
 
     const handleInputChange = (value: string | number) => {
-        let newValue = Number(value);
+        const newValue = Number(value);
         if (!isNaN(newValue)) {
-            if (props.useDegrees) {
-                // Convert degrees to radians if necessary
-                newValue = Tools.ToRadians(newValue);
-            }
-
             setValue(newValue);
             props.onChange(newValue); // Notify parent
         }
     };
 
-    const min = props.min ?? (props.useDegrees ? 0 : undefined);
-    const max = props.max ?? (props.useDegrees ? 360 : undefined);
-
-    const convertedValue = props.useDegrees ? Tools.ToDegrees(value) : value;
-
     return (
         <div className={classes.syncedSlider}>
-            {min !== undefined && max !== undefined && (
-                <Slider {...props} min={min} max={max} size="small" className={classes.slider} value={convertedValue} onChange={handleSliderChange} />
+            {props.min !== undefined && props.max !== undefined && (
+                <Slider {...props} size="small" className={classes.slider} min={min / step} max={max / step} step={undefined} value={value / step} onChange={handleSliderChange} />
             )}
-            <Input {...props} className={classes.input} value={convertedValue} onChange={handleInputChange} step={props.step} />
+            <Input {...props} className={classes.input} value={Math.round(value / step) * step} onChange={handleInputChange} step={step} />
         </div>
     );
 };
