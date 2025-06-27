@@ -6,7 +6,6 @@ import type {
     FrameGraphTextureHandle,
     Camera,
     NodeRenderGraphGeometryRendererBlock,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { RegisterClass } from "../../../../Misc/typeStore";

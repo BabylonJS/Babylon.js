@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, FrameGraphTextureHandle, NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";

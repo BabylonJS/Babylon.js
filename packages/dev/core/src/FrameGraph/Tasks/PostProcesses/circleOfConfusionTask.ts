@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass, Camera } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { Constants } from "core/Engines/constants";

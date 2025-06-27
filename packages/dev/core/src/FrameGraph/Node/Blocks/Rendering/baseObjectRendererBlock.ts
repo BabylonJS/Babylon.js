@@ -8,7 +8,6 @@ import type {
     FrameGraphObjectRendererTask,
     NodeRenderGraphResourceContainerBlock,
     FrameGraphShadowGeneratorTask,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";

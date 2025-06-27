@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraphTextureHandle, FrameGraph, Scene } from "core/index";
 import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";

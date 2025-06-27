@@ -1,9 +1,4 @@
-import type {
-    FrameGraph,
-    Scene,
-    IThinGlowLayerOptions,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { FrameGraph, Scene, IThinGlowLayerOptions } from "core/index";
 import { ThinGlowLayer } from "core/Layers/thinGlowLayer";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
 

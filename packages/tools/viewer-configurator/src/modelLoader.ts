@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable } from "core/index";
-// eslint-disable-next-line import/no-internal-modules
 import type { LoadModelOptions, ViewerElement } from "viewer/index";
 
 import { Deferred } from "core/Misc/deferred";

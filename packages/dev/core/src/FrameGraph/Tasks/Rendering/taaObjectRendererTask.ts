@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget, FrameGraphRenderPass } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";

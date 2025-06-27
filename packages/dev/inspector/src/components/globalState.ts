@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-// eslint-disable-next-line import/no-internal-modules
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
 import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
@@ -15,7 +14,6 @@ import { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
-// eslint-disable-next-line import/no-internal-modules
 import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
 
 export class GlobalState {

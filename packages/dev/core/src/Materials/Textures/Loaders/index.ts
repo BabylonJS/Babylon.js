@@ -8,5 +8,4 @@ export * from "./basisTextureLoader";
 export * from "./exrTextureLoader";
 export * from "./iesTextureLoader";
 export * from "./textureLoaderManager";
-// eslint-disable-next-line import/no-internal-modules
 export * from "./EXR/index";
