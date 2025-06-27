@@ -225,9 +225,6 @@ export abstract class AbstractEngine {
     /** @internal */
     public _videoTextureSupported: boolean;
 
-    /** @internal */
-    public _useVertexPulling: boolean = false;
-
     protected _compatibilityMode = true;
     /** @internal */
     public _pointerLockRequested: boolean;
