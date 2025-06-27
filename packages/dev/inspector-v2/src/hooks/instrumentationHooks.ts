@@ -18,7 +18,7 @@ export function useInterceptObservable<T extends object>(type: "function" | "pro
     // Create a cached observable. It effectively has the lifetime of the component that uses this hook.
     const observable = useMemo(() => new Observable<void>(), []);
 
-    // Whenver the type, target, or property key changes, we need to set up a new interceptor.
+    // Whenever the type, target, or property key changes, we need to set up a new interceptor.
     useEffect(() => {
         let interceptToken: Nullable<IDisposable> = null;
 
