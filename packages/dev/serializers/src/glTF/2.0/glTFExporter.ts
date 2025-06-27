@@ -521,9 +521,8 @@ export class GLTFExporter {
     }
 
     public async generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
-        this._extensionsOnExporting();
-
         const binaryBuffer = await this._generateBinaryAsync();
+        this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength, glTFPrefix, true);
 
         const bin = new Blob([binaryBuffer], { type: "application/octet-stream" });
@@ -564,10 +563,9 @@ export class GLTFExporter {
     }
 
     public async generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
-        this._extensionsOnExporting();
-
         this._shouldUseGlb = true;
         const binaryBuffer = await this._generateBinaryAsync();
+        this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength);
 
         const glbFileName = glTFPrefix + ".glb";
