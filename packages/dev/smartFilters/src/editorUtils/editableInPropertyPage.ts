@@ -1,4 +1,4 @@
-import type { Observable } from "core-for-sf/Misc/observable.js";
+import type { Observable } from "core/Misc/observable.js";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the node editor

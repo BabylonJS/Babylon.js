@@ -41,13 +41,10 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "npm:@babylonjs/core@8.0.1",
-        "@babylonjs/smart-filters": "^8.10.1",
-        "@dev/build-tools": "^1.0.0",
-        "@dev/smart-filters": "^1.0.0"
+        "@dev/build-tools": "^1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.1"
+        "@babylonjs/core": "^7.47.3 || ^8.0.1"
     },
     "dependencies": {
         "@babylonjs/smart-filters": "^8.10.1"

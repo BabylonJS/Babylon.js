@@ -1,7 +1,7 @@
-import type { Nullable } from "core-for-sf/types.js";
+import type { Nullable } from "core/types.js";
 import type { BaseBlock } from "../../blockFoundation/baseBlock.js";
 import type { SmartFilter } from "../../smartFilter.js";
-import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 import type { IEditorData } from "shared-ui-components-for-sf/nodeGraphSystem/interfaces/nodeLocationInfo.js";
 import type { SmartFilterDeserializer } from "../smartFilterDeserializer.js";
 import type { OutputTextureOptions } from "../../blockFoundation/textureOptions.js";

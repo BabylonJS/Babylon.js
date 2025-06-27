@@ -1,4 +1,4 @@
-import type { Effect } from "core-for-sf/Materials/effect.js";
+import type { Effect } from "core/Materials/effect.js";
 import type { ShaderCode } from "./buildTools/shaderCode.types.js";
 
 /**

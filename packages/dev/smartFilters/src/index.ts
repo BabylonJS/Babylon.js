@@ -13,4 +13,4 @@ export { SmartFilter, type InitializationData } from "./smartFilter.js";
 export * from "./version.js";
 
 // So that users of the Smart Filters core can easily modify the logger settings (e.g. to change the logging level)
-export { Logger } from "core-for-sf/Misc/logger.js";
+export { Logger } from "core/Misc/logger.js";

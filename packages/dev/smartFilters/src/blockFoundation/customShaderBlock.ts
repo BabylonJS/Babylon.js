@@ -1,4 +1,4 @@
-import type { Effect } from "core-for-sf/Materials/effect.js";
+import type { Effect } from "core/Materials/effect.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
@@ -8,7 +8,7 @@ import type { SmartFilter } from "../smartFilter.js";
 import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
 import type { RuntimeData } from "../connection/connectionPoint.js";
-import type { Nullable } from "core-for-sf/types.js";
+import type { Nullable } from "core/types.js";
 
 /**
  * The binding for a CustomShaderBlock

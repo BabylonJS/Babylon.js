@@ -1,5 +1,5 @@
-import type { Effect } from "core-for-sf/Materials/effect.js";
-import type { Nullable } from "core-for-sf/types.js";
+import type { Effect } from "core/Materials/effect.js";
+import type { Nullable } from "core/types.js";
 
 import type { SmartFilter } from "../smartFilter.js";
 import type { ShaderProgram } from "../utils/shaderCodeUtils.js";

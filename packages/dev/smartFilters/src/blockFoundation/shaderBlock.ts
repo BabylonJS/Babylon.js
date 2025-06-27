@@ -1,4 +1,4 @@
-import type { ThinRenderTargetTexture } from "core-for-sf/Materials/Textures/thinRenderTargetTexture.js";
+import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
 import "core/Engines/Extensions/engine.renderTarget.js";
 
 import type { InitializationData, SmartFilter } from "../smartFilter.js";
@@ -13,7 +13,7 @@ import { RegisterFinalRenderCommand } from "../utils/renderTargetUtils.js";
 import { BaseBlock } from "./baseBlock.js";
 import { TextureFormat, TextureType, type OutputTextureOptions } from "./textureOptions.js";
 import { EditableInPropertyPage, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
-import type { Nullable } from "core-for-sf/types.js";
+import type { Nullable } from "core/types.js";
 
 const OutputTexturePropertiesGroupName = "OUTPUT TEXTURE PROPERTIES";
 

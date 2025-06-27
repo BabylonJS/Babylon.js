@@ -24,8 +24,8 @@
         "./dist/utils/buildTools/**"
     ],
     "devDependencies": {
-        "core-for-sf": "npm:@babylonjs/core@8.0.1",
+        "@dev/core": "^1.0.0",
         "@dev/build-tools": "^1.0.0",
-        "shared-ui-components-for-sf": "npm:@babylonjs/shared-ui-components@8.0.1"
+        "@dev/shared-ui-components": "^1.0.0"
     }
 }

@@ -4,7 +4,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { Nullable } from "core-for-sf/types.js";
+import type { Nullable } from "core/types.js";
 import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType.js";
 import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
 

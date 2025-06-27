@@ -1,4 +1,4 @@
-import type { Nullable } from "core-for-sf/types.js";
+import type { Nullable } from "core/types.js";
 import { ConnectionPointCompatibilityState, GetCompatibilityIssueMessage } from "./connectionPointCompatibilityState.js";
 import { ConnectionPointDirection } from "./connectionPointDirection.js";
 import type { BaseBlock } from "../blockFoundation/baseBlock.js";

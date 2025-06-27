@@ -1,5 +1,5 @@
-import { EffectRenderer } from "core-for-sf/Materials/effectRenderer.js";
-import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
+import { EffectRenderer } from "core/Materials/effectRenderer.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 import { CommandBuffer } from "../command/commandBuffer.js";
 import type { IDisposable } from "../IDisposable.js";
 import type { Command } from "../command/command.js";

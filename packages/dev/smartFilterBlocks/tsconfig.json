@@ -3,8 +3,7 @@
 
     "compilerOptions": {
         "paths": {
-            "core/*": ["../node_modules/core-for-sf/*"],
-            "@babylonjs/core/*": ["../node_modules/core-for-sf/*"],
+            "core/*": ["dev/core/*"],
             "@babylonjs/smart-filters": ["dev/smartFilters/src"]
         }
     }

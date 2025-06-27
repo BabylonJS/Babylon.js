@@ -1,5 +1,5 @@
-import type { Nullable } from "core-for-sf/types.js";
-import { Logger } from "core-for-sf/Misc/logger.js";
+import type { Nullable } from "core/types.js";
+import { Logger } from "core/Misc/logger.js";
 import type { ShaderCode, ShaderFunction } from "./shaderCode.types.js";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
 import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";

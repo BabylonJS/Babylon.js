@@ -1,9 +1,9 @@
-import type { EffectRenderer } from "core-for-sf/Materials/effectRenderer.js";
-import type { RenderTargetWrapper } from "core-for-sf/Engines/renderTargetWrapper.js";
-import type { AbstractEngine } from "core-for-sf/Engines/abstractEngine.js";
-import type { Effect } from "core-for-sf/Materials/effect.js";
-import { EffectWrapper } from "core-for-sf/Materials/effectRenderer.js";
-import type { ThinRenderTargetTexture } from "core-for-sf/Materials/Textures/thinRenderTargetTexture.js";
+import type { EffectRenderer } from "core/Materials/effectRenderer.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import type { AbstractEngine } from "core/Engines/abstractEngine.js";
+import type { Effect } from "core/Materials/effect.js";
+import { EffectWrapper } from "core/Materials/effectRenderer.js";
+import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
 
 import type { IDisposable } from "../IDisposable.js";
 import type { ShaderProgram } from "../utils/shaderCodeUtils.js";

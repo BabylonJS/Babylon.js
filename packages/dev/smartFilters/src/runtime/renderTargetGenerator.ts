@@ -1,7 +1,7 @@
-import type { ThinTexture } from "core-for-sf/Materials/Textures/thinTexture.js";
-import type { Nullable } from "core-for-sf/types.js";
-import { ThinRenderTargetTexture } from "core-for-sf/Materials/Textures/thinRenderTargetTexture.js";
-import type { RenderTargetCreationOptions } from "core-for-sf/Materials/Textures/textureCreationOptions.js";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture.js";
+import type { Nullable } from "core/types.js";
+import { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
 
 import type { BaseBlock } from "../blockFoundation/baseBlock.js";
 import type { InitializationData, SmartFilter } from "../smartFilter.js";
