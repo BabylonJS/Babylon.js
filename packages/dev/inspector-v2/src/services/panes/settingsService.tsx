@@ -17,11 +17,6 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity, type ISettingsContext } from "../settingsContext";
 import { ShellServiceIdentity } from "../shellService";
-import { SettingsContextIdentity, type ISettingsContext } from "../settingsContext";
-import { Observable } from "core/Misc/observable";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
-import { DataStorage } from "core/Misc/dataStorage";
-import { Pane } from "../../components/pane";
 
 export const SettingsServiceIdentity = Symbol("SettingsService");
 

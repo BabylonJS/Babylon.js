@@ -13,12 +13,6 @@ import { useObservableCollection, useObservableState, useOrderedObservableCollec
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
-import { DebugPane } from "../../components/debug/debugPane";
-import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { SceneContextIdentity, type ISceneContext } from "../sceneContext";
-import { ObservableCollection } from "../../misc/observableCollection";
-import { type AccordionSection, type AccordionSectionContent } from "../../components/accordionPane";
-import type { Scene } from "core/scene";
 
 export const DebugServiceIdentity = Symbol("DebugService");
 
