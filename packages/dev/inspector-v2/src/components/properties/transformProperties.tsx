@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Quaternion, Vector3 } from "core/index";
 
 import type { FunctionComponent } from "react";

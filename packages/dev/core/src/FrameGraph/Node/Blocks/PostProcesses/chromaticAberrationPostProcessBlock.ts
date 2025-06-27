@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { Vector2 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../../Misc/typeStore";

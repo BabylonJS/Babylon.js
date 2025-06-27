@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
 
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
