@@ -6,12 +6,22 @@ import type { BezierCurveEase } from "core/Animations";
 /**
  * Class responsible for rendering lottie animations.
  */
-export class LottieRenderer implements IDisposable {
+export class LottieAnimation implements IDisposable {
+    // Animation information
     private _animation: LottieAnimationData;
-    private _currentFrame: number;
     private _animationNodes: Array<LottieNode>;
+    private _loop: boolean = false;
+    private _frameDuration: number;
+
+    // Variables for playing the animation
+    private _accumulatedTime: number;
+    private _isPlaying: boolean;
+    private _isCompleted: boolean;
+    private _currentFrame: number;
 
     // Variables used to avoid allocations when updating
+    private _animationStartFrame: number;
+    private _animationEndFrame: number;
     private _currentNode: LottieNode;
     private _currentVector2Keyframe: Vector2Keyframe | undefined;
     private _nextVector2Keyframe: Vector2Keyframe | undefined;
@@ -21,21 +31,86 @@ export class LottieRenderer implements IDisposable {
     /**
      * Creates an instance of LottieRenderer.
      * @param animation The LottieAnimation to be rendered.
+     * @param loop Whether the animation should loop or not.
      */
-    public constructor(animation: LottieAnimationData) {
+    public constructor(animation: LottieAnimationData, loop: boolean = false) {
         this._animation = animation;
+        this._loop = loop;
+
+        this._frameDuration = 1000 / this._animation.frameRate;
+        this._accumulatedTime = 0;
+        this._isPlaying = false;
+        this._isCompleted = false;
         this._currentFrame = 0;
+
         this._animationNodes = Array.from(this._animation.nodes.values());
         this._currentNode = this._animationNodes[0];
+        this._animationStartFrame = this._animation.startFrame;
+        this._animationEndFrame = this._animation.endFrame;
+    }
+
+    /**
+     * Starts playing the animation.
+     */
+    public play(): void {
+        this._isPlaying = true;
+        if (this._isCompleted && !this._loop) {
+            this._reset();
+        }
+    }
+
+    /**
+     * Pauses the animation.
+     */
+    public pause(): void {
+        this._isPlaying = false;
+    }
+
+    /**
+     * Stops the animation.
+     */
+    public stop(): void {
+        this._isPlaying = false;
+        this._reset();
+    }
+
+    private _reset(): void {
+        this._accumulatedTime = 0;
+        this._isCompleted = false;
+        this._currentFrame = 0;
     }
 
     /**
      * Updates the animation state based on the given time.
+     * @param delta The time delta since the last update, in milliseconds.
      */
-    public update(): void {
-        // For now ignore time and just think that each call to update is 1 frame
-        if (this._currentFrame < this._animation.startFrame || this._currentFrame > this._animation.endFrame) {
-            return; // Animation is not playing
+    public update(delta: number): void {
+        if (!this._isPlaying || this._isCompleted) {
+            return;
+        }
+
+        this._accumulatedTime += delta;
+        const framesToAdvance = Math.floor(this._accumulatedTime / this._frameDuration);
+
+        if (framesToAdvance <= 0) {
+            return; // No frames to advance
+        }
+
+        this._accumulatedTime -= framesToAdvance * this._frameDuration;
+        this._currentFrame += framesToAdvance;
+
+        if (this._currentFrame < this._animationStartFrame) {
+            return;
+        }
+
+        if (this._currentFrame > this._animationEndFrame) {
+            if (this._loop) {
+                this._currentFrame = this._animationStartFrame % (this._animationEndFrame - this._animationStartFrame);
+            } else {
+                this._isPlaying = false;
+                this._isCompleted = true;
+                return;
+            }
         }
 
         // Update the visibility of the animation components
@@ -252,9 +327,9 @@ export class LottieRenderer implements IDisposable {
         }
     }
 
-    private _calculateValueUpdate(startValue: number, endValue: number, startTime: number, endTime: number, easeFunction: BezierCurveEase | undefined): number {
+    private _calculateValueUpdate(startValue: number, endValue: number, startTime: number, endTime: number, easeFunction: BezierCurveEase): number {
         const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-        const easeGradientFactor = easeFunction?.ease(gradient) ?? gradient;
+        const easeGradientFactor = easeFunction.ease(gradient) ?? gradient;
         return startValue + easeGradientFactor * (endValue - startValue); // Lerping the value
     }
 

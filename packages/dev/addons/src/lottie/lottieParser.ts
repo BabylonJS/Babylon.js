@@ -326,16 +326,9 @@ export class LottieParser {
             keyframes.push({
                 value: rawKeyFrames[i].s[0],
                 time: rawKeyFrames[i].t,
-                easeFunction,
+                easeFunction: easeFunction!, // We assume that the ease function is always defined if we have keyframes
             });
         }
-
-        // DEBUGGING - Add one extra keyframe at the end to make sure the animation reaches the end value
-        // keyframes.push({
-        //     value: rawKeyFrames[i - 1].s[0],
-        //     time: rawKeyFrames[i - 1].t + 1,
-        //     easeFunction: keyframes[i - 2].easeFunction,
-        // });
 
         return {
             startValue: rawKeyFrames[0].s[0],
@@ -409,18 +402,10 @@ export class LottieParser {
             keyframes.push({
                 value: this._calculateFinalVector(rawKeyFrames[i].s[0], rawKeyFrames[i].s[1], vectorType),
                 time: rawKeyFrames[i].t,
-                easeFunction1,
-                easeFunction2,
+                easeFunction1: easeFunction1!, // We assume that the ease function is always defined if we have keyframes
+                easeFunction2: easeFunction2!, // We assume that the ease function is always defined if we have keyframes
             });
         }
-
-        // DEBUGGING - Add one extra keyframe at the end to make sure the animation reaches the end value
-        // keyframes.push({
-        //     value: this._calculateFinalVector(rawKeyFrames[i - 1].s[0], rawKeyFrames[i - 1].s[1], vectorType),
-        //     time: rawKeyFrames[i - 1].t + 1,
-        //     easeFunction1: keyframes[i - 2].easeFunction1,
-        //     easeFunction2: keyframes[i - 2].easeFunction2,
-        // });
 
         return {
             startValue: this._calculateFinalVector(rawKeyFrames[0].s[0], rawKeyFrames[0].s[1], vectorType),

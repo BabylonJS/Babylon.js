@@ -58,7 +58,7 @@ export type ScalarProperty = {
 export type ScalarKeyframe = {
     value: number;
     time: number;
-    easeFunction?: BezierCurveEase;
+    easeFunction: BezierCurveEase;
 };
 
 export type Vector2Property = {
@@ -69,6 +69,6 @@ export type Vector2Property = {
 export type Vector2Keyframe = {
     value: Vector2;
     time: number;
-    easeFunction1?: BezierCurveEase;
-    easeFunction2?: BezierCurveEase;
+    easeFunction1: BezierCurveEase;
+    easeFunction2: BezierCurveEase;
 };
