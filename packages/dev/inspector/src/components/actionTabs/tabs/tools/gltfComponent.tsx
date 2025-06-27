@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as React from "react";
 import type { Scene } from "core/scene";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
