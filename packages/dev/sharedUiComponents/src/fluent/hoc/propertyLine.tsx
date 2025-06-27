@@ -1,7 +1,7 @@
 import { Body1, Body1Strong, Button, InfoLabel, Link, ToggleButton, makeStyles, tokens } from "@fluentui/react-components";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
-import type { FunctionComponent, PropsWithChildren } from "react";
+import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef } from "react";
 import { copyCommandToClipboard } from "../../copyCommandToClipboard";
 import { ToolContext } from "./fluentToolWrapper";
@@ -81,10 +81,10 @@ export type PropertyLineProps = {
     docLink?: string;
 };
 
-export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren>((props, ref) => {
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren & HTMLProps<HTMLDivElement>>((props, ref) => {
     const classes = usePropertyLineStyles();
     return (
-        <div ref={ref} className={classes.container}>
+        <div ref={ref} className={classes.container} {...props}>
             {props.children}
         </div>
     );
