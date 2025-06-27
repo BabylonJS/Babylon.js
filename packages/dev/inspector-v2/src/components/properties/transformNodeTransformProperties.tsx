@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { TransformNode } from "core/index";
 
 import type { FunctionComponent } from "react";
@@ -22,7 +21,7 @@ export const TransformNodeTransformProperties: FunctionComponent<{ node: Transfo
     return (
         <>
             <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (node.position = val)} />
-            {node.rotationQuaternion ? (
+            {quatRotation ? (
                 <QuaternionPropertyLine
                     key="QuaternionRotationTransform"
                     label="Rotation (Quaternion)"

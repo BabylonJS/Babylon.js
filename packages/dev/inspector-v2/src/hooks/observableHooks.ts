@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IReadonlyObservable } from "core/index";
 
 import type { ObservableCollection } from "../misc/observableCollection";

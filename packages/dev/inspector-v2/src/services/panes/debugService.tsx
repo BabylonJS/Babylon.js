@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Scene } from "core/index";
 
 import type { AccordionSection, AccordionSectionContent } from "../../components/accordionPane";
