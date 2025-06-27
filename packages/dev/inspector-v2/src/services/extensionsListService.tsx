@@ -103,8 +103,21 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
         return stateChangedHandlerRegistration.dispose;
     }, [props.extension]);
 
-    const install = useCallback(async () => await props.extension.installAsync(), [props.extension]);
-    const uninstall = useCallback(async () => await props.extension.uninstallAsync(), [props.extension]);
+    const install = useCallback(async () => {
+        try {
+            await props.extension.installAsync();
+        } catch {
+            // Ignore errors. Other parts of the infrastructure handle them and communicate them to the user.
+        }
+    }, [props.extension]);
+
+    const uninstall = useCallback(async () => {
+        try {
+            await props.extension.uninstallAsync();
+        } catch {
+            // Ignore errors. Other parts of the infrastructure handle them and communicate them to the user.
+        }
+    }, [props.extension]);
 
     return (
         <>

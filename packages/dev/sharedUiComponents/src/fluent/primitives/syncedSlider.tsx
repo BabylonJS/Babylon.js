@@ -42,8 +42,9 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     }, [props.value]);
 
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
-        setValue(data.value);
-        props.onChange(data.value); // Notify parent
+        const value = data.value;
+        setValue(value);
+        props.onChange(value); // Notify parent
     };
 
     const handleInputChange = (value: string | number) => {
@@ -56,7 +57,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
 
     return (
         <div className={classes.syncedSlider}>
-            {props.min != undefined && props.max != undefined && <Slider {...props} size="small" className={classes.slider} value={value} onChange={handleSliderChange} />}
+            {props.min !== undefined && props.max !== undefined && <Slider {...props} size="small" className={classes.slider} value={value} onChange={handleSliderChange} />}
             <Input {...props} className={classes.input} value={value} onChange={handleInputChange} step={props.step} />
         </div>
     );
