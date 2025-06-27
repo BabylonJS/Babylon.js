@@ -22,7 +22,7 @@ export const TransformNodeTransformProperties: FunctionComponent<{ node: Transfo
     return (
         <>
             <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (node.position = val)} />
-            {node.rotationQuaternion ? (
+            {quatRotation ? (
                 <QuaternionPropertyLine
                     key="QuaternionRotationTransform"
                     label="Rotation (Quaternion)"
