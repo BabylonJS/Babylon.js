@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as OBJSerializers from "../../../../dev/serializers/src/OBJ/index";
 
 /**
@@ -12,7 +12,7 @@ if (typeof GlobalObject !== "undefined") {
     }
 }
 
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as STLSerializers from "../../../../dev/serializers/src/stl/index";
 
 /**
@@ -32,7 +32,7 @@ if (typeof GlobalObject !== "undefined") {
     }
 }
 
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as Exporters from "../../../../dev/serializers/src/glTF/glTFFileExporter";
 import * as Datas from "../../../../dev/serializers/src/glTF/2.0/glTFData";
 import * as Serializers from "../../../../dev/serializers/src/glTF/2.0/glTFSerializer";

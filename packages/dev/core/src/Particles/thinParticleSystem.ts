@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
 import type { Immutable, Nullable } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import type { Observer } from "../Misc/observable";
