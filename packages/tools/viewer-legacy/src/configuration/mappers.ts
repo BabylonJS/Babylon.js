@@ -1,7 +1,7 @@
 import { Tools } from "core/Misc/tools";
 import type { ViewerConfiguration } from "./configuration";
 
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { kebabToCamel } from "../helper/index";
 
 /**

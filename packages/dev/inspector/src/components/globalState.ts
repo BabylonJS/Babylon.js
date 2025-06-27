@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
 import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
