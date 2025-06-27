@@ -1,6 +1,7 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { _SpatialAudioSubNode } from "../../abstractAudio/subNodes/spatialAudioSubNode";
 import { _SpatialAudioDefaults } from "../../abstractAudio/subProperties/abstractSpatialAudio";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
@@ -27,6 +28,12 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
     private _lastRotationQuaternion: Quaternion = new Quaternion();
+    private _orientationX: _WebAudioParameterComponent;
+    private _orientationY: _WebAudioParameterComponent;
+    private _orientationZ: _WebAudioParameterComponent;
+    private _positionX: _WebAudioParameterComponent;
+    private _positionY: _WebAudioParameterComponent;
+    private _positionZ: _WebAudioParameterComponent;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -46,6 +53,28 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         super(engine);
 
         this.node = new PannerNode(engine._audioContext);
+
+        this._orientationX = new _WebAudioParameterComponent(engine, this.node.orientationX);
+        this._orientationY = new _WebAudioParameterComponent(engine, this.node.orientationY);
+        this._orientationZ = new _WebAudioParameterComponent(engine, this.node.orientationZ);
+
+        this._positionX = new _WebAudioParameterComponent(engine, this.node.positionX);
+        this._positionY = new _WebAudioParameterComponent(engine, this.node.positionY);
+        this._positionZ = new _WebAudioParameterComponent(engine, this.node.positionZ);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._orientationX.dispose();
+        this._orientationY.dispose();
+        this._orientationZ.dispose();
+        this._positionX.dispose();
+        this._positionY.dispose();
+        this._positionZ.dispose();
+
+        this.node.disconnect();
     }
 
     /** @internal */
@@ -141,9 +170,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return;
         }
 
-        this.engine._setAudioParam(this.node.positionX, this.position.x);
-        this.engine._setAudioParam(this.node.positionY, this.position.y);
-        this.engine._setAudioParam(this.node.positionZ, this.position.z);
+        this._positionX.targetValue = this.position.x;
+        this._positionY.targetValue = this.position.y;
+        this._positionZ.targetValue = this.position.z;
 
         this._lastPosition.copyFrom(this.position);
     }
@@ -163,9 +192,9 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
         Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, TmpVector);
 
-        this.engine._setAudioParam(this.node.orientationX, TmpVector.x);
-        this.engine._setAudioParam(this.node.orientationY, TmpVector.y);
-        this.engine._setAudioParam(this.node.orientationZ, TmpVector.z);
+        this._orientationX.targetValue = TmpVector.x;
+        this._orientationY.targetValue = TmpVector.y;
+        this._orientationZ.targetValue = TmpVector.z;
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
