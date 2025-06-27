@@ -1,15 +1,14 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
 import type { ISelectionService } from "../../selectionService";
+import type { IPropertiesService } from "./propertiesService";
 
 import { Bone } from "core/Bones/bone";
-
-import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
-import { PropertiesServiceIdentity } from "./propertiesService";
-import { SelectionServiceIdentity } from "../../selectionService";
 import { BoneGeneralProperties } from "../../../components/properties/boneProperties";
 import { TransformProperties } from "../../../components/properties/transformProperties";
 import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
+import { SelectionServiceIdentity } from "../../selectionService";
+import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
 const TransformPropertiesSectionIdentity = Symbol("Transform");
 

@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Quaternion, TransformNode, Vector3 } from "core/index";
+import type { Nullable, Quaternion, Vector3 } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-
-import { useQuaternionProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../hooks/observableHooks";
 import type { ISettingsContext } from "../../services/settingsContext";
 
-export type Transform = { position: Vector3; rotation: Vector3; rotationQuaternion: Quaternion; scaling: Vector3 };
+import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { useQuaternionProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
+import { useObservableState } from "../../hooks/observableHooks";
+
+export type Transform = { position: Vector3; rotation: Vector3; rotationQuaternion: Nullable<Quaternion>; scaling: Vector3 };
 
 export const TransformProperties: FunctionComponent<{ transform: Transform; settings: ISettingsContext }> = (props) => {
     const { transform, settings } = props;
@@ -24,7 +24,7 @@ export const TransformProperties: FunctionComponent<{ transform: Transform; sett
     return (
         <>
             <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (transform.position = val)} />
-            {transform.rotationQuaternion ? (
+            {quatRotation ? (
                 <QuaternionPropertyLine
                     key="QuaternionRotationTransform"
                     label="Rotation (Quaternion)"

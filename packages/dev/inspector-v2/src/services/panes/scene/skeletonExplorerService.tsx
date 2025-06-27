@@ -1,9 +1,13 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { Bone } from "core/index";
+
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
+import { DataLineRegular, PersonWalkingRegular } from "@fluentui/react-icons";
+
 import { Skeleton } from "core/Bones/skeleton";
-import { Bone } from "core/Bones/bone";
+import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const SkeletonHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
     friendlyName: "Skeleton Hierarchy",
@@ -16,6 +20,7 @@ export const SkeletonHierarchyServiceDefinition: ServiceDefinition<[], [ISceneEx
             getEntityChildren: (skeletonOrBone) => skeletonOrBone.getChildren(),
             getEntityParent: (skeletonOrBone) => (skeletonOrBone instanceof Skeleton ? null : skeletonOrBone.getParent() || skeletonOrBone.getSkeleton()),
             getEntityDisplayName: (skeletonOrBone) => skeletonOrBone.name,
+            entityIcon: ({ entity: skeletonOrBone }) => (skeletonOrBone instanceof Skeleton ? <PersonWalkingRegular /> : <DataLineRegular />),
             getEntityAddedObservables: (scene) => [scene.onNewSkeletonAddedObservable],
             getEntityRemovedObservables: (scene) => [scene.onSkeletonRemovedObservable],
         });

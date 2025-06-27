@@ -1,27 +1,32 @@
 import type { ISkeletonViewerDisplayOptions, Skeleton } from "core/index";
-import { SkeletonViewer } from "core/Debug/skeletonViewer";
-
 import type { FunctionComponent } from "react";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/ButtonLine";
-import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropDownPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+
+import { makeStyles } from "@fluentui/react-components";
 import { Collapse } from "@fluentui/react-motion-components-preview";
-import { useState, useReducer } from "react";
+import { useReducer, useState } from "react";
+
+import { SkeletonViewer } from "core/Debug/skeletonViewer";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { BoundProperty } from "./boundProperty";
 
 export const SkeletonGeneralProperties: FunctionComponent<{ skeleton: Skeleton }> = (props) => {
     const { skeleton } = props;
+
     return (
         <>
             <TextPropertyLine key="SkeletonBoneCount" label="Bone count" description="The number of bones of the skeleton." value={skeleton.bones.length.toString()} />
-            <SwitchPropertyLine
-                key="SkeletonUseTextureToStoreBoneMatrices"
+            <BoundProperty
+                key="SkeletonUseTextureToStoreBoneMatrices2"
+                component={SwitchPropertyLine}
                 label="Use texture to store bone matrices"
-                description="Whether to use texture to store bone matrices or not."
-                value={skeleton.useTextureToStoreBoneMatrices}
-                onChange={(checked) => (skeleton.useTextureToStoreBoneMatrices = checked)}
+                target={skeleton}
+                propertyKey="useTextureToStoreBoneMatrices"
             />
             <ButtonLine key="SkeletonReturnToRest" label="Return to rest" onClick={() => skeleton.returnToRest()} />
         </>
@@ -32,13 +37,21 @@ const ViewerDisplayModes = [
     { label: "Lines", value: SkeletonViewer.DISPLAY_LINES },
     { label: "Spheres", value: SkeletonViewer.DISPLAY_SPHERES },
     { label: "Sphere and Spurs", value: SkeletonViewer.DISPLAY_SPHERE_AND_SPURS },
-];
+] as const satisfies DropdownOption[];
+
+const useStyles = makeStyles({
+    contentDiv: {
+        overflow: "hidden",
+    },
+});
 
 interface IViewerOptions extends Required<ISkeletonViewerDisplayOptions> {
     displayMode: number;
 }
 
 export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }> = (props) => {
+    const classes = useStyles();
+
     const { skeleton } = props;
     const scene = skeleton.getScene();
 
@@ -115,17 +128,17 @@ export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }>
             />
 
             <Collapse visible={enabled}>
-                <div>
-                    <DropdownPropertyLine
+                <div className={classes.contentDiv}>
+                    <NumberDropdownPropertyLine
                         key="SkeletonViewerDisplayMode"
                         label="Display Mode"
                         options={ViewerDisplayModes}
                         description="Show lines, spheres, or sphere and spurs."
-                        value={ViewerDisplayModes.find((value) => value.value === options.displayMode) || ViewerDisplayModes[0]}
-                        onChange={(value) => updateOptions({ displayMode: value.value as number })}
+                        value={options.displayMode}
+                        onChange={(value) => updateOptions({ displayMode: value })}
                     />
                     <Collapse visible={options.displayMode !== SkeletonViewer.DISPLAY_LINES}>
-                        <div>
+                        <div className={classes.contentDiv}>
                             <FloatInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsMidStep"
                                 label="Mid Step"

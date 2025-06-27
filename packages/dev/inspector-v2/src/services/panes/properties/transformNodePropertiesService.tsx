@@ -2,10 +2,9 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 
 import { TransformNode } from "core/Meshes/transformNode";
-
-import { PropertiesServiceIdentity } from "./propertiesService";
 import { TransformProperties } from "../../../components/properties/transformProperties";
 import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const TransformPropertiesSectionIdentity = Symbol("Transform");
 
