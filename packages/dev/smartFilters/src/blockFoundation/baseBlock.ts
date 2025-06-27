@@ -1,4 +1,4 @@
-import type { Nullable } from "core/types.js";
+import type { Nullable } from "core-for-sf/types.js";
 import { ConnectionPointType, type ConnectionPointValue } from "../connection/connectionPointType.js";
 import type { InitializationData, SmartFilter } from "../smartFilter.js";
 import type { ICommandOwner } from "../command/command.js";

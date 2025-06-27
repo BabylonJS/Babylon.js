@@ -1,4 +1,4 @@
-import { ThinEngine } from "core/Engines/thinEngine.js";
+import { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
 
 /**
  * Initializes a ThinEngine for the preview canvas.

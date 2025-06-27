@@ -18,7 +18,7 @@ import { NodeListComponent } from "./components/nodeList/nodeListComponent.js";
 import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
-import type { Nullable } from "core/types";
+import type { Nullable } from "core-for-sf/types";
 import type { BaseBlock, SmartFilter } from "@babylonjs/smart-filters";
 import { inputsNamespace } from "@babylonjs/smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
@@ -29,13 +29,13 @@ import { PreviewAreaComponent } from "./components/preview/previewAreaComponent.
 import { InitializePreview } from "./initializePreview.js";
 import { PreviewAreaControlComponent } from "./components/preview/previewAreaControlComponent.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
-import type { IInspectorOptions } from "core/Debug/debugLayer.js";
+import type { IInspectorOptions } from "core-for-sf/Debug/debugLayer.js";
 import { DecodeBlockKey } from "./helpers/blockKeyConverters.js";
 import { OutputBlockName } from "./configuration/constants.js";
 import type { BlockNodeData } from "./graphSystem/blockNodeData";
-import { DataStorage } from "core/Misc/dataStorage.js";
+import { DataStorage } from "core-for-sf/Misc/dataStorage.js";
 import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
-import { ThinEngine } from "core/Engines/thinEngine.js";
+import { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;

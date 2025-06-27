@@ -1,4 +1,4 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
+import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
 import { WebCamRuntime } from "./webCamRuntime.js";
 import {
     ConnectionPointType,
@@ -10,7 +10,7 @@ import {
     type IEditablePropertyListOption,
     Logger,
 } from "@babylonjs/smart-filters";
-import { Observable } from "core/Misc/observable.js";
+import { Observable } from "core-for-sf/Misc/observable.js";
 import { WebCamInputBlockName } from "../blockNames.js";
 
 /**

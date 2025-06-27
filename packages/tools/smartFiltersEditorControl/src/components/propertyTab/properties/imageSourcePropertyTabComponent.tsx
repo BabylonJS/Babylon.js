@@ -2,13 +2,13 @@ import * as react from "react";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent.js";
 import { NumericInput } from "shared-ui-components/lines/numericInputComponent.js";
 import { type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
-import { Tools } from "core/Misc/tools.js";
+import { Tools } from "core-for-sf/Misc/tools.js";
 import type { GlobalState, TexturePreset } from "../../../globalState.js";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
-import type { IInspectableOptions } from "core/Misc/iInspectable.js";
+import type { IInspectableOptions } from "core-for-sf/Misc/iInspectable.js";
 import { CheckBoxLineComponent } from "../../../sharedComponents/checkBoxLineComponent.js";
 
-import type { Nullable } from "core/types.js";
+import type { Nullable } from "core-for-sf/types.js";
 import { GetTextureInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
 import { LazyTextInputLineComponent } from "../../../sharedComponents/lazyTextInputLineComponent.js";
 import { Debounce } from "../../../helpers/debounce.js";

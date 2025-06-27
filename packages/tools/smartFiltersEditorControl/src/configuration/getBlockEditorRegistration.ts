@@ -1,11 +1,11 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
-import type { Nullable } from "core/types.js";
+import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
+import type { Nullable } from "core-for-sf/types.js";
 import { type BaseBlock, type SmartFilter, type SmartFilterDeserializer, Logger } from "@babylonjs/smart-filters";
 import { inputsNamespace, type IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import type { BlockEditorRegistration } from "./blockEditorRegistration";
 import { CustomInputDisplayManager } from "./customInputDisplayManager.js";
 import { CustomBlocksNamespace, OutputBlockName } from "./constants.js";
-import type { Observable } from "core/Misc/observable";
+import type { Observable } from "core-for-sf/Misc/observable";
 import { LogEntry } from "../components/log/logComponent.js";
 
 /**

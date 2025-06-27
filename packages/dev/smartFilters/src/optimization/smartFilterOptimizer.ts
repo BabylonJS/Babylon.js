@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types.js";
-import { Logger } from "core/Misc/logger.js";
+import type { Nullable } from "core-for-sf/types.js";
+import { Logger } from "core-for-sf/Misc/logger.js";
 
 import type { ConnectionPoint } from "../connection/connectionPoint.js";
 import type { ShaderBinding } from "../runtime/shaderRuntime.js";

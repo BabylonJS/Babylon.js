@@ -7,7 +7,8 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "paths": {
-            "core/*": ["node_modules/core/*"]
+            "core/*": ["node_modules/core-for-sf/*"],
+            "shared-ui-components-for-sf/*": ["/node_modules/shared-ui-components-for-sf/*"]
         }
     },
 

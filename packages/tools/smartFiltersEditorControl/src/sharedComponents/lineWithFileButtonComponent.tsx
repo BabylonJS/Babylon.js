@@ -1,4 +1,4 @@
-import { DataStorage } from "core/Misc/dataStorage.js";
+import { DataStorage } from "core-for-sf/Misc/dataStorage.js";
 import * as react from "react";
 
 interface ILineWithFileButtonComponentProps {

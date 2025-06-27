@@ -1,10 +1,10 @@
 /* eslint-disable import/no-internal-modules */
-import type { ThinEngine } from "core/Engines/thinEngine.js";
+import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
 import type { SmartFilterDeserializer, SerializedBlockDefinition } from "../serialization/index.js";
 import type { SmartFilter } from "../smartFilter.js";
 import { AggregateBlock } from "./aggregateBlock.js";
 import type { BaseBlock } from "./baseBlock.js";
-import type { Nullable } from "core/types.js";
+import type { Nullable } from "core-for-sf/types.js";
 
 /**
  * Loads a serialized Smart Filter into a block which can be used in another SmartFilter.

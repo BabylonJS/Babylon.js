@@ -34,7 +34,7 @@
         "webpack-cli": "^5.1.0",
         "webpack-dev-server": "^4.7.4",
         "webpack-bundle-analyzer": "^4.10.0",
-        "core": "npm:@babylonjs/core@8.0.1",
+        "core-for-sf": "npm:@babylonjs/core@8.0.1",
         "@dev/smart-filters": "^1.0.0",
         "@dev/smart-filters-blocks": "^1.0.0",
         "@tools/smart-filters-editor-control": "^1.0.0"

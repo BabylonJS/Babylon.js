@@ -1,5 +1,5 @@
-import type { ThinEngine } from "core/Engines/thinEngine.js";
-import type { Nullable } from "core/types.js";
+import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
+import type { Nullable } from "core-for-sf/types.js";
 import type { SmartFilterRuntime } from "./runtime/smartFilterRuntime.js";
 import type { BaseBlock } from "./blockFoundation/baseBlock.js";
 import type { ConnectionPointType } from "./connection/connectionPointType.js";
@@ -8,10 +8,10 @@ import { OutputBlock } from "./blockFoundation/outputBlock.js";
 import { InternalSmartFilterRuntime } from "./runtime/smartFilterRuntime.js";
 import { RenderTargetGenerator } from "./runtime/renderTargetGenerator.js";
 import { AggregateBlock } from "./blockFoundation/aggregateBlock.js";
-import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo.js";
+import type { IEditorData } from "shared-ui-components-for-sf/nodeGraphSystem/interfaces/nodeLocationInfo.js";
 import type { IDisposable } from "./IDisposable.js";
 import { ShaderBlock } from "./blockFoundation/shaderBlock.js";
-import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";
+import type { ThinRenderTargetTexture } from "core-for-sf/Materials/Textures/thinRenderTargetTexture.js";
 import { GetBlockOutputTextureSize } from "./utils/textureUtils.js";
 
 /**

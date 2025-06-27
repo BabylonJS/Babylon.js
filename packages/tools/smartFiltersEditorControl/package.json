@@ -31,7 +31,7 @@
         "react-dom": "^18.2.0"
     },
     "devDependencies": {
-        "core": "npm:@babylonjs/core@8.0.1",
+        "core-for-sf": "npm:@babylonjs/core@8.0.1",
         "@dev/smart-filters": "^1.0.0"
     }
 }

@@ -1,4 +1,4 @@
-import type { Nullable } from "core/types";
+import type { Nullable } from "core-for-sf/types";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";

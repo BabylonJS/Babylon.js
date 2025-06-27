@@ -1,5 +1,5 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
-import type { Nullable } from "core/types";
+import type { ThinEngine } from "core-for-sf/Engines/thinEngine";
+import type { Nullable } from "core-for-sf/types";
 import type { BaseBlock, SmartFilter } from "@babylonjs/smart-filters";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 

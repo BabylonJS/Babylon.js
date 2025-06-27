@@ -1,6 +1,6 @@
-import type { ThinTexture } from "core/Materials/Textures/thinTexture.js";
-import type { IColor3Like, IColor4Like, IVector2Like } from "core/Maths/math.like.js";
-import type { Nullable } from "core/types.js";
+import type { ThinTexture } from "core-for-sf/Materials/Textures/thinTexture.js";
+import type { IColor3Like, IColor4Like, IVector2Like } from "core-for-sf/Maths/math.like.js";
+import type { Nullable } from "core-for-sf/types.js";
 
 /**
  * Defines the type of a connection point.

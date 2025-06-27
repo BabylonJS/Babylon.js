@@ -6,7 +6,7 @@ import type { DisableableShaderBlock } from "./disableableShaderBlock.js";
 import { BaseBlock } from "./baseBlock.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import { ConnectionPointType } from "../connection/connectionPointType.js";
-import type { Nullable } from "core/types.js";
+import type { Nullable } from "core-for-sf/types.js";
 
 /**
  * Type predicate to check if value is a strong ref or a direct value

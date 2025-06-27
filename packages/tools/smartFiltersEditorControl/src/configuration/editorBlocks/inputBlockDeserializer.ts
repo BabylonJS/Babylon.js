@@ -1,5 +1,5 @@
 import type { SmartFilter, ISerializedBlockV1, BaseBlock } from "@babylonjs/smart-filters";
-import type { Nullable } from "core/types";
+import type { Nullable } from "core-for-sf/types";
 import { WebCamInputBlockName } from "./blockNames.js";
 
 /**

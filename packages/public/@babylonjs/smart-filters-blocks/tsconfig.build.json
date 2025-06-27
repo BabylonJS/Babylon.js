@@ -27,7 +27,7 @@
             }
         ],
         "paths": {
-            "@babylonjs/core/*": ["../node_modules/core/*"]
+            "@babylonjs/core/*": ["../node_modules/core-for-sf/*"]
         }
     },
 

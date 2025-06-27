@@ -1,7 +1,7 @@
 import * as react from "react";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent.js";
 import type { ConnectionPointType, InputBlock } from "@babylonjs/smart-filters";
-import { Color3 } from "core/Maths/math.color.js";
+import { Color3 } from "core-for-sf/Maths/math.color.js";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 interface IColor3PropertyTabComponentProps {

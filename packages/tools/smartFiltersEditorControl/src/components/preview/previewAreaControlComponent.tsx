@@ -2,8 +2,8 @@ import * as react from "react";
 import { DefaultPreviewAspectRatio, type GlobalState } from "../../globalState.js";
 
 import popUpIcon from "../../assets/imgs/popOut.svg";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core-for-sf/types";
+import type { Observer } from "core-for-sf/Misc/observable";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 

@@ -1,7 +1,7 @@
 import { ConnectionPointType, type SmartFilter, type InputBlock } from "@babylonjs/smart-filters";
 import { WebCamInputBlock } from "../configuration/editorBlocks/webCamInputBlock/webCamInputBlock.js";
-import type { Observable } from "core/Misc/observable.js";
-import type { ThinEngine } from "core/Engines/thinEngine.js";
+import type { Observable } from "core-for-sf/Misc/observable.js";
+import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
 
 /**
  * Registers animations for the Smart Filter Editor specific to the editor blocks, such as the time and webcam blocks.

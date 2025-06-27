@@ -1,6 +1,6 @@
-import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
-import { type ThinEngine } from "core/Engines/thinEngine.js";
-import type { Nullable } from "core/types.js";
+import { ThinTexture } from "core-for-sf/Materials/Textures/thinTexture.js";
+import { type ThinEngine } from "core-for-sf/Engines/thinEngine.js";
+import type { Nullable } from "core-for-sf/types.js";
 
 /**
  * Helper that takes in a URL to an image and returns a ThinTexture
