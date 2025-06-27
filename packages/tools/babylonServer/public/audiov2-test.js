@@ -7,6 +7,7 @@ var audioTestResult;
 var audioTestSounds = [];
 var audioTestSuspendTime = 0;
 var BABYLON;
+var errorMessage;
 
 const SilenceAudioOutput = true;
 
@@ -48,17 +49,21 @@ class AudioV2Test {
         return sourceUrl;
     }
 
-    static async AfterEachAsync() {
+    static AfterEach() {
+        audioEngine?.dispose();
+        audioEngine = null;
+        audioTestConfig = null;
+    }
+
+    static BeforeEach() {
         audioContext = null;
         audioRecorder = null;
         audioRecorderDestination = null;
-        audioTestConfig = null;
         audioTestResult = null;
         audioTestSounds.length = 0;
         audioTestSuspendTime = 0;
 
-        audioEngine?.dispose();
-        audioEngine = null;
+        errorMessage = "No error";
     }
 
     static async CreateAudioEngineAsync(contextType, duration, options = {}) {
@@ -421,6 +426,11 @@ class AudioV2Test {
         return new Promise((resolve) => {
             resolve(audioTestResult);
         });
+    }
+
+    static async GetErrorMessageAsync() {
+        await AudioV2Test.GetResultAsync();
+        return errorMessage;
     }
 
     static async WaitAsync(seconds, callback) {
