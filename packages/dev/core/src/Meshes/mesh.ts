@@ -2063,9 +2063,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, this.forcedInstanceCount || instancesCount);
         } else if (this._useVertexPulling) {
             // We're rendering the number of indices in the index buffer but the vertex shader is handling the data itself.
-            engine._useVertexPulling = true;
             engine.drawArraysType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
-            engine._useVertexPulling = false;
         } else {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         }

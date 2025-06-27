@@ -194,7 +194,7 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtTextureArray: InternalTexture[];
     public readonly mrtTextureCount: number = 0;
 
-    public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0, useVertexPulling: boolean = false): GPURenderPipeline {
+    public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
         sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
         if (this.disabled) {
@@ -215,7 +215,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._setRasterizationState(fillMode, sampleCount);
         this._setColorStates();
         this._setDepthStencilState();
-        this._setVertexState(effect, useVertexPulling);
+        this._setVertexState(effect);
         this._setTextureState(textureState);
 
         this.lastStateDirtyLowestIndex = this._stateDirtyLowestIndex;
@@ -853,13 +853,13 @@ export abstract class WebGPUCacheRenderPipeline {
         }
     }
 
-    private _setVertexState(effect: Effect, useVertexPulling: boolean = false): void {
+    private _setVertexState(effect: Effect): void {
         const currStateLen = this._statesLength;
         let newNumStates = StatePosition.VertexState;
 
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
-        const attributes = useVertexPulling ? [] : webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
-        const locations = useVertexPulling ? [] : webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
+        const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
+        const locations = webgpuPipelineContext.shaderProcessingContext.attributeLocationsFromEffect;
 
         let currentGPUBuffer;
         let numVertexBuffers = 0;
