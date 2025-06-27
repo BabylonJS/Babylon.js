@@ -320,6 +320,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     private _commandBuffers: GPUCommandBuffer[] = [null as any, null as any];
 
+    private _dummyVertexBuffer: DataBuffer;
+
     // Frame Buffer Life Cycle (recreated for each render target pass)
 
     private _mainRenderPassWrapper: IWebGPURenderPassWrapper = {
@@ -3701,7 +3703,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._currentMaterialContext.textureState = textureState;
 
-        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
+        // If vertex pulling, get a cached pipeline with empty vertex layout
+        // Pass a boolean here to getRenderPipeline that will cause the vertex layout to be empty
+        const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState, this._useVertexPulling);
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRendering.record) {
@@ -3728,6 +3732,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             );
         }
 
+        // If vertex pulling, bind a cached empty vertex buffer
+        if (this._useVertexPulling) {
+            if (!this._dummyVertexBuffer) {
+                this._dummyVertexBuffer = this.createVertexBuffer(new Float32Array(0), false, "DummyVertexPullingBuffer");
+            }
+            renderPass2.setVertexBuffer(0, this._dummyVertexBuffer.underlyingResource, 0, 0);
+        }
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
         for (let index = 0; index < vertexBuffers.length; index++) {
             const vertexBuffer = vertexBuffers[index];
