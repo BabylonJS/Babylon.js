@@ -14,7 +14,6 @@ import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
  * @param propertyKey The key of the function/property to intercept.
  * @returns An observable that fires when the function/property is called/set.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useInterceptObservable<T extends object>(type: "function" | "property", target: T | null | undefined, propertyKey: keyof T): IReadonlyObservable<void> {
     // Create a cached observable. It effectively has the lifetime of the component that uses this hook.
     const observable = useMemo(() => new Observable<void>(), []);

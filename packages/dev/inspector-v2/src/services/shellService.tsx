@@ -416,7 +416,6 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string }
 // This hook provides a side pane container and the tab list.
 // In "compact" mode, the tab list is integrated into the pane itself.
 // In "full" mode, the returned tab list is later injected into the toolbar.
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function usePane(
     alignment: "left" | "right",
     defaultWidth: number,
