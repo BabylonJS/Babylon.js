@@ -44,10 +44,10 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape, scalingFactor: 
         for (const shape of rawGroup.it) {
             switch (shape.ty) {
                 case "rc":
-                    DrawRectangle(ctx, shape as RawRectangleShape, scalingFactor);
+                    DrawRectangle(ctx, shape as RawRectangleShape);
                     break;
                 case "sh":
-                    DrawPath(ctx, shape as RawPathShape, boundingBox, scalingFactor);
+                    DrawPath(ctx, shape as RawPathShape, boundingBox);
                     break;
                 case "fl":
                     DrawFill(ctx, shape as RawFillShape);
@@ -70,7 +70,7 @@ export function DrawGroup(name: string, rawGroup: RawGroupShape, scalingFactor: 
     };
 }
 
-function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape, scalingFactor: Vector2): void {
+function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape): void {
     const size = shape.s.k as number[];
     const radius = shape.r.k as number;
 
@@ -81,7 +81,7 @@ function DrawRectangle(ctx: ICanvasRenderingContext, shape: RawRectangleShape, s
     }
 }
 
-function DrawPath(ctx: ICanvasRenderingContext, shape: RawPathShape, boundingBox: BoundingBox, scalingFactor: Vector2): void {
+function DrawPath(ctx: ICanvasRenderingContext, shape: RawPathShape, boundingBox: BoundingBox): void {
     const pathData = shape.ks.k as RawBezier;
     const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
     const yTranslate = boundingBox.height / 2 - boundingBox.centerY;

@@ -168,6 +168,7 @@ export class LottieParser {
 
             if (shape.ty === "gr") {
                 this._processGroupShape(parent, shape as RawGroupShape, scalingFactor);
+                //break; // TEST - We only support one group per layer for now
             } else {
                 this._errors.push(`${ShapeUnsupportedTopLevelType} - Name: ${shape.nm} Type: ${shape.ty}`);
                 continue;

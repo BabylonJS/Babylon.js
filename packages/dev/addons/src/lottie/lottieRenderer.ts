@@ -1,13 +1,22 @@
 import type { IDisposable } from "core/scene";
-import type { LottieAnimationData, LottieNode } from "./types/processedLottie";
+import type { LottieAnimationData, LottieNode, ScalarKeyframe, Vector2Keyframe } from "./types/processedLottie";
 import { Mesh } from "core/Meshes";
+import type { BezierCurveEase } from "core/Animations";
 
 /**
  * Class responsible for rendering lottie animations.
  */
 export class LottieRenderer implements IDisposable {
-    private _animation: LottieAnimationData | null;
+    private _animation: LottieAnimationData;
     private _currentFrame: number;
+    private _animationNodes: Array<LottieNode>;
+
+    // Variables used to avoid allocations when updating
+    private _currentNode: LottieNode;
+    private _currentVector2Keyframe: Vector2Keyframe | undefined;
+    private _nextVector2Keyframe: Vector2Keyframe | undefined;
+    private _currentScalarKeyframe: ScalarKeyframe | undefined;
+    private _nextScalarKeyframe: ScalarKeyframe | undefined;
 
     /**
      * Creates an instance of LottieRenderer.
@@ -16,50 +25,46 @@ export class LottieRenderer implements IDisposable {
     public constructor(animation: LottieAnimationData) {
         this._animation = animation;
         this._currentFrame = 0;
+        this._animationNodes = Array.from(this._animation.nodes.values());
+        this._currentNode = this._animationNodes[0];
     }
 
     /**
      * Updates the animation state based on the given time.
      */
     public update(): void {
-        if (!this._animation) {
-            return;
-        }
-
         // For now ignore time and just think that each call to update is 1 frame
         if (this._currentFrame < this._animation.startFrame || this._currentFrame > this._animation.endFrame) {
             return; // Animation is not playing
         }
 
         // Update the visibility of the animation components
-        for (const layer of this._animation.nodes.values()) {
-            if (this._currentFrame < layer.inFrame || this._currentFrame > layer.outFrame) {
-                if (layer.nodeAnchor instanceof Mesh && layer.nodeAnchor.isVisible === true) {
-                    layer.nodeAnchor.isVisible = false; // Hide the node if the layer is not visible
+        for (let i = 0; i < this._animationNodes.length; i++) {
+            this._currentNode = this._animationNodes[i];
+            if (this._currentFrame < this._currentNode.inFrame || this._currentFrame > this._currentNode.outFrame) {
+                if (this._currentNode.nodeAnchor instanceof Mesh && this._currentNode.nodeAnchor.isVisible === true) {
+                    this._currentNode.nodeAnchor.isVisible = false; // Hide the node if the layer is not visible
                 }
             }
 
-            if (this._currentFrame >= layer.inFrame && this._currentFrame <= layer.outFrame) {
-                if (layer.isHidden === false && layer.nodeAnchor instanceof Mesh && layer.nodeAnchor.isVisible === false) {
-                    layer.nodeAnchor.isVisible = true; // Hide the node if the layer is not visible
+            if (this._currentFrame >= this._currentNode.inFrame && this._currentFrame <= this._currentNode.outFrame) {
+                if (this._currentNode.isHidden === false && this._currentNode.nodeAnchor instanceof Mesh && this._currentNode.nodeAnchor.isVisible === false) {
+                    this._currentNode.nodeAnchor.isVisible = true; // Hide the node if the layer is not visible
                 }
             }
-        }
 
-        // Update all nodes transforms
-        for (const layer of this._animation.nodes.values()) {
-            this._updateNode(layer);
+            this._updateNode(this._currentNode);
         }
 
         this._currentFrame++;
     }
 
-    private _updateNode(layer: LottieNode): void {
-        this._updatePosition(layer);
-        this._updateRotation(layer);
-        this._updateScale(layer);
-        this._updateAnchor(layer);
-        this._updateOpacity(layer);
+    private _updateNode(node: LottieNode): void {
+        this._updatePosition(node);
+        this._updateRotation(node);
+        this._updateScale(node);
+        this._updateAnchor(node);
+        this._updateOpacity(node);
     }
 
     private _updatePosition(node: LottieNode): void {
@@ -71,26 +76,27 @@ export class LottieRenderer implements IDisposable {
                 }
 
                 for (let i = 0; i < node.transform.position.keyframes.length - 1; i++) {
-                    const currentFrame = node.transform.position.keyframes[i];
-                    const nextFrame = node.transform.position.keyframes[i + 1];
+                    this._currentVector2Keyframe = node.transform.position.keyframes[i];
+                    this._nextVector2Keyframe = node.transform.position.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
-                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                    if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
                         // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        const startTime = currentFrame.time;
-                        const startValueX = currentFrame.value.x;
-                        const startValueY = currentFrame.value.y;
+                        node.nodeTrs!.position.x = this._calculateValueUpdate(
+                            this._currentVector2Keyframe.value.x,
+                            this._nextVector2Keyframe.value.x,
+                            this._currentVector2Keyframe.time,
+                            this._nextVector2Keyframe.time,
+                            this._currentVector2Keyframe.easeFunction1
+                        );
 
-                        const endTime = nextFrame.time;
-                        const endValueX = nextFrame.value.x;
-                        const endValueY = nextFrame.value.y;
-
-                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-                        const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
-                        const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
-
-                        node.nodeTrs!.position.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
-                        node.nodeTrs!.position.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
+                        node.nodeTrs!.position.y = this._calculateValueUpdate(
+                            this._currentVector2Keyframe.value.y,
+                            this._nextVector2Keyframe.value.y,
+                            this._currentVector2Keyframe.time,
+                            this._nextVector2Keyframe.time,
+                            this._currentVector2Keyframe.easeFunction2
+                        );
 
                         break;
                     }
@@ -108,23 +114,21 @@ export class LottieRenderer implements IDisposable {
                 }
 
                 for (let i = 0; i < node.transform.rotation.keyframes.length - 1; i++) {
-                    const currentFrame = node.transform.rotation.keyframes[i];
-                    const nextFrame = node.transform.rotation.keyframes[i + 1];
+                    this._currentScalarKeyframe = node.transform.rotation.keyframes[i];
+                    this._nextScalarKeyframe = node.transform.rotation.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
-                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                    if (this._currentFrame >= this._currentScalarKeyframe.time && this._currentFrame < this._nextScalarKeyframe.time) {
                         // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        const startTime = currentFrame.time;
-                        const startValue = currentFrame.value;
+                        const interpolatedValue = this._calculateValueUpdate(
+                            this._currentScalarKeyframe.value,
+                            this._nextScalarKeyframe.value,
+                            this._currentScalarKeyframe.time,
+                            this._nextScalarKeyframe.time,
+                            this._currentScalarKeyframe.easeFunction
+                        );
 
-                        const endTime = nextFrame.time;
-                        const endValue = nextFrame.value;
-
-                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-                        const easeGradientFactor = currentFrame.easeFunction?.ease(gradient) ?? gradient;
-
-                        node.nodeTrs!.rotation.z = -(this._lerp(startValue, endValue, easeGradientFactor) * Math.PI) / 180;
-
+                        node.nodeTrs!.rotation.z = -(interpolatedValue * Math.PI) / 180;
                         break;
                     }
                 }
@@ -141,26 +145,29 @@ export class LottieRenderer implements IDisposable {
                 }
 
                 for (let i = 0; i < node.transform.scale.keyframes.length - 1; i++) {
-                    const currentFrame = node.transform.scale.keyframes[i];
-                    const nextFrame = node.transform.scale.keyframes[i + 1];
+                    this._currentVector2Keyframe = node.transform.scale.keyframes[i];
+                    this._nextVector2Keyframe = node.transform.scale.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
-                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                    if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
                         // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        const startTime = currentFrame.time;
-                        const startValueX = currentFrame.value.x;
-                        const startValueY = currentFrame.value.y;
+                        node.nodeTrs!.scaling.x =
+                            this._calculateValueUpdate(
+                                this._currentVector2Keyframe.value.x,
+                                this._nextVector2Keyframe.value.x,
+                                this._currentVector2Keyframe.time,
+                                this._nextVector2Keyframe.time,
+                                this._currentVector2Keyframe.easeFunction1
+                            ) / 100;
 
-                        const endTime = nextFrame.time;
-                        const endValueX = nextFrame.value.x;
-                        const endValueY = nextFrame.value.y;
-
-                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-                        const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
-                        const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
-
-                        node.nodeTrs!.scaling.x = this._lerp(startValueX, endValueX, easeGradientFactorX) / 100;
-                        node.nodeTrs!.scaling.y = this._lerp(startValueY, endValueY, easeGradientFactorY) / 100;
+                        node.nodeTrs!.scaling.y =
+                            this._calculateValueUpdate(
+                                this._currentVector2Keyframe.value.y,
+                                this._nextVector2Keyframe.value.y,
+                                this._currentVector2Keyframe.time,
+                                this._nextVector2Keyframe.time,
+                                this._currentVector2Keyframe.easeFunction2
+                            ) / 100;
 
                         break;
                     }
@@ -178,26 +185,27 @@ export class LottieRenderer implements IDisposable {
                 }
 
                 for (let i = 0; i < node.transform.anchorPoint.keyframes.length - 1; i++) {
-                    const currentFrame = node.transform.anchorPoint.keyframes[i];
-                    const nextFrame = node.transform.anchorPoint.keyframes[i + 1];
+                    this._currentVector2Keyframe = node.transform.anchorPoint.keyframes[i];
+                    this._nextVector2Keyframe = node.transform.anchorPoint.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
-                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                    if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
                         // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        const startTime = currentFrame.time;
-                        const startValueX = currentFrame.value.x;
-                        const startValueY = currentFrame.value.y;
+                        node.nodeAnchor!.position.x = this._calculateValueUpdate(
+                            this._currentVector2Keyframe.value.x,
+                            this._nextVector2Keyframe.value.x,
+                            this._currentVector2Keyframe.time,
+                            this._nextVector2Keyframe.time,
+                            this._currentVector2Keyframe.easeFunction1
+                        );
 
-                        const endTime = nextFrame.time;
-                        const endValueX = nextFrame.value.x;
-                        const endValueY = nextFrame.value.y;
-
-                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-                        const easeGradientFactorX = currentFrame.easeFunction1?.ease(gradient) ?? gradient;
-                        const easeGradientFactorY = currentFrame.easeFunction2?.ease(gradient) ?? gradient;
-
-                        node.nodeAnchor!.position.x = this._lerp(startValueX, endValueX, easeGradientFactorX);
-                        node.nodeAnchor!.position.y = this._lerp(startValueY, endValueY, easeGradientFactorY);
+                        node.nodeAnchor!.position.y = this._calculateValueUpdate(
+                            this._currentVector2Keyframe.value.y,
+                            this._nextVector2Keyframe.value.y,
+                            this._currentVector2Keyframe.time,
+                            this._nextVector2Keyframe.time,
+                            this._currentVector2Keyframe.easeFunction2
+                        );
 
                         break;
                     }
@@ -215,28 +223,27 @@ export class LottieRenderer implements IDisposable {
                 }
 
                 for (let i = 0; i < node.transform.opacity.keyframes.length - 1; i++) {
-                    const currentFrame = node.transform.opacity.keyframes[i];
-                    const nextFrame = node.transform.opacity.keyframes[i + 1];
+                    this._currentScalarKeyframe = node.transform.opacity.keyframes[i];
+                    this._nextScalarKeyframe = node.transform.opacity.keyframes[i + 1];
 
                     // Find the right keyframe we are currently in
-                    if (this._currentFrame >= currentFrame.time && this._currentFrame < nextFrame.time) {
+                    if (this._currentFrame >= this._currentScalarKeyframe.time && this._currentFrame < this._nextScalarKeyframe.time) {
                         // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        const startTime = currentFrame.time;
-                        const startValue = currentFrame.value;
+                        //const alpha =
+                        this._calculateValueUpdate(
+                            this._currentScalarKeyframe.value,
+                            this._nextScalarKeyframe.value,
+                            this._currentScalarKeyframe.time,
+                            this._nextScalarKeyframe.time,
+                            this._currentScalarKeyframe.easeFunction
+                        ) / 100;
 
-                        const endTime = nextFrame.time;
-                        const endValue = nextFrame.value;
-
-                        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-                        const easeGradientFactor = currentFrame.easeFunction?.ease(gradient) ?? gradient;
-                        const alpha = this._lerp(startValue, endValue, easeGradientFactor) / 100;
-
-                        const children = node.nodeAnchor && node.nodeAnchor.getChildMeshes(false);
-                        if (children && children.length > 0) {
-                            for (const child of children) {
-                                child.material && (child.material.alpha = alpha);
-                            }
-                        }
+                        // const children = node.nodeAnchor && node.nodeAnchor.getChildMeshes(false);
+                        // if (children && children.length > 0) {
+                        //     for (const child of children) {
+                        //         child.material && (child.material.alpha = alpha);
+                        //     }
+                        // }
 
                         break;
                     }
@@ -245,8 +252,10 @@ export class LottieRenderer implements IDisposable {
         }
     }
 
-    private _lerp(start: number, end: number, t: number): number {
-        return start + t * (end - start);
+    private _calculateValueUpdate(startValue: number, endValue: number, startTime: number, endTime: number, easeFunction: BezierCurveEase | undefined): number {
+        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
+        const easeGradientFactor = easeFunction?.ease(gradient) ?? gradient;
+        return startValue + easeGradientFactor * (endValue - startValue); // Lerping the value
     }
 
     /**
@@ -254,6 +263,5 @@ export class LottieRenderer implements IDisposable {
      */
     dispose(): void {
         // TODO: free the animation resources
-        this._animation = null;
     }
 }
