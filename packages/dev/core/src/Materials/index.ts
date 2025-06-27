@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Background/index";
 export * from "./colorCurves";
 export * from "./iEffectFallbacks";

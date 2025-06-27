@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene } from "core/index";
 
 import { AbstractEngine } from "core/Engines/abstractEngine";

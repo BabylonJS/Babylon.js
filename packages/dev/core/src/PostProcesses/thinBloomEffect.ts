@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine } from "core/index";
 import { ThinBloomMergePostProcess } from "./thinBloomMergePostProcess";
 import { Vector2 } from "core/Maths/math.vector";

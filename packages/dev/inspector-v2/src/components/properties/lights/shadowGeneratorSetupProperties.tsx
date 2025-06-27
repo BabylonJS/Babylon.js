@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
 
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";

@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
-// eslint-disable-next-line import/no-internal-modules
 import type { Vector3, Color3, Nullable, Quaternion } from "core/index";
 
 import { useInterceptObservable } from "./instrumentationHooks";

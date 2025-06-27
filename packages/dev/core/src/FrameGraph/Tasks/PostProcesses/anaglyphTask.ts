@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphRenderPass, FrameGraphTextureHandle } from "core/index";
 import { ThinAnaglyphPostProcess } from "core/PostProcesses/thinAnaglyphPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";

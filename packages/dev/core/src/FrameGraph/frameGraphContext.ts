@@ -1,12 +1,4 @@
-import type {
-    AbstractEngine,
-    FrameGraphTextureManager,
-    Scene,
-    FrameGraphTextureHandle,
-    Nullable,
-    InternalTexture,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { AbstractEngine, FrameGraphTextureManager, Scene, FrameGraphTextureHandle, Nullable, InternalTexture } from "core/index";
 
 /**
  * Base class for frame graph context.

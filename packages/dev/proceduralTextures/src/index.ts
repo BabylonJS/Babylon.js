@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./brick/index";
 export * from "./cloud/index";
 export * from "./fire/index";

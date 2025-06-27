@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./nodeParticleBlock";
 export * from "./nodeParticleSystemSet";
 export * from "./nodeParticleBlockConnectionPoint";
