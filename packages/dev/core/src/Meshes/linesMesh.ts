@@ -227,6 +227,20 @@ export class LinesMesh extends Mesh {
     }
 
     /**
+     * Disposes of the line mesh
+     * @param doNotRecurse If children should be disposed
+     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
+     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
+        if (!doNotDisposeMaterial) {
+            this.material?.dispose(false, false, true);
+        }
+        super.dispose(doNotRecurse);
+    }
+
+    /**
      * Returns a new LineMesh object cloned from the current one.
      * @param name defines the cloned mesh name
      * @param newParent defines the new mesh parent
