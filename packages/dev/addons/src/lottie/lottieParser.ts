@@ -44,6 +44,9 @@ export class LottieParser {
     private _childIndex = 1000;
     private _zIndex = 0;
 
+    private _defaultScale = new Vector2(100, 100);
+    private _defaultPosition = Vector2.Zero();
+
     /**
      * Creates an instance of LottieParser.
      */
@@ -61,15 +64,15 @@ export class LottieParser {
      */
     public printProcessingReport(): void {
         if (this._errors.length === 0) {
-            console.log("LottieParser: No errors found. Processed lottie object:");
+            console.log("LottieParser - No errors found.");
+        } else {
+            console.log("LottieParser - Errors:");
+            for (let i = 0; i < this._errors.length; i++) {
+                console.log(this._errors[i]);
+            }
         }
 
-        console.log("LottieParser errors:");
-        for (const error of this._errors) {
-            console.log(error);
-        }
-
-        console.log("Processed data:");
+        console.log("LottieParser - Processed data:");
         console.log(this._processedData);
     }
 
@@ -119,6 +122,22 @@ export class LottieParser {
 
         const transform = this._processRawLottieTransform(rawLayer.ks);
 
+        const nodeTrs = new TransformNode(`TRS - ${rawLayer.nm}`);
+        nodeTrs.position.x = transform.position?.startValue.x ?? 0;
+        nodeTrs.position.y = transform.position?.startValue.y ?? 0;
+        nodeTrs.position.z = this._zIndex;
+        nodeTrs.rotation.z = -((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+        nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+
+        const nodeAnchor = new TransformNode(`Anchor - ${rawLayer.nm}`);
+        nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
+        nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
+        nodeAnchor.position.z = 0; // Anchor position is always at z=0
+        nodeAnchor.parent = nodeTrs; // Set the anchor as a child of the TRS node
+
+        this._zIndex += 5; // Decrement zIndex for each layer
+
         const newNode: LottieNode = {
             name: rawLayer.nm ?? "No name",
             parentIndex: rawLayer.parent,
@@ -130,31 +149,14 @@ export class LottieParser {
             timeStretch: rawLayer.sr ?? 1,
             autoOrient: rawLayer.ao === 1,
             transform: transform,
+            nodeTrs: nodeTrs,
+            nodeAnchor: nodeAnchor,
         };
-
-        newNode.nodeTrs = new TransformNode(`TRS - ${rawLayer.nm}`);
-
-        newNode.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
-        newNode.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
-        newNode.nodeTrs.position.z = this._zIndex;
-        this._zIndex += 5; // Decrement zIndex for each layer
-
-        newNode.nodeTrs.rotation.z = -((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
-
-        newNode.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-        newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
-
-        newNode.nodeAnchor = new TransformNode(`Anchor - ${rawLayer.nm}`);
-        newNode.nodeAnchor.position.x = transform.anchorPoint?.startValue.x ?? 0;
-        newNode.nodeAnchor.position.y = transform.anchorPoint?.startValue.y ?? 0;
-        newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
-
-        newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
 
         this._processedData.nodes.set(newNode.index, newNode);
 
         const scalingFactor = new Vector2((transform.scale?.startValue.x ?? 100) / 100, (transform.scale?.startValue.x ?? 100) / 100);
-        //const scalingFactor = new Vector2(1, 1);
+
         if (rawLayer.shapes && rawLayer.shapes.length > 0) {
             this._processRawLottieShapes(newNode, rawLayer.shapes, scalingFactor);
         }
@@ -168,7 +170,6 @@ export class LottieParser {
 
             if (shape.ty === "gr") {
                 this._processGroupShape(parent, shape as RawGroupShape, scalingFactor);
-                //break; // TEST - We only support one group per layer for now
             } else {
                 this._errors.push(`${ShapeUnsupportedTopLevelType} - Name: ${shape.nm} Type: ${shape.ty}`);
                 continue;
@@ -189,7 +190,7 @@ export class LottieParser {
                 this._errors.push(`Group ${rawGroup.nm} contains another shape ${shape.nm} which is a group. Nested groups are not supported`);
             } else if (shape.ty === "tr") {
                 this._validateNonAnimatedTransform(transform); // We do not support animated transforms for groups
-                transform = this._processLottieTransformShape(shape as RawTransformShape);
+                transform = this._processRawLottieTransform(shape as RawTransformShape);
             } else if (shape.ty === "sh") {
                 this._validatePathShape(shape as RawPathShape);
             } else if (shape.ty === "rc") {
@@ -208,42 +209,28 @@ export class LottieParser {
             return;
         }
 
-        const newNode: LottieNode = {
-            name: `${parent.name} - ${rawGroup.nm}`,
-            parentIndex: parent.index,
-            index: this._childIndex++,
-            isHidden: rawGroup.hd ?? false,
-            inFrame: parent.inFrame,
-            outFrame: parent.outFrame,
-            startTime: parent.startTime ?? 0,
-            timeStretch: parent.timeStretch ?? 1,
-            autoOrient: parent.autoOrient,
-            transform: transform,
-        };
+        const nodeName = `${parent.name} - ${rawGroup.nm}`;
 
-        newNode.nodeTrs = new TransformNode(`TRS - ${rawGroup.nm}`);
-
-        newNode.nodeTrs.position.x = transform.position?.startValue.x ?? 0;
-        newNode.nodeTrs.position.y = transform.position?.startValue.y ?? 0;
-        newNode.nodeTrs.position.z = this._zIndex;
-        this._zIndex += 5; // Increment zIndex for each layer
-
-        newNode.nodeTrs.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
-
-        newNode.nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
-        newNode.nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
+        const nodeTrs = new TransformNode(`TRS - ${nodeName}`);
+        nodeTrs.position.x = transform.position?.startValue.x ?? 0;
+        nodeTrs.position.y = transform.position?.startValue.y ?? 0;
+        nodeTrs.position.z = this._zIndex;
+        nodeTrs.rotation.z = ((transform.rotation?.startValue ?? 0) * Math.PI) / 180;
+        nodeTrs.scaling.x = (transform.scale?.startValue.x ?? 100) / 100;
+        nodeTrs.scaling.y = (transform.scale?.startValue.y ?? 100) / 100;
 
         let mesh: Mesh | undefined = undefined;
-        const renderData = DrawGroup(newNode.name, rawGroup, scalingFactor);
+        const renderData = DrawGroup(nodeName, rawGroup, scalingFactor);
 
         if (renderData !== undefined) {
-            mesh = MeshBuilder.CreatePlane(`Anchor - ${newNode.name}`, { height: renderData.boundingBox.height, width: renderData.boundingBox.width });
+            mesh = MeshBuilder.CreatePlane(`Anchor - ${nodeName}`, { height: renderData.boundingBox.height, width: renderData.boundingBox.width });
         } else {
-            mesh = MeshBuilder.CreatePlane(`Anchor with Fake Texture - ${newNode.name}`, { height: 50, width: 50 });
+            this._errors.push(`Group ${nodeName} could not be rendered correctly`);
+            mesh = MeshBuilder.CreatePlane(`Anchor with Fake Texture - ${nodeName}`, { height: 50, width: 50 });
         }
 
         mesh.isVisible = false;
-        const material = new StandardMaterial(`Material - ${newNode.name}`);
+        const material = new StandardMaterial(`Material - ${nodeName}`);
 
         if (renderData) {
             renderData.texture.hasAlpha = true;
@@ -256,40 +243,46 @@ export class LottieParser {
 
         mesh.material = material;
 
-        newNode.nodeAnchor = mesh;
-        newNode.nodeAnchor.position.x = (transform.anchorPoint?.startValue.x ?? 0) + (renderData?.boundingBox.centerX ?? 0);
-        newNode.nodeAnchor.position.y = (transform.anchorPoint?.startValue.y ?? 0) - (renderData?.boundingBox.centerY ?? 0);
-        newNode.nodeAnchor.position.z = 0; // Anchor position is always at z=0
+        mesh.position.x = (transform.anchorPoint?.startValue.x ?? 0) + (renderData?.boundingBox.centerX ?? 0);
+        mesh.position.y = (transform.anchorPoint?.startValue.y ?? 0) - (renderData?.boundingBox.centerY ?? 0);
+        mesh.position.z = 0; // Anchor position is always at z=0
+        mesh.parent = nodeTrs; // Set the anchor as a child of the TRS node
 
-        newNode.nodeAnchor.parent = newNode.nodeTrs; // Set the anchor as a child of the TRS node
-        /* End fake sprites debugging */
+        this._zIndex += 5; // Increment zIndex for each layer
+
+        const newNode: LottieNode = {
+            name: nodeName,
+            parentIndex: parent.index,
+            index: this._childIndex++,
+            isHidden: rawGroup.hd ?? false,
+            inFrame: parent.inFrame,
+            outFrame: parent.outFrame,
+            startTime: parent.startTime ?? 0,
+            timeStretch: parent.timeStretch ?? 1,
+            autoOrient: parent.autoOrient,
+            transform: transform,
+            nodeTrs: nodeTrs,
+            nodeAnchor: mesh,
+        };
 
         this._processedData.nodes.set(newNode.index, newNode);
     }
 
     private _processRawLottieTransform(transform: RawTransform): Transform {
         return {
-            opacity: this._fromLottieScalarToBabylonScalar(transform.o),
-            rotation: this._fromLottieScalarToBabylonScalar(transform.r),
-            scale: this._fromLottieVector2ToBabylonVector2(transform.s, "Scale"),
-            position: this._fromLottieVector2ToBabylonVector2(transform.p, "Position"),
-            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a, "AnchorPoint"),
+            opacity: this._fromLottieScalarToBabylonScalar(transform.o, 1),
+            rotation: this._fromLottieScalarToBabylonScalar(transform.r, 0),
+            scale: this._fromLottieVector2ToBabylonVector2(transform.s, "Scale", this._defaultScale),
+            position: this._fromLottieVector2ToBabylonVector2(transform.p, "Position", this._defaultPosition),
+            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a, "AnchorPoint", this._defaultPosition),
         };
     }
 
-    private _processLottieTransformShape(transform: RawTransformShape): Transform {
-        return {
-            opacity: this._fromLottieScalarToBabylonScalar(transform.o),
-            rotation: this._fromLottieScalarToBabylonScalar(transform.r),
-            scale: this._fromLottieVector2ToBabylonVector2(transform.s, "Scale"),
-            position: this._fromLottieVector2ToBabylonVector2(transform.p, "Position"),
-            anchorPoint: this._fromLottieVector2ToBabylonVector2(transform.a, "AnchorPoint"),
-        };
-    }
-
-    private _fromLottieScalarToBabylonScalar(property: RawScalarProperty | undefined): ScalarProperty | undefined {
+    private _fromLottieScalarToBabylonScalar(property: RawScalarProperty | undefined, defaultValue: number): ScalarProperty {
         if (!property) {
-            return undefined;
+            return {
+                startValue: defaultValue,
+            };
         }
 
         if (property.a === 0) {
@@ -336,14 +329,18 @@ export class LottieParser {
         };
     }
 
-    private _fromLottieVector2ToBabylonVector2(property: RawVectorProperty | undefined, vectorType: VectorType): Vector2Property | undefined {
+    private _fromLottieVector2ToBabylonVector2(property: RawVectorProperty | undefined, vectorType: VectorType, defaultValue: Vector2): Vector2Property {
         if (!property) {
-            return undefined;
+            return {
+                startValue: defaultValue,
+            };
         }
 
         if (property.l !== undefined && property.l !== 2) {
             this._errors.push(`${PropertyInvalidVector2Length} - Length: ${property.l}`);
-            return undefined;
+            return {
+                startValue: defaultValue,
+            };
         }
 
         if (property.a === 0) {

@@ -17,9 +17,6 @@ export type RenderData = {
 };
 
 export function DrawGroup(name: string, rawGroup: RawGroupShape, scalingFactor: Vector2): RenderData | undefined {
-    // eslint-disable-next-line no-console
-    console.log(`Drawing group: ${name}`);
-
     const boundingBox = GetBoundingBox(rawGroup);
 
     if (boundingBox.width <= 0 || boundingBox.height <= 0) {

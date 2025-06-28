@@ -1,7 +1,6 @@
 import type { IDisposable } from "core/scene";
 import type { LottieAnimationData, LottieNode, ScalarKeyframe, Vector2Keyframe } from "./types/processedLottie";
 import { Mesh } from "core/Meshes";
-import type { BezierCurveEase } from "core/Animations";
 
 /**
  * Class responsible for rendering lottie animations.
@@ -18,15 +17,19 @@ export class LottieAnimation implements IDisposable {
     private _isPlaying: boolean;
     private _isCompleted: boolean;
     private _currentFrame: number;
+    private _framesToAdvance: number;
 
     // Variables used to avoid allocations when updating
     private _animationStartFrame: number;
     private _animationEndFrame: number;
-    private _currentNode: LottieNode;
+    private _currentVector2Keyframes: Vector2Keyframe[] | undefined;
     private _currentVector2Keyframe: Vector2Keyframe | undefined;
     private _nextVector2Keyframe: Vector2Keyframe | undefined;
+    private _currentScalarKeyframes: ScalarKeyframe[] | undefined;
     private _currentScalarKeyframe: ScalarKeyframe | undefined;
     private _nextScalarKeyframe: ScalarKeyframe | undefined;
+    private _gradient: number;
+    private _easeGradientFactor: number;
 
     /**
      * Creates an instance of LottieRenderer.
@@ -44,7 +47,6 @@ export class LottieAnimation implements IDisposable {
         this._currentFrame = 0;
 
         this._animationNodes = Array.from(this._animation.nodes.values());
-        this._currentNode = this._animationNodes[0];
         this._animationStartFrame = this._animation.startFrame;
         this._animationEndFrame = this._animation.endFrame;
     }
@@ -90,14 +92,14 @@ export class LottieAnimation implements IDisposable {
         }
 
         this._accumulatedTime += delta;
-        const framesToAdvance = Math.floor(this._accumulatedTime / this._frameDuration);
+        this._framesToAdvance = Math.floor(this._accumulatedTime / this._frameDuration);
 
-        if (framesToAdvance <= 0) {
+        if (this._framesToAdvance <= 0) {
             return; // No frames to advance
         }
 
-        this._accumulatedTime -= framesToAdvance * this._frameDuration;
-        this._currentFrame += framesToAdvance;
+        this._accumulatedTime -= this._framesToAdvance * this._frameDuration;
+        this._currentFrame += this._framesToAdvance;
 
         if (this._currentFrame < this._animationStartFrame) {
             return;
@@ -113,28 +115,26 @@ export class LottieAnimation implements IDisposable {
             }
         }
 
-        // Update the visibility of the animation components
         for (let i = 0; i < this._animationNodes.length; i++) {
-            this._currentNode = this._animationNodes[i];
-            if (this._currentFrame < this._currentNode.inFrame || this._currentFrame > this._currentNode.outFrame) {
-                if (this._currentNode.nodeAnchor instanceof Mesh && this._currentNode.nodeAnchor.isVisible === true) {
-                    this._currentNode.nodeAnchor.isVisible = false; // Hide the node if the layer is not visible
-                }
-            }
-
-            if (this._currentFrame >= this._currentNode.inFrame && this._currentFrame <= this._currentNode.outFrame) {
-                if (this._currentNode.isHidden === false && this._currentNode.nodeAnchor instanceof Mesh && this._currentNode.nodeAnchor.isVisible === false) {
-                    this._currentNode.nodeAnchor.isVisible = true; // Hide the node if the layer is not visible
-                }
-            }
-
-            this._updateNode(this._currentNode);
+            this._updateNode(this._animationNodes[i]);
         }
 
         this._currentFrame++;
     }
 
     private _updateNode(node: LottieNode): void {
+        if (this._currentFrame < node.inFrame || this._currentFrame > node.outFrame) {
+            if (node.nodeAnchor instanceof Mesh && node.nodeAnchor.isVisible === true) {
+                node.nodeAnchor.isVisible = false; // Hide the node if the layer is not visible
+            }
+        }
+
+        if (this._currentFrame >= node.inFrame && this._currentFrame <= node.outFrame) {
+            if (node.isHidden === false && node.nodeAnchor instanceof Mesh && node.nodeAnchor.isVisible === false) {
+                node.nodeAnchor.isVisible = true; // Hide the node if the layer is not visible
+            }
+        }
+
         this._updatePosition(node);
         this._updateRotation(node);
         this._updateScale(node);
@@ -143,194 +143,178 @@ export class LottieAnimation implements IDisposable {
     }
 
     private _updatePosition(node: LottieNode): void {
-        if (node.transform) {
-            if (node.transform.position?.keyframes !== undefined && node.transform.position.keyframes.length > 0) {
-                // We have keyframes, so the position is animated
-                if (this._currentFrame < node.transform.position.keyframes[0].time) {
-                    return; // Animation not started yet
-                }
+        this._currentVector2Keyframes = node.transform.position.keyframes;
+        if (this._currentVector2Keyframes === undefined || this._currentVector2Keyframes.length === 0) {
+            return;
+        }
 
-                for (let i = 0; i < node.transform.position.keyframes.length - 1; i++) {
-                    this._currentVector2Keyframe = node.transform.position.keyframes[i];
-                    this._nextVector2Keyframe = node.transform.position.keyframes[i + 1];
+        // We have keyframes, so the position is animated
+        if (this._currentFrame < this._currentVector2Keyframes[0].time) {
+            return; // Animation not started yet
+        }
 
-                    // Find the right keyframe we are currently in
-                    if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
-                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        node.nodeTrs!.position.x = this._calculateValueUpdate(
-                            this._currentVector2Keyframe.value.x,
-                            this._nextVector2Keyframe.value.x,
-                            this._currentVector2Keyframe.time,
-                            this._nextVector2Keyframe.time,
-                            this._currentVector2Keyframe.easeFunction1
-                        );
+        for (let i = 0; i < this._currentVector2Keyframes.length - 1; i++) {
+            this._currentVector2Keyframe = this._currentVector2Keyframes[i];
+            this._nextVector2Keyframe = this._currentVector2Keyframes[i + 1];
 
-                        node.nodeTrs!.position.y = this._calculateValueUpdate(
-                            this._currentVector2Keyframe.value.y,
-                            this._nextVector2Keyframe.value.y,
-                            this._currentVector2Keyframe.time,
-                            this._nextVector2Keyframe.time,
-                            this._currentVector2Keyframe.easeFunction2
-                        );
+            // Find the right keyframe we are currently in
+            if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
+                // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
 
-                        break;
-                    }
-                }
+                this._gradient = (this._currentFrame - this._currentVector2Keyframe.time) / (this._nextVector2Keyframe.time - this._currentVector2Keyframe.time);
+
+                // Position X component interpolation
+                this._easeGradientFactor = this._currentVector2Keyframe.easeFunction1.ease(this._gradient);
+                node.nodeTrs.position.x =
+                    this._currentVector2Keyframe.value.x + this._easeGradientFactor * (this._nextVector2Keyframe.value.x - this._currentVector2Keyframe.value.x);
+
+                // Position Y component interpolation
+                this._easeGradientFactor = this._currentVector2Keyframe.easeFunction2.ease(this._gradient);
+                node.nodeTrs.position.y =
+                    this._currentVector2Keyframe.value.y + this._easeGradientFactor * (this._nextVector2Keyframe.value.y - this._currentVector2Keyframe.value.y);
+
+                break;
             }
         }
     }
 
     private _updateRotation(node: LottieNode): void {
-        if (node.transform) {
-            if (node.transform.rotation?.keyframes !== undefined && node.transform.rotation.keyframes.length > 0) {
-                // We have keyframes, so the scale is animated
-                if (this._currentFrame < node.transform.rotation.keyframes[0].time) {
-                    return; // Animation not started yet
-                }
+        this._currentScalarKeyframes = node.transform.rotation.keyframes;
+        if (this._currentScalarKeyframes === undefined || this._currentScalarKeyframes.length === 0) {
+            return;
+        }
 
-                for (let i = 0; i < node.transform.rotation.keyframes.length - 1; i++) {
-                    this._currentScalarKeyframe = node.transform.rotation.keyframes[i];
-                    this._nextScalarKeyframe = node.transform.rotation.keyframes[i + 1];
+        // We have keyframes, so the scale is animated
+        if (this._currentFrame < this._currentScalarKeyframes[0].time) {
+            return; // Animation not started yet
+        }
 
-                    // Find the right keyframe we are currently in
-                    if (this._currentFrame >= this._currentScalarKeyframe.time && this._currentFrame < this._nextScalarKeyframe.time) {
-                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        const interpolatedValue = this._calculateValueUpdate(
-                            this._currentScalarKeyframe.value,
-                            this._nextScalarKeyframe.value,
-                            this._currentScalarKeyframe.time,
-                            this._nextScalarKeyframe.time,
-                            this._currentScalarKeyframe.easeFunction
-                        );
+        for (let i = 0; i < this._currentScalarKeyframes.length - 1; i++) {
+            this._currentScalarKeyframe = this._currentScalarKeyframes[i];
+            this._nextScalarKeyframe = this._currentScalarKeyframes[i + 1];
 
-                        node.nodeTrs!.rotation.z = -(interpolatedValue * Math.PI) / 180;
-                        break;
-                    }
-                }
+            // Find the right keyframe we are currently in
+            if (this._currentFrame >= this._currentScalarKeyframe.time && this._currentFrame < this._nextScalarKeyframe.time) {
+                // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
+
+                this._gradient = (this._currentFrame - this._currentScalarKeyframe.time) / (this._nextScalarKeyframe.time - this._currentScalarKeyframe.time);
+
+                // Rotation value interpolation
+                this._easeGradientFactor = this._currentScalarKeyframe.easeFunction.ease(this._gradient);
+                node.nodeTrs.rotation.z =
+                    -((this._currentScalarKeyframe.value + this._easeGradientFactor * (this._nextScalarKeyframe.value - this._currentScalarKeyframe.value)) * Math.PI) / 180;
+
+                break;
             }
         }
     }
 
     private _updateScale(node: LottieNode): void {
-        if (node.transform) {
-            if (node.transform.scale?.keyframes !== undefined && node.transform.scale.keyframes.length > 0) {
-                // We have keyframes, so the scale is animated
-                if (this._currentFrame < node.transform.scale.keyframes[0].time) {
-                    return; // Animation not started yet
-                }
+        this._currentVector2Keyframes = node.transform.scale.keyframes;
+        if (this._currentVector2Keyframes === undefined || this._currentVector2Keyframes.length === 0) {
+            return;
+        }
 
-                for (let i = 0; i < node.transform.scale.keyframes.length - 1; i++) {
-                    this._currentVector2Keyframe = node.transform.scale.keyframes[i];
-                    this._nextVector2Keyframe = node.transform.scale.keyframes[i + 1];
+        // We have keyframes, so the scale is animated
+        if (this._currentFrame < this._currentVector2Keyframes[0].time) {
+            return; // Animation not started yet
+        }
 
-                    // Find the right keyframe we are currently in
-                    if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
-                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        node.nodeTrs!.scaling.x =
-                            this._calculateValueUpdate(
-                                this._currentVector2Keyframe.value.x,
-                                this._nextVector2Keyframe.value.x,
-                                this._currentVector2Keyframe.time,
-                                this._nextVector2Keyframe.time,
-                                this._currentVector2Keyframe.easeFunction1
-                            ) / 100;
+        for (let i = 0; i < this._currentVector2Keyframes.length - 1; i++) {
+            this._currentVector2Keyframe = this._currentVector2Keyframes[i];
+            this._nextVector2Keyframe = this._currentVector2Keyframes[i + 1];
 
-                        node.nodeTrs!.scaling.y =
-                            this._calculateValueUpdate(
-                                this._currentVector2Keyframe.value.y,
-                                this._nextVector2Keyframe.value.y,
-                                this._currentVector2Keyframe.time,
-                                this._nextVector2Keyframe.time,
-                                this._currentVector2Keyframe.easeFunction2
-                            ) / 100;
+            // Find the right keyframe we are currently in
+            if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
+                // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
 
-                        break;
-                    }
-                }
+                this._gradient = (this._currentFrame - this._currentVector2Keyframe.time) / (this._nextVector2Keyframe.time - this._currentVector2Keyframe.time);
+
+                // Scale X interpolation
+                this._easeGradientFactor = this._currentVector2Keyframe.easeFunction1.ease(this._gradient);
+                node.nodeTrs.scaling.x =
+                    (this._currentVector2Keyframe.value.x + this._easeGradientFactor * (this._nextVector2Keyframe.value.x - this._currentVector2Keyframe.value.x)) / 100;
+
+                // Sacle Y interpolation
+                this._easeGradientFactor = this._currentVector2Keyframe.easeFunction2.ease(this._gradient);
+                node.nodeTrs.scaling.y =
+                    (this._currentVector2Keyframe.value.y + this._easeGradientFactor * (this._nextVector2Keyframe.value.y - this._currentVector2Keyframe.value.y)) / 100;
+
+                break;
             }
         }
     }
 
     private _updateAnchor(node: LottieNode): void {
-        if (node.transform) {
-            if (node.transform.anchorPoint?.keyframes !== undefined && node.transform.anchorPoint.keyframes.length > 0) {
-                // We have keyframes, so the position is animated
-                if (this._currentFrame < node.transform.anchorPoint.keyframes[0].time) {
-                    return; // Animation not started yet
-                }
+        this._currentVector2Keyframes = node.transform.anchorPoint.keyframes;
+        if (this._currentVector2Keyframes === undefined || this._currentVector2Keyframes.length === 0) {
+            return;
+        }
 
-                for (let i = 0; i < node.transform.anchorPoint.keyframes.length - 1; i++) {
-                    this._currentVector2Keyframe = node.transform.anchorPoint.keyframes[i];
-                    this._nextVector2Keyframe = node.transform.anchorPoint.keyframes[i + 1];
+        // We have keyframes, so the position is animated
+        if (this._currentFrame < this._currentVector2Keyframes[0].time) {
+            return; // Animation not started yet
+        }
 
-                    // Find the right keyframe we are currently in
-                    if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
-                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        node.nodeAnchor!.position.x = this._calculateValueUpdate(
-                            this._currentVector2Keyframe.value.x,
-                            this._nextVector2Keyframe.value.x,
-                            this._currentVector2Keyframe.time,
-                            this._nextVector2Keyframe.time,
-                            this._currentVector2Keyframe.easeFunction1
-                        );
+        for (let i = 0; i < this._currentVector2Keyframes.length - 1; i++) {
+            this._currentVector2Keyframe = this._currentVector2Keyframes[i];
+            this._nextVector2Keyframe = this._currentVector2Keyframes[i + 1];
 
-                        node.nodeAnchor!.position.y = this._calculateValueUpdate(
-                            this._currentVector2Keyframe.value.y,
-                            this._nextVector2Keyframe.value.y,
-                            this._currentVector2Keyframe.time,
-                            this._nextVector2Keyframe.time,
-                            this._currentVector2Keyframe.easeFunction2
-                        );
+            // Find the right keyframe we are currently in
+            if (this._currentFrame >= this._currentVector2Keyframe.time && this._currentFrame < this._nextVector2Keyframe.time) {
+                // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
 
-                        break;
-                    }
-                }
+                this._gradient = (this._currentFrame - this._currentVector2Keyframe.time) / (this._nextVector2Keyframe.time - this._currentVector2Keyframe.time);
+
+                // Anchor X component
+                this._easeGradientFactor = this._currentVector2Keyframe.easeFunction1.ease(this._gradient);
+                node.nodeAnchor.position.x =
+                    this._currentVector2Keyframe.value.x + this._easeGradientFactor * (this._nextVector2Keyframe.value.x - this._currentVector2Keyframe.value.x);
+
+                // Anchor Y component
+                this._easeGradientFactor = this._currentVector2Keyframe.easeFunction2.ease(this._gradient);
+                node.nodeAnchor.position.y =
+                    this._currentVector2Keyframe.value.y + this._easeGradientFactor * (this._nextVector2Keyframe.value.y - this._currentVector2Keyframe.value.y);
+
+                break;
             }
         }
     }
 
     private _updateOpacity(node: LottieNode): void {
-        if (node.transform) {
-            if (node.transform.opacity?.keyframes !== undefined && node.transform.opacity.keyframes.length > 0) {
-                // We have keyframes, so the position is animated
-                if (this._currentFrame < node.transform.opacity.keyframes[0].time) {
-                    return; // Animation not started yet
-                }
+        this._currentScalarKeyframes = node.transform.opacity.keyframes;
+        if (this._currentScalarKeyframes === undefined || this._currentScalarKeyframes.length === 0) {
+            return;
+        }
 
-                for (let i = 0; i < node.transform.opacity.keyframes.length - 1; i++) {
-                    this._currentScalarKeyframe = node.transform.opacity.keyframes[i];
-                    this._nextScalarKeyframe = node.transform.opacity.keyframes[i + 1];
+        // We have keyframes, so the position is animated
+        if (this._currentFrame < this._currentScalarKeyframes[0].time) {
+            return; // Animation not started yet
+        }
 
-                    // Find the right keyframe we are currently in
-                    if (this._currentFrame >= this._currentScalarKeyframe.time && this._currentFrame < this._nextScalarKeyframe.time) {
-                        // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
-                        //const alpha =
-                        this._calculateValueUpdate(
-                            this._currentScalarKeyframe.value,
-                            this._nextScalarKeyframe.value,
-                            this._currentScalarKeyframe.time,
-                            this._nextScalarKeyframe.time,
-                            this._currentScalarKeyframe.easeFunction
-                        ) / 100;
+        for (let i = 0; i < this._currentScalarKeyframes.length - 1; i++) {
+            this._currentScalarKeyframe = this._currentScalarKeyframes[i];
+            this._nextScalarKeyframe = this._currentScalarKeyframes[i + 1];
 
-                        // const children = node.nodeAnchor && node.nodeAnchor.getChildMeshes(false);
-                        // if (children && children.length > 0) {
-                        //     for (const child of children) {
-                        //         child.material && (child.material.alpha = alpha);
-                        //     }
-                        // }
+            // Find the right keyframe we are currently in
+            if (this._currentFrame >= this._currentScalarKeyframe.time && this._currentFrame < this._nextScalarKeyframe.time) {
+                // BUG WITH THE LAST FRAME OF THE LAST KEYFRAME
 
-                        break;
-                    }
-                }
+                this._gradient = (this._currentFrame - this._currentScalarKeyframe.time) / (this._nextScalarKeyframe.time - this._currentScalarKeyframe.time);
+
+                // Opacity interpolation
+                this._easeGradientFactor = this._currentScalarKeyframe.easeFunction.ease(this._gradient);
+
+                // const children = node.nodeAnchor.getChildMeshes(false);
+                // if (children && children.length > 0) {
+                //     for (const child of children) {
+                //         child.material && (child.material.alpha = alpha);
+                //     }
+                // }
+
+                break;
             }
         }
-    }
-
-    private _calculateValueUpdate(startValue: number, endValue: number, startTime: number, endTime: number, easeFunction: BezierCurveEase): number {
-        const gradient = (this._currentFrame - startTime) / (endTime - startTime);
-        const easeGradientFactor = easeFunction.ease(gradient) ?? gradient;
-        return startValue + easeGradientFactor * (endValue - startValue); // Lerping the value
     }
 
     /**

@@ -38,16 +38,16 @@ export type LottieNode = {
     timeStretch: number; // Time stretch factor
     autoOrient: boolean; // Whether the layer auto-orients to its path
     transform: Transform; // Initial transform properties and animations of the layer
-    nodeTrs?: TransformNode; // Translation/Rotation/Scale node, it will contain the current transformed value
-    nodeAnchor?: TransformNode; // Anchor node, it may contain a sprite to render
+    nodeTrs: TransformNode; // Translation/Rotation/Scale node, it will contain the current transformed value
+    nodeAnchor: TransformNode; // Anchor node, it may contain a sprite to render
 };
 
 export type Transform = {
-    anchorPoint?: Vector2Property;
-    position?: Vector2Property;
-    rotation?: ScalarProperty;
-    scale?: Vector2Property;
-    opacity?: ScalarProperty;
+    anchorPoint: Vector2Property;
+    position: Vector2Property;
+    rotation: ScalarProperty;
+    scale: Vector2Property;
+    opacity: ScalarProperty;
 };
 
 export type ScalarProperty = {
