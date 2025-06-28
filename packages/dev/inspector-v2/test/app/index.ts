@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import { Sprite, SpriteManager, type ArcRotateCamera, type Nullable } from "core/index";
+import type { ArcRotateCamera, Nullable } from "core/index";
 
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -9,8 +8,6 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ShowInspector } from "../../src/inspector";
 
 import "core/Helpers/sceneHelpers";
-// For testing the Outline & Overlay section
-import "core/Rendering/outlineRenderer";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -37,7 +34,6 @@ function createCamera() {
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
-
     createCamera();
 
     engine.runRenderLoop(() => {

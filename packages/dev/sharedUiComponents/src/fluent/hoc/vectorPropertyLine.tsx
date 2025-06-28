@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
@@ -6,40 +7,34 @@ import type { BaseComponentProps, PropertyLineProps } from "./propertyLine";
 
 import { SyncedSliderLine } from "./syncedSliderLine";
 
-import type { Vector2 } from "core/Maths/math.vector";
-import { Vector3, Vector4 } from "core/Maths/math.vector";
+import { Quaternion, Vector4 } from "core/Maths/math.vector";
+import type { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
-export type DegreesLineProps = {
-    /**
-     * Do we want to use angles with degrees instead of radians?
-     */
-    useDegrees?: boolean;
-};
-
-/**
- * Alternative names for the components of the vector
- */
-export type AlternativeComponentNamesProps = {
-    /**
-     * Alternative name for the x component
-     */
-    xName?: string;
-    /**
-     * Alternative name for the y component
-     */
-    yName?: string;
-    /**
-     * alternative name for the z component
-     */
-    zName?: string;
-    /**
-     * Alternative name for the w component
-     */
-    wName?: string;
-};
-
-export type VectorPropertyLineProps<V extends Vector2 | Vector3 | Vector4> = BaseComponentProps<V> & PropertyLineProps & DegreesLineProps & AlternativeComponentNamesProps;
+export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = BaseComponentProps<V> &
+    PropertyLineProps & {
+        /**
+         * If passed, all sliders will use this for the min value
+         */
+        min?: number;
+        /**
+         * If passed, all sliders will use this for the max value
+         */
+        max?: number;
+        /**
+         * If passed, the UX will use the conversion functions to display/update values
+         */
+        valueConverter?: {
+            /**
+             * Will call from(val) before displaying in the UX
+             */
+            from: (val: number) => number;
+            /**
+             * Will call to(val) before calling onChange
+             */
+            to: (val: number) => number;
+        };
+    };
 
 /**
  * Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
@@ -47,41 +42,81 @@ export type VectorPropertyLineProps<V extends Vector2 | Vector3 | Vector4> = Bas
  * @param props
  * @returns
  */
-const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector2 | Vector3 | Vector4>> = (props) => {
-    let converter = (v: number) => v.toFixed(2);
-    const xName = props.xName || "X";
-    const yName = props.yName || "Y";
-    const zName = props.zName || "Z";
-    const wName = props.wName || "W";
+const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector3 | Vector4 | Quaternion>> = (props) => {
+    const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
+    const formatted = (val: number) => converted(val).toFixed(2);
 
-    if (props.useDegrees) {
-        converter = (v: number) => Tools.ToDegrees(v).toFixed(2);
-    }
+    const [vector, setVector] = useState(props.value);
+    const { min, max } = props;
+
+    const onChange = (val: number, key: "x" | "y" | "z" | "w") => {
+        const value = props.valueConverter ? props.valueConverter.to(val) : val;
+        const newVector = vector.clone();
+        (newVector as Vector4)[key] = value; // The syncedSlider for 'w' is only rendered when vector is a Vector4, so this is safe
+
+        setVector(newVector);
+        props.onChange(newVector);
+    };
 
     return (
-        <PropertyLine {...props} expandedContent={<VectorSliders {...props} />}>
-            <Body1>{`${xName}: ${converter(props.value.x)} | ${yName}: ${converter(props.value.y)} ${props.value instanceof Vector3 ? ` | ${zName}: ${converter(props.value.z)}` : ""}${props.value instanceof Vector4 ? ` | ${wName}: ${converter(props.value.w)}` : ""}`}</Body1>
+        <PropertyLine
+            {...props}
+            expandedContent={
+                <>
+                    <SyncedSliderLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} />
+                    <SyncedSliderLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} />
+                    <SyncedSliderLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />
+                    {vector instanceof Vector4 && <SyncedSliderLine label="W" value={vector.w} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
+                </>
+            }
+        >
+            <Body1>{`X: ${formatted(props.value.x)} | Y: ${formatted(props.value.y)} | Z: ${formatted(props.value.z)}${props.value instanceof Vector4 ? ` | W: ${formatted(props.value.w)}` : ""}`}</Body1>
         </PropertyLine>
     );
 };
 
-const VectorSliders: FunctionComponent<{ value: Vector2 | Vector3 | Vector4; useDegrees?: boolean; xName?: string; yName?: string; zName?: string; wName?: string }> = (props) => {
-    const { value: vector } = props;
-    const xName = props.xName || "X";
-    const yName = props.yName || "Y";
-    const zName = props.zName || "Z";
-    const wName = props.wName || "W";
+type RotationVectorPropertyLineProps = TensorPropertyLineProps<Vector3> & {
+    /**
+     * Display angles as degrees instead of radians
+     */
+    useDegrees?: boolean;
+};
 
-    return (
-        <>
-            <SyncedSliderLine label={xName} useDegrees={props.useDegrees} value={vector.x} onChange={(value) => (vector.x = value)} />
-            <SyncedSliderLine label={yName} useDegrees={props.useDegrees} value={vector.y} onChange={(value) => (vector.y = value)} />
-            {vector instanceof Vector3 && <SyncedSliderLine label={zName} useDegrees={props.useDegrees} value={vector.z} onChange={(value) => (vector.z = value)} />}
-            {vector instanceof Vector4 && <SyncedSliderLine label={wName} useDegrees={props.useDegrees} value={vector.w} onChange={(value) => (vector.w = value)} />}
-        </>
+const ToDegreesConverter = { from: Tools.ToDegrees, to: Tools.ToRadians };
+export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropertyLineProps> = (props) => {
+    const min = props.useDegrees ? 0 : undefined;
+    const max = props.useDegrees ? 360 : undefined;
+    return <Vector3PropertyLine {...props} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
+};
+
+type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
+    /**
+     * Display angles as degrees instead of radians
+     */
+    useDegrees?: boolean;
+};
+
+const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
+export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
+    const min = props.useDegrees ? 0 : undefined;
+    const max = props.useDegrees ? 360 : undefined;
+    const [quat, setQuat] = useState(props.value);
+    const onQuatChange = (val: Quaternion) => {
+        setQuat(val);
+        props.onChange(val);
+    };
+
+    const onEulerChange = (val: Vector3) => {
+        const quat = Quaternion.FromEulerAngles(val.x, val.y, val.z);
+        setQuat(quat);
+        props.onChange(quat);
+    };
+    return props.useDegrees ? (
+        <Vector3PropertyLine {...props} value={quat.toEulerAngles()} valueConverter={ToDegreesConverter} min={min} max={max} onChange={onEulerChange} />
+    ) : (
+        <QuaternionPropertyLineInternal {...props} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
 };
 
-export const Vector2PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector2>>;
-export const Vector3PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector3>>;
-export const Vector4PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector4>>;
+export const Vector3PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector3>>;
+export const Vector4PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector4>>;

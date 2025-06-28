@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 // export * from "../../../../dev/loaders/src/index";
 // export * from "./legacy-glTF";
 // export * from "./legacy-glTF1";

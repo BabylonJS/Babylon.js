@@ -1,11 +1,12 @@
 import type { FunctionComponent, PropsWithChildren } from "react";
 
-import { Children, isValidElement } from "react";
+import { Children, isValidElement, useMemo } from "react";
 
 import { Accordion as FluentAccordion, AccordionItem, AccordionHeader, AccordionPanel, Subtitle1, makeStyles, tokens } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
     accordion: {
+        overflowX: "hidden",
         overflowY: "auto",
         paddingBottom: tokens.spacingVerticalM,
         display: "flex",
@@ -21,6 +22,7 @@ const useStyles = makeStyles({
 
 export type AccordionSectionProps = {
     title: string;
+    collapseByDefault?: boolean;
 };
 
 export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSectionProps>> = (props) => {
@@ -33,23 +35,43 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
     const classes = useStyles();
 
     const { children, ...rest } = props;
-
-    return (
-        <FluentAccordion className={classes.accordion} collapsible multiple defaultOpenItems={Array.from({ length: Children.count(children) }, (_, index) => index)} {...rest}>
-            {Children.map(children, (child, index) => {
+    const validChildren = useMemo(() => {
+        return (
+            Children.map(children, (child) => {
                 if (isValidElement(child)) {
-                    return (
-                        <AccordionItem key={child.props.title} value={index}>
-                            <AccordionHeader expandIconPosition="end">
-                                <Subtitle1>{child.props.title}</Subtitle1>
-                            </AccordionHeader>
-                            <AccordionPanel>
-                                <div className={classes.panelDiv}>{child}</div>
-                            </AccordionPanel>
-                        </AccordionItem>
-                    );
+                    const childProps = child.props as Partial<AccordionSectionProps>;
+                    if (childProps.title) {
+                        return {
+                            title: childProps.title,
+                            collapseByDefault: childProps.collapseByDefault,
+                            content: child,
+                        };
+                    }
                 }
                 return null;
+            })?.filter(Boolean) ?? []
+        );
+    }, [children]);
+
+    return (
+        <FluentAccordion
+            className={classes.accordion}
+            collapsible
+            multiple
+            defaultOpenItems={validChildren.filter((child) => !child.collapseByDefault).map((child) => child.title)}
+            {...rest}
+        >
+            {validChildren.map((child) => {
+                return (
+                    <AccordionItem key={child.title} value={child.title}>
+                        <AccordionHeader expandIconPosition="end">
+                            <Subtitle1>{child.title}</Subtitle1>
+                        </AccordionHeader>
+                        <AccordionPanel>
+                            <div className={classes.panelDiv}>{child.content}</div>
+                        </AccordionPanel>
+                    </AccordionItem>
+                );
             })}
         </FluentAccordion>
     );

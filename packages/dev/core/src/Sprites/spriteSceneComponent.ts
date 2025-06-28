@@ -108,6 +108,13 @@ declare module "../scene" {
     }
 }
 
+Object.defineProperty(Scene.prototype, "spriteManagers", {
+    value: undefined,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+});
+
 Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;

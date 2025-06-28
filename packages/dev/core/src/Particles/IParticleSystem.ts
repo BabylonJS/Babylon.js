@@ -13,7 +13,6 @@ import type {
     CylinderDirectedParticleEmitter,
     ConeParticleEmitter,
     ConeDirectedParticleEmitter,
-    // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import type { Scene } from "../scene";
 import type { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
