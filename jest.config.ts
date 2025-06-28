@@ -7,6 +7,15 @@ import { JestConfigWithTsJest, pathsToModuleNameMapper } from "ts-jest";
 
 const compilerOptions = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./tsconfig.json"), "utf8")).compilerOptions;
 
+const stripAnyJsExtensionFound = (mappings: any): any => {
+    const newMappings: any = {};
+    for (const key in mappings) {
+        // Remove the .js extension from the end if it is there
+        newMappings[key.replace("(.*)$", "(.*?)(?:\\.js)?$")] = mappings[key];
+    }
+    return newMappings;
+};
+
 const createProject = (type: string) => {
     const setupFileLocation = path.resolve(".", `jest.${type}.setup.ts`);
     const setupFilesAfterEnvLocation = path.resolve(".", `jest.${type}.setup.afterEnv.ts`);
@@ -20,7 +29,11 @@ const createProject = (type: string) => {
             color: "yellow",
         },
         testRegex: [`/test/${type}/.*test\\.[tj]sx?$`],
-        moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/packages/" }) as any,
+        moduleNameMapper: {
+            ...stripAnyJsExtensionFound(pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/packages/" })),
+            // Remove .js from imports (for packages that include .js in the import paths)
+            "^(.+)\\.js$": "$1",
+        },
         roots: [path.resolve(".")],
         setupFilesAfterEnv: ["@alex_neo/jest-expect-message"],
         transform: {

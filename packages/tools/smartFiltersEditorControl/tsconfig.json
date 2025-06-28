@@ -1,0 +1,13 @@
+{
+    "extends": "../../../tsconfig.json",
+
+    "compilerOptions": {
+        "paths": {
+            "core/*": ["../node_modules/core/*"],
+            "@babylonjs/core/*": ["../node_modules/core/*"],
+            "@babylonjs/smart-filters": ["dev/smartFilters/src"],
+            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/dist"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+        }
+    }
+}

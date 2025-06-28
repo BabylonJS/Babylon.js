@@ -1,0 +1,19 @@
+{
+    "extends": "../../../tsconfig.json",
+
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "paths": {
+            "core/*": ["../node_modules/core/*"],
+            "@babylonjs/core/*": ["../node_modules/core/*"],
+            "@babylonjs/smart-filters": ["dev/smartFilters/src"],
+            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/src"],
+            "@babylonjs/smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
+            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+        }
+    },
+
+    "include": ["./src/**/*.ts", "./src/configuration/smartFilters/serialized/*.json"],
+    "exclude": ["**/node_modules", "**/.temp"]
+}

@@ -1,0 +1,44 @@
+{
+    "name": "@tools/smart-filters-debugger",
+    "private": true,
+    "version": "0.1.0",
+    "description": "A browser extension to allow for debugging Babylon.js Smart Filters in websites",
+    "license": "MIT",
+    "readme": "README.md",
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "src",
+        "license.md",
+        "readme.md"
+    ],
+    "scripts": {
+        "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+        "build": "npm run clean && npm run compile",
+        "compile": "webpack --env=prod",
+        "watch": "webpack --env=dev --watch"
+    },
+    "devDependencies": {
+        "@fortawesome/fontawesome-svg-core": "^6.1.0",
+        "@fortawesome/free-solid-svg-icons": "^6.1.0",
+        "@fortawesome/react-fontawesome": "^0.2.0",
+        "@types/chrome": "^0.0.268",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "copy-webpack-plugin": "^11.0.0",
+        "css-loader": "^7.1.0",
+        "file-loader": "^6.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "sass": "^1.62.1",
+        "sass-loader": "^16.0.0",
+        "source-map-loader": "^4.0.0",
+        "style-loader": "^3.3.0",
+        "ts-loader": "^9.2.6",
+        "url-loader": "^4.1.1",
+        "webpack": "^5.98.0",
+        "webpack-cli": "^5.1.0",
+        "webpack-dev-server": "^4.7.4",
+        "@tools/smart-filters-editor-control": "^1.0.0"
+    }
+}
