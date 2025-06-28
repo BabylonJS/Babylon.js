@@ -48,6 +48,7 @@ interface IParsedPLY {
     sh?: Uint8Array[];
     trainedWithAntialiasing?: boolean;
     compressed?: boolean;
+    rawSplat?: boolean;
 }
 
 /**
@@ -381,7 +382,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
                                     gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
-                                    if (parsedPLY.compressed) {
+                                    if (parsedPLY.compressed || !parsedPLY.rawSplat) {
                                         gaussianSplatting.viewDirectionFactor.set(-1, -1, 1);
                                     }
                                 }
@@ -480,7 +481,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         if (headerEndIndex < 0 || !header) {
             // standard splat
             return new Promise((resolve) => {
-                resolve({ mode: Mode.Splat, data: data });
+                resolve({ mode: Mode.Splat, data: data, rawSplat: true });
             });
         }
 
@@ -581,7 +582,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // early exit for chunked/quantized ply
             if (chunkCount) {
                 return await new Promise((resolve) => {
-                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false, compressed: true });
+                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false, compressed: true, rawSplat: false });
                 });
             }
             // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
@@ -603,7 +604,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return await new Promise((resolve) => {
-                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount, compressed: false });
+                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount, compressed: false, rawSplat: false });
             });
         });
     }
