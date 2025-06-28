@@ -3,7 +3,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../../services/sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { ImageRegular } from "@fluentui/react-icons";
+import { LayerDiagonalPersonRegular, PersonSquareRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
@@ -77,7 +77,7 @@ export const SpriteManagerHierarchyServiceDefinition: ServiceDefinition<[], [ISc
             getEntityChildren: (spriteEntity) => (IsSpriteManager(spriteEntity) ? spriteEntity.sprites : ([] as ISpriteManager[])),
             getEntityParent: (spriteEntity) => (IsSprite(spriteEntity) ? spriteEntity.manager : null),
             getEntityDisplayName: (spriteEntity) => spriteEntity.name || `Unnamed Sprite Manager (${spriteEntity.uniqueId})`,
-            entityIcon: () => <ImageRegular />,
+            entityIcon: ({ entity: spriteEntity }) => (IsSpriteManager(spriteEntity) ? <LayerDiagonalPersonRegular /> : <PersonSquareRegular />),
             getEntityAddedObservables: (scene) => {
                 const deferredObservables = getOrCreateDeferredObservables(scene);
                 if (!deferredObservables.onNewSpriteManagerAddedObservable) {
