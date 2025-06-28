@@ -115,6 +115,20 @@ Object.defineProperty(Scene.prototype, "spriteManagers", {
     writable: true,
 });
 
+Object.defineProperty(Scene.prototype, "onNewSpriteManagerAddedObservable", {
+    value: undefined,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+});
+
+Object.defineProperty(Scene.prototype, "onSpriteManagerRemovedObservable", {
+    value: undefined,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+});
+
 Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
