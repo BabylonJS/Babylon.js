@@ -104,7 +104,7 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
             }
 
             if (this._cameraLinesMesh) {
-                this._cameraLinesMesh.dispose();
+                this._cameraLinesMesh.dispose(false, true);
             }
             const linesColor = this._frustumLinesColor?.toColor4(1) ?? new Color4(1, 1, 1, 1);
             this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene, linesColor);

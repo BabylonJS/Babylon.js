@@ -1040,7 +1040,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public override dispose() {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
-        this._lineBoundingBox.dispose();
+        this._lineBoundingBox.dispose(false, true);
         this._rotateAnchorsParent.dispose();
         this._scaleBoxesParent.dispose();
         if (this._dragMesh) {
