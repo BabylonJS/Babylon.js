@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as Exporters from "serializers/glTF/glTFFileExporter";
 import * as Datas from "serializers/glTF/2.0/glTFData";
 import * as Serializers from "serializers/glTF/2.0/glTFSerializer";

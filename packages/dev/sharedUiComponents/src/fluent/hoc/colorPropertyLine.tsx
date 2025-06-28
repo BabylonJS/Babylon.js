@@ -22,12 +22,12 @@ const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((pr
     const [color, setColor] = useState(props.value);
 
     const onSliderChange = (value: number, key: "r" | "g" | "b" | "a") => {
-        let newColor;
+        let newColor: Color3 | Color4;
         if (key === "a") {
             newColor = Color4.FromColor3(color, value);
         } else {
             newColor = color.clone();
-            newColor[key] = value / 255.0;
+            newColor[key] = value / 255;
         }
 
         setColor(newColor); // Create a new object to trigger re-render
@@ -45,9 +45,9 @@ const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((pr
             {...props}
             expandedContent={
                 <>
-                    <SyncedSliderLine label="R" value={color.r * 255.0} min={0} max={255} step={1} onChange={(value) => onSliderChange(value, "r")} />
-                    <SyncedSliderLine label="G" value={color.g * 255.0} min={0} max={255} step={1} onChange={(value) => onSliderChange(value, "g")} />
-                    <SyncedSliderLine label="B" value={color.b * 255.0} min={0} max={255} step={1} onChange={(value) => onSliderChange(value, "b")} />
+                    <SyncedSliderLine label="R" value={color.r * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "r")} />
+                    <SyncedSliderLine label="G" value={color.g * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "g")} />
+                    <SyncedSliderLine label="B" value={color.b * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "b")} />
                     {color instanceof Color4 && <SyncedSliderLine label="A" value={color.a} min={0} max={1} step={0.01} onChange={(value) => onSliderChange(value, "a")} />}
                 </>
             }

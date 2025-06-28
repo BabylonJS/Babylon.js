@@ -8,7 +8,6 @@ import type {
     FrameGraphObjectList,
     AbstractMesh,
     ObjectRendererOptions,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { Color4 } from "core/Maths/math.color";

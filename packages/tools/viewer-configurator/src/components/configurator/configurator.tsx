@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import "./configurator.scss";
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
-// eslint-disable-next-line import/no-internal-modules
 import type { HotSpot, ShadowQuality, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 

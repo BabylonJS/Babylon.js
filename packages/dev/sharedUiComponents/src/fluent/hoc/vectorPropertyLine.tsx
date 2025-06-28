@@ -7,11 +7,11 @@ import type { BaseComponentProps, PropertyLineProps } from "./propertyLine";
 
 import { SyncedSliderLine } from "./syncedSliderLine";
 
-import { Vector4 } from "core/Maths/math.vector";
+import { Quaternion, Vector4 } from "core/Maths/math.vector";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
-export type VectorPropertyLineProps<V extends Vector3 | Vector4> = BaseComponentProps<V> &
+export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = BaseComponentProps<V> &
     PropertyLineProps & {
         /**
          * If passed, all sliders will use this for the min value
@@ -42,7 +42,7 @@ export type VectorPropertyLineProps<V extends Vector3 | Vector4> = BaseComponent
  * @param props
  * @returns
  */
-const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Vector4>> = (props) => {
+const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector3 | Vector4 | Quaternion>> = (props) => {
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
     const formatted = (val: number) => converted(val).toFixed(2);
 
@@ -75,7 +75,7 @@ const VectorPropertyLine: FunctionComponent<VectorPropertyLineProps<Vector3 | Ve
     );
 };
 
-type RotationVectorPropertyLineProps = VectorPropertyLineProps<Vector3> & {
+type RotationVectorPropertyLineProps = TensorPropertyLineProps<Vector3> & {
     /**
      * Display angles as degrees instead of radians
      */
@@ -89,5 +89,34 @@ export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropert
     return <Vector3PropertyLine {...props} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
 };
 
-export const Vector3PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector3>>;
-export const Vector4PropertyLine = VectorPropertyLine as FunctionComponent<VectorPropertyLineProps<Vector4>>;
+type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
+    /**
+     * Display angles as degrees instead of radians
+     */
+    useDegrees?: boolean;
+};
+
+const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
+export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
+    const min = props.useDegrees ? 0 : undefined;
+    const max = props.useDegrees ? 360 : undefined;
+    const [quat, setQuat] = useState(props.value);
+    const onQuatChange = (val: Quaternion) => {
+        setQuat(val);
+        props.onChange(val);
+    };
+
+    const onEulerChange = (val: Vector3) => {
+        const quat = Quaternion.FromEulerAngles(val.x, val.y, val.z);
+        setQuat(quat);
+        props.onChange(quat);
+    };
+    return props.useDegrees ? (
+        <Vector3PropertyLine {...props} value={quat.toEulerAngles()} valueConverter={ToDegreesConverter} min={min} max={max} onChange={onEulerChange} />
+    ) : (
+        <QuaternionPropertyLineInternal {...props} value={quat} min={min} max={max} onChange={onQuatChange} />
+    );
+};
+
+export const Vector3PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector3>>;
+export const Vector4PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector4>>;
