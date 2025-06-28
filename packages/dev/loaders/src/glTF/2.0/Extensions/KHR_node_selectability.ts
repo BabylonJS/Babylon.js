@@ -4,7 +4,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import type { INode } from "../glTFLoaderInterfaces";
-import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessor } from "./objectModelMapping";
 
 const NAME = "KHR_node_selectability";
 
@@ -90,7 +90,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
 });
 
 // object model extension for selectable
-AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_selectability/selectable", {
+AddObjectAccessor("/nodes/{}/extensions/KHR_node_selectability/selectable", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.isPickable !== undefined) {
@@ -124,16 +124,14 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
+    /** @internal */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
-    public async onReady(): Promise<void> {
+    /** @internal */
+    public onReady(): void {
         this._loader.gltf.nodes?.forEach((node) => {
             if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {
                 node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
