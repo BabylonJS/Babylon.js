@@ -1,13 +1,11 @@
 import type { IDisposable, IObserver, ISpriteManager, Scene, Sprite } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISceneContext } from "../../../services/sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { LayerDiagonalPersonRegular, PersonSquareRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
-import { SceneContextIdentity } from "../../../services/sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
@@ -20,10 +18,10 @@ function IsSprite(entity: ISpriteManager | Sprite): entity is Sprite {
     return (entity as Sprite).manager !== undefined;
 }
 
-export const SpriteManagerHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const SpriteManagerHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
     friendlyName: "Sprite Manager Hierarchy",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity],
+    factory: (sceneExplorerService) => {
         const deferredObservableMap = new Map<
             Scene,
             {
