@@ -2732,7 +2732,7 @@ export class ThinEngine extends AbstractEngine {
     public applyStates() {
         this._depthCullingState.apply(this._gl);
         this._stencilStateComposer.apply(this._gl);
-        this._alphaState.apply(this._gl, this._currentRenderTarget ? this._currentRenderTarget.textures!.length : 1);
+        this._alphaState.apply(this._gl, this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures!.length : 1);
 
         if (this._colorWriteChanged) {
             this._colorWriteChanged = false;

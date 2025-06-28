@@ -41,7 +41,7 @@ export class ThinPassPostProcess extends EffectWrapper {
      * @param options Options to configure the effect
      */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPassPostProcessOptions) {
-        super({
+        const localOptions: ThinPassPostProcessOptions = {
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
@@ -50,7 +50,13 @@ export class ThinPassPostProcess extends EffectWrapper {
             samplers: ["textureSampler2"],
             defines: options?.enableDualSourceBlending ? "#define DUAL_SOURCE_BLENDING" : "",
             ...options,
-        });
+        };
+
+        if (!localOptions.engine) {
+            localOptions.engine = Engine.LastCreatedEngine!;
+        }
+
+        super(localOptions);
     }
 }
 

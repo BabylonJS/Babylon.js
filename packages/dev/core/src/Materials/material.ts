@@ -560,7 +560,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Stores the value of the alpha mode
      */
-    @serialize("alphaMode")
     private _alphaMode: number[] = [Constants.ALPHA_COMBINE];
 
     /**
@@ -1991,6 +1990,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
 
+        serializationObject.alphaMode = this._alphaMode;
+
         serializationObject.stencil = this.stencil.serialize();
         serializationObject.uniqueId = this.uniqueId;
 
@@ -2032,6 +2033,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const materialType = Tools.Instantiate(parsedMaterial.customType);
         const material = materialType.Parse(parsedMaterial, scene, rootUrl);
         material._loadedUniqueId = parsedMaterial.uniqueId;
+        if (!Array.isArray(parsedMaterial.alphaMode)) {
+            material._alphaMode = [parsedMaterial.alphaMode ?? Constants.ALPHA_COMBINE];
+        } else {
+            material._alphaMode = parsedMaterial.alphaMode;
+        }
 
         return material;
     }
