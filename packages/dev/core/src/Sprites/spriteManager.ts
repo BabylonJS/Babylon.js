@@ -29,6 +29,11 @@ declare const Reflect: any;
  */
 export interface ISpriteManager extends IDisposable {
     /**
+     * Gets or sets the unique id of the texture
+     */
+    uniqueId: number;
+
+    /**
      * Gets manager's name
      */
     name: string;
@@ -345,6 +350,8 @@ export class SpriteManager implements ISpriteManager {
         if (this._fromPacked) {
             this._makePacked(imgUrl, spriteJSON);
         }
+
+        this._scene.onNewSpriteManagerAddedObservable.notifyObservers(this);
     }
 
     /**

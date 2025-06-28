@@ -24,11 +24,13 @@ import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mes
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
@@ -180,6 +182,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             MaterialExplorerServiceDefinition,
             SkeletonHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
+            SpriteManagerHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
@@ -196,6 +199,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             DirectionalLightPropertiesServiceDefinition,
             SpotLightPropertiesServiceDefinition,
             ShadowLightPropertiesServiceDefinition,
+            SpritePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

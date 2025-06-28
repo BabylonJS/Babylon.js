@@ -11,9 +11,9 @@ type SyncedSliderLineProps = SyncedSliderProps & PropertyLineProps;
  * @returns
  */
 export const SyncedSliderLine: FunctionComponent<SyncedSliderLineProps> = (props): React.ReactElement => {
-    const { label, ...sliderProps } = props;
+    const { label, description, ...sliderProps } = props;
     return (
-        <PropertyLine label={label}>
+        <PropertyLine label={label} description={description}>
             <SyncedSliderInput {...sliderProps} />
         </PropertyLine>
     );
