@@ -12,6 +12,9 @@ import type {
  * Base class for frame graph context.
  */
 export class FrameGraphContext {
+    private _depthTest: boolean;
+    private _depthWrite: boolean;
+
     /** @internal */
     constructor(
         protected readonly _engine: AbstractEngine,
@@ -64,5 +67,31 @@ export class FrameGraphContext {
      */
     public popDebugGroup() {
         this._engine._debugPopGroup?.(1);
+    }
+
+    /**
+     * Saves the current depth states (depth testing and depth writing)
+     */
+    public saveDepthStates(): void {
+        this._depthTest = this._engine.getDepthBuffer();
+        this._depthWrite = this._engine.getDepthWrite();
+    }
+
+    /**
+     * Restores the depth states saved by saveDepthStates
+     */
+    public restoreDepthStates(): void {
+        this._engine.setDepthBuffer(this._depthTest);
+        this._engine.setDepthWrite(this._depthWrite);
+    }
+
+    /**
+     * Sets the depth states for the current render target
+     * @param depthTest If true, depth testing is enabled
+     * @param depthWrite If true, depth writing is enabled
+     */
+    public setDepthStates(depthTest: boolean, depthWrite: boolean): void {
+        this._engine.setDepthBuffer(depthTest);
+        this._engine.setDepthWrite(depthWrite);
     }
 }

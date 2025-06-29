@@ -330,7 +330,12 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             shadowMap.renderList = this.objectList.meshes;
             shadowMap.particleSystemList = this.objectList.particleSystems;
 
+            context.saveDepthStates();
+            context.setDepthStates(true, true);
+
             context.renderUnmanaged(shadowMap);
+
+            context.restoreDepthStates();
         });
 
         const passDisabled = this._frameGraph.addPass(this.name + "_disabled", true);
