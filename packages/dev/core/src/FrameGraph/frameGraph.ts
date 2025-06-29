@@ -118,6 +118,15 @@ export class FrameGraph {
     }
 
     /**
+     * Gets all tasks of a specific type
+     * @param taskType Type of the task(s) to get
+     * @returns The list of tasks of the specified type
+     */
+    public getTasksByType<T extends FrameGraphTask>(taskType: new (...args: any[]) => T): T[] {
+        return this._tasks.filter((t) => t instanceof taskType) as T[];
+    }
+
+    /**
      * Adds a task to the frame graph
      * @param task Task to add
      */

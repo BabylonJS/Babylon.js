@@ -475,7 +475,7 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch, true, this._passIdForDrawWrapper[3]);
             this._engine.setAlphaMode(currentMode);
             this._engine.setDepthWrite(this._savedDepthWrite);
-            this._engine.alphaState.alphaBlend = alphaBlendState;
+            this._engine.alphaState.setAlphaBlend(alphaBlendState);
         }
 
         // Outline - step 2

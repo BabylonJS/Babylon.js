@@ -29,8 +29,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
-    private _depthTest: boolean;
-    private _depthWrite: boolean;
 
     private static _IsObjectRenderer(value: Layer | ObjectRenderer | UtilityLayerRenderer): value is ObjectRenderer {
         return (value as ObjectRenderer).initRender !== undefined;
@@ -110,6 +108,20 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /**
+     * Clears all attachments (color(s) + depth/stencil) of the current render target
+     * @param color Defines the color to use
+     * @param attachments The attachments to clear
+     * @param backBuffer Defines if the back buffer must be cleared
+     * @param depth Defines if the depth buffer must be cleared
+     * @param stencil Defines if the stencil buffer must be cleared
+     */
+    public clearAttachments(color: Nullable<IColor4Like>, attachments: number[], backBuffer: boolean, depth: boolean, stencil?: boolean): void {
+        this._applyRenderTarget();
+        this._engine.bindAttachments(attachments);
+        this._engine.clear(color, backBuffer, depth, stencil);
+    }
+
+    /**
      * Binds the attachments to the current render target
      * @param attachments The attachments to bind
      */
@@ -178,32 +190,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
 
         effect._bindTexture(name, texture);
-    }
-
-    /**
-     * Saves the current depth states (depth testing and depth writing)
-     */
-    public saveDepthStates(): void {
-        this._depthTest = this._engine.getDepthBuffer();
-        this._depthWrite = this._engine.getDepthWrite();
-    }
-
-    /**
-     * Restores the depth states saved by saveDepthStates
-     */
-    public restoreDepthStates(): void {
-        this._engine.setDepthBuffer(this._depthTest);
-        this._engine.setDepthWrite(this._depthWrite);
-    }
-
-    /**
-     * Sets the depth states for the current render target
-     * @param depthTest If true, depth testing is enabled
-     * @param depthWrite If true, depth writing is enabled
-     */
-    public setDepthStates(depthTest: boolean, depthWrite: boolean): void {
-        this._engine.setDepthBuffer(depthTest);
-        this._engine.setDepthWrite(depthWrite);
     }
 
     /**

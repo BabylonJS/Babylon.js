@@ -900,6 +900,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
             disableMorphTargetTexture: false,
             textureNorm16: false, // in the works: https://github.com/gpuweb/gpuweb/issues/3001
+            blendParametersPerTarget: true,
+            dualSourceBlending: true,
         };
 
         this._features = {
@@ -1269,7 +1271,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public applyStates() {
         this._stencilStateComposer.apply();
-        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
+        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
     }
 
     /**
@@ -1296,10 +1298,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
 
             this._alphaState.reset();
-            this._alphaMode = Constants.ALPHA_ADD;
-            this._alphaEquation = Constants.ALPHA_DISABLE;
+            this._resetAlphaMode();
             this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
-            this._cacheRenderPipeline.setAlphaBlendEnabled(false);
+            this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
 
             this.setColorWrite(true);
         }

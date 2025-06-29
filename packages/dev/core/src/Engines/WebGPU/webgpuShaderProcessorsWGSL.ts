@@ -335,6 +335,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
+        const enabledExtensions: string[] = [];
+
         const fragCoordCode =
             fragmentCode.indexOf("fragmentInputs.position") >= 0 && !this.pureMode
                 ? `
@@ -444,7 +446,16 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         }
 
         if (indexLocation === 0) {
-            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+            const useDualSourceBlending = fragmentCode.indexOf("DUAL_SOURCE_BLENDING") !== -1;
+
+            if (useDualSourceBlending) {
+                enabledExtensions.push("dual_source_blending");
+
+                fragmentOutputs += "  @location(0) @blend_src(0) color : vec4<f32>,\n";
+                fragmentOutputs += "  @location(0) @blend_src(1) color2 : vec4<f32>,\n";
+            } else {
+                fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+            }
             indexLocation++;
         }
 
@@ -479,6 +490,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         const fragmentStartingCode = "  fragmentInputs = input;\n  " + fragCoordCode;
         const fragmentEndingCode = "  return fragmentOutputs;";
         needDiagnosticOff = fragmentCode.indexOf(Constants.DISABLEUA) !== -1;
+
+        if (enabledExtensions.length > 0) {
+            fragmentCode = "enable " + enabledExtensions.join(";\nenable ") + ";\n" + fragmentCode;
+        }
 
         fragmentCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
