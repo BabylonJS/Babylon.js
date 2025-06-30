@@ -7,9 +7,11 @@ import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock.js";
 /**
  * Converts all GLSL files in a path into blocks for use in the build system.
  * @param shaderPath - The path to the .glsl files to convert, or a single .glsl file.
- * @param importPath - The path to import the ShaderProgram type from.
+ * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
+ * @param babylonCorePath - The path to import the Babylon core from (optional).
+
  */
-export function ConvertShaders(shaderPath: string, importPath: string) {
+export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string, babylonCorePath?: string) {
     const stats = fs.statSync(shaderPath);
 
     let shaderFiles: fs.Dirent[];
@@ -40,23 +42,24 @@ export function ConvertShaders(shaderPath: string, importPath: string) {
     // Convert all shaders
     for (const shaderFile of shaderFiles) {
         const fullPathAndFileName = path.join(shaderFile.path, shaderFile.name);
-        ConvertShader(fullPathAndFileName, importPath);
+        ConvertShader(fullPathAndFileName, smartFiltersCorePath, babylonCorePath);
     }
 }
 
 /**
  * Converts a single GLSL file into a block class or a ShaderProgram for use in the build system.
  * @param fullPathAndFileName - The full path and file name of the .glsl file to convert.
- * @param importPath - The path to import the ShaderProgram type from.
+ * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
+ * @param babylonCorePath - The path to import the Babylon core from (optional).
  */
-export function ConvertShader(fullPathAndFileName: string, importPath: string): void {
+export function ConvertShader(fullPathAndFileName: string, smartFiltersCorePath: string, babylonCorePath?: string): void {
     Logger.Log(`\nProcessing shader: ${fullPathAndFileName}`);
 
     if (fullPathAndFileName.endsWith(".fragment.glsl")) {
         Logger.Log("Generating a .ts file that exports a ShaderProgram.");
-        ConvertGlslIntoShaderProgram(fullPathAndFileName, importPath);
+        ConvertGlslIntoShaderProgram(fullPathAndFileName, smartFiltersCorePath);
     } else if (fullPathAndFileName.endsWith(".block.glsl")) {
         Logger.Log("Generating a .ts file that exports the block as a class.");
-        ConvertGlslIntoBlock(fullPathAndFileName, importPath);
+        ConvertGlslIntoBlock(fullPathAndFileName, smartFiltersCorePath, babylonCorePath);
     }
 }

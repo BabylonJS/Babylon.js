@@ -36,7 +36,7 @@
         "build": "npm run clean && npm run copySrc && npm run compile",
         "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
         "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilterBlocks/src', './src', { recursive: true })\"",
-        "precompile": "node ../../../dev/smartFilters/dist/utils/buildTools/buildShaders.js ./src/blocks @babylonjs/smart-filters",
+        "precompile": "tsx ../../../dev/smartFilters/src/utils/buildTools/buildShaders.ts ./src/blocks smart-filters core",
         "compile": "tsc -b tsconfig.build.json",
         "postcompile": "build-tools -c add-js-to-es6"
     },

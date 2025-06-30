@@ -6,6 +6,8 @@ import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlo
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const EXTRA_IMPORTS = "@EXTRA_IMPORTS@";
 // eslint-disable-next-line @typescript-eslint/naming-convention
+const BABYLON_CORE_PATH = "@BABYLON_CORE_PATH@";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SMART_FILTER_CORE_IMPORT = "@SMART_FILTER_CORE_IMPORT@";
 const SHADER_PROGRAM = "@SHADER_PROGRAM@";
 const BLOCK_NAME = "@BLOCK_NAME@";
@@ -68,7 +70,7 @@ const FileTemplate = `/* eslint-disable prettier/prettier */
 // to the block. This file will get overwritten when the build
 // is run or during a watch when the .glsl file is updated.
 
-import type { Effect } from "@babylonjs/core/Materials/effect.js";
+import type { Effect } from "${BABYLON_CORE_PATH}/Materials/effect.js";
 
 import {
     ${SHADER_BINDING_EXTENDS},
@@ -149,12 +151,14 @@ ${BLOCK_GET_SHADER_BINDING_VARS}
 /**
  * Converts a single shader to a .ts file which exports a Smart Filter block
  * @param fragmentShaderPath - The path to the fragment file for the shader
- * @param importPath - The path to import the ShaderProgram type from
+ * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
+ * @param babylonCorePath - The path to import the Babylon core from (optional).
+
  */
-export function ConvertGlslIntoBlock(fragmentShaderPath: string, importPath: string): void {
+export function ConvertGlslIntoBlock(fragmentShaderPath: string, smartFiltersCorePath: string, babylonCorePath?: string): void {
     const extraImports: string[] = [];
 
-    const { shaderProgramCode, fragmentShaderInfo } = ExtractShaderProgramFromGlsl(fragmentShaderPath, importPath, false, false);
+    const { shaderProgramCode, fragmentShaderInfo } = ExtractShaderProgramFromGlsl(fragmentShaderPath, smartFiltersCorePath, false, false);
 
     // Validation
     if (!fragmentShaderInfo.blockType) {
@@ -296,7 +300,8 @@ export function ConvertGlslIntoBlock(fragmentShaderPath: string, importPath: str
     // Generate final contents
     const finalContents = FileTemplate.replace(SHADER_PROGRAM, shaderProgramCode)
         .replace(EXTRA_IMPORTS, extraImports.join(",\n"))
-        .replace(SMART_FILTER_CORE_IMPORT, importPath)
+        .replace(BABYLON_CORE_PATH, babylonCorePath || "@babylonjs/core")
+        .replace(SMART_FILTER_CORE_IMPORT, smartFiltersCorePath)
         .replace(new RegExp(BLOCK_NAME, "g"), fragmentShaderInfo.blockType)
         .replace(NAMESPACE, fragmentShaderInfo.namespace || "Other")
         .replace(new RegExp(SHADER_BINDING_EXTENDS, "g"), shaderBindingExtends)

@@ -16,7 +16,10 @@
         "build": "npm run compile",
         "test": "jest -c ../../../jest.config.ts --passWithNoTests",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf --glob ./src/blocks/**/*.block.ts && rimraf --glob ./src/blocks/**/*.fragment.ts",
-        "compile": "tsc -b tsconfig.build.json",
+        "precompile": "npm run compile:assets",
+        "compile": "npm run compile:source",
+        "compile:assets": "build-tools -c process-assets",
+        "compile:source": "tsc -b tsconfig.build.json",
         "watch": "build-tools -c dev-watch --packages \"smart-filters-blocks\" -wa"
     },
     "devDependencies": {

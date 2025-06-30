@@ -11,7 +11,7 @@ import {
     createStrongRef,
     PropertyTypeForEdition,
     editableInPropertyPage,
-} from "@babylonjs/smart-filters";
+} from "smart-filters";
 import { compositionBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
 import { uniforms, shaderProgram } from "./compositionBlock.fragment.js";

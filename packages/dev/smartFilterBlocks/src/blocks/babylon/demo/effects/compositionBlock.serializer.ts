@@ -1,7 +1,7 @@
 import type { CompositionBlock } from "./compositionBlock.js";
 import { compositionBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
-import type { IBlockSerializerV1, BaseBlock } from "@babylonjs/smart-filters";
+import type { IBlockSerializerV1, BaseBlock } from "smart-filters";
 
 /**
  * The V1 serializer for a Composition Block

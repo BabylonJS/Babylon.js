@@ -1,4 +1,4 @@
-import type { IBlockSerializerV1 } from "@babylonjs/smart-filters";
+import type { IBlockSerializerV1 } from "smart-filters";
 import { BlurBlockSerializer } from "../blocks/babylon/demo/effects/blurBlock.serializer.js";
 import { DirectionalBlurBlockSerializer } from "../blocks/babylon/demo/effects/directionalBlurBlock.serializer.js";
 import { CompositionBlockSerializer } from "../blocks/babylon/demo/effects/compositionBlock.serializer.js";

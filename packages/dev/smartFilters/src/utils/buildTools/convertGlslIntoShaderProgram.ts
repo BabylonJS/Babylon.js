@@ -79,14 +79,14 @@ export function ConvertGlslIntoShaderProgram(fragmentShaderPath: string, importP
 /**
  * Extracts the shader program from a glsl file(s) and returns it as a string which can be written to a .ts file
  * @param fragmentShaderPath - The path to the fragment file for the shader
- * @param importPath - The path to import the ShaderProgram type from
+ * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
  * @param exportObjects - Whether to export the shaderProgram and uniforms objects
  * @param includeImports - Whether to include the imports in the output
  * @returns The string to write to the .ts file
  */
 export function ExtractShaderProgramFromGlsl(
     fragmentShaderPath: string,
-    importPath: string,
+    smartFiltersCorePath: string,
     exportObjects: boolean,
     includeImports: boolean
 ): {
@@ -131,7 +131,7 @@ export function ExtractShaderProgramFromGlsl(
                 .replace(FUNCTION_CODE, AddLinePrefixes(shaderFunction.code, CodeLinePrefix))
         );
     }
-    const imports = includeImports ? ImportTemplate.replace(TYPE_IMPORT_PATH, importPath) : "";
+    const imports = includeImports ? ImportTemplate.replace(TYPE_IMPORT_PATH, smartFiltersCorePath) : "";
     const finalContents = ShaderTemplate.replace(VERTEX_SHADER, vertexShader ? `\`${vertexShader}\`` : "undefined")
         .replace(IMPORTS, imports)
         .replace(UNIFORMS, "\n" + AddLinePrefixes(fragmentShaderInfo.shaderCode.uniform || "", UniformLinePrefix))

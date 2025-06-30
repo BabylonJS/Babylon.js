@@ -9,7 +9,7 @@
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "@babylonjs/core/*": ["dev/core/dist/*"],
-            "@babylonjs/smart-filters": ["dev/smartFilters/dist"]
+            "smart-filters": ["dev/smartFilters/dist"]
         }
     },
 
