@@ -6,15 +6,7 @@
         "types": [
             // (various types, e.g. jquery, core-js),
             "chrome"
-        ],
-        "paths": {
-            "core/*": ["dev/core/src/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
-            "@babylonjs/smart-filters": ["dev/smartFilters/src"],
-            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/src"],
-            "@babylonjs/smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
-            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"]
-        }
+        ]
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],

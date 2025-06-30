@@ -2,15 +2,7 @@
     "extends": "../../../tsconfig.json",
 
     "compilerOptions": {
-        "resolveJsonModule": true,
-        "paths": {
-            "core/*": ["dev/core/src/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
-            "smart-filters": ["dev/smartFilters/src"],
-            "smart-filters-blocks": ["dev/smartFilterBlocks/src"],
-            "smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
-            "smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"]
-        }
+        "resolveJsonModule": true
     },
 
     "include": ["./src/**/*.ts", "./src/configuration/smartFilters/serialized/*.json"],

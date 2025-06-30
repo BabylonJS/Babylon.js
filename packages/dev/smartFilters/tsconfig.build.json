@@ -5,11 +5,7 @@
         "composite": true,
         "strict": true,
         "outDir": "./dist",
-        "rootDir": "./src",
-        "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"]
-        }
+        "rootDir": "./src"
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],

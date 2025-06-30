@@ -5,12 +5,7 @@
         "composite": true,
         "strict": true,
         "outDir": "./dist",
-        "rootDir": "./src",
-        "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "@babylonjs/core/*": ["dev/core/dist/*"],
-            "smart-filters": ["dev/smartFilters/dist"]
-        }
+        "rootDir": "./src"
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],

@@ -8,7 +8,7 @@ import * as childProcess from "child_process";
  */
 export function BuildSmartFilterShaderBlock(filePath: string) {
     try {
-        childProcess.execSync(`tsx ./packages/dev/smartFilters/src/utils/buildTools/buildShaders.ts ${filePath} smart-filters`, {
+        childProcess.execSync(`tsx ./packages/dev/smartFilters/src/utils/buildTools/buildShaders.ts ${filePath} smart-filters core`, {
             stdio: "inherit",
             encoding: "utf8",
         });

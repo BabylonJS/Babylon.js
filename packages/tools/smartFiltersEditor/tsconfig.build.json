@@ -4,15 +4,7 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "resolveJsonModule": true,
-        "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "smart-filters": ["dev/smartFilters/dist"],
-            "smart-filters-blocks": ["dev/smartFilterBlocks/dist"],
-            "smart-filters-blocks/*": ["dev/smartFilterBlocks/dist/*"],
-            "smart-filters-editor-control": ["tools/smartFiltersEditorControl/dist"]
-        }
+        "resolveJsonModule": true
     },
 
     "include": ["./src/**/*.ts", "./src/configuration/smartFilters/serialized/*.json"],

@@ -5,13 +5,7 @@
         "composite": true,
         "strict": true,
         "outDir": "./dist",
-        "rootDir": "./src",
-        "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "smart-filters": ["dev/smartFilters/dist"],
-            "smart-filters-blocks": ["dev/smartFilterBlocks/dist"]
-        }
+        "rootDir": "./src"
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
