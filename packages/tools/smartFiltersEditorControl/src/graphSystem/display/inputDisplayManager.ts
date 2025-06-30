@@ -3,9 +3,9 @@ import { BlockTools } from "../../blockTools.js";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as styles from "../../assets/styles/graphSystem/display/inputDisplayManager.module.scss";
-import { ConnectionPointType } from "@babylonjs/smart-filters";
+import { ConnectionPointType } from "smart-filters";
 import { Color3, Color4 } from "core/Maths/math.color.js";
-import type { AnyInputBlock } from "@babylonjs/smart-filters";
+import type { AnyInputBlock } from "smart-filters";
 import { GetTextureInputBlockEditorData } from "../getEditorData.js";
 
 export class InputDisplayManager implements IDisplayManager {

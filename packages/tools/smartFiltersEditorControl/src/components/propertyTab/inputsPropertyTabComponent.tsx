@@ -6,8 +6,8 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import "../../assets/styles/components/propertyTab.scss";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponent.js";
-import { ConnectionPointType } from "@babylonjs/smart-filters";
-import type { AnyInputBlock } from "@babylonjs/smart-filters";
+import { ConnectionPointType } from "smart-filters";
+import type { AnyInputBlock } from "smart-filters";
 import { Vector2PropertyTabComponent } from "./properties/vector2PropertyTabComponent.js";
 import { Color3PropertyTabComponent } from "./properties/color3PropertyTabComponent.js";
 import { Color4PropertyTabComponent } from "./properties/color4PropertyTabComponent.js";

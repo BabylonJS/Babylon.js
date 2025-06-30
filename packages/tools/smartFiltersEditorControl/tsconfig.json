@@ -5,8 +5,8 @@
         "paths": {
             "core/*": ["dev/core/src/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
-            "@babylonjs/smart-filters": ["dev/smartFilters/src"],
-            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/src"]
+            "smart-filters": ["dev/smartFilters/src"],
+            "smart-filters-blocks": ["dev/smartFilterBlocks/src"]
         }
     }
 }

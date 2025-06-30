@@ -9,8 +9,8 @@
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "@babylonjs/smart-filters": ["dev/smartFilters/dist"],
-            "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/dist"]
+            "smart-filters": ["dev/smartFilters/dist"],
+            "smart-filters-blocks": ["dev/smartFilterBlocks/dist"]
         }
     },
 

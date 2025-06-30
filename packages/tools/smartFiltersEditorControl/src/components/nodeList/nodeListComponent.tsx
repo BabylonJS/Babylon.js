@@ -14,7 +14,7 @@ import addButton from "../../assets/imgs/add.svg";
 import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent.js";
 import { GetBlockKey } from "../../helpers/blockKeyConverters.js";
 import { CustomBlocksNamespace } from "../../configuration/constants.js";
-import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
+import type { IBlockRegistration } from "smart-filters-blocks";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 
 interface INodeListComponentProps {

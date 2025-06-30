@@ -1,4 +1,4 @@
-import type { ConnectionPointType, InputBlock, InputBlockEditorData } from "@babylonjs/smart-filters";
+import type { ConnectionPointType, InputBlock, InputBlockEditorData } from "smart-filters";
 
 /**
  * Gets the InputBlockEditorData for a Texture InputBlock, and if it's missing,

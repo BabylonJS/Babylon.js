@@ -1,4 +1,4 @@
-import type { SmartFilter } from "@babylonjs/smart-filters";
+import type { SmartFilter } from "smart-filters";
 import type { GlobalState } from "../globalState";
 import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 

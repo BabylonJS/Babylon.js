@@ -1,4 +1,4 @@
-import { ConnectionPointType, type SmartFilter, type InputBlock } from "@babylonjs/smart-filters";
+import { ConnectionPointType, type SmartFilter, type InputBlock } from "smart-filters";
 import { WebCamInputBlock } from "../configuration/editorBlocks/webCamInputBlock/webCamInputBlock.js";
 import type { Observable } from "core/Misc/observable.js";
 import type { ThinEngine } from "core/Engines/thinEngine.js";

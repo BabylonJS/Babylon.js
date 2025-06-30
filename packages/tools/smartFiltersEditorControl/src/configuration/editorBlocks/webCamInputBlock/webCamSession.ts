@@ -1,7 +1,7 @@
 import type { ThinEngine } from "core/Engines/thinEngine.js";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
 import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
-import type { ConnectionPointType, IDisposable, RuntimeData } from "@babylonjs/smart-filters";
+import type { ConnectionPointType, IDisposable, RuntimeData } from "smart-filters";
 
 /**
  * Manages a single web cam session for a given source.

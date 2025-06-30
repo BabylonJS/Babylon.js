@@ -1,6 +1,6 @@
 import { BlockNodeData } from "./blockNodeData.js";
-import type { ConnectionPoint, SmartFilter, RuntimeData } from "@babylonjs/smart-filters";
-import { InputBlock, ConnectionPointType, createStrongRef, createImageTexture } from "@babylonjs/smart-filters";
+import type { ConnectionPoint, SmartFilter, RuntimeData } from "smart-filters";
+import { InputBlock, ConnectionPointType, createStrongRef, createImageTexture } from "smart-filters";
 import type { GlobalState } from "../globalState";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";

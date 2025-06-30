@@ -1,7 +1,7 @@
 import type { ThinEngine } from "core/Engines/thinEngine.js";
 import type { Nullable } from "core/types.js";
-import { type BaseBlock, type SmartFilter, type SmartFilterDeserializer, Logger } from "@babylonjs/smart-filters";
-import { inputsNamespace, type IBlockRegistration } from "@babylonjs/smart-filters-blocks";
+import { type BaseBlock, type SmartFilter, type SmartFilterDeserializer, Logger } from "smart-filters";
+import { inputsNamespace, type IBlockRegistration } from "smart-filters-blocks";
 import type { BlockEditorRegistration } from "./blockEditorRegistration";
 import { CustomInputDisplayManager } from "./customInputDisplayManager.js";
 import { CustomBlocksNamespace, OutputBlockName } from "./constants.js";

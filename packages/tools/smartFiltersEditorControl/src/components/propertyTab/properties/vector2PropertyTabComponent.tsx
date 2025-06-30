@@ -1,5 +1,5 @@
 import { Component } from "react";
-import type { ConnectionPointType, InputBlock } from "@babylonjs/smart-filters";
+import type { ConnectionPointType, InputBlock } from "smart-filters";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent.js";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject.js";

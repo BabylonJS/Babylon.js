@@ -1,4 +1,4 @@
-import type { SmartFilter, ISerializedBlockV1, BaseBlock } from "@babylonjs/smart-filters";
+import type { SmartFilter, ISerializedBlockV1, BaseBlock } from "smart-filters";
 import type { Nullable } from "core/types";
 import { WebCamInputBlockName } from "./blockNames.js";
 

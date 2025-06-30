@@ -1,5 +1,5 @@
 import { Component } from "react";
-import type { ConnectionPointType, InputBlock } from "@babylonjs/smart-filters";
+import type { ConnectionPointType, InputBlock } from "smart-filters";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
 import { GetFloatInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
 import { FloatSliderComponent } from "../../../sharedComponents/floatSliderComponent.js";

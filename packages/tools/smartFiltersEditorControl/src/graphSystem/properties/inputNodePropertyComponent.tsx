@@ -4,7 +4,7 @@ import { GeneralPropertyTabComponent, GenericPropertyComponent } from "./generic
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
 import type { IInspectableOptions } from "core/Misc/iInspectable.js";
-import { ConnectionPointType, type AnyInputBlock } from "@babylonjs/smart-filters";
+import { ConnectionPointType, type AnyInputBlock } from "smart-filters";
 import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent.js";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent.js";
 import { ImageSourcePropertyTabComponent } from "../../components/propertyTab/properties/imageSourcePropertyTabComponent.js";

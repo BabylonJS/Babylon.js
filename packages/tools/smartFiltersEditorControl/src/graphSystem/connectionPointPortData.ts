@@ -4,8 +4,8 @@ import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interf
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData.js";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
-import type { ConnectionPoint } from "@babylonjs/smart-filters";
-import { getCompatibilityIssueMessage, ConnectionPointDirection } from "@babylonjs/smart-filters";
+import type { ConnectionPoint } from "smart-filters";
+import { getCompatibilityIssueMessage, ConnectionPointDirection } from "smart-filters";
 
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;

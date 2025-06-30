@@ -9,7 +9,7 @@ import {
     PropertyTypeForEdition,
     type IEditablePropertyListOption,
     Logger,
-} from "@babylonjs/smart-filters";
+} from "smart-filters";
 import { Observable } from "core/Misc/observable.js";
 import { WebCamInputBlockName } from "../blockNames.js";
 

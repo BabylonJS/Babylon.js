@@ -21,7 +21,7 @@ import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNo
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ForceWebGL1StorageKey, type GlobalState } from "../../globalState.js";
 import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
-import { SmartFilterCoreVersion } from "@babylonjs/smart-filters";
+import { SmartFilterCoreVersion } from "smart-filters";
 import type { Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 

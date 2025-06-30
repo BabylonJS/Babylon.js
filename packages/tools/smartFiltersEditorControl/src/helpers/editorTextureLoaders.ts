@@ -3,7 +3,7 @@ import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
 import type { Observable } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { createImageTexture, type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
+import { createImageTexture, type ConnectionPointType, type InputBlock } from "smart-filters";
 
 export type LoadResult = {
     /**

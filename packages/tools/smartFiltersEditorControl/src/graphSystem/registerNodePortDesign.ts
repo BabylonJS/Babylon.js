@@ -2,7 +2,7 @@ import { BlockTools } from "../blockTools.js";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import type { ConnectionPointPortData } from "./connectionPointPortData";
-import { ConnectionPointType } from "@babylonjs/smart-filters";
+import { ConnectionPointType } from "smart-filters";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, imgHost: HTMLImageElement) => {

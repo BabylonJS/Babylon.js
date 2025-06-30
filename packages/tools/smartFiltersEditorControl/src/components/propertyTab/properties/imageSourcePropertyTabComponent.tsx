@@ -1,7 +1,7 @@
 import * as react from "react";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent.js";
 import { NumericInput } from "shared-ui-components/lines/numericInputComponent.js";
-import { type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
+import { type ConnectionPointType, type InputBlock } from "smart-filters";
 import { Tools } from "core/Misc/tools.js";
 import type { GlobalState, TexturePreset } from "../../../globalState.js";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";

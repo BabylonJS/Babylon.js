@@ -1,5 +1,5 @@
-import type { SmartFilter, AnyInputBlock } from "@babylonjs/smart-filters";
-import { ConnectionPointType } from "@babylonjs/smart-filters";
+import type { SmartFilter, AnyInputBlock } from "smart-filters";
+import { ConnectionPointType } from "smart-filters";
 
 export class BlockTools {
     /**
