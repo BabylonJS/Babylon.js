@@ -1,11 +1,11 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { Observable } from "@babylonjs/core/Misc/observable";
-import type { SmartFilter, SmartFilterDeserializer } from "@babylonjs/smart-filters";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Observable } from "core/Misc/observable";
+import type { SmartFilter, SmartFilterDeserializer } from "smart-filters";
 import { CreateDefaultSmartFilter } from "../defaultSmartFilter";
-import type { Nullable } from "@babylonjs/core/types";
+import type { Nullable } from "core/types";
 import { GetSnippet, SetSnippet } from "./hashFunctions";
 import { LoadSmartFilterFromSnippetServer } from "./loadSmartFilterFromSnippetServer";
-import { LogEntry } from "@babylonjs/smart-filters-editor-control";
+import { LogEntry } from "smart-filters-editor-control";
 
 /**
  * Loads the starting Smart Filter for this session, consulting the URL first, and if

@@ -1,4 +1,4 @@
-import type { TexturePreset } from "@babylonjs/smart-filters-editor-control";
+import type { TexturePreset } from "smart-filters-editor-control";
 
 /**
  * Texture presets are used to provide a list of assets that can be used

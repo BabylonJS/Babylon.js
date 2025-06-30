@@ -1,5 +1,5 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { Nullable } from "@babylonjs/core/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Nullable } from "core/types";
 import {
     type SmartFilter,
     type BaseBlock,
@@ -10,8 +10,8 @@ import {
     CustomAggregateBlock,
     type SmartFilterDeserializer,
     Logger,
-} from "@babylonjs/smart-filters";
-import { CustomBlocksNamespace, GetBlockKey } from "@babylonjs/smart-filters-editor-control";
+} from "smart-filters";
+import { CustomBlocksNamespace, GetBlockKey } from "smart-filters-editor-control";
 
 const SavedCustomBlockKeysName = "Custom-Block-List";
 const SavedCustomBlockDefinitionNameSuffix = "-Definition";

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { SmartFilter, ISerializedBlockV1, BaseBlock, SmartFilterDeserializer } from "@babylonjs/smart-filters";
-import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
-import type { Nullable } from "@babylonjs/core/types";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
+import type { SmartFilter, ISerializedBlockV1, BaseBlock, SmartFilterDeserializer } from "smart-filters";
+import type { IBlockRegistration } from "smart-filters-blocks";
+import type { Nullable } from "core/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
 import type { CustomBlockManager } from "../customBlockManager";
 
 /**

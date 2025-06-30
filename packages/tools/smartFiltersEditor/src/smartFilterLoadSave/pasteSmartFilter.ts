@@ -1,6 +1,6 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { SmartFilter, SmartFilterDeserializer } from "@babylonjs/smart-filters";
-import type { Nullable } from "@babylonjs/core/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { SmartFilter, SmartFilterDeserializer } from "smart-filters";
+import type { Nullable } from "core/types";
 
 /**
  * Pastes a Smart Filter from clipboard.

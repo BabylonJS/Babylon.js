@@ -1,5 +1,5 @@
-import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
-import type { BlockEditorRegistration } from "@babylonjs/smart-filters-editor-control";
+import type { IBlockRegistration } from "smart-filters-blocks";
+import type { BlockEditorRegistration } from "smart-filters-editor-control";
 
 /**
  * Removes a custom block from the block editor registration.

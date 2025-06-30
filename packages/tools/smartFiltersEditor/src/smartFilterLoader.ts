@@ -1,8 +1,8 @@
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { SmartFilter, SmartFilterDeserializer } from "@babylonjs/smart-filters";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { SmartFilter, SmartFilterDeserializer } from "smart-filters";
 import type { SmartFilterRenderer } from "./smartFilterRenderer";
-import { Observable } from "@babylonjs/core/Misc/observable";
-import { ReadFile } from "@babylonjs/core/Misc/fileTools";
+import { Observable } from "core/Misc/observable";
+import { ReadFile } from "core/Misc/fileTools";
 
 /**
  * Indicates the source of a Smart Filter

@@ -1,5 +1,5 @@
 import { StringTools } from "shared-ui-components/stringTools.js";
-import type { SmartFilter } from "@babylonjs/smart-filters";
+import type { SmartFilter } from "smart-filters";
 import { SerializeSmartFilter } from "./serializeSmartFilter";
 
 /**

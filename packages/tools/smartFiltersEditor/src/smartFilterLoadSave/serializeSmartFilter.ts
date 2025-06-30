@@ -1,4 +1,4 @@
-import { SmartFilterSerializer, type SmartFilter } from "@babylonjs/smart-filters";
+import { SmartFilterSerializer, type SmartFilter } from "smart-filters";
 
 /**
  * Serializes the provided Smart Filter to a JSON string.

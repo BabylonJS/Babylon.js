@@ -1,4 +1,4 @@
-import { type SmartFilter } from "@babylonjs/smart-filters";
+import { type SmartFilter } from "smart-filters";
 import { GetSnippet, SetSnippet } from "./hashFunctions";
 import { SnippetUrl } from "./constants";
 import { SerializeSmartFilter } from "./serializeSmartFilter";

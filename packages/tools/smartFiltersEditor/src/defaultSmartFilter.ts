@@ -1,5 +1,5 @@
-import { ConnectionPointType, InputBlock, SmartFilter } from "@babylonjs/smart-filters";
-import { PixelateBlock } from "@babylonjs/smart-filters-blocks";
+import { ConnectionPointType, InputBlock, SmartFilter } from "smart-filters";
+import { PixelateBlock } from "smart-filters-blocks";
 
 /**
  * Creates a new instance of the default Smart Filter for the Smart Filter Editor

@@ -1,8 +1,8 @@
-import { Observable } from "@babylonjs/core/Misc/observable";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { Nullable } from "@babylonjs/core/types";
-import { RenderTargetGenerator, ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "@babylonjs/smart-filters";
-import { LogEntry, RegisterAnimations, TextureAssetCache } from "@babylonjs/smart-filters-editor-control";
+import { Observable } from "core/Misc/observable";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Nullable } from "core/types";
+import { RenderTargetGenerator, ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "smart-filters";
+import { LogEntry, RegisterAnimations, TextureAssetCache } from "smart-filters-editor-control";
 
 /**
  * Describes the result of rendering a Smart Filter

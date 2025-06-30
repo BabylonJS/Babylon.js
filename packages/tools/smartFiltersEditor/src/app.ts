@@ -1,9 +1,9 @@
 import "@babylonjs/core/Engines/Extensions/engine.rawTexture";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import { Observable, type Observer } from "@babylonjs/core/Misc/observable";
-import type { Nullable } from "@babylonjs/core/types";
-import { SmartFilterDeserializer, type ISerializedBlockV1, type SmartFilter, Logger } from "@babylonjs/smart-filters";
-import { builtInBlockRegistrations, type IBlockRegistration } from "@babylonjs/smart-filters-blocks";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import { Observable, type Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import { SmartFilterDeserializer, type ISerializedBlockV1, type SmartFilter, Logger } from "smart-filters";
+import { builtInBlockRegistrations, type IBlockRegistration } from "smart-filters-blocks";
 import {
     EditorBlockRegistrations,
     GetBlockEditorRegistration,
@@ -12,7 +12,7 @@ import {
     ObservableProperty,
     SmartFilterEditorControl,
     type SmartFilterEditorOptions,
-} from "@babylonjs/smart-filters-editor-control";
+} from "smart-filters-editor-control";
 import { SmartFilterRenderer } from "./smartFilterRenderer";
 import { CustomBlockManager } from "./customBlockManager";
 import { CreateBlockRegistration, GenerateCustomBlockRegistrations } from "./blockRegistration/generateCustomBlockEditorRegistrations";
