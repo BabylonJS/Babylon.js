@@ -50,6 +50,8 @@ export class TransformNode extends Node {
     private static _TmpRotation = Quaternion.Zero();
     private static _TmpScaling = Vector3.Zero();
     private static _TmpTranslation = Vector3.Zero();
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private static _TmpRHRestore = Matrix.Scaling(1, 1, -1);
 
     private _forward = new Vector3(0, 0, 1);
     private _up = new Vector3(0, 1, 0);
@@ -1209,6 +1211,11 @@ export class TransformNode extends Node {
                 // Cancel camera rotation
                 TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
 
+                if (this.getScene().useRightHandedSystem) {
+                    // We need to restore the scaling on z axis
+                    TmpVectors.Matrix[1].multiplyToRef(TransformNode._TmpRHRestore, TmpVectors.Matrix[1]);
+                }
+
                 TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
                 TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);
 
@@ -1238,7 +1245,7 @@ export class TransformNode extends Node {
                 this._worldMatrix.setTranslation(TmpVectors.Vector3[0]);
             }
             // Billboarding based on camera position
-            else if (cache.useBillboardPosition) {
+            else {
                 const storedTranslation = TmpVectors.Vector3[0];
                 // Save translation
                 this._worldMatrix.getTranslationToRef(storedTranslation);
