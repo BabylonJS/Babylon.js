@@ -3,10 +3,15 @@ import { useObservableState } from "../../hooks/observableHooks";
 import type { ComponentType } from "react";
 import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLine";
 
-export type BoundPropertyProps<T, P extends object> = Omit<P, "value" | "onChange"> & {
-    component: ComponentType<P & BaseComponentProps<T>>;
-    target: any;
-    propertyKey: PropertyKey;
+/**
+ * This enables type safety when using a BoundProperty
+ * Generic types TargetT and PropertyKeyT ensure that target[propertyKey] has the same type as the value/onChange of the BaseComponent
+ * Generic type PropsT ensures that the BoundProperty component accepts only the props of the underlying ComponentType
+ */
+export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object> = Omit<PropsT, "value" | "onChange"> & {
+    component: ComponentType<PropsT & BaseComponentProps<TargetT[PropertyKeyT]>>;
+    target: TargetT;
+    propertyKey: PropertyKeyT;
 };
 
 /**
@@ -15,10 +20,18 @@ export type BoundPropertyProps<T, P extends object> = Omit<P, "value" | "onChang
  * @param props
  * @returns
  */
-export function BoundProperty<T, P extends object>(props: BoundPropertyProps<T, P>) {
+export function BoundProperty<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object>(props: BoundPropertyProps<TargetT, PropertyKeyT, PropsT>) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { target, propertyKey, component: Component, ...rest } = props;
     const value = useObservableState(() => target[propertyKey], useInterceptObservable("property", target, propertyKey));
 
-    return <Component {...(rest as P)} value={value} onChange={(val: T) => (target[propertyKey] = val)} />;
+    return (
+        <Component
+            {...(rest as PropsT)}
+            value={value}
+            onChange={(val: TargetT[PropertyKeyT]) => {
+                target[propertyKey] = val;
+            }}
+        />
+    );
 }

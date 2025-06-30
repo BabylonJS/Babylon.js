@@ -6,6 +6,7 @@ import { Accordion as FluentAccordion, AccordionItem, AccordionHeader, Accordion
 
 const useStyles = makeStyles({
     accordion: {
+        overflowX: "hidden",
         overflowY: "auto",
         paddingBottom: tokens.spacingVerticalM,
         display: "flex",

@@ -10,7 +10,9 @@ import { DataBarHorizontalRegular } from "@fluentui/react-icons";
 
 import { CountStats } from "../../components/stats/countStats";
 import { FrameStepsStats } from "../../components/stats/frameStepStats";
+import { PerformanceStats } from "../../components/stats/performanceStats";
 import { StatsPane } from "../../components/stats/statsPane";
+import { SystemStats } from "../../components/stats/systemStats";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
@@ -51,8 +53,8 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
         const sectionContentCollection = new ObservableCollection<AccordionSectionContent<Scene>>();
 
         const registration = shellService.addSidePane({
-            key: "Stats",
-            title: "Stats",
+            key: "Statistics",
+            title: "Statistics",
             icon: DataBarHorizontalRegular,
             horizontalLocation: "right",
             order: 300,
@@ -92,14 +94,24 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
             key: "DefaultStats",
             content: [
                 {
-                    section: StatsCountSectionIdentity,
+                    section: StatsPerformanceSectionIdentity,
                     order: 0,
+                    component: PerformanceStats,
+                },
+                {
+                    section: StatsCountSectionIdentity,
+                    order: 1,
                     component: CountStats,
                 },
                 {
                     section: StatsFrameStepsSectionIdentity,
-                    order: 0,
+                    order: 2,
                     component: FrameStepsStats,
+                },
+                {
+                    section: StatsSystemInfoSectionIdentity,
+                    order: 3,
+                    component: SystemStats,
                 },
             ],
         });

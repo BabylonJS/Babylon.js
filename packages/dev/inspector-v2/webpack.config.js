@@ -32,24 +32,17 @@ module.exports = (env) => {
         },
 
         module: {
-            rules: [
-                {
-                    test: /\.tsx?$/,
-                    use: [
-                        {
-                            loader: "ts-loader",
-                            options: {
-                                configFile: "tsconfig.build.json",
-                                getCustomTransformers: () => ({
-                                    before: [ReactRefreshTypeScript()].filter(Boolean),
-                                }),
-                                transpileOnly: true,
-                            },
-                        },
-                    ],
-                    exclude: /node_modules/,
+            rules: webpackTools.getRules({
+                sideEffects: true,
+                includeCSS: false,
+                tsOptions: {
+                    configFile: "tsconfig.build.json",
+                    getCustomTransformers: () => ({
+                        before: [ReactRefreshTypeScript()].filter(Boolean),
+                    }),
+                    transpileOnly: true,
                 },
-            ],
+            }),
         },
 
         plugins: [new ReactRefreshWebpackPlugin()].filter(Boolean),
