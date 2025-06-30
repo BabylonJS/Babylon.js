@@ -48,7 +48,6 @@ import {
     GetAttributeType,
     GetMinMax,
     GetPrimitiveMode,
-    IsNoopNode,
     IsTriangleFillMode,
     IsChildCollapsible,
     FloatsNeed16BitInteger,
@@ -61,6 +60,7 @@ import {
     DefaultScale,
     DefaultRotation,
 } from "./glTFUtilities";
+import { IsNoopNode } from "../../exportUtils";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
 import { MultiMaterial } from "core/Materials/multiMaterial";
@@ -78,6 +78,7 @@ import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh
 import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
+import { DataWriter } from "./dataWriter";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -521,9 +522,9 @@ export class GLTFExporter {
 
     public async generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
         const binaryBuffer = await this._generateBinaryAsync();
-
         this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength, glTFPrefix, true);
+
         const bin = new Blob([binaryBuffer], { type: "application/octet-stream" });
 
         const glTFFileName = glTFPrefix + ".gltf";
@@ -564,15 +565,15 @@ export class GLTFExporter {
     public async generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
         this._shouldUseGlb = true;
         const binaryBuffer = await this._generateBinaryAsync();
-
         this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength);
+
         const glbFileName = glTFPrefix + ".glb";
         const headerLength = 12;
         const chunkLengthPrefix = 8;
         let jsonLength = jsonText.length;
         let encodedJsonText;
-        // make use of TextEncoder when available
+        // Make use of TextEncoder when available
         if (typeof TextEncoder !== "undefined") {
             const encoder = new TextEncoder();
             encodedJsonText = encoder.encode(jsonText);
@@ -583,61 +584,53 @@ export class GLTFExporter {
 
         const byteLength = headerLength + 2 * chunkLengthPrefix + jsonLength + jsonPadding + binaryBuffer.byteLength + binPadding;
 
-        // header
-        const headerBuffer = new ArrayBuffer(headerLength);
-        const headerBufferView = new DataView(headerBuffer);
-        headerBufferView.setUint32(0, 0x46546c67, true); //glTF
-        headerBufferView.setUint32(4, 2, true); // version
-        headerBufferView.setUint32(8, byteLength, true); // total bytes in file
+        const dataWriter = new DataWriter(byteLength);
 
-        // json chunk
-        const jsonChunkBuffer = new ArrayBuffer(chunkLengthPrefix + jsonLength + jsonPadding);
-        const jsonChunkBufferView = new DataView(jsonChunkBuffer);
-        jsonChunkBufferView.setUint32(0, jsonLength + jsonPadding, true);
-        jsonChunkBufferView.setUint32(4, 0x4e4f534a, true);
+        // Header
+        dataWriter.writeUInt32(0x46546c67); // "glTF"
+        dataWriter.writeUInt32(2); // Version
+        dataWriter.writeUInt32(byteLength); // Total bytes in file
 
-        // json chunk bytes
-        const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-        // if TextEncoder was available, we can simply copy the encoded array
+        // JSON chunk length prefix
+        dataWriter.writeUInt32(jsonLength + jsonPadding);
+        dataWriter.writeUInt32(0x4e4f534a); // "JSON"
+
+        // JSON chunk bytes
         if (encodedJsonText) {
-            jsonData.set(encodedJsonText);
+            // If TextEncoder was available, we can simply copy the encoded array
+            dataWriter.writeTypedArray(encodedJsonText);
         } else {
             const blankCharCode = "_".charCodeAt(0);
             for (let i = 0; i < jsonLength; ++i) {
                 const charCode = jsonText.charCodeAt(i);
-                // if the character doesn't fit into a single UTF-16 code unit, just put a blank character
+                // If the character doesn't fit into a single UTF-16 code unit, just put a blank character
                 if (charCode != jsonText.codePointAt(i)) {
-                    jsonData[i] = blankCharCode;
+                    dataWriter.writeUInt8(blankCharCode);
                 } else {
-                    jsonData[i] = charCode;
+                    dataWriter.writeUInt8(charCode);
                 }
             }
         }
 
-        // json padding
-        const jsonPaddingView = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix + jsonLength);
+        // JSON padding
         for (let i = 0; i < jsonPadding; ++i) {
-            jsonPaddingView[i] = 0x20;
+            dataWriter.writeUInt8(0x20);
         }
 
-        // binary chunk
-        const binaryChunkBuffer = new ArrayBuffer(chunkLengthPrefix);
-        const binaryChunkBufferView = new DataView(binaryChunkBuffer);
-        binaryChunkBufferView.setUint32(0, binaryBuffer.byteLength + binPadding, true);
-        binaryChunkBufferView.setUint32(4, 0x004e4942, true);
+        // Binary chunk length prefix
+        dataWriter.writeUInt32(binaryBuffer.byteLength + binPadding);
+        dataWriter.writeUInt32(0x004e4942); // "BIN"
 
-        // binary padding
-        const binPaddingBuffer = new ArrayBuffer(binPadding);
-        const binPaddingView = new Uint8Array(binPaddingBuffer);
+        // Binary chunk bytes
+        dataWriter.writeTypedArray(binaryBuffer);
+
+        // Binary padding
         for (let i = 0; i < binPadding; ++i) {
-            binPaddingView[i] = 0;
+            dataWriter.writeUInt8(0);
         }
-
-        const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer, binPaddingBuffer];
-        const glbFile = new Blob(glbData, { type: "application/octet-stream" });
 
         const container = new GLTFData();
-        container.files[glbFileName] = glbFile;
+        container.files[glbFileName] = new Blob([dataWriter.getOutputData()], { type: "application/octet-stream" });
 
         return container;
     }

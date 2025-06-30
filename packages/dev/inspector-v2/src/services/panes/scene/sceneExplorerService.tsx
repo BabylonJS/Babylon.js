@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
 
 import type { EntityBase, SceneExplorerEntityCommand, SceneExplorerSection } from "../../../components/scene/sceneExplorer";

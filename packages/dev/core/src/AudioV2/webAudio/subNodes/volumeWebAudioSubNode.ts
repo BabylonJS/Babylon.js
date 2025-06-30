@@ -1,4 +1,7 @@
+import type { Nullable } from "../../../types";
 import { _VolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import type { IAudioParameterRampOptions } from "../../audioParameter";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSubNode } from "../webAudioNode";
 
@@ -10,30 +13,37 @@ export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): P
 
 /** @internal */
 export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebAudioSubNode {
-    private _volume: number = 1;
+    private _volume: _WebAudioParameterComponent;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public readonly node: GainNode;
+    public readonly node: AudioNode;
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this.node = new GainNode(engine._audioContext);
+        const gainNode = (this.node = new GainNode(engine._audioContext));
+        this._volume = new _WebAudioParameterComponent(engine, gainNode.gain);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._volume.dispose();
     }
 
     /** @internal */
     public get volume(): number {
-        return this._volume;
+        return this._volume.value;
     }
 
     /** @internal */
     public set volume(value: number) {
-        this._volume = value;
-        this.engine._setAudioParam(this.node.gain, value);
+        this.setVolume(value);
     }
 
     /** @internal */
@@ -44,6 +54,11 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
     /** @internal */
     public get _outNode(): AudioNode {
         return this.node;
+    }
+
+    /** @internal */
+    public setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
+        this._volume.setTargetValue(value, options);
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {

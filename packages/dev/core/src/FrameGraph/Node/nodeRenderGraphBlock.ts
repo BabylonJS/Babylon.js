@@ -8,7 +8,6 @@ import type {
     FrameGraph,
     NodeRenderGraphResourceContainerBlock,
     FrameGraphTextureHandle,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";

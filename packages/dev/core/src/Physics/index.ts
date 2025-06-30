@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./v1/index";
 export * from "./v2/index";
 export * from "./physicsEngineComponent";

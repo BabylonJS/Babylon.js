@@ -7,16 +7,13 @@ import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector"
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 import { Logger } from "core/Misc/logger";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
-
-// Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
-const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.Zero();
@@ -314,32 +311,6 @@ export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, pare
 
     if (!parentBabylonNode.scaling.equalsWithEpsilon(expectedScale, Epsilon)) {
         Logger.Warn(`Cannot collapse node ${babylonNode.name} into parent node ${parentBabylonNode.name} with modified scaling.`);
-        return false;
-    }
-
-    return true;
-}
-
-export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
-    if (!(node instanceof TransformNode)) {
-        return false;
-    }
-
-    // Transform
-    if (useRightHandedSystem) {
-        const matrix = node.getWorldMatrix();
-        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
-            return false;
-        }
-    } else {
-        const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
-        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
-            return false;
-        }
-    }
-
-    // Geometry
-    if (node instanceof AbstractMesh && node.geometry) {
         return false;
     }
 

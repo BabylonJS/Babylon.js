@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
 
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
@@ -56,6 +55,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             title: "Properties",
             icon: DocumentTextRegular,
             horizontalLocation: "right",
+            order: 100,
             suppressTeachingMoment: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);

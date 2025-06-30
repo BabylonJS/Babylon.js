@@ -1,2 +1,2 @@
-// eslint-disable-next-line import/no-internal-modules
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./HtmlTwin/index";
