@@ -1208,14 +1208,16 @@ export class TransformNode extends Node {
                 const storedTranslation = TmpVectors.Vector3[0];
                 this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
 
-                // Cancel camera rotation
+                // Get camera view matrix
                 TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
 
                 if (this.getScene().useRightHandedSystem) {
-                    // We need to restore the scaling on z axis
+                    // This operation is necessary to cancel out the scaling component of the matrix without decomposing it.
+                    // It's a trick to extract only the rotation part.
                     TmpVectors.Matrix[1].multiplyToRef(TransformNode._TmpRHRestore, TmpVectors.Matrix[1]);
                 }
 
+                // This will cancel the camera rotation
                 TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
                 TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);
 
