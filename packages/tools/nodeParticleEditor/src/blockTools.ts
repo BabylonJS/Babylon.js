@@ -1,6 +1,5 @@
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
-import { RandomRangeBlock } from "core/Particles/Node/Blocks/randomRangeBlock";
 import { UpdateDirectionBlock } from "core/Particles/Node/Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "core/Particles/Node/Blocks/Update/updatePositionBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
@@ -140,8 +139,6 @@ export class BlockTools {
                 return new CustomShapeBlock("Custom shape");
             case "CylinderShapeBlock":
                 return new CylinderShapeBlock("Cylinder shape");
-            case "RandomRangeBlock":
-                return new RandomRangeBlock("Random range");
             case "PositionBlock": {
                 const block = new ParticleInputBlock("Position");
                 block.contextualValue = NodeParticleContextualSources.Position;
