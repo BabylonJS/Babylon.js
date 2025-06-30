@@ -8,7 +8,7 @@ import { OutputBlock } from "./blockFoundation/outputBlock.js";
 import { InternalSmartFilterRuntime } from "./runtime/smartFilterRuntime.js";
 import { RenderTargetGenerator } from "./runtime/renderTargetGenerator.js";
 import { AggregateBlock } from "./blockFoundation/aggregateBlock.js";
-import type { IEditorData } from "shared-ui-components-for-sf/nodeGraphSystem/interfaces/nodeLocationInfo.js";
+import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo.js";
 import type { IDisposable } from "./IDisposable.js";
 import { ShaderBlock } from "./blockFoundation/shaderBlock.js";
 import type { ThinRenderTargetTexture } from "core/Materials/Textures/thinRenderTargetTexture.js";

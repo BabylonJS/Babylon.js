@@ -4,7 +4,7 @@
     "compilerOptions": {
         "paths": {
             "core/*": ["dev/core/src/*"],
-            "shared-ui-components/*": ["dev/shared-ui-components/src/*"]
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
         }
     }
 }
