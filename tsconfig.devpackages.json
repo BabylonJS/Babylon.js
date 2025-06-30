@@ -66,6 +66,9 @@
         },
         {
             "path": "packages/tools/smartFiltersEditorControl/tsconfig.build.json"
+        },
+        {
+            "path": "packages/tools/smartFiltersDebugger/tsconfig.build.json"
         }
     ],
     "include": []

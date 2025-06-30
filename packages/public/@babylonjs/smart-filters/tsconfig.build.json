@@ -25,7 +25,11 @@
                 "basePackage": "@babylonjs/smart-filters",
                 "appendJS": true
             }
-        ]
+        ],
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"]
+        }
     },
 
     "include": ["./src/**/*"]
