@@ -675,6 +675,7 @@ export class SpriteManager implements ISpriteManager {
         if (this._scene.spriteManagers) {
             const index = this._scene.spriteManagers.indexOf(this);
             this._scene.spriteManagers.splice(index, 1);
+            this._scene.onSpriteManagerRemovedObservable.notifyObservers(this);
         }
 
         // Callback
