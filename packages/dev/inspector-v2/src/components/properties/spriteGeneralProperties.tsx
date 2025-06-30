@@ -1,10 +1,10 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Sprite } from "core/index";
 
 import type { FunctionComponent } from "react";
 
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { BoundProperty } from "./boundProperty";
 
 export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; setSelectedEntity: (entity: unknown) => void }> = (props) => {
     const { sprite, setSelectedEntity } = props;
@@ -18,12 +18,13 @@ export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; setSel
                 value={sprite.manager.name}
                 onLink={() => setSelectedEntity(sprite.manager)}
             />
-            <SwitchPropertyLine
-                key="SpriteIsVisible"
-                label="Is visible"
+            <BoundProperty
+                component={SwitchPropertyLine}
+                key="IsVisible"
+                label="Is Visible"
                 description="Whether the sprite is visible or not."
-                value={sprite.isVisible}
-                onChange={(checked) => (sprite.isVisible = checked)}
+                target={sprite}
+                propertyKey="isVisible"
             />
         </>
     );
