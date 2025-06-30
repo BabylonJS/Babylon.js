@@ -7,6 +7,11 @@
             "referenceImage": "rh-billboard.png"
         },
         {
+            "title": "RH billboard2",
+            "playgroundId": "#QDVYS4#4",
+            "referenceImage": "rh-billboard2.png"
+        },
+        {
             "title": "MSDF",
             "playgroundId": "#6RLCWP#20",
             "referenceImage": "msdf.png"
