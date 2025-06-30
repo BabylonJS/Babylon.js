@@ -1,7 +1,6 @@
-import { useInterceptObservable } from "../../hooks/instrumentationHooks";
-import { useObservableState } from "../../hooks/observableHooks";
 import type { ComponentType } from "react";
 import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLine";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
  * This enables type safety when using a BoundProperty
@@ -12,6 +11,8 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     component: ComponentType<PropsT & BaseComponentProps<TargetT[PropertyKeyT]>>;
     target: TargetT;
     propertyKey: PropertyKeyT;
+    convertTo?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
+    convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
 };
 
 /**
@@ -22,15 +23,15 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
  */
 export function BoundProperty<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object>(props: BoundPropertyProps<TargetT, PropertyKeyT, PropsT>) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { target, propertyKey, component: Component, ...rest } = props;
-    const value = useObservableState(() => target[propertyKey], useInterceptObservable("property", target, propertyKey));
+    const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
+    const value = useProperty(target, propertyKey);
 
     return (
         <Component
             {...(rest as PropsT)}
-            value={value}
+            value={convertTo ? convertTo(value) : value}
             onChange={(val: TargetT[PropertyKeyT]) => {
-                target[propertyKey] = val;
+                target[propertyKey] = convertFrom ? convertFrom(val) : val;
             }}
         />
     );

@@ -11,6 +11,8 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { useObservableState } from "../../../hooks/observableHooks";
 
+import "core/Lights/Shadows/shadowGeneratorSceneComponent";
+
 type ShadowGeneratorType = "Default" | "Cascade";
 
 const DefaultShadowGeneratorOptions = [{ label: "Shadow Generator", value: "Default" satisfies ShadowGeneratorType }] as const satisfies DropdownOption[];

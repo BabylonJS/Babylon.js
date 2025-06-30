@@ -533,6 +533,13 @@
             "preLaunchTask": "Viewer Configurator Serve (Dev)"
         },
         {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Inspector v2 development (Edge)",
+            "url": "http://localhost:9001",
+            "preLaunchTask": "Inspector v2 Test App"
+        },
+        {
             "type": "chrome",
             "request": "launch",
             "name": "Inspector v2 development (Chrome)",
