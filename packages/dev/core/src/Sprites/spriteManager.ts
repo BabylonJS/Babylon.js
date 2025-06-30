@@ -352,7 +352,7 @@ export class SpriteManager implements ISpriteManager {
             this._makePacked(imgUrl, spriteJSON);
         }
 
-        this._scene._onNewSpriteManagerAddedObservable.notifyObservers(this);
+        this._scene._onNewSpriteManagerAddedObservable?.notifyObservers(this);
     }
 
     /**
@@ -676,7 +676,7 @@ export class SpriteManager implements ISpriteManager {
         if (this._scene.spriteManagers) {
             const index = this._scene.spriteManagers.indexOf(this);
             this._scene.spriteManagers.splice(index, 1);
-            this._scene._onSpriteManagerRemovedObservable.notifyObservers(this);
+            this._scene._onSpriteManagerRemovedObservable?.notifyObservers(this);
         }
 
         // Callback

@@ -111,15 +111,15 @@ declare module "../scene" {
 
 /** @internal */
 export type InternalSpriteAugmentedScene = Scene & {
-    _onNewSpriteManagerAddedObservable: Observable<ISpriteManager>;
-    _onSpriteManagerRemovedObservable: Observable<ISpriteManager>;
+    _onNewSpriteManagerAddedObservable?: Observable<ISpriteManager>;
+    _onSpriteManagerRemovedObservable?: Observable<ISpriteManager>;
 };
 
 Object.defineProperty(Scene.prototype, "onNewSpriteManagerAddedObservable", {
     get: function (this: InternalSpriteAugmentedScene) {
         if (!this.isDisposed && !this._onNewSpriteManagerAddedObservable) {
-            this._onNewSpriteManagerAddedObservable = new Observable<ISpriteManager>();
-            this.onDisposeObservable.addOnce(() => this._onNewSpriteManagerAddedObservable.clear());
+            const onNewSpriteManagerAddedObservable = (this._onNewSpriteManagerAddedObservable = new Observable<ISpriteManager>());
+            this.onDisposeObservable.addOnce(() => onNewSpriteManagerAddedObservable.clear());
         }
         return this._onNewSpriteManagerAddedObservable;
     },
@@ -130,8 +130,8 @@ Object.defineProperty(Scene.prototype, "onNewSpriteManagerAddedObservable", {
 Object.defineProperty(Scene.prototype, "onSpriteManagerRemovedObservable", {
     get: function (this: InternalSpriteAugmentedScene) {
         if (!this.isDisposed && !this._onSpriteManagerRemovedObservable) {
-            this._onSpriteManagerRemovedObservable = new Observable<ISpriteManager>();
-            this.onDisposeObservable.addOnce(() => this._onSpriteManagerRemovedObservable.clear());
+            const onSpriteManagerRemovedObservable = (this._onSpriteManagerRemovedObservable = new Observable<ISpriteManager>());
+            this.onDisposeObservable.addOnce(() => onSpriteManagerRemovedObservable.clear());
         }
         return this._onSpriteManagerRemovedObservable;
     },
