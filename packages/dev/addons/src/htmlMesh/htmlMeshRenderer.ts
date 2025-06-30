@@ -8,7 +8,7 @@ import { RenderingGroup } from "core/Rendering/renderingGroup";
 
 import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
-import { type AbstractEngine } from "core/Engines";
+import type { AbstractEngine } from "core/Engines";
 import { TransformNode } from "core/Meshes/transformNode";
 
 const PositionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
