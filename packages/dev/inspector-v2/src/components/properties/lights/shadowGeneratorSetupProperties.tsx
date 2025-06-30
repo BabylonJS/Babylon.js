@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
 
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
@@ -11,6 +10,8 @@ import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { useObservableState } from "../../../hooks/observableHooks";
+
+import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
 type ShadowGeneratorType = "Default" | "Cascade";
 

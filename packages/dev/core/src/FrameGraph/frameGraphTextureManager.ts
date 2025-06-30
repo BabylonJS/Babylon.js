@@ -12,7 +12,6 @@ import type {
     RenderTargetWrapper,
     FrameGraphTask,
     IFrameGraphPass,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";

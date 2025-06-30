@@ -7,9 +7,9 @@ export * from "../Execution/flowGraphSetPropertyBlock";
 export * from "./flowGraphConstantBlock";
 export * from "./flowGraphGetAssetBlock";
 export * from "./flowGraphDataSwitchBlock";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Math/index";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Transformers/index";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Utils/index";

@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-
 import type { CheckboxOnChangeData } from "@fluentui/react-components";
 import type { ChangeEvent, FunctionComponent } from "react";
 

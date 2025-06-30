@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { HemisphericLight } from "core/index";
 import type { FunctionComponent } from "react";
 

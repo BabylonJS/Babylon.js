@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./objectModelMapping";
 export * from "./EXT_lights_image_based";
 export * from "./EXT_mesh_gpu_instancing";
@@ -36,5 +37,4 @@ export * from "./KHR_node_visibility";
 export * from "./KHR_node_selectability";
 export * from "./KHR_node_hoverability";
 export * from "./ExtrasAsMetadata";
-// eslint-disable-next-line import/no-internal-modules
 export * from "./KHR_interactivity/index";

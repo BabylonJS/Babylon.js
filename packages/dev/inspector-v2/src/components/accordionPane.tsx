@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-
 import type { ComponentType, FunctionComponent, PropsWithChildren } from "react";
 
 import type { AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";

@@ -3,7 +3,7 @@ import { mapperManager } from "./mappers";
 import type { ViewerConfiguration } from "./configuration";
 import { processConfigurationCompatibility } from "./configurationCompatibility";
 
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { deepmerge } from "../helper/index";
 import { Tools } from "core/Misc/tools";
 import { extendedConfiguration } from "./types/extended";

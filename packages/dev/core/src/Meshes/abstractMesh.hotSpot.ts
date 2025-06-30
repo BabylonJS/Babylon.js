@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { AbstractMesh, PickingInfo } from "core/index";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";

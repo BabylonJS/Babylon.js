@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
 import type {
     NodeRenderGraphConnectionPoint,
     Scene,
