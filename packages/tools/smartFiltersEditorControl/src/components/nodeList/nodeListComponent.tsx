@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as react from "react";
-import type { Nullable } from "core-for-sf/types";
-import type { Observer } from "core-for-sf/Misc/observable";
-import { Tools } from "core-for-sf/Misc/tools.js";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Tools } from "core/Misc/tools.js";
 
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";

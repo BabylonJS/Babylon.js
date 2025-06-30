@@ -2,7 +2,7 @@
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { InputArrowsComponent } from "shared-ui-components/lines/inputArrowsComponent.js";
 import * as react from "react";
-import type { Observable } from "core-for-sf/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 export const ConflictingValuesPlaceholder = "—";

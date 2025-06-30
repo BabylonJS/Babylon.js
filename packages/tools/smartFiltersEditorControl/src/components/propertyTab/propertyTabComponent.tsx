@@ -2,7 +2,7 @@ import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame.js";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode.js";
 import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort.js";
 import * as react from "react";
-import { DataStorage } from "core-for-sf/Misc/dataStorage.js";
+import { DataStorage } from "core/Misc/dataStorage.js";
 
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent.js";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
@@ -16,13 +16,13 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent.js";
 import { BlockTools } from "../../blockTools.js";
 
-import type { Nullable } from "core-for-sf/types";
+import type { Nullable } from "core/types";
 import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ForceWebGL1StorageKey, type GlobalState } from "../../globalState.js";
 import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { SmartFilterCoreVersion } from "@babylonjs/smart-filters";
-import type { Observer } from "core-for-sf/Misc/observable.js";
+import type { Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 
 interface IPropertyTabComponentProps {

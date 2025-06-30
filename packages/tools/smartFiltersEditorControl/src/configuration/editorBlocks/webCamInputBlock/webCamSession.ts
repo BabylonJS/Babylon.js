@@ -1,6 +1,6 @@
-import type { ThinEngine } from "core-for-sf/Engines/thinEngine.js";
-import type { InternalTexture } from "core-for-sf/Materials/Textures/internalTexture.js";
-import { ThinTexture } from "core-for-sf/Materials/Textures/thinTexture.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
+import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
 import type { ConnectionPointType, IDisposable, RuntimeData } from "@babylonjs/smart-filters";
 
 /**

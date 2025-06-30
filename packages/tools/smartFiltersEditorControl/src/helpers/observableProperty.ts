@@ -1,4 +1,4 @@
-import { Observable } from "core-for-sf/Misc/observable.js";
+import { Observable } from "core/Misc/observable.js";
 
 /**
  * An Observable that doesn't allow you to notify observers.

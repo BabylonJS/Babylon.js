@@ -25,10 +25,7 @@
                 "basePackage": "@babylonjs/smart-filters",
                 "appendJS": true
             }
-        ],
-        "paths": {
-            "@babylonjs/core/*": ["../node_modules/core-for-sf/*"]
-        }
+        ]
     },
 
     "include": ["./src/**/*"]

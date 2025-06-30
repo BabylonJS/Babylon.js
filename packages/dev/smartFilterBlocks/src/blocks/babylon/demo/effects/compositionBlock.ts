@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { Effect } from "@babylonjs/core/Materials/effect.js";
+import type { Effect } from "core/Materials/effect.js";
 import {
     DisableableShaderBinding,
     type RuntimeData,

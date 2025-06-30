@@ -1,4 +1,4 @@
-import type { Effect } from "@babylonjs/core/Materials/effect.js";
+import type { Effect } from "core/Materials/effect.js";
 
 import {
     type ShaderProgram,

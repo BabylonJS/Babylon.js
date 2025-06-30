@@ -1,4 +1,4 @@
-import type { Nullable } from "core-for-sf/types";
+import type { Nullable } from "core/types";
 
 /**
  * The editor uses a single string to uniquely identify a block type, but Smart Filter blocks use

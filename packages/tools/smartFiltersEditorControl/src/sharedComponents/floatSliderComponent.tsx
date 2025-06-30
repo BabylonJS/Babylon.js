@@ -2,7 +2,7 @@
 import { Component } from "react";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent.js";
-import type { Nullable } from "core-for-sf/types.js";
+import type { Nullable } from "core/types.js";
 
 export interface IFloatSliderComponentProps {
     lockObject: any;

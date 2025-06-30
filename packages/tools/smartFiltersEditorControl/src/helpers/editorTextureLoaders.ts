@@ -1,8 +1,8 @@
-import type { ThinEngine } from "core-for-sf/Engines/thinEngine";
-import type { InternalTexture } from "core-for-sf/Materials/Textures/internalTexture";
-import { ThinTexture } from "core-for-sf/Materials/Textures/thinTexture.js";
-import type { Observable } from "core-for-sf/Misc/observable";
-import type { Nullable } from "core-for-sf/types";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { ThinTexture } from "core/Materials/Textures/thinTexture.js";
+import type { Observable } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import { createImageTexture, type ConnectionPointType, type InputBlock } from "@babylonjs/smart-filters";
 
 export type LoadResult = {

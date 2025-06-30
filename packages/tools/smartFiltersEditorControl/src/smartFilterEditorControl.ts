@@ -1,4 +1,4 @@
-import type { ThinEngine } from "core-for-sf/Engines/thinEngine";
+import type { ThinEngine } from "core/Engines/thinEngine";
 import * as react from "react";
 import * as reactDOM from "react-dom";
 import { GlobalState, type TexturePreset } from "./globalState.js";
@@ -7,8 +7,8 @@ import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger.js";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger.js";
 import type { SmartFilter } from "@babylonjs/smart-filters";
-import type { Nullable } from "core-for-sf/types.js";
-import type { Observable } from "core-for-sf/Misc/observable.js";
+import type { Nullable } from "core/types.js";
+import type { Observable } from "core/Misc/observable.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
 import type { IBlockRegistration } from "@babylonjs/smart-filters-blocks";
 import type { LogEntry } from "./components/log/logComponent.js";

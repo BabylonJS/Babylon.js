@@ -1,6 +1,6 @@
-import { Observable } from "core-for-sf/Misc/observable.js";
-import type { ThinEngine } from "core-for-sf/Engines/thinEngine";
-import type { Nullable } from "core-for-sf/types";
+import { Observable } from "core/Misc/observable.js";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Nullable } from "core/types";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject.js";
 import { type BaseBlock, type ConnectionPoint, SmartFilter } from "@babylonjs/smart-filters";

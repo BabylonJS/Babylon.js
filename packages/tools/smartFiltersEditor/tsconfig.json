@@ -4,13 +4,12 @@
     "compilerOptions": {
         "resolveJsonModule": true,
         "paths": {
-            "core/*": ["../node_modules/core-for-sf/*"],
-            "@babylonjs/core/*": ["../node_modules/core-for-sf/*"],
+            "core/*": ["dev/core/src/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
             "@babylonjs/smart-filters": ["dev/smartFilters/src"],
             "@babylonjs/smart-filters-blocks": ["dev/smartFilterBlocks/src"],
             "@babylonjs/smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
-            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+            "@babylonjs/smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"]
         }
     },
 

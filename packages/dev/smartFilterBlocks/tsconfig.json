@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "core/*": ["dev/core/*"],
+            "core/*": ["dev/core/src/*"],
+            "@babylonjs/core/*": ["dev/core/src/*"],
             "@babylonjs/smart-filters": ["dev/smartFilters/src"]
         }
     }

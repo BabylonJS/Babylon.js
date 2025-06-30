@@ -9,7 +9,7 @@ import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponen
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent.js";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
-import { Observable } from "core-for-sf/Misc/observable.js";
+import { Observable } from "core/Misc/observable.js";
 import { DynamicOptionsLine } from "../../sharedComponents/dynamicOptionsLineComponent.js";
 import { OutputBlockName } from "../../configuration/constants.js";
 
