@@ -1,4 +1,4 @@
-import "@babylonjs/core/Engines/Extensions/engine.rawTexture";
+import "core/Engines/Extensions/engine.rawTexture";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { Observable, type Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";

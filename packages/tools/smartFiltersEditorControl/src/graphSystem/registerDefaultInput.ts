@@ -7,8 +7,8 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import type { ThinEngine } from "core/Engines/thinEngine";
 
-import "@babylonjs/core/Engines/Extensions/engine.dynamicTexture.js";
-import "@babylonjs/core/Engines/Extensions/engine.videoTexture.js";
+import "core/Engines/Extensions/engine.dynamicTexture.js";
+import "core/Engines/Extensions/engine.videoTexture.js";
 import type { Nullable } from "core/types.js";
 
 /**
