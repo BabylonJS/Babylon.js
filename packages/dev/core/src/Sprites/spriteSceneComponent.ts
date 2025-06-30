@@ -1,5 +1,6 @@
 import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
+import type { IReadonlyObservable } from "../Misc/observable";
 import { Scene } from "../scene";
 import type { Sprite } from "./sprite";
 import type { ISpriteManager } from "./spriteManager";
@@ -33,12 +34,12 @@ declare module "../scene" {
         /**
          * An event triggered when a sprite manager is added to the scene
          */
-        onNewSpriteManagerAddedObservable: Observable<ISpriteManager>;
+        readonly onNewSpriteManagerAddedObservable: IReadonlyObservable<ISpriteManager>;
 
         /**
          * An event triggered when a sprite manager is removed from the scene
          */
-        onSpriteManagerRemovedObservable: Observable<ISpriteManager>;
+        readonly onSpriteManagerRemovedObservable: IReadonlyObservable<ISpriteManager>;
 
         /**
          * An event triggered when sprites rendering is about to start
@@ -108,25 +109,34 @@ declare module "../scene" {
     }
 }
 
-Object.defineProperty(Scene.prototype, "spriteManagers", {
-    value: undefined,
-    enumerable: true,
-    configurable: true,
-    writable: true,
-});
+/** @internal */
+export type InternalSpriteAugmentedScene = Scene & {
+    _onNewSpriteManagerAddedObservable: Observable<ISpriteManager>;
+    _onSpriteManagerRemovedObservable: Observable<ISpriteManager>;
+};
 
 Object.defineProperty(Scene.prototype, "onNewSpriteManagerAddedObservable", {
-    value: undefined,
+    get: function (this: InternalSpriteAugmentedScene) {
+        if (!this.isDisposed && !this._onNewSpriteManagerAddedObservable) {
+            this._onNewSpriteManagerAddedObservable = new Observable<ISpriteManager>();
+            this.onDisposeObservable.addOnce(() => this._onNewSpriteManagerAddedObservable.clear());
+        }
+        return this._onNewSpriteManagerAddedObservable;
+    },
     enumerable: true,
     configurable: true,
-    writable: true,
 });
 
 Object.defineProperty(Scene.prototype, "onSpriteManagerRemovedObservable", {
-    value: undefined,
+    get: function (this: InternalSpriteAugmentedScene) {
+        if (!this.isDisposed && !this._onSpriteManagerRemovedObservable) {
+            this._onSpriteManagerRemovedObservable = new Observable<ISpriteManager>();
+            this.onDisposeObservable.addOnce(() => this._onSpriteManagerRemovedObservable.clear());
+        }
+        return this._onSpriteManagerRemovedObservable;
+    },
     enumerable: true,
     configurable: true,
-    writable: true,
 });
 
 Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
@@ -308,8 +318,6 @@ export class SpriteSceneComponent implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
         this.scene.spriteManagers = [] as ISpriteManager[];
-        this.scene.onNewSpriteManagerAddedObservable = new Observable<ISpriteManager>();
-        this.scene.onSpriteManagerRemovedObservable = new Observable<ISpriteManager>();
         // This ray is used to pick sprites in the scene
         this.scene._tempSpritePickingRay = Ray ? Ray.Zero() : null;
         this.scene.onBeforeSpritesRenderingObservable = new Observable<Scene>();

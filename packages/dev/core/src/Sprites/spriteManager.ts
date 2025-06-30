@@ -5,6 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
+import type { InternalSpriteAugmentedScene } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
@@ -288,7 +289,7 @@ export class SpriteManager implements ISpriteManager {
     private _textureContent: Nullable<Uint8Array>;
     private _onDisposeObserver: Nullable<Observer<SpriteManager>>;
     private _fromPacked: boolean;
-    private _scene: Scene;
+    private _scene: InternalSpriteAugmentedScene;
 
     /**
      * Creates a new sprite manager
@@ -325,7 +326,7 @@ export class SpriteManager implements ISpriteManager {
         }
         this._fromPacked = fromPacked;
 
-        this._scene = scene;
+        this._scene = scene as InternalSpriteAugmentedScene;
         const engine = this._scene.getEngine();
         this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene, options?.spriteRendererOptions);
 
@@ -351,7 +352,7 @@ export class SpriteManager implements ISpriteManager {
             this._makePacked(imgUrl, spriteJSON);
         }
 
-        this._scene.onNewSpriteManagerAddedObservable.notifyObservers(this);
+        this._scene._onNewSpriteManagerAddedObservable.notifyObservers(this);
     }
 
     /**
@@ -675,7 +676,7 @@ export class SpriteManager implements ISpriteManager {
         if (this._scene.spriteManagers) {
             const index = this._scene.spriteManagers.indexOf(this);
             this._scene.spriteManagers.splice(index, 1);
-            this._scene.onSpriteManagerRemovedObservable.notifyObservers(this);
+            this._scene._onSpriteManagerRemovedObservable.notifyObservers(this);
         }
 
         // Callback
