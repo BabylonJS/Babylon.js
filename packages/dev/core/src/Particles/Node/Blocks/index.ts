@@ -2,7 +2,6 @@
 export * from "./systemBlock";
 export * from "./particleInputBlock";
 export * from "./particleSourceTextureBlock";
-export * from "./randomRangeBlock";
 export * from "./particleMathBlock";
 export * from "./particleLerpBlock";
 export * from "./Update/updateDirectionBlock";
