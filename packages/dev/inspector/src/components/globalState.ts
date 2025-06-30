@@ -17,6 +17,8 @@ import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
 // eslint-disable-next-line import/no-internal-modules
 import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -184,7 +186,10 @@ export class GlobalState {
                 light.reservedDataStore = {};
             }
             if (!light.reservedDataStore.lightGizmo) {
-                light.reservedDataStore.lightGizmo = new LightGizmo();
+                const scene = light.getScene();
+                const layer = scene.frameGraph ? FrameGraphUtils.CreateUtilityLayerRenderer(scene.frameGraph) : new UtilityLayerRenderer(scene);
+
+                light.reservedDataStore.lightGizmo = new LightGizmo(layer);
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo);
                 light.reservedDataStore.lightGizmo.light = light;
                 light.reservedDataStore.lightGizmo.material.reservedDataStore = { hidden: true };
@@ -206,7 +211,10 @@ export class GlobalState {
                 camera.reservedDataStore = {};
             }
             if (!camera.reservedDataStore.cameraGizmo) {
-                camera.reservedDataStore.cameraGizmo = new CameraGizmo();
+                const scene = camera.getScene();
+                const layer = scene.frameGraph ? FrameGraphUtils.CreateUtilityLayerRenderer(scene.frameGraph) : new UtilityLayerRenderer(scene);
+
+                camera.reservedDataStore.cameraGizmo = new CameraGizmo(layer);
                 this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo);
                 camera.reservedDataStore.cameraGizmo.camera = camera;
                 camera.reservedDataStore.cameraGizmo.material.reservedDataStore = { hidden: true };
