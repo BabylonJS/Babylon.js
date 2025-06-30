@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { SmartFilterEditorControl } from "@babylonjs/smart-filters-editor-control";
+import { SmartFilterEditorControl } from "smart-filters-editor-control";
 
 const Filter = (window as any).currentSmartFilter;
 const Engine = (window as any).thinEngine;
