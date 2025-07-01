@@ -585,7 +585,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 onClick={async () => {
                                     this.props.globalState.nodeMaterial.build();
                                     const fragment = await this.props.globalState.nodeMaterial!._getProcessedFragmentAsync();
-                                    StringTools.DownloadAsFile(this.props.globalState.hostDocument, fragment, "nme.block.glsl");
+                                    StringTools.DownloadAsFile(this.props.globalState.hostDocument, fragment, `${this.props.globalState.nodeMaterial.name}.block.glsl`);
                                 }}
                             />
                         )}
