@@ -6,6 +6,7 @@ import type { ISceneContext } from "../sceneContext";
 import type { IShellService } from "../shellService";
 
 import { SettingsRegular } from "@fluentui/react-icons";
+import { useCallback } from "react";
 
 import { DataStorage } from "core/Misc/dataStorage";
 import { Observable } from "core/Misc/observable";
@@ -88,7 +89,10 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
-                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                const scene = useObservableState(
+                    useCallback(() => sceneContext.currentScene, [sceneContext]),
+                    sceneContext.currentSceneObservable
+                );
 
                 return (
                     <>

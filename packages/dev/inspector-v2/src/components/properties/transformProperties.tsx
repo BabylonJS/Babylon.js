@@ -1,8 +1,9 @@
-import type { Nullable, Quaternion, Vector3 } from "core/index";
-
 import type { FunctionComponent } from "react";
 
+import type { Nullable, Quaternion, Vector3 } from "core/index";
 import type { ISettingsContext } from "../../services/settingsContext";
+
+import { useCallback } from "react";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { useQuaternionProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
@@ -18,7 +19,10 @@ export const TransformProperties: FunctionComponent<{ transform: Transform; sett
     const quatRotation = useQuaternionProperty(transform, "rotationQuaternion");
     const scaling = useVector3Property(transform, "scaling");
 
-    const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
+    const useDegrees = useObservableState(
+        useCallback(() => settings.useDegrees, [settings]),
+        settings.settingsChangedObservable
+    );
 
     return (
         <>

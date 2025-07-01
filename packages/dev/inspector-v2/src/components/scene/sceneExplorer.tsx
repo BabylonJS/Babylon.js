@@ -221,7 +221,10 @@ const EntityTreeItemComponent: FunctionComponent<{ item: EntityTreeItemData }> =
         return () => displayInfo.dispose?.();
     }, [item]);
 
-    const name = useObservableState(() => displayInfo?.name, displayInfo?.onChange);
+    const name = useObservableState(
+        useCallback(() => displayInfo?.name, [displayInfo?.name]),
+        displayInfo?.onChange
+    );
 
     return (
         <Body1 wrap={false} truncate>

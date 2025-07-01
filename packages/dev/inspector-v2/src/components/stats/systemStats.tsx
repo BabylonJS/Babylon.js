@@ -2,6 +2,8 @@ import type { Scene } from "core/index";
 
 import type { FunctionComponent } from "react";
 
+import { useCallback } from "react";
+
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -9,8 +11,14 @@ import { useObservableState } from "../../hooks/observableHooks";
 export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const engine = scene.getEngine();
     const caps = engine.getCaps();
-    const resolution = useObservableState(() => `${engine.getRenderWidth()} x ${engine.getRenderHeight()}`, engine.onResizeObservable);
-    const hardwareScalingLevel = useObservableState(() => engine.getHardwareScalingLevel(), engine.onResizeObservable);
+    const resolution = useObservableState(
+        useCallback(() => `${engine.getRenderWidth()} x ${engine.getRenderHeight()}`, [engine]),
+        engine.onResizeObservable
+    );
+    const hardwareScalingLevel = useObservableState(
+        useCallback(() => engine.getHardwareScalingLevel(), [engine]),
+        engine.onResizeObservable
+    );
 
     // TODO: replace these references to PlaceholderPropertyLine with BooleanPropertyLine when it is available
     return (

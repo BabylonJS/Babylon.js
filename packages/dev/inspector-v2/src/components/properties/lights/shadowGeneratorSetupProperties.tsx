@@ -1,8 +1,9 @@
-import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
+import type { FunctionComponent } from "react";
 
+import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { useEffect, useState, type FunctionComponent } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
@@ -67,7 +68,10 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
     const defaultMapSize = MapSizeOptions[0].value;
     const [shadowGeneratorSettings, setShadowGeneratorSettings] = useState<Readonly<ShadowGeneratorSettings>>({ generatorType: defaultGeneratorType, mapSize: defaultMapSize });
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
-    const camera = useObservableState(() => shadowLight.getScene().activeCamera, shadowLight.getScene().onActiveCameraChanged);
+    const camera = useObservableState(
+        useCallback(() => shadowLight.getScene().activeCamera, [shadowLight.getScene().activeCamera]),
+        shadowLight.getScene().onActiveCameraChanged
+    );
     const shadowGenerator = GetShadowGenerator(camera, shadowLight);
     const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGenerator);
 

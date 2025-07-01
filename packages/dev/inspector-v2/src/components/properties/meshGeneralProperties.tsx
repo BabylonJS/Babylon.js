@@ -4,18 +4,26 @@ import type { FunctionComponent } from "react";
 
 import type { ISelectionService } from "../../services/selectionService";
 
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { useCallback } from "react";
+
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 
 import { useObservableState } from "../../hooks/observableHooks";
 
 export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
 
-    const isEnabled = useObservableState(() => mesh.isEnabled(false), mesh.onEnabledStateChangedObservable);
+    const isEnabled = useObservableState(
+        useCallback(() => mesh.isEnabled(false), [mesh]),
+        mesh.onEnabledStateChangedObservable
+    );
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
-    const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
+    const material = useObservableState(
+        useCallback(() => mesh.material, [mesh]),
+        mesh.onMaterialChangedObservable
+    );
 
     return (
         <>

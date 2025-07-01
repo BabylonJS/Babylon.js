@@ -2,7 +2,7 @@ import type { IReadonlyObservable } from "core/index";
 
 import type { ObservableCollection } from "../misc/observableCollection";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Returns the current value of the accessor and updates it when the specified event is fired on the specified element.
@@ -35,7 +35,7 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
         }
 
         return undefined;
-    }, [element]);
+    }, [accessor, element, ...eventNames]);
 
     return current;
 }
@@ -65,7 +65,7 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
         return () => {
             observers.forEach((observer) => observer?.remove());
         };
-    }, [...observables]);
+    }, [accessor, ...observables]);
 
     return current;
 }
@@ -76,7 +76,13 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
  * @returns A copy of the items in the collection.
  */
 export function useObservableCollection<T>(collection: ObservableCollection<T>) {
-    return useObservableState(() => [...collection.items], collection.observable);
+    const items = useMemo(() => [...collection.items], [...collection.items]);
+    return useObservableState(
+        useCallback(() => {
+            return items;
+        }, [items]),
+        collection.observable
+    );
 }
 
 /**

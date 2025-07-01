@@ -6,6 +6,7 @@ import type { ISceneContext } from "../sceneContext";
 import type { IShellService } from "../shellService";
 
 import { DataBarHorizontalRegular } from "@fluentui/react-icons";
+import { useCallback } from "react";
 
 import { CountStats } from "../../components/stats/countStats";
 import { FrameStepsStats } from "../../components/stats/frameStepStats";
@@ -61,7 +62,10 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
-                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                const scene = useObservableState(
+                    useCallback(() => sceneContext.currentScene, [sceneContext]),
+                    sceneContext.currentSceneObservable
+                );
 
                 return <>{scene && <StatsPane sections={sections} sectionContent={sectionContent} context={scene} />}</>;
             },
