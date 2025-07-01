@@ -1852,8 +1852,8 @@ export class Viewer implements IDisposable {
 
         for (const model of this._loadedModelsBacking) {
             // Add all root meshes to the shadow generator.
-            for (const mesh of model.assetContainer.meshes.filter((mesh) => !mesh.parent)) {
-                normal.generator.addShadowCaster(mesh, true);
+            for (const mesh of model.assetContainer.meshes) {
+                normal.generator.addShadowCaster(mesh);
             }
             // Set all meshes to receive shadows.
             for (const mesh of model.assetContainer.meshes) {
