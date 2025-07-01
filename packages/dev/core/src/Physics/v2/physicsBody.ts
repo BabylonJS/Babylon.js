@@ -117,8 +117,6 @@ export class PhysicsBody {
 
         this.startAsleep = startsAsleep;
 
-        this._motionType = motionType;
-
         // only dynamic and animated body needs sync from physics to transformNode
         this.disableSync = motionType == PhysicsMotionType.STATIC;
 
