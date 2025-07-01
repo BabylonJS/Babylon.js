@@ -12,7 +12,6 @@ import type {
     FrameGraphRenderTarget,
     InternalTexture,
     UtilityLayerRenderer,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";

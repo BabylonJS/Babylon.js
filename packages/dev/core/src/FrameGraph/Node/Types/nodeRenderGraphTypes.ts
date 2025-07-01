@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Color4, Scene, FrameGraphTextureHandle, Camera, FrameGraphObjectList, IShadowLight, FrameGraphShadowGeneratorTask, FrameGraphObjectRendererTask } from "core/index";
 
 /**

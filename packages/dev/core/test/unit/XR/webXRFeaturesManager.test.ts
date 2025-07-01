@@ -5,7 +5,6 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRFeaturesManager, WebXRSessionManager, WebXRMotionControllerTeleportation, WebXRControllerMovement } from "core/XR";
-// eslint-disable-next-line import/no-internal-modules
 import "core/Animations/index";
 /**
  * WebXR Features Manager test suite.

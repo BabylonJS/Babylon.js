@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
+import type { PhysicsTransformNode } from "../../../components/properties/physicsProperties";
 
 import { TransformNode } from "core/Meshes/transformNode";
 
@@ -19,7 +20,7 @@ export const PhysicsPropertiesServiceDefinition: ServiceDefinition<[], [IPropert
 
         const contentRegistration = propertiesService.addSectionContent({
             key: "Physics Properties",
-            predicate: (entity: unknown): entity is TransformNode => entity instanceof TransformNode && (entity as any).physicsBody,
+            predicate: (entity: unknown): entity is PhysicsTransformNode => entity instanceof TransformNode && !!entity.physicsBody,
             content: [
                 // "Physics" section.
                 {

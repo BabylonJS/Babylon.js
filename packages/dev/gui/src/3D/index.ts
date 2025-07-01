@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./controls/index";
 export * from "./materials/index";
 export * from "./gizmos/index";

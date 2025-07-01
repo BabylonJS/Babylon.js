@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
 import { Camera } from "../Cameras/camera";
 import { Halton2DSequence } from "core/Maths/halton2DSequence";

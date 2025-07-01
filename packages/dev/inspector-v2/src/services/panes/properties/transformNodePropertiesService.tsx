@@ -2,31 +2,30 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 
 import { TransformNode } from "core/Meshes/transformNode";
-
-import { PropertiesServiceIdentity } from "./propertiesService";
-import { TransformNodeTransformProperties } from "../../../components/properties/transformNodeTransformProperties";
+import { TransformProperties } from "../../../components/properties/transformProperties";
 import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
-export const TransformsPropertiesSectionIdentity = Symbol("Transforms");
+export const TransformPropertiesSectionIdentity = Symbol("Transform");
 
 export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Transform Node Properties",
     consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
     factory: (propertiesService, settingsContent) => {
-        const transformsSectionRegistration = propertiesService.addSection({
+        const transformSectionRegistration = propertiesService.addSection({
             order: 1,
-            identity: TransformsPropertiesSectionIdentity,
+            identity: TransformPropertiesSectionIdentity,
         });
 
         const contentRegistration = propertiesService.addSectionContent({
-            key: "Transform Node Properties",
+            key: "Transform Properties",
             predicate: (entity: unknown) => entity instanceof TransformNode,
             content: [
-                // "TRANSFORMS" section.
+                // "TRANSFORM" section.
                 {
-                    section: TransformsPropertiesSectionIdentity,
+                    section: TransformPropertiesSectionIdentity,
                     order: 0,
-                    component: ({ context }) => <TransformNodeTransformProperties node={context} settings={settingsContent} />,
+                    component: ({ context }) => <TransformProperties transform={context} settings={settingsContent} />,
                 },
             ],
         });
@@ -34,7 +33,7 @@ export const TransformNodePropertiesServiceDefinition: ServiceDefinition<[], [IP
         return {
             dispose: () => {
                 contentRegistration.dispose();
-                transformsSectionRegistration.dispose();
+                transformSectionRegistration.dispose();
             },
         };
     },

@@ -1,81 +1,78 @@
-// eslint-disable-next-line import/no-internal-modules
-import { PhysicsMotionType, PhysicsPrestepType, type TransformNode } from "core/index";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
-
 import type { FunctionComponent } from "react";
-import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+
+import type { TransformNode } from "core/index";
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+
+import { Vector3 } from "core/Maths/math.vector";
+import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { useProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
-import type { Vector3 } from "core/Maths/math.vector";
 
-type Vector3Keys<T> = { [P in keyof T]: T[P] extends Vector3 ? P : never }[keyof T];
+import "core/Physics/v2/physicsEngineComponent";
 
-// This helper hook gets the value of a Vector3 property from a target object and causes the component
-// to re-render when the property changes or when the x/y/z components of the Vector3 change.
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function useVector3Property<T extends object, K extends Vector3Keys<T>>(target: T, propertyKey: K): Vector3 {
-    const position = useObservableState(() => target[propertyKey] as Vector3, useInterceptObservable("property", target, propertyKey));
-    useObservableState(() => position.x, useInterceptObservable("property", position, "x"));
-    useObservableState(() => position.y, useInterceptObservable("property", position, "y"));
-    useObservableState(() => position.z, useInterceptObservable("property", position, "z"));
-    return position;
-}
-
-const MotionOptions: DropdownOption[] = [
+const MotionOptions = [
     { label: "Static", value: PhysicsMotionType.STATIC },
     { label: "Animated", value: PhysicsMotionType.ANIMATED },
     { label: "Dynamic", value: PhysicsMotionType.DYNAMIC },
-];
+] as const satisfies readonly DropdownOption[];
 
-const PrestepOptions: DropdownOption[] = [
+const PrestepOptions = [
     { label: "Disabled", value: PhysicsPrestepType.DISABLED },
     { label: "Teleport", value: PhysicsPrestepType.TELEPORT },
     { label: "Action", value: PhysicsPrestepType.ACTION },
-];
+] as const satisfies readonly DropdownOption[];
+
+export type PhysicsTransformNode = TransformNode & { physicsBody: NonNullable<TransformNode["physicsBody"]> };
 
 /**
  * Physics properties
  * @param props transform node
  * @returns controls
  */
-export const TransformNodePhysicsProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
+export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTransformNode }> = (props) => {
     const { node } = props;
 
-    if (!node.physicsBody) {
-        return <></>;
-    }
+    // TODO: This component will only even be rendered if physicsBody is defined, so it doesn't really handle physicsBody changing to/from undefined.
+    const physicsBody = useProperty(node, "physicsBody");
+    const massProperties = useObservableState(() => physicsBody.getMassProperties(), useInterceptObservable("function", physicsBody, "setMassProperties"));
 
-    const massProps = node.physicsBody.getMassProperties() as any;
-    const centerOfMass = useVector3Property(massProps, "centerOfMass");
-    const inertia = useVector3Property(massProps, "inertia");
+    const centerOfMass = useVector3Property(massProperties, "centerOfMass") ?? Vector3.Zero();
+    const inertia = useVector3Property(massProperties, "inertia") ?? Vector3.Zero();
 
     // Get current damping values
-    const linearDamping = node.physicsBody.getLinearDamping();
-    const angularDamping = node.physicsBody.getAngularDamping();
+    const linearDamping = useObservableState(() => physicsBody.getLinearDamping(), useInterceptObservable("function", physicsBody, "setLinearDamping"));
+    const angularDamping = useObservableState(() => physicsBody.getAngularDamping(), useInterceptObservable("function", physicsBody, "setAngularDamping"));
 
-    // Get current velocities (read-only)
-    const linearVelocity = node.physicsBody.getLinearVelocity();
-    const angularVelocity = node.physicsBody.getAngularVelocity();
+    // Get motion and prestep types
+    const motionType = useObservableState(() => physicsBody.getMotionType(), useInterceptObservable("function", physicsBody, "setMotionType"));
+    const prestepType = useObservableState(() => physicsBody.getPrestepType(), useInterceptObservable("function", physicsBody, "setPrestepType"));
+
+    // Get current velocities
+    const linearVelocity = useObservableState(() => physicsBody.getLinearVelocity(), useInterceptObservable("function", physicsBody, "setLinearVelocity"));
+    const angularVelocity = useObservableState(() => physicsBody.getAngularVelocity(), useInterceptObservable("function", physicsBody, "setAngularVelocity"));
 
     return (
         <>
-            <DropdownPropertyLine
+            <NumberDropdownPropertyLine
+                key="MotionType"
                 label="Motion Type"
                 options={MotionOptions}
-                value={MotionOptions.find((opt) => opt.value === (node.physicsBody as any)._motionType) ?? MotionOptions[0]}
-                onChange={(option) => {
-                    return node.physicsBody?.setMotionType(option.value as PhysicsMotionType);
+                value={motionType}
+                onChange={(value) => {
+                    return physicsBody.setMotionType(value as PhysicsMotionType);
                 }}
             />
-            <DropdownPropertyLine
+            <NumberDropdownPropertyLine
                 label="Prestep Type"
                 options={PrestepOptions}
-                value={PrestepOptions.find((opt) => opt.value === (node.physicsBody as any)._prestepType) ?? PrestepOptions[0]}
-                onChange={(option) => {
-                    return node.physicsBody?.setPrestepType(option.value as PhysicsPrestepType);
+                value={prestepType}
+                onChange={(value) => {
+                    return node.physicsBody.setPrestepType(value as PhysicsPrestepType);
                 }}
             />
             {/* Linear Damping */}
@@ -86,7 +83,7 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
                 step={0.01}
                 value={linearDamping}
                 onChange={(e) => {
-                    node.physicsBody!.setLinearDamping(e);
+                    physicsBody.setLinearDamping(e);
                 }}
             />
             {/* Angular Damping */}
@@ -97,39 +94,36 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: Transform
                 step={0.01}
                 value={angularDamping}
                 onChange={(e) => {
-                    node.physicsBody!.setAngularDamping(e);
+                    physicsBody.setAngularDamping(e);
                 }}
             />
-            <Vector3PropertyLine label="Linear Velocity" value={linearVelocity} onChange={() => {}} />
-            <Vector3PropertyLine label="Angular Velocity" value={angularVelocity} onChange={() => {}} />
+            <Vector3PropertyLine label="Linear Velocity" value={linearVelocity} onChange={(value) => physicsBody.setLinearVelocity(value)} />
+            <Vector3PropertyLine label="Angular Velocity" value={angularVelocity} onChange={(value) => physicsBody.setAngularVelocity(value)} />
             {/* Physics Mass Properties Controls */}
-            {massProps && (
+            {massProperties && (
                 <PropertyLine label="Mass">
                     <div style={{ marginTop: 12 }}>
                         <FloatInputPropertyLine
                             label="Value"
-                            value={massProps.mass ?? ""}
+                            value={massProperties.mass ?? 0}
                             min={0}
                             step={0.01}
-                            onChange={(e) => {
-                                massProps.mass = e;
-                                node.physicsBody?.setMassProperties(massProps);
+                            onChange={(value) => {
+                                node.physicsBody.setMassProperties({ ...massProperties, mass: value });
                             }}
                         />
                         <Vector3PropertyLine
                             label="Center"
                             value={centerOfMass}
-                            onChange={(v) => {
-                                massProps.centerOfMass = v;
-                                node.physicsBody?.setMassProperties(massProps);
+                            onChange={(value) => {
+                                node.physicsBody.setMassProperties({ ...massProperties, centerOfMass: value });
                             }}
                         />
                         <Vector3PropertyLine
                             label="Inertia"
                             value={inertia}
-                            onChange={(v) => {
-                                massProps.inertia = v;
-                                node.physicsBody?.setMassProperties(massProps);
+                            onChange={(value) => {
+                                node.physicsBody.setMassProperties({ ...massProperties, inertia: value });
                             }}
                         />
                     </div>

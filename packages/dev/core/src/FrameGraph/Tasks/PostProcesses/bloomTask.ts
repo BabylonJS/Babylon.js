@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
