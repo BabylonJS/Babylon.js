@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable, Observable, Scene } from "core/index";
+import type { IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { IService } from "../modularity/serviceDefinition";
 
@@ -17,5 +16,5 @@ export interface ISceneContext extends IService<typeof SceneContextIdentity> {
     /**
      * Observable that fires whenever the current scene changes.
      */
-    readonly currentSceneObservable: Observable<Nullable<Scene>>;
+    readonly currentSceneObservable: IReadonlyObservable<Nullable<Scene>>;
 }

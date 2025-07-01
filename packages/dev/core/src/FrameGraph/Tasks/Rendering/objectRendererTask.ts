@@ -11,7 +11,6 @@ import type {
     Observer,
     FrameGraphShadowGeneratorTask,
     FrameGraphRenderPass,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";

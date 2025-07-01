@@ -89,6 +89,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FragmentOutputBlock: "A mandatory final node for outputing the color of each pixel",
         PrePassOutputBlock: "An optional final node for outputing geometry data on prepass textures",
         VertexOutputBlock: "A mandatory final node for outputing the position of each vertex",
+        SmartFilterFragmentOutputBlock: "A mandatory final node for outputing the color of each pixel in Smart Filters mode",
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         NormalizeBlock: "Remaps the length of a vector or color to 1",
         RemapBlock: "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
@@ -341,7 +342,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         const allBlocks: Record<string, string[]> = {
             Custom_Frames: customFrameNames,
             Custom_Blocks: customBlockNames,
-            SFE: ["ScreenUVBlock", "SmartFilterTextureBlock"],
+            SFE: ["ScreenUVBlock", "SmartFilterTextureBlock", "SmartFilterFragmentOutputBlock"],
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock", "ColorConverterBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -492,9 +493,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 excludeCategories = ["SFE", "PostProcess", "Particle", "Procedural__Texture", "GaussianSplatting"];
                 break;
             case NodeMaterialModes.SFE:
-                excludeCategories = ["Animation", "Mesh", "Particle", "Procedural__Texture", "PBR", "Scene", "GaussianSplatting"];
+                excludeCategories = ["Animation", "Mesh", "Particle", "Procedural__Texture", "PostProcess", "PBR", "Scene", "GaussianSplatting"];
                 excludeNodes = {
-                    Output_Nodes: ["VertexOutputBlock", "PrePassOutputBlock", "ClipPlanesBlock", "FragDepthBlock"],
+                    Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "ClipPlanesBlock", "FragDepthBlock"],
                     Inputs: [
                         "TextureBlock",
                         "MaterialAlphaBlock",

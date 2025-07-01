@@ -774,11 +774,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const size = this.getSize();
         const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
 
-        const targetX = Math.round(globalViewPort.width * (1 / this.rootContainer.scaleX));
-        const targetY = Math.round(globalViewPort.height * (1 / this.rootContainer.scaleY));
+        const targetX = Math.round(globalViewPort.width / this._rootContainer.scaleX);
+        const targetY = Math.round(globalViewPort.height / this._rootContainer.scaleY);
 
-        globalViewPort.x += (globalViewPort.width - targetX) / 2;
-        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+        const scale = this._adjustToEngineHardwareScalingLevel ? this._renderScale / (this.getScene()?.getEngine().getHardwareScalingLevel() || 1) : 1;
+
+        globalViewPort.x += (globalViewPort.width / scale - targetX) / 2;
+        globalViewPort.y += (globalViewPort.height / scale - targetY) / 2;
 
         globalViewPort.width = targetX;
         globalViewPort.height = targetY;

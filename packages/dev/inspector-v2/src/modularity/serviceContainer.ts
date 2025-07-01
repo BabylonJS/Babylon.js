@@ -1,10 +1,11 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
 
 import type { IService, ServiceDefinition } from "./serviceDefinition";
 
 import { SortGraph } from "../misc/graphUtils";
 
+// Service definitions should strongly typed when they are defined to avoid programming errors. However, they are tracked internally
+// in a weakly typed manner so they can be handled generically.
 export type WeaklyTypedServiceDefinition = Omit<ServiceDefinition<IService<symbol>[] | [], IService<symbol>[] | []>, "factory"> & {
     /**
      * A factory function responsible for creating a service instance.
@@ -12,6 +13,7 @@ export type WeaklyTypedServiceDefinition = Omit<ServiceDefinition<IService<symbo
     factory: (...args: any) => ReturnType<ServiceDefinition<IService<symbol>[] | [], IService<symbol>[] | []>["factory"]>;
 };
 
+// This sorts a set of service definitions based on their dependencies (e.g. a topological sort).
 function SortServiceDefinitions(serviceDefinitions: WeaklyTypedServiceDefinition[]) {
     const sortedServiceDefinitions: typeof serviceDefinitions = [];
     SortGraph(

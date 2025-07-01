@@ -1,19 +1,14 @@
-import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { CurrentScreenBlock } from "./currentScreenBlock";
 import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
-import { ScreenSizeBlock } from "../Fragment/screenSizeBlock";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
-
-/** @internal */
-export const SfeModeDefine = "USE_SFE_FRAMEWORK";
+import { SfeModeDefine } from "../Fragment/smartFilterFragmentOutputBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 
 /**
  * Base block used for creating Smart Filter shader blocks for the SFE framework.
@@ -21,6 +16,8 @@ export const SfeModeDefine = "USE_SFE_FRAMEWORK";
  * to represent arbitrary 2D textures to compose, and work similarly.
  */
 export class SmartFilterTextureBlock extends CurrentScreenBlock {
+    private _firstInit: boolean = true;
+
     /**
      * A boolean indicating whether this block should be the main input for the SFE pipeline.
      * If true, it can be used in SFE for auto-disabling.
@@ -49,58 +46,10 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
-        super.initialize(state);
-
-        this._samplerName = state._getFreeVariableName(this.name);
-
-        if (state.sharedData.nodeMaterial.mode !== NodeMaterialModes.SFE) {
-            state.sharedData.raiseBuildError("SmartFilterTextureBlock should not be used outside of SFE mode.");
+        if (this._firstInit) {
+            this._samplerName = state._getFreeVariableName(this.name);
+            this._firstInit = false;
         }
-
-        if (state.sharedData.nodeMaterial.shaderLanguage !== ShaderLanguage.GLSL) {
-            state.sharedData.raiseBuildError("WebGPU is not supported by SmartFilterTextureBlock.");
-        }
-
-        // Tell FragmentOutputBlock ahead of time to store the final color in a temp variable
-        if (!state._customOutputName && state.target === NodeMaterialBlockTargets.Fragment) {
-            state._customOutputName = "outColor";
-        }
-
-        // Annotate uniforms of InputBlocks and bindable blocks with their current values
-        if (!state.sharedData.formatConfig.getUniformAnnotation) {
-            state.sharedData.formatConfig.getUniformAnnotation = (name: string) => {
-                for (const block of state.sharedData.nodeMaterial.attachedBlocks) {
-                    if (block instanceof InputBlock && block.isUniform && block.associatedVariableName === name) {
-                        return this._generateInputBlockAnnotation(block);
-                    }
-                    if (block instanceof ScreenSizeBlock && block.associatedVariableName === name) {
-                        return this._generateScreenSizeBlockAnnotation();
-                    }
-                }
-                return "";
-            };
-        }
-
-        // Do our best to clean up variable names, as they will be used as display names.
-        state.sharedData.formatConfig.formatVariablename = (n: string) => {
-            let name = n;
-
-            const hasUnderscoredPrefix = name.length > 1 && name[1] === "_";
-            if (hasUnderscoredPrefix) {
-                name = name.substring(2);
-            }
-
-            return name.replace(/[^a-zA-Z]+/g, "");
-        };
-    }
-
-    private _generateInputBlockAnnotation(inputBlock: InputBlock): string {
-        const value = inputBlock.valueCallback ? inputBlock.valueCallback() : inputBlock.value;
-        return `// { "default": ${JSON.stringify(value)} }\n`;
-    }
-
-    private _generateScreenSizeBlockAnnotation(): string {
-        return `// { "autoBind": "outputResolution" }\n`;
     }
 
     protected override _getMainUvName(state: NodeMaterialBuildState): string {
@@ -137,35 +86,8 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         }
     }
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
-
-        if (state.target === NodeMaterialBlockTargets.Fragment) {
-            // Add the header JSON for the SFE block
-            if (!state._injectAtTop) {
-                state._injectAtTop = `// { "smartFilterBlockType": "${state.sharedData.nodeMaterial.name}", "namespace": "Babylon.NME.Exports" }`;
-            }
-
-            // Convert the main fragment function into a helper function, to later be inserted in an SFE pipeline.
-            if (!state._customEntryHeader) {
-                state._customEntryHeader += `#ifdef ${SfeModeDefine}\n`;
-                state._customEntryHeader += `vec4 nmeMain(vec2 ${this._mainUVName}) { // main\n`;
-                state._customEntryHeader += `#else\n`;
-                state._customEntryHeader += `void main(void) {\n`;
-                state._customEntryHeader += `#endif\n`;
-                state._customEntryHeader += `vec4 outColor = vec4(0.0);\n`;
-            }
-
-            if (!state._injectAtEnd) {
-                state._injectAtEnd += `\n#ifndef ${SfeModeDefine}\n`;
-                state._injectAtEnd += `gl_FragColor = outColor;\n`;
-                state._injectAtEnd += `#else\n`;
-                state._injectAtEnd += `return outColor;\n`;
-                state._injectAtEnd += `#endif\n`;
-            }
-        }
-
-        return this;
+    public override _postBuildBlock(): void {
+        this._firstInit = true;
     }
 
     public override serialize(): any {

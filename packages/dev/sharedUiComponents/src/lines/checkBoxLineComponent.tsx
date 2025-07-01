@@ -6,6 +6,9 @@ import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { SwitchPropertyLine } from "../fluent/hoc/switchPropertyLine";
+import { Checkbox } from "../fluent/primitives/checkbox";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;
@@ -129,7 +132,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         }
     }
 
-    override render() {
+    renderOriginal() {
         const icons = this.props.large ? Icons.size40 : Icons.size30;
         const icon = this.state.isConflict ? icons.mixed : this.state.isSelected ? icons.on : icons.off;
         return (
@@ -166,5 +169,17 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                 </div>
             </div>
         );
+    }
+
+    renderFluent() {
+        // if faIcons are sent (to mimic a checkbox) use fluent checkbox
+        if (this.props.faIcons) {
+            return <Checkbox disabled={this.props.disabled} value={this.state.isSelected} onChange={() => !this.props.disabled && this.onChange()} />;
+        }
+        return <SwitchPropertyLine label={this.props.label || ""} value={this.state.isSelected} onChange={() => this.onChange()} disabled={!!this.props.disabled} />;
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

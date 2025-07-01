@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import { NodeGeometryEditor } from "../../../nodeGeometryEditor/src/index";
 
 const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;

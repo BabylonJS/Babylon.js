@@ -10,7 +10,6 @@ import type {
     WebGPUShaderProcessor,
     WebGPUPipelineContext,
     GaussianSplattingMesh,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";

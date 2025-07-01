@@ -232,6 +232,25 @@ const rules = {
                         message: "Async function name must end in 'Async'",
                     },
                 ],
+                // For typescript files, allow type only imports from index files as these are compile time only and cause no issues with runtime side effects.
+                "@typescript-eslint/no-restricted-imports": [
+                    "error",
+                    {
+                        patterns: [
+                            {
+                                group: ["**/index"],
+                                message: "Do not import from index files",
+                                allowTypeImports: true,
+                            },
+                        ],
+                    },
+                ],
+                "import/no-internal-modules": [
+                    "error",
+                    {
+                        forbid: ["**/"],
+                    },
+                ],
                 "@typescript-eslint/naming-convention": [
                     "error",
                     {
@@ -417,6 +436,26 @@ const rules = {
                         },
                     },
                     {
+                        // Exception for hooks which start with 'use'
+                        selector: "variable",
+                        format: ["strictCamelCase"],
+                        modifiers: ["global"],
+                        filter: {
+                            regex: "^use",
+                            match: true,
+                        },
+                    },
+                    {
+                        // Exception for hooks which start with 'use'
+                        selector: "function",
+                        format: ["strictCamelCase"],
+                        modifiers: ["global"],
+                        filter: {
+                            regex: "^use",
+                            match: true,
+                        },
+                    },
+                    {
                         selector: "variable",
                         format: ["PascalCase"],
                         modifiers: ["global"],
@@ -510,7 +549,6 @@ const rules = {
         "import/no-internal-modules": [
             "error",
             {
-                // {   "allow": ["**/*.ts", "**/*.tsx"]
                 forbid: ["**/index", "**/"],
             },
         ],

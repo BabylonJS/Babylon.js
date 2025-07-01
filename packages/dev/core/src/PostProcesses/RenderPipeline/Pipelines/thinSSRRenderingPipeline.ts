@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, CubeTexture, Scene, Camera } from "core/index";
 import { Vector2 } from "core/Maths/math.vector";
 import { ThinSSRPostProcess } from "core/PostProcesses/thinSSRPostProcess";

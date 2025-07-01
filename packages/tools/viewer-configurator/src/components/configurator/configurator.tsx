@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import "./configurator.scss";
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IInspectableOptions, Nullable, Observable } from "core/index";
-// eslint-disable-next-line import/no-internal-modules
 import type { HotSpot, ShadowQuality, ToneMapping, Viewer, ViewerDetails, ViewerElement, ViewerOptions } from "viewer/index";
 import type { DragEndEvent } from "@dnd-kit/core";
 
@@ -61,6 +59,7 @@ const OutputOptions = [
 const ShadowQualityOptions = [
     { label: "None", value: "none" },
     { label: "Normal", value: "normal" },
+    { label: "High", value: "high" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: ShadowQuality }[];
 
 const ToneMappingOptions = [

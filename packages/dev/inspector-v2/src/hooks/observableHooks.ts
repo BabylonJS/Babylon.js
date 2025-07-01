@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Observable } from "core/index";
+import type { IReadonlyObservable } from "core/index";
 
 import type { ObservableCollection } from "../misc/observableCollection";
 
@@ -12,7 +11,6 @@ import { useEffect, useMemo, useState } from "react";
  * @param eventNames The names of the events to listen for.
  * @returns The current value of the accessor.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useEventfulState<T>(accessor: () => T, element: HTMLElement | null | undefined, ...eventNames: string[]): T {
     const [current, setCurrent] = useState(accessor);
 
@@ -48,8 +46,7 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
  * @param observables The observables to listen for changes on.
  * @returns The current value of the accessor.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function useObservableState<T>(accessor: () => T, ...observables: Array<Observable<any> | null | undefined>): T {
+export function useObservableState<T>(accessor: () => T, ...observables: Array<IReadonlyObservable | null | undefined>): T {
     const [current, setCurrent] = useState(accessor);
 
     useEffect(() => {
@@ -78,7 +75,6 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<O
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useObservableCollection<T>(collection: ObservableCollection<T>) {
     return useObservableState(() => [...collection.items], collection.observable);
 }
@@ -88,7 +84,6 @@ export function useObservableCollection<T>(collection: ObservableCollection<T>) 
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection sorted by the order property.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useOrderedObservableCollection<T extends Readonly<{ order?: number }>>(collection: ObservableCollection<T>) {
     const items = useObservableCollection(collection);
     const sortedItems = useMemo(() => items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [items]);

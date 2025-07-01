@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
@@ -12,13 +11,27 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { BonePropertiesServiceDefinition } from "./services/panes/properties/bonePropertiesService";
+import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
+import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
+import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
+import { HemisphericLightPropertiesServiceDefinition } from "./services/panes/properties/lights/hemisphericLightPropertiesServices";
+import { PointLightPropertiesServiceDefinition } from "./services/panes/properties/lights/pointLightPropertiesServices";
+import { ShadowLightPropertiesServiceDefinition } from "./services/panes/properties/lights/shadowLightPropertiesServices";
+import { SpotLightPropertiesServiceDefinition } from "./services/panes/properties/lights/spotLightPropertiesServices";
+import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
+import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
+import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
+import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
-import { CommonPropertiesServiceDefinition } from "./services/panes/properties/common/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mesh/meshPropertiesService";
-import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
@@ -59,7 +72,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         scene = EngineStore.LastCreatedScene;
     }
 
-    if (!scene) {
+    if (!scene || scene.isDisposed) {
         return;
     }
 
@@ -167,12 +180,26 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
             MaterialExplorerServiceDefinition,
+            SkeletonHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
+            SpriteManagerHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
+            NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
+            TransformNodePropertiesServiceDefinition,
+            SkeletonPropertiesServiceDefinition,
+            BonePropertiesServiceDefinition,
+            MaterialPropertiesServiceDefinition,
+            HemisphericLightPropertiesServiceDefinition,
+            AreaLightPropertiesServiceDefinition,
+            PointLightPropertiesServiceDefinition,
+            DirectionalLightPropertiesServiceDefinition,
+            SpotLightPropertiesServiceDefinition,
+            ShadowLightPropertiesServiceDefinition,
+            SpritePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
@@ -198,14 +225,27 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     });
     disposeActions.push(() => modularTool.dispose());
 
+    let disposed = false;
     CurrentInspectorToken = {
         dispose: () => {
+            if (disposed) {
+                return;
+            }
+
             disposeActions.reverse().forEach((dispose) => dispose());
             if (options.handleResize) {
                 scene.getEngine().resize();
             }
+
+            disposed = true;
         },
     };
+
+    const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
+        HideInspector();
+    });
+
+    disposeActions.push(() => sceneDisposedObserver.remove());
 }
 
 export function HideInspector() {

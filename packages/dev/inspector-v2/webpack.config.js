@@ -25,32 +25,24 @@ module.exports = (env) => {
             alias: {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
+                addons: path.resolve("../../dev/addons/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },
         },
 
         module: {
-            rules: [
-                {
-                    test: /\.tsx?$/,
-                    use: [
-                        {
-                            loader: "ts-loader",
-                            options: {
-                                getCustomTransformers: () => ({
-                                    before: [ReactRefreshTypeScript()].filter(Boolean),
-                                }),
-                                transpileOnly: true,
-                            },
-                        },
-                    ],
-                    exclude: /node_modules/,
+            rules: webpackTools.getRules({
+                sideEffects: true,
+                includeCSS: false,
+                tsOptions: {
+                    configFile: "tsconfig.build.json",
+                    getCustomTransformers: () => ({
+                        before: [ReactRefreshTypeScript()].filter(Boolean),
+                    }),
+                    transpileOnly: true,
                 },
-                {
-                    test: /\.css$/,
-                    use: ["style-loader", "css-loader"],
-                },
-            ],
+            }),
         },
 
         plugins: [new ReactRefreshWebpackPlugin()].filter(Boolean),

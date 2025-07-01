@@ -10,6 +10,8 @@ import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
+import { Vector3PropertyLine } from "../fluent/hoc/vectorPropertyLine";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -137,13 +139,23 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
             const value = this.props.target[this.props.propertyName!];
             const strVector = "new " + babylonNamespace + "Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
             const strCommand = targetName + "." + targetProperty + " = " + strVector + ";// (debugNode as " + babylonNamespace + className + ")";
-            copyCommandToClipboard(strCommand);
-        } else {
-            copyCommandToClipboard("undefined");
+            return strCommand;
         }
+        return "";
     }
 
-    override render() {
+    renderFluent() {
+        return (
+            <Vector3PropertyLine
+                label={this.props.label}
+                onChange={(val) => this.setState({ value: val })}
+                value={this.props.target[this.props.propertyName!]}
+                onCopy={() => this.onCopyClick()}
+            />
+        );
+    }
+
+    renderOriginal() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
@@ -163,7 +175,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
-                    <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <div className="copy hoverIcon" onClick={() => copyCommandToClipboard(this.onCopyClick())} title="Copy to clipboard">
                         <img src={copyIcon} alt="Copy" />
                     </div>
                     {this.props.additionalCommands && this.props.additionalCommands.map((c) => c)}
@@ -254,5 +266,8 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 )}
             </div>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

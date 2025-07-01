@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { ArcRotateCamera, Nullable } from "core/index";
 
 import { Engine } from "core/Engines/engine";
@@ -21,6 +20,7 @@ const engine = new Engine(canvas, true, {
 });
 
 const scene = new Scene(engine);
+(globalThis as any).scene = scene; // For debugging purposes
 
 let camera: Nullable<ArcRotateCamera> = null;
 

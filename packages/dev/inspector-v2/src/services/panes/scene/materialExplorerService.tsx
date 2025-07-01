@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Observer } from "core/index";
-
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
@@ -18,29 +15,8 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             getRootEntities: (scene) => scene.materials,
             getEntityDisplayName: (material) => material.name,
             entityIcon: () => <PaintBrushRegular />,
-            watch: (scene, onAdded, onRemoved) => {
-                const observers: Observer<any>[] = [];
-
-                observers.push(
-                    scene.onNewMaterialAddedObservable.add((material) => {
-                        onAdded(material);
-                    })
-                );
-
-                observers.push(
-                    scene.onMaterialRemovedObservable.add((material) => {
-                        onRemoved(material);
-                    })
-                );
-
-                return {
-                    dispose: () => {
-                        for (const observer of observers) {
-                            observer.remove();
-                        }
-                    },
-                };
-            },
+            getEntityAddedObservables: (scene) => [scene.onNewMaterialAddedObservable],
+            getEntityRemovedObservables: (scene) => [scene.onMaterialRemovedObservable],
         });
 
         return {

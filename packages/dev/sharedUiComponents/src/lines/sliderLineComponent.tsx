@@ -6,6 +6,8 @@ import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "./floatLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { SyncedSliderLine } from "../fluent/hoc/syncedSliderLine";
 
 interface ISliderLineComponentProps {
     label: string;
@@ -140,7 +142,20 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         }
     }
 
-    override render() {
+    renderFluent() {
+        return (
+            <SyncedSliderLine
+                label={this.props.label}
+                value={this.state.value}
+                onChange={(val) => this.onChange(val)}
+                step={this.props.step}
+                min={this.props.minimum}
+                max={this.props.maximum}
+            />
+        );
+    }
+
+    renderOriginal() {
         return (
             <div className="sliderLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
@@ -187,5 +202,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 </div>
             </div>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

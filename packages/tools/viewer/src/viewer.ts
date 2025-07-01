@@ -22,7 +22,6 @@ import type {
     ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";

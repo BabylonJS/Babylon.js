@@ -9,6 +9,7 @@ import type { ParticleDebugBlock } from "core/Particles/Node/Blocks/particleDebu
 
 export class DebugPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;
+    private _dataCollectedObserver: Nullable<Observer<ParticleDebugBlock>>;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -21,11 +22,22 @@ export class DebugPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     override componentWillUnmount() {
-        this.props.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        this._onUpdateRequiredObserver?.remove();
+        this._onUpdateRequiredObserver = null;
+        this._dataCollectedObserver?.remove();
+        this._dataCollectedObserver = null;
     }
 
     override render() {
         const debugBlock = this.props.nodeData.data as ParticleDebugBlock;
+
+        if (this._dataCollectedObserver) {
+            this._dataCollectedObserver.remove();
+        }
+
+        this._dataCollectedObserver = debugBlock.onDataCollectedObservable.add((data) => {
+            this.forceUpdate();
+        });
 
         return (
             <div>

@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import "serializers/index";
 export * from "./legacy-glTF2Serializer";
 export * from "./legacy-objSerializer";
