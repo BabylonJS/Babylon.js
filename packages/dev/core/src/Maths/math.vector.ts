@@ -3012,11 +3012,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      */
     public static _UnprojectFromInvertedMatrixToRef<T extends Vector3>(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: T): T {
         Vector3.TransformCoordinatesToRef(source, matrix, result);
-        const m = matrix.m;
-        const num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
-        if (WithinEpsilon(num, 1.0)) {
-            result.scaleInPlace(1.0 / num);
-        }
+
         return result;
     }
 
