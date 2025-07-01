@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
 import { AccordionPane } from "../accordionPane";

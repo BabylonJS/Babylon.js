@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";

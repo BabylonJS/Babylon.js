@@ -1,7 +1,7 @@
-// eslint-disable-next-line import/no-internal-modules
-import { type SpotLight, Tools } from "core/index";
+import type { SpotLight } from "core/index";
 import type { FunctionComponent } from "react";
 
+import { Tools } from "core/Misc/tools";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";

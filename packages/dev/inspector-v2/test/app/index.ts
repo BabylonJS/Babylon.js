@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { ArcRotateCamera, Nullable } from "core/index";
 
 import { Engine } from "core/Engines/engine";

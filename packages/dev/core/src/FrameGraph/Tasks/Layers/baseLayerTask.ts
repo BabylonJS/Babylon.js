@@ -12,7 +12,6 @@ import type {
     ThinEffectLayer,
     FrameGraphRenderPass,
     FrameGraphRenderContext,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";

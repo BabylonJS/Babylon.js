@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 

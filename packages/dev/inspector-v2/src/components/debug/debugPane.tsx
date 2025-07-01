@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { AbstractMesh, Mesh, Scene } from "core/index";
 
 import { FontAsset } from "addons/msdfText/fontAsset";
