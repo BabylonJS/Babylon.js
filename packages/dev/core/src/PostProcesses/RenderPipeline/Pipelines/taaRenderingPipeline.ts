@@ -12,9 +12,18 @@ import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
+import { TAAPostProcessAntiGhosting, ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
+import type { PrePassRenderer } from "core/Rendering/prePassRenderer";
+import type { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
+import { Logger } from "core/Misc/logger";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
+
+class TAAEffectConfiguration implements PrePassEffectConfiguration {
+    public name = "taa";
+    public enabled = true;
+    public readonly texturesRequired = [Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE];
+}
 
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).
@@ -85,6 +94,17 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
     public set disableOnCameraMove(value: boolean) {
         this._taaThinPostProcess.disableOnCameraMove = value;
+        this._buildPipeline();
+    }
+
+    @serialize()
+    public get antiGhosting(): TAAPostProcessAntiGhosting {
+        return this._taaThinPostProcess.antiGhosting;
+    }
+
+    public set antiGhosting(antiGhosting: TAAPostProcessAntiGhosting) {
+        this._taaThinPostProcess.antiGhosting = antiGhosting;
+        this._buildPipeline();
     }
 
     @serialize("isEnabled")
@@ -227,12 +247,12 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._ping = engine.createRenderTargetTexture(
             { width, height },
-            { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_NEAREST_NEAREST }
+            { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_LINEAR_LINEAR }
         );
 
         this._pong = engine.createRenderTargetTexture(
             { width, height },
-            { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_NEAREST_NEAREST }
+            { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_LINEAR_LINEAR }
         );
 
         this._taaThinPostProcess.textureWidth = width;
@@ -305,14 +325,27 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _createTAAPostProcess(): void {
+        let prePassRenderer: Nullable<PrePassRenderer> = null;
+        if (this._taaThinPostProcess._requiresVelocityTexture) {
+            prePassRenderer = this._scene.enablePrePassRenderer();
+            if (!prePassRenderer) {
+                Logger.Warn("TAA with VelocityOffset could not enable PrePass, falling back to DisableOnCameraMove");
+                this._taaThinPostProcess.antiGhosting = TAAPostProcessAntiGhosting.DisableOnCameraMove;
+            }
+        }
+
         this._taaPostProcess = new PostProcess("TAA", "taa", {
             uniforms: ["factor"],
-            samplers: ["historySampler"],
+            samplers: ["historySampler", "velocitySampler"],
             size: 1.0,
             engine: this._scene.getEngine(),
             textureType: this._textureType,
             effectWrapper: this._taaThinPostProcess,
         });
+
+        if (prePassRenderer) {
+            this._taaPostProcess._prePassEffectConfiguration = new TAAEffectConfiguration();
+        }
 
         this._taaPostProcess.samples = this._msaaSamples;
 
@@ -334,6 +367,11 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._taaPostProcess.onApplyObservable.add((effect: Effect) => {
             effect._bindTexture("historySampler", this._pingpong ? this._ping.texture : this._pong.texture);
+            if (prePassRenderer) {
+                const renderTarget = prePassRenderer.getRenderTarget();
+                const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
+                effect.setTexture("velocitySampler", renderTarget.textures[velocityIndex]);
+            }
         });
     }
 

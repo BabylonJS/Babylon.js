@@ -4,6 +4,13 @@ import { Halton2DSequence } from "core/Maths/halton2DSequence";
 import { Engine } from "core/Engines/engine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 
+export enum TAAPostProcessAntiGhosting {
+    None,
+    DisableOnCameraMove,
+    VelocityOffset,
+    ColorClampedVelocityOffset,
+}
+
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).
  * This can be used to improve image quality for still pictures (screenshots for e.g.).
@@ -22,7 +29,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
     /**
      * The list of samplers used by the effect
      */
-    public static readonly Samplers = ["historySampler"];
+    public static readonly Samplers = ["historySampler", "velocitySampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
@@ -108,11 +115,38 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._reset();
     }
 
+    private _antiGhosting = TAAPostProcessAntiGhosting.DisableOnCameraMove;
+    public get antiGhosting(): TAAPostProcessAntiGhosting {
+        return this._antiGhosting;
+    }
+
+    public set antiGhosting(antiGhosting: TAAPostProcessAntiGhosting) {
+        if (this._antiGhosting === antiGhosting) {
+            return;
+        }
+        this._antiGhosting = antiGhosting;
+        this._updateEffectDefines();
+    }
+
     /**
      * Disable TAA on camera move (default: true).
      * You generally want to keep this enabled, otherwise you will get a ghost effect when the camera moves (but if it's what you want, go for it!)
      */
-    public disableOnCameraMove = true;
+    public get disableOnCameraMove(): boolean {
+        return this._antiGhosting === TAAPostProcessAntiGhosting.DisableOnCameraMove;
+    }
+
+    public set disableOnCameraMove(disable: boolean) {
+        if (this.disableOnCameraMove === disable) {
+            return;
+        }
+        this._antiGhosting = disable ? TAAPostProcessAntiGhosting.DisableOnCameraMove : TAAPostProcessAntiGhosting.None;
+    }
+
+    /** @internal */
+    public get _requiresVelocityTexture(): boolean {
+        return this._antiGhosting === TAAPostProcessAntiGhosting.VelocityOffset || this._antiGhosting === TAAPostProcessAntiGhosting.ColorClampedVelocityOffset;
+    }
 
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
@@ -176,5 +210,19 @@ export class ThinTAAPostProcess extends EffectWrapper {
         effect.setFloat("factor", (this.camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate ? 1 : this.factor);
 
         this._firstUpdate = false;
+    }
+
+    private _updateEffectDefines(): void {
+        if (!this._requiresVelocityTexture) {
+            // Only the velocity modes need extra defines, otherwise just set the effect to defaults
+            this.updateEffect();
+            return;
+        }
+
+        let defines = "#define TAA_VELOCITY_OFFSET";
+        if (this._antiGhosting === TAAPostProcessAntiGhosting.ColorClampedVelocityOffset) {
+            defines += "\n#define TAA_COLOR_CLAMPED";
+        }
+        this.updateEffect(defines);
     }
 }
