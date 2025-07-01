@@ -78,6 +78,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public disableImageProcessing = false;
 
     /**
+     * Sets this property to true if this task is the main object renderer of the frame graph.
+     * It will help to locate the main object renderer in the frame graph when multiple object renderers are used.
+     * This is useful for the inspector to know which object renderer to use for additional rendering features like wireframe rendering or frustum light debugging.
+     * It is also used to determine the main camera used by the frame graph: this is the camera used by the main object renderer.
+     */
+    public isMainObjectRenderer = false;
+
+    /**
      * The output texture.
      * This texture will point to the same texture than the targetTexture property if it is set.
      * Note, however, that the handle itself will be different!

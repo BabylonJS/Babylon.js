@@ -8,16 +8,23 @@ import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 
 /**
  * Looks for the main camera used by the frame graph.
- * We assume that the camera used by the the last rendering task in the graph is the main camera.
+ * By default, this is the camera used by the main object renderer task.
+ * If no such task, we try to find a camera in either a geometry renderer or a utility layer renderer tasks.
  * @param frameGraph The frame graph to search in
  * @returns The main camera used by the frame graph, or null if not found
  */
 export function FindMainCamera(frameGraph: FrameGraph): Nullable<Camera> {
+    const mainObjectRenderer = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
+    if (mainObjectRenderer) {
+        return mainObjectRenderer.camera;
+    }
+
+    // Try to find a camera in either the geometry renderer or the utility layer renderer tasks
     const tasks = frameGraph.tasks;
 
     for (let i = tasks.length - 1; i >= 0; i--) {
         const task = tasks[i];
-        if (task instanceof FrameGraphObjectRendererTask || task instanceof FrameGraphGeometryRendererTask || task instanceof FrameGraphUtilityLayerRendererTask) {
+        if (task instanceof FrameGraphGeometryRendererTask || task instanceof FrameGraphUtilityLayerRendererTask) {
             return task.camera;
         }
     }
@@ -27,18 +34,24 @@ export function FindMainCamera(frameGraph: FrameGraph): Nullable<Camera> {
 
 /**
  * Looks for the main object renderer task in the frame graph.
- * We assume that the last object renderer task that has an object list with meshes is the main object renderer.
+ * By default, this is the object renderer task with isMainObjectRenderer set to true.
+ * If no such task, we return the last object renderer task that has an object list with meshes (or null if none found).
  * @param frameGraph The frame graph to search in
  * @returns The main object renderer of the frame graph, or null if not found
  */
 export function FindMainObjectRenderer(frameGraph: FrameGraph): Nullable<FrameGraphObjectRendererTask> {
-    const tasks = frameGraph.getTasksByType<FrameGraphObjectRendererTask>(FrameGraphObjectRendererTask);
-    for (let i = tasks.length - 1; i >= 0; --i) {
-        if (tasks[i].objectList.meshes) {
-            return tasks[i];
+    const objectRenderers = frameGraph.getTasksByType<FrameGraphObjectRendererTask>(FrameGraphObjectRendererTask);
+
+    let fallbackRenderer: Nullable<FrameGraphObjectRendererTask> = null;
+    for (let i = objectRenderers.length - 1; i >= 0; --i) {
+        if (objectRenderers[i].isMainObjectRenderer) {
+            return objectRenderers[i];
+        }
+        if (objectRenderers[i].objectList.meshes && !fallbackRenderer) {
+            fallbackRenderer = objectRenderers[i];
         }
     }
-    return null;
+    return fallbackRenderer;
 }
 
 /**

@@ -150,20 +150,20 @@ export class DirectionalLightFrustumViewer {
 
     private _addMeshesToFrameGraph(frameGraph: FrameGraph) {
         const objectRenderer = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
-        if (objectRenderer) {
+        if (objectRenderer && objectRenderer.objectList.meshes) {
             for (const mesh of this._lightHelperFrustumMeshes) {
-                objectRenderer.objectList.meshes!.push(mesh);
+                objectRenderer.objectList.meshes.push(mesh);
             }
         }
     }
 
     private _removeMeshesFromFrameGraph(frameGraph: FrameGraph) {
         const objectRenderer = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
-        if (objectRenderer) {
+        if (objectRenderer && objectRenderer.objectList.meshes) {
             for (const mesh of this._lightHelperFrustumMeshes) {
                 const index = objectRenderer.objectList.meshes!.indexOf(mesh);
                 if (index !== -1) {
-                    objectRenderer.objectList.meshes!.splice(index, 1);
+                    objectRenderer.objectList.meshes.splice(index, 1);
                 }
             }
         }
