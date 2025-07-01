@@ -2,7 +2,7 @@ import type { FunctionComponent } from "react";
 
 import type { Scene } from "core/index";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
