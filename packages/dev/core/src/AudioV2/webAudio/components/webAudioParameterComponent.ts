@@ -46,6 +46,11 @@ export class _WebAudioParameterComponent {
     }
 
     /** @internal */
+    public get isRamping(): boolean {
+        return this._engine.currentTime < this._rampEndTime;
+    }
+
+    /** @internal */
     public get targetValue(): number {
         return this._targetValue;
     }
