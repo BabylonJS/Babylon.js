@@ -62,6 +62,11 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      */
     getEntityParent?: (entity: T) => Nullable<T>;
 
+    /**
+     * Gets the display information for a given entity.
+     * This is ideally "live" display info (e.g. updates to the display info are taken into account and communicated via the observable).
+     * This means in many cases the display info will need to be disposed when it is no longer needed so observable registrations can be removed.
+     */
     getEntityDisplayInfo: (entity: T) => EntityDisplayInfo;
 
     /**
