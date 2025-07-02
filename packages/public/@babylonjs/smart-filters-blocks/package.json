@@ -49,6 +49,6 @@
         "@babylonjs/core": "^7.47.3 || ^8.0.1"
     },
     "dependencies": {
-        "@babylonjs/smart-filters": "^8.10.1"
+        "@babylonjs/smart-filters": "^8.14.0"
     }
 }
