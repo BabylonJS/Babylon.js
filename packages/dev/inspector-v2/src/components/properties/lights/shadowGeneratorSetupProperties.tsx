@@ -1,8 +1,9 @@
-import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
+import type { FunctionComponent } from "react";
 
+import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { useEffect, useState, type FunctionComponent } from "react";
+import { useEffect, useState } from "react";
 
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";

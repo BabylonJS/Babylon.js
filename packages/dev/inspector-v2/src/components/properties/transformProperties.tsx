@@ -1,7 +1,6 @@
-import type { Nullable, Quaternion, Vector3 } from "core/index";
-
 import type { FunctionComponent } from "react";
 
+import type { Nullable, Quaternion, Vector3 } from "core/index";
 import type { ISettingsContext } from "../../services/settingsContext";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";

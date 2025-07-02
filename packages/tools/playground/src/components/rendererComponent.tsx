@@ -408,7 +408,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 return this._notifyError("You must at least create a scene.");
             }
 
-            if (this._engine.scenes[0] && displayInspector) {
+            if (this._engine.scenes[0] && displayInspector && !globalObject.scene.then) {
                 this.props.globalState.onInspectorRequiredObservable.notifyObservers();
             }
 
