@@ -1,4 +1,4 @@
-import type { Vector3, Color3, Nullable, Quaternion } from "core/index";
+import type { Vector3, Color3, Color4, Nullable, Quaternion } from "core/index";
 
 import { useInterceptObservable } from "./instrumentationHooks";
 import { useObservableState } from "./observableHooks";
@@ -55,6 +55,26 @@ export function useColor3Property<TargetT extends object, PropertyKeyT extends P
     useProperty(color as Color3 | null | undefined, "r");
     useProperty(color as Color3 | null | undefined, "g");
     useProperty(color as Color3 | null | undefined, "b");
+    return color;
+}
+
+export function useColor4Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color4>>(target: TargetT, propertyKey: PropertyKeyT): TargetT[PropertyKeyT];
+export function useColor4Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color4>>(
+    target: TargetT | null | undefined,
+    propertyKey: PropertyKeyT
+): TargetT[PropertyKeyT] | null;
+/**
+ * Translates a Color4 property value to react state, updating the state whenever the property changes or when the r/g/b components of the Color4 change.
+ * @param target The object containing the property to observe.
+ * @param propertyKey The key of the property to observe.
+ * @returns The current value of the property, or null if the target is null or undefined.
+ */
+export function useColor4Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color4>>(target: TargetT | null | undefined, propertyKey: PropertyKeyT) {
+    const color = useProperty(target, propertyKey);
+    useProperty(color as Color3 | null | undefined, "r");
+    useProperty(color as Color3 | null | undefined, "g");
+    useProperty(color as Color3 | null | undefined, "b");
+    useProperty(color as Color4 | null | undefined, "a");
     return color;
 }
 

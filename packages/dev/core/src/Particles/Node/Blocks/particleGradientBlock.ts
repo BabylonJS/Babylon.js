@@ -48,16 +48,21 @@ export class ParticleGradientBlock extends NodeParticleBlock {
         this._manageExtendedInputs(1);
     }
 
+    private _extend() {
+        this._entryCount++;
+        this.registerInput("value" + (this._entryCount - 1), NodeParticleBlockConnectionPointTypes.AutoDetect, true);
+        this._linkConnectionTypes(1, this._entryCount);
+
+        this._manageExtendedInputs(this._entryCount);
+    }
+
     private _manageExtendedInputs(index: number) {
         this._inputs[index].onConnectionObservable.add(() => {
             if (this._entryCount > index) {
                 return;
             }
-            this._entryCount++;
-            this.registerInput("value" + (this._entryCount - 1), NodeParticleBlockConnectionPointTypes.AutoDetect, true);
-            this._linkConnectionTypes(1, this._entryCount);
 
-            this._manageExtendedInputs(this._entryCount);
+            this._extend();
         });
     }
 
@@ -134,6 +139,24 @@ export class ParticleGradientBlock extends NodeParticleBlock {
 
             return 0;
         };
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject._entryCount = this._entryCount;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        if (serializationObject._entryCount && serializationObject._entryCount > 1) {
+            for (let i = 1; i < serializationObject._entryCount; i++) {
+                this._extend();
+            }
+        }
     }
 }
 
