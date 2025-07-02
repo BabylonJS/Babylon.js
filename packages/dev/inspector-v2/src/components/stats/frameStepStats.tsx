@@ -2,7 +2,7 @@ import type { Scene } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
@@ -59,46 +59,16 @@ export const FrameStepsStats: FunctionComponent<{ context: Scene }> = ({ context
         };
     }, [scene]);
 
-    const absoluteFPS = useObservableState(
-        useCallback(() => Math.floor(1000.0 / sceneInstrumentationRef.current.frameTimeCounter.lastSecAverage), [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const meshesSelection = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.activeMeshesEvaluationTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const renderTargets = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.renderTargetsRenderTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const particles = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.particlesRenderTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const sprites = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.spritesRenderTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const animations = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.animationsTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const physics = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.physicsTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const interFrameTime = useObservableState(
-        useCallback(() => sceneInstrumentationRef.current.interFrameTimeCounter.lastSecAverage, [sceneInstrumentationRef.current]),
-        pollingObservable
-    );
-    const gpuFrameTime = useObservableState(
-        useCallback(() => engineInstrumentationRef.current.gpuFrameTimeCounter.lastSecAverage * 0.000001, [engineInstrumentationRef.current]),
-        pollingObservable
-    );
-    const gpuFrameTimeAverage = useObservableState(
-        useCallback(() => engineInstrumentationRef.current.gpuFrameTimeCounter.average * 0.000001, [engineInstrumentationRef.current]),
-        pollingObservable
-    );
+    const absoluteFPS = useObservableState(() => Math.floor(1000.0 / sceneInstrumentationRef.current.frameTimeCounter.lastSecAverage), pollingObservable);
+    const meshesSelection = useObservableState(() => sceneInstrumentationRef.current.activeMeshesEvaluationTimeCounter.lastSecAverage, pollingObservable);
+    const renderTargets = useObservableState(() => sceneInstrumentationRef.current.renderTargetsRenderTimeCounter.lastSecAverage, pollingObservable);
+    const particles = useObservableState(() => sceneInstrumentationRef.current.particlesRenderTimeCounter.lastSecAverage, pollingObservable);
+    const sprites = useObservableState(() => sceneInstrumentationRef.current.spritesRenderTimeCounter.lastSecAverage, pollingObservable);
+    const animations = useObservableState(() => sceneInstrumentationRef.current.animationsTimeCounter.lastSecAverage, pollingObservable);
+    const physics = useObservableState(() => sceneInstrumentationRef.current.physicsTimeCounter.lastSecAverage, pollingObservable);
+    const interFrameTime = useObservableState(() => sceneInstrumentationRef.current.interFrameTimeCounter.lastSecAverage, pollingObservable);
+    const gpuFrameTime = useObservableState(() => engineInstrumentationRef.current.gpuFrameTimeCounter.lastSecAverage * 0.000001, pollingObservable);
+    const gpuFrameTimeAverage = useObservableState(() => engineInstrumentationRef.current.gpuFrameTimeCounter.average * 0.000001, pollingObservable);
 
     return (
         <>

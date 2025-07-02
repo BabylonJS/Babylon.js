@@ -2,8 +2,6 @@ import type { FunctionComponent } from "react";
 
 import type { Scene } from "core/index";
 
-import { useCallback } from "react";
-
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
@@ -11,47 +9,16 @@ import { usePollingObservable } from "../../hooks/pollingHooks";
 export const CountStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const pollingObservable = usePollingObservable(1000);
 
-    const totalMeshes = useObservableState(
-        useCallback(() => scene.meshes.length, [scene]),
-        scene.onNewMeshAddedObservable,
-        scene.onMeshRemovedObservable
-    );
-    const activeMeshes = useObservableState(
-        useCallback(() => scene.getActiveMeshes().length, [scene]),
-        pollingObservable
-    );
-    const activeIndices = useObservableState(
-        useCallback(() => scene.getActiveIndices(), [scene]),
-        pollingObservable
-    );
-    const activeBones = useObservableState(
-        useCallback(() => scene.getActiveBones(), [scene]),
-        pollingObservable
-    );
-    const activeParticles = useObservableState(
-        useCallback(() => scene.getActiveParticles(), [scene]),
-        pollingObservable
-    );
-    const drawCalls = useObservableState(
-        useCallback(() => scene.getEngine()._drawCalls.current, [scene]),
-        pollingObservable
-    );
-    const totalLights = useObservableState(
-        useCallback(() => scene.lights.length, [scene]),
-        pollingObservable
-    );
-    const totalVertices = useObservableState(
-        useCallback(() => scene.getTotalVertices(), [scene]),
-        pollingObservable
-    );
-    const totalMaterials = useObservableState(
-        useCallback(() => scene.materials.length, [scene]),
-        pollingObservable
-    );
-    const totalTextures = useObservableState(
-        useCallback(() => scene.textures.length, [scene]),
-        pollingObservable
-    );
+    const totalMeshes = useObservableState(() => scene.meshes.length, scene.onNewMeshAddedObservable, scene.onMeshRemovedObservable);
+    const activeMeshes = useObservableState(() => scene.getActiveMeshes().length, pollingObservable);
+    const activeIndices = useObservableState(() => scene.getActiveIndices(), pollingObservable);
+    const activeBones = useObservableState(() => scene.getActiveBones(), pollingObservable);
+    const activeParticles = useObservableState(() => scene.getActiveParticles(), pollingObservable);
+    const drawCalls = useObservableState(() => scene.getEngine()._drawCalls.current, pollingObservable);
+    const totalLights = useObservableState(() => scene.lights.length, pollingObservable);
+    const totalVertices = useObservableState(() => scene.getTotalVertices(), pollingObservable);
+    const totalMaterials = useObservableState(() => scene.materials.length, pollingObservable);
+    const totalTextures = useObservableState(() => scene.textures.length, pollingObservable);
 
     return (
         <>

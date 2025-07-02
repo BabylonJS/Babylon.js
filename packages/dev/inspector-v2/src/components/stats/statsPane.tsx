@@ -1,7 +1,5 @@
 import type { Scene } from "core/index";
 
-import { useCallback } from "react";
-
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -11,10 +9,7 @@ import { Pane } from "../pane";
 export const StatsPane: typeof AccordionPane<Scene> = (props) => {
     const scene = props.context;
     const engine = scene.getEngine();
-    const fps = useObservableState(
-        useCallback(() => Math.round(engine.getFps()), [engine]),
-        engine.onBeginFrameObservable
-    );
+    const fps = useObservableState(() => Math.round(engine.getFps()), engine.onBeginFrameObservable);
 
     return (
         <>

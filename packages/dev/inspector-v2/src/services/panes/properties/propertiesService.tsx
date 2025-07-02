@@ -61,10 +61,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
-                const entity = useObservableState(
-                    useCallback(() => selectionService.selectedEntity, [selectionService]),
-                    selectionService.onSelectedEntityChanged
-                );
+                const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
                 const applicableContent = entity ? sectionContent.filter((content) => content.predicate(entity)) : [];
 
                 return <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />;

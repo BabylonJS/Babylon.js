@@ -7,7 +7,6 @@ import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { CubeTreeRegular } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { SceneExplorer } from "../../../components/scene/sceneExplorer";
 import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
@@ -55,14 +54,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const commands = useOrderedObservableCollection(commandsCollection);
-                const scene = useObservableState(
-                    useCallback(() => sceneContext.currentScene, [sceneContext]),
-                    sceneContext.currentSceneObservable
-                );
-                const entity = useObservableState(
-                    useCallback(() => selectionService.selectedEntity, [selectionService]),
-                    selectionService.onSelectedEntityChanged
-                );
+                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+                const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
 
                 return (
                     <>

@@ -3,8 +3,6 @@ import type { FunctionComponent } from "react";
 import type { Sprite } from "core/index";
 import type { ISettingsContext } from "../../services/settingsContext";
 
-import { useCallback } from "react";
-
 import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { useVector3Property } from "../../hooks/compoundPropertyHooks";
@@ -18,10 +16,7 @@ export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite; sett
 
     const position = useVector3Property(sprite, "position");
 
-    const useDegrees = useObservableState(
-        useCallback(() => settings.useDegrees, [settings]),
-        settings.settingsChangedObservable
-    );
+    const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
     const angleMultiplier = useDegrees ? RadiansToDegrees : 1;
 
     return (

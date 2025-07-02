@@ -68,10 +68,7 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
     const defaultMapSize = MapSizeOptions[0].value;
     const [shadowGeneratorSettings, setShadowGeneratorSettings] = useState<Readonly<ShadowGeneratorSettings>>({ generatorType: defaultGeneratorType, mapSize: defaultMapSize });
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
-    const camera = useObservableState(
-        useCallback(() => shadowLight.getScene().activeCamera, [shadowLight.getScene().activeCamera]),
-        shadowLight.getScene().onActiveCameraChanged
-    );
+    const camera = useObservableState(() => shadowLight.getScene().activeCamera, shadowLight.getScene().onActiveCameraChanged);
     const shadowGenerator = GetShadowGenerator(camera, shadowLight);
     const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGenerator);
 

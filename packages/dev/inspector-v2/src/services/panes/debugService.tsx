@@ -6,7 +6,6 @@ import type { ISceneContext } from "../sceneContext";
 import type { IShellService } from "../shellService";
 
 import { BugRegular } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { DebugPane } from "../../components/debug/debugPane";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
@@ -51,10 +50,7 @@ export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellS
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
-                const scene = useObservableState(
-                    useCallback(() => sceneContext.currentScene, [sceneContext]),
-                    sceneContext.currentSceneObservable
-                );
+                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 return <>{scene && <DebugPane sections={sections} sectionContent={sectionContent} context={scene} />}</>;
             },
         });

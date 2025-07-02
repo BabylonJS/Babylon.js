@@ -2,13 +2,12 @@ import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { IShellService } from "./shellService";
 
-import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, Button, makeStyles, Text, tokens } from "@fluentui/react-components";
-import { FormNewRegular } from "@fluentui/react-icons";
-import { useCallback } from "react";
-
-import { useObservableState } from "../hooks/observableHooks";
-import { SceneContextIdentity } from "./sceneContext";
+import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Button } from "@fluentui/react-components";
 import { ShellServiceIdentity } from "./shellService";
+
+import { FormNewRegular } from "@fluentui/react-icons";
+import { SceneContextIdentity } from "./sceneContext";
+import { useObservableState } from "../hooks/observableHooks";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -33,10 +32,7 @@ export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellServic
                 const classes = useStyles();
 
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const scene = useObservableState(
-                    useCallback(() => sceneContext.currentScene, [sceneContext]),
-                    sceneContext.currentSceneObservable
-                );
+                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 // eslint-disable-next-line no-console
                 console.log(scene);
 
