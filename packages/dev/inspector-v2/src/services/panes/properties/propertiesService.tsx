@@ -6,7 +6,6 @@ import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
-import { useCallback } from "react";
 
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
