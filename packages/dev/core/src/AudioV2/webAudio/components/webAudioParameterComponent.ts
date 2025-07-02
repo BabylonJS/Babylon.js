@@ -25,8 +25,14 @@ const MaxWaitTime = 0.011;
  */
 const MinRampDuration = 0.000001;
 
+// let Id = 1;
+
 /** @internal */
 export class _WebAudioParameterComponent {
+    private _deferredRampEndTime = 0;
+    private _deferredRampShape: AudioParameterRampShape = AudioParameterRampShape.Linear;
+    private _deferredTargetValue = -1;
+    // private _id: number = Id++;
     private _rampEndTime: number = 0;
     private _engine: _WebAudioEngine;
     private _param: AudioParam;
@@ -55,6 +61,8 @@ export class _WebAudioParameterComponent {
 
     /** @internal */
     public dispose(): void {
+        this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
+
         this._param = null!;
         this._engine = null!;
     }
@@ -84,16 +92,20 @@ export class _WebAudioParameterComponent {
         const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
 
         let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
-        let startTime = this._engine.currentTime;
+        const startTime = this._engine.currentTime;
 
         if (startTime < this._rampEndTime) {
             const timeLeft = this._rampEndTime - startTime;
 
             if (MaxWaitTime < timeLeft) {
+                // console.log(
+                //     `Waiting for active ramp to finish before setting new target value: ${this._id}, Current value: ${this._targetValue}, Target value: ${value}, Time left: ${timeLeft}`
+                // );
+
                 throw new Error("Audio parameter not set. Wait for current ramp to finish.");
             } else {
-                duration -= timeLeft;
-                startTime = this._rampEndTime;
+                this._deferRamp(value, duration, shape);
+                return;
             }
         }
 
@@ -105,6 +117,48 @@ export class _WebAudioParameterComponent {
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
 
+        // console.log("Started audio parameter ramp:", this._id, "Target value:", this._deferredTargetValue, "End time:", this._deferredRampEndTime);
+
         this._rampEndTime = startTime + duration;
     }
+
+    private _applyDeferredRamp = () => {
+        if (0 < this._deferredRampEndTime) {
+            if (this._rampEndTime < this._engine.currentTime) {
+                this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
+
+                if (this._engine.state !== "running") {
+                    this._engine.stateChangedObservable.add(this._applyDeferredRamp);
+                    return;
+                }
+
+                // console.log("Applying deferred ramp to audio parameter:", this._id, "Target value:", this._deferredTargetValue, "End time:", this._deferredRampEndTime);
+
+                this.setTargetValue(this._deferredTargetValue, {
+                    duration: this._deferredRampEndTime - this._engine.currentTime,
+                    shape: this._deferredRampShape,
+                });
+
+                this._deferredRampEndTime = 0;
+            } else {
+                requestAnimationFrame(this._applyDeferredRamp);
+            }
+        }
+    };
+
+    private _deferRamp(value: number, duration: number, shape: AudioParameterRampShape): void {
+        this._deferredRampEndTime = this._rampEndTime + duration;
+        this._deferredRampShape = shape;
+        this._deferredTargetValue = value;
+
+        // console.log("Deferring ramp for audio parameter:", this._id, "Target value:", this._deferredTargetValue, "End time:", this._deferredRampEndTime);
+
+        this._applyDeferredRamp();
+    }
 }
+
+// Example for testing:
+//  http://localhost:1338/#1BZK59#14
+// Stress test:
+//  http://localhost:1338/#1BZK59#59 = 200 spatial sounds - runs at full 60 FPS on a MacBook Air M3.
+//  http://localhost:1338/#1BZK59#60 = 500 spatial sounds - runs at 5 FPS on a MacBook Air M3.
