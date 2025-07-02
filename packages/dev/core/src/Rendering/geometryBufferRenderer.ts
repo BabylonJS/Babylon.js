@@ -1095,7 +1095,7 @@ export class GeometryBufferRenderer {
                         sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
                     }
                 } else {
-                    sideOrientation = instanceDataStorage.sideOrientation;
+                    sideOrientation = renderingMesh._getInstanceDataStorage().sideOrientation;
                 }
 
                 material._preBind(drawWrapper, sideOrientation);
