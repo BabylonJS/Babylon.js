@@ -25,14 +25,11 @@ const MaxWaitTime = 0.011;
  */
 const MinRampDuration = 0.000001;
 
-// let Id = 1;
-
 /** @internal */
 export class _WebAudioParameterComponent {
     private _deferredRampEndTime = 0;
     private _deferredRampShape: AudioParameterRampShape = AudioParameterRampShape.Linear;
     private _deferredTargetValue = -1;
-    // private _id: number = Id++;
     private _rampEndTime: number = 0;
     private _engine: _WebAudioEngine;
     private _param: AudioParam;
@@ -103,10 +100,6 @@ export class _WebAudioParameterComponent {
             const timeLeft = this._rampEndTime - startTime;
 
             if (MaxWaitTime < timeLeft) {
-                // console.log(
-                //     `Waiting for active ramp to finish before setting new target value: ${this._id}, Current value: ${this._targetValue}, Target value: ${value}, Time left: ${timeLeft}`
-                // );
-
                 throw new Error("Audio parameter not set. Wait for current ramp to finish.");
             } else {
                 this._deferRamp(value, duration, shape);
@@ -118,8 +111,6 @@ export class _WebAudioParameterComponent {
             this._param.setValueAtTime((this._targetValue = value), startTime);
             return;
         }
-
-        // console.log("Starting audio parameter ramp:", this._id, "Target value:", value, "End time:", startTime + duration);
 
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
@@ -140,8 +131,6 @@ export class _WebAudioParameterComponent {
                     return;
                 }
 
-                // console.log("Applying deferred ramp to audio parameter:", this._id, "Target value:", this._deferredTargetValue, "End time:", this._deferredRampEndTime);
-
                 this.setTargetValue(this._deferredTargetValue, {
                     duration: this._deferredRampEndTime - this._engine.currentTime,
                     shape: this._deferredRampShape,
@@ -157,15 +146,6 @@ export class _WebAudioParameterComponent {
         this._deferredRampShape = shape;
         this._deferredTargetValue = value;
 
-        // console.log("Deferring ramp for audio parameter:", this._id, "Target value:", this._deferredTargetValue, "End time:", this._deferredRampEndTime);
-
         this._applyDeferredRamp();
     }
 }
-
-// Example for testing:
-//  http://localhost:1338/#1BZK59#14
-// Stress test:
-//  http://localhost:1338/#1BZK59#59 = 200 spatial sounds - runs at full 60 FPS on a MacBook Air M3.
-//  http://localhost:1338/#1BZK59#60 = 500 spatial sounds - runs at 5 FPS on a MacBook Air M3.
-//  http://localhost:1338/#1BZK59#63 = 300 spatial sounds - doesn't play any sound. 224 spatial sounds seems to be the limit on Chrome on a MacBook Air M3.
