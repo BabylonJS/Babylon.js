@@ -7,6 +7,9 @@ uniform sampler2D velocitySampler;
 #endif
 uniform float factor;
 
+// Reprojection and clamping are based off this article:
+// https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
+
 void main() {
     ivec2 pos = ivec2(gl_FragCoord.xy);
     vec4 c = texelFetch(textureSampler, pos, 0);

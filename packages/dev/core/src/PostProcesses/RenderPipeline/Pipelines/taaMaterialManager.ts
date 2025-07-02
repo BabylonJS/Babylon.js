@@ -81,6 +81,8 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
     }
 
     public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL) {
+        // We jitter instead of modifying the camera so the velocity buffer stays unaffected
+        // More info: https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/
         if (shaderType !== "vertex") {
             return null;
         } else if (shaderLanguage === ShaderLanguage.WGSL) {

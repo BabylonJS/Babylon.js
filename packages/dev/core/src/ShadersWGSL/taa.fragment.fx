@@ -9,6 +9,9 @@ var velocitySampler: texture_2d<f32>;
 
 uniform factor: f32;
 
+// Reprojection and clamping are based off this article:
+// https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
+
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
 	let pos = vec2i(fragmentInputs.position.xy);
