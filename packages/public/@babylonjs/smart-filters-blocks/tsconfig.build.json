@@ -25,11 +25,7 @@
                 "basePackage": "@babylonjs/smart-filters-blocks",
                 "appendJS": true
             }
-        ],
-        "paths": {
-            "core/*": ["dev/core/dist/*"],
-            "smart-filters": ["dev/smartFilters/dist"]
-        }
+        ]
     },
 
     "include": ["./src/**/*"]
