@@ -28,7 +28,10 @@ const MinRampDuration = 0.000001;
 /** @internal */
 export class _WebAudioParameterComponent {
     private _deferredRampEndTime = 0;
-    private _deferredRampShape: AudioParameterRampShape = AudioParameterRampShape.Linear;
+    private _deferredRampOptions = {
+        duration: 0,
+        shape: AudioParameterRampShape.Linear,
+    };
     private _deferredTargetValue = -1;
     private _rampEndTime: number = 0;
     private _engine: _WebAudioEngine;
@@ -131,10 +134,9 @@ export class _WebAudioParameterComponent {
                     return;
                 }
 
-                this.setTargetValue(this._deferredTargetValue, {
-                    duration: this._deferredRampEndTime - this._engine.currentTime,
-                    shape: this._deferredRampShape,
-                });
+                this._deferredRampOptions.duration = this._deferredRampEndTime - this._engine.currentTime;
+
+                this.setTargetValue(this._deferredTargetValue, this._deferredRampOptions);
 
                 this._deferredRampEndTime = 0;
             }
@@ -143,7 +145,7 @@ export class _WebAudioParameterComponent {
 
     private _deferRamp(value: number, duration: number, shape: AudioParameterRampShape): void {
         this._deferredRampEndTime = this._rampEndTime + duration;
-        this._deferredRampShape = shape;
+        this._deferredRampOptions.shape = shape;
         this._deferredTargetValue = value;
 
         this._applyDeferredRamp();
