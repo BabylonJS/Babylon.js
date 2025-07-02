@@ -588,7 +588,13 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                if ((await EvaluateAudioContextType(page)) === "Offline") {
+                    expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                } else {
+                    // Expect larger range due to timing variations.
+                    expect(volumes[Channel.L]).toBeGreaterThanOrEqual(0.45);
+                    expect(volumes[Channel.L]).toBeLessThanOrEqual(0.56);
+                }
             });
         });
 
