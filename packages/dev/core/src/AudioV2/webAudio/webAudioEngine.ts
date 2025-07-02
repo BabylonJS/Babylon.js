@@ -87,6 +87,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumePromise: Nullable<Promise<void>> = null;
     private _silentHtmlAudio: Nullable<HTMLAudioElement> = null;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
+    private _updateObservable: Nullable<Observable<void>> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
 
@@ -377,6 +378,25 @@ export class _WebAudioEngine extends AudioEngineV2 {
         super._removeNode(node);
     }
 
+    /** @internal */
+    public _addUpdateObserver(callback: () => void): void {
+        if (!this._updateObservable) {
+            this._updateObservable = new Observable<void>();
+            this._update();
+        }
+
+        this._updateObservable.add(callback);
+    }
+
+    /** @internal */
+    public _removeUpdateObserver(callback: () => void): void {
+        if (!this._updateObservable) {
+            return;
+        }
+
+        this._updateObservable.removeCallback(callback);
+    }
+
     private _initAudioContextAsync: () => Promise<void> = async () => {
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
@@ -432,4 +452,11 @@ export class _WebAudioEngine extends AudioEngineV2 {
     };
 
     private _resolveIsReadyPromise: () => void;
+
+    private _update = (): void => {
+        if (this._updateObservable?.hasObservers()) {
+            this._updateObservable.notifyObservers();
+            requestAnimationFrame(this._update);
+        }
+    };
 }

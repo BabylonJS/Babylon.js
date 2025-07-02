@@ -114,18 +114,21 @@ export class _WebAudioParameterComponent {
             return;
         }
 
+        // console.log("Starting audio parameter ramp:", this._id, "Target value:", value, "End time:", startTime + duration);
+
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
-
-        // console.log("Started audio parameter ramp:", this._id, "Target value:", this._deferredTargetValue, "End time:", this._deferredRampEndTime);
 
         this._rampEndTime = startTime + duration;
     }
 
     private _applyDeferredRamp = () => {
         if (0 < this._deferredRampEndTime) {
-            if (this._rampEndTime < this._engine.currentTime) {
+            if (this._engine.currentTime < this._rampEndTime) {
+                this._engine._addUpdateObserver(this._applyDeferredRamp);
+            } else {
                 this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
+                this._engine._removeUpdateObserver(this._applyDeferredRamp);
 
                 if (this._engine.state !== "running") {
                     this._engine.stateChangedObservable.add(this._applyDeferredRamp);
@@ -140,8 +143,6 @@ export class _WebAudioParameterComponent {
                 });
 
                 this._deferredRampEndTime = 0;
-            } else {
-                requestAnimationFrame(this._applyDeferredRamp);
             }
         }
     };
@@ -162,3 +163,4 @@ export class _WebAudioParameterComponent {
 // Stress test:
 //  http://localhost:1338/#1BZK59#59 = 200 spatial sounds - runs at full 60 FPS on a MacBook Air M3.
 //  http://localhost:1338/#1BZK59#60 = 500 spatial sounds - runs at 5 FPS on a MacBook Air M3.
+//  http://localhost:1338/#1BZK59#63 = 300 spatial sounds - doesn't play any sound. 224 spatial sounds seems to be the limit on Chrome on a MacBook Air M3.
