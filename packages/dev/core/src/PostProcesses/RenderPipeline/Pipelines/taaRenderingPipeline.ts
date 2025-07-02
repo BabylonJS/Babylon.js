@@ -12,15 +12,12 @@ import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { TAAPostProcessAntiGhosting, ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
+import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
 import { TAAMaterialManager } from "./taaMaterialManager";
-import type { PrePassRenderer } from "core/Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
 import { Logger } from "core/Misc/logger";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
-
-export { TAAPostProcessAntiGhosting } from "core/PostProcesses/thinTAAPostProcess";
 
 class TAAEffectConfiguration implements PrePassEffectConfiguration {
     public name = "taa";
@@ -97,17 +94,38 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
     public set disableOnCameraMove(value: boolean) {
         this._taaThinPostProcess.disableOnCameraMove = value;
-        this._buildPipeline();
     }
 
+    /**
+     * Enables reprojecting the history texture with a per-pixel velocity.
+     */
     @serialize()
-    public get antiGhosting(): TAAPostProcessAntiGhosting {
-        return this._taaThinPostProcess.antiGhosting;
+    public get reprojectHistory(): boolean {
+        return this._taaThinPostProcess.reprojectHistory;
     }
 
-    public set antiGhosting(antiGhosting: TAAPostProcessAntiGhosting) {
-        this._taaThinPostProcess.antiGhosting = antiGhosting;
+    public set reprojectHistory(reproject: boolean) {
+        if (this.reprojectHistory === reproject) {
+            return;
+        } else if (reproject && !this._scene.enablePrePassRenderer()) {
+            Logger.Warn("TAA reprojection requires PrePass which is not supported");
+            return;
+        }
+        this._taaThinPostProcess.reprojectHistory = reproject;
         this._buildPipeline();
+    }
+
+    /**
+     * Clamps the history pixel to the min and max of the 3x3 pixels surrounding the target pixel.
+     * This can help further reduce ghosting and artifacts.
+     */
+    @serialize()
+    public get clampHistory(): boolean {
+        return this._taaThinPostProcess.clampHistory;
+    }
+
+    public set clampHistory(history: boolean) {
+        this._taaThinPostProcess.clampHistory = history;
     }
 
     @serialize("isEnabled")
@@ -331,25 +349,16 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _createTAAPostProcess(): void {
-        let prePassRenderer: Nullable<PrePassRenderer> = null;
-        if (this._taaThinPostProcess._requiresVelocityTexture) {
-            prePassRenderer = this._scene.enablePrePassRenderer();
-            if (!prePassRenderer) {
-                Logger.Warn("TAA with VelocityOffset could not enable PrePass, falling back to DisableOnCameraMove");
-                this._taaThinPostProcess.antiGhosting = TAAPostProcessAntiGhosting.DisableOnCameraMove;
-            }
-        }
-
         this._taaPostProcess = new PostProcess("TAA", "taa", {
             uniforms: ["factor"],
-            samplers: ["historySampler", "velocitySampler"],
+            samplers: ["historySampler"],
             size: 1.0,
             engine: this._scene.getEngine(),
             textureType: this._textureType,
             effectWrapper: this._taaThinPostProcess,
         });
 
-        if (prePassRenderer) {
+        if (this.reprojectHistory) {
             this._taaPostProcess._prePassEffectConfiguration = new TAAEffectConfiguration();
         }
 
@@ -373,7 +382,9 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._taaPostProcess.onApplyObservable.add((effect: Effect) => {
             effect._bindTexture("historySampler", this._pingpong ? this._ping.texture : this._pong.texture);
-            if (prePassRenderer) {
+
+            const prePassRenderer = this._scene.prePassRenderer;
+            if (this.reprojectHistory && prePassRenderer) {
                 const renderTarget = prePassRenderer.getRenderTarget();
                 const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
                 effect.setTexture("velocitySampler", renderTarget.textures[velocityIndex]);

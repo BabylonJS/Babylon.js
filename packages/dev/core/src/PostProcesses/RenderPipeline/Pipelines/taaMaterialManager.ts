@@ -112,8 +112,14 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
     }
 }
 
+/**
+ * Applies and manages the TAA jitter plugin on all materials.
+ */
 export class TAAMaterialManager {
     private _isEnabled = true;
+    /**
+     * Set to enable or disable the jitter offset on all materials.
+     */
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
@@ -128,11 +134,17 @@ export class TAAMaterialManager {
         }
     }
 
+    /**
+     * The current jitter offset to apply to all materials.
+     */
     public readonly jitter = new Vector2();
 
     /** @internal */
     public readonly _materialPlugins: TAAJitterMaterialPlugin[] = [];
 
+    /**
+     * @param scene All materials in this scene will have a jitter offset applied to them.
+     */
     constructor(scene: Scene) {
         for (const material of scene.materials) {
             this._getPlugin(material);
@@ -140,6 +152,9 @@ export class TAAMaterialManager {
         RegisterMaterialPlugin(TAAJitterMaterialPlugin.Name, (material) => this._getPlugin(material));
     }
 
+    /**
+     * Disposes of the material manager.
+     */
     public dispose(): void {
         UnregisterMaterialPlugin(TAAJitterMaterialPlugin.Name);
         const plugins = this._materialPlugins.splice(0, this._materialPlugins.length);

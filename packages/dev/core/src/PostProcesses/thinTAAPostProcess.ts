@@ -5,13 +5,6 @@ import { Vector2 } from "core/Maths/math.vector";
 import { Engine } from "core/Engines/engine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 
-export const enum TAAPostProcessAntiGhosting {
-    None,
-    DisableOnCameraMove,
-    VelocityOffset,
-    ColorClampedVelocityOffset,
-}
-
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).
  * This can be used to improve image quality for still pictures (screenshots for e.g.).
@@ -30,7 +23,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
     /**
      * The list of samplers used by the effect
      */
-    public static readonly Samplers = ["historySampler", "velocitySampler"];
+    public static readonly Samplers = ["historySampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
@@ -116,38 +109,44 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._reset();
     }
 
-    private _antiGhosting = TAAPostProcessAntiGhosting.DisableOnCameraMove;
-    public get antiGhosting(): TAAPostProcessAntiGhosting {
-        return this._antiGhosting;
-    }
-
-    public set antiGhosting(antiGhosting: TAAPostProcessAntiGhosting) {
-        if (this._antiGhosting === antiGhosting) {
-            return;
-        }
-        this._antiGhosting = antiGhosting;
-        this._updateEffectDefines();
-    }
-
     /**
      * Disable TAA on camera move (default: true).
      * You generally want to keep this enabled, otherwise you will get a ghost effect when the camera moves (but if it's what you want, go for it!)
      */
-    public get disableOnCameraMove(): boolean {
-        return this._antiGhosting === TAAPostProcessAntiGhosting.DisableOnCameraMove;
+    public disableOnCameraMove = true;
+
+    private _reprojectHistory = false;
+    /**
+     * Enables reprojecting the history texture with a per-pixel velocity.
+     * If set the "velocitySampler" has to be provided.
+     */
+    public get reprojectHistory(): boolean {
+        return this._reprojectHistory;
     }
 
-    public set disableOnCameraMove(disable: boolean) {
-        if (this.disableOnCameraMove === disable) {
+    public set reprojectHistory(reproject: boolean) {
+        if (this._reprojectHistory === reproject) {
             return;
         }
-        this._antiGhosting = disable ? TAAPostProcessAntiGhosting.DisableOnCameraMove : TAAPostProcessAntiGhosting.None;
-        this._updateEffectDefines();
+        this._reprojectHistory = reproject;
+        this._updateEffect();
     }
 
-    /** @internal */
-    public get _requiresVelocityTexture(): boolean {
-        return this._antiGhosting === TAAPostProcessAntiGhosting.VelocityOffset || this._antiGhosting === TAAPostProcessAntiGhosting.ColorClampedVelocityOffset;
+    private _clampHistory = false;
+    /**
+     * Clamps the history pixel to the min and max of the 3x3 pixels surrounding the target pixel.
+     * This can help further reduce ghosting and artifacts.
+     */
+    public get clampHistory(): boolean {
+        return this._clampHistory;
+    }
+
+    public set clampHistory(clamp: boolean) {
+        if (this._clampHistory === clamp) {
+            return;
+        }
+        this._clampHistory = clamp;
+        this._updateEffect();
     }
 
     private _hs: Halton2DSequence;
@@ -182,8 +181,10 @@ export class ThinTAAPostProcess extends EffectWrapper {
     }
 
     public nextJitterOffset(output = new Vector2()): Vector2 {
+        if (!this.camera || !this.camera.hasMoved) {
+            this._hs.next();
+        }
         output.set(this._hs.x, this._hs.y);
-        this._hs.next();
         return output;
     }
 
@@ -220,17 +221,17 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._firstUpdate = false;
     }
 
-    private _updateEffectDefines(): void {
-        if (!this._requiresVelocityTexture) {
-            // Only the velocity modes need extra defines, otherwise just set the effect to defaults
-            this.updateEffect();
-            return;
+    private _updateEffect(): void {
+        const defines: string[] = [];
+        // There seems to be an issue where `updateEffect` sometimes doesn't include the initial samplers
+        const samplers = ["textureSampler", "historySampler"];
+        if (this._reprojectHistory) {
+            defines.push("#define TAA_REPROJECT_HISTORY");
+            samplers.push("velocitySampler");
         }
-
-        let defines = "#define TAA_VELOCITY_OFFSET";
-        if (this._antiGhosting === TAAPostProcessAntiGhosting.ColorClampedVelocityOffset) {
-            defines += "\n#define TAA_COLOR_CLAMPED";
+        if (this._clampHistory) {
+            defines.push("#define TAA_CLAMP_HISTORY");
         }
-        this.updateEffect(defines);
+        this.updateEffect(defines.join("\n"), null, samplers);
     }
 }
