@@ -1,3 +1,4 @@
+import { Constants } from "core/Engines/constants";
 import type { Nullable } from "../types";
 
 /**
@@ -181,5 +182,98 @@ export class AlphaState {
             gl.blendColor(<number>this._blendConstants[0], <number>this._blendConstants[1], <number>this._blendConstants[2], <number>this._blendConstants[3]);
             this._isBlendConstantsDirty = false;
         }
+    }
+
+    public setAlphaMode(mode: number, targetIndex: number) {
+        let equation = Constants.GL_ALPHA_EQUATION_ADD;
+
+        switch (mode) {
+            case Constants.ALPHA_DISABLE:
+                break;
+            case Constants.ALPHA_PREMULTIPLIED:
+                this.setAlphaBlendFunctionParameters(1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, 1, 1, targetIndex);
+                break;
+            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                this.setAlphaBlendFunctionParameters(1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, 1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, targetIndex);
+                break;
+            case Constants.ALPHA_COMBINE:
+                this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_SRC_ALPHA, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, 1, 1, targetIndex);
+                break;
+            case Constants.ALPHA_ONEONE:
+                this.setAlphaBlendFunctionParameters(1, 1, 0, 1, targetIndex);
+                break;
+            case Constants.ALPHA_ADD:
+                this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_SRC_ALPHA, 1, 0, 1, targetIndex);
+                break;
+            case Constants.ALPHA_SUBTRACT:
+                this.setAlphaBlendFunctionParameters(0, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR, 1, 1, targetIndex);
+                equation = Constants.GL_ALPHA_EQUATION_SUBTRACT;
+                break;
+            case Constants.ALPHA_MULTIPLY:
+                this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_DST_COLOR, 0, 1, 1, targetIndex);
+                break;
+            case Constants.ALPHA_MAXIMIZED:
+                this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_SRC_ALPHA, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR, 1, 1, targetIndex);
+                break;
+            case Constants.ALPHA_INTERPOLATE:
+                this.setAlphaBlendFunctionParameters(
+                    Constants.GL_ALPHA_FUNCTION_CONSTANT_COLOR,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR,
+                    Constants.GL_ALPHA_FUNCTION_CONSTANT_ALPHA,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA,
+                    targetIndex
+                );
+                break;
+            case Constants.ALPHA_SCREENMODE:
+                this.setAlphaBlendFunctionParameters(1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR, 1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, targetIndex);
+                break;
+            case Constants.ALPHA_ONEONE_ONEONE:
+                this.setAlphaBlendFunctionParameters(1, 1, 1, 1, targetIndex);
+                break;
+            case Constants.ALPHA_ALPHATOCOLOR:
+                this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_DST_ALPHA, 1, 0, 0, targetIndex);
+                break;
+            case Constants.ALPHA_REVERSEONEMINUS:
+                this.setAlphaBlendFunctionParameters(
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_ALPHA,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA,
+                    targetIndex
+                );
+                break;
+            case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
+                this.setAlphaBlendFunctionParameters(1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, 1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, targetIndex);
+                break;
+            case Constants.ALPHA_ONEONE_ONEZERO:
+                this.setAlphaBlendFunctionParameters(1, 1, 1, 0, targetIndex);
+                break;
+            case Constants.ALPHA_EXCLUSION:
+                this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR, 0, 1, targetIndex);
+                break;
+            case Constants.ALPHA_LAYER_ACCUMULATE:
+                // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independant transparency
+                this.setAlphaBlendFunctionParameters(
+                    Constants.GL_ALPHA_FUNCTION_SRC_ALPHA,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA,
+                    1,
+                    Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA,
+                    targetIndex
+                );
+                break;
+            case Constants.ALPHA_MIN:
+                this.setAlphaBlendFunctionParameters(1, 1, 1, 1, targetIndex);
+                equation = Constants.GL_ALPHA_EQUATION_MIN;
+                break;
+            case Constants.ALPHA_MAX:
+                this.setAlphaBlendFunctionParameters(1, 1, 1, 1, targetIndex);
+                equation = Constants.GL_ALPHA_EQUATION_MAX;
+                break;
+            case Constants.ALPHA_DUAL_SRC0_ADD_SRC1xDST:
+                this.setAlphaBlendFunctionParameters(1, Constants.GL_ALPHA_FUNCTION_SRC1_COLOR, 0, 1, targetIndex);
+                break;
+        }
+
+        this.setAlphaEquationParameters(equation, equation, targetIndex);
     }
 }
