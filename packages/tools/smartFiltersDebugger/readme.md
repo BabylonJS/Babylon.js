@@ -10,7 +10,7 @@ This package is currently in preview form. There are known issues which will be 
 
 ## Debugger Browser Extension
 
-This browser extension is intended to aid in the development of web applications that make use of Smart Filters.
+This browser extension is intended to aid in the development of web applications that make use of Smart Filters. It is not intended to be distributed in the extension store, but instead loaded locally to aid in the debugging of applications using Smart Filters. When installed as an extension, it adds a button in the browser which can launch a popup window showing a visual representation of the current Smart Filter. You can then modify the values of input blocks and see the results live (assuming the application is continuing to render new frames). The application must register the Smart Filter to view on the window object for this debugger to find it. See below for more details.
 
 ### Usage
 
