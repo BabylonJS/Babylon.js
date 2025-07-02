@@ -13,11 +13,14 @@ import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { TAAPostProcessAntiGhosting, ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
+import { TAAMaterialManager } from "./taaMaterialManager";
 import type { PrePassRenderer } from "core/Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
 import { Logger } from "core/Misc/logger";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
+
+export { TAAPostProcessAntiGhosting } from "core/PostProcesses/thinTAAPostProcess";
 
 class TAAEffectConfiguration implements PrePassEffectConfiguration {
     public name = "taa";
@@ -122,6 +125,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         }
 
         this._isEnabled = value;
+        this._taaMaterialManager.isEnabled = value;
 
         if (!value) {
             if (this._cameras !== null) {
@@ -153,6 +157,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     private _textureType: number;
     private _taaPostProcess: Nullable<PostProcess>;
     private _taaThinPostProcess: ThinTAAPostProcess;
+    private _taaMaterialManager: TAAMaterialManager;
     private _passPostProcess: Nullable<PassPostProcess>;
     private _ping: RenderTargetWrapper;
     private _pong: RenderTargetWrapper;
@@ -186,6 +191,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         this._scene = scene;
         this._textureType = textureType;
         this._taaThinPostProcess = new ThinTAAPostProcess("TAA", this._scene.getEngine());
+        this._taaMaterialManager = new TAAMaterialManager(scene);
 
         if (this.isSupported) {
             this._createPingPongTextures(engine.getRenderWidth(), engine.getRenderHeight());
@@ -357,7 +363,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
                 this._createPingPongTextures(engine.getRenderWidth(), engine.getRenderHeight());
             }
 
-            this._taaThinPostProcess.updateProjectionMatrix();
+            this._taaThinPostProcess.nextJitterOffset(this._taaMaterialManager.jitter);
 
             if (this._passPostProcess) {
                 this._passPostProcess.inputTexture = this._pingpong ? this._ping : this._pong;

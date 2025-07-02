@@ -1,10 +1,11 @@
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
 import { Camera } from "../Cameras/camera";
 import { Halton2DSequence } from "core/Maths/halton2DSequence";
+import { Vector2 } from "core/Maths/math.vector";
 import { Engine } from "core/Engines/engine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 
-export enum TAAPostProcessAntiGhosting {
+export const enum TAAPostProcessAntiGhosting {
     None,
     DisableOnCameraMove,
     VelocityOffset,
@@ -141,6 +142,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
             return;
         }
         this._antiGhosting = disable ? TAAPostProcessAntiGhosting.DisableOnCameraMove : TAAPostProcessAntiGhosting.None;
+        this._updateEffectDefines();
     }
 
     /** @internal */
@@ -177,6 +179,12 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._hs.setDimensions(this._textureWidth / 2, this._textureHeight / 2);
         this._hs.next();
         this._firstUpdate = true;
+    }
+
+    public nextJitterOffset(output = new Vector2()): Vector2 {
+        output.set(this._hs.x, this._hs.y);
+        this._hs.next();
+        return output;
     }
 
     public updateProjectionMatrix(): void {
