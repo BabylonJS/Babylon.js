@@ -3,7 +3,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { InputProperties } from "../../components/propertyTab/inputsPropertyTabComponent";
+import { GetInputProperties } from "../../components/propertyTab/inputsPropertyTabComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
@@ -77,7 +77,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                         }}
                     />
                 </LineContainerComponent>
-                {InputProperties({
+                {GetInputProperties({
                     globalState: this.props.globalState,
                     lockObject: this.props.globalState.lockObject,
                     inputs: configurableInputBlocks,

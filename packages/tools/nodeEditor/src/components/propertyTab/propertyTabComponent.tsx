@@ -18,7 +18,7 @@ import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { PreviewType } from "../preview/previewType";
-import { InputProperties } from "./inputsPropertyTabComponent";
+import { GetInputProperties } from "./inputsPropertyTabComponent";
 import { LogEntry } from "../log/logComponent";
 import "./propertyTab.scss";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
@@ -627,7 +627,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
                     />
                 </LineContainerComponent>
-                {InputProperties({ lockObject: this.props.lockObject, globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() })}
+                {GetInputProperties({ lockObject: this.props.lockObject, globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() })}
             </PropertyTabComponentBase>
         );
     }

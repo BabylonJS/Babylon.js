@@ -28,13 +28,13 @@ interface IInputsPropertyTabComponentProps {
  * @param props
  * @returns
  */
-export const InputProperties = (props: IInputsPropertyTabComponentProps) => {
+export function GetInputProperties(props: IInputsPropertyTabComponentProps) {
     return (
         <LineContainerComponent title="INPUTS">
             <InputsPropertyContent {...props} />
         </LineContainerComponent>
     );
-};
+}
 
 class InputsPropertyContent extends React.Component<IInputsPropertyTabComponentProps> {
     constructor(props: IInputsPropertyTabComponentProps) {
