@@ -60,7 +60,7 @@ export class AlphaState {
         this._isBlendConstantsDirty = true;
     }
 
-    public setAlphaBlendFunctionParameters(srcRGBFactor: number, dstRGBFactor: number, srcAlphaFactor: number, dstAlphaFactor: number, targetIndex: number): void {
+    public setAlphaBlendFunctionParameters(srcRGBFactor: number, dstRGBFactor: number, srcAlphaFactor: number, dstAlphaFactor: number, targetIndex: number = 0): void {
         const offset = targetIndex * 4;
 
         if (
@@ -80,7 +80,7 @@ export class AlphaState {
         this._isBlendFunctionParametersDirty = true;
     }
 
-    public setAlphaEquationParameters(rgbEquation: number, alphaEquation: number, targetIndex: number): void {
+    public setAlphaEquationParameters(rgbEquation: number, alphaEquation: number, targetIndex: number = 0): void {
         const offset = targetIndex * 2;
 
         if (this._blendEquationParameters[offset + 0] === rgbEquation && this._blendEquationParameters[offset + 1] === alphaEquation) {
