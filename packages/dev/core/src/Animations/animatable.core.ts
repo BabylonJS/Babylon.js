@@ -13,11 +13,11 @@ import type { Node } from "../node";
  */
 export class Animatable {
     /**
-     * If true, the animatable will not be processed if it is considered actively paused weight of 0 and previous weight of 0.
+     * If false, the animatable will not be processed if it is considered actively paused weight of 0 and previous weight of 0.
      * This can be used to skip paused animatables in the animation engine.
      * Default is true.
      */
-    public static SkipPausedAnimatables = true;
+    public static AnimatePausedAnimatables = false;
 
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
@@ -446,7 +446,7 @@ export class Animatable {
 
         this._goToFrame = null;
 
-        if (Animatable.SkipPausedAnimatables && this._weight === 0 && this._previousWeight === 0) {
+        if (!Animatable.AnimatePausedAnimatables && this._weight === 0 && this._previousWeight === 0) {
             // We consider that an animatable with a weight === 0 is "actively" paused
             return true;
         }
