@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.15.0
+
+### Playground
+
+- Inspector v2: Handle scene explorer mutations + some bug fixes - by [ryantrem](https://github.com/ryantrem) ([#16841](https://github.com/BabylonJS/Babylon.js/pull/16841))
+
 ## 8.14.2
 
 ### Core
