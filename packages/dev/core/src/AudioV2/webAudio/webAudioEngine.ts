@@ -386,11 +386,6 @@ export class _WebAudioEngine extends AudioEngineV2 {
         return this._updateObservable;
     }
 
-    /** @internal */
-    public _removeUpdateObserver(callback: () => void): void {
-        this._updateObservable.removeCallback(callback);
-    }
-
     private _initAudioContextAsync: () => Promise<void> = async () => {
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
