@@ -1,12 +1,12 @@
 import type { FunctionComponent } from "react";
 
 import type { Sprite } from "core/index";
+import type { ISettingsContext } from "../../services/settingsContext";
 
 import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { useVector3Property } from "../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../hooks/observableHooks";
-import type { ISettingsContext } from "../../services/settingsContext";
 import { BoundProperty } from "./boundProperty";
 
 const RadiansToDegrees = 180 / Math.PI;
