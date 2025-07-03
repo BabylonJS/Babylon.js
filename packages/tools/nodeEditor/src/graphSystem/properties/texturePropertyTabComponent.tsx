@@ -12,7 +12,7 @@ import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock"
 import type { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
-import { GeneralProperties, GenericProperties } from "./genericNodePropertyComponent";
+import { GetGeneralProperties, GetGenericProperties } from "./genericNodePropertyComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { GlobalState } from "../../globalState";
@@ -241,7 +241,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         return (
             <PropertyTabComponentBase>
-                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
                         label="Auto select UV"
@@ -470,7 +470,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                     </LineContainerComponent>
                 )}
-                {GenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
             </PropertyTabComponentBase>
         );
     }

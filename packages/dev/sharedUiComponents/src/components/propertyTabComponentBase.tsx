@@ -2,7 +2,7 @@ import { useContext } from "react";
 import type { FunctionComponent, PropsWithChildren } from "react";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { Pane } from "../fluent/hoc/pane";
-import { Accordion } from "shared-ui-components/fluent/primitives/accordion";
+import { Accordion } from "../fluent/primitives/accordion";
 
 /**
  * A wrapper component for the property tab that provides a consistent layout and styling.

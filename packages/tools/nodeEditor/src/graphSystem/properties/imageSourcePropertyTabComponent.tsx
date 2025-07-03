@@ -6,7 +6,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
-import { GeneralProperties, GenericProperties } from "./genericNodePropertyComponent";
+import { GetGeneralProperties, GetGenericProperties } from "./genericNodePropertyComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
@@ -151,7 +151,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <PropertyTabComponentBase>
-                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     {texture && texture.updateSamplingMode && (
                         <OptionsLine
@@ -300,7 +300,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                 </LineContainerComponent>
-                {GenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
             </PropertyTabComponentBase>
         );
     }

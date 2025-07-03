@@ -11,7 +11,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { GeneralProperties } from "./genericNodePropertyComponent";
+import { GetGeneralProperties } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
 import type { Nullable } from "core/types";
@@ -275,7 +275,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <PropertyTabComponentBase>
-                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && (
                         <OptionsLine

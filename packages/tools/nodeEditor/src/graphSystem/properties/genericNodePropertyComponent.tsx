@@ -15,6 +15,8 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class DefaultPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -24,51 +26,26 @@ export class DefaultPropertyTabComponent extends React.Component<IPropertyCompon
     override render() {
         return (
             <PropertyTabComponentBase>
-                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
-                {GenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
             </PropertyTabComponentBase>
         );
     }
 }
 
 /**
- * NOTE if being used within a PropertyTabComponentBase (which is a wrapper for Accordion), call as a function rather than
- * rendering as a component. This will avoid a wrapper JSX element existing before the lineContainerComponent and will ensure
+ * NOTE This is intentionally a function to avoid another wrapper JSX element around the lineContainerComponent, and will ensure
  * the lineContainerComponent gets properly rendered as a child of the Accordion
  * @param props
  * @returns
  */
-export const GeneralProperties = (props: IPropertyComponentProps) => (
-    <LineContainerComponent title="GENERAL">
-        <GeneralPropertiesContent stateManager={props.stateManager} nodeData={props.nodeData} />
-    </LineContainerComponent>
-);
-
-/**
- * NOTE if being used within a PropertyTabComponentBase (which is a wrapper for Accordion), call as a function rather than
- * rendering as a component. This will avoid a wrapper JSX element existing before the lineContainerComponent and will ensure
- * the lineContainerComponent gets properly rendered as a child of the Accordion
- * @param props
- * @returns
- */
-export const GenericProperties = (props: IPropertyComponentProps) => {
-    const content = GetGenericPropertiesContent(props);
-    if (!content) {
-        return <></>;
-    }
-
-    const { groups, componentList } = content;
-
+export function GetGeneralProperties(props: IPropertyComponentProps) {
     return (
-        <>
-            {groups.map((group) => (
-                <LineContainerComponent key={`group-${group}`} title={group}>
-                    {componentList[group]}
-                </LineContainerComponent>
-            ))}
-        </>
+        <LineContainerComponent title="GENERAL">
+            <GeneralPropertiesContent stateManager={props.stateManager} nodeData={props.nodeData} />
+        </LineContainerComponent>
     );
-};
+}
 
 class GeneralPropertiesContent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -132,12 +109,36 @@ class GeneralPropertiesContent extends React.Component<IPropertyComponentProps> 
     }
 }
 
+/**
+ * NOTE This is intentionally a function to avoid another wrapper JSX element around the lineContainerComponent, and will ensure
+ * the lineContainerComponent gets properly rendered as a child of the Accordion
+ * @param props
+ * @returns
+ */
+export function GetGenericProperties(props: IPropertyComponentProps) {
+    const content = GetGenericPropertiesContent(props.stateManager, props.nodeData);
+    if (!content) {
+        return <></>;
+    }
+    const { groups, componentList } = content;
+
+    return (
+        <>
+            {groups.map((group) => (
+                <LineContainerComponent key={`group-${group}`} title={group}>
+                    {componentList[group]}
+                </LineContainerComponent>
+            ))}
+        </>
+    );
+}
+
 type GenericContent = {
     componentList: { [groupName: string]: JSX.Element[] };
     groups: string[];
 };
-const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericContent | undefined => {
-    const block = props.nodeData.data as NodeMaterialBlock,
+function GetGenericPropertiesContent(stateManager: StateManager, nodeData: INodeData): GenericContent | undefined {
+    const block = nodeData.data as NodeMaterialBlock,
         propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 
     if (!propStore) {
@@ -176,7 +177,7 @@ const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericCon
                         label={displayName}
                         target={block}
                         propertyName={propertyName}
-                        onValueChanged={() => ForceRebuild(block, props.stateManager, propertyName, options.notifiers)}
+                        onValueChanged={() => ForceRebuild(block, stateManager, propertyName, options.notifiers)}
                     />
                 );
                 break;
@@ -187,25 +188,25 @@ const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericCon
                     components.push(
                         <FloatLineComponent
                             key={`float-${propertyName}`}
-                            lockObject={props.stateManager.lockObject}
+                            lockObject={stateManager.lockObject}
                             label={displayName}
                             propertyName={propertyName}
                             target={block}
-                            onChange={() => ForceRebuild(block, props.stateManager, propertyName, options.notifiers)}
+                            onChange={() => ForceRebuild(block, stateManager, propertyName, options.notifiers)}
                         />
                     );
                 } else {
                     components.push(
                         <SliderLineComponent
                             key={`slider-${propertyName}`}
-                            lockObject={props.stateManager.lockObject}
+                            lockObject={stateManager.lockObject}
                             label={displayName}
                             target={block}
                             propertyName={propertyName}
                             step={Math.abs((options.max as number) - (options.min as number)) / 100.0}
                             minimum={Math.min(options.min as number, options.max as number)}
                             maximum={options.max as number}
-                            onChange={() => ForceRebuild(block, props.stateManager, propertyName, options.notifiers)}
+                            onChange={() => ForceRebuild(block, stateManager, propertyName, options.notifiers)}
                         />
                     );
                 }
@@ -215,14 +216,14 @@ const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericCon
                 components.push(
                     <FloatLineComponent
                         key={`int-${propertyName}`}
-                        lockObject={props.stateManager.lockObject}
+                        lockObject={stateManager.lockObject}
                         digits={0}
                         step={"1"}
                         isInteger={true}
                         label={displayName}
                         propertyName={propertyName}
                         target={block}
-                        onChange={() => ForceRebuild(block, props.stateManager, propertyName, options.notifiers)}
+                        onChange={() => ForceRebuild(block, stateManager, propertyName, options.notifiers)}
                     />
                 );
                 break;
@@ -231,11 +232,11 @@ const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericCon
                 components.push(
                     <Vector2LineComponent
                         key={`vector2-${propertyName}`}
-                        lockObject={props.stateManager.lockObject}
+                        lockObject={stateManager.lockObject}
                         label={displayName}
                         propertyName={propertyName}
                         target={block}
-                        onChange={() => ForceRebuild(block, props.stateManager, propertyName, options.notifiers)}
+                        onChange={() => ForceRebuild(block, stateManager, propertyName, options.notifiers)}
                     />
                 );
                 break;
@@ -248,7 +249,7 @@ const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericCon
                         options={options.options as IEditablePropertyListOption[]}
                         target={block}
                         propertyName={propertyName}
-                        onSelect={() => ForceRebuild(block, props.stateManager, propertyName, options.notifiers)}
+                        onSelect={() => ForceRebuild(block, stateManager, propertyName, options.notifiers)}
                     />
                 );
                 break;
@@ -259,4 +260,4 @@ const GetGenericPropertiesContent = (props: IPropertyComponentProps): GenericCon
         componentList,
         groups,
     };
-};
+}

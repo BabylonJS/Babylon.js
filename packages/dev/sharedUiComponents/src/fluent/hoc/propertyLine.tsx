@@ -81,7 +81,7 @@ export type PropertyLineProps = {
     docLink?: string;
 };
 
-export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren & HTMLProps<HTMLDivElement>>((props, ref) => {
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
     const classes = usePropertyLineStyles();
     return (
         <div ref={ref} className={classes.container} {...props}>

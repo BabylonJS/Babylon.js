@@ -2,8 +2,8 @@ import * as React from "react";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { ISelectedLineContainer } from "./iSelectedLineContainer";
 import downArrow from "./downArrow.svg";
-import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { AccordionSection } from "../fluent/primitives/accordion";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 interface ILineContainerComponentProps {
     selection?: ISelectedLineContainer;

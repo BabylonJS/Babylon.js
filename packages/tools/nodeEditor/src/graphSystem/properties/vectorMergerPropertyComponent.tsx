@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { GeneralProperties } from "./genericNodePropertyComponent";
+import { GetGeneralProperties } from "./genericNodePropertyComponent";
 import type { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
@@ -23,7 +23,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
 
         return (
             <PropertyTabComponentBase>
-                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="SWIZZLES">
                     <OptionsLine
                         label="X"

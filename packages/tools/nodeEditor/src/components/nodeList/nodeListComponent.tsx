@@ -330,16 +330,16 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
     }
 
-    renderFluent(blockMenu: any[] = []) {
+    renderFluent(blockMenu: JSX.Element[]) {
         return (
             <div>
-                <Input value="Filter" placeholder="Filter" onChange={(val) => this.filterContent(val.toString())} />
+                <Input value="" placeholder="Filter" style={{ width: "100%" }} onChange={(val) => this.filterContent(val.toString())} />
                 <Accordion>{blockMenu}</Accordion>
             </div>
         );
     }
 
-    renderOriginal(blockMenu: any[]) {
+    renderOriginal(blockMenu: JSX.Element[]) {
         return (
             <div id="nmeNodeList">
                 <div className="panes">
@@ -591,7 +591,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Create node menu
-        const blockMenu: any = [];
+        const blockMenu: JSX.Element[] = [];
         for (const key in allBlocks) {
             const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)

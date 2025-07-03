@@ -1,12 +1,12 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { LightBlock } from "core/Materials/Node/Blocks/Dual/lightBlock";
-import { GeneralProperties } from "./genericNodePropertyComponent";
 import type { Light } from "core/Lights/light";
 import type { GlobalState } from "../../globalState";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { GetGeneralProperties } from "./genericNodePropertyComponent";
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     override render() {
@@ -21,7 +21,7 @@ export class LightPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <PropertyTabComponentBase>
-                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLine
                         label="Light"
