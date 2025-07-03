@@ -3,6 +3,8 @@ import type { FunctionComponent } from "react";
 import type { TransformNode } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
+import { useCallback } from "react";
+
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
@@ -38,7 +40,10 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTr
 
     // TODO: This component will only even be rendered if physicsBody is defined, so it doesn't really handle physicsBody changing to/from undefined.
     const physicsBody = useProperty(node, "physicsBody");
-    const massProperties = useObservableState(() => physicsBody.getMassProperties(), useInterceptObservable("function", physicsBody, "setMassProperties"));
+    const massProperties = useObservableState(
+        useCallback(() => physicsBody.getMassProperties(), [physicsBody]),
+        useInterceptObservable("function", physicsBody, "setMassProperties")
+    );
 
     const centerOfMass = useVector3Property(massProperties, "centerOfMass") ?? Vector3.Zero();
     const inertia = useVector3Property(massProperties, "inertia") ?? Vector3.Zero();
@@ -52,8 +57,14 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTr
     const prestepType = useObservableState(() => physicsBody.getPrestepType(), useInterceptObservable("function", physicsBody, "setPrestepType"));
 
     // Get current velocities
-    const linearVelocity = useObservableState(() => physicsBody.getLinearVelocity(), useInterceptObservable("function", physicsBody, "setLinearVelocity"));
-    const angularVelocity = useObservableState(() => physicsBody.getAngularVelocity(), useInterceptObservable("function", physicsBody, "setAngularVelocity"));
+    const linearVelocity = useObservableState(
+        useCallback(() => physicsBody.getLinearVelocity(), [physicsBody]),
+        useInterceptObservable("function", physicsBody, "setLinearVelocity")
+    );
+    const angularVelocity = useObservableState(
+        useCallback(() => physicsBody.getAngularVelocity(), [physicsBody]),
+        useInterceptObservable("function", physicsBody, "setAngularVelocity")
+    );
 
     return (
         <>
