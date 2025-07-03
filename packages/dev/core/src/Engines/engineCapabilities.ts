@@ -124,4 +124,8 @@ export interface EngineCapabilities {
     rg11b10ufColorRenderable: boolean;
     /** Defines if EXT_texture_norm16 is available which enables the following texture formats: R16_EXT, RG16_EXT, RGB16_EXT, RGBA16_EXT, R16_SNORM_EXT, RG16_SNORM_EXT, RGB16_SNORM_EXT, RGBA16_SNORM_EXT */
     textureNorm16: boolean;
+    /** Defines if blend parameters can be defined per target */
+    blendParametersPerTarget: boolean;
+    /** Defines if dual source blending is supported */
+    dualSourceBlending: boolean;
 }
