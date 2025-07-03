@@ -151,8 +151,8 @@ ${BLOCK_GET_SHADER_BINDING_VARS}
 /**
  * Converts a single shader to a .ts file which exports a Smart Filter block
  * @param fragmentShaderPath - The path to the fragment file for the shader
- * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
- * @param babylonCorePath - The path to import the Babylon core from (optional).
+ * @param smartFiltersCorePath - The path to import the Smart Filters core from
+ * @param babylonCorePath - The path to import the Babylon core from (optional)
 
  */
 export function ConvertGlslIntoBlock(fragmentShaderPath: string, smartFiltersCorePath: string, babylonCorePath?: string): void {

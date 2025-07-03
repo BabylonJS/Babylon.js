@@ -7,7 +7,7 @@ import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock.js";
 /**
  * Converts all GLSL files in a path into blocks for use in the build system.
  * @param shaderPath - The path to the .glsl files to convert, or a single .glsl file.
- * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
+ * @param smartFiltersCorePath - The path to import the Smart Filters core from.
  * @param babylonCorePath - The path to import the Babylon core from (optional).
 
  */
@@ -49,7 +49,7 @@ export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string,
 /**
  * Converts a single GLSL file into a block class or a ShaderProgram for use in the build system.
  * @param fullPathAndFileName - The full path and file name of the .glsl file to convert.
- * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
+ * @param smartFiltersCorePath - The path to import the Smart Filters core from.
  * @param babylonCorePath - The path to import the Babylon core from (optional).
  */
 export function ConvertShader(fullPathAndFileName: string, smartFiltersCorePath: string, babylonCorePath?: string): void {

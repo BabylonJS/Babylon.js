@@ -68,7 +68,7 @@ const UniformNameLinePrefix = "    ";
 /**
  * Converts a single shader to a .ts file which exports a ShaderProgram which can be imported by a hardcoded block
  * @param fragmentShaderPath - The path to the fragment file for the shader
- * @param importPath - The path to import the ShaderProgram type from
+ * @param importPath - The path to import the Smart Filters core from
  */
 export function ConvertGlslIntoShaderProgram(fragmentShaderPath: string, importPath: string): void {
     const { shaderProgramCode } = ExtractShaderProgramFromGlsl(fragmentShaderPath, importPath, true, true);
@@ -79,7 +79,7 @@ export function ConvertGlslIntoShaderProgram(fragmentShaderPath: string, importP
 /**
  * Extracts the shader program from a glsl file(s) and returns it as a string which can be written to a .ts file
  * @param fragmentShaderPath - The path to the fragment file for the shader
- * @param smartFiltersCorePath - The path to import the ShaderProgram type from.
+ * @param smartFiltersCorePath - The path to import the Smart Filters core from
  * @param exportObjects - Whether to export the shaderProgram and uniforms objects
  * @param includeImports - Whether to include the imports in the output
  * @returns The string to write to the .ts file
