@@ -17,7 +17,6 @@ const useStyles = makeStyles({
     header: {
         height: tokens.fontSizeBase400,
         fontSize: tokens.fontSizeBase400,
-        color: "white",
         textAlign: "center",
         verticalAlign: "middle",
     },
