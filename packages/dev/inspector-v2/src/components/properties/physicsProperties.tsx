@@ -7,7 +7,6 @@ import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { useProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
@@ -101,33 +100,31 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTr
             <Vector3PropertyLine label="Angular Velocity" value={angularVelocity} onChange={(value) => physicsBody.setAngularVelocity(value)} />
             {/* Physics Mass Properties Controls */}
             {massProperties && (
-                <PropertyLine label="Mass">
-                    <div style={{ marginTop: 12 }}>
-                        <FloatInputPropertyLine
-                            label="Value"
-                            value={massProperties.mass ?? 0}
-                            min={0}
-                            step={0.01}
-                            onChange={(value) => {
-                                node.physicsBody.setMassProperties({ ...massProperties, mass: value });
-                            }}
-                        />
-                        <Vector3PropertyLine
-                            label="Center"
-                            value={centerOfMass}
-                            onChange={(value) => {
-                                node.physicsBody.setMassProperties({ ...massProperties, centerOfMass: value });
-                            }}
-                        />
-                        <Vector3PropertyLine
-                            label="Inertia"
-                            value={inertia}
-                            onChange={(value) => {
-                                node.physicsBody.setMassProperties({ ...massProperties, inertia: value });
-                            }}
-                        />
-                    </div>
-                </PropertyLine>
+                <>
+                    <FloatInputPropertyLine
+                        label="Mass"
+                        value={massProperties.mass ?? 0}
+                        min={0}
+                        step={0.01}
+                        onChange={(value) => {
+                            node.physicsBody.setMassProperties({ ...massProperties, mass: value });
+                        }}
+                    />
+                    <Vector3PropertyLine
+                        label="Center of Mass"
+                        value={centerOfMass}
+                        onChange={(value) => {
+                            node.physicsBody.setMassProperties({ ...massProperties, centerOfMass: value });
+                        }}
+                    />
+                    <Vector3PropertyLine
+                        label="Inertia"
+                        value={inertia}
+                        onChange={(value) => {
+                            node.physicsBody.setMassProperties({ ...massProperties, inertia: value });
+                        }}
+                    />
+                </>
             )}
         </>
     );
