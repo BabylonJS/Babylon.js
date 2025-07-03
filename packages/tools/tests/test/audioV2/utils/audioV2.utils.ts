@@ -82,6 +82,7 @@ declare global {
         public static GetResultAsync(): Promise<AudioTestResult>;
         public static GetVolumesAtTimeAsync(time: number): Promise<number[]>;
         public static WaitAsync(seconds: number, callback?: () => void): Promise<void>;
+        public static WaitForParameterRampDurationAsync(callback?: () => void): Promise<void>;
     }
 }
 
