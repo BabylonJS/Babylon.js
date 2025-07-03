@@ -4,7 +4,8 @@ import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import { MergeClassNames } from "../styleHelper";
 import { TextPropertyLine } from "../fluent/hoc/textPropertyLine";
 import { LinkPropertyLine } from "../fluent/hoc/linkPropertyLine";
-import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { ReadonlyBooleanLine } from "../fluent/hoc/readonlyBooleanLine";
 
 interface ITextLineComponentProps {
     label?: string;
@@ -102,6 +103,8 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
         };
         if (isLink) {
             return <LinkPropertyLine {...sharedProps} value={this.props.url ? "doc" : this.props.value || "no name"} url={this.props.url} onLink={this.props.onLink} />;
+        } else if (this.props.value === "Yes" || this.props.value === "No") {
+            return <ReadonlyBooleanLine label={this.props.label || ""} value={this.props.value === "Yes"} />;
         } else {
             return <TextPropertyLine {...sharedProps} value={this.props.value || ""} />;
         }

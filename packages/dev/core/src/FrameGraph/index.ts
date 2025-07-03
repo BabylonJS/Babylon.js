@@ -52,3 +52,4 @@ export * from "./frameGraphRenderTarget";
 export * from "./frameGraphTask";
 export * from "./frameGraphTextureManager";
 export * from "./frameGraphTypes";
+export * from "./frameGraphUtils";

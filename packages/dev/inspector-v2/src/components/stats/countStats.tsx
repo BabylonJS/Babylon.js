@@ -1,6 +1,6 @@
-import type { Scene } from "core/index";
-
 import type { FunctionComponent } from "react";
+
+import type { Scene } from "core/index";
 
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";

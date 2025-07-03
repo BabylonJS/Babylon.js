@@ -26,6 +26,19 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilCompare(value);
     }
 
+    public override get backFunc(): number {
+        return this._backFunc;
+    }
+
+    public override set backFunc(value: number) {
+        if (this._backFunc === value) {
+            return;
+        }
+
+        this._backFunc = value;
+        this._cache.setStencilBackCompare(value);
+    }
+
     public override get funcMask(): number {
         return this._funcMask;
     }
@@ -76,6 +89,45 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
 
         this._opStencilDepthPass = value;
         this._cache.setStencilPassOp(value);
+    }
+
+    public override get backOpStencilFail(): number {
+        return this._backOpStencilFail;
+    }
+
+    public override set backOpStencilFail(value: number) {
+        if (this._backOpStencilFail === value) {
+            return;
+        }
+
+        this._backOpStencilFail = value;
+        this._cache.setStencilBackFailOp(value);
+    }
+
+    public override get backOpDepthFail(): number {
+        return this._backOpDepthFail;
+    }
+
+    public override set backOpDepthFail(value: number) {
+        if (this._backOpDepthFail === value) {
+            return;
+        }
+
+        this._backOpDepthFail = value;
+        this._cache.setStencilBackDepthFailOp(value);
+    }
+
+    public override get backOpStencilDepthPass(): number {
+        return this._backOpStencilDepthPass;
+    }
+
+    public override set backOpStencilDepthPass(value: number) {
+        if (this._backOpStencilDepthPass === value) {
+            return;
+        }
+
+        this._backOpStencilDepthPass = value;
+        this._cache.setStencilBackPassOp(value);
     }
 
     public override get mask(): number {
