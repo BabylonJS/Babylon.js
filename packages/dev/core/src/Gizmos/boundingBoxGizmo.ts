@@ -1055,6 +1055,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this.onScaleBoxDragEndObservable.clear();
         this.onRotationSphereDragObservable.clear();
         this.onRotationSphereDragEndObservable.clear();
+
+        this._coloredMaterial.dispose();
+        this._hoverColoredMaterial.dispose();
         super.dispose();
     }
 
