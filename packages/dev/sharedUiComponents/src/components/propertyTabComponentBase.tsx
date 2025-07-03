@@ -1,4 +1,5 @@
-import { useContext, type FunctionComponent, type PropsWithChildren } from "react";
+import { useContext } from "react";
+import type { FunctionComponent, PropsWithChildren } from "react";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { Pane } from "../fluent/hoc/pane";
 import { Accordion } from "shared-ui-components/fluent/primitives/accordion";
