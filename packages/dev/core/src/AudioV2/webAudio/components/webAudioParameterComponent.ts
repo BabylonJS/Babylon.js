@@ -25,9 +25,15 @@ const MaxWaitTime = 0.011;
  */
 const MinRampDuration = 0.000001;
 
+enum ObserverType {
+    None,
+    StateChanged,
+    Update,
+}
+
 /** @internal */
 export class _WebAudioParameterComponent {
-    private _deferredRampEndTime = 0;
+    private _deferredRampObserverType: ObserverType = ObserverType.None;
     private _deferredRampOptions = {
         duration: 0,
         shape: AudioParameterRampShape.Linear,
@@ -66,7 +72,7 @@ export class _WebAudioParameterComponent {
 
     /** @internal */
     public dispose(): void {
-        this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
+        this._removeDeferredRamp();
 
         this._param = null!;
         this._engine = null!;
@@ -118,36 +124,41 @@ export class _WebAudioParameterComponent {
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
 
+        this._removeDeferredRamp();
+
         this._rampEndTime = startTime + duration;
     }
 
-    private _applyDeferredRamp = () => {
-        if (0 < this._deferredRampEndTime) {
-            if (this._engine.currentTime < this._rampEndTime) {
-                this._engine._addUpdateObserver(this._applyDeferredRamp);
-            } else {
-                this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
-                this._engine._removeUpdateObserver(this._applyDeferredRamp);
-
-                if (this._engine.state !== "running") {
-                    this._engine.stateChangedObservable.add(this._applyDeferredRamp);
-                    return;
-                }
-
-                this._deferredRampOptions.duration = this._deferredRampEndTime - this._engine.currentTime;
-
-                this.setTargetValue(this._deferredTargetValue, this._deferredRampOptions);
-
-                this._deferredRampEndTime = 0;
-            }
-        }
-    };
-
     private _deferRamp(value: number, duration: number, shape: AudioParameterRampShape): void {
-        this._deferredRampEndTime = this._rampEndTime + duration;
+        this._deferredRampOptions.duration = duration;
         this._deferredRampOptions.shape = shape;
         this._deferredTargetValue = value;
 
-        this._applyDeferredRamp();
+        if (this._deferredRampObserverType === ObserverType.None) {
+            if (this._engine.state !== "running") {
+                this._engine.stateChangedObservable.add(this._applyDeferredRamp);
+                this._deferredRampObserverType = ObserverType.StateChanged;
+            } else {
+                this._engine._addUpdateObserver(this._applyDeferredRamp);
+                this._deferredRampObserverType = ObserverType.Update;
+            }
+        }
+    }
+
+    private _applyDeferredRamp = () => {
+        if (0 < this._deferredRampOptions.duration && this._rampEndTime < this._engine.currentTime) {
+            this.setTargetValue(this._deferredTargetValue, this._deferredRampOptions);
+        }
+    };
+
+    private _removeDeferredRamp(): void {
+        if (this._deferredRampObserverType === ObserverType.StateChanged) {
+            this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
+        } else if (this._deferredRampObserverType === ObserverType.Update) {
+            this._engine._removeUpdateObserver(this._applyDeferredRamp);
+        }
+
+        this._deferredRampObserverType = ObserverType.None;
+        this._deferredRampOptions.duration = 0;
     }
 }

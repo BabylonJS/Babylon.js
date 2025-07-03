@@ -74,6 +74,7 @@ const FormatMimeTypes: { [key: string]: string } = {
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _invalidFormats = new Set<string>();
+    private _isUpdating = false;
     private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
     private readonly _listenerAutoUpdate: boolean = true;
@@ -87,7 +88,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumePromise: Nullable<Promise<void>> = null;
     private _silentHtmlAudio: Nullable<HTMLAudioElement> = null;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
-    private _updateObservable: Nullable<Observable<void>> = null;
+    private _updateObservable = new Observable<void>();
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
 
@@ -380,20 +381,12 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public _addUpdateObserver(callback: () => void): void {
-        if (!this._updateObservable) {
-            this._updateObservable = new Observable<void>();
-            this._update();
-        }
-
         this._updateObservable.add(callback);
+        this._startUpdating();
     }
 
     /** @internal */
     public _removeUpdateObserver(callback: () => void): void {
-        if (!this._updateObservable) {
-            return;
-        }
-
         this._updateObservable.removeCallback(callback);
     }
 
@@ -453,10 +446,21 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     private _resolveIsReadyPromise: () => void;
 
+    private _startUpdating(): void {
+        if (this._isUpdating) {
+            return;
+        }
+
+        this._isUpdating = true;
+        this._update();
+    }
+
     private _update = (): void => {
-        if (this._updateObservable?.hasObservers()) {
+        if (this._updateObservable.hasObservers()) {
             this._updateObservable.notifyObservers();
             requestAnimationFrame(this._update);
+        } else {
+            this._isUpdating = false;
         }
     };
 }
