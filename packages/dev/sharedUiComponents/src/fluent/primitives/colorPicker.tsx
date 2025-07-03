@@ -26,7 +26,7 @@ import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useColorPickerStyles = makeStyles({
     colorPickerContainer: {
-        width: "300px",
+        width: "325px",
         display: "flex",
         flexDirection: "column",
         gap: tokens.spacingVerticalMNudge, // 10px

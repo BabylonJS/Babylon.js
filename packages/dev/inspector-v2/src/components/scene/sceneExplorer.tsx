@@ -1,4 +1,4 @@
-import type { IReadonlyObservable, Nullable, Scene } from "core/index";
+import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ScrollToInterface } from "@fluentui/react-components/unstable";
@@ -9,11 +9,26 @@ import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useObservableState } from "../../hooks/observableHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
     uniqueId: number;
 }>;
+
+export type EntityDisplayInfo = Readonly<
+    {
+        /**
+         * The name of the entity to display in the Scene Explorer tree.
+         */
+        name: string;
+
+        /**
+         * An observable that notifies when the display info (such as the name) changes.
+         */
+        onChange?: IReadonlyObservable<void>;
+    } & Partial<IDisposable>
+>;
 
 export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     /**
@@ -26,6 +41,11 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      * Defaults to 0.
      */
     order?: number;
+
+    /**
+     * A predicate function that determines if the entity belongs to this section.
+     */
+    predicate: (entity: unknown) => entity is T;
 
     /**
      * A function that returns the root entities for this section.
@@ -43,9 +63,11 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     getEntityParent?: (entity: T) => Nullable<T>;
 
     /**
-     * A function that returns the display name for a given entity.
+     * Gets the display information for a given entity.
+     * This is ideally "live" display info (e.g. updates to the display info are taken into account and communicated via the observable).
+     * This means in many cases the display info will need to be disposed when it is no longer needed so observable registrations can be removed.
      */
-    getEntityDisplayName: (entity: T) => string;
+    getEntityDisplayInfo: (entity: T) => EntityDisplayInfo;
 
     /**
      * An optional icon component to render for the entity.
@@ -61,6 +83,11 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      * A function that returns an array of observables for when entities are removed from the scene.
      */
     getEntityRemovedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
+
+    /**
+     * A function that returns an array of observables for when entities are moved (e.g. re-parented) within the scene.
+     */
+    getEntityMovedObservables?: (scene: Scene) => readonly IReadonlyObservable<T>[];
 }>;
 
 type EntityCommandBase<T extends EntityBase> = Readonly<{
@@ -116,22 +143,25 @@ type ToggleCommand<T extends EntityBase> = EntityCommandBase<T> &
 
 export type SceneExplorerEntityCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
-type TreeItemData =
-    | { type: "scene"; scene: Scene }
-    | {
-          type: "section";
-          sectionName: string;
-          hasChildren: boolean;
-      }
-    | {
-          type: "entity";
-          entity: EntityBase;
-          depth: number;
-          parent: TreeItemValue;
-          hasChildren: boolean;
-          title: string;
-          icon?: ComponentType<{ entity: EntityBase }>;
-      };
+type SceneTreeItemData = { type: "scene"; scene: Scene };
+
+type SectionTreeItemData = {
+    type: "section";
+    sectionName: string;
+    hasChildren: boolean;
+};
+
+type EntityTreeItemData = {
+    type: "entity";
+    entity: EntityBase;
+    depth: number;
+    parent: TreeItemValue;
+    hasChildren: boolean;
+    icon?: ComponentType<{ entity: EntityBase }>;
+    getDisplayInfo: () => EntityDisplayInfo;
+};
+
+type TreeItemData = SceneTreeItemData | SectionTreeItemData | EntityTreeItemData;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -185,6 +215,26 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; ent
     );
 };
 
+const EntityTreeItemComponent: FunctionComponent<{ item: EntityTreeItemData }> = (props) => {
+    const { item } = props;
+
+    const [displayInfo, setDisplayInfo] = useState<EntityDisplayInfo>();
+
+    useEffect(() => {
+        const displayInfo = item.getDisplayInfo();
+        setDisplayInfo(displayInfo);
+        return () => displayInfo.dispose?.();
+    }, [item]);
+
+    const name = useObservableState(() => displayInfo?.name, displayInfo?.onChange);
+
+    return (
+        <Body1 wrap={false} truncate>
+            {name?.substring(0, 100)}
+        </Body1>
+    );
+};
+
 export const SceneExplorer: FunctionComponent<{
     sections: readonly SceneExplorerSection<EntityBase>[];
     commands: readonly SceneExplorerEntityCommand<EntityBase>[];
@@ -233,12 +283,19 @@ export const SceneExplorer: FunctionComponent<{
 
         const addObservers = sections.flatMap((section) => section.getEntityAddedObservables(scene).map((observable) => observable.add(onSceneItemAdded)));
         const removeObservers = sections.flatMap((section) => section.getEntityRemovedObservables(scene).map((observable) => observable.add(onSceneItemRemoved)));
+        const moveObservers = sections
+            .map((section) => section.getEntityMovedObservables)
+            .filter((getEntityMovedObservable) => !!getEntityMovedObservable)
+            .flatMap((getEntityMovedObservable) => getEntityMovedObservable(scene).map((observable) => observable.add(onSceneItemAdded)));
 
         return () => {
             for (const observer of addObservers) {
                 observer.remove();
             }
             for (const observer of removeObservers) {
+                observer.remove();
+            }
+            for (const observer of moveObservers) {
                 observer.remove();
             }
         };
@@ -284,8 +341,8 @@ export const SceneExplorer: FunctionComponent<{
                             depth,
                             parent: entityParents.get(entity.uniqueId) ?? section.displayName,
                             hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
-                            title: section.getEntityDisplayName(entity),
                             icon: section.entityIcon,
+                            getDisplayInfo: () => section.getEntityDisplayInfo(entity),
                         });
                     },
                     () => {
@@ -303,11 +360,10 @@ export const SceneExplorer: FunctionComponent<{
             const parentStack: TreeItemValue[] = [];
 
             for (const section of sections) {
-                for (let parent = section.getEntityParent?.(entity); parent; parent = section.getEntityParent?.(parent)) {
-                    parentStack.push(parent.uniqueId);
-                }
-
-                if (parentStack.length > 0 || section.getRootEntities(scene).includes(entity)) {
+                if (section.predicate(entity)) {
+                    for (let parent = section.getEntityParent?.(entity); parent; parent = section.getEntityParent?.(parent)) {
+                        parentStack.push(parent.uniqueId);
+                    }
                     parentStack.push(section.displayName);
                     break;
                 }
@@ -437,9 +493,7 @@ export const SceneExplorer: FunctionComponent<{
                                                 )
                                             )}
                                     >
-                                        <Body1 wrap={false} truncate>
-                                            {item.title.substring(0, 100)}
-                                        </Body1>
+                                        <EntityTreeItemComponent item={item} />
                                     </TreeItemLayout>
                                 </FlatTreeItem>
                             );

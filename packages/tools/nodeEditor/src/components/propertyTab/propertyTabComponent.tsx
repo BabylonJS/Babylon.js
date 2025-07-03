@@ -449,6 +449,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return (
             <PropertyTabComponentBase>
                 <LineContainerComponent title="GENERAL">
+                    <TextInputLineComponent label="Name" lockObject={this.props.globalState.lockObject} target={this.props.globalState.nodeMaterial} propertyName="name" />
                     <OptionsLine
                         ref={this._modeSelect}
                         label="Mode"
@@ -571,7 +572,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onClick={async () => {
                                 this.props.globalState.nodeMaterial.build();
                                 const fragment = await this.props.globalState.nodeMaterial!._getProcessedFragmentAsync();
-                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, fragment, "nme.block.glsl");
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, fragment, `${this.props.globalState.nodeMaterial.name}.block.glsl`);
                             }}
                         />
                     )}
@@ -626,11 +627,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
                     />
                 </LineContainerComponent>
-                {InputProperties({
-                    globalState: this.props.globalState,
-                    lockObject: this.props.lockObject,
-                    inputs: this.props.globalState.nodeMaterial.getInputBlocks(),
-                })}
+                {InputProperties({ lockObject: this.props.lockObject, globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() })}
             </PropertyTabComponentBase>
         );
     }

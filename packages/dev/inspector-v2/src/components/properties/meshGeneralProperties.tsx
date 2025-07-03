@@ -4,8 +4,8 @@ import type { FunctionComponent } from "react";
 
 import type { ISelectionService } from "../../services/selectionService";
 
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 
 import { useObservableState } from "../../hooks/observableHooks";
 

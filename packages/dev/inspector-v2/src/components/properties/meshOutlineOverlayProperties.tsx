@@ -6,9 +6,8 @@ import { Collapse } from "@fluentui/react-motion-components-preview";
 
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
-import { useColor3Property } from "../../hooks/compoundPropertyHooks";
-import { useInterceptObservable } from "../../hooks/instrumentationHooks";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useColor3Property, useProperty } from "../../hooks/compoundPropertyHooks";
+import { BoundProperty } from "./boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
@@ -16,16 +15,14 @@ import "core/Rendering/outlineRenderer";
 export const MeshOutlineOverlayProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
     const { mesh } = props;
 
-    // There is no observable for colors, so we use an interceptor to listen for changes.
-    const renderOverlay = useObservableState(() => mesh.renderOverlay, useInterceptObservable("property", mesh, "renderOverlay"));
+    const renderOverlay = useProperty(mesh, "renderOverlay");
     const overlayColor = useColor3Property(mesh, "overlayColor");
-
-    const renderOutline = useObservableState(() => mesh.renderOutline, useInterceptObservable("property", mesh, "renderOutline"));
+    const renderOutline = useProperty(mesh, "renderOutline");
     const outlineColor = useColor3Property(mesh, "outlineColor");
 
     return (
         <>
-            <SwitchPropertyLine key="RenderOverlay" label="Render Overlay" value={renderOverlay} onChange={(checked) => (mesh.renderOverlay = checked)} />
+            <BoundProperty component={SwitchPropertyLine} label="Render Overlay" target={mesh} propertyKey={"renderOverlay"} />
             <Collapse visible={renderOverlay}>
                 <Color3PropertyLine
                     key="OverlayColor"
@@ -36,7 +33,7 @@ export const MeshOutlineOverlayProperties: FunctionComponent<{ mesh: Mesh }> = (
                     }}
                 />
             </Collapse>
-            <SwitchPropertyLine key="RenderOutline" label="Render Outline" value={renderOutline} onChange={(checked) => (mesh.renderOutline = checked)} />
+            <BoundProperty component={SwitchPropertyLine} label="Render Outline" target={mesh} propertyKey={"renderOutline"} />
             <Collapse visible={renderOutline}>
                 <Color3PropertyLine
                     key="OutlineColor"

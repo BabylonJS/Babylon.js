@@ -1,5 +1,7 @@
 import type { Vector3, Color3, Color4, Nullable, Quaternion } from "core/index";
 
+import { useCallback } from "react";
+
 import { useInterceptObservable } from "./instrumentationHooks";
 import { useObservableState } from "./observableHooks";
 
@@ -17,7 +19,10 @@ export function useProperty<TargetT extends object, PropertyKeyT extends keyof T
  * @returns The current value of the property, or null if the target is null or undefined.
  */
 export function useProperty<TargetT extends object, PropertyKeyT extends keyof TargetT>(target: TargetT | null | undefined, propertyKey: PropertyKeyT) {
-    return useObservableState(() => (target ? target[propertyKey] : null), useInterceptObservable("property", target, propertyKey));
+    return useObservableState(
+        useCallback(() => (target ? target[propertyKey] : null), [target, propertyKey]),
+        useInterceptObservable("property", target, propertyKey)
+    );
 }
 
 export function useVector3Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Vector3>>(target: TargetT, propertyKey: PropertyKeyT): TargetT[PropertyKeyT];
