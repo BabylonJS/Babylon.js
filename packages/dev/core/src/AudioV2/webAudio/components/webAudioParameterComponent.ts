@@ -1,3 +1,4 @@
+import type { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { IAudioParameterRampOptions } from "../../audioParameter";
 import { AudioParameterRampShape } from "../../audioParameter";
@@ -25,15 +26,9 @@ const MaxWaitTime = 0.011;
  */
 const MinRampDuration = 0.000001;
 
-enum ObserverType {
-    None,
-    StateChanged,
-    Update,
-}
-
 /** @internal */
 export class _WebAudioParameterComponent {
-    private _deferredRampObserverType: ObserverType = ObserverType.None;
+    private _deferredRampObserverable: Nullable<Observable<string>> | Nullable<Observable<void>> = null;
     private _deferredRampOptions = {
         duration: 0,
         shape: AudioParameterRampShape.Linear,
@@ -134,13 +129,12 @@ export class _WebAudioParameterComponent {
         this._deferredRampOptions.shape = shape;
         this._deferredTargetValue = value;
 
-        if (this._deferredRampObserverType === ObserverType.None) {
+        if (!this._deferredRampObserverable) {
             if (this._engine.state !== "running") {
-                this._engine.stateChangedObservable.add(this._applyDeferredRamp);
-                this._deferredRampObserverType = ObserverType.StateChanged;
+                this._deferredRampObserverable = this._engine.stateChangedObservable;
+                this._deferredRampObserverable.add(this._applyDeferredRamp);
             } else {
-                this._engine._addUpdateObserver(this._applyDeferredRamp);
-                this._deferredRampObserverType = ObserverType.Update;
+                this._deferredRampObserverable = this._engine._addUpdateObserver(this._applyDeferredRamp);
             }
         }
     }
@@ -152,13 +146,8 @@ export class _WebAudioParameterComponent {
     };
 
     private _removeDeferredRamp(): void {
-        if (this._deferredRampObserverType === ObserverType.StateChanged) {
-            this._engine.stateChangedObservable.removeCallback(this._applyDeferredRamp);
-        } else if (this._deferredRampObserverType === ObserverType.Update) {
-            this._engine._removeUpdateObserver(this._applyDeferredRamp);
-        }
-
-        this._deferredRampObserverType = ObserverType.None;
+        this._deferredRampObserverable?.removeCallback(this._applyDeferredRamp);
+        this._deferredRampObserverable = null;
         this._deferredRampOptions.duration = 0;
     }
 }

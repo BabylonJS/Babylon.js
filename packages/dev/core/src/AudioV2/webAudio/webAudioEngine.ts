@@ -380,9 +380,10 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public _addUpdateObserver(callback: () => void): void {
+    public _addUpdateObserver(callback: () => void): Observable<void> {
         this._updateObservable.add(callback);
         this._startUpdating();
+        return this._updateObservable;
     }
 
     /** @internal */
