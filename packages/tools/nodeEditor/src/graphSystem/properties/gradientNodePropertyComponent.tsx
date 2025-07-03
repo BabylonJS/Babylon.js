@@ -4,13 +4,14 @@ import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientStepComponent } from "./gradientStepComponent";
 import { Color3 } from "core/Maths/math.color";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { GeneralProperties } from "./genericNodePropertyComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;
@@ -102,8 +103,8 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         ];
 
         return (
-            <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+            <PropertyTabComponentBase>
+                {GeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLine
                         label="Type"
@@ -154,7 +155,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                         );
                     })}
                 </LineContainerComponent>
-            </div>
+            </PropertyTabComponentBase>
         );
     }
 }
