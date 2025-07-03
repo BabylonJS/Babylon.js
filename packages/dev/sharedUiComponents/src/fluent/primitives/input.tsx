@@ -1,8 +1,7 @@
-import type { KeyboardEvent, ChangeEvent } from "react";
-import { useEffect, useState, forwardRef } from "react";
+import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 
 import { Input as FluentInput, makeStyles } from "@fluentui/react-components";
-import type { InputProps as FluentInputProps } from "@fluentui/react-components";
 import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useInputStyles = makeStyles({
@@ -28,9 +27,9 @@ export type InputProps<T extends string | number> = BaseComponentProps<T> & {
  * @param props
  * @returns
  */
-export const Input = forwardRef<HTMLInputElement, Omit<FluentInputProps, "value" | "onChange"> & InputProps<string | number>>((props, ref) => {
+export const Input: FunctionComponent<InputProps<string | number>> = (props) => {
     const classes = useInputStyles();
-    const [value, setValue] = useState<string | number>(props.value ?? "");
+    const [value, setValue] = useState(props.value ?? "");
 
     const type = typeof props.value === "number" ? "number" : "text";
 
@@ -51,9 +50,7 @@ export const Input = forwardRef<HTMLInputElement, Omit<FluentInputProps, "value"
 
     return (
         <FluentInput
-            appearance="underline"
             {...props}
-            ref={ref}
             type={type}
             size="small"
             value={value.toString()}
@@ -62,4 +59,4 @@ export const Input = forwardRef<HTMLInputElement, Omit<FluentInputProps, "value"
             onKeyDown={handleKeyDown}
         />
     );
-});
+};
