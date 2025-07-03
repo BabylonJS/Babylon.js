@@ -15,7 +15,7 @@ export class Animatable {
     /**
      * If false, the animatable will not be processed if it is considered actively paused weight of 0 and previous weight of 0.
      * This can be used to skip paused animatables in the animation engine.
-     * Default is true.
+     * Default is false.
      */
     public static ProcessPausedAnimatables = false;
 
