@@ -1,4 +1,5 @@
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinPassCubePostProcess, ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 

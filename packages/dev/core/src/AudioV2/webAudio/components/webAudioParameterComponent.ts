@@ -27,6 +27,12 @@ const MinRampDuration = 0.000001;
 
 /** @internal */
 export class _WebAudioParameterComponent {
+    private _deferredRampOptions = {
+        duration: 0,
+        shape: AudioParameterRampShape.Linear,
+    };
+    private _deferredTargetValue = -1;
+    private _isObservingUpdates = false;
     private _rampEndTime: number = 0;
     private _engine: _WebAudioEngine;
     private _param: AudioParam;
@@ -37,6 +43,11 @@ export class _WebAudioParameterComponent {
         this._engine = engine;
         this._param = param;
         this._targetValue = param.value;
+    }
+
+    /** @internal */
+    public get isRamping(): boolean {
+        return this._engine.currentTime < this._rampEndTime;
     }
 
     /** @internal */
@@ -55,6 +66,8 @@ export class _WebAudioParameterComponent {
 
     /** @internal */
     public dispose(): void {
+        this._clearDeferredRamp();
+
         this._param = null!;
         this._engine = null!;
     }
@@ -84,7 +97,7 @@ export class _WebAudioParameterComponent {
         const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
 
         let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
-        let startTime = this._engine.currentTime;
+        const startTime = this._engine.currentTime;
 
         if (startTime < this._rampEndTime) {
             const timeLeft = this._rampEndTime - startTime;
@@ -92,8 +105,8 @@ export class _WebAudioParameterComponent {
             if (MaxWaitTime < timeLeft) {
                 throw new Error("Audio parameter not set. Wait for current ramp to finish.");
             } else {
-                duration -= timeLeft;
-                startTime = this._rampEndTime;
+                this._deferRamp(value, duration, shape);
+                return;
             }
         }
 
@@ -105,6 +118,34 @@ export class _WebAudioParameterComponent {
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
 
+        this._clearDeferredRamp();
+
         this._rampEndTime = startTime + duration;
+    }
+
+    private _deferRamp(value: number, duration: number, shape: AudioParameterRampShape): void {
+        this._deferredRampOptions.duration = duration;
+        this._deferredRampOptions.shape = shape;
+        this._deferredTargetValue = value;
+
+        if (!this._isObservingUpdates) {
+            this._engine._addUpdateObserver(this._applyDeferredRamp);
+            this._isObservingUpdates = true;
+        }
+    }
+
+    private _applyDeferredRamp = () => {
+        if (0 < this._deferredRampOptions.duration && this._rampEndTime < this._engine.currentTime) {
+            this.setTargetValue(this._deferredTargetValue, this._deferredRampOptions);
+        }
+    };
+
+    private _clearDeferredRamp(): void {
+        this._deferredRampOptions.duration = 0;
+
+        if (this._isObservingUpdates) {
+            this._engine._removeUpdateObserver(this._applyDeferredRamp);
+            this._isObservingUpdates = false;
+        }
     }
 }
