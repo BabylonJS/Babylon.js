@@ -13,8 +13,8 @@ import type { Node } from "../node";
  */
 export class Animatable {
     /**
-     * If false, the animatable will not be processed if it is considered actively paused weight of 0 and previous weight of 0.
-     * This can be used to skip paused animatables in the animation engine.
+     * If true, the animatable will be processed even if it is considered actively paused (weight of 0 and previous weight of 0).
+     * This can be used to force the full processing of paused animatables in the animation engine.
      * Default is false.
      */
     public static ProcessPausedAnimatables = false;
