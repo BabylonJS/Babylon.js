@@ -1,4 +1,3 @@
-import type { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { IAudioParameterRampOptions } from "../../audioParameter";
 import { AudioParameterRampShape } from "../../audioParameter";
@@ -28,12 +27,12 @@ const MinRampDuration = 0.000001;
 
 /** @internal */
 export class _WebAudioParameterComponent {
-    private _deferredRampObserverable: Nullable<Observable<string>> | Nullable<Observable<void>> = null;
     private _deferredRampOptions = {
         duration: 0,
         shape: AudioParameterRampShape.Linear,
     };
     private _deferredTargetValue = -1;
+    private _isObservingUpdates = false;
     private _rampEndTime: number = 0;
     private _engine: _WebAudioEngine;
     private _param: AudioParam;
@@ -67,7 +66,7 @@ export class _WebAudioParameterComponent {
 
     /** @internal */
     public dispose(): void {
-        this._removeDeferredRamp();
+        this._clearDeferredRamp();
 
         this._param = null!;
         this._engine = null!;
@@ -119,7 +118,7 @@ export class _WebAudioParameterComponent {
         this._param.cancelScheduledValues(startTime);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._targetValue, (this._targetValue = value)), startTime, duration);
 
-        this._removeDeferredRamp();
+        this._clearDeferredRamp();
 
         this._rampEndTime = startTime + duration;
     }
@@ -129,13 +128,9 @@ export class _WebAudioParameterComponent {
         this._deferredRampOptions.shape = shape;
         this._deferredTargetValue = value;
 
-        if (!this._deferredRampObserverable) {
-            if (this._engine.state !== "running") {
-                this._deferredRampObserverable = this._engine.stateChangedObservable;
-                this._deferredRampObserverable.add(this._applyDeferredRamp);
-            } else {
-                this._deferredRampObserverable = this._engine._addUpdateObserver(this._applyDeferredRamp);
-            }
+        if (!this._isObservingUpdates) {
+            this._engine._addUpdateObserver(this._applyDeferredRamp);
+            this._isObservingUpdates = true;
         }
     }
 
@@ -145,9 +140,12 @@ export class _WebAudioParameterComponent {
         }
     };
 
-    private _removeDeferredRamp(): void {
-        this._deferredRampObserverable?.removeCallback(this._applyDeferredRamp);
-        this._deferredRampObserverable = null;
+    private _clearDeferredRamp(): void {
         this._deferredRampOptions.duration = 0;
+
+        if (this._isObservingUpdates) {
+            this._engine._removeUpdateObserver(this._applyDeferredRamp);
+            this._isObservingUpdates = false;
+        }
     }
 }

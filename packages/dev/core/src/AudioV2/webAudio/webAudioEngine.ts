@@ -300,6 +300,8 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         this._unmuteUI?.dispose();
         this._unmuteUI = null;
+
+        this.stateChangedObservable.clear();
     }
 
     /** @internal */
@@ -383,15 +385,19 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     /** @internal */
-    public _addUpdateObserver(callback: () => void): Observable<void> {
+    public _addUpdateObserver(callback: () => void): void {
         if (!this._updateObservable) {
             this._updateObservable = new Observable<void>();
         }
 
         this._updateObservable.add(callback);
         this._startUpdating();
+    }
 
-        return this._updateObservable;
+    public _removeUpdateObserver(callback: () => void): void {
+        if (this._updateObservable) {
+            this._updateObservable.removeCallback(callback);
+        }
     }
 
     private _initAudioContextAsync: () => Promise<void> = async () => {
@@ -450,14 +456,26 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     private _resolveIsReadyPromise: () => void;
 
-    private _startUpdating(): void {
+    private _startUpdating = () => {
         if (this._isUpdating) {
             return;
         }
 
         this._isUpdating = true;
-        this._update();
-    }
+
+        if (this.state === "running") {
+            this._update();
+        } else {
+            const callback = () => {
+                if (this.state === "running") {
+                    this._update();
+                    this.stateChangedObservable.removeCallback(callback);
+                }
+            };
+
+            this.stateChangedObservable.add(callback);
+        }
+    };
 
     private _update = (): void => {
         if (this._updateObservable?.hasObservers()) {
