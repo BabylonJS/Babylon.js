@@ -1,5 +1,17 @@
 # Changelog
 
+## 8.15.1
+
+### Core
+
+- Implement velocity offset for TAA - by [matanui159](https://github.com/matanui159) ([#16835](https://github.com/BabylonJS/Babylon.js/pull/16835))
+- Fix static sound disconnect edge case - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16846](https://github.com/BabylonJS/Babylon.js/pull/16846))
+- Add a way to force run paused animatables - by [sebavan](https://github.com/sebavan) ([#16843](https://github.com/BabylonJS/Babylon.js/pull/16843))
+- gizmo mem leak - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16845](https://github.com/BabylonJS/Babylon.js/pull/16845))
+
+### Loaders
+
+
 ## 8.15.0
 
 ### Playground
