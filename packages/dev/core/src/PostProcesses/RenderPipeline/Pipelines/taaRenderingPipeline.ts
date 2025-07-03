@@ -107,12 +107,8 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     public set reprojectHistory(reproject: boolean) {
         if (this.reprojectHistory === reproject) {
             return;
-        } else if (reproject && !this._scene.enablePrePassRenderer()) {
-            Logger.Warn("TAA reprojection requires PrePass which is not supported");
-            return;
         }
-        this._taaThinPostProcess.reprojectHistory = reproject;
-        this._buildPipeline();
+        this._updateReprojection(reproject);
     }
 
     /**
@@ -143,7 +139,9 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         }
 
         this._isEnabled = value;
-        this._taaMaterialManager.isEnabled = value;
+        if (this._taaMaterialManager) {
+            this._taaMaterialManager.isEnabled = value && this.reprojectHistory;
+        }
 
         if (!value) {
             if (this._cameras !== null) {
@@ -175,7 +173,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     private _textureType: number;
     private _taaPostProcess: Nullable<PostProcess>;
     private _taaThinPostProcess: ThinTAAPostProcess;
-    private _taaMaterialManager: TAAMaterialManager;
+    private _taaMaterialManager: Nullable<TAAMaterialManager>;
     private _passPostProcess: Nullable<PassPostProcess>;
     private _ping: RenderTargetWrapper;
     private _pong: RenderTargetWrapper;
@@ -209,7 +207,6 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         this._scene = scene;
         this._textureType = textureType;
         this._taaThinPostProcess = new ThinTAAPostProcess("TAA", this._scene.getEngine());
-        this._taaMaterialManager = new TAAMaterialManager(scene);
 
         if (this.isSupported) {
             this._createPingPongTextures(engine.getRenderWidth(), engine.getRenderHeight());
@@ -257,7 +254,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
 
-        this._taaMaterialManager.dispose();
+        this._taaMaterialManager?.dispose();
         this._ping.dispose();
         this._pong.dispose();
 
@@ -282,6 +279,26 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._taaThinPostProcess.textureWidth = width;
         this._taaThinPostProcess.textureHeight = height;
+    }
+
+    private _updateReprojection(reproject: boolean) {
+        if (reproject) {
+            if (!this._scene.enablePrePassRenderer()) {
+                Logger.Warn("TAA reprojection requires PrePass which is not supported");
+                return;
+            } else if (!this._taaMaterialManager) {
+                this._taaMaterialManager = new TAAMaterialManager(this._scene);
+            }
+            // The velocity buffer may be old so reset for one frame
+            this._taaThinPostProcess._reset();
+        }
+
+        this._taaThinPostProcess.reprojectHistory = reproject;
+        if (this._taaMaterialManager) {
+            this._taaMaterialManager.isEnabled = reproject && this._isEnabled;
+        }
+
+        this._buildPipeline();
     }
 
     private _buildPipeline() {
@@ -373,7 +390,14 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
                 this._createPingPongTextures(engine.getRenderWidth(), engine.getRenderHeight());
             }
 
-            this._taaThinPostProcess.nextJitterOffset(this._taaMaterialManager.jitter);
+            if (this.reprojectHistory && this._taaMaterialManager) {
+                // Applying jitter to the projection matrix messes with the velocity buffer,
+                // so we do it as a final vertex step in a material plugin instead
+                this._taaThinPostProcess.nextJitterOffset(this._taaMaterialManager.jitter);
+            } else {
+                // Use the projection matrix by default since it supports most materials
+                this._taaThinPostProcess.updateProjectionMatrix();
+            }
 
             if (this._passPostProcess) {
                 this._passPostProcess.inputTexture = this._pingpong ? this._ping : this._pong;
