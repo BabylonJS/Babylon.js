@@ -88,7 +88,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     private _resumePromise: Nullable<Promise<void>> = null;
     private _silentHtmlAudio: Nullable<HTMLAudioElement> = null;
     private _unmuteUI: Nullable<_WebAudioUnmuteUI> = null;
-    private _updateObservable = new Observable<void>();
+    private _updateObservable: Nullable<Observable<void>> = null;
     private readonly _validFormats = new Set<string>();
     private _volume = 1;
 
@@ -295,6 +295,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         this._silentHtmlAudio?.remove();
 
+        this._updateObservable?.clear();
+        this._updateObservable = null;
+
         this._unmuteUI?.dispose();
         this._unmuteUI = null;
     }
@@ -381,8 +384,13 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public _addUpdateObserver(callback: () => void): Observable<void> {
+        if (!this._updateObservable) {
+            this._updateObservable = new Observable<void>();
+        }
+
         this._updateObservable.add(callback);
         this._startUpdating();
+
         return this._updateObservable;
     }
 
@@ -452,7 +460,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
     }
 
     private _update = (): void => {
-        if (this._updateObservable.hasObservers()) {
+        if (this._updateObservable?.hasObservers()) {
             this._updateObservable.notifyObservers();
             requestAnimationFrame(this._update);
         } else {
