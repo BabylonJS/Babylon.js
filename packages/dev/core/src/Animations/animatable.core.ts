@@ -17,7 +17,7 @@ export class Animatable {
      * This can be used to skip paused animatables in the animation engine.
      * Default is true.
      */
-    public static AnimatePausedAnimatables = false;
+    public static ProcessPausedAnimatables = false;
 
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
@@ -446,7 +446,7 @@ export class Animatable {
 
         this._goToFrame = null;
 
-        if (!Animatable.AnimatePausedAnimatables && this._weight === 0 && this._previousWeight === 0) {
+        if (!Animatable.ProcessPausedAnimatables && this._weight === 0 && this._previousWeight === 0) {
             // We consider that an animatable with a weight === 0 is "actively" paused
             return true;
         }
