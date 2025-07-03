@@ -1,17 +1,17 @@
 import type { IDisposable } from "core/index";
 
+import type { AccordionSection, AccordionSectionContent } from "../../../components/accordionPane";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
-import type { AccordionSection, AccordionSectionContent } from "../../../components/accordionPane";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
 
+import { PropertiesPane } from "../../../components/properties/propertiesPane";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
-import { PropertiesPane } from "../../../components/properties/propertiesPane";
 
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 

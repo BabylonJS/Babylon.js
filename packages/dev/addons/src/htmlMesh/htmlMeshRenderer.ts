@@ -9,6 +9,7 @@ import { RenderingGroup } from "core/Rendering/renderingGroup";
 import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
 import type { AbstractEngine } from "core/Engines";
+import { TransformNode } from "core/Meshes/transformNode";
 
 const PositionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
 const BabylonUnitsToPixels = 100;
@@ -465,7 +466,8 @@ export class HtmlMeshRenderer {
 
         let style = `translate(-50%, -50%) ${this._getHtmlContentCssMatrix(scaledAndTranslatedObjectMatrix, useRightHandedSystem)}`;
         // In a right handed system, screens are on the wrong side of the mesh, so we have to rotate by Math.PI which results in the matrix3d seen below
-        style += `${useRightHandedSystem ? "matrix3d(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)" : ""}`;
+        // Also in RH + billboard mode, we cancel the handedness so we do not need to scale on x
+        style += `${useRightHandedSystem ? `matrix3d(${htmlMesh.billboardMode !== TransformNode.BILLBOARDMODE_NONE ? 1 : -1}, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)` : ""}`;
 
         if (htmlMeshData.style !== style) {
             htmlMesh.element.style.webkitTransform = style;

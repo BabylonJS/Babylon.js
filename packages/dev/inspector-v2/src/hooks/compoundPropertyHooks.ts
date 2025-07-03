@@ -1,4 +1,6 @@
-import type { Vector3, Color3, Quaternion } from "core/index";
+import type { Vector3, Color3, Color4, Quaternion } from "core/index";
+
+import { useCallback } from "react";
 
 import { useInterceptObservable } from "./instrumentationHooks";
 import { useObservableState } from "./observableHooks";
@@ -17,7 +19,10 @@ export function useProperty<TargetT extends object, PropertyKeyT extends keyof T
  * @returns The current value of the property, or null if the target is null or undefined.
  */
 export function useProperty<TargetT extends object, PropertyKeyT extends keyof TargetT>(target: TargetT | null | undefined, propertyKey: PropertyKeyT) {
-    return useObservableState(() => (target ? target[propertyKey] : undefined), useInterceptObservable("property", target, propertyKey));
+    return useObservableState(
+        useCallback(() => (target ? target[propertyKey] : undefined), [target, propertyKey]),
+        useInterceptObservable("property", target, propertyKey)
+    );
 }
 
 export function useVector3Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Vector3>>(target: TargetT, propertyKey: PropertyKeyT): TargetT[PropertyKeyT];
@@ -55,6 +60,26 @@ export function useColor3Property<TargetT extends object, PropertyKeyT extends P
     useProperty(color as Color3 | null | undefined, "r");
     useProperty(color as Color3 | null | undefined, "g");
     useProperty(color as Color3 | null | undefined, "b");
+    return color;
+}
+
+export function useColor4Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color4>>(target: TargetT, propertyKey: PropertyKeyT): TargetT[PropertyKeyT];
+export function useColor4Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color4>>(
+    target: TargetT | null | undefined,
+    propertyKey: PropertyKeyT
+): TargetT[PropertyKeyT] | null;
+/**
+ * Translates a Color4 property value to react state, updating the state whenever the property changes or when the r/g/b components of the Color4 change.
+ * @param target The object containing the property to observe.
+ * @param propertyKey The key of the property to observe.
+ * @returns The current value of the property, or null if the target is null or undefined.
+ */
+export function useColor4Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color4>>(target: TargetT | null | undefined, propertyKey: PropertyKeyT) {
+    const color = useProperty(target, propertyKey);
+    useProperty(color as Color3 | null | undefined, "r");
+    useProperty(color as Color3 | null | undefined, "g");
+    useProperty(color as Color3 | null | undefined, "b");
+    useProperty(color as Color4 | null | undefined, "a");
     return color;
 }
 

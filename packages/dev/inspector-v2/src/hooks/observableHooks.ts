@@ -2,7 +2,7 @@ import type { IReadonlyObservable } from "core/index";
 
 import type { ObservableCollection } from "../misc/observableCollection";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Returns the current value of the accessor and updates it when the specified event is fired on the specified element.
@@ -10,6 +10,8 @@ import { useEffect, useMemo, useState } from "react";
  * @param element The element to listen for the event on.
  * @param eventNames The names of the events to listen for.
  * @returns The current value of the accessor.
+ *  * @remarks If the accessor function is not idempotent (e.g. it returns a different array or object instance each time it is called),
+ * then there is a good chance it should be wrapped in a `useCallback` to prevent unnecessary re-renders or re-render infinite loops.
  */
 export function useEventfulState<T>(accessor: () => T, element: HTMLElement | null | undefined, ...eventNames: string[]): T {
     const [current, setCurrent] = useState(accessor);
@@ -35,7 +37,7 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
         }
 
         return undefined;
-    }, [element]);
+    }, [accessor, element, ...eventNames]);
 
     return current;
 }
@@ -45,6 +47,8 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
  * @param accessor A function that returns the current value.
  * @param observables The observables to listen for changes on.
  * @returns The current value of the accessor.
+ * @remarks If the accessor function is not idempotent (e.g. it returns a different array or object instance each time it is called),
+ * then there is a good chance it should be wrapped in a `useCallback` to prevent unnecessary re-renders or re-render infinite loops.
  */
 export function useObservableState<T>(accessor: () => T, ...observables: Array<IReadonlyObservable | null | undefined>): T {
     const [current, setCurrent] = useState(accessor);
@@ -65,7 +69,7 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
         return () => {
             observers.forEach((observer) => observer?.remove());
         };
-    }, [...observables]);
+    }, [accessor, ...observables]);
 
     return current;
 }
@@ -76,7 +80,16 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
  * @returns A copy of the items in the collection.
  */
 export function useObservableCollection<T>(collection: ObservableCollection<T>) {
-    return useObservableState(() => [...collection.items], collection.observable);
+    const itemsRef = useRef([...collection.items]);
+    return useObservableState(
+        useCallback(() => {
+            if (itemsRef.current.length !== collection.items.length || !itemsRef.current.every((item, index) => item === collection.items[index])) {
+                itemsRef.current = [...collection.items];
+            }
+            return itemsRef.current;
+        }, [collection]),
+        collection.observable
+    );
 }
 
 /**

@@ -1,8 +1,9 @@
-import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
+import type { FunctionComponent } from "react";
 
+import type { Camera, IShadowGenerator, Nullable, ShadowLight } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { useEffect, useState, type FunctionComponent } from "react";
+import { useEffect, useState } from "react";
 
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
@@ -10,6 +11,8 @@ import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { useObservableState } from "../../../hooks/observableHooks";
+
+import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
 type ShadowGeneratorType = "Default" | "Cascade";
 

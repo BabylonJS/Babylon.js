@@ -690,8 +690,8 @@ export class Ray {
         const farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
         const nearVec3 = TmpVectors.Vector3[2];
         const farVec3 = TmpVectors.Vector3[3];
-        Vector3._UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
-        Vector3._UnprojectFromInvertedMatrixToRef(farScreenSource, matrix, farVec3);
+        Vector3.TransformCoordinatesToRef(nearScreenSource, matrix, nearVec3);
+        Vector3.TransformCoordinatesToRef(farScreenSource, matrix, farVec3);
 
         this.origin.copyFrom(nearVec3);
         farVec3.subtractToRef(nearVec3, this.direction);
