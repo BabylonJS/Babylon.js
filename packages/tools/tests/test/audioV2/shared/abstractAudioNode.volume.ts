@@ -401,7 +401,13 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
+                if ((await EvaluateAudioContextType(page)) === "Offline") {
+                    expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
+                } else {
+                    // Expect larger range due to timing variations.
+                    expect(volumes[Channel.L]).toBeGreaterThan(0.23);
+                    expect(volumes[Channel.L]).toBeLessThan(0.4);
+                }
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.3x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {
