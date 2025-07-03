@@ -307,6 +307,7 @@ export class _WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebAudioOutNode {
     private _enginePlayTime: number = 0;
     private _enginePauseTime: number = 0;
+    private _isConnected: boolean = false;
     private _pitch: Nullable<_WebAudioParameterComponent> = null;
     private _playbackRate: Nullable<_WebAudioParameterComponent> = null;
     private _sourceNode: Nullable<AudioBufferSourceNode> = null;
@@ -484,6 +485,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
         if (node instanceof _WebAudioStaticSound && node._inNode) {
             this._outNode?.connect(node._inNode);
+            this._isConnected = true;
         }
 
         return true;
@@ -498,6 +500,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
         if (node instanceof _WebAudioStaticSound && node._inNode) {
             this._outNode?.disconnect(node._inNode);
+            this._isConnected = false;
         }
 
         return true;
@@ -515,7 +518,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return;
         }
 
-        if (!this._disconnect(this._sound)) {
+        if (this._isConnected && !this._disconnect(this._sound)) {
             throw new Error("Disconnect failed");
         }
 
