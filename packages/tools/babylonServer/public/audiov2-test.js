@@ -460,4 +460,8 @@ class AudioV2Test {
             throw new Error("Unknown audio context type.");
         }
     }
+
+    static async WaitForParameterRampDurationAsync(callback) {
+        await AudioV2Test.WaitAsync(audioEngine.parameterRampDuration, callback);
+    }
 }

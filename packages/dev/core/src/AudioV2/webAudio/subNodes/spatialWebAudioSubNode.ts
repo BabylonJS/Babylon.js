@@ -170,6 +170,12 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return;
         }
 
+        // If attached and there is a ramp in progress, we assume another update is coming soon that we can wait for.
+        // We don't do this for unattached nodes because there may not be another update coming.
+        if (this.isAttached && (this._positionX.isRamping || this._positionY.isRamping || this._positionZ.isRamping)) {
+            return;
+        }
+
         this._positionX.targetValue = this.position.x;
         this._positionY.targetValue = this.position.y;
         this._positionZ.targetValue = this.position.z;
@@ -179,6 +185,12 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
 
     /** @internal */
     public _updateRotation(): void {
+        // If attached and there is a ramp in progress, we assume another update is coming soon that we can wait for.
+        // We don't do this for unattached nodes because there may not be another update coming.
+        if (this.isAttached && (this._orientationX.isRamping || this._orientationY.isRamping || this._orientationZ.isRamping)) {
+            return;
+        }
+
         if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
             TmpQuaternion.copyFrom(this.rotationQuaternion);
             this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);
