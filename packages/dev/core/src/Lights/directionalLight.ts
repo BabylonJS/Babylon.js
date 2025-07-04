@@ -280,15 +280,6 @@ export class DirectionalLight extends ShadowLight {
         );
     }
 
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 4);
-        this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 4);
-        this._uniformBuffer.addUniform("shadowsInfo", 3);
-        this._uniformBuffer.addUniform("depthValues", 2);
-        this._uniformBuffer.create();
-    }
-
     /**
      * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
      * @param effect The effect to update
@@ -297,10 +288,10 @@ export class DirectionalLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightDataA", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
             return this;
         }
-        this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightDataA", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
         return this;
     }
 
@@ -342,15 +333,6 @@ export class DirectionalLight extends ShadowLight {
     public override getDepthMaxZ(_activeCamera: Nullable<Camera>): number {
         const engine = this._scene.getEngine();
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-    }
-
-    /**
-     * Prepares the list of defines specific to the light type.
-     * @param defines the list of defines
-     * @param lightIndex defines the index of the light for the effect
-     */
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["DIRLIGHT" + lightIndex] = true;
     }
 }
 

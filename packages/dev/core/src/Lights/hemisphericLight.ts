@@ -45,16 +45,6 @@ export class HemisphericLight extends Light {
         this.direction = direction || Vector3.Up();
     }
 
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 4);
-        this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 4);
-        this._uniformBuffer.addUniform("vLightGround", 3);
-        this._uniformBuffer.addUniform("shadowsInfo", 3);
-        this._uniformBuffer.addUniform("depthValues", 2);
-        this._uniformBuffer.create();
-    }
-
     /**
      * Returns the string "HemisphericLight".
      * @returns The class name
@@ -90,8 +80,8 @@ export class HemisphericLight extends Light {
      */
     public transferToEffect(_effect: Effect, lightIndex: string): HemisphericLight {
         const normalizeDirection = Vector3.Normalize(this.direction);
-        this._uniformBuffer.updateFloat4("vLightData", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0, lightIndex);
-        this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
+        this._uniformBuffer.updateFloat4("vLightDataA", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0, lightIndex);
+        this._uniformBuffer.updateColor4("vLightDataB", this.groundColor.scale(this.intensity), 1.0, lightIndex);
         return this;
     }
 
@@ -119,15 +109,6 @@ export class HemisphericLight extends Light {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
-    }
-
-    /**
-     * Prepares the list of defines specific to the light type.
-     * @param defines the list of defines
-     * @param lightIndex defines the index of the light for the effect
-     */
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["HEMILIGHT" + lightIndex] = true;
     }
 }
 
