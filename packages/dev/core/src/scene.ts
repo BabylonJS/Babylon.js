@@ -1358,6 +1358,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._lightsEnabled;
     }
 
+    /** @internal */
+    public _defaultLight?: Light;
+
     private _activeCameras: Nullable<Camera[]>;
     private _unObserveActiveCameras: Nullable<() => void> = null;
 

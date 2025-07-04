@@ -1,4 +1,12 @@
-﻿#ifdef LIGHT{X}
+﻿// Constants
+#define LIGHTTYPEID_NONE -1
+#define LIGHTTYPEID_POINTLIGHT 0
+#define LIGHTTYPEID_DIRECTIONALLIGHT 1
+#define LIGHTTYPEID_SPOTLIGHT 2
+#define LIGHTTYPEID_HEMISPHERICLIGHT 3
+#define LIGHTTYPEID_RECT_AREALIGHT 4
+
+if (light{X}.vLightType >= 0.0) {
     #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
@@ -6,6 +14,7 @@
         vec4 diffuse{X} = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
+        int lightTypeId = int(light{X}.vLightType);
         #ifdef PBR
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
@@ -187,24 +196,31 @@
                 #endif
             #endif
         #else
-            #ifdef SPOTLIGHT{X}
-                #ifdef IESLIGHTTEXTURE{X}
-                    info = computeIESSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness, iesLightTexture{X});
-                #else
-                    info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
-                #endif
-            #elif defined(HEMILIGHT{X})
-                info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightGround, glossiness);
-            #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-                info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
-            #elif defined(AREALIGHT{X}) && defined(AREALIGHTSUPPORTED)
-                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
+            #ifdef AREALIGHT{X}
+                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightPosition.xyz, light{X}.vLightDataA.rgb, light{X}.vLightDataB.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
                 #ifdef AREALIGHTNOROUGHTNESS
                     0.5
                 #else
                     vReflectionInfos.y
                 #endif
                 );
+            #else
+            if (lightTypeId == LIGHTTYPEID_SPOTLIGHT) {
+                #ifdef IESLIGHTTEXTURE{X}
+                    info = computeIESSpotLighting(viewDirectionW, normalW, light{X}.vLightPosition, light{X}.vLightDataA, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness, iesLightTexture{X});
+                #else
+                    info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightPosition, light{X}.vLightDataA, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
+                #endif
+            } else if (lightTypeId == LIGHTTYPEID_HEMISPHERICLIGHT) {
+                info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightDataA, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightDataB.rgb, glossiness);
+            } else if (lightTypeId == LIGHTTYPEID_POINTLIGHT) {
+                vec3 direction = light{X}.vLightPosition.xyz - vPositionW;
+
+                float attenuation = max(0., 1.0 - length(direction) / diffuse{X}.a);
+                info = computeLighting(viewDirectionW, normalW, direction, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, attenuation, glossiness);
+            } else if (lightTypeId == LIGHTTYPEID_DIRECTIONALLIGHT) {
+                info = computeLighting(viewDirectionW, normalW, -light{X}.vLightDataA.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, 1.0, glossiness);
+            }
             #endif
         #endif
 
@@ -389,4 +405,4 @@
             #endif
         #endif
     #endif
-#endif
+}

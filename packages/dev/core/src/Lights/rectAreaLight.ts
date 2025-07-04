@@ -85,17 +85,6 @@ export class RectAreaLight extends AreaLight {
         return Light.LIGHTTYPEID_RECT_AREALIGHT;
     }
 
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 4);
-        this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 4);
-        this._uniformBuffer.addUniform("vLightWidth", 4);
-        this._uniformBuffer.addUniform("vLightHeight", 4);
-        this._uniformBuffer.addUniform("shadowsInfo", 3);
-        this._uniformBuffer.addUniform("depthValues", 2);
-        this._uniformBuffer.create();
-    }
-
     protected _computeTransformedInformation(): boolean {
         if (this.parent && this.parent.getWorldMatrix) {
             Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this._pointTransformedPosition);
@@ -115,10 +104,10 @@ export class RectAreaLight extends AreaLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): RectAreaLight {
         if (this._computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z, 0, lightIndex);
-            this._uniformBuffer.updateFloat4("vLightWidth", this._pointTransformedWidth.x / 2, this._pointTransformedWidth.y / 2, this._pointTransformedWidth.z / 2, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightPosition", this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightDataA", this._pointTransformedWidth.x / 2, this._pointTransformedWidth.y / 2, this._pointTransformedWidth.z / 2, 0, lightIndex);
             this._uniformBuffer.updateFloat4(
-                "vLightHeight",
+                "vLightDataB",
                 this._pointTransformedHeight.x / 2,
                 this._pointTransformedHeight.y / 2,
                 this._pointTransformedHeight.z / 2,
@@ -126,9 +115,9 @@ export class RectAreaLight extends AreaLight {
                 lightIndex
             );
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
-            this._uniformBuffer.updateFloat4("vLightWidth", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
-            this._uniformBuffer.updateFloat4("vLightHeight", this._height.x / 2, this._height.y / 2, this._height.z / 2, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightPosition", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightDataA", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightDataB", this._height.x / 2, this._height.y / 2, this._height.z / 2, 0.0, lightIndex);
         }
         return this;
     }

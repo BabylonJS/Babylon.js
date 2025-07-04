@@ -375,17 +375,6 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureMatrix.multiplyToRef(this._projectionTextureScalingMatrix, this._projectionTextureMatrix);
     }
 
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 4);
-        this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 4);
-        this._uniformBuffer.addUniform("vLightDirection", 3);
-        this._uniformBuffer.addUniform("vLightFalloff", 4);
-        this._uniformBuffer.addUniform("shadowsInfo", 3);
-        this._uniformBuffer.addUniform("depthValues", 2);
-        this._uniformBuffer.create();
-    }
-
     private _computeAngleValues(): void {
         this._lightAngleScale = 1.0 / Math.max(0.001, Math.cos(this._innerAngle * 0.5) - this._cosHalfAngle);
         this._lightAngleOffset = -this._cosHalfAngle * this._lightAngleScale;
@@ -428,18 +417,18 @@ export class SpotLight extends ShadowLight {
         let normalizeDirection;
 
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightPosition", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent, lightIndex);
 
             normalizeDirection = Vector3.Normalize(this.transformedDirection);
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, this.exponent, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightPosition", this.position.x, this.position.y, this.position.z, this.exponent, lightIndex);
 
             normalizeDirection = Vector3.Normalize(this.direction);
         }
 
-        this._uniformBuffer.updateFloat4("vLightDirection", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, this._cosHalfAngle, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightDataA", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, this._cosHalfAngle, lightIndex);
 
-        this._uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, this._lightAngleScale, this._lightAngleOffset, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightDataB", this.range, this._inverseSquaredRange, this._lightAngleScale, this._lightAngleOffset, lightIndex);
         return this;
     }
 

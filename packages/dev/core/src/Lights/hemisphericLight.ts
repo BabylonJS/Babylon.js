@@ -45,16 +45,6 @@ export class HemisphericLight extends Light {
         this.direction = direction || Vector3.Up();
     }
 
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 4);
-        this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 4);
-        this._uniformBuffer.addUniform("vLightGround", 3);
-        this._uniformBuffer.addUniform("shadowsInfo", 3);
-        this._uniformBuffer.addUniform("depthValues", 2);
-        this._uniformBuffer.create();
-    }
-
     /**
      * Returns the string "HemisphericLight".
      * @returns The class name
@@ -90,8 +80,8 @@ export class HemisphericLight extends Light {
      */
     public transferToEffect(_effect: Effect, lightIndex: string): HemisphericLight {
         const normalizeDirection = Vector3.Normalize(this.direction);
-        this._uniformBuffer.updateFloat4("vLightData", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0, lightIndex);
-        this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
+        this._uniformBuffer.updateFloat4("vLightDataA", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0, lightIndex);
+        this._uniformBuffer.updateColor3("vLightDataB", this.groundColor.scale(this.intensity), lightIndex);
         return this;
     }
 

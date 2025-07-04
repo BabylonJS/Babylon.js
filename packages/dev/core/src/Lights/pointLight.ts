@@ -171,16 +171,6 @@ export class PointLight extends ShadowLight {
         );
     }
 
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 4);
-        this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 4);
-        this._uniformBuffer.addUniform("vLightFalloff", 4);
-        this._uniformBuffer.addUniform("shadowsInfo", 3);
-        this._uniformBuffer.addUniform("depthValues", 2);
-        this._uniformBuffer.create();
-    }
-
     /**
      * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
      * @param effect The effect to update
@@ -189,12 +179,12 @@ export class PointLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): PointLight {
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightPosition", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0.0, lightIndex);
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightPosition", this.position.x, this.position.y, this.position.z, 0, lightIndex);
         }
 
-        this._uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, 0, 0, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightDataB", this.range, this._inverseSquaredRange, 0, 0, lightIndex);
         return this;
     }
 

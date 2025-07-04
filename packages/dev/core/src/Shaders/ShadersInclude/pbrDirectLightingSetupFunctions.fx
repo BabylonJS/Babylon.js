@@ -27,13 +27,10 @@ struct preLightingInfo
         float iridescenceIntensity;
     #endif
 
-    #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        vec3 areaLightDiffuse;
-
-        #ifdef SPECULARTERM
-            vec3 areaLightSpecular;
-            vec4 areaLightFresnel;
-        #endif
+    vec3 areaLightDiffuse;
+    #ifdef SPECULARTERM
+        vec3 areaLightSpecular;
+        vec4 areaLightFresnel;
     #endif
 };
 
@@ -104,7 +101,6 @@ preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N
     return result;
 }
 
-#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 #include<ltcHelperFunctions>
 
 uniform sampler2D areaLightsLTC1Sampler;
@@ -132,4 +128,3 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 
     result.surfaceAlbedo = vec3(0.);
 	return result;
 }
-#endif

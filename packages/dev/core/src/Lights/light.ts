@@ -385,7 +385,26 @@ export abstract class Light extends Node implements ISortableLight {
         this._resyncMeshes();
     }
 
-    protected abstract _buildUniformLayout(): void;
+    private _buildUniformLayout(): void {
+        this._uniformBuffer.addUniform("vLightType", 1);
+        this._uniformBuffer.addUniform("vLightPosition", 4);
+        this._uniformBuffer.addUniform("vLightDiffuse", 4);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
+
+        // | Type        | Data A    | Data B  |
+        // | ----------- | --------- | ------- |
+        // | Point       | -         | Falloff |
+        // | Directional | Direction | -       |
+        // | Spot        | Direction | Falloff |
+        // | Hemispheric | Direction | Ground  |
+        // | Area        | Width     | Height  |
+        this._uniformBuffer.addUniform("vLightDataA", 4);
+        this._uniformBuffer.addUniform("vLightDataB", 4);
+
+        this._uniformBuffer.addUniform("shadowsInfo", 4);
+        this._uniformBuffer.addUniform("depthValues", 2);
+        this._uniformBuffer.create();
+    }
 
     /**
      * Sets the passed Effect "effect" with the Light information.
@@ -428,6 +447,8 @@ export abstract class Light extends Node implements ISortableLight {
             const scaledIntensity = this.getScaledIntensity();
 
             this.transferToEffect(effect, iAsString);
+
+            this._uniformBuffer.updateFloat("vLightType", this.getTypeID(), iAsString);
 
             this.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
             this._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], this.range, iAsString);
