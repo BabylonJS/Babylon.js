@@ -521,6 +521,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             (!this._scene.useRightHandedSystem && value === Constants.MATERIAL_ClockWiseSideOrientation);
     }
 
+    /** @internal */
+    public get _effectiveSideOrientation(): number {
+        return this._internalMeshDataInfo._effectiveSideOrientation;
+    }
+
     /**
      * @deprecated Please use sideOrientation instead.
      * @see https://doc.babylonjs.com/breaking-changes#7110
