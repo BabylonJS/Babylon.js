@@ -110,15 +110,6 @@ export class HemisphericLight extends Light {
     public override getTypeID(): number {
         return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
     }
-
-    /**
-     * Prepares the list of defines specific to the light type.
-     * @param defines the list of defines
-     * @param lightIndex defines the index of the light for the effect
-     */
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["HEMILIGHT" + lightIndex] = true;
-    }
 }
 
 // Register Class Name

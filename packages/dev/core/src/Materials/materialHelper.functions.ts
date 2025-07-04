@@ -19,7 +19,6 @@ import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
-import { DefaultLight } from "core/Lights/defaultLight";
 
 // Temps
 const TempFogColor = Color3.Black();
@@ -388,13 +387,8 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
  * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
  */
 export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
-    const len = mesh.lightSources.length;
-    if (len < maxSimultaneousLights && !scene._defaultLight) {
-        scene._defaultLight = new DefaultLight("default", scene);
-    }
-
     for (let i = 0; i < maxSimultaneousLights; i++) {
-        const light = i < len ? mesh.lightSources[i] : scene._defaultLight!;
+        const light = mesh.lightSources[i] ?? scene._disabledLight;
         BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
     }
 }
@@ -564,27 +558,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
 
     // Resetting all other lights if any
     for (let index = lightIndex; index < maxSimultaneousLights; index++) {
-        defines["LIGHT" + index] = false;
-        defines["HEMILIGHT" + index] = false;
-        defines["POINTLIGHT" + index] = false;
-        defines["DIRLIGHT" + index] = false;
-        defines["SPOTLIGHT" + index] = false;
-        defines["AREALIGHT" + index] = false;
-        defines["SHADOW" + index] = false;
-        defines["SHADOWCSM" + index] = false;
-        defines["SHADOWCSMDEBUG" + index] = false;
-        defines["SHADOWCSMNUM_CASCADES" + index] = false;
-        defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
-        defines["SHADOWCSMNOBLEND" + index] = false;
-        defines["SHADOWCSM_RIGHTHANDED" + index] = false;
-        defines["SHADOWPCF" + index] = false;
-        defines["SHADOWPCSS" + index] = false;
-        defines["SHADOWPOISSON" + index] = false;
-        defines["SHADOWESM" + index] = false;
-        defines["SHADOWCLOSEESM" + index] = false;
-        defines["SHADOWCUBE" + index] = false;
-        defines["SHADOWLOWQUALITY" + index] = false;
-        defines["SHADOWMEDIUMQUALITY" + index] = false;
+        PrepareDefinesForLight(scene, mesh, scene._disabledLight, lightIndex, defines, specularSupported, state);
     }
 
     const caps = scene.getEngine().getCaps();
@@ -636,17 +610,9 @@ export function PrepareDefinesForLight(
 ) {
     state.needNormals = true;
 
-    if (defines["LIGHT" + lightIndex] === undefined) {
+    if (defines["SHADOW" + lightIndex] === undefined) {
         state.needRebuild = true;
     }
-
-    defines["LIGHT" + lightIndex] = true;
-
-    defines["SPOTLIGHT" + lightIndex] = false;
-    defines["HEMILIGHT" + lightIndex] = false;
-    defines["POINTLIGHT" + lightIndex] = false;
-    defines["DIRLIGHT" + lightIndex] = false;
-    defines["AREALIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
 

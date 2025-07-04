@@ -949,7 +949,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param defines the list of defines
      * @param lightIndex defines the index of the light for the effect
      */
-    public abstract prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {}
 
     /**
      * @internal

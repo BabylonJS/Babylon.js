@@ -196,15 +196,6 @@ if (light{X}.vLightType >= 0.0) {
                 #endif
             #endif
         #else
-            #ifdef AREALIGHT{X}
-                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightPosition.xyz, light{X}.vLightDataA.rgb, light{X}.vLightDataB.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
-                #ifdef AREALIGHTNOROUGHTNESS
-                    0.5
-                #else
-                    vReflectionInfos.y
-                #endif
-                );
-            #else
             if (lightTypeId == LIGHTTYPEID_SPOTLIGHT) {
                 #ifdef IESLIGHTTEXTURE{X}
                     info = computeIESSpotLighting(viewDirectionW, normalW, light{X}.vLightPosition, light{X}.vLightDataA, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness, iesLightTexture{X});
@@ -220,8 +211,17 @@ if (light{X}.vLightType >= 0.0) {
                 info = computeLighting(viewDirectionW, normalW, direction, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, attenuation, glossiness);
             } else if (lightTypeId == LIGHTTYPEID_DIRECTIONALLIGHT) {
                 info = computeLighting(viewDirectionW, normalW, -light{X}.vLightDataA.xyz, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, 1.0, glossiness);
-            }
+            #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            } else if (lightTypeId == LIGHTTYPEID_RECT_AREALIGHT) {
+                info = computeAreaLighting(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightPosition.xyz, light{X}.vLightDataA.rgb, light{X}.vLightDataB.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
+                #ifdef AREALIGHTNOROUGHTNESS
+                    0.5
+                #else
+                    vReflectionInfos.y
+                #endif
+                );
             #endif
+            }
         #endif
 
         #ifdef PROJECTEDLIGHTTEXTURE{X}

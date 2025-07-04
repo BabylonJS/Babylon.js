@@ -68,6 +68,7 @@ import type { Camera } from "./Cameras/camera";
 import type { Collider } from "./Collisions/collider";
 import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray.core";
 import type { Light } from "./Lights/light";
+import { DisabledLight } from "./Lights/disabledLight";
 import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
 import type { MorphTarget } from "./Morph/morphTarget";
 import type { MorphTargetManager } from "./Morph/morphTargetManager";
@@ -1359,7 +1360,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /** @internal */
-    public _defaultLight?: Light;
+    public _disabledLight: DisabledLight;
 
     private _activeCameras: Nullable<Camera[]>;
     private _unObserveActiveCameras: Nullable<() => void> = null;
@@ -1961,6 +1962,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (!options || !options.virtual) {
             engine.onNewSceneAddedObservable.notifyObservers(this);
         }
+
+        this._disabledLight = new DisabledLight("disabled", this);
     }
 
     /**

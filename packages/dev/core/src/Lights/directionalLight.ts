@@ -334,15 +334,6 @@ export class DirectionalLight extends ShadowLight {
         const engine = this._scene.getEngine();
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
     }
-
-    /**
-     * Prepares the list of defines specific to the light type.
-     * @param defines the list of defines
-     * @param lightIndex defines the index of the light for the effect
-     */
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["DIRLIGHT" + lightIndex] = true;
-    }
 }
 
 // Register Class Name

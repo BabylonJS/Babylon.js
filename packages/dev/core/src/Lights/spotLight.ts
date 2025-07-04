@@ -493,8 +493,7 @@ export class SpotLight extends ShadowLight {
      * @param defines the list of defines
      * @param lightIndex defines the index of the light for the effect
      */
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["SPOTLIGHT" + lightIndex] = true;
+    public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
         defines["IESLIGHTTEXTURE" + lightIndex] = this._iesProfileTexture && this._iesProfileTexture.isReady() ? true : false;
     }

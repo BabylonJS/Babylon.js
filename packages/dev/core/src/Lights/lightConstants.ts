@@ -69,7 +69,7 @@ export class LightConstants {
     public static readonly INTENSITYMODE_LUMINANCE = 4;
 
     // Light types ids const.
-    public static readonly LIGHTTYPEID_NONE = -1;
+    public static readonly LIGHTTYPEID_DISABLED = -1;
     /**
      * Light type const id of the point light.
      */

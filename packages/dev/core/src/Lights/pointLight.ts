@@ -197,15 +197,6 @@ export class PointLight extends ShadowLight {
 
         return this;
     }
-
-    /**
-     * Prepares the list of defines specific to the light type.
-     * @param defines the list of defines
-     * @param lightIndex defines the index of the light for the effect
-     */
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
-        defines["POINTLIGHT" + lightIndex] = true;
-    }
 }
 
 // Register Class Name
