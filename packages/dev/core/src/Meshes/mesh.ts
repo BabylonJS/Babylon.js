@@ -92,7 +92,6 @@ class _InstanceDataStorageRenderPass {
     public instancesData: Float32Array;
     public instancesPreviousData: Float32Array;
     public previousBatch: Nullable<_InstancesBatch>;
-    public sideOrientation: number;
     public previousRenderId: number;
 }
 
@@ -177,6 +176,8 @@ class _InternalMeshDataInfo {
     public _overrideRenderingFillMode: Nullable<number> = null;
 
     public _sideOrientation: number;
+
+    public _effectiveSideOrientation: number;
 }
 
 /**
@@ -1545,7 +1546,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._preActivateId = sceneRenderId;
-        this._getInstanceDataStorage().visibleInstances = null;
+        if (this.hasInstances) {
+            this._getInstanceDataStorage().visibleInstances = null;
+        }
         return this;
     }
 
@@ -1553,6 +1556,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public override _preActivateForIntermediateRendering(renderId: number): Mesh {
+        if (!this.hasInstances) {
+            return this;
+        }
         const instanceDataStorage = this._getInstanceDataStorage();
         if (instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
@@ -2686,12 +2692,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (mainDeterminant < 0) {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             }
-            this._getInstanceDataStorage().sideOrientation = sideOrientation!;
-        } else {
-            sideOrientation = this._getInstanceDataStorage().sideOrientation;
+            this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
+        } else if (this.hasInstances) {
+            sideOrientation = this._internalMeshDataInfo._effectiveSideOrientation;
         }
 
-        const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, sideOrientation);
+        const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
 
         if (this._internalMeshDataInfo._effectiveMaterial.forceDepthWrite) {
             engine.setDepthWrite(true);
