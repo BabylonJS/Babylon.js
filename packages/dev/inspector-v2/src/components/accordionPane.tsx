@@ -62,11 +62,6 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
     },
-    panelDiv: {
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-    },
 });
 
 export type AccordionPaneSectionProps = {

@@ -12,6 +12,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         rowGap: tokens.spacingVerticalM,
+        height: "100%",
     },
     panelDiv: {
         display: "flex",

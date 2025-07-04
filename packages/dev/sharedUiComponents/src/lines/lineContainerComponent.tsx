@@ -2,6 +2,8 @@ import * as React from "react";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { ISelectedLineContainer } from "./iSelectedLineContainer";
 import downArrow from "./downArrow.svg";
+import { AccordionSection } from "../fluent/primitives/accordion";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 interface ILineContainerComponentProps {
     selection?: ISelectedLineContainer;
@@ -69,7 +71,11 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         }
     }
 
-    override render() {
+    renderFluent() {
+        return <AccordionSection title={this.props.title}>{this.props.children}</AccordionSection>;
+    }
+
+    renderOriginal() {
         if (!this.state.isExpanded) {
             return (
                 <div className="paneContainer">
@@ -87,5 +93,9 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                 <div className={"paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "")}></div>
             </div>
         );
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }
