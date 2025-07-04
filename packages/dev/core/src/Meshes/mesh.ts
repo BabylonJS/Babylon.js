@@ -598,13 +598,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer(): Float32Array {
-        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId];
+        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0];
         return instanceDataStorage ? instanceDataStorage.instancesData : (undefined as any);
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
     public get previousWorldMatrixInstancedBuffer(): Float32Array {
-        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId];
+        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0];
         return instanceDataStorage ? instanceDataStorage.instancesPreviousData : (undefined as any);
     }
 
