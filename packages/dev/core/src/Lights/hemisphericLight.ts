@@ -81,7 +81,7 @@ export class HemisphericLight extends Light {
     public transferToEffect(_effect: Effect, lightIndex: string): HemisphericLight {
         const normalizeDirection = Vector3.Normalize(this.direction);
         this._uniformBuffer.updateFloat4("vLightDataA", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0, lightIndex);
-        this._uniformBuffer.updateColor3("vLightDataB", this.groundColor.scale(this.intensity), lightIndex);
+        this._uniformBuffer.updateColor4("vLightDataB", this.groundColor.scale(this.intensity), 1.0, lightIndex);
         return this;
     }
 
