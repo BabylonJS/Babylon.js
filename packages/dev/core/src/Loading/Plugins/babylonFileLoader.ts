@@ -424,10 +424,43 @@ const LoadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         }
 
         // Animation Groups
-        if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null) {
+        if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null && parsedData.animationGroups.length) {
+            // Build the nodeMap only for scenes with animationGroups
+            const nodeMap = new Map<Node["id"], Node>();
+            // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
+            // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
+            for (let index = 0; index < scene.meshes.length; index++) {
+                // This follows the behavior of scene.getXXXById, which picks the first match
+                if (!nodeMap.has(scene.meshes[index].id)) {
+                    nodeMap.set(scene.meshes[index].id, scene.meshes[index]);
+                }
+            }
+            for (let index = 0; index < scene.transformNodes.length; index++) {
+                if (!nodeMap.has(scene.transformNodes[index].id)) {
+                    nodeMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
+                }
+            }
+            for (let index = 0; index < scene.lights.length; index++) {
+                if (!nodeMap.has(scene.lights[index].id)) {
+                    nodeMap.set(scene.lights[index].id, scene.lights[index]);
+                }
+            }
+            for (let index = 0; index < scene.cameras.length; index++) {
+                if (!nodeMap.has(scene.cameras[index].id)) {
+                    nodeMap.set(scene.cameras[index].id, scene.cameras[index]);
+                }
+            }
+            for (let skeletonIndex = 0; skeletonIndex < scene.skeletons.length; skeletonIndex++) {
+                const skeleton = scene.skeletons[skeletonIndex];
+                for (let boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (!nodeMap.has(skeleton.bones[boneIndex].id)) {
+                        nodeMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
+                    }
+                }
+            }
             for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                 const parsedAnimationGroup = parsedData.animationGroups[index];
-                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene);
+                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene, nodeMap);
                 container.animationGroups.push(animationGroup);
                 animationGroup._parentContainer = container;
                 log += index === 0 ? "\n\tAnimationGroups:" : "";
