@@ -13,9 +13,14 @@ export type ToolHostProps = {
      * Can be set to true to disable the copy button in the tool's property lines. Default is false (copy enabled)
      */
     disableCopy?: boolean;
+
+    /**
+     * Name of the tool displayed in the UX
+     */
+    toolName: string;
 };
 
-export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean } as const);
+export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string } as const);
 
 /**
  * For tools which are ready to move over the fluent, wrap the root of the tool (or the panel which you want fluentized) with this component
@@ -25,13 +30,17 @@ export const ToolContext = createContext({ useFluent: false as boolean, disableC
  */
 export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProps>> = (props) => {
     const url = new URL(window.location.href);
-    const enableFluent = url.searchParams.has("newUX") || url.hash.includes("newUX");
-
-    return enableFluent ? (
+    const useFluent = url.searchParams.has("newUX") || url.hash.includes("newUX");
+    const contextValue = {
+        useFluent,
+        disableCopy: !!props.disableCopy,
+        toolName: props.toolName,
+    };
+    return useFluent ? (
         <FluentProvider theme={props.customTheme || webDarkTheme}>
-            <ToolContext.Provider value={{ useFluent: true, disableCopy: !!props.disableCopy }}>{props.children}</ToolContext.Provider>
+            <ToolContext.Provider value={contextValue}>{props.children}</ToolContext.Provider>
         </FluentProvider>
     ) : (
-        props.children
+        <ToolContext.Provider value={contextValue}>{props.children}</ToolContext.Provider>
     );
 };
