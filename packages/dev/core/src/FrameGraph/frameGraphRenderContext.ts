@@ -246,6 +246,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      */
     public render(object: Layer | ObjectRenderer | UtilityLayerRenderer, viewportWidth?: number, viewportHeight?: number): void {
         if (FrameGraphRenderContext._IsObjectRenderer(object)) {
+            this._scene._intermediateRendering = true;
             if (object.shouldRender()) {
                 this._scene.incrementRenderId();
                 this._scene.resetCachedMaterial();
@@ -260,6 +261,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
                 object.finishRender();
             }
+            this._scene._intermediateRendering = false;
         } else {
             this._applyRenderTarget();
             object.render();
