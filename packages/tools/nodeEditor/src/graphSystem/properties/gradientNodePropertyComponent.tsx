@@ -2,15 +2,17 @@ import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
-import { GradientStepComponent } from "./gradientStepComponent";
+// import { GradientStepComponent } from "./gradientStepComponent";
 import { Color3 } from "core/Maths/math.color";
 import { GetGeneralProperties } from "./genericNodePropertyComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+// import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { LineList } from "shared-ui-components/fluent/hoc/lineList";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { Gradient } from "shared-ui-components/fluent/hoc/gradient";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
@@ -138,7 +140,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                         propertyName={""}
                     />
                 </LineContainerComponent>
-                <LineContainerComponent title="STEPS">
+                {/* <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {gradientBlock.colorSteps.map((c, i) => {
                         return (
@@ -154,6 +156,27 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             />
                         );
                     })}
+                </LineContainerComponent> */}
+                <LineContainerComponent title="STEPS2">
+                    <LineList
+                        items={gradientBlock.colorSteps.map((step, index) => ({
+                            id: index,
+                            data: step,
+                        }))}
+                        renderItem={(item) => (
+                            <Gradient
+                                onChange={(gradient) => {
+                                    item.data.step = gradient.step;
+                                    item.data.color = gradient.color;
+                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
+                                }}
+                                value={{ step: item.data.step, color: item.data.color }}
+                            />
+                        )}
+                        onDelete={(item) => this.deleteStep(item.data)}
+                        onAdd={(item?) => (item ? this.copyStep(item.data) : this.addNewStep())}
+                        addButtonLabel="Add new step"
+                    />
                 </LineContainerComponent>
             </PropertyTabComponentBase>
         );

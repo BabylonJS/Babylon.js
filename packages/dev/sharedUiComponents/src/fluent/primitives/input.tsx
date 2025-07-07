@@ -11,8 +11,7 @@ const useInputStyles = makeStyles({
     },
     float: {
         height: "auto",
-        width: "80px", // Fixed width for number input
-        flexShrink: 0,
+        minWidth: "20px", // Fixed width for number input
     },
 });
 

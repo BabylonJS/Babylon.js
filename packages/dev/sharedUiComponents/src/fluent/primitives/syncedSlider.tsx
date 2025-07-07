@@ -17,7 +17,7 @@ const useSyncedSliderStyles = makeStyles({
         minWidth: 0, // Allow shrink if needed
     },
     input: {
-        width: "80px", // Fixed width for number input
+        // width: "80px", // Fixed width for number input
         flexShrink: 0,
     },
 });
