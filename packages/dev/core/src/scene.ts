@@ -1631,7 +1631,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _renderId = 0;
     private _frameId = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
-    private _intermediateRendering = false;
+    /** @internal */
+    public _intermediateRendering = false;
     private _defaultFrameBufferCleared = false;
 
     private _viewUpdateFlag = -1;
