@@ -319,7 +319,6 @@ export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> =
             <div
                 id={props.id}
                 className={styles["split-container"] + " " + props.className}
-                style={{ height: "100vh" }} // Temporary until fluent mergeStyles
                 ref={elementRef}
                 onPointerDown={(evt) => props.onPointerDown && props.onPointerDown(evt)}
                 onPointerMove={(evt) => props.onPointerMove && props.onPointerMove(evt)}
