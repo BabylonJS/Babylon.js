@@ -3,11 +3,7 @@
         //No light calculation
     #else
 
-        #ifdef CLUSTLIGHT{X}
-            vec4 diffuse{X} = vec4(1);
-        #else
-            vec4 diffuse{X} = light{X}.vLightDiffuse;
-        #endif
+        vec4 diffuse{X} = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
         #ifdef PBR
@@ -209,8 +205,8 @@
                     vReflectionInfos.y
                 #endif
                 );
-            #elif defined(CLUSTLIGHT{X})
-                info = computeClusteredLighting(light{X}.vLights, CLUSTLIGHT_COUNT{X}, viewDirectionW, normalW, diffuse{X}, glossiness);
+            #elif defined(CLUSTLIGHT{X}) && defined(CLUSTLIGHTSUPPORTED)
+                info = computeClusteredLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLights, diffuse{X}, light{X}.vLightSpecular.rgb, glossiness);
             #endif
         #endif
 

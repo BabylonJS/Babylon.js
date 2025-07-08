@@ -1,7 +1,7 @@
 struct ClusteredLight {
-	vec4 vLightData; // Position
-	vec4 vLightDiffuse;
-	vec4 vLightSpecular;
-	vec4 vLightDirection;
-	vec4 vLightFalloff;
+	vec4 position;
+	vec4 direction;
+	vec4 diffuse;
+	vec4 specular;
+	vec4 falloff;
 };

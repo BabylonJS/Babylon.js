@@ -180,16 +180,21 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 // End Area Light
 #endif
 
-lightingInfo computeClusteredLighting(ClusteredLight lights[32], int lightCount, vec3 viewDirectionW, vec3 vNormal, vec4 diffuseColor, float glossiness) {
-	lightingInfo aggInfo;
-	// TODO: only do this on WebGL 2
-	for (int i = 0; i < lightCount; i += 1) {
-		vec4 lightDiffuse = lights[i].vLightDiffuse * diffuseColor;
-		lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lights[i].vLightData, lights[i].vLightDirection, lightDiffuse.rgb, lights[i].vLightSpecular.rgb, lightDiffuse.a, glossiness);
-		aggInfo.diffuse += info.diffuse;
+#ifdef CLUSTLIGHTSUPPORTED
+lightingInfo computeClusteredLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, ClusteredLight lights[32], vec4 diffuseScale, vec3 specularScale, float glossiness) {
+	lightingInfo result;
+	int len = int(lightData.x);
+
+	// TODO: Dynamic for loops aren't supported on WebGL 1
+	for (int i = 0; i < len; i += 1) {
+		vec4 diffuse = lights[i].diffuse * diffuseScale;
+		vec3 specular = lights[i].specular.rgb * specularScale;
+		lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse.rgb, specular, diffuse.a, glossiness);
+		result.diffuse += info.diffuse;
 		#ifdef SPECULARTERM
-			aggInfo.specular += info.specular;
+			result.specular += info.specular;
 		#endif
 	}
-	return aggInfo;
+	return result;
 }
+#endif

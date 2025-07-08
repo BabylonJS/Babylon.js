@@ -40,7 +40,6 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
-    private _suffixUbo = false;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -539,9 +538,8 @@ export class UniformBuffer {
 
     /**
      * Effectively creates the WebGL Uniform Buffer, once layout is completed with `addUniform`.
-     * @param suffixUbo Set to true to apply the suffixes to UBOs as well
      */
-    public create(suffixUbo = false): void {
+    public create(): void {
         if (this._noUBO) {
             return;
         }
@@ -556,7 +554,6 @@ export class UniformBuffer {
         this._rebuild();
 
         this._needSync = true;
-        this._suffixUbo = suffixUbo;
     }
 
     // The result of this method is used for debugging purpose, as part of the buffer name
@@ -893,10 +890,7 @@ export class UniformBuffer {
         this._currentEffect.setFloat4(name + suffix, x, y, z, w);
     }
 
-    private _updateFloat4ForUniform(name: string, x: number, y: number, z: number, w: number, suffix = "") {
-        if (this._suffixUbo) {
-            name += suffix;
-        }
+    private _updateFloat4ForUniform(name: string, x: number, y: number, z: number, w: number) {
         UniformBuffer._TempBuffer[0] = x;
         UniformBuffer._TempBuffer[1] = y;
         UniformBuffer._TempBuffer[2] = z;
@@ -998,10 +992,7 @@ export class UniformBuffer {
         this._currentEffect.setDirectColor4(name + suffix, color);
     }
 
-    private _updateColor4ForUniform(name: string, color: IColor3Like, alpha: number, suffix = "") {
-        if (this._suffixUbo) {
-            name += suffix;
-        }
+    private _updateColor4ForUniform(name: string, color: IColor3Like, alpha: number) {
         UniformBuffer._TempBuffer[0] = color.r;
         UniformBuffer._TempBuffer[1] = color.g;
         UniformBuffer._TempBuffer[2] = color.b;

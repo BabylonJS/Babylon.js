@@ -297,6 +297,7 @@ export class NativeEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
+            blendFloat: false,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             textureFloat: true,

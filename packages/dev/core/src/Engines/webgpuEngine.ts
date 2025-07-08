@@ -877,6 +877,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
+            blendFloat: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Blendable) >= 0,
             supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
             rg11b10ufColorRenderable: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) >= 0,
             textureFloat: true,

@@ -80,6 +80,8 @@ export interface EngineCapabilities {
     depthTextureExtension: boolean;
     /** Defines if float color buffer are supported */
     colorBufferFloat: boolean;
+    /** Defines if float color blending is supported */
+    blendFloat: boolean;
     /** Defines if half float color buffer are supported */
     colorBufferHalfFloat?: boolean;
     /** Gets disjoint timer query extension (null if not supported) */
