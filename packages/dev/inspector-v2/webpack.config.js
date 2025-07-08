@@ -38,13 +38,13 @@ module.exports = (env) => {
                 tsOptions: {
                     configFile: "tsconfig.build.json",
                     getCustomTransformers: () => ({
-                        before: [ReactRefreshTypeScript()].filter(Boolean),
+                        before: [ReactRefreshTypeScript()],
                     }),
                     transpileOnly: true,
                 },
             }),
         },
 
-        plugins: [new ReactRefreshWebpackPlugin()].filter(Boolean),
+        plugins: [new ReactRefreshWebpackPlugin()],
     };
 };

@@ -1,6 +1,8 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
     const commonConfig = {
@@ -10,6 +12,7 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.playground.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
@@ -67,6 +70,9 @@ module.exports = (env) => {
                     compilerOptions: {
                         rootDir: "../../",
                     },
+                    getCustomTransformers: () => ({
+                        before: [!env.production && ReactRefreshTypeScript()].filter(Boolean),
+                    }),
                 },
             }),
         },
@@ -75,7 +81,8 @@ module.exports = (env) => {
                 // publicPath: "public/",
                 languages: ["typescript", "javascript"],
             }),
-        ],
+            !env.production && new ReactRefreshWebpackPlugin(),
+        ].filter(Boolean),
     };
     return commonConfig;
 };

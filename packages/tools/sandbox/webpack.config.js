@@ -1,5 +1,7 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
     const commonConfig = {
@@ -9,6 +11,7 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.sandbox.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
@@ -50,9 +53,18 @@ module.exports = (env) => {
             // React, react dom etc'
         ],
         module: {
-            rules: webpackTools.getRules(),
+            rules: webpackTools.getRules({
+                includeAssets: true,
+                includeCSS: true,
+                sideEffects: true,
+                tsOptions: {
+                    getCustomTransformers: () => ({
+                        before: [!env.production && ReactRefreshTypeScript()].filter(Boolean),
+                    }),
+                },
+            }),
         },
-        plugins: [],
+        plugins: [!env.production && new ReactRefreshWebpackPlugin()].filter(Boolean),
     };
     return commonConfig;
 };
