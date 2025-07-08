@@ -6,7 +6,5 @@ const { execSync } = require("child_process");
 
 const files = fs.readdirSync(path.join(__dirname, "src"));
 files.forEach((file) => {
-    if (file === "sceneWithInspector.ts") {
-        execSync(`webpack --env entry=${path.basename(file, ".ts")}`, { stdio: "inherit" });
-    }
+    execSync(`webpack --env entry=${path.basename(file, ".ts")}`, { stdio: "inherit" });
 });
