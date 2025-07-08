@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 
-import type { TransformNode } from "core/index";
+import type { PhysicsBody } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { useCallback } from "react";
@@ -10,7 +10,7 @@ import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsE
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-import { useProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
+import { useVector3Property } from "../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { useObservableState } from "../../hooks/observableHooks";
 
@@ -28,18 +28,14 @@ const PrestepOptions = [
     { label: "Action", value: PhysicsPrestepType.ACTION },
 ] as const satisfies readonly DropdownOption[];
 
-export type PhysicsTransformNode = TransformNode & { physicsBody: NonNullable<TransformNode["physicsBody"]> };
-
 /**
  * Physics properties
  * @param props transform node
  * @returns controls
  */
-export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTransformNode }> = (props) => {
-    const { node } = props;
+export const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (props) => {
+    const { physicsBody } = props;
 
-    // TODO: This component will only even be rendered if physicsBody is defined, so it doesn't really handle physicsBody changing to/from undefined.
-    const physicsBody = useProperty(node, "physicsBody");
     const massProperties = useObservableState(
         useCallback(() => physicsBody.getMassProperties(), [physicsBody]),
         useInterceptObservable("function", physicsBody, "setMassProperties")
@@ -82,7 +78,7 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTr
                 options={PrestepOptions}
                 value={prestepType}
                 onChange={(value) => {
-                    return node.physicsBody.setPrestepType(value as PhysicsPrestepType);
+                    return physicsBody.setPrestepType(value as PhysicsPrestepType);
                 }}
             />
             {/* Linear Damping */}
@@ -118,21 +114,21 @@ export const TransformNodePhysicsProperties: FunctionComponent<{ node: PhysicsTr
                         min={0}
                         step={0.01}
                         onChange={(value) => {
-                            node.physicsBody.setMassProperties({ ...massProperties, mass: value });
+                            physicsBody.setMassProperties({ ...massProperties, mass: value });
                         }}
                     />
                     <Vector3PropertyLine
                         label="Center of Mass"
                         value={centerOfMass}
                         onChange={(value) => {
-                            node.physicsBody.setMassProperties({ ...massProperties, centerOfMass: value });
+                            physicsBody.setMassProperties({ ...massProperties, centerOfMass: value });
                         }}
                     />
                     <Vector3PropertyLine
                         label="Inertia"
                         value={inertia}
                         onChange={(value) => {
-                            node.physicsBody.setMassProperties({ ...massProperties, inertia: value });
+                            physicsBody.setMassProperties({ ...massProperties, inertia: value });
                         }}
                     />
                 </>
