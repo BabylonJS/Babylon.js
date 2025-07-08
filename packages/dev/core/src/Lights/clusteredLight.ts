@@ -9,23 +9,31 @@ import { Light } from "./light";
 import { PointLight } from "./pointLight";
 import { SpotLight } from "./spotLight";
 
-const MAX_CLUSTERED_LIGHTS = 32;
-
 export class ClusteredLight extends Light {
-    private static _IsEngineSupported(engine: AbstractEngine): boolean {
-        if (engine.isWebGPU) {
-            return true;
-        } else if (engine instanceof ThinEngine && engine.version > 1) {
+    private static _GetEngineMaxLights(engine: AbstractEngine): number {
+        const caps = engine._caps;
+        if (!engine.supportsUniformBuffers) {
+            return 0;
+        } else if (engine.isWebGPU) {
+            // On WebGPU we use atomic writes to storage textures
+            return 32;
+        } else if (engine instanceof ThinEngine && engine._webGLVersion > 1) {
             // On WebGL 2 we use additive float blending as the light mask
-            return engine._caps.colorBufferFloat && engine._caps.blendFloat;
+            if (!caps.colorBufferFloat || !caps.blendFloat) {
+                return 0;
+            }
+            // Due to the use of floats we want to limit lights to the precision of floats
+            const gl = engine._gl;
+            const format = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, caps.highPrecisionShaderSupported ? gl.HIGH_FLOAT : gl.MEDIUM_FLOAT);
+            return format?.precision ?? 0;
         } else {
             // WebGL 1 is not supported due to lack of dynamic for loops
-            return false;
+            return 0;
         }
     }
 
     public static IsLightSupported(light: Light): boolean {
-        if (!ClusteredLight._IsEngineSupported(light.getEngine())) {
+        if (ClusteredLight._GetEngineMaxLights(light.getEngine()) === 0) {
             return false;
         } else if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
             // Shadows are not supported
@@ -46,14 +54,19 @@ export class ClusteredLight extends Light {
         return this._lights;
     }
 
+    public readonly maxLights: number;
+
     public get isSupported(): boolean {
-        return ClusteredLight._IsEngineSupported(this.getEngine());
+        return this.maxLights > 0;
     }
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
-        for (const light of lights) {
-            this.addLight(light);
+        this.maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
+        if (this.maxLights > 0) {
+            for (const light of lights) {
+                this.addLight(light);
+            }
         }
     }
 
@@ -69,10 +82,13 @@ export class ClusteredLight extends Light {
     }
 
     protected _buildUniformLayout(): void {
+        // We can't use `this.maxLights` since this will get called during construction
+        const maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
+
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
         this._uniformBuffer.addUniform("vLightSpecular", 4);
-        for (let i = 0; i < MAX_CLUSTERED_LIGHTS; i += 1) {
+        for (let i = 0; i < maxLights; i += 1) {
             // These technically don't have to match the field name but also why not
             const struct = `vLights[${i}].`;
             this._uniformBuffer.addUniform(struct + "position", 4);
@@ -87,7 +103,7 @@ export class ClusteredLight extends Light {
     }
 
     public transferToEffect(effect: Effect, lightIndex: string): Light {
-        const len = Math.min(this._lights.length, MAX_CLUSTERED_LIGHTS);
+        const len = Math.min(this._lights.length, this.maxLights);
         this._uniformBuffer.updateFloat4("vLightData", len, 0, 0, 0, lightIndex);
 
         for (let i = 0; i < len; i += 1) {
@@ -105,7 +121,7 @@ export class ClusteredLight extends Light {
                 direction = Vector3.Normalize(light.direction);
             }
             this._uniformBuffer.updateFloat4(struct + "position", position.x, position.y, position.z, spotLight?.exponent ?? 0, lightIndex);
-            this._uniformBuffer.updateFloat4(struct + "direction", direction.x, direction.y, direction.z, spotLight?._cosHalfAngle ?? 0, lightIndex);
+            this._uniformBuffer.updateFloat4(struct + "direction", direction.x, direction.y, direction.z, spotLight?._cosHalfAngle ?? -1, lightIndex);
 
             const scaledIntensity = light.getScaledIntensity();
             light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
@@ -132,6 +148,6 @@ export class ClusteredLight extends Light {
 
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["CLUSTLIGHT" + lightIndex] = true;
-        defines["CLUSTLIGHTSUPPORTED"] = this.isSupported;
+        defines["CLUSTLIGHT_MAX"] = this.maxLights;
     }
 }

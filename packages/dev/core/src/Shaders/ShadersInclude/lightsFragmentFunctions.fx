@@ -180,12 +180,11 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 // End Area Light
 #endif
 
-#ifdef CLUSTLIGHTSUPPORTED
-lightingInfo computeClusteredLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, ClusteredLight lights[32], vec4 diffuseScale, vec3 specularScale, float glossiness) {
+#if defined(CLUSTLIGHT_MAX) && CLUSTLIGHT_MAX > 0
+lightingInfo computeClusteredLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, ClusteredLight lights[CLUSTLIGHT_MAX], vec4 diffuseScale, vec3 specularScale, float glossiness) {
 	lightingInfo result;
 	int len = int(lightData.x);
 
-	// TODO: Dynamic for loops aren't supported on WebGL 1
 	for (int i = 0; i < len; i += 1) {
 		vec4 diffuse = lights[i].diffuse * diffuseScale;
 		vec3 specular = lights[i].specular.rgb * specularScale;

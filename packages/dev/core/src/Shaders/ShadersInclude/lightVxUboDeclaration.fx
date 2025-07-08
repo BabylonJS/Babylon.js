@@ -13,7 +13,7 @@
 		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
 		#elif defined(CLUSTLIGHT{X})
-			ClusteredLight vLights[32];
+			ClusteredLight vLights[CLUSTLIGHT_MAX];
 		#endif
 		#if defined(AREALIGHT{X})
 			vec4 vLightWidth;
