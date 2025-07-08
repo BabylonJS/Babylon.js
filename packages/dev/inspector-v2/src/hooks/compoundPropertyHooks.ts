@@ -1,17 +1,17 @@
-import type { Vector3, Color3, Color4, Nullable, Quaternion } from "core/index";
+import type { Vector3, Color3, Color4, Quaternion } from "core/index";
 
 import { useCallback } from "react";
 
 import { useInterceptObservable } from "./instrumentationHooks";
 import { useObservableState } from "./observableHooks";
 
-type PropertyKeys<TargetT, PropertyT> = { [PropertyKeyT in keyof TargetT]: TargetT[PropertyKeyT] extends Nullable<PropertyT> ? PropertyKeyT : never }[keyof TargetT];
+type PropertyKeys<TargetT, PropertyT> = { [PropertyKeyT in keyof TargetT]: TargetT[PropertyKeyT] extends PropertyT | null | undefined ? PropertyKeyT : never }[keyof TargetT];
 
 export function useProperty<TargetT extends object, PropertyKeyT extends keyof TargetT>(target: TargetT, propertyKey: PropertyKeyT): TargetT[PropertyKeyT];
 export function useProperty<TargetT extends object, PropertyKeyT extends keyof TargetT>(
     target: TargetT | null | undefined,
     propertyKey: PropertyKeyT
-): TargetT[PropertyKeyT] | null;
+): TargetT[PropertyKeyT] | undefined;
 /**
  * Translates a property value to react state, updating the state whenever the property changes.
  * @param target The object containing the property to observe.
@@ -20,7 +20,7 @@ export function useProperty<TargetT extends object, PropertyKeyT extends keyof T
  */
 export function useProperty<TargetT extends object, PropertyKeyT extends keyof TargetT>(target: TargetT | null | undefined, propertyKey: PropertyKeyT) {
     return useObservableState(
-        useCallback(() => (target ? target[propertyKey] : null), [target, propertyKey]),
+        useCallback(() => (target ? target[propertyKey] : undefined), [target, propertyKey]),
         useInterceptObservable("property", target, propertyKey)
     );
 }
@@ -29,7 +29,7 @@ export function useVector3Property<TargetT extends object, PropertyKeyT extends 
 export function useVector3Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Vector3>>(
     target: TargetT | null | undefined,
     propertyKey: PropertyKeyT
-): TargetT[PropertyKeyT] | null;
+): TargetT[PropertyKeyT] | undefined;
 /**
  * Translates a Vector3 property value to react state, updating the state whenever the property changes or when the x/y/z components of the Vector3 change.
  * @param target The object containing the property to observe.
@@ -48,7 +48,7 @@ export function useColor3Property<TargetT extends object, PropertyKeyT extends P
 export function useColor3Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Color3>>(
     target: TargetT | null | undefined,
     propertyKey: PropertyKeyT
-): TargetT[PropertyKeyT] | null;
+): TargetT[PropertyKeyT] | undefined;
 /**
  * Translates a Color3 property value to react state, updating the state whenever the property changes or when the r/g/b components of the Color3 change.
  * @param target The object containing the property to observe.
@@ -90,7 +90,7 @@ export function useQuaternionProperty<TargetT extends object, PropertyKeyT exten
 export function useQuaternionProperty<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Quaternion>>(
     target: TargetT | null | undefined,
     propertyKey: PropertyKeyT
-): TargetT[PropertyKeyT] | null;
+): TargetT[PropertyKeyT] | undefined;
 /**
  * Translates a Quaternion property value to react state, updating the state whenever the property changes or when the x/y/z/w components of the Quaternion change.
  * @param target The object containing the property to observe.
