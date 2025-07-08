@@ -20,12 +20,13 @@ export const TransformPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
 
         const contentRegistration = propertiesService.addSectionContent({
             key: "Transform Properties",
+            // TransformNode and Bone don't share a common base class, but both have the same transform related properties.
             predicate: (entity: unknown) => entity instanceof TransformNode || entity instanceof Bone,
             content: [
                 // "TRANSFORM" section.
                 {
                     section: TransformPropertiesSectionIdentity,
-                    order: 0,
+                    order: 1,
                     component: ({ context }) => <TransformProperties transform={context} settings={settingsContent} />,
                 },
             ],
