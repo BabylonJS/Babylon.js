@@ -654,7 +654,7 @@ export class GLTFExporter {
         }
 
         const rotationQuaternion =
-            babylonTransformNode.rotationQuaternion ||
+            babylonTransformNode.rotationQuaternion?.clone() ||
             Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
 
         if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
