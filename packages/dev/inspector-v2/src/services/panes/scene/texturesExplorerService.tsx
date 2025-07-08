@@ -28,7 +28,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
 
                 return {
                     get name() {
-                        return texture.name;
+                        return texture.displayName || texture.name || `${texture.constructor?.name || "Unnamed Texture"} (${texture.uniqueId})`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

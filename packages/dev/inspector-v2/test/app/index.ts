@@ -71,7 +71,7 @@ async function createPhysics() {
                 event.preventDefault();
                 isDropping = true;
                 try {
-                    assetContainer.removeAllFromScene();
+                    assetContainer.dispose();
                     assetContainer = await LoadAssetContainerAsync(file, scene);
                     assetContainer.addAllToScene();
                     createCamera();

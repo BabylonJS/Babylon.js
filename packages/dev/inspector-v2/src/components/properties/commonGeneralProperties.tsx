@@ -15,6 +15,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
     const { commonEntity } = props;
 
     const name = useProperty(commonEntity, "name");
+    const className = commonEntity.constructor?.name || commonEntity.getClassName?.();
 
     return (
         <>
@@ -25,9 +26,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
             {commonEntity.uniqueId !== undefined && (
                 <TextPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId.toString()} />
             )}
-            {commonEntity.getClassName !== undefined && (
-                <TextPropertyLine key="EntityClassName" label="Class" description="The class of the node." value={commonEntity.getClassName()} />
-            )}
+            {className !== undefined && <TextPropertyLine key="EntityClassName" label="Class" description="The class of the node." value={className} />}
         </>
     );
 };
