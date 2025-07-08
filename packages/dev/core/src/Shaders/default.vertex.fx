@@ -58,6 +58,7 @@ varying vec4 vColor;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
+#include<lightClusteredDeclaration>
 #include<__decl__lightVxFragment>[0..maxSimultaneousLights]
 
 #include<morphTargetsVertexGlobalDeclaration>

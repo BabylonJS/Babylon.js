@@ -179,3 +179,17 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 
 // End Area Light
 #endif
+
+lightingInfo computeClusteredLighting(ClusteredLight lights[32], int lightCount, vec3 viewDirectionW, vec3 vNormal, vec4 diffuseColor, float glossiness) {
+	lightingInfo aggInfo;
+	// TODO: only do this on WebGL 2
+	for (int i = 0; i < lightCount; i += 1) {
+		vec4 lightDiffuse = lights[i].vLightDiffuse * diffuseColor;
+		lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lights[i].vLightData, lights[i].vLightDirection, lightDiffuse.rgb, lights[i].vLightSpecular.rgb, lightDiffuse.a, glossiness);
+		aggInfo.diffuse += info.diffuse;
+		#ifdef SPECULARTERM
+			aggInfo.specular += info.specular;
+		#endif
+	}
+	return aggInfo;
+}

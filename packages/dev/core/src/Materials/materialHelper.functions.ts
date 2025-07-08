@@ -577,6 +577,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["DIRLIGHT" + index] = false;
             defines["SPOTLIGHT" + index] = false;
             defines["AREALIGHT" + index] = false;
+            defines["CLUSTLIGHT" + index] = false;
             defines["SHADOW" + index] = false;
             defines["SHADOWCSM" + index] = false;
             defines["SHADOWCSMDEBUG" + index] = false;

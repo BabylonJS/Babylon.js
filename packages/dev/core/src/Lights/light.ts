@@ -393,7 +393,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param lightIndex The index of the light in the effect to update
      * @returns The light
      */
-    public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
+    public abstract transferToEffect(effect: Effect, lightIndex: string, uniformBuffer?: UniformBuffer): Light;
 
     /**
      * Sets the passed Effect "effect" with the Light textures.
@@ -417,29 +417,40 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
         const iAsString = lightIndex.toString();
-        let needUpdate = false;
 
         this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+        const needUpdate = this._bindLightToUniform(lightIndex, scene, effect, this._uniformBuffer, useSpecular, receiveShadows);
 
-        if (this._renderId !== scene.getRenderId() || this._lastUseSpecular !== useSpecular || !this._uniformBuffer.useUbo) {
+        // Textures might still need to be rebound.
+        this.transferTexturesToEffect(effect, iAsString);
+
+        if (needUpdate) {
+            this._uniformBuffer.update();
+        } else {
+            this._uniformBuffer.bindUniformBuffer();
+        }
+    }
+
+    public _bindLightToUniform(lightIndex: number, scene: Scene, effect: Effect, uniformBuffer: UniformBuffer, useSpecular: boolean, receiveShadows = true): boolean {
+        const iAsString = lightIndex.toString();
+        let needUpdate = false;
+
+        if (this._renderId !== scene.getRenderId() || this._lastUseSpecular !== useSpecular || !uniformBuffer.useUbo) {
             this._renderId = scene.getRenderId();
             this._lastUseSpecular = useSpecular;
 
             const scaledIntensity = this.getScaledIntensity();
 
-            this.transferToEffect(effect, iAsString);
+            this.transferToEffect(effect, iAsString, uniformBuffer);
 
             this.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            this._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], this.range, iAsString);
+            uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], this.range, iAsString);
             if (useSpecular) {
                 this.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-                this._uniformBuffer.updateColor4("vLightSpecular", TmpColors.Color3[1], this.radius, iAsString);
+                uniformBuffer.updateColor4("vLightSpecular", TmpColors.Color3[1], this.radius, iAsString);
             }
             needUpdate = true;
         }
-
-        // Textures might still need to be rebound.
-        this.transferTexturesToEffect(effect, iAsString);
 
         // Shadows
         if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
@@ -450,11 +461,7 @@ export abstract class Light extends Node implements ISortableLight {
             }
         }
 
-        if (needUpdate) {
-            this._uniformBuffer.update();
-        } else {
-            this._uniformBuffer.bindUniformBuffer();
-        }
+        return needUpdate;
     }
 
     /**

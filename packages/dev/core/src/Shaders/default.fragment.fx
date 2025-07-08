@@ -32,6 +32,7 @@ varying vec4 vColor;
 #include<helperFunctions>
 
 // Lights
+#include<lightClusteredDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
 #include<lightsFragmentFunctions>

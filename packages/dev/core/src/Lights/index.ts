@@ -8,4 +8,5 @@ export * from "./pointLight";
 export * from "./spotLight";
 export * from "./areaLight";
 export * from "./rectAreaLight";
+export * from "./clusteredLight";
 export * from "./IES/iesLoader";

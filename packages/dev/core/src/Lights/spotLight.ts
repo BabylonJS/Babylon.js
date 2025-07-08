@@ -422,24 +422,25 @@ export class SpotLight extends ShadowLight {
      * Sets the passed Effect object with the SpotLight transformed position (or position if not parented) and normalized direction.
      * @param effect The effect to update
      * @param lightIndex The index of the light in the effect to update
+     * @param uniformBuffer The uniform buffer to update
      * @returns The spot light
      */
-    public transferToEffect(effect: Effect, lightIndex: string): SpotLight {
+    public transferToEffect(effect: Effect, lightIndex: string, uniformBuffer = this._uniformBuffer): SpotLight {
         let normalizeDirection;
 
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent, lightIndex);
+            uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent, lightIndex);
 
             normalizeDirection = Vector3.Normalize(this.transformedDirection);
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, this.exponent, lightIndex);
+            uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, this.exponent, lightIndex);
 
             normalizeDirection = Vector3.Normalize(this.direction);
         }
 
-        this._uniformBuffer.updateFloat4("vLightDirection", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, this._cosHalfAngle, lightIndex);
+        uniformBuffer.updateFloat4("vLightDirection", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, this._cosHalfAngle, lightIndex);
 
-        this._uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, this._lightAngleScale, this._lightAngleOffset, lightIndex);
+        uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, this._lightAngleScale, this._lightAngleOffset, lightIndex);
         return this;
     }
 

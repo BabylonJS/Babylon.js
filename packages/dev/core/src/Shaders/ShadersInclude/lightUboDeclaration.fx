@@ -1,6 +1,9 @@
 ﻿#ifdef LIGHT{X}
 	uniform Light{X}
 	{
+		#ifdef CLUSTLIGHT{X}
+			ClusteredLight vLights[32];
+		#else
 		vec4 vLightData;
 
 		vec4 vLightDiffuse;
@@ -19,6 +22,7 @@
 		#endif
 		vec4 shadowsInfo;
 		vec2 depthValues;
+		#endif
 	} light{X};
 #ifdef IESLIGHTTEXTURE{X}
 	uniform sampler2D iesLightTexture{X};
