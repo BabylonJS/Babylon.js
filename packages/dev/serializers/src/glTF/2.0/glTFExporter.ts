@@ -64,7 +64,7 @@ import { IsNoopNode } from "../../exportUtils";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
 import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
@@ -1418,7 +1418,7 @@ export class GLTFExporter {
         if (materialIndex === undefined) {
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
             babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
-            if (babylonMaterial instanceof PBRMaterial) {
+            if (babylonMaterial instanceof PBRBaseMaterial) {
                 materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
                 materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
