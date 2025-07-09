@@ -4,6 +4,7 @@ import HavokPhysics from "@babylonjs/havok";
 
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { ParticleHelper } from "core/Particles/particleHelper";
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsAggregate, PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2";
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
@@ -28,6 +29,10 @@ const scene = new Scene(engine);
 (globalThis as any).scene = scene; // For debugging purposes
 
 let camera: Nullable<ArcRotateCamera> = null;
+
+const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
+newSystem.name = "CPU particle system";
+newSystem.start();
 
 function createCamera() {
     camera?.dispose();

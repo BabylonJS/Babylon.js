@@ -8,10 +8,11 @@ const useInputStyles = makeStyles({
     text: {
         height: "auto",
         textAlign: "right",
+        minWidth: "100px", // Min width for text input
     },
-    float: {
+    number: {
         height: "auto",
-        minWidth: "20px", // Fixed width for number input
+        minWidth: "40px", // Min width for number input
     },
 });
 
@@ -26,11 +27,9 @@ export type InputProps<T extends string | number> = BaseComponentProps<T> & {
  * @param props
  * @returns
  */
-export const Input: FunctionComponent<InputProps<string | number>> = (props) => {
+const Input: FunctionComponent<InputProps<string | number> & { type: "text" | "number" }> = (props) => {
     const classes = useInputStyles();
     const [value, setValue] = useState(props.value ?? "");
-
-    const type = typeof props.value === "number" ? "number" : "text";
 
     useEffect(() => {
         setValue(props.value ?? ""); // Update local state when props.value changes
@@ -38,7 +37,7 @@ export const Input: FunctionComponent<InputProps<string | number>> = (props) => 
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>, _: unknown) => {
         event.stopPropagation(); // Prevent event propagation
-        const value = type === "number" ? Number(event.target.value) : String(event.target.value);
+        const value = props.type === "number" ? Number(event.target.value) : String(event.target.value);
         props.onChange(value); // Call the original onChange handler passed as prop
         setValue(value); // Update local state with the new value
     };
@@ -50,12 +49,17 @@ export const Input: FunctionComponent<InputProps<string | number>> = (props) => 
     return (
         <FluentInput
             {...props}
-            type={type}
             size="small"
-            value={typeof value === "number" ? value.toFixed(2).toString() : value}
-            className={typeof props.value === "number" ? classes.float : classes.text}
+            value={value.toString()}
+            className={props.type === "number" ? classes.number : classes.text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
         />
     );
 };
+
+const NumberInputCast = Input as FunctionComponent<InputProps<number> & { type: "number" }>;
+const TextInputCast = Input as FunctionComponent<InputProps<string> & { type: "text" }>;
+
+export const NumberInput: FunctionComponent<InputProps<number>> = (props) => <NumberInputCast {...props} type="number" />;
+export const TextInput: FunctionComponent<InputProps<string>> = (props) => <TextInputCast {...props} type="text" />;

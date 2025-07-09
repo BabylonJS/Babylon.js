@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 
 import { List } from "../primitives/list";
@@ -18,18 +19,26 @@ type GradientListProps<T extends FactorGradient | Color3Gradient | Color4Gradien
     onChange: (newGradient: T) => void;
 };
 
+// Convert gradients to LineList items and sort by gradient value
+function GradientsToListItems(gradients: Nullable<Array<IValueGradient>>) {
+    return (
+        gradients?.map((gradient, index) => ({
+            id: index,
+            data: gradient,
+            sortBy: gradient.gradient,
+        })) || []
+    );
+}
+
 const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3Gradient | Color4Gradient> & { mode: GradientTypes }> = (props) => {
-    // Do I need any state within this component?
-    // TODO add slider option to not update until slider is released
-    const { gradients } = props;
+    const items = GradientsToListItems(props.gradients);
+
     const deleteStep = (step: FactorGradient | Color3Gradient | Color4Gradient) => {
-        if (gradients && gradients.indexOf(step) > -1) {
-            props.removeGradient(step);
-        }
+        props.removeGradient(step);
     };
 
     const addNewStep = () => {
-        if (!gradients || gradients.length === 0) {
+        if (items.length === 0) {
             props.addGradient(); // Default
         } else {
             switch (props.mode) {
@@ -52,19 +61,11 @@ const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3G
         }
     };
 
-    // Convert gradients to LineList items and sort by gradient value
-    const listItems: ListItem<IValueGradient>[] =
-        props.gradients?.map((gradient, index) => ({
-            id: index,
-            data: gradient,
-            sortBy: gradient.gradient,
-        })) || [];
-
     return (
         <div>
             <List
-                addButtonLabel={gradients && gradients.length > 0 ? `Add new ${props.label}` : `Use ${props.label}`}
-                items={listItems}
+                addButtonLabel={items.length > 0 ? `Add new ${props.label}` : `Use ${props.label}s`}
+                items={items}
                 onDelete={(item) => deleteStep(item.data)}
                 onAdd={addNewStep}
                 renderItem={(item) => {

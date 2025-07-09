@@ -1,5 +1,5 @@
 import { CopyRegular, DeleteRegular } from "@fluentui/react-icons";
-import { useEffect, type FunctionComponent, type ReactNode } from "react";
+import type { FunctionComponent, ReactNode } from "react";
 import { ButtonLine } from "../hoc/buttonLine";
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
@@ -25,7 +25,9 @@ const useListStyles = makeStyles({
         alignItems: "center",
         flexShrink: 0, // Prevent shrinking
     },
-    list: {},
+    list: {
+        padding: tokens.spacingVerticalS,
+    },
 });
 
 /**
@@ -56,12 +58,10 @@ type ListProps<T = any> = {
 export const List: FunctionComponent<ListProps<any>> = (props): React.ReactElement => {
     const { items, renderItem, onDelete, onAdd, addButtonLabel = "Add new item" } = props;
     const classes = useListStyles();
-    useEffect(() => {
-        // Do I need a state value to pass below?
-    }, [props.items, props.renderItem]);
+
     return (
         <div>
-            <ButtonLine label={addButtonLabel} onClick={() => onAdd()} />
+            <ButtonLine label={addButtonLabel} onClick={() => props.onAdd()} />
 
             <div className={classes.list}>
                 {items

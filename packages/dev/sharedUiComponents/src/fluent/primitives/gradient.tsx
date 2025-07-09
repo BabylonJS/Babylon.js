@@ -12,7 +12,7 @@ const useGradientStyles = makeStyles({
     container: {
         display: "flex",
         alignItems: "center",
-        gap: tokens.spacingHorizontalM,
+        gap: tokens.spacingHorizontalS,
         width: "100%",
     },
 });
@@ -45,10 +45,11 @@ const Gradient: FunctionComponent<BaseComponentProps<GradientProps<number | Colo
             )}
             {gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? (
                 <ColorPickerPopup value={gradient.value2} onChange={(color) => gradientChange({ ...gradient, value2: color })} />
-            ) : gradient.value2 ? (
+            ) : gradient.value2 !== undefined ? (
                 <SyncedSliderInput step={0.01} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} />
             ) : undefined}
-            <SyncedSliderInput min={0} max={1} step={0.01} value={gradient.step} onChange={(val) => gradientChange({ ...gradient, step: val })} />
+
+            <SyncedSliderInput notifyOnlyOnRelease={true} min={0} max={1} step={0.01} value={gradient.step} onChange={(val) => gradientChange({ ...gradient, step: val })} />
         </div>
     );
 };
