@@ -18,6 +18,7 @@ export class BaseSlider extends Control {
     private _isVertical = false;
     protected _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
     private _isThumbClamped = false;
+    private _dragOnly = false;
     protected _displayThumb = true;
     private _step = 0;
 
@@ -190,6 +191,21 @@ export class BaseSlider extends Control {
         this._markAsDirty();
     }
 
+    /** Gets or sets a value indicating whether the slider disables picking */
+    @serialize()
+    public get dragOnly(): boolean {
+        return this._dragOnly;
+    }
+
+    public set dragOnly(value: boolean) {
+        if (this._dragOnly === value) {
+            return;
+        }
+
+        this._dragOnly = value;
+        this._markAsDirty();
+    }
+
     /**
      * Creates a new BaseSlider
      * @param name defines the control name
@@ -310,10 +326,11 @@ export class BaseSlider extends Control {
         }
 
         this._pointerIsDown = true;
-
-        this._updateValueFromPointer(coordinates.x, coordinates.y);
-        this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownId = pointerId;
+        if (!this._dragOnly) {
+            this._updateValueFromPointer(coordinates.x, coordinates.y);
+            this._host._capturingControl[pointerId] = this;
+            this._lastPointerDownId = pointerId;
+        }
         return true;
     }
 
