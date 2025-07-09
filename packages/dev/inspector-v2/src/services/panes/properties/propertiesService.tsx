@@ -17,10 +17,17 @@ export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
 type PropertiesSectionContent<EntityT> = {
     /**
+     * A unique key for the the content.
+     */
+    key: string;
+
+    /**
      * A predicate function to determine if the content applies to the given entity.
      */
     predicate: (entity: unknown) => entity is EntityT;
-} & AccordionSectionContent<EntityT>;
+} & {
+    content: readonly Omit<AccordionSectionContent<EntityT>, "key">[];
+};
 
 /**
  * Allows new sections or content to be added to the properties pane.
@@ -61,7 +68,19 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
-                const applicableContent = entity ? sectionContent.filter((content) => content.predicate(entity)) : [];
+                const applicableContent = entity
+                    ? sectionContent
+                          .filter((section) => section.predicate(entity))
+                          .flatMap((section) => {
+                              return section.content.map((content) => {
+                                  return {
+                                      key: section.key,
+                                      section: content.section,
+                                      component: content.component,
+                                  };
+                              });
+                          })
+                    : [];
 
                 return <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />;
             },
