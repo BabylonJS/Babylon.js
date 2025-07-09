@@ -2,19 +2,28 @@ import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
-// import { GradientStepComponent } from "./gradientStepComponent";
+import { GradientStepComponent } from "./gradientStepComponent";
 import { Color3 } from "core/Maths/math.color";
 import { GetGeneralProperties } from "./genericNodePropertyComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-// import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { LineList } from "shared-ui-components/fluent/hoc/lineList";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import type { ListItem } from "shared-ui-components/fluent/primitives/list";
+import { List } from "shared-ui-components/fluent/primitives/list";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
-import { Gradient } from "shared-ui-components/fluent/hoc/gradient";
+import { ColorStepGradientComponent } from "shared-ui-components/fluent/primitives/gradient";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const TypeOptions = [
+    { label: "None", value: 0 },
+    { label: "Visible in the inspector", value: 1 },
+];
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;
 
@@ -96,13 +105,8 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
-    override render() {
+    renderOriginal() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
-
-        const typeOptions = [
-            { label: "None", value: 0 },
-            { label: "Visible in the inspector", value: 1 },
-        ];
 
         return (
             <PropertyTabComponentBase>
@@ -110,7 +114,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLine
                         label="Type"
-                        options={typeOptions}
+                        options={TypeOptions}
                         target={gradientBlock}
                         noDirectUpdate={true}
                         extractValue={(block: InputBlock) => {
@@ -140,7 +144,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                         propertyName={""}
                     />
                 </LineContainerComponent>
-                {/* <LineContainerComponent title="STEPS">
+                <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {gradientBlock.colorSteps.map((c, i) => {
                         return (
@@ -156,29 +160,58 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             />
                         );
                     })}
-                </LineContainerComponent> */}
-                <LineContainerComponent title="STEPS2">
-                    <LineList
+                </LineContainerComponent>
+            </PropertyTabComponentBase>
+        );
+    }
+
+    renderFluent() {
+        const gradientBlock = this.props.nodeData.data as GradientBlock;
+
+        return (
+            <PropertyTabComponentBase>
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+                <AccordionSection title="PROPERTIES">
+                    <LineContainerComponent title="Type">
+                        <NumberDropdownPropertyLine
+                            label="Type"
+                            options={TypeOptions}
+                            value={gradientBlock.visibleInInspector ? 1 : 0}
+                            onChange={(value: number) => {
+                                gradientBlock.visibleInInspector = value === 1;
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                            }}
+                        />
+                    </LineContainerComponent>
+                </AccordionSection>
+                <AccordionSection title="STEPS">
+                    <List
                         items={gradientBlock.colorSteps.map((step, index) => ({
                             id: index,
                             data: step,
+                            sortBy: step.step,
                         }))}
-                        renderItem={(item) => (
-                            <Gradient
-                                onChange={(gradient) => {
+                        renderItem={(item: ListItem<GradientBlockColorStep>) => (
+                            <ColorStepGradientComponent
+                                onChange={(gradient: GradientBlockColorStep) => {
                                     item.data.step = gradient.step;
                                     item.data.color = gradient.color;
                                     this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
                                 }}
-                                value={{ step: item.data.step, color: item.data.color }}
+                                value={item.data}
                             />
                         )}
                         onDelete={(item) => this.deleteStep(item.data)}
                         onAdd={(item?) => (item ? this.copyStep(item.data) : this.addNewStep())}
                         addButtonLabel="Add new step"
                     />
-                </LineContainerComponent>
+                </AccordionSection>
             </PropertyTabComponentBase>
         );
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{(context) => (context.useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

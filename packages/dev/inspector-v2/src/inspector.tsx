@@ -26,6 +26,7 @@ import { PropertiesServiceDefinition } from "./services/panes/properties/propert
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
@@ -200,6 +201,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SpotLightPropertiesServiceDefinition,
             ShadowLightPropertiesServiceDefinition,
             SpritePropertiesServiceDefinition,
+            ParticleSystemPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

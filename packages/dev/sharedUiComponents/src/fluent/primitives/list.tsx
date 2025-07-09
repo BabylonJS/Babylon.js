@@ -1,29 +1,9 @@
 import { CopyRegular, DeleteRegular } from "@fluentui/react-icons";
 import { useEffect, type FunctionComponent, type ReactNode } from "react";
-import { ButtonLine } from "./buttonLine";
+import { ButtonLine } from "../hoc/buttonLine";
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
-/**
- * Represents an item in a line list
- */
-export type LineListItem<T = any> = {
-    /** Unique identifier for the item */
-    id: number;
-    /** The data associated with the item */
-    data: T;
-    /** Value to use for sorting the list */
-    sortBy: number;
-};
-
-type LineListProps<T = any> = {
-    items: LineListItem<T>[];
-    renderItem: (item: LineListItem<T>, index: number) => ReactNode;
-    onDelete: (item: LineListItem<T>, index: number) => void;
-    onAdd: (item?: LineListItem<T>) => void;
-    addButtonLabel?: string;
-};
-
-const useLineListStyles = makeStyles({
+const useListStyles = makeStyles({
     item: {
         width: "100%",
         display: "flex",
@@ -49,13 +29,33 @@ const useLineListStyles = makeStyles({
 });
 
 /**
- * For cases where you may want to add / remove lines from a list via a trash can button / copy button, this HOC can be used
- * @returns A React component that renders a list of items with add/delete functionality
- * @param props - The properties for the LineList component
+ * Represents an item in a list
  */
-export const LineList: FunctionComponent<LineListProps<any>> = (props): React.ReactElement => {
+export type ListItem<T = any> = {
+    /** Unique identifier for the item */
+    id: number;
+    /** The data associated with the item */
+    data: T;
+    /** Value to use for sorting the list */
+    sortBy: number;
+};
+
+type ListProps<T = any> = {
+    items: ListItem<T>[];
+    renderItem: (item: ListItem<T>, index: number) => ReactNode;
+    onDelete: (item: ListItem<T>, index: number) => void;
+    onAdd: (item?: ListItem<T>) => void;
+    addButtonLabel?: string;
+};
+
+/**
+ * For cases where you may want to add / remove items from a list via a trash can button / copy button, this HOC can be used
+ * @returns A React component that renders a list of items with add/delete functionality
+ * @param props - The properties for the List component
+ */
+export const List: FunctionComponent<ListProps<any>> = (props): React.ReactElement => {
     const { items, renderItem, onDelete, onAdd, addButtonLabel = "Add new item" } = props;
-    const classes = useLineListStyles();
+    const classes = useListStyles();
     useEffect(() => {
         // Do I need a state value to pass below?
     }, [props.items, props.renderItem]);
@@ -66,7 +66,7 @@ export const LineList: FunctionComponent<LineListProps<any>> = (props): React.Re
             <div className={classes.list}>
                 {items
                     .sort((a, b) => a.sortBy - b.sortBy)
-                    .map((item: LineListItem<any>, index: number) => (
+                    .map((item: ListItem<any>, index: number) => (
                         <div key={item.id} className={classes.item}>
                             <Body1Strong className={classes.itemId}>#{index}</Body1Strong>
                             <div className={classes.itemContent}>{renderItem(item, index)}</div>

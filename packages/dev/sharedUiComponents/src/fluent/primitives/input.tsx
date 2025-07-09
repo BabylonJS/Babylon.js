@@ -52,7 +52,7 @@ export const Input: FunctionComponent<InputProps<string | number>> = (props) => 
             {...props}
             type={type}
             size="small"
-            value={value.toString()}
+            value={typeof value === "number" ? value.toFixed(2).toString() : value}
             className={typeof props.value === "number" ? classes.float : classes.text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}

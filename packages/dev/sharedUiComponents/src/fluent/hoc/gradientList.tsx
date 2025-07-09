@@ -1,0 +1,122 @@
+import type { FunctionComponent } from "react";
+
+import { List } from "../primitives/list";
+import type { ListItem } from "../primitives/list";
+import { Color3GradientComponent, Color4GradientComponent, FactorGradientComponent } from "../primitives/gradient";
+import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
+import type { IValueGradient } from "core/Misc/gradients";
+import type { Nullable } from "core/types";
+import { Color3, Color4 } from "core/Maths";
+
+type GradientTypes = "Factor" | "Color3" | "Color4";
+
+type GradientListProps<T extends FactorGradient | Color3Gradient | Color4Gradient> = {
+    label: string;
+    gradients: Nullable<Array<T>>;
+    addGradient: (step?: T) => void;
+    removeGradient: (step: T) => void;
+    onChange: (newGradient: T) => void;
+};
+
+const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3Gradient | Color4Gradient> & { mode: GradientTypes }> = (props) => {
+    // Do I need any state within this component?
+    // TODO add slider option to not update until slider is released
+    const { gradients } = props;
+    const deleteStep = (step: FactorGradient | Color3Gradient | Color4Gradient) => {
+        if (gradients && gradients.indexOf(step) > -1) {
+            props.removeGradient(step);
+        }
+    };
+
+    const addNewStep = () => {
+        if (!gradients || gradients.length === 0) {
+            props.addGradient(); // Default
+        } else {
+            switch (props.mode) {
+                case "Factor": {
+                    const newStep = new FactorGradient(1, 1, 1);
+                    props.addGradient(newStep);
+                    break;
+                }
+                case "Color3": {
+                    const newStepColor3 = new Color3Gradient(1, Color3.White());
+                    props.addGradient(newStepColor3);
+                    break;
+                }
+                case "Color4": {
+                    const newStepColor = new Color4Gradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
+                    props.addGradient(newStepColor);
+                    break;
+                }
+            }
+        }
+    };
+
+    // Convert gradients to LineList items and sort by gradient value
+    const listItems: ListItem<IValueGradient>[] =
+        props.gradients?.map((gradient, index) => ({
+            id: index,
+            data: gradient,
+            sortBy: gradient.gradient,
+        })) || [];
+
+    return (
+        <div>
+            <List
+                addButtonLabel={gradients && gradients.length > 0 ? `Add new ${props.label}` : `Use ${props.label}`}
+                items={listItems}
+                onDelete={(item) => deleteStep(item.data)}
+                onAdd={addNewStep}
+                renderItem={(item) => {
+                    const gradient = item.data;
+                    switch (props.mode) {
+                        case "Factor":
+                            return (
+                                <FactorGradientComponent
+                                    value={gradient}
+                                    onChange={(newGradient: FactorGradient) => {
+                                        item.data.gradient = newGradient.gradient;
+                                        item.data.factor1 = newGradient.factor1;
+                                        item.data.factor2 = newGradient.factor2;
+                                        props.onChange(newGradient);
+                                    }}
+                                />
+                            );
+
+                        case "Color3":
+                            return (
+                                <Color3GradientComponent
+                                    value={gradient}
+                                    onChange={(newGradient: Color3Gradient) => {
+                                        item.data.gradient = newGradient.gradient;
+                                        item.data.color = newGradient.color;
+                                        props.onChange(newGradient);
+                                    }}
+                                />
+                            );
+                        case "Color4":
+                            return (
+                                <Color4GradientComponent
+                                    value={gradient}
+                                    onChange={(newGradient: Color4Gradient) => {
+                                        item.data.gradient = newGradient.gradient;
+                                        item.data.color1 = newGradient.color1;
+                                        item.data.color2 = newGradient.color2;
+                                        props.onChange(newGradient);
+                                    }}
+                                />
+                            );
+                    }
+                }}
+            />
+        </div>
+    );
+};
+
+const FactorGradientCast = GradientList as FunctionComponent<GradientListProps<FactorGradient> & { mode: "Factor" }>;
+const Color3GradientCast = GradientList as FunctionComponent<GradientListProps<Color3Gradient> & { mode: "Color3" }>;
+const Color4GradientCast = GradientList as FunctionComponent<GradientListProps<Color4Gradient> & { mode: "Color4" }>;
+
+export const FactorGradientList: FunctionComponent<GradientListProps<FactorGradient>> = (props) => <FactorGradientCast {...props} mode="Factor" />;
+export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradient>> = (props) => <Color3GradientCast {...props} mode="Color3" />;
+export const Color4GradientList: FunctionComponent<GradientListProps<Color4Gradient>> = (props) => <Color4GradientCast {...props} mode="Color4" />;
