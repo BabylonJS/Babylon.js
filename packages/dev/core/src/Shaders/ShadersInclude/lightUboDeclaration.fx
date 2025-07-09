@@ -29,6 +29,9 @@
 	uniform mat4 textureProjectionMatrix{X};
 	uniform sampler2D projectionLightTexture{X};
 #endif
+#ifdef CLUSTLIGHT{X}
+	uniform sampler2D lightMaskTexture{X};
+#endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
 		uniform mat4 lightMatrix{X}[SHADOWCSMNUM_CASCADES{X}];

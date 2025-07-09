@@ -181,14 +181,20 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 #endif
 
 #if defined(CLUSTLIGHT_MAX) && CLUSTLIGHT_MAX > 0
-lightingInfo computeClusteredLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, ClusteredLight lights[CLUSTLIGHT_MAX], vec4 diffuseScale, vec3 specularScale, float glossiness) {
+#define inline
+lightingInfo computeClusteredLighting(sampler2D lightMask, vec3 viewDirectionW, vec3 vNormal, vec4 lightData, ClusteredLight lights[CLUSTLIGHT_MAX], vec3 diffuseScale, vec3 specularScale, float glossiness) {
 	lightingInfo result;
-	int len = int(lightData.x);
+	vec4 maskTexel = texelFetch(lightMask, ivec2(gl_FragCoord.xy * lightData.xy), 0);
+	uint mask = uint(maskTexel.r);
+	uint len = uint(lightData.z);
 
-	for (int i = 0; i < len; i += 1) {
-		vec4 diffuse = lights[i].diffuse * diffuseScale;
+	for (uint i = 0u; i < len; i += 1u) {
+		if ((mask & (1u << i)) == 0u) {
+			continue;
+		}
+		vec3 diffuse = lights[i].diffuse.rgb * diffuseScale;
 		vec3 specular = lights[i].specular.rgb * specularScale;
-		lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse.rgb, specular, diffuse.a, glossiness);
+		lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse.rgb, specular, lights[i].diffuse.a, glossiness);
 		result.diffuse += info.diffuse;
 		#ifdef SPECULARTERM
 			result.specular += info.specular;
