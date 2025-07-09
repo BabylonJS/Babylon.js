@@ -1,29 +1,37 @@
+import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { ThinEngine } from "core/Engines/thinEngine";
+import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Effect } from "core/Materials/effect";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
 import { TmpColors } from "core/Maths/math.color";
+import type { Mesh } from "core/Meshes/mesh";
+import { Logger } from "core/Misc/logger";
+import { _WarnImport } from "core/Misc/devTools";
 import type { Scene } from "core/scene";
 
-import { Light } from "./light";
-import { PointLight } from "./pointLight";
-import { SpotLight } from "./spotLight";
+import { Light } from "../light";
+import { LightConstants } from "../lightConstants";
+import { PointLight } from "../pointLight";
+import { SpotLight } from "../spotLight";
+
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
 export class ClusteredLight extends Light {
     private static _GetEngineMaxLights(engine: AbstractEngine): number {
         const caps = engine._caps;
-        if (!engine.supportsUniformBuffers) {
+        if (!engine.supportsUniformBuffers || !caps.texelFetch) {
             return 0;
         } else if (engine.isWebGPU) {
             // On WebGPU we use atomic writes to storage textures
             return 32;
-        } else if (engine instanceof ThinEngine && engine._webGLVersion > 1) {
+        } else if (engine.version > 1) {
             // On WebGL 2 we use additive float blending as the light mask
             if (!caps.colorBufferFloat || !caps.blendFloat) {
                 return 0;
             }
             // Due to the use of floats we want to limit lights to the precision of floats
-            const gl = engine._gl;
+            const gl = (<ThinEngine>engine)._gl;
             const format = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, caps.highPrecisionShaderSupported ? gl.HIGH_FLOAT : gl.MEDIUM_FLOAT);
             return format?.precision ?? 0;
         } else {
@@ -42,14 +50,19 @@ export class ClusteredLight extends Light {
             return true;
         } else if (light instanceof SpotLight) {
             // Extra texture bindings per light are not supported
-            return !(light.projectionTexture || light.iesProfileTexture);
+            return !light.projectionTexture && !light.iesProfileTexture;
         } else {
             // Currently only point and spot lights are supported
             return false;
         }
     }
 
-    private _lights: (PointLight | SpotLight)[] = [];
+    /** @internal */
+    public static _SceneComponentInitialization: (scene: Scene) => Mesh = () => {
+        throw _WarnImport("ClusteredLightSceneComponent");
+    };
+
+    private readonly _lights: (PointLight | SpotLight)[] = [];
     public get lights(): readonly Light[] {
         return this._lights;
     }
@@ -60,13 +73,37 @@ export class ClusteredLight extends Light {
         return this.maxLights > 0;
     }
 
+    /** @internal */
+    public readonly _lightMask: RenderTargetTexture;
+    private readonly _sphere: Mesh;
+    private readonly _lightSpheres: Mesh[] = [];
+
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
-        this.maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
+        this._sphere = ClusteredLight._SceneComponentInitialization(this._scene);
+
+        const engine = this.getEngine();
+        this.maxLights = ClusteredLight._GetEngineMaxLights(engine);
+
+        // TODO: make size configurable
+        this._lightMask = new RenderTargetTexture("LightMask", 128, this._scene, {
+            type: engine.isWebGPU ? Constants.TEXTURETYPE_UNSIGNED_INTEGER : Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_RED,
+            generateDepthBuffer: true,
+            generateStencilBuffer: true,
+        });
+
         if (this.maxLights > 0) {
             for (const light of lights) {
                 this.addLight(light);
             }
+
+            this._lightMask.renderParticles = false;
+            this._lightMask.renderSprites = false;
+            this._lightMask.noPrePassRenderer = true;
+            // Use the default render list
+            this._lightMask.renderList = null;
+            this._lightMask.customRenderFunction = this._renderLightMask;
         }
     }
 
@@ -74,11 +111,49 @@ export class ClusteredLight extends Light {
         return "ClusteredLight";
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public override getTypeID(): number {
+        return LightConstants.LIGHTTYPEID_CLUSTERED;
+    }
+
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
     public addLight(light: Light): void {
-        if (ClusteredLight.IsLightSupported(light)) {
-            this._scene.removeLight(light);
-            this._lights.push(<PointLight | SpotLight>light);
+        if (!ClusteredLight.IsLightSupported(light)) {
+            Logger.Warn("Attempting to add a light to cluster that does not support clustering");
         }
+        if (this._lights.length === this.maxLights) {
+            // Only log this once (hence equals) but add the light anyway
+            Logger.Warn(`Attempting to add more lights to cluster than what is supported (${this.maxLights})`);
+        }
+        if (light instanceof PointLight || light instanceof SpotLight) {
+            // We already warned the user above if we are unable to add this,
+            // still try to add supported light types even if their properties aren't supported
+            this._scene.removeLight(light);
+            this._lights.push(light);
+
+            const material = new StandardMaterial("LightMaterial");
+            material.disableLighting = true;
+            material.emissiveColor = light.diffuse;
+
+            const sphere = this._sphere.clone();
+            sphere.material = material;
+            sphere.position = light.position;
+            sphere.scaling = new Vector3(0.1, 0.1, 0.1);
+            this._scene.removeMesh(sphere);
+            this._lightSpheres.push(sphere);
+        }
+    }
+
+    public override _isReady(): boolean {
+        for (const sphere of this._lightSpheres) {
+            if (!sphere.isReady()) {
+                return false;
+            }
+        }
+        return super._isReady();
     }
 
     protected _buildUniformLayout(): void {
@@ -150,4 +225,30 @@ export class ClusteredLight extends Light {
         defines["CLUSTLIGHT" + lightIndex] = true;
         defines["CLUSTLIGHT_MAX"] = this.maxLights;
     }
+
+    private _renderLightMask: RenderTargetTexture["customRenderFunction"] = (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes, beforeTransparents) => {
+        const engine = this.getEngine();
+        // Draw everything as depth only
+        engine.setColorWrite(false);
+        for (let i = 0; i < depthOnlySubMeshes.length; i += 1) {
+            depthOnlySubMeshes.data[i].render(false);
+        }
+        for (let i = 0; i < opaqueSubMeshes.length; i += 1) {
+            opaqueSubMeshes.data[i].render(false);
+        }
+        for (let i = 0; i < alphaTestSubMeshes.length; i += 1) {
+            alphaTestSubMeshes.data[i].render(false);
+        }
+        engine.setColorWrite(true);
+
+        // We don't render any transparent meshes for the light mask
+        // TODO: we should stencil out transparent materials and always enable lights that are over transparent materials
+        beforeTransparents?.();
+
+        const len = Math.min(this._lights.length, this.maxLights);
+        // TODO: instancing
+        for (let i = 0; i < len; i += 1) {
+            this._lightSpheres[i].subMeshes[0].render(false);
+        }
+    };
 }

@@ -91,6 +91,8 @@ export class LightConstants {
      */
     public static readonly LIGHTTYPEID_RECT_AREALIGHT = 4;
 
+    public static readonly LIGHTTYPEID_CLUSTERED = 5;
+
     /**
      * Sort function to order lights for rendering.
      * @param a First Light object to compare to second.
