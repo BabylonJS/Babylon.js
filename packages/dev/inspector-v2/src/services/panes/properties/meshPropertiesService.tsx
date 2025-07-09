@@ -47,7 +47,7 @@ export const MeshPropertiesServiceDefinition: ServiceDefinition<[], [IProperties
         });
 
         const outlineOverlaySectionRegistration = propertiesService.addSection({
-            order: 0,
+            order: 3,
             identity: OutlineOverlayPropertiesSectionItentity,
         });
 
