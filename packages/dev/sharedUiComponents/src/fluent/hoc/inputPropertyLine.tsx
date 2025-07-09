@@ -16,11 +16,11 @@ export const TextInputPropertyLine: FunctionComponent<InputProps<string> & Prope
 );
 
 /**
- * Wraps a float input in a property line
+ * Wraps a number input in a property line
  * @param props - PropertyLineProps and InputProps
  * @returns property-line wrapped input component
  */
-export const FloatInputPropertyLine: FunctionComponent<InputProps<number> & PropertyLineProps> = (props) => (
+export const NumberInputPropertyLine: FunctionComponent<InputProps<number> & PropertyLineProps> = (props) => (
     <PropertyLine {...props}>
         <NumberInput {...props} />
     </PropertyLine>
