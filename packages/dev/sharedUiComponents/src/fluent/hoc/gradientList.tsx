@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 
 import { List } from "../primitives/list";
-import type { ListItem } from "../primitives/list";
 import { Color3GradientComponent, Color4GradientComponent, FactorGradientComponent } from "../primitives/gradient";
 import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
 import type { IValueGradient } from "core/Misc/gradients";
