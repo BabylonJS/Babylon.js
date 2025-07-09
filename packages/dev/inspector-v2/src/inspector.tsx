@@ -29,6 +29,7 @@ import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { RenderingPipelineHierarchyServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
 import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
@@ -183,6 +184,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SkeletonHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
             SpriteManagerHierarchyServiceDefinition,
+            RenderingPipelineHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
