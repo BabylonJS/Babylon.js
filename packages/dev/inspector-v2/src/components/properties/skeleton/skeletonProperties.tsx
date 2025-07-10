@@ -10,7 +10,7 @@ import { useReducer, useState } from "react";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
 import { BoundProperty } from "../boundProperty";
@@ -139,35 +139,35 @@ export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }>
                     />
                     <Collapse visible={options.displayMode !== SkeletonViewer.DISPLAY_LINES}>
                         <div className={classes.contentDiv}>
-                            <FloatInputPropertyLine
+                            <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsMidStep"
                                 label="Mid Step"
                                 value={options.midStep}
                                 description="How far down to start tapering the bone spurs."
                                 onChange={(value) => updateOptions({ midStep: value })}
                             />
-                            <FloatInputPropertyLine
+                            <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsMidStepFactor"
                                 label="Mid Step Factor"
                                 value={options.midStepFactor}
                                 description="How big is the midStep?"
                                 onChange={(value) => updateOptions({ midStepFactor: value })}
                             />
-                            <FloatInputPropertyLine
+                            <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsSphereBaseSize"
                                 label="Sphere Base Size"
                                 value={options.sphereBaseSize}
                                 description="Base for the Sphere Size."
                                 onChange={(value) => updateOptions({ sphereBaseSize: value })}
                             />
-                            <FloatInputPropertyLine
+                            <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsSphereScaleUnit"
                                 label="Sphere Scale Unit"
                                 value={options.sphereScaleUnit}
                                 description="The ratio of the sphere to the longest bone in units."
                                 onChange={(value) => updateOptions({ sphereScaleUnit: value })}
                             />
-                            <FloatInputPropertyLine
+                            <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsSphereFactor"
                                 label="Sphere Factor"
                                 value={options.sphereFactor}
@@ -188,7 +188,7 @@ export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }>
                                 description="Whether to show local axes or not."
                                 onChange={(checked) => updateOptions({ showLocalAxes: checked })}
                             />
-                            <FloatInputPropertyLine
+                            <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsLocalAxesSize"
                                 label="Local Axes Size"
                                 value={options.localAxesSize}

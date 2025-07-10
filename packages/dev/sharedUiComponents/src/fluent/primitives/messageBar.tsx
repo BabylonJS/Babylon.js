@@ -1,4 +1,4 @@
-import { MessageBar as FluentMessageBar, MessageBarTitle, MessageBarBody, makeStyles } from "@fluentui/react-components";
+import { MessageBar as FluentMessageBar, MessageBarTitle, MessageBarBody, makeStyles, tokens } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 import { Link } from "./link";
 
@@ -6,7 +6,7 @@ const useClasses = makeStyles({
     container: {
         display: "flex",
         flexDirection: "column",
-        gap: "10px",
+        gap: tokens.spacingVerticalS, // 8px
     },
 });
 

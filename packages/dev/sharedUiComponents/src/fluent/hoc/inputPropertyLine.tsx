@@ -1,23 +1,27 @@
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
-import { Input } from "../primitives/input";
+import { NumberInput, TextInput } from "../primitives/input";
 import type { InputProps } from "../primitives/input";
 
-type InputPropertyLineProps = InputProps<string | number> & PropertyLineProps;
-
 /**
- * Wraps an input in a property line
+ * Wraps a text input in a property line
  * @param props - PropertyLineProps and InputProps
  * @returns property-line wrapped input component
  */
-const InputPropertyLine: FunctionComponent<InputPropertyLineProps> = (props) => {
-    return (
-        <PropertyLine {...props}>
-            <Input {...props} />
-        </PropertyLine>
-    );
-};
+export const TextInputPropertyLine: FunctionComponent<InputProps<string> & PropertyLineProps> = (props) => (
+    <PropertyLine {...props}>
+        <TextInput {...props} />
+    </PropertyLine>
+);
 
-export const TextInputPropertyLine = InputPropertyLine as FunctionComponent<InputProps<string> & PropertyLineProps>;
-export const FloatInputPropertyLine = InputPropertyLine as FunctionComponent<InputProps<number> & PropertyLineProps>;
+/**
+ * Wraps a number input in a property line
+ * @param props - PropertyLineProps and InputProps
+ * @returns property-line wrapped input component
+ */
+export const NumberInputPropertyLine: FunctionComponent<InputProps<number> & PropertyLineProps> = (props) => (
+    <PropertyLine {...props}>
+        <NumberInput {...props} />
+    </PropertyLine>
+);

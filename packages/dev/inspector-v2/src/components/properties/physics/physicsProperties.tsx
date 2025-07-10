@@ -8,7 +8,7 @@ import { useCallback } from "react";
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 import { useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
@@ -82,7 +82,7 @@ export const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody
                 }}
             />
             {/* Linear Damping */}
-            <FloatInputPropertyLine
+            <NumberInputPropertyLine
                 label="Linear Damping"
                 min={0}
                 max={1}
@@ -93,7 +93,7 @@ export const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody
                 }}
             />
             {/* Angular Damping */}
-            <FloatInputPropertyLine
+            <NumberInputPropertyLine
                 label="Angular Damping"
                 min={0}
                 max={1}
@@ -108,7 +108,7 @@ export const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody
             {/* Physics Mass Properties Controls */}
             {massProperties && (
                 <>
-                    <FloatInputPropertyLine
+                    <NumberInputPropertyLine
                         label="Mass"
                         value={massProperties.mass ?? 0}
                         min={0}

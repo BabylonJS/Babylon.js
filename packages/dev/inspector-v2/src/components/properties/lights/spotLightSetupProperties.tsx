@@ -3,7 +3,7 @@ import type { FunctionComponent } from "react";
 
 import { Tools } from "core/Misc/tools";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
@@ -33,7 +33,7 @@ export const SpotLightSetupProperties: FunctionComponent<{ context: SpotLight }>
                 step={0.1}
                 onChange={(value) => (spotLight.innerAngle = Tools.ToRadians(value))}
             />
-            <FloatInputPropertyLine label="Exponent" value={exponent} onChange={(value) => (spotLight.exponent = value)} />
+            <NumberInputPropertyLine label="Exponent" value={exponent} onChange={(value) => (spotLight.exponent = value)} />
         </>
     );
 };

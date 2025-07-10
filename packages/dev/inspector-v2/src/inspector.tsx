@@ -26,12 +26,14 @@ import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { RenderingPipelineHierarchyServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
 import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
@@ -181,6 +183,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
             MaterialExplorerServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
             SkeletonHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
             SpriteManagerHierarchyServiceDefinition,
@@ -202,6 +205,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SpotLightPropertiesServiceDefinition,
             ShadowLightPropertiesServiceDefinition,
             SpritePropertiesServiceDefinition,
+            ParticleSystemPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
