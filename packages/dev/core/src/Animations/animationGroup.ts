@@ -13,6 +13,7 @@ import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -22,10 +23,16 @@ export class TargetedAnimation {
      * Animation to perform
      */
     public animation: Animation;
+
     /**
      * Target to animate
      */
     public target: any;
+
+    /**
+     * Gets or sets the unique id of the targeted animation
+     */
+    public readonly uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * Returns the string "TargetedAnimation"
@@ -34,6 +41,12 @@ export class TargetedAnimation {
     public getClassName(): string {
         return "TargetedAnimation";
     }
+
+    /**
+     * Creates a new targeted animation
+     * @param parent The animation group to which the animation belongs
+     */
+    constructor(public readonly parent: AnimationGroup) {}
 
     /**
      * Serialize the object
@@ -524,7 +537,7 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        const targetedAnimation = new TargetedAnimation();
+        const targetedAnimation = new TargetedAnimation(this);
         targetedAnimation.animation = animation;
         targetedAnimation.target = target;
 

@@ -14,10 +14,24 @@ type CommonEntity = {
     getClassName?: () => string;
 };
 
+const NameProperty: FunctionComponent<{ commonEntity: CommonEntity; isReadonly: boolean }> = (props) => {
+    const { commonEntity, isReadonly } = props;
+
+    const name = useProperty(commonEntity, "name");
+
+    return (
+        name !== undefined &&
+        (isReadonly ? (
+            <TextPropertyLine key="EntityName" label="Name" description="The name of the node." value={name} />
+        ) : (
+            <TextInputPropertyLine key="EntityName" label="Name" description="The name of the node." value={name} onChange={(newName) => (commonEntity.name = newName)} />
+        ))
+    );
+};
+
 export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEntity }> = (props) => {
     const { commonEntity } = props;
 
-    const name = useProperty(commonEntity, "name");
     const namePropertyDescriptor = useMemo(() => GetPropertyDescriptor(commonEntity, "name")?.[1], [commonEntity]);
     const isNameReadonly = !namePropertyDescriptor || IsPropertyReadonly(namePropertyDescriptor);
 
@@ -26,12 +40,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
     return (
         <>
             {commonEntity.id !== undefined && <TextPropertyLine key="EntityId" label="ID" description="The id of the node." value={commonEntity.id.toString()} />}
-            {name !== undefined &&
-                (isNameReadonly ? (
-                    <TextPropertyLine key="EntityName" label="Name" description="The name of the node." value={name} />
-                ) : (
-                    <TextInputPropertyLine key="EntityName" label="Name" description="The name of the node." value={name} onChange={(newName) => (commonEntity.name = newName)} />
-                ))}
+            {namePropertyDescriptor !== undefined && <NameProperty commonEntity={commonEntity} isReadonly={isNameReadonly} />}
             {commonEntity.uniqueId !== undefined && (
                 <TextPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId.toString()} />
             )}
