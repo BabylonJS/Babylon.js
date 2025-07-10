@@ -1,6 +1,5 @@
 import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Effect } from "core/Materials/effect";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
@@ -30,9 +29,7 @@ export class ClusteredLight extends Light {
                 return 0;
             }
             // Due to the use of floats we want to limit lights to the precision of floats
-            const gl = (<ThinEngine>engine)._gl;
-            const format = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, caps.highPrecisionShaderSupported ? gl.HIGH_FLOAT : gl.MEDIUM_FLOAT);
-            return format?.precision ?? 0;
+            return caps.shaderFloatPrecision;
         } else {
             // WebGL 1 is not supported due to lack of dynamic for loops
             return 0;

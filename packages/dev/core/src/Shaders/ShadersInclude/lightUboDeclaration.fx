@@ -30,7 +30,8 @@
 	uniform sampler2D projectionLightTexture{X};
 #endif
 #ifdef CLUSTLIGHT{X}
-	uniform sampler2D lightMaskTexture{X};
+	// Ensure the mask is sampled with high precision
+	uniform highp sampler2D lightMaskTexture{X};
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}

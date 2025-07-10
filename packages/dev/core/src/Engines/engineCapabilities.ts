@@ -27,6 +27,8 @@ export interface EngineCapabilities {
     maxVertexUniformVectors: number;
     /** Maximum number of uniforms per fragment shader */
     maxFragmentUniformVectors: number;
+    /** The number of bits that can be accurately represented in shader floats */
+    shaderFloatPrecision: number;
     /** Defines if standard derivatives (dx/dy) are supported */
     standardDerivatives: boolean;
     /** Defines if s3tc texture compression is supported */

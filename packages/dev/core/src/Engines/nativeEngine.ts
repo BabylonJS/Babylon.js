@@ -286,6 +286,7 @@ export class NativeEngine extends Engine {
             maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
             maxVertexUniformVectors: 16,
+            shaderFloatPrecision: 23, // TODO: is this correct?
             standardDerivatives: true,
             astc: null,
             pvrtc: null,

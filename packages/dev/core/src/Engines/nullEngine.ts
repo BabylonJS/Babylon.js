@@ -133,6 +133,7 @@ export class NullEngine extends Engine {
             maxVaryingVectors: 16,
             maxFragmentUniformVectors: 16,
             maxVertexUniformVectors: 16,
+            shaderFloatPrecision: 10, // Minimum precision for mediump floats WebGL 1
             standardDerivatives: false,
             astc: null,
             pvrtc: null,
