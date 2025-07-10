@@ -843,10 +843,6 @@ export class Viewer implements IDisposable {
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
 
-    private _cdfGenerator: Nullable<IblCdfGenerator> = null; // used for shadow maps light direction calculation
-    private _cachedIblDirection: Nullable<Vector3> = null;
-    private _cachedShadowLightPositionFactor: number = 20;
-
     public constructor(
         private readonly _engine: AbstractEngine,
         private readonly _options?: Readonly<ViewerOptions>
@@ -1972,7 +1968,6 @@ export class Viewer implements IDisposable {
             normalShadow.ground.dispose(true, true);
             normalShadow.iblDirection.iblCdfGenerator.dispose();
             this._scene.removeMesh(normalShadow.ground);
-            this._cdfGenerator?.dispose();
         }
 
         if (highShadow) {
