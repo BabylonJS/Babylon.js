@@ -3,13 +3,14 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
+import { GetInputProperties } from "../../components/propertyTab/inputsPropertyTabComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;
@@ -48,46 +49,40 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
         });
 
         return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">NODE MATERIAL EDITOR</div>
-                </div>
-                <div>
-                    <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent label="Name" propertyName="name" lockObject={this.props.globalState.lockObject} target={this.props.frame} />
-                        <Color3LineComponent lockObject={this.props.globalState.lockObject} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
-                        <TextInputLineComponent lockObject={this.props.globalState.lockObject} label="Comments" propertyName="comments" target={this.props.frame} />
-                        {!this.props.frame.isCollapsed && (
-                            <ButtonLineComponent
-                                label="Collapse"
-                                onClick={() => {
-                                    this.props.frame.isCollapsed = true;
-                                }}
-                            />
-                        )}
-                        {this.props.frame.isCollapsed && (
-                            <ButtonLineComponent
-                                label="Expand"
-                                onClick={() => {
-                                    this.props.frame.isCollapsed = false;
-                                }}
-                            />
-                        )}
+            <PropertyTabComponentBase>
+                <LineContainerComponent title="GENERAL">
+                    <TextInputLineComponent label="Name" propertyName="name" lockObject={this.props.globalState.lockObject} target={this.props.frame} />
+                    <Color3LineComponent lockObject={this.props.globalState.lockObject} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
+                    <TextInputLineComponent lockObject={this.props.globalState.lockObject} label="Comments" propertyName="comments" target={this.props.frame} />
+                    {!this.props.frame.isCollapsed && (
                         <ButtonLineComponent
-                            label="Export"
+                            label="Collapse"
                             onClick={() => {
-                                this.props.frame.export();
+                                this.props.frame.isCollapsed = true;
                             }}
                         />
-                    </LineContainerComponent>
-                    <InputsPropertyTabComponent
-                        lockObject={this.props.globalState.lockObject}
-                        globalState={this.props.globalState}
-                        inputs={configurableInputBlocks}
-                    ></InputsPropertyTabComponent>
-                </div>
-            </div>
+                    )}
+                    {this.props.frame.isCollapsed && (
+                        <ButtonLineComponent
+                            label="Expand"
+                            onClick={() => {
+                                this.props.frame.isCollapsed = false;
+                            }}
+                        />
+                    )}
+                    <ButtonLineComponent
+                        label="Export"
+                        onClick={() => {
+                            this.props.frame.export();
+                        }}
+                    />
+                </LineContainerComponent>
+                {GetInputProperties({
+                    globalState: this.props.globalState,
+                    lockObject: this.props.globalState.lockObject,
+                    inputs: configurableInputBlocks,
+                })}
+            </PropertyTabComponentBase>
         );
     }
 }

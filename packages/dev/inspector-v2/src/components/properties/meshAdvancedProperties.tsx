@@ -4,32 +4,23 @@ import type { FunctionComponent } from "react";
 
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 
-import { useInterceptObservable } from "../../hooks/instrumentationHooks";
-import { useObservableState } from "../../hooks/observableHooks";
+import { BoundProperty } from "./boundProperty";
 
 export const MeshAdvancedProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
     const { mesh } = props;
 
-    // There is no observable for computeBonesUsingShaders, so we use an interceptor to listen for changes.
-    const computeBonesUsingShaders = useObservableState(() => mesh.computeBonesUsingShaders, useInterceptObservable("property", mesh, "computeBonesUsingShaders"));
-    const checkCollisions = useObservableState(() => mesh.checkCollisions, useInterceptObservable("property", mesh, "checkCollisions"));
-
     return (
         <>
             {mesh.useBones && (
-                <SwitchPropertyLine
-                    label="Compute bones using shaders"
+                <BoundProperty
+                    component={SwitchPropertyLine}
+                    label="Compute Bones Using Shaders"
                     description="Whether to compute bones using shaders."
-                    value={computeBonesUsingShaders}
-                    onChange={(checked) => (mesh.computeBonesUsingShaders = checked)}
+                    target={mesh}
+                    propertyKey={"computeBonesUsingShaders"}
                 />
             )}
-            <SwitchPropertyLine
-                label="Check collisions"
-                description="Whether to check for collisions."
-                value={checkCollisions}
-                onChange={(checked) => (mesh.checkCollisions = checked)}
-            />
+            <BoundProperty component={SwitchPropertyLine} label="Check Collisions" description="Whether to check for collisions." target={mesh} propertyKey={"checkCollisions"} />
         </>
     );
 };

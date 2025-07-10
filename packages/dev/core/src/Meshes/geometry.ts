@@ -299,7 +299,7 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
         }
 
-        if (buffer._buffer) {
+        if (buffer._buffer && buffer._ownsBuffer) {
             buffer._buffer._increaseReferences();
         }
 

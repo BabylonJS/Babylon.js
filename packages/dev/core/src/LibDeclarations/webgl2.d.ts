@@ -26,6 +26,15 @@ interface WebGL2RenderingContext extends WebGL2RenderingContextBase {
     RG16_SNORM_EXT: number;
     RGB16_SNORM_EXT: number;
     RGBA16_SNORM_EXT: number;
+
+    // OES_draw_buffers_indexed extension methods
+    blendEquationSeparateIndexed(buf: GLuint, modeRGB: GLenum, modeAlpha: GLenum): void;
+    blendEquationIndexed(buf: GLuint, mode: GLenum): void;
+    blendFuncSeparateIndexed(buf: GLuint, srcRGB: GLenum, dstRGB: GLenum, srcAlpha: GLenum, dstAlpha: GLenum): void;
+    blendFuncIndexed(buf: GLuint, src: GLenum, dst: GLenum): void;
+    colorMaskIndexed(buf: GLuint, r: GLboolean, g: GLboolean, b: GLboolean, a: GLboolean): void;
+    disableIndexed(target: GLenum, index: GLuint): void;
+    enableIndexed(target: GLenum, index: GLuint): void;
 }
 
 interface EXT_disjoint_timer_query {

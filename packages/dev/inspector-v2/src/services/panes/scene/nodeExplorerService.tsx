@@ -7,19 +7,49 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
+import { Observable } from "core/Misc";
+import { Node } from "core/node";
+import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
     friendlyName: "Node Hierarchy",
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {
+        const nodeMovedObservable = new Observable<Node>();
+
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: 0,
+            predicate: (entity) => entity instanceof Node,
             getRootEntities: (scene) => scene.rootNodes,
             getEntityChildren: (node) => node.getChildren(),
             getEntityParent: (node) => node.parent,
-            getEntityDisplayName: (node) => node.name,
+            getEntityDisplayInfo: (node) => {
+                const onChangeObservable = new Observable<void>();
+
+                const nameHookToken = InterceptProperty(node, "name", {
+                    afterSet: () => onChangeObservable.notifyObservers(),
+                });
+
+                const parentHookToken = InterceptProperty(node, "parent", {
+                    afterSet: () => {
+                        nodeMovedObservable.notifyObservers(node);
+                    },
+                });
+
+                return {
+                    get name() {
+                        return node.name;
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        nameHookToken.dispose();
+                        parentHookToken.dispose();
+                        onChangeObservable.clear();
+                    },
+                };
+            },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
                     <BoxRegular />
@@ -44,6 +74,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
                 scene.onCameraRemovedObservable,
                 scene.onLightRemovedObservable,
             ],
+            getEntityMovedObservables: () => [nodeMovedObservable],
         });
 
         const visibilityCommandRegistration = sceneExplorerService.addCommand({

@@ -4,7 +4,7 @@ import { ButtonLine } from "./buttonLine";
 import type { ButtonLineProps } from "./buttonLine";
 
 type FileUploadLineProps = Omit<ButtonLineProps, "onClick"> & {
-    onClick: (file: File) => void;
+    onClick: (files: FileList) => void;
     accept: string;
 };
 
@@ -18,7 +18,7 @@ export const FileUploadLine: FunctionComponent<FileUploadLineProps> = (props) =>
     const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
         const files = evt.target.files;
         if (files && files.length) {
-            props.onClick(files[0]);
+            props.onClick(files);
         }
         evt.target.value = "";
     };

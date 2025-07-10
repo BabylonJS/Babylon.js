@@ -19,6 +19,7 @@ import {
     PopoverTrigger,
     tokens,
     Body1Strong,
+    ColorSwatch,
 } from "@fluentui/react-components";
 import type { SpinButtonChangeEvent, SpinButtonOnChangeData, ColorPickerProps as FluentColorPickerProps, InputOnChangeData } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -26,21 +27,11 @@ import type { BaseComponentProps } from "../hoc/propertyLine";
 
 const useColorPickerStyles = makeStyles({
     colorPickerContainer: {
-        width: "300px",
+        width: "325px",
         display: "flex",
         flexDirection: "column",
         gap: tokens.spacingVerticalMNudge, // 10px
         overflow: "visible",
-    },
-    triggerColor: {
-        width: "50px",
-        height: tokens.lineHeightBase100,
-        borderRadius: tokens.borderRadiusMedium,
-        cursor: "pointer", // Show pointer on hover
-        border: `${tokens.spacingVerticalXXS} solid ${tokens.colorNeutralShadowKeyLighter}`,
-        "@media (forced-colors: active)": {
-            forcedColorAdjust: "none", // ensures element maintains color in high contrast mode
-        },
     },
     previewColor: {
         width: "50px",
@@ -86,19 +77,20 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     const [popoverOpen, setPopoverOpen] = useState(false);
 
     useEffect(() => {
-        props.onChange(color); // Ensures the parent is notified when color changes from within colorPicker
-    }, [color]);
-
-    useEffect(() => {
         setColor(props.value); // Ensures the trigger color updates when props.value changes
     }, [props.value]);
 
-    const handleChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
+    const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
         let color: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);
         if (props.value instanceof Color4) {
             color = Color4.FromColor3(color, data.color.a ?? 1);
         }
-        setColor(color);
+        handleChange(color);
+    };
+
+    const handleChange = (newColor: Color3 | Color4) => {
+        setColor(newColor);
+        props.onChange(newColor); // Ensures the parent is notified when color changes from within colorPicker
     };
 
     return (
@@ -113,12 +105,12 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
             onOpenChange={(_, data) => setPopoverOpen(data.open)}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <div className={classes.triggerColor} style={{ backgroundColor: color.toHexString() }} />
+                <ColorSwatch size="small" color={color.toHexString()} value={color.toHexString().slice(1)} />
             </PopoverTrigger>
 
             <PopoverSurface>
                 <div className={classes.colorPickerContainer}>
-                    <ColorPicker color={rgbaToHsv(color)} onColorChange={handleChange}>
+                    <ColorPicker color={rgbaToHsv(color)} onColorChange={handleColorPickerChange}>
                         <ColorArea inputX={{ "aria-label": "Saturation" }} inputY={{ "aria-label": "Brightness" }} />
                         <ColorSlider aria-label="Hue" />
                         {color instanceof Color4 && <AlphaSlider aria-label="Alpha" />}
@@ -127,23 +119,23 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
                         {/* Top Row: Preview, Gamma Hex, Linear Hex */}
                         <div className={classes.row}>
                             <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
-                            <InputHexField label="Gamma Hex" value={color} isLinearMode={props.isLinearMode} onChange={setColor} />
-                            <InputHexField label="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} value={color} onChange={setColor} />
+                            <InputHexField label="Gamma Hex" value={color} isLinearMode={props.isLinearMode} onChange={handleChange} />
+                            <InputHexField label="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} value={color} onChange={handleChange} />
                         </div>
 
                         {/* Middle Row: Red, Green, Blue, Alpha */}
                         <div className={classes.row}>
-                            <InputRgbField label="Red" color={color} rgbKey="r" onChange={setColor} />
-                            <InputRgbField label="Green" color={color} rgbKey="g" onChange={setColor} />
-                            <InputRgbField label="Blue" color={color} rgbKey="b" onChange={setColor} />
-                            <InputAlphaField color={color} onChange={setColor} />
+                            <InputRgbField label="Red" color={color} rgbKey="r" onChange={handleChange} />
+                            <InputRgbField label="Green" color={color} rgbKey="g" onChange={handleChange} />
+                            <InputRgbField label="Blue" color={color} rgbKey="b" onChange={handleChange} />
+                            <InputAlphaField color={color} onChange={handleChange} />
                         </div>
 
                         {/* Bottom Row: Hue, Saturation, Value */}
                         <div className={classes.row}>
-                            <InputHsvField label="Hue" color={color} hsvKey="h" max={360} onChange={setColor} />
-                            <InputHsvField label="Saturation" color={color} hsvKey="s" max={100} scale={100} onChange={setColor} />
-                            <InputHsvField label="Value" color={color} hsvKey="v" max={100} scale={100} onChange={setColor} />
+                            <InputHsvField label="Hue" color={color} hsvKey="h" max={360} onChange={handleChange} />
+                            <InputHsvField label="Saturation" color={color} hsvKey="s" max={100} scale={100} onChange={handleChange} />
+                            <InputHsvField label="Value" color={color} hsvKey="v" max={100} scale={100} onChange={handleChange} />
                         </div>
                     </div>
                 </div>

@@ -33,25 +33,20 @@ export type AccordionSectionContent<ContextT> = Readonly<{
     key: string;
 
     /**
-     * The content that is added to individual sections.
+     * The section this content belongs to.
      */
-    content: readonly Readonly<{
-        /**
-         * The section this content belongs to.
-         */
-        section: symbol;
+    section: symbol;
 
-        /**
-         * An optional order for the content within the section.
-         * Defaults to 0.
-         */
-        order?: number;
+    /**
+     * An optional order for the content within the section.
+     * Defaults to 0.
+     */
+    order?: number;
 
-        /**
-         * The React component that will be rendered for this content.
-         */
-        component: ComponentType<{ context: ContextT }>;
-    }>[];
+    /**
+     * The React component that will be rendered for this content.
+     */
+    component: ComponentType<{ context: ContextT }>;
 }>;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -61,11 +56,6 @@ const useStyles = makeStyles({
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-    },
-    panelDiv: {
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
     },
 });
 
@@ -118,12 +108,8 @@ export function AccordionPane<ContextT = unknown>(
                     const childProps = child.props as AccordionSectionProps;
                     defaultSectionContent.push({
                         key: child.key ?? childProps.title,
-                        content: [
-                            {
-                                section: defaultSections[index].identity,
-                                component: () => child,
-                            },
-                        ],
+                        section: defaultSections[index].identity,
+                        component: () => child,
                     });
                 }
             });
@@ -147,9 +133,7 @@ export function AccordionPane<ContextT = unknown>(
         return mergedSections
             .map((section) => {
                 // Get a flat list of the section content, preserving the key so it can be used when each component for each section is rendered.
-                const contentForSection = mergedSectionContent
-                    .flatMap((entry) => entry.content.map((content) => ({ key: entry.key, ...content })))
-                    .filter((content) => content.section === section.identity);
+                const contentForSection = mergedSectionContent.filter((content) => content.section === section.identity);
 
                 // If there is no content for this section, we skip it.
                 if (contentForSection.length === 0) {

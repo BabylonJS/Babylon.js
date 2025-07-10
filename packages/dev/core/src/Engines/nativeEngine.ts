@@ -325,6 +325,8 @@ export class NativeEngine extends Engine {
             disableMorphTargetTexture: false,
             parallelShaderCompile: { COMPLETION_STATUS_KHR: 0 },
             textureNorm16: false,
+            blendParametersPerTarget: false,
+            dualSourceBlending: false,
         };
 
         this._features = {
@@ -1322,10 +1324,11 @@ export class NativeEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+     * @param targetIndex defines the index of the target to set the alpha mode for (default is 0)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      */
-    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
-        if (this._alphaMode === mode) {
+    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false, targetIndex = 0): void {
+        if (this._alphaMode[targetIndex] === mode) {
             return;
         }
 
@@ -1339,7 +1342,7 @@ export class NativeEngine extends Engine {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
         }
 
-        this._alphaMode = mode;
+        this._alphaMode[targetIndex] = mode;
     }
 
     public override setInt(uniform: WebGLUniformLocation, int: number): boolean {

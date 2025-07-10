@@ -975,10 +975,10 @@ export class GaussianSplattingMesh extends Mesh {
                     position[0] = value;
                     break;
                 case PLYValue.Y:
-                    position[1] = -value;
+                    position[1] = value;
                     break;
                 case PLYValue.Z:
-                    position[2] = -value;
+                    position[2] = value;
                     break;
                 case PLYValue.SCALE_0:
                     scale[0] = Math.exp(value);
@@ -1020,10 +1020,10 @@ export class GaussianSplattingMesh extends Mesh {
                     r1 = value;
                     break;
                 case PLYValue.ROT_2:
-                    r2 = -value;
+                    r2 = value;
                     break;
                 case PLYValue.ROT_3:
-                    r3 = -value;
+                    r3 = value;
                     break;
             }
             if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {

@@ -8,7 +8,7 @@ import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceV
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
 import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 
 const enum PerfMetadataCategory {
     Count = "Count",
@@ -68,8 +68,8 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
         startPerformanceViewerPopup();
     };
 
-    const onLoadClick = (file: File) => {
-        Tools.ReadFile(file, (data: string) => {
+    const onLoadClick = (fileList: FileList) => {
+        Tools.ReadFile(fileList[0], (data: string) => {
             // reopen window and load data!
             setIsOpen(false);
             setIsLoadedFromCsv(true);
@@ -129,15 +129,7 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
     return (
         <>
             {!isOpen && <ButtonLine label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />}
-            {!isOpen && (
-                <PlaceholderPropertyLine
-                    label="Load Perf Viewer using CSV"
-                    value={false}
-                    onChange={() => {
-                        onLoadClick({} as File);
-                    }}
-                />
-            )}
+            {!isOpen && <FileUploadLine label="Load Perf Viewer using CSV" accept=".csv" onClick={onLoadClick} />}
             <ButtonLine label="Export Perf to CSV" onClick={onExportClick} />
             {!isOpen && <ButtonLine label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
         </>

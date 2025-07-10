@@ -159,12 +159,27 @@ class _SpatialWebAudioListener extends _AbstractSpatialWebAudioListener {
     }
 
     protected override _setWebAudioPosition(position: Vector3): void {
+        // If attached and there is a ramp in progress, we assume another update is coming soon that we can wait for.
+        // We don't do this for unattached nodes because there may not be another update coming.
+        if (this.isAttached && (this._positionX.isRamping || this._positionY.isRamping || this._positionZ.isRamping)) {
+            return;
+        }
+
         this._positionX.targetValue = position.x;
         this._positionY.targetValue = position.y;
         this._positionZ.targetValue = position.z;
     }
 
     protected override _setWebAudioOrientation(forward: Vector3, up: Vector3): void {
+        // If attached and there is a ramp in progress, we assume another update is coming soon that we can wait for.
+        // We don't do this for unattached nodes because there may not be another update coming.
+        if (
+            this.isAttached &&
+            (this._forwardX.isRamping || this._forwardY.isRamping || this._forwardZ.isRamping || this._upX.isRamping || this._upY.isRamping || this._upZ.isRamping)
+        ) {
+            return;
+        }
+
         this._forwardX.targetValue = forward.x;
         this._forwardY.targetValue = forward.y;
         this._forwardZ.targetValue = forward.z;
