@@ -26,7 +26,7 @@ export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
                 <MessageBarBody>
                     <MessageBarTitle>{header}</MessageBarTitle>
                     {message}
-                    {docLink && <Link href={docLink}>Link to Docs!</Link>}
+                    {docLink && <Link href={docLink}> - Link to Docs!</Link>}
                 </MessageBarBody>
             </FluentMessageBar>
         </div>
