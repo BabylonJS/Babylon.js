@@ -6,8 +6,8 @@ import { Collapse } from "@fluentui/react-motion-components-preview";
 
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
-import { useColor3Property, useProperty } from "../../hooks/compoundPropertyHooks";
-import { BoundProperty } from "./boundProperty";
+import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
+import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";

@@ -10,9 +10,9 @@ import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsE
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
-import { useVector3Property } from "../../hooks/compoundPropertyHooks";
-import { useInterceptObservable } from "../../hooks/instrumentationHooks";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useVector3Property } from "../../../hooks/compoundPropertyHooks";
+import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
+import { useObservableState } from "../../../hooks/observableHooks";
 
 import "core/Physics/v2/physicsEngineComponent";
 

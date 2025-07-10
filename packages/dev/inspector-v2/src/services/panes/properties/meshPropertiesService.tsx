@@ -8,9 +8,9 @@ import { Mesh } from "core/Meshes";
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
-import { MeshAdvancedProperties } from "../../../components/properties/meshAdvancedProperties";
-import { MeshGeneralProperties } from "../../../components/properties/meshGeneralProperties";
-import { MeshOutlineOverlayProperties } from "../../../components/properties/meshOutlineOverlayProperties";
+import { MeshAdvancedProperties } from "../../../components/properties/mesh/meshAdvancedProperties";
+import { MeshGeneralProperties } from "../../../components/properties/mesh/meshGeneralProperties";
+import { MeshOutlineOverlayProperties } from "../../../components/properties/mesh/meshOutlineOverlayProperties";
 
 export const AdvancedPropertiesSectionIdentity = Symbol("Advanced");
 export const OutlineOverlayPropertiesSectionItentity = Symbol("Outline & Overlay");

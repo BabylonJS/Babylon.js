@@ -13,7 +13,7 @@ import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/drop
 import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
-import { BoundProperty } from "./boundProperty";
+import { BoundProperty } from "../boundProperty";
 
 export const SkeletonGeneralProperties: FunctionComponent<{ skeleton: Skeleton }> = (props) => {
     const { skeleton } = props;
