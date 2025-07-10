@@ -20,7 +20,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
-            return void 0;
+            return undefined;
         }
 
         const nodeMovedObservable = new Observable<Node>();

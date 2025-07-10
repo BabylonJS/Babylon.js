@@ -26,7 +26,7 @@ export const SpriteManagerHierarchyServiceDefinition: ServiceDefinition<[], [ISc
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
-            return void 0;
+            return undefined;
         }
 
         const sectionRegistration = sceneExplorerService.addSection<ISpriteManager | Sprite>({

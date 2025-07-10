@@ -17,7 +17,7 @@ export const SkeletonHierarchyServiceDefinition: ServiceDefinition<[], [ISceneEx
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
-            return void 0;
+            return undefined;
         }
 
         const boneMovedObservable = new Observable<Bone>();

@@ -16,7 +16,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
-            return void 0;
+            return undefined;
         }
 
         const sectionRegistration = sceneExplorerService.addSection({
