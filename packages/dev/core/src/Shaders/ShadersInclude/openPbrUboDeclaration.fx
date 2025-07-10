@@ -23,9 +23,6 @@ layout(std140, column_major) uniform;
 // }
 
 uniform Material {
-    vec2 vAlbedoInfos;
-    vec2 vBaseWeightInfos;
-    vec2 vBaseDiffuseRoughnessInfos;
     vec4 vAmbientInfos;
     vec2 vOpacityInfos;
     vec2 vEmissiveInfos;
@@ -33,9 +30,7 @@ uniform Material {
     vec3 vReflectivityInfos;
     vec2 vMicroSurfaceSamplerInfos;
     vec3 vBumpInfos;
-    mat4 albedoMatrix;
-    mat4 baseWeightMatrix;
-    mat4 baseDiffuseRoughnessMatrix;
+    
     mat4 ambientMatrix;
     mat4 opacityMatrix;
     mat4 emissiveMatrix;
@@ -44,13 +39,9 @@ uniform Material {
     mat4 microSurfaceSamplerMatrix;
     mat4 bumpMatrix;
     vec2 vTangentSpaceParams;
-    vec4 vAlbedoColor;
-    float baseWeight;
-    float baseDiffuseRoughness;
     vec4 vLightingIntensity;
     float pointSize;
     vec4 vReflectivityColor;
-    vec3 vEmissiveColor;
     vec3 vAmbientColor;
 
     vec2 vDebugMode;
@@ -91,7 +82,18 @@ uniform Material {
     vec3 vSphericalYZ;
     vec3 vSphericalZX;
 
-    #define ADDITIONAL_UBO_DECLARATION
+    float baseWeight;
+    vec4 vBaseColor;
+    float baseDiffuseRoughness;
+    vec3 vEmissiveColor;
+
+    vec2 baseWeightInfos;
+    mat4 baseWeightMatrix;
+    vec2 baseColorInfos;
+    mat4 baseColorMatrix;
+    vec2 baseDiffuseRoughnessInfos;
+    mat4 baseDiffuseRoughnessMatrix;
+#define ADDITIONAL_UBO_DECLARATION
 };
 
 #include<sceneUboDeclaration>

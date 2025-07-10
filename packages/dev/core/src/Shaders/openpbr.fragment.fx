@@ -1,4 +1,4 @@
-﻿#define PBR_FRAGMENT_SHADER
+﻿#define OPENPBR_FRAGMENT_SHADER
 
 #define CUSTOM_FRAGMENT_EXTENSION
 
@@ -27,11 +27,11 @@ precision highp float;
 #endif
 
 // Declaration
-#include<__decl__pbrFragment>
+#include<__decl__openpbrFragment>
 
 #include<pbrFragmentExtraDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
-#include<pbrFragmentSamplersDeclaration>
+#include<openpbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
@@ -89,11 +89,11 @@ void main(void) {
     albedoOpacityOutParams albedoOpacityOut;
 
 #ifdef ALBEDO
-    vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
+    vec4 baseColorFromTexture = texture2D(baseColorSampler, vBaseColorUV + uvOffset);
 #endif
 
 #ifdef BASE_WEIGHT
-    vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
+    vec4 baseWeightFromTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef OPACITY
@@ -105,15 +105,15 @@ void main(void) {
 #endif
 
     albedoOpacityOut = albedoOpacityBlock(
-        vAlbedoColor
+        vBaseColor
     #ifdef ALBEDO
-        , albedoTexture
-        , vAlbedoInfos
+        , baseColorFromTexture
+        , baseColorInfos
     #endif
         , baseWeight
     #ifdef BASE_WEIGHT
-        , baseWeightTexture
-        , vBaseWeightInfos
+        , baseWeightFromTexture
+        , baseWeightInfos
     #endif
     #ifdef OPACITY
         , opacityMap
@@ -202,7 +202,7 @@ void main(void) {
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    float baseDiffuseRoughnessTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
+    float baseDiffuseRoughnessFromTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
 
     reflectivityOut = reflectivityBlock(
@@ -213,8 +213,8 @@ void main(void) {
     #endif
         , baseDiffuseRoughness
     #ifdef BASE_DIFFUSE_ROUGHNESS
-        , baseDiffuseRoughnessTexture
-        , vBaseDiffuseRoughnessInfos
+        , baseDiffuseRoughnessFromTexture
+        , baseDiffuseRoughnessInfos
     #endif
     #ifdef REFLECTIVITY
         , vReflectivityInfos
