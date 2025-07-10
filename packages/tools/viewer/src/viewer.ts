@@ -1796,13 +1796,15 @@ export class Viewer implements IDisposable {
     /**
      * Finds the light direction the environment (IBL).
      * If the environment changes, it will explicitly trigger the generation of CDF maps.
+     * @param iblCdfGenerator The IblCdfGenerator to use for finding the dominant direction.
+     * @returns A promise that resolves to the dominant direction vector.
      */
     private async _findIblDominantDirection(iblCdfGenerator: IblCdfGenerator): Promise<Vector3> {
         if (this._reflectionTexture && iblCdfGenerator.iblSource !== this._reflectionTexture) {
             iblCdfGenerator.iblSource = this._reflectionTexture;
             await iblCdfGenerator.renderWhenReady();
         }
-        return iblCdfGenerator.findDominantDirection();
+        return await iblCdfGenerator.findDominantDirection();
     }
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
