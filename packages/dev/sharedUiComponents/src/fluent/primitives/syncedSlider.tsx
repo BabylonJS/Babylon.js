@@ -18,8 +18,7 @@ const useSyncedSliderStyles = makeStyles({
     },
     input: {
         width: "40px", // Fixed width for input - always 40px
-        minWidth: "40px", // Ensure minimum width
-        maxWidth: "40px", // Prevent input from growing
+        flexShrink: 0,
     },
 });
 
