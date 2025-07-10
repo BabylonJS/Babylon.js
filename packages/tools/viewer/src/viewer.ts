@@ -22,6 +22,7 @@ import type {
     ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
+    IblCdfGenerator,
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
@@ -37,7 +38,7 @@ import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConf
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
 import { Scalar } from "core/Maths/math.scalar";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -53,7 +54,6 @@ import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
-import { IblCdfGenerator } from "core/Rendering/iblCdfGenerator";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
@@ -140,6 +140,12 @@ type ShadowState = {
         ground: Mesh;
         light: ShadowLight;
         shouldRender: boolean;
+        iblDirection: {
+            iblCdfGenerator: IblCdfGenerator;
+            lightPositionFactor: number;
+            direction: Vector3;
+        };
+        refreshLightPositionDirection: Function;
     };
     high?: {
         pipeline: IblShadowsRenderPipeline;
@@ -1601,11 +1607,7 @@ export class Viewer implements IDisposable {
     private _rotateShadowLightWithEnvironment(): void {
         if (this._shadowQuality === "normal" && this._shadowState.normal) {
             if (this._shadowState.normal.light) {
-                const light = this._shadowState.normal.light;
-                const effectiveSourceDir = this._getEffectiveLightSourceDirection();
-
-                light.position = effectiveSourceDir.scale(this._cachedShadowLightPositionFactor);
-                light.direction = adjustLightTargetDirection(effectiveSourceDir.negate());
+                this._shadowState.normal.refreshLightPositionDirection(this._reflectionsRotation);
             }
         } else if (this._shadowQuality === "high" && this._shadowState.high) {
             this._shadowState.high.pipeline?.resetAccumulation();
@@ -1797,56 +1799,25 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Calculates and caches the dominant light direction from the IBL.
-     * @returns The IBL dominant direction, or null.
+     * Finds the light direction the environment (IBL).
+     * If the environment changes, it will explicitly trigger the generation of CDF maps.
      */
-    private async _calculateAndCacheIblDominantDirection(): Promise<Nullable<Vector3>> {
-        if (!this._cdfGenerator) {
-            await import("core/Rendering/iblCdfGeneratorSceneComponent");
-            this._cdfGenerator = new IblCdfGenerator(this._engine);
+    private async _findIblDominantDirection(iblCdfGenerator: IblCdfGenerator): Promise<Vector3> {
+        if (this._reflectionTexture && iblCdfGenerator.iblSource !== this._reflectionTexture) {
+            iblCdfGenerator.iblSource = this._reflectionTexture;
+            await iblCdfGenerator.renderWhenReady();
         }
-
-        if (this._cdfGenerator && this._reflectionTexture && this._cdfGenerator.iblSource !== this._reflectionTexture) {
-            this._cdfGenerator.iblSource = this._reflectionTexture;
-            await this._cdfGenerator.renderWhenReady();
-        }
-
-        if (this._cdfGenerator) {
-            this._cachedIblDirection = await this._cdfGenerator.findDominantDirection();
-        } else {
-            this._cachedIblDirection = null;
-        }
-
-        return this._cachedIblDirection;
-    }
-
-    /**
-     * Calculates the effective light source direction considering IBL and manual rotation.
-     * @returns The effective light source direction.
-     */
-    private _getEffectiveLightSourceDirection(): Vector3 {
-        let effectiveSourceDir: Vector3;
-
-        if (this._cachedIblDirection) {
-            effectiveSourceDir = this._cachedIblDirection.normalizeToNew();
-            const rotationYMatrix = Matrix.RotationY(this._reflectionsRotation);
-            effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
-        } else {
-            // Fallback if IBL direction is not available:
-            const x = Math.cos(this._reflectionsRotation);
-            const z = Math.sin(this._reflectionsRotation);
-            effectiveSourceDir = new Vector3(x, 1, z);
-        }
-
-        return effectiveSourceDir;
+        return iblCdfGenerator.findDominantDirection();
     }
 
     private async _updateShadowMap(abortSignal?: AbortSignal) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
+        const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }, { IblCdfGenerator }] = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
             import("core/Materials/Textures/renderTargetTexture"),
             import("core/Lights/Shadows/shadowGenerator"),
+            import("core/Rendering/iblCdfGenerator"),
+            import("core/Rendering/iblCdfGeneratorSceneComponent"),
             import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
         ]);
 
@@ -1868,7 +1839,8 @@ export class Viewer implements IDisposable {
             return;
         }
 
-        const rawIblDirection = await this._calculateAndCacheIblDominantDirection();
+        const iblCdfGenerator = normal?.iblDirection.iblCdfGenerator ? normal?.iblDirection.iblCdfGenerator : new IblCdfGenerator(this._engine);
+        const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
         this._snapshotHelper.disableSnapshotRendering();
@@ -1876,18 +1848,16 @@ export class Viewer implements IDisposable {
         const size = 4096;
         const groundFactor = 20;
         const groundSize = radius * groundFactor;
-        this._cachedShadowLightPositionFactor = radius * 3;
-        const iblLightStrength = rawIblDirection ? Math.min(1.0, Math.max(0.0, rawIblDirection.length())) : 0.5;
-
-        const effectiveSourceDir = this._getEffectiveLightSourceDirection();
-        const lightPosition = effectiveSourceDir.scale(this._cachedShadowLightPositionFactor);
-        const lightTargetDirection = adjustLightTargetDirection(effectiveSourceDir.negate());
+        const lightPositionFactor = radius * 3;
+        const iblLightStrength = iblDirection ? Clamp(iblDirection.length(), 0.0, 1.0) : 0.5;
 
         if (!normal) {
-            const light = new DirectionalLight("shadowMapDirectionalLight", lightTargetDirection, this._scene);
+            const light = new DirectionalLight("shadowMapDirectionalLight", Vector3.Zero(), this._scene);
+            light.autoUpdateExtends = false;
 
             const generator = new ShadowGenerator(size, light);
             generator.setDarkness(Scalar.Lerp(0.8, 0.2, iblLightStrength));
+            generator.setDarkness(Lerp(0.8, 0.2, iblLightStrength));
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
             generator.useBlurExponentialShadowMap = true;
@@ -1895,6 +1865,7 @@ export class Viewer implements IDisposable {
             generator.bias = radius / 1000;
             generator.useKernelBlur = true;
             generator.blurKernel = Math.floor(Scalar.Lerp(64, 8, iblLightStrength));
+            generator.blurKernel = 32;
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
@@ -1917,6 +1888,19 @@ export class Viewer implements IDisposable {
                 generator: generator,
                 ground: ground,
                 shouldRender: true,
+                iblDirection: {
+                    iblCdfGenerator: iblCdfGenerator,
+                    lightPositionFactor: lightPositionFactor,
+                    direction: iblDirection,
+                },
+                refreshLightPositionDirection(reflectionRotation: number) {
+                    let effectiveSourceDir = this.iblDirection.direction.normalizeToNew();
+                    const rotationYMatrix = Matrix.RotationY(reflectionRotation * -1);
+                    effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
+
+                    this.light.position = effectiveSourceDir.scale(this.iblDirection.lightPositionFactor);
+                    this.light.direction = adjustLightTargetDirection(effectiveSourceDir.negate());
+                },
             });
 
             // Since the light is not applied to the meshes of the model (we only want shadows, not lighting),
@@ -1927,9 +1911,9 @@ export class Viewer implements IDisposable {
             });
         }
 
-        normal.light.position = lightPosition;
-        normal.light.direction = lightTargetDirection;
-        (normal.light as DirectionalLight).autoUpdateExtends = false;
+        normal.iblDirection.direction = iblDirection;
+        normal.iblDirection.lightPositionFactor = lightPositionFactor;
+        normal.refreshLightPositionDirection(this._reflectionsRotation);
         (normal.light as DirectionalLight).shadowFrustumSize = radius * 4;
 
         for (const model of this._loadedModelsBacking) {
@@ -1987,6 +1971,7 @@ export class Viewer implements IDisposable {
             normalShadow.generator.dispose();
             normalShadow.light.dispose();
             normalShadow.ground.dispose(true, true);
+            normalShadow.iblDirection.iblCdfGenerator.dispose();
             this._scene.removeMesh(normalShadow.ground);
             this._cdfGenerator?.dispose();
         }
