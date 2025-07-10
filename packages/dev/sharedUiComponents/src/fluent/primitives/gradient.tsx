@@ -7,7 +7,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "./colorPicker";
 import type { BaseComponentProps } from "../hoc/propertyLine";
 import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
-import { GradientBlockColorStep } from "core/Materials";
+import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 
 const useGradientStyles = makeStyles({
     container: {
@@ -18,12 +18,19 @@ const useGradientStyles = makeStyles({
     },
     // Wrapper for each slider to control its size
     valueWrapper: {
+        flex: "0 1 auto", // Don't grow, can shrink, size based on content
         alignContent: "center",
+        minWidth: "80px", // Minimum width to keep usable
         maxWidth: "100px", // Maximum width to prevent them from getting too wide
+    },
+    // Wrapper for color pickers - much smaller since they're just swatches
+    colorWrapper: {
+        alignContent: "center",
+        // No flex properties - just take natural size
     },
     // Wrapper for the step slider to take remaining space
     stepSliderWrapper: {
-        flex: "1 1 0",
+        flex: "1 0 auto", // Can grow, don't shrink, size based on content
         minWidth: "100px",
     },
 });
@@ -53,7 +60,7 @@ const Gradient: FunctionComponent<BaseComponentProps<GradientProps<number | Colo
     };
     return (
         <div id="gradientContainer" className={classes.container}>
-            <div className={classes.valueWrapper}>
+            <div className={gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4 ? classes.colorWrapper : classes.valueWrapper}>
                 {gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4 ? (
                     <ColorPickerPopup value={gradient.value1} onChange={(color) => gradientChange({ ...gradient, value1: color })} />
                 ) : (
@@ -61,7 +68,7 @@ const Gradient: FunctionComponent<BaseComponentProps<GradientProps<number | Colo
                 )}
             </div>
             {gradient.value2 !== undefined && (
-                <div className={classes.valueWrapper}>
+                <div className={gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? classes.colorWrapper : classes.valueWrapper}>
                     {gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? (
                         <ColorPickerPopup value={gradient.value2} onChange={(color) => gradientChange({ ...gradient, value2: color })} />
                     ) : (

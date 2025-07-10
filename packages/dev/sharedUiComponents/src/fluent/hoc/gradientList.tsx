@@ -5,7 +5,7 @@ import { Color3GradientComponent, Color4GradientComponent, FactorGradientCompone
 import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
 import type { IValueGradient } from "core/Misc/gradients";
 import type { Nullable } from "core/types";
-import { Color3, Color4 } from "core/Maths";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 type GradientTypes = "Factor" | "Color3" | "Color4";
 
