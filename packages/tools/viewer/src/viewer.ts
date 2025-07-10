@@ -19,7 +19,6 @@ import type {
     Nullable,
     Observer,
     PickingInfo,
-    ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
     IblCdfGenerator,
@@ -135,24 +134,24 @@ export type PostProcessing = {
 
 type ShadowState = {
     normal?: {
-        generator: ShadowGenerator;
-        ground: Mesh;
-        light: ShadowLight;
+        readonly generator: ShadowGenerator;
+        readonly ground: Mesh;
+        readonly light: DirectionalLight;
         shouldRender: boolean;
-        iblDirection: {
-            iblCdfGenerator: IblCdfGenerator;
+        readonly iblDirection: {
+            readonly iblCdfGenerator: IblCdfGenerator;
             positionFactor: number;
             direction: Vector3;
         };
-        refreshLightPositionDirection: Function;
+        refreshLightPositionDirection(reflectionRotation: number): void;
     };
     high?: {
-        pipeline: IblShadowsRenderPipeline;
-        ground: Mesh;
-        groundMaterial: ShaderMaterial;
+        readonly pipeline: IblShadowsRenderPipeline;
+        readonly ground: Mesh;
+        readonly groundMaterial: ShaderMaterial;
         renderTimer?: Nullable<ReturnType<typeof setTimeout>>;
         shouldRender: boolean;
-        resizeObserver: Observer<Engine>;
+        readonly resizeObserver: Observer<Engine>;
     };
 };
 
@@ -1854,7 +1853,6 @@ export class Viewer implements IDisposable {
 
             const generator = new ShadowGenerator(size, light);
             generator.setDarkness(Lerp(0.8, 0.2, iblLightStrength));
-            generator.setDarkness(Lerp(0.8, 0.2, iblLightStrength));
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
             generator.useBlurExponentialShadowMap = true;
@@ -1862,7 +1860,6 @@ export class Viewer implements IDisposable {
             generator.bias = radius / 1000;
             generator.useKernelBlur = true;
             generator.blurKernel = Math.floor(Lerp(64, 8, iblLightStrength));
-            generator.blurKernel = 32;
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
@@ -1911,7 +1908,7 @@ export class Viewer implements IDisposable {
         normal.iblDirection.direction = iblDirection;
         normal.iblDirection.positionFactor = positionFactor;
         normal.refreshLightPositionDirection(this._reflectionsRotation);
-        (normal.light as DirectionalLight).shadowFrustumSize = radius * 4;
+        normal.light.shadowFrustumSize = radius * 4;
 
         for (const model of this._loadedModelsBacking) {
             // Add all root meshes to the shadow generator.
