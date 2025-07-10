@@ -1,5 +1,7 @@
 import * as React from "react";
 import { DataStorage } from "core/Misc/dataStorage";
+import { FileUploadLine } from "../fluent/hoc/fileUploadLine";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 interface ILineWithFileButtonComponentProps {
     title: string;
@@ -38,7 +40,23 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
         this.setState({ isExpanded: newState });
     }
 
-    override render() {
+    renderFluent() {
+        return (
+            <FileUploadLine
+                label={this.props.title ?? "file-upload"}
+                accept={this.props.accept}
+                onClick={(files) => {
+                    if (files && files.length) {
+                        for (const file of files) {
+                            this.props.onIconClick(file);
+                        }
+                    }
+                }}
+            />
+        );
+    }
+
+    renderOriginal() {
         return (
             <div className="nonDraggableLine withButton">
                 {this.props.label}
@@ -58,5 +76,8 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
                 </div>
             </div>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }
