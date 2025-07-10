@@ -105,7 +105,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
             onOpenChange={(_, data) => setPopoverOpen(data.open)}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <ColorSwatch size="small" color={color.toHexString()} value={color.toHexString().slice(1)} />
+                <ColorSwatch borderColor={tokens.colorNeutralShadowKeyDarker} size="small" color={color.toHexString()} value={color.toHexString().slice(1)} />
             </PopoverTrigger>
 
             <PopoverSurface>

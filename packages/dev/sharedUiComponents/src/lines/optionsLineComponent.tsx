@@ -16,7 +16,7 @@ export interface IOptionsLineProps {
     label: string;
     target: any;
     propertyName: string;
-    options: IInspectableOptions[];
+    options: readonly IInspectableOptions[];
     noDirectUpdate?: boolean;
     onSelect?: (value: number | string) => void;
     extractValue?: (target: any) => number | string;
