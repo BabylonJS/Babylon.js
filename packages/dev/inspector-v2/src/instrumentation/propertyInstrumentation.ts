@@ -53,22 +53,31 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
     // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
     const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
 
+    // If the property does not exist, we'll define one transiently directly on the target object.
+    const [propertyOwner, propertyDescriptor] = ownerAndDescriptor ?? [
+        target,
+        {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: undefined,
+        },
+    ];
+
     if (!ownerAndDescriptor) {
-        throw new Error(`Property "${propertyKey.toString()}" not found on "${target}" or in its prototype chain.`);
-    }
+        Reflect.defineProperty(propertyOwner, propertyKey, propertyDescriptor);
+    } else {
+        // If the property is not configurable, it cannot be intercepted.
+        if (!propertyDescriptor.configurable) {
+            throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is not configurable.`);
+        }
 
-    const [propertyOwner, propertyDescriptor] = ownerAndDescriptor;
-
-    // If the property is not configurable, it cannot be intercepted.
-    if (!propertyDescriptor.configurable) {
-        throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is not configurable.`);
-    }
-
-    // If the property is not writable, it cannot be intercepted, but it cannot be mutated anyway so there is no need to intercept it.
-    if (IsPropertyReadonly(propertyDescriptor)) {
-        return {
-            dispose: () => {},
-        };
+        // If the property is not writable, it cannot be intercepted, but it cannot be mutated anyway so there is no need to intercept it.
+        if (IsPropertyReadonly(propertyDescriptor)) {
+            return {
+                dispose: () => {},
+            };
+        }
     }
 
     // Get or create the hooks map for the target object.
@@ -128,15 +137,19 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
                         InterceptorHooksMaps.delete(target);
                     }
 
-                    if (isOwnProperty) {
-                        // If the property is owned by the target object, it means the property was defined directly on the target object,
-                        // in which case we replaced it and the original property descriptor needs to be restored.
+                    const shouldRestorePropertyDescriptor =
+                        // If the property is owned by the target object, then we may have replaced an original property descriptor that needs to be restore.
+                        propertyOwner === target &&
+                        // But this is only the case if we found an existing property descriptor on the target object (hence the ownerAndDescriptor check),
+                        // or if the property value is not undefined, in which case we still want to retain the value that was set.
+                        (ownerAndDescriptor || target[propertyKey] !== undefined);
+                    // Otherwise, the property was inherited through the prototype chain, and so we can simply delete it from the target object.
+
+                    if (shouldRestorePropertyDescriptor) {
                         if (!Reflect.defineProperty(target, propertyKey, propertyDescriptor)) {
                             throw new Error(`Failed to restore original property descriptor "${propertyKey.toString()}" on object "${target}".`);
                         }
                     } else {
-                        // Otherwise, the property was inherited through the prototype chain, and so we can simply delete it from
-                        // the target object to allow it to fall back to the prototype chain as it did originally.
                         if (!Reflect.deleteProperty(target, propertyKey)) {
                             throw new Error(`Failed to delete transient property descriptor "${propertyKey.toString()}" on object "${target}".`);
                         }
