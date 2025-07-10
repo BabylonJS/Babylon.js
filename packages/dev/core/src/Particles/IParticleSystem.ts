@@ -31,6 +31,11 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
  */
 export interface IParticleSystem {
     /**
+     * Gets or sets the unique id of the particle system.
+     */
+    uniqueId: number;
+
+    /**
      * List of animations used by the particle system.
      */
     animations: Animation[];

@@ -30,7 +30,7 @@ declare const Reflect: any;
  */
 export interface ISpriteManager extends IDisposable {
     /**
-     * Gets or sets the unique id of the texture
+     * Gets or sets the unique id of the sprite manager
      */
     uniqueId: number;
 
