@@ -39,7 +39,6 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
-import { Scalar } from "core/Maths/math.scalar";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
@@ -1856,7 +1855,7 @@ export class Viewer implements IDisposable {
             light.autoUpdateExtends = false;
 
             const generator = new ShadowGenerator(size, light);
-            generator.setDarkness(Scalar.Lerp(0.8, 0.2, iblLightStrength));
+            generator.setDarkness(Lerp(0.8, 0.2, iblLightStrength));
             generator.setDarkness(Lerp(0.8, 0.2, iblLightStrength));
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
@@ -1864,7 +1863,7 @@ export class Viewer implements IDisposable {
             generator.enableSoftTransparentShadow = true;
             generator.bias = radius / 1000;
             generator.useKernelBlur = true;
-            generator.blurKernel = Math.floor(Scalar.Lerp(64, 8, iblLightStrength));
+            generator.blurKernel = Math.floor(Lerp(64, 8, iblLightStrength));
             generator.blurKernel = 32;
 
             const shadowMap = generator.getShadowMap();
