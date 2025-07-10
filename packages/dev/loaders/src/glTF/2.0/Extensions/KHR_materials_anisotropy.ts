@@ -1,5 +1,6 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -20,6 +21,8 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_anisotropy"]: {};
     }
 }
+
+let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
@@ -60,8 +63,15 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsAnisotropy>(context, material, this.name, async (extensionContext, extension) => {
+            if (useOpenPBR) {
+                const mod = await import("core/Materials/PBR/openPbrMaterial");
+                PBRMaterialClass = mod.OpenPBRMaterial;
+            } else {
+                const mod = await import("core/Materials/PBR/pbrMaterial");
+                PBRMaterialClass = mod.PBRMaterial;
+            }
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadIridescencePropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -70,23 +80,23 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
     }
 
     private async _loadIridescencePropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!(babylonMaterial instanceof PBRMaterialClass)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.anisotropy.isEnabled = true;
+        (babylonMaterial as PBRMaterial).anisotropy.isEnabled = true;
 
-        babylonMaterial.anisotropy.intensity = properties.anisotropyStrength ?? 0;
-        babylonMaterial.anisotropy.angle = properties.anisotropyRotation ?? 0;
+        (babylonMaterial as PBRMaterial).anisotropy.intensity = properties.anisotropyStrength ?? 0;
+        (babylonMaterial as PBRMaterial).anisotropy.angle = properties.anisotropyRotation ?? 0;
 
         if (properties.anisotropyTexture) {
             (properties.anisotropyTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/anisotropyTexture`, properties.anisotropyTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Anisotropy Intensity)`;
-                    babylonMaterial.anisotropy.texture = texture;
+                    (babylonMaterial as PBRMaterial).anisotropy.texture = texture;
                 })
             );
         }
