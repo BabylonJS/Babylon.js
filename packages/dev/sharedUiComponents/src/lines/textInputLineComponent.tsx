@@ -7,7 +7,7 @@ import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 import { PropertyLine } from "../fluent/hoc/propertyLine";
 import { Textarea } from "../fluent/primitives/textarea";
-import { Input } from "../fluent/primitives/input";
+import { TextInput, NumberInput } from "../fluent/primitives/input";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 export interface ITextInputLineComponentProps {
@@ -201,8 +201,10 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
             <PropertyLine label={this.props.label || ""}>
                 {this.props.multilines ? (
                     <Textarea value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} disabled={this.props.disabled} />
+                ) : this.props.numeric ? (
+                    <NumberInput value={this.getCurrentNumericValue(value)} onChange={(val) => this.updateValue(val.toString())} step={step} disabled={this.props.disabled} />
                 ) : (
-                    <Input value={value} onChange={(val) => this.updateValue(val.toString())} step={step} disabled={this.props.disabled} />
+                    <TextInput value={value} onChange={(val) => this.updateValue(val.toString())} step={step} disabled={this.props.disabled} />
                 )}
             </PropertyLine>
         );

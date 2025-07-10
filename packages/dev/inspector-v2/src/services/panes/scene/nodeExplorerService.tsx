@@ -1,4 +1,5 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { BoxRegular, BranchRegular, CameraRegular, EyeOffRegular, EyeRegular, LightbulbRegular } from "@fluentui/react-icons";
@@ -10,19 +11,25 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc";
 import { Node } from "core/node";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Node Hierarchy",
-    consumes: [SceneExplorerServiceIdentity],
-    factory: (sceneExplorerService) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
+    factory: (sceneExplorerService, sceneContext) => {
+        const scene = sceneContext.currentScene;
+        if (!scene) {
+            return undefined;
+        }
+
         const nodeMovedObservable = new Observable<Node>();
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
-            order: 0,
+            order: 100,
             predicate: (entity) => entity instanceof Node,
-            getRootEntities: (scene) => scene.rootNodes,
+            getRootEntities: () => scene.rootNodes,
             getEntityChildren: (node) => node.getChildren(),
             getEntityParent: (node) => node.parent,
             getEntityDisplayInfo: (node) => {
@@ -62,13 +69,13 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
                 ) : (
                     <></>
                 ),
-            getEntityAddedObservables: (scene) => [
+            getEntityAddedObservables: () => [
                 scene.onNewMeshAddedObservable,
                 scene.onNewTransformNodeAddedObservable,
                 scene.onNewCameraAddedObservable,
                 scene.onNewLightAddedObservable,
             ],
-            getEntityRemovedObservables: (scene) => [
+            getEntityRemovedObservables: () => [
                 scene.onMeshRemovedObservable,
                 scene.onTransformNodeRemovedObservable,
                 scene.onCameraRemovedObservable,

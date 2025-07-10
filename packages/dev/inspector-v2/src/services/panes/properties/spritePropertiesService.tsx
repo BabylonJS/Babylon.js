@@ -7,10 +7,10 @@ import { Sprite } from "core/Sprites";
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
-import { SpriteAnimationProperties } from "../../../components/properties/spriteAnimationProperties";
-import { SpriteGeneralProperties } from "../../../components/properties/spriteGeneralProperties";
-import { SpriteTransformProperties } from "../../../components/properties/spriteTransformProperties";
-import { SpriteOtherProperties } from "../../../components/properties/spriteOtherProperties";
+import { SpriteAnimationProperties } from "../../../components/properties/sprites/spriteAnimationProperties";
+import { SpriteGeneralProperties } from "../../../components/properties/sprites/spriteGeneralProperties";
+import { SpriteTransformProperties } from "../../../components/properties/sprites/spriteTransformProperties";
+import { SpriteOtherProperties } from "../../../components/properties/sprites/spriteOtherProperties";
 import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
 
 export const SpriteTransformsPropertiesSectionItentity = Symbol("Transforms");

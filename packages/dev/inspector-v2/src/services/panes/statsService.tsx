@@ -90,29 +90,31 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
 
         // Default/built-in content.
         sectionContentCollection.add({
-            key: "DefaultStats",
-            content: [
-                {
-                    section: StatsPerformanceSectionIdentity,
-                    order: 0,
-                    component: PerformanceStats,
-                },
-                {
-                    section: StatsCountSectionIdentity,
-                    order: 1,
-                    component: CountStats,
-                },
-                {
-                    section: StatsFrameStepsSectionIdentity,
-                    order: 2,
-                    component: FrameStepsStats,
-                },
-                {
-                    section: StatsSystemInfoSectionIdentity,
-                    order: 3,
-                    component: SystemStats,
-                },
-            ],
+            key: "DefaultPerfStats",
+            section: StatsPerformanceSectionIdentity,
+            order: 0,
+            component: PerformanceStats,
+        });
+
+        sectionContentCollection.add({
+            key: "DefaultCountStats",
+            section: StatsCountSectionIdentity,
+            order: 1,
+            component: CountStats,
+        });
+
+        sectionContentCollection.add({
+            key: "DefaultFrameStats",
+            section: StatsFrameStepsSectionIdentity,
+            order: 2,
+            component: FrameStepsStats,
+        });
+
+        sectionContentCollection.add({
+            key: "DefaultSystemStats",
+            section: StatsSystemInfoSectionIdentity,
+            order: 3,
+            component: SystemStats,
         });
 
         return {

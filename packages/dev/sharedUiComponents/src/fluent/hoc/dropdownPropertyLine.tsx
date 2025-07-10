@@ -20,9 +20,7 @@ const DropdownPropertyLine: FunctionComponent<DropdownProps<AcceptedDropdownValu
     );
 };
 
-export const NullableDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => (
-    <DropdownPropertyLine {...props} includeNullAs="null" />
-);
+const NullableDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => <DropdownPropertyLine {...props} includeNullAs="null" />;
 const OptionalDropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => <DropdownPropertyLine {...props} includeNullAs="undefined" />;
 
 /**
