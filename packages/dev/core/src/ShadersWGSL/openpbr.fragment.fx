@@ -1,4 +1,4 @@
-#define PBR_FRAGMENT_SHADER
+#define OPENPBR_FRAGMENT_SHADER
 
 #define CUSTOM_FRAGMENT_BEGIN
 
@@ -11,11 +11,11 @@
 #endif
 
 // Declaration
-#include<openPbrUboDeclaration>
+#include<openpbrUboDeclaration>
 
 #include<pbrFragmentExtraDeclaration>
 #include<lightUboDeclaration>[0..maxSimultaneousLights]
-#include<pbrFragmentSamplersDeclaration>
+#include<openpbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
@@ -74,11 +74,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var albedoOpacityOut: albedoOpacityOutParams;
 
 #ifdef ALBEDO
-    var albedoTexture: vec4f = textureSample(albedoSampler, albedoSamplerSampler, fragmentInputs.vAlbedoUV + uvOffset);
+    var baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
 #endif
 
 #ifdef BASE_WEIGHT
-    var baseWeightTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
+    var baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef OPACITY
@@ -90,15 +90,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
     albedoOpacityOut = albedoOpacityBlock(
-        uniforms.vAlbedoColor
+        uniforms.vBaseColor
     #ifdef ALBEDO
-        , albedoTexture
-        , uniforms.vAlbedoInfos
+        , baseColorFromTexture
+        , uniforms.baseColorInfos
     #endif
         , uniforms.baseWeight
     #ifdef BASE_WEIGHT
-        , baseWeightTexture
-        , uniforms.vBaseWeightInfos
+        , baseWeightFromTexture
+        , uniforms.baseWeightInfos
     #endif
     #ifdef OPACITY
         , opacityMap
@@ -164,7 +164,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    var baseDiffuseRoughnessTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).x;
+    var baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).x;
 #endif
 
 #ifdef METALLICWORKFLOW
@@ -198,8 +198,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
         , uniforms.baseDiffuseRoughness
     #ifdef BASE_DIFFUSE_ROUGHNESS
-        , baseDiffuseRoughnessTexture
-        , uniforms.vBaseDiffuseRoughnessInfos
+        , baseDiffuseRoughnessFromTexture
+        , uniforms.baseDiffuseRoughnessInfos
     #endif
     #ifdef REFLECTIVITY
         , uniforms.vReflectivityInfos

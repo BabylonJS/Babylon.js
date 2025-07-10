@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -55,7 +55,7 @@ import { MaterialFlags } from "../materialFlags";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4, TmpVectors } from "core/Maths/math.vector";
 import type { Matrix } from "core/Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
 import { ImageProcessingMixin } from "../imageProcessing";
@@ -66,28 +66,79 @@ import type { IAnimatable } from "../../Animations/animatable.interface";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
+class Uniform {
+    public name: string;
+    public numComponents: number;
+    public linkedProperties: { [name: string]: Property<any> } = {};
+    public populateVectorFromLinkedProperties(vector: Vector4 | Vector3 | Vector2): void {
+        const destinationSize = vector instanceof Vector4 ? 4 : vector instanceof Vector3 ? 3 : vector instanceof Vector2 ? 2 : 1;
+        for (const propKey in this.linkedProperties) {
+            const prop = this.linkedProperties[propKey];
+            const sourceSize = prop.numComponents;
+            if (destinationSize < sourceSize || prop.targetUniformComponentOffset > destinationSize - sourceSize) {
+                if (sourceSize == 1) {
+                    Logger.Error(`Float property ${prop.name} has an offset that is too large.`);
+                } else {
+                    Logger.Error(`Vector${sourceSize} property ${prop.name} won't fit in Vector${destinationSize} or has an offset that is too large.`);
+                }
+                return;
+            }
+            if (typeof prop.value === "number") {
+                Uniform._tmpArray[prop.targetUniformComponentOffset] = prop.value;
+            } else {
+                prop.value.toArray(Uniform._tmpArray, prop.targetUniformComponentOffset);
+            }
+        }
+        vector.fromArray(Uniform._tmpArray);
+    }
+    public constructor(name: string, componentNum: number) {
+        this.name = name;
+        this.numComponents = componentNum;
+    }
+    private static _tmpArray: number[] = [0, 0, 0, 0];
+}
+
 /**
  * Defines a property for the OpenPBRMaterial.
  */
 class Property<T> {
+    public name: string;
+    public targetUniformName: string;
+    public defaultValue: T;
+    public value: T;
+    // public includeAlphaFromProp: string = "";
+
+    /**
+     * If not given a type, there will be no uniform defined for this property and
+     * it will be assumed that the value will be packed into the already existing "uniformName" uniform.
+     */
+    public targetUniformComponentNum: number = 4; // Default to vec4
+    public targetUniformComponentOffset: number = 0;
+
     /**
      * Creates a new Property instance.
      * @param name The name of the property in the shader
      * @param defaultValue The default value of the property
-     * @param value The current value of the property, defaults to defaultValue
+     * @param targetUniformName The name of the property in the shader uniform block
+     * @param targetUniformComponentNum The number of components in the target uniform. All properties that are
+     * packed into the same uniform must agree on the size of the target uniform.
+     * @param targetUniformComponentOffset The offset in the uniform where this property will be packed.
      */
-    constructor(
-        public name: string,
-        public defaultValue: T,
-        public value: T = defaultValue
-    ) {}
+    constructor(name: string, defaultValue: T, targetUniformName: string, targetUniformComponentNum: number, targetUniformComponentOffset: number = 0) {
+        this.name = name;
+        this.targetUniformName = targetUniformName;
+        this.defaultValue = defaultValue;
+        this.value = defaultValue;
+        this.targetUniformComponentNum = targetUniformComponentNum;
+        this.targetUniformComponentOffset = targetUniformComponentOffset;
+    }
 
     /**
-     * Returns the number of components of the property based on its type.
+     * Returns the number of components of the property based on its default value type.
      */
     public get numComponents(): number {
         if (typeof this.defaultValue === "number") {
-            return 1; // Single float
+            return 1;
         } else if (this.defaultValue instanceof Color3) {
             return 3;
         } else if (this.defaultValue instanceof Color4) {
@@ -104,10 +155,50 @@ class Property<T> {
 }
 
 class Sampler {
-    constructor(
-        public name: string, // Name in the shader
-        public value: Nullable<BaseTexture> = null // Texture value, default to null
-    ) {}
+    public name: string;
+    public value: Nullable<BaseTexture> = null; // Texture value, default to null
+    public samplerPrefix: string = ""; // The name of the sampler in the shader
+    public textureDefine: string = ""; // The define used in the shader for this sampler
+
+    /**
+     * The name of the sampler used in the shader.
+     * If this naming changes, we'll also need to change:
+     * - samplerFragmentDeclaration.fx
+     * - openpbr.fragment.fx
+     */
+    public get samplerName(): string {
+        return this.samplerPrefix + "Sampler";
+    }
+    /**
+     * The name of the sampler info used in the shader.
+     * If this naming changes, we'll also need to change:
+     * - openpbr.vertex.fx
+     * - openpbr.fragment.fx
+     */
+    public get samplerInfoName(): string {
+        return this.samplerPrefix + "Infos";
+    }
+    /**
+     * The name of the matrix used for this sampler in the shader.
+     * If this naming changes, we'll also need to change:
+     * - materialHelper.functions.BindTextureMatrix
+     * - samplerVertexImplementation.fx
+     * - openpbr.fragment.fx
+     */
+    public get samplerMatrixName(): string {
+        return this.samplerPrefix + "Matrix";
+    }
+    /**
+     * Creates a new Sampler instance.
+     * @param name The name of the texture property
+     * @param samplerPrefix The prefix used for the name of the sampler in the shader
+     * @param textureDefine The define used in the shader for this sampler
+     */
+    constructor(name: string, samplerPrefix: string, textureDefine: string) {
+        this.name = name;
+        this.samplerPrefix = samplerPrefix;
+        this.textureDefine = textureDefine;
+    }
 }
 
 class OpenPBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
@@ -128,7 +219,9 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public VERTEXCOLOR = false;
 
     public BASE_WEIGHT = false;
+    public BASE_WEIGHTDIRECTUV = 0;
     public BASE_DIFFUSE_ROUGHNESS = false;
+    public BASE_DIFFUSE_ROUGHNESSDIRECTUV = 0;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
@@ -378,26 +471,78 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
-     * Base Color uniform property.
+     * Base Weight is a multiplier on the diffuse and metal lobes.
+     * See OpenPBR's specs for base_weight
      */
-    get baseColor(): Color3 {
-        return this._baseColor.value;
-    }
-    set baseColor(color: Color3) {
-        this._baseColor.value = color;
-    }
-    private _baseColor: Property<Color3> = new Property<Color3>("baseColor", Color3.White());
+    public baseWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseWeight: Property<number> = new Property<number>("base_weight", 1, "baseWeight", 1);
+
+    /**
+     * Base Weight is a multiplier on the diffuse and metal lobes.
+     * See OpenPBR's specs for base_weight
+     */
+    public baseWeightTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseWeightTexture: Sampler = new Sampler("base_weight", "baseWeight", "BASE_WEIGHT");
+
+    /**
+     * Color of the base diffuse lobe.
+     * See OpenPBR's specs for base_color
+     */
+    public baseColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseColor: Property<Color3> = new Property<Color3>("base_color", Color3.White(), "vBaseColor", 4);
 
     /**
      * Base Color Texture property.
+     * See OpenPBR's specs for base_color
      */
-    get baseColorTexture(): Nullable<BaseTexture> {
-        return this._baseColorTexture.value;
-    }
-    set baseColorTexture(texture: Nullable<BaseTexture>) {
-        this._baseColorTexture.value = texture;
-    }
-    private _baseColorTexture: Sampler = new Sampler("baseColor");
+    public baseColorTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseColorTexture: Sampler = new Sampler("base_color", "baseColor", "ALBEDO");
+
+    /**
+     * Roughness of the diffuse lobe.
+     * See OpenPBR's specs for base_diffuse_roughness
+     */
+    public baseDiffuseRoughness: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseDiffuseRoughness")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseDiffuseRoughness: Property<number> = new Property<number>("base_diffuse_roughness", 0, "vBaseDiffuseRoughness", 1);
+
+    /**
+     * Roughness of the diffuse lobe.
+     * See OpenPBR's specs for base_diffuse_roughness
+     */
+    public baseDiffuseRoughnessTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseDiffuseRoughnessTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseDiffuseRoughnessTexture: Sampler = new Sampler("base_diffuse_roughness", "baseDiffuseRoughness", "BASE_DIFFUSE_ROUGHNESS");
+
+    /**
+     * Defines the opacity of the material's geometry. See OpenPBR's specs for geometry_opacity
+     */
+    public geometryOpacity: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryOpacity")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryOpacity: Property<number> = new Property<number>("geometry_opacity", 1.0, "vBaseColor", 4, 3);
+
+    /**
+     * Defines the color of the material's emission. See OpenPBR's specs for emission_color
+     */
+    public emissionColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _emissionColor: Property<Color3> = new Property<Color3>("emission_color", Color3.Black(), "vEmissiveColor", 3);
+
+    private _propertyList: { [name: string]: Property<any> };
+    private _uniformsList: { [name: string]: Uniform } = {};
+    private _samplersList: { [name: string]: Sampler } = {};
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -424,40 +569,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public environmentIntensity: number = 1.0;
 
     /**
-     * This is a special control allowing the reduction of the specular highlights coming from the
-     * four lights of the scene. Those highlights may not be needed in full environment lighting.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public specularIntensity: number = 1.0;
-
-    /**
      * Debug Control allowing disabling the bump map on this material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public disableBumpMap: boolean = false;
-
-    /**
-     * AKA Diffuse Texture in standard nomenclature.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoTexture: Nullable<BaseTexture>;
-
-    /**
-     * OpenPBR Base Weight texture (multiplier to the diffuse and metal lobes).
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseWeightTexture: Nullable<BaseTexture>;
-
-    /**
-     * OpenPBR Base Diffuse Roughness texture (roughness of the diffuse lobe).
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
@@ -616,27 +732,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public ambientColor = new Color3(0, 0, 0);
 
     /**
-     * AKA Diffuse Color in other nomenclature.
-     */
-    @serializeAsColor3("albedo")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoColor = new Color3(1, 1, 1);
-
-    /**
-     * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
-     */
-    @serialize("baseWeight")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseWeight = 1;
-
-    /**
-     * OpenPBR Base Diffuse Roughness (roughness of the diffuse lobe).
-     */
-    @serialize("baseDiffuseRoughness")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseDiffuseRoughness: Nullable<number>;
-
-    /**
      * AKA Specular Color in other nomenclature.
      */
     @serializeAsColor3("reflectivity")
@@ -649,13 +744,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serializeAsColor3("reflection")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionColor = new Color3(1.0, 1.0, 1.0);
-
-    /**
-     * The color emitted from the material.
-     */
-    @serializeAsColor3("emissive")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveColor = new Color3(0, 0, 0);
 
     /**
      * AKA Glossiness in other nomenclature.
@@ -1001,40 +1089,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _environmentIntensity: number = 1.0;
 
     /**
-     * This is a special control allowing the reduction of the specular highlights coming from the
-     * four lights of the scene. Those highlights may not be needed in full environment lighting.
-     * @internal
-     */
-    public _specularIntensity: number = 1.0;
-
-    /**
      * This stores the direct, emissive, environment, and specular light intensities into a Vector4.
      */
-    private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, this._specularIntensity);
+    private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, 1.0);
 
     /**
      * Debug Control allowing disabling the bump map on this material.
      * @internal
      */
     public _disableBumpMap: boolean = false;
-
-    /**
-     * AKA Diffuse Texture in standard nomenclature.
-     * @internal
-     */
-    public _albedoTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Base Weight texture (multiplier to the diffuse and metal lobes).
-     * @internal
-     */
-    public _baseWeightTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Base Diffuse Roughness texture (roughness of the diffuse lobe).
-     * @internal
-     */
-    public _baseDiffuseRoughnessTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
@@ -1173,25 +1236,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _ambientColor = new Color3(0, 0, 0);
 
     /**
-     * AKA Diffuse Color in other nomenclature.
-     * @internal
-     */
-    public _albedoColor = new Color3(1, 1, 1);
-
-    /**
-     * Base Weight (multiplier to the diffuse and metal lobes).
-     * @internal
-     */
-    public _baseWeight = 1;
-
-    /**
-     * Base Diffuse Roughness (roughness of the diffuse lobe).
-     * Can also be used to scale the corresponding texture.
-     * @internal
-     */
-    public _baseDiffuseRoughness: Nullable<number> = null;
-
-    /**
      * AKA Specular Color in other nomenclature.
      * @internal
      */
@@ -1202,12 +1246,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _reflectionColor = new Color3(1, 1, 1);
-
-    /**
-     * The color applied when light is emitted from a material.
-     * @internal
-     */
-    public _emissiveColor = new Color3(0, 0, 0);
 
     /**
      * AKA Glossiness in other nomenclature.
@@ -1526,6 +1564,48 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
+
+        // Build the internal property list that can be used to generate and update the uniform buffer
+        this._propertyList = {};
+        for (const key of Object.getOwnPropertyNames(this)) {
+            const value = (this as any)[key];
+            if (value instanceof Property) {
+                this._propertyList[key] = value;
+            }
+        }
+        // Build the internal uniforms list that is used for combining and updating
+        // property values in the uniform buffer
+        const propertyKeys = Object.keys(this._propertyList);
+        propertyKeys.forEach((key) => {
+            const prop = this._propertyList[key];
+            let uniform = this._uniformsList[prop.targetUniformName];
+            if (!uniform) {
+                uniform = new Uniform(prop.targetUniformName, prop.targetUniformComponentNum);
+                this._uniformsList[prop.targetUniformName] = uniform;
+            } else if (uniform.numComponents !== prop.targetUniformComponentNum) {
+                Logger.Error(`Uniform ${prop.targetUniformName} already exists of size ${uniform.numComponents}, but trying to set it to ${prop.targetUniformComponentNum}.`);
+            }
+            uniform.linkedProperties[prop.name] = prop;
+        });
+
+        // Build the internal list of samplers
+        this._samplersList = {};
+        for (const key of Object.getOwnPropertyNames(this)) {
+            const value = (this as any)[key];
+            if (value instanceof Sampler) {
+                this._samplersList[key] = value;
+            }
+        }
+
+        // Arg. Why do I have to add these references to get rid of the linting errors?
+        this._baseWeight;
+        this._baseWeightTexture;
+        this._baseColor;
+        this._baseColorTexture;
+        this._baseDiffuseRoughness;
+        this._baseDiffuseRoughnessTexture;
+        this._geometryOpacity;
+        this._emissionColor;
     }
 
     /**
@@ -1572,7 +1652,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             return false;
         }
 
-        return this.alpha < 1.0 || this._opacityTexture != null || this._shouldUseAlphaFromAlbedoTexture();
+        return this.geometryOpacity < 1.0 || this._opacityTexture != null || this._shouldUseAlphaFromAlbedoTexture();
     }
 
     /**
@@ -1590,21 +1670,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @returns whether or not the alpha value of the albedo texture should be used for alpha blending.
      */
     protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-        return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
+        return this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
     }
 
     /**
      * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
-        return (this._albedoTexture != null && this._albedoTexture.hasAlpha) || this._opacityTexture != null;
-    }
-
-    /**
-     * @returns the texture used for the alpha test.
-     */
-    public override getAlphaTestTexture(): Nullable<BaseTexture> {
-        return this._albedoTexture;
+        return this._opacityTexture != null;
     }
 
     /**
@@ -1740,21 +1813,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
             this._cacheHasRenderTargetTextures = this._eventInfo.hasRenderTargetTextures;
             if (scene.texturesEnabled) {
-                if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                    if (!this._albedoTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
-                if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
-                    if (!this._baseWeightTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
-                if (this._baseDiffuseRoughnessTexture && MaterialFlags.BaseDiffuseRoughnessTextureEnabled) {
-                    if (!this._baseDiffuseRoughnessTexture.isReadyOrNotBlocking()) {
-                        return false;
+                // Loop through samplers, check MaterialFlag and whether the texture is ready or not.
+                for (const key in this._samplersList) {
+                    const sampler = this._samplersList[key];
+                    if (sampler.value) {
+                        if (!sampler.value.isReadyOrNotBlocking()) {
+                            return false;
+                        }
                     }
                 }
 
@@ -1924,9 +1989,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override buildUniformLayout(): void {
         // Order is important !
         const ubo = this._uniformBuffer;
-        ubo.addUniform("vAlbedoInfos", 2);
-        ubo.addUniform("vBaseWeightInfos", 2);
-        ubo.addUniform("vBaseDiffuseRoughnessInfos", 2);
         ubo.addUniform("vAmbientInfos", 4);
         ubo.addUniform("vOpacityInfos", 2);
         ubo.addUniform("vEmissiveInfos", 2);
@@ -1934,9 +1996,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("vReflectivityInfos", 3);
         ubo.addUniform("vMicroSurfaceSamplerInfos", 2);
         ubo.addUniform("vBumpInfos", 3);
-        ubo.addUniform("albedoMatrix", 16);
-        ubo.addUniform("baseWeightMatrix", 16);
-        ubo.addUniform("baseDiffuseRoughnessMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("emissiveMatrix", 16);
@@ -1945,14 +2004,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("microSurfaceSamplerMatrix", 16);
         ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
-        ubo.addUniform("vAlbedoColor", 4);
-        ubo.addUniform("baseWeight", 1);
-        ubo.addUniform("baseDiffuseRoughness", 1);
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("pointSize", 1);
         ubo.addUniform("vReflectivityColor", 4);
-        ubo.addUniform("vEmissiveColor", 3);
+        // ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("vAmbientColor", 3);
 
         ubo.addUniform("vDebugMode", 2);
@@ -1965,6 +2021,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         ubo.addUniform("cameraInfo", 4);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
+
+        Object.values(this._uniformsList).forEach((uniform) => {
+            ubo.addUniform(uniform.name, uniform.numComponents);
+        });
+
+        Object.values(this._samplersList).forEach((sampler) => {
+            ubo.addUniform(sampler.samplerInfoName, 2);
+            ubo.addUniform(sampler.samplerMatrixName, 16);
+        });
+
         super.buildUniformLayout();
     }
 
@@ -2033,19 +2099,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 // Texture uniforms
                 if (scene.texturesEnabled) {
-                    if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                        ubo.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
-                        BindTextureMatrix(this._albedoTexture, ubo, "albedo");
-                    }
-
-                    if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
-                        ubo.updateFloat2("vBaseWeightInfos", this._baseWeightTexture.coordinatesIndex, this._baseWeightTexture.level);
-                        BindTextureMatrix(this._baseWeightTexture, ubo, "baseWeight");
-                    }
-
-                    if (this._baseDiffuseRoughnessTexture && MaterialFlags.BaseDiffuseRoughnessTextureEnabled) {
-                        ubo.updateFloat2("vBaseDiffuseRoughnessInfos", this._baseDiffuseRoughnessTexture.coordinatesIndex, this._baseDiffuseRoughnessTexture.level);
-                        BindTextureMatrix(this._baseDiffuseRoughnessTexture, ubo, "baseDiffuseRoughness");
+                    // Loop through samplers and bind info and matrix for each texture.
+                    for (const key in this._samplersList) {
+                        const sampler = this._samplersList[key];
+                        if (sampler.value) {
+                            ubo.updateFloat2(sampler.samplerInfoName, sampler.value.coordinatesIndex, sampler.value.level);
+                            BindTextureMatrix(sampler.value, ubo, sampler.samplerPrefix);
+                        }
                     }
 
                     if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -2134,18 +2194,29 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     ubo.updateColor4("vMetallicReflectanceFactors", this._metallicReflectanceColor, this._metallicF0Factor);
                 }
 
-                ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
+                // ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
 
-                ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
-
-                ubo.updateFloat("baseWeight", this._baseWeight);
-                ubo.updateFloat("baseDiffuseRoughness", this._baseDiffuseRoughness || 0.0);
+                Object.values(this._uniformsList).forEach((uniform) => {
+                    // If the property actually defines a uniform, update it.
+                    if (uniform.numComponents === 4) {
+                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector4[0]);
+                        ubo.updateVector4(uniform.name, TmpVectors.Vector4[0]);
+                    } else if (uniform.numComponents === 3) {
+                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector3[0]);
+                        ubo.updateVector3(uniform.name, TmpVectors.Vector3[0]);
+                    } else if (uniform.numComponents === 2) {
+                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector2[0]);
+                        ubo.updateFloat2(uniform.name, TmpVectors.Vector2[0].x, TmpVectors.Vector2[0].y);
+                    } else if (uniform.numComponents === 1) {
+                        ubo.updateFloat(uniform.name, uniform.linkedProperties[Object.keys(uniform.linkedProperties)[0]].value);
+                    }
+                });
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
                 this._lightingInfos.y = this._emissiveIntensity;
                 this._lightingInfos.z = this._environmentIntensity * scene.environmentIntensity;
-                this._lightingInfos.w = this._specularIntensity;
+                this._lightingInfos.w = 1.0; // This is used to be _specularIntensity.
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
 
@@ -2159,16 +2230,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
             // Textures
             if (scene.texturesEnabled) {
-                if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                    ubo.setTexture("albedoSampler", this._albedoTexture);
-                }
-
-                if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
-                    ubo.setTexture("baseWeightSampler", this._baseWeightTexture);
-                }
-
-                if (this._baseDiffuseRoughnessTexture && MaterialFlags.BaseDiffuseRoughnessTextureEnabled) {
-                    ubo.setTexture("baseDiffuseRoughnessSampler", this._baseDiffuseRoughnessTexture);
+                // Loop through samplers and set textures
+                for (const key in this._samplersList) {
+                    const sampler = this._samplersList[key];
+                    if (sampler.value) {
+                        ubo.setTexture(sampler.samplerName, sampler.value);
+                    }
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -2277,16 +2344,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override getAnimatables(): IAnimatable[] {
         const results = super.getAnimatables();
 
-        if (this._albedoTexture && this._albedoTexture.animations && this._albedoTexture.animations.length > 0) {
-            results.push(this._albedoTexture);
-        }
-
-        if (this._baseWeightTexture && this._baseWeightTexture.animations && this._baseWeightTexture.animations.length > 0) {
-            results.push(this._baseWeightTexture);
-        }
-
-        if (this._baseDiffuseRoughnessTexture && this._baseDiffuseRoughnessTexture.animations && this._baseDiffuseRoughnessTexture.animations.length > 0) {
-            results.push(this._baseDiffuseRoughnessTexture);
+        // Loop through samplers and push animated textures to list.
+        for (const key in this._samplersList) {
+            const sampler = this._samplersList[key];
+            if (sampler.value && sampler.value.animations && sampler.value.animations.length > 0) {
+                results.push(sampler.value);
+            }
         }
 
         if (this._ambientTexture && this._ambientTexture.animations && this._ambientTexture.animations.length > 0) {
@@ -2341,16 +2404,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
-        if (this._albedoTexture) {
-            activeTextures.push(this._albedoTexture);
-        }
-
-        if (this._baseWeightTexture) {
-            activeTextures.push(this._baseWeightTexture);
-        }
-
-        if (this._baseDiffuseRoughnessTexture) {
-            activeTextures.push(this._baseDiffuseRoughnessTexture);
+        // Loop through samplers and push active textures
+        for (const key in this._samplersList) {
+            const sampler = this._samplersList[key];
+            if (sampler.value) {
+                activeTextures.push(sampler.value);
+            }
         }
 
         if (this._ambientTexture) {
@@ -2410,16 +2469,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             return true;
         }
 
-        if (this._albedoTexture === texture) {
-            return true;
-        }
-
-        if (this._baseWeightTexture === texture) {
-            return true;
-        }
-
-        if (this._baseDiffuseRoughnessTexture === texture) {
-            return true;
+        // Loop through samplers and check each texture for equality
+        for (const key in this._samplersList) {
+            const sampler = this._samplersList[key];
+            if (sampler.value === texture) {
+                return true;
+            }
         }
 
         if (this._ambientTexture === texture) {
@@ -2491,9 +2546,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 this._environmentBRDFTexture.dispose();
             }
 
-            this._albedoTexture?.dispose();
-            this._baseWeightTexture?.dispose();
-            this._baseDiffuseRoughnessTexture?.dispose();
+            // Loop through samplers and dispose the textures
+            for (const key in this._samplersList) {
+                const sampler = this._samplersList[key];
+                sampler.value?.dispose();
+            }
+
             this._ambientTexture?.dispose();
             this._opacityTexture?.dispose();
             this._reflectionTexture?.dispose();
@@ -2666,19 +2724,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vEyePosition",
             "vLightsType",
             "vAmbientColor",
-            "vAlbedoColor",
-            "baseWeight",
-            "baseDiffuseRoughness",
             "vReflectivityColor",
             "vMetallicReflectanceFactors",
-            "vEmissiveColor",
             "visibility",
             "vFogInfos",
             "vFogColor",
             "pointSize",
             "vAlbedoInfos",
-            "vBaseWeightInfos",
-            "vBaseDiffuseRoughnessInfos",
             "vAmbientInfos",
             "vOpacityInfos",
             "vEmissiveInfos",
@@ -2690,8 +2742,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vLightmapInfos",
             "mBones",
             "albedoMatrix",
-            "baseWeightMatrix",
-            "baseDiffuseRoughnessMatrix",
             "ambientMatrix",
             "opacityMatrix",
             "emissiveMatrix",
@@ -2712,10 +2762,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "cameraInfo",
         ];
 
+        for (const uniformName in Object.keys(this._uniformsList)) {
+            uniforms.push(uniformName);
+        }
+
         const samplers = [
-            "albedoSampler",
-            "baseWeightSampler",
-            "baseDiffuseRoughnessSampler",
             "reflectivitySampler",
             "ambientSampler",
             "emissiveSampler",
@@ -2733,6 +2784,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "areaLightsLTC1Sampler",
             "areaLightsLTC2Sampler",
         ];
+
+        for (const key in this._samplersList) {
+            const sampler = this._samplersList[key];
+            samplers.push(sampler.samplerName);
+        }
 
         PrepareUniformsAndSamplersForIBL(uniforms, samplers, true);
 
@@ -2865,23 +2921,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.LODBASEDMICROSFURACE = true;
                 }
 
-                if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO");
-                    defines.GAMMAALBEDO = this._albedoTexture.gammaSpace;
-                } else {
-                    defines.ALBEDO = false;
-                }
-
-                if (this._baseWeightTexture && MaterialFlags.BaseWeightTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._baseWeightTexture, defines, "BASE_WEIGHT");
-                } else {
-                    defines.BASE_WEIGHT = false;
-                }
-
-                if (this._baseDiffuseRoughnessTexture && MaterialFlags.BaseDiffuseRoughnessTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._baseDiffuseRoughnessTexture, defines, "BASE_DIFFUSE_ROUGHNESS");
-                } else {
-                    defines.BASE_DIFFUSE_ROUGHNESS = false;
+                // TODO - loop through samplers and prepare defines for each texture
+                for (const key in this._samplersList) {
+                    const sampler = this._samplersList[key];
+                    defines[sampler.textureDefine + "DIRECTUV"] = 0;
+                    if (sampler.value) {
+                        PrepareDefinesForMergedUV(sampler.value, defines, sampler.textureDefine);
+                        defines["GAMMA" + sampler.textureDefine] = sampler.value.gammaSpace;
+                    } else {
+                        defines[sampler.textureDefine] = false;
+                    }
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -2975,7 +3024,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                     PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
-                    if (this._useParallax && this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
+                    if (this._useParallax && this.baseColorTexture && MaterialFlags.DiffuseTextureEnabled) {
                         defines.PARALLAX = true;
                         defines.PARALLAX_RHS = scene.useRightHandedSystem;
                         defines.PARALLAXOCCLUSION = !!this._useParallaxOcclusion;
