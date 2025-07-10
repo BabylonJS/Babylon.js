@@ -76,6 +76,9 @@ function GetModuleDeclaration(
                     line = line.startsWith("    ") ? "    //" + line.substring(3) : "// " + line;
                 }
 
+                // replace type imports from directories with index (mixins are generating them)
+                line = line.replace(/import\("([./]+)"\)/g, `import("$1/index")`);
+
                 [
                     // Declaration
                     /declare module ['"](.*)['"]/,
@@ -85,7 +88,7 @@ function GetModuleDeclaration(
                     / {4}module ['"](.*)['"]/,
                     /^module ['"](\..*)['"]/,
                     // Inlined Import
-                    /import\(['"](.*)['"]/,
+                    /import\(['"]([^'"]*)['"]/,
                     // Side Effect Import
                     /import ['"](.*)['"]/,
                 ].forEach((regex) => {
@@ -93,7 +96,9 @@ function GetModuleDeclaration(
                     if (match) {
                         if (match[1][0] === ".") {
                             const newLocation = path.join(sourceDir, match[1]).replace(/\\/g, "/");
-                            line = line.replace(match[1], newLocation);
+                            // replaceAll only avaialable by modifying the typescript lib
+                            // which we prefered to not change for now
+                            line = (line as any).replaceAll(match[1], newLocation);
                         } else {
                             let found = false;
                             Object.keys(mapping).forEach((devPackageName) => {
@@ -319,8 +324,8 @@ function GetPackageDeclaration(
     while (i < lines.length) {
         let line = lines[i];
 
-        if (/import\("\.(.*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
-            line = line.replace(/import\((.*)\)./, "");
+        if (/import\("\.([^)]*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
+            line = line.replace(/import\(([^)]*)\)./g, "");
         }
 
         if (!line.includes("const enum") && !line.includes("=")) {
