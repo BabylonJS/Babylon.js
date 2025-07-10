@@ -15,7 +15,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Particle Systems",
             order: 4,
-            predicate: (entity) => entity instanceof ParticleSystem,
+            predicate: (entity) => entity instanceof ParticleSystem, //  TODO-iv2: Implement a more robust predicate to filter for IParticleSystems (perhaps checking if contained in scene.particleSystems)
             getRootEntities: (scene) => scene.particleSystems.map((ps) => ps as ParticleSystem),
             getEntityDisplayInfo: (particleSystem) => {
                 const onChangeObservable = new Observable<void>();
@@ -38,7 +38,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
                 };
             },
             entityIcon: () => <DropRegular />,
-            getEntityAddedObservables: (scene) => [],
+            getEntityAddedObservables: (scene) => [], // TODO-iv2: Implement scene-level observables for particle system additions/removals
             getEntityRemovedObservables: (scene) => [],
         });
 

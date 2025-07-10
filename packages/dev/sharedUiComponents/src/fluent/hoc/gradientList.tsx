@@ -24,12 +24,13 @@ function GradientsToListItems(gradients: Nullable<Array<IValueGradient>>) {
             id: index,
             data: gradient,
             sortBy: gradient.gradient,
-        })) || []
+        })) ?? []
     );
 }
 
-const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3Gradient | Color4Gradient> & { mode: GradientTypes }> = (props) => {
-    const items = GradientsToListItems(props.gradients);
+const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3Gradient | Color4Gradient> & { type: GradientTypes }> = (props) => {
+    const { gradients, type } = props;
+    const items = GradientsToListItems(gradients);
 
     const deleteStep = (step: FactorGradient | Color3Gradient | Color4Gradient) => {
         props.removeGradient(step);
@@ -39,7 +40,7 @@ const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3G
         if (items.length === 0) {
             props.addGradient(); // Default
         } else {
-            switch (props.mode) {
+            switch (props.type) {
                 case "Factor": {
                     const newStep = new FactorGradient(1, 1, 1);
                     props.addGradient(newStep);
@@ -62,13 +63,14 @@ const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3G
     return (
         <div>
             <List
+                key={type}
                 addButtonLabel={items.length > 0 ? `Add new ${props.label}` : `Use ${props.label}s`}
                 items={items}
                 onDelete={(item) => deleteStep(item.data)}
                 onAdd={addNewStep}
                 renderItem={(item) => {
                     const gradient = item.data;
-                    switch (props.mode) {
+                    switch (props.type) {
                         case "Factor":
                             return (
                                 <FactorGradientComponent
@@ -112,10 +114,10 @@ const GradientList: FunctionComponent<GradientListProps<FactorGradient | Color3G
     );
 };
 
-const FactorGradientCast = GradientList as FunctionComponent<GradientListProps<FactorGradient> & { mode: "Factor" }>;
-const Color3GradientCast = GradientList as FunctionComponent<GradientListProps<Color3Gradient> & { mode: "Color3" }>;
-const Color4GradientCast = GradientList as FunctionComponent<GradientListProps<Color4Gradient> & { mode: "Color4" }>;
+const FactorGradientCast = GradientList as FunctionComponent<GradientListProps<FactorGradient> & { type: "Factor" }>;
+const Color3GradientCast = GradientList as FunctionComponent<GradientListProps<Color3Gradient> & { type: "Color3" }>;
+const Color4GradientCast = GradientList as FunctionComponent<GradientListProps<Color4Gradient> & { type: "Color4" }>;
 
-export const FactorGradientList: FunctionComponent<GradientListProps<FactorGradient>> = (props) => <FactorGradientCast {...props} mode="Factor" />;
-export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradient>> = (props) => <Color3GradientCast {...props} mode="Color3" />;
-export const Color4GradientList: FunctionComponent<GradientListProps<Color4Gradient>> = (props) => <Color4GradientCast {...props} mode="Color4" />;
+export const FactorGradientList: FunctionComponent<GradientListProps<FactorGradient>> = (props) => <FactorGradientCast {...props} type="Factor" />;
+export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradient>> = (props) => <Color3GradientCast {...props} type="Color3" />;
+export const Color4GradientList: FunctionComponent<GradientListProps<Color4Gradient>> = (props) => <Color4GradientCast {...props} type="Color4" />;

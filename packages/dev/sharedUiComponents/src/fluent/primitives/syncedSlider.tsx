@@ -14,10 +14,12 @@ const useSyncedSliderStyles = makeStyles({
     },
     slider: {
         flexGrow: 1, // Let slider grow
-        minWidth: 0, // Allow shrink if needed
+        minWidth: "40px", // Minimum width for slider to remain usable
     },
     input: {
-        width: "40px", // Fixed width for input
+        width: "40px", // Fixed width for input - always 40px
+        minWidth: "40px", // Ensure minimum width
+        maxWidth: "40px", // Prevent input from growing
     },
 });
 
@@ -33,15 +35,15 @@ export type SyncedSliderProps = BaseComponentProps<number> & {
 };
 
 /**
- * Component which synchronizes a slider and an input field, allowing the user to change a value using either control
+ * Component which synchronizes a slider and an input field, allowing the user to change the value using either control
  * @param props
  * @returns SyncedSlider component
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
     const classes = useSyncedSliderStyles();
     const [value, setValue] = useState<number>(props.value);
-    const [isDragging, setIsDragging] = useState<boolean>(false);
-    const pendingValueRef = useRef<number | null>(null);
+    const pendingValueRef = useRef<number>(undefined);
+    const isDraggingRef = useRef(false);
 
     // NOTE: The Fluent slider will add tick marks if the step prop is anything other than undefined.
     // To avoid this, we scale the min/max based on the step so we can always make step undefined.
@@ -51,7 +53,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     const step = props.step ?? 1;
 
     useEffect(() => {
-        setValue(props.value ?? ""); // Update local state when props.value changes
+        !isDraggingRef.current && setValue(props.value ?? ""); // Update local state when props.value changes as long as user is not actively dragging
     }, [props.value]);
 
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {
@@ -61,18 +63,18 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
         if (props.notifyOnlyOnRelease) {
             // Store the value but don't notify parent yet
             pendingValueRef.current = newValue;
-            setIsDragging(true);
+            isDraggingRef.current = true;
         } else {
-            // Immediate update mode
+            // Notify parent as slider changes
             props.onChange(newValue);
         }
     };
 
-    const handleSliderMouseUp = () => {
-        if (props.notifyOnlyOnRelease && isDragging && pendingValueRef.current !== null) {
+    const handleSliderPointerUp = () => {
+        if (props.notifyOnlyOnRelease && isDraggingRef.current && pendingValueRef.current !== undefined) {
             props.onChange(pendingValueRef.current);
-            pendingValueRef.current = null;
-            setIsDragging(false);
+            pendingValueRef.current = undefined;
+            isDraggingRef.current = false;
         }
     };
 
@@ -96,8 +98,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                     step={undefined}
                     value={value / step}
                     onChange={handleSliderChange}
-                    onMouseUp={handleSliderMouseUp}
-                    onTouchEnd={handleSliderMouseUp}
+                    onPointerUp={handleSliderPointerUp}
                 />
             )}
             <NumberInput {...props} className={classes.input} value={Math.round(value / step) * step} onChange={handleInputChange} step={step} />

@@ -4,11 +4,11 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { useCallback } from "react";
 import type { FunctionComponent } from "react";
 
-import { useInterceptObservable } from "../../hooks/instrumentationHooks";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
+import { useObservableState } from "../../../hooks/observableHooks";
 import { Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 
-export const ParticleSystemProperties: FunctionComponent<{ particleSystem: IParticleSystem }> = (props) => {
+export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: IParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
     // TODO-iv2: Perhaps a common enough pattern to create a custom hook
@@ -19,16 +19,6 @@ export const ParticleSystemProperties: FunctionComponent<{ particleSystem: IPart
         }, [system]),
         useInterceptObservable("function", system, "addEmitRateGradient"),
         useInterceptObservable("function", system, "removeEmitRateGradient"),
-        useInterceptObservable("function", system, "forceRefreshGradients")
-    );
-
-    const colorGradients = useObservableState(
-        useCallback(() => {
-            const gradients = system.getColorGradients();
-            return [...(gradients ?? [])];
-        }, [system]),
-        useInterceptObservable("function", system, "addColorGradient"),
-        useInterceptObservable("function", system, "removeColorGradient"),
         useInterceptObservable("function", system, "forceRefreshGradients")
     );
 
@@ -51,6 +41,25 @@ export const ParticleSystemProperties: FunctionComponent<{ particleSystem: IPart
                     }}
                 />
             )}
+        </>
+    );
+};
+
+export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: IParticleSystem }> = (props) => {
+    const { particleSystem: system } = props;
+
+    const colorGradients = useObservableState(
+        useCallback(() => {
+            const gradients = system.getColorGradients();
+            return [...(gradients ?? [])];
+        }, [system]),
+        useInterceptObservable("function", system, "addColorGradient"),
+        useInterceptObservable("function", system, "removeColorGradient"),
+        useInterceptObservable("function", system, "forceRefreshGradients")
+    );
+
+    return (
+        <>
             {!system.isNodeGenerated && (
                 <Color4GradientList
                     gradients={colorGradients}

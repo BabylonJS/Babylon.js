@@ -1,11 +1,12 @@
 import type { FunctionComponent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { makeStyles, tokens } from "@fluentui/react-components";
+
 import { SyncedSliderInput } from "./syncedSlider";
-import { Color3, Color4 } from "core/Maths";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "./colorPicker";
 import type { BaseComponentProps } from "../hoc/propertyLine";
-import { makeStyles, tokens } from "@fluentui/react-components";
-import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc";
+import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
 import { GradientBlockColorStep } from "core/Materials";
 
 const useGradientStyles = makeStyles({
@@ -14,6 +15,16 @@ const useGradientStyles = makeStyles({
         alignItems: "center",
         gap: tokens.spacingHorizontalS,
         width: "100%",
+    },
+    // Wrapper for each slider to control its size
+    valueWrapper: {
+        alignContent: "center",
+        maxWidth: "100px", // Maximum width to prevent them from getting too wide
+    },
+    // Wrapper for the step slider to take remaining space
+    stepSliderWrapper: {
+        flex: "1 1 0",
+        minWidth: "100px",
     },
 });
 
@@ -32,24 +43,36 @@ const Gradient: FunctionComponent<BaseComponentProps<GradientProps<number | Colo
     const [gradient, setGradient] = useState(props.value);
     const classes = useGradientStyles();
 
+    useEffect(() => {
+        setGradient(props.value); // Re-render if props.value changes
+    }, [props.value]);
+
     const gradientChange = (newGradient: GradientProps<number | Color3 | Color4>) => {
         setGradient(newGradient);
         props.onChange(newGradient);
     };
     return (
         <div id="gradientContainer" className={classes.container}>
-            {gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4 ? (
-                <ColorPickerPopup value={gradient.value1} onChange={(color) => gradientChange({ ...gradient, value1: color })} />
-            ) : (
-                <SyncedSliderInput step={0.01} value={gradient.value1} onChange={(val) => gradientChange({ ...gradient, value1: val })} />
+            <div className={classes.valueWrapper}>
+                {gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4 ? (
+                    <ColorPickerPopup value={gradient.value1} onChange={(color) => gradientChange({ ...gradient, value1: color })} />
+                ) : (
+                    <SyncedSliderInput step={0.01} value={gradient.value1} onChange={(val) => gradientChange({ ...gradient, value1: val })} />
+                )}
+            </div>
+            {gradient.value2 !== undefined && (
+                <div className={classes.valueWrapper}>
+                    {gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? (
+                        <ColorPickerPopup value={gradient.value2} onChange={(color) => gradientChange({ ...gradient, value2: color })} />
+                    ) : (
+                        <SyncedSliderInput step={0.01} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} />
+                    )}
+                </div>
             )}
-            {gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? (
-                <ColorPickerPopup value={gradient.value2} onChange={(color) => gradientChange({ ...gradient, value2: color })} />
-            ) : gradient.value2 !== undefined ? (
-                <SyncedSliderInput step={0.01} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} />
-            ) : undefined}
 
-            <SyncedSliderInput notifyOnlyOnRelease={true} min={0} max={1} step={0.01} value={gradient.step} onChange={(val) => gradientChange({ ...gradient, step: val })} />
+            <div className={classes.stepSliderWrapper}>
+                <SyncedSliderInput notifyOnlyOnRelease={true} min={0} max={1} step={0.01} value={gradient.step} onChange={(val) => gradientChange({ ...gradient, step: val })} />
+            </div>
         </div>
     );
 };
@@ -58,6 +81,11 @@ const FactorGradientCast = Gradient as FunctionComponent<BaseComponentProps<Grad
 const Color3GradientCast = Gradient as FunctionComponent<BaseComponentProps<GradientProps<Color3>>>;
 const Color4GradientCast = Gradient as FunctionComponent<BaseComponentProps<GradientProps<Color4>>>;
 
+/**
+ * Component wrapper for FactorGradient that provides slider inputs for factor1, factor2, and gradient step
+ * @param props - Component props containing FactorGradient value and change handler
+ * @returns A React component
+ */
 export const FactorGradientComponent: FunctionComponent<BaseComponentProps<FactorGradient>> = (props) => {
     return (
         <FactorGradientCast
@@ -67,6 +95,11 @@ export const FactorGradientComponent: FunctionComponent<BaseComponentProps<Facto
         />
     );
 };
+/**
+ * Component wrapper for Color3Gradient that provides color picker and gradient step slider
+ * @param props - Component props containing Color3Gradient value and change handler
+ * @returns A React component
+ */
 export const Color3GradientComponent: FunctionComponent<BaseComponentProps<Color3Gradient>> = (props) => {
     return (
         <Color3GradientCast
@@ -76,6 +109,11 @@ export const Color3GradientComponent: FunctionComponent<BaseComponentProps<Color
         />
     );
 };
+/**
+ * Component wrapper for Color4Gradient that provides color pickers for color1, color2, and gradient step slider
+ * @param props - Component props containing Color4Gradient value and change handler
+ * @returns A React component
+ */
 export const Color4GradientComponent: FunctionComponent<BaseComponentProps<Color4Gradient>> = (props) => {
     return (
         <Color4GradientCast
@@ -85,6 +123,11 @@ export const Color4GradientComponent: FunctionComponent<BaseComponentProps<Color
         />
     );
 };
+/**
+ * Component wrapper for GradientBlockColorStep that provides color picker and step slider
+ * @param props - Component props containing GradientBlockColorStep value and change handler
+ * @returns A React component
+ */
 export const ColorStepGradientComponent: FunctionComponent<BaseComponentProps<GradientBlockColorStep>> = (props) => {
     return (
         <Color3GradientCast

@@ -19,11 +19,11 @@ import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const TypeOptions = [
     { label: "None", value: 0 },
     { label: "Visible in the inspector", value: 1 },
-];
+] as const;
+
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;
 
