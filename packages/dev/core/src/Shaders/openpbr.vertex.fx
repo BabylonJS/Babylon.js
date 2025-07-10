@@ -1,10 +1,10 @@
-#define PBR_VERTEX_SHADER
+#define OPENPBR_VERTEX_SHADER
 
 #define CUSTOM_VERTEX_EXTENSION
 
 precision highp float;
 
-#include<__decl__pbrVertex>
+#include<__decl__openpbrVertex>
 
 #define CUSTOM_VERTEX_BEGIN
 

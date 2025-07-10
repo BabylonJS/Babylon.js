@@ -79,17 +79,30 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
         const properties = material.pbrMetallicRoughness;
         if (properties) {
             if (properties.baseColorFactor) {
-                babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
+                if (babylonMaterial instanceof OpenPBRMaterial) {
+                    babylonMaterial.baseColor = Color3.FromArray(properties.baseColorFactor);
+                } else {
+                    babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
+                }
+
                 babylonMaterial.alpha = properties.baseColorFactor[3];
             } else {
-                babylonMaterial.albedoColor = Color3.White();
+                if (babylonMaterial instanceof OpenPBRMaterial) {
+                    babylonMaterial.baseColor = Color3.White();
+                } else {
+                    babylonMaterial.albedoColor = Color3.White();
+                }
             }
 
             if (properties.baseColorTexture) {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        babylonMaterial.albedoTexture = texture;
+                        if (babylonMaterial instanceof OpenPBRMaterial) {
+                            babylonMaterial.baseColorTexture = texture;
+                        } else {
+                            babylonMaterial.albedoTexture = texture;
+                        }
                     })
                 );
             }

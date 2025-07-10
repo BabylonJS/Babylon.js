@@ -47,14 +47,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
 
         return (
             <LineContainerComponent title="CHANNELS" selection={this.props.globalState}>
-                <TextureLinkLineComponent
-                    label="Albedo"
-                    texture={material.albedoTexture}
-                    propertyName="albedoTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Albedo"
+                        texture={material.albedoTexture}
+                        propertyName="albedoTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
                 <TextureLinkLineComponent
                     label="Base Weight"
                     texture={material.baseWeightTexture}

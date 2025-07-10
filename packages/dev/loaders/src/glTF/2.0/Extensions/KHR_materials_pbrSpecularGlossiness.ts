@@ -85,10 +85,18 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         babylonMaterial.roughness = null;
 
         if (properties.diffuseFactor) {
-            babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
+            if (babylonMaterial instanceof OpenPBRMaterial) {
+                babylonMaterial.baseColor = Color3.FromArray(properties.diffuseFactor);
+            } else {
+                babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
+            }
             babylonMaterial.alpha = properties.diffuseFactor[3];
         } else {
-            babylonMaterial.albedoColor = Color3.White();
+            if (babylonMaterial instanceof OpenPBRMaterial) {
+                babylonMaterial.baseColor = Color3.White();
+            } else {
+                babylonMaterial.albedoColor = Color3.White();
+            }
         }
 
         babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : Color3.White();
@@ -98,7 +106,11 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse)`;
-                    babylonMaterial.albedoTexture = texture;
+                    if (babylonMaterial instanceof OpenPBRMaterial) {
+                        babylonMaterial.baseColorTexture = texture;
+                    } else {
+                        babylonMaterial.albedoTexture = texture;
+                    }
                 })
             );
         }

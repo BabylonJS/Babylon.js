@@ -2149,11 +2149,20 @@ export class GLTFLoader implements IGLTFLoader {
         const promises = new Array<Promise<unknown>>();
 
         if (properties) {
-            if (properties.baseColorFactor) {
-                babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
-                babylonMaterial.alpha = properties.baseColorFactor[3];
+            if (babylonMaterial instanceof OpenPBRMaterial) {
+                if (properties.baseColorFactor) {
+                    babylonMaterial.baseColor = Color3.FromArray(properties.baseColorFactor);
+                    babylonMaterial.geometryOpacity = properties.baseColorFactor[3];
+                } else {
+                    babylonMaterial.baseColor = Color3.White();
+                }
             } else {
-                babylonMaterial.albedoColor = Color3.White();
+                if (properties.baseColorFactor) {
+                    babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
+                    babylonMaterial.alpha = properties.baseColorFactor[3];
+                } else {
+                    babylonMaterial.albedoColor = Color3.White();
+                }
             }
 
             babylonMaterial.metallic = properties.metallicFactor == undefined ? 1 : properties.metallicFactor;
@@ -2163,7 +2172,11 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(
                     this.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        babylonMaterial.albedoTexture = texture;
+                        if (babylonMaterial instanceof OpenPBRMaterial) {
+                            babylonMaterial.baseColorTexture = texture;
+                        } else {
+                            babylonMaterial.albedoTexture = texture;
+                        }
                     })
                 );
             }
@@ -2321,7 +2334,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         const promises = new Array<Promise<unknown>>();
 
-        babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+        if (babylonMaterial instanceof OpenPBRMaterial) {
+            babylonMaterial.emissionColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+        } else {
+            babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+        }
         if (material.doubleSided) {
             babylonMaterial.backFaceCulling = false;
             babylonMaterial.twoSidedLighting = true;
@@ -2384,6 +2401,8 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const baseColorTexture = babylonMaterial instanceof OpenPBRMaterial ? babylonMaterial.baseColorTexture : babylonMaterial.albedoTexture;
+
         const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
         switch (alphaMode) {
             case MaterialAlphaMode.OPAQUE: {
@@ -2394,15 +2413,15 @@ export class GLTFLoader implements IGLTFLoader {
             case MaterialAlphaMode.MASK: {
                 babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
                 babylonMaterial.alphaCutOff = material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff;
-                if (babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoTexture.hasAlpha = true;
+                if (baseColorTexture) {
+                    baseColorTexture.hasAlpha = true;
                 }
                 break;
             }
             case MaterialAlphaMode.BLEND: {
                 babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
-                if (babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoTexture.hasAlpha = true;
+                if (baseColorTexture) {
+                    baseColorTexture.hasAlpha = true;
                     babylonMaterial.useAlphaFromAlbedoTexture = true;
                 }
                 break;

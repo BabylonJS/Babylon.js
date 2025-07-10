@@ -1,6 +1,6 @@
-#define PBR_VERTEX_SHADER
+#define OPENPBR_VERTEX_SHADER
 
-#include<openPbrUboDeclaration>
+#include<openpbrUboDeclaration>
 
 #define CUSTOM_VERTEX_BEGIN
 
@@ -228,7 +228,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     #include<uvVariableDeclaration>[3..7]
 
-    #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,BaseColor,_MATRIXNAME_,baseColor,_INFONAME_,baseColorInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,BASE_WEIGHT,_VARYINGNAME_,BaseWeight,_MATRIXNAME_,baseWeight,_INFONAME_,BaseWeightInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,BASE_DIFFUSE_ROUGHNESS,_VARYINGNAME_,BaseDiffuseRoughness,_MATRIXNAME_,baseDiffuseRoughness,_INFONAME_,BaseDiffuseRoughnessInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)
