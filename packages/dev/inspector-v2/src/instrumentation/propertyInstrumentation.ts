@@ -118,9 +118,6 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
     }
     hooksForKey.push(hooks);
 
-    // Take note of whether the property is owned by the target object or inherited from its prototype chain.
-    const isOwnProperty = propertyOwner === target;
-
     let isDisposed = false;
     return {
         dispose: () => {
