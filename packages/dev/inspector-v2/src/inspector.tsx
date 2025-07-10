@@ -21,19 +21,20 @@ import { SpotLightPropertiesServiceDefinition } from "./services/panes/propertie
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
-import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
-import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
-import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
 import { RenderingPipelineHierarchyServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
+import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
 import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
-import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
 import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
@@ -182,12 +183,13 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
-            MaterialExplorerServiceDefinition,
-            ParticleSystemExplorerServiceDefinition,
             SkeletonHierarchyServiceDefinition,
+            MaterialExplorerServiceDefinition,
             TextureHierarchyServiceDefinition,
-            SpriteManagerHierarchyServiceDefinition,
             RenderingPipelineHierarchyServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
+            SpriteManagerHierarchyServiceDefinition,
+            AnimationGroupExplorerServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
