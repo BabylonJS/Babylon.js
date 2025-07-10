@@ -141,7 +141,7 @@ type ShadowState = {
         shouldRender: boolean;
         iblDirection: {
             iblCdfGenerator: IblCdfGenerator;
-            lightPositionFactor: number;
+            positionFactor: number;
             direction: Vector3;
         };
         refreshLightPositionDirection: Function;
@@ -1843,7 +1843,7 @@ export class Viewer implements IDisposable {
         const size = 4096;
         const groundFactor = 20;
         const groundSize = radius * groundFactor;
-        const lightPositionFactor = radius * 3;
+        const positionFactor = radius * 3;
         const iblLightStrength = iblDirection ? Clamp(iblDirection.length(), 0.0, 1.0) : 0.5;
 
         if (!normal) {
@@ -1885,7 +1885,7 @@ export class Viewer implements IDisposable {
                 shouldRender: true,
                 iblDirection: {
                     iblCdfGenerator: iblCdfGenerator,
-                    lightPositionFactor: lightPositionFactor,
+                    positionFactor: positionFactor,
                     direction: iblDirection,
                 },
                 refreshLightPositionDirection(reflectionRotation: number) {
@@ -1893,7 +1893,7 @@ export class Viewer implements IDisposable {
                     const rotationYMatrix = Matrix.RotationY(reflectionRotation * -1);
                     effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
 
-                    this.light.position = effectiveSourceDir.scale(this.iblDirection.lightPositionFactor);
+                    this.light.position = effectiveSourceDir.scale(this.iblDirection.positionFactor);
                     this.light.direction = adjustLightTargetDirection(effectiveSourceDir.negate());
                 },
             });
@@ -1907,7 +1907,7 @@ export class Viewer implements IDisposable {
         }
 
         normal.iblDirection.direction = iblDirection;
-        normal.iblDirection.lightPositionFactor = lightPositionFactor;
+        normal.iblDirection.positionFactor = positionFactor;
         normal.refreshLightPositionDirection(this._reflectionsRotation);
         (normal.light as DirectionalLight).shadowFrustumSize = radius * 4;
 
