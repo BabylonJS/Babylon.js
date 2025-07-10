@@ -2,12 +2,12 @@ import type { AbstractMesh } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import type { ISelectionService } from "../../services/selectionService";
+import type { ISelectionService } from "../../../services/selectionService";
 
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 
-import { useObservableState } from "../../hooks/observableHooks";
+import { useObservableState } from "../../../hooks/observableHooks";
 
 export const MeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;

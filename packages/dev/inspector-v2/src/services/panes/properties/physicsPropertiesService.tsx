@@ -4,7 +4,7 @@ import type { IPropertiesService } from "./propertiesService";
 import { TransformNode } from "core/Meshes/transformNode";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { PhysicsBodyProperties } from "../../../components/properties/physicsProperties";
+import { PhysicsBodyProperties } from "../../../components/properties/physics/physicsProperties";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
