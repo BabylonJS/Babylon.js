@@ -30,6 +30,7 @@ import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/prop
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { RenderingPipelineHierarchyServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
 import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
@@ -182,10 +183,11 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SceneExplorerServiceDefinition,
             NodeHierarchyServiceDefinition,
             MaterialExplorerServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
             SkeletonHierarchyServiceDefinition,
             TextureHierarchyServiceDefinition,
             SpriteManagerHierarchyServiceDefinition,
-            ParticleSystemExplorerServiceDefinition,
+            RenderingPipelineHierarchyServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
