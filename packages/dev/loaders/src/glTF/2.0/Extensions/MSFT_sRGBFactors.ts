@@ -55,8 +55,14 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
                 const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
 
                 const useExactSrgbConversions = babylonMaterial.getScene().getEngine().useExactSrgbConversions;
-                if (!babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor, useExactSrgbConversions);
+                if (babylonMaterial instanceof OpenPBRMaterial) {
+                    if (!babylonMaterial.baseColorTexture) {
+                        babylonMaterial.baseColor.toLinearSpaceToRef(babylonMaterial.baseColor, useExactSrgbConversions);
+                    }
+                } else {
+                    if (!babylonMaterial.albedoTexture) {
+                        babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor, useExactSrgbConversions);
+                    }
                 }
 
                 if (!babylonMaterial.reflectivityTexture) {
