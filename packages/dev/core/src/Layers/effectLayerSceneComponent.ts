@@ -1,5 +1,5 @@
 import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -24,22 +24,6 @@ AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Sce
         }
     }
 });
-
-declare module "../scene" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    export interface Scene {
-        /**
-         * Adds the given effect layer to this scene
-         * @param newEffectLayer defines the effect layer to add
-         * @deprecated Please use addNewEffectLayer instead.
-         */
-        addEffectLayer(newEffectLayer: EffectLayer): void;
-    }
-}
-
-Scene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
-    this.addNewEffectLayer(newEffectLayer);
-};
 
 /**
  * Defines the layer scene component responsible to manage any effect layers
@@ -125,7 +109,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
             return;
         }
         for (const o of container.effectLayers) {
-            this.scene.addNewEffectLayer(o);
+            this.scene.addEffectLayer(o);
         }
     }
 

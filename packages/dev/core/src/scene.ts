@@ -3336,7 +3336,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * Adds the given effect layer to this scene.
      * @param newEffectLayer The effect layer to add
      */
-    public addNewEffectLayer(newEffectLayer: EffectLayer): void {
+    public addEffectLayer(newEffectLayer: EffectLayer): void {
         if (this._blockEntityCollection) {
             return;
         }
