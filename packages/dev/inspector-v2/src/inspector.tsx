@@ -28,6 +28,8 @@ import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
+import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
@@ -190,6 +192,8 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             ParticleSystemExplorerServiceDefinition,
             SpriteManagerHierarchyServiceDefinition,
             AnimationGroupExplorerServiceDefinition,
+            GuiExplorerServiceDefinition,
+            FrameGraphExplorerServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,

@@ -2,17 +2,16 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
+import { FrameRegular } from "@fluentui/react-icons";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Texture Hierarchy",
+export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Frame Graph Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,14 +20,14 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
         }
 
         const sectionRegistration = sceneExplorerService.addSection({
-            displayName: "Textures",
-            order: 400,
-            predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
-            getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
-            getEntityDisplayInfo: (texture) => {
+            displayName: "Frame Graph",
+            order: 1000,
+            predicate: (entity) => entity instanceof FrameGraph,
+            getRootEntities: () => scene.frameGraphs,
+            getEntityDisplayInfo: (frameGraph) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(texture, "name", {
+                const nameHookToken = InterceptProperty(frameGraph, "name", {
                     afterSet: () => {
                         onChangeObservable.notifyObservers();
                     },
@@ -36,7 +35,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
 
                 return {
                     get name() {
-                        return texture.displayName || texture.name || `${texture.constructor?.name || "Unnamed Texture"} (${texture.uniqueId})`;
+                        return frameGraph.name;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -45,9 +44,9 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
-            getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
-            getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
+            entityIcon: () => <FrameRegular />,
+            getEntityAddedObservables: () => [scene.onNewFrameGraphAddedObservable],
+            getEntityRemovedObservables: () => [scene.onFrameGraphRemovedObservable],
         });
 
         return {
