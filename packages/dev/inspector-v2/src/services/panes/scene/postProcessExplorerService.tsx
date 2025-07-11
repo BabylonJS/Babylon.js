@@ -1,18 +1,18 @@
-import type { IParticleSystem } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { DropRegular } from "@fluentui/react-icons";
+import { BlurRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc";
+import { PostProcess } from "core/PostProcesses/postProcess";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Particle System Explorer",
+export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Post Process Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,14 +21,14 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
         }
 
         const sectionRegistration = sceneExplorerService.addSection({
-            displayName: "Particle Systems",
-            order: DefaultSectionsOrder.ParticleSystems,
-            predicate: (entity): entity is IParticleSystem => scene.particleSystems.includes(entity as IParticleSystem),
-            getRootEntities: () => scene.particleSystems,
-            getEntityDisplayInfo: (particleSystem) => {
+            displayName: "Post Processes",
+            order: DefaultSectionsOrder.PostProcesses,
+            predicate: (entity) => entity instanceof PostProcess,
+            getRootEntities: () => scene.postProcesses,
+            getEntityDisplayInfo: (postProcess) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(particleSystem, "name", {
+                const nameHookToken = InterceptProperty(postProcess, "name", {
                     afterSet: () => {
                         onChangeObservable.notifyObservers();
                     },
@@ -36,7 +36,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
                 return {
                     get name() {
-                        return particleSystem.name;
+                        return postProcess.name;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -45,9 +45,9 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
                     },
                 };
             },
-            entityIcon: () => <DropRegular />,
-            getEntityAddedObservables: () => [scene.onNewParticleSystemAddedObservable],
-            getEntityRemovedObservables: () => [scene.onParticleSystemRemovedObservable],
+            entityIcon: () => <BlurRegular />,
+            getEntityAddedObservables: () => [scene.onNewPostProcessAddedObservable],
+            getEntityRemovedObservables: () => [scene.onPostProcessRemovedObservable],
         });
 
         return {

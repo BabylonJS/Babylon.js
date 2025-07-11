@@ -12,10 +12,11 @@ import { Observable } from "core/Misc";
 import { Node } from "core/node";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Node Hierarchy",
+export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Node Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -27,7 +28,7 @@ export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplor
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
-            order: 100,
+            order: DefaultSectionsOrder.Nodes,
             predicate: (entity) => entity instanceof Node,
             getRootEntities: () => scene.rootNodes,
             getEntityChildren: (node) => node.getChildren(),

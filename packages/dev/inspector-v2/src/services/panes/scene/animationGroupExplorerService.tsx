@@ -8,10 +8,11 @@ import { AnimationGroup, TargetedAnimation } from "core/Animations/animationGrou
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Animation Group Hierarchy",
+    friendlyName: "Animation Group Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,7 +22,7 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Animation Groups",
-            order: 800,
+            order: DefaultSectionsOrder.AnimationGroups,
             predicate: (entity) => entity instanceof AnimationGroup || entity instanceof TargetedAnimation,
             getRootEntities: () => scene.animationGroups,
             getEntityChildren: (entity) => (entity instanceof AnimationGroup ? entity.targetedAnimations : []),
