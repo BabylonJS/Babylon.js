@@ -1,18 +1,22 @@
+import type { AdvancedDynamicTexture } from "gui/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
+import { AppGenericRegular } from "@fluentui/react-icons";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Texture Hierarchy",
+// Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
+function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
+    return (entity as AdvancedDynamicTexture)?.constructor?.name === "AdvancedDynamicTexture";
+}
+
+export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "GUI Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,10 +25,10 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
         }
 
         const sectionRegistration = sceneExplorerService.addSection({
-            displayName: "Textures",
-            order: 400,
-            predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
-            getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
+            displayName: "GUI",
+            order: 900,
+            predicate: IsAdvancedDynamicTexture,
+            getRootEntities: () => scene.textures.filter(IsAdvancedDynamicTexture),
             getEntityDisplayInfo: (texture) => {
                 const onChangeObservable = new Observable<void>();
 
@@ -36,7 +40,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
 
                 return {
                     get name() {
-                        return texture.displayName || texture.name || `${texture.constructor?.name || "Unnamed Texture"} (${texture.uniqueId})`;
+                        return texture.name;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -45,7 +49,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
+            entityIcon: () => <AppGenericRegular />,
             getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
             getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
         });

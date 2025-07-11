@@ -25,6 +25,7 @@ module.exports = (env) => {
                 materials: path.resolve("../../dev/materials/dist"),
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
+                gui: path.resolve("../../dev/gui/dist"),
             },
         },
         externals: [
@@ -42,6 +43,8 @@ module.exports = (env) => {
                         return callback(null, "ADDONS");
                     } else if (/^materials\//.test(request)) {
                         return callback(null, "BABYLON");
+                    } else if (/^gui\//.test(request)) {
+                        return callback(null, "BABYLON.GUI");
                     }
                 }
 
