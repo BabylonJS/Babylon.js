@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -20,6 +20,8 @@ declare module "../../glTFFileLoader" {
         ["MSFT_sRGBFactors"]: {};
     }
 }
+
+let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -45,23 +47,30 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
 
     /** @internal*/
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
+            if (useOpenPBR) {
+                const mod = await import("core/Materials/PBR/openPbrMaterial");
+                PBRMaterialClass = mod.OpenPBRMaterial;
+            } else {
+                const mod = await import("core/Materials/PBR/pbrMaterial");
+                PBRMaterialClass = mod.PBRMaterial;
+            }
             if (extra) {
-                if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
+                if (!(babylonMaterial instanceof PBRMaterialClass)) {
                     throw new Error(`${extraContext}: Material type not supported`);
                 }
 
                 const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
 
                 const useExactSrgbConversions = babylonMaterial.getScene().getEngine().useExactSrgbConversions;
-                if (babylonMaterial instanceof OpenPBRMaterial) {
-                    if (!babylonMaterial.baseColorTexture) {
-                        babylonMaterial.baseColor.toLinearSpaceToRef(babylonMaterial.baseColor, useExactSrgbConversions);
+                if (useOpenPBR) {
+                    if (!(babylonMaterial as OpenPBRMaterial).baseColorTexture) {
+                        (babylonMaterial as OpenPBRMaterial).baseColor.toLinearSpaceToRef((babylonMaterial as OpenPBRMaterial).baseColor, useExactSrgbConversions);
                     }
                 } else {
-                    if (!babylonMaterial.albedoTexture) {
-                        babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor, useExactSrgbConversions);
+                    if (!(babylonMaterial as PBRMaterial).albedoTexture) {
+                        (babylonMaterial as PBRMaterial).albedoColor.toLinearSpaceToRef((babylonMaterial as PBRMaterial).albedoColor, useExactSrgbConversions);
                     }
                 }
 
