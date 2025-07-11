@@ -10,8 +10,9 @@ import { InterceptProperty } from "../../../instrumentation/propertyInstrumentat
 import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
+// Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
 function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
-    return (entity as AdvancedDynamicTexture)?.getClassName() === "AdvancedDynamicTexture";
+    return (entity as AdvancedDynamicTexture)?.constructor?.name === "AdvancedDynamicTexture";
 }
 
 export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
