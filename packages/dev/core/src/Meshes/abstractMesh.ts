@@ -957,9 +957,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public _unIndexed = false;
 
     /** @internal */
-    public _useVertexPulling = false;
-
-    /** @internal */
     public _lightSources = new Array<Light>();
 
     /** Gets the list of lights affecting that mesh */
