@@ -10,7 +10,7 @@ import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
-export const RenderingPipelineHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const RenderingPipelineExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Rendering Pipeline Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
@@ -19,9 +19,9 @@ export const RenderingPipelineHierarchyServiceDefinition: ServiceDefinition<[], 
             return undefined;
         }
 
-        const sectionRegistration = sceneExplorerService.addSection<PostProcessRenderPipeline>({
+        const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Rendering Pipelines",
-            order: 500,
+            order: 600,
             predicate: (entity) => entity instanceof PostProcessRenderPipeline,
             getRootEntities: () => scene.postProcessRenderPipelineManager.supportedPipelines ?? [],
             getEntityDisplayInfo: (pipeline) => {

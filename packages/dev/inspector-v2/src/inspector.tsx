@@ -31,13 +31,14 @@ import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
-import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { NodeExplorerServiceDefinition } from "./services/panes/scene/nodeExplorerService";
 import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
-import { RenderingPipelineHierarchyServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
+import { PostProcessExplorerServiceDefinition } from "./services/panes/scene/postProcessExplorerService";
+import { RenderingPipelineExplorerServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
-import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
-import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
-import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
@@ -184,13 +185,14 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
-            NodeHierarchyServiceDefinition,
-            SkeletonHierarchyServiceDefinition,
+            NodeExplorerServiceDefinition,
+            SkeletonExplorerServiceDefinition,
             MaterialExplorerServiceDefinition,
-            TextureHierarchyServiceDefinition,
-            RenderingPipelineHierarchyServiceDefinition,
+            TextureExplorerServiceDefinition,
+            PostProcessExplorerServiceDefinition,
+            RenderingPipelineExplorerServiceDefinition,
             ParticleSystemExplorerServiceDefinition,
-            SpriteManagerHierarchyServiceDefinition,
+            SpriteManagerExplorerServiceDefinition,
             AnimationGroupExplorerServiceDefinition,
             GuiExplorerServiceDefinition,
             FrameGraphExplorerServiceDefinition,

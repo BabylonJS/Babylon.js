@@ -14,7 +14,7 @@ import { InterceptProperty } from "../../../instrumentation/propertyInstrumentat
 import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const NodeHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Node Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {

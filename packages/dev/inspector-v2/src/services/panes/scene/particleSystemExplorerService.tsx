@@ -21,7 +21,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Particle Systems",
-            order: 600,
+            order: 700,
             predicate: (entity): entity is IParticleSystem => scene.particleSystems.includes(entity as IParticleSystem),
             getRootEntities: () => scene.particleSystems,
             getEntityDisplayInfo: (particleSystem) => {

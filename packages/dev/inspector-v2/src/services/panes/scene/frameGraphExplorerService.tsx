@@ -21,7 +21,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Frame Graph",
-            order: 1000,
+            order: 1100,
             predicate: (entity) => entity instanceof FrameGraph,
             getRootEntities: () => scene.frameGraphs,
             getEntityDisplayInfo: (frameGraph) => {

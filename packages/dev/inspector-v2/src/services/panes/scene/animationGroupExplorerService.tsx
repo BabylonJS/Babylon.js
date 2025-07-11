@@ -21,7 +21,7 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Animation Groups",
-            order: 800,
+            order: 900,
             predicate: (entity) => entity instanceof AnimationGroup || entity instanceof TargetedAnimation,
             getRootEntities: () => scene.animationGroups,
             getEntityChildren: (entity) => (entity instanceof AnimationGroup ? entity.targetedAnimations : []),

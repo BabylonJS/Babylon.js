@@ -20,7 +20,7 @@ function IsSprite(entity: unknown): entity is Sprite {
     return (entity as Sprite).manager !== undefined;
 }
 
-export const SpriteManagerHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Sprite Manager Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
@@ -29,9 +29,9 @@ export const SpriteManagerHierarchyServiceDefinition: ServiceDefinition<[], [ISc
             return undefined;
         }
 
-        const sectionRegistration = sceneExplorerService.addSection<ISpriteManager | Sprite>({
+        const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Sprite Managers",
-            order: 700,
+            order: 800,
             predicate: (entity) => IsSpriteManager(entity) || IsSprite(entity),
             getRootEntities: () => scene.spriteManagers ?? [],
             getEntityChildren: (spriteEntity) => (IsSpriteManager(spriteEntity) ? spriteEntity.sprites : ([] as ISpriteManager[])),

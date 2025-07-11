@@ -11,7 +11,7 @@ import { InterceptProperty } from "../../../instrumentation/propertyInstrumentat
 import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const SkeletonHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Skeleton Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {

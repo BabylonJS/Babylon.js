@@ -26,7 +26,7 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "GUI",
-            order: 900,
+            order: 1000,
             predicate: IsAdvancedDynamicTexture,
             getRootEntities: () => scene.textures.filter(IsAdvancedDynamicTexture),
             getEntityDisplayInfo: (texture) => {

@@ -2,17 +2,16 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
+import { BlurRegular } from "@fluentui/react-icons";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Observable } from "core/Misc";
+import { PostProcess } from "core/PostProcesses/postProcess";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Texture Hierarchy",
+export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Rendering Pipeline Hierarchy",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,14 +20,14 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
         }
 
         const sectionRegistration = sceneExplorerService.addSection({
-            displayName: "Textures",
-            order: 400,
-            predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
-            getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
-            getEntityDisplayInfo: (texture) => {
+            displayName: "Post Processes",
+            order: 500,
+            predicate: (entity) => entity instanceof PostProcess,
+            getRootEntities: () => scene.postProcesses,
+            getEntityDisplayInfo: (postProcess) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(texture, "name", {
+                const nameHookToken = InterceptProperty(postProcess, "name", {
                     afterSet: () => {
                         onChangeObservable.notifyObservers();
                     },
@@ -36,7 +35,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
 
                 return {
                     get name() {
-                        return texture.displayName || texture.name || `${texture.constructor?.name || "Unnamed Texture"} (${texture.uniqueId})`;
+                        return postProcess.name;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -45,9 +44,9 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                     },
                 };
             },
-            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
-            getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
-            getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
+            entityIcon: () => <BlurRegular />,
+            getEntityAddedObservables: () => [scene.onNewPostProcessAddedObservable],
+            getEntityRemovedObservables: () => [scene.onPostProcessRemovedObservable],
         });
 
         return {
