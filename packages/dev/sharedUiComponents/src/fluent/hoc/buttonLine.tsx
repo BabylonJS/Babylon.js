@@ -1,6 +1,7 @@
-import { Body1, Button, makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, Button as FluentButton, makeStyles, tokens } from "@fluentui/react-components";
 import { LineContainer } from "./propertyLine";
 import type { FunctionComponent } from "react";
+import type { FluentIcon } from "@fluentui/react-icons";
 
 const useButtonLineStyles = makeStyles({
     button: {
@@ -8,12 +9,11 @@ const useButtonLineStyles = makeStyles({
     },
 });
 
-export type ButtonLineProps = {
-    label: string;
+export type ButtonProps = {
     onClick: () => void;
+    icon?: FluentIcon;
+    label: string;
     disabled?: boolean;
-    icon?: string;
-    title?: string;
 };
 
 /**
@@ -21,13 +21,22 @@ export type ButtonLineProps = {
  * @param props Button props plus a label
  * @returns A button inside a line
  */
-export const ButtonLine: FunctionComponent<ButtonLineProps> = (props) => {
-    const classes = useButtonLineStyles();
+export const ButtonLine: FunctionComponent<ButtonProps> = (props) => {
     return (
         <LineContainer>
-            <Button className={classes.button} {...props}>
-                <Body1>{props.label}</Body1>
-            </Button>
+            <Button {...props} />
         </LineContainer>
+    );
+};
+
+export const Button: FunctionComponent<ButtonProps> = (props) => {
+    const classes = useButtonLineStyles();
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { icon: Icon, ...buttonProps } = props;
+
+    return (
+        <FluentButton iconPosition="after" className={classes.button} {...buttonProps} icon={Icon && <Icon />}>
+            <Body1>{props.label}</Body1>
+        </FluentButton>
     );
 };
