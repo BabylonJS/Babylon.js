@@ -28,6 +28,7 @@ import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
@@ -191,6 +192,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             TextureExplorerServiceDefinition,
             PostProcessExplorerServiceDefinition,
             RenderingPipelineExplorerServiceDefinition,
+            EffectLayerExplorerServiceDefinition,
             ParticleSystemExplorerServiceDefinition,
             SpriteManagerExplorerServiceDefinition,
             AnimationGroupExplorerServiceDefinition,

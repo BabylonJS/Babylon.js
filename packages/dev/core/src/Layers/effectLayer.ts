@@ -23,6 +23,7 @@ import { _WarnImport } from "../Misc/devTools";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinEffectLayer } from "./thinEffectLayer";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -116,6 +117,11 @@ export abstract class EffectLayer {
     public static set ForceGLSL(value: boolean) {
         ThinEffectLayer.ForceGLSL = value;
     }
+
+    /**
+     * The unique id of the layer
+     */
+    public readonly uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * The name of the layer
