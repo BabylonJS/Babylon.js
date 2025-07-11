@@ -9,10 +9,11 @@ import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Texture Hierarchy",
+    friendlyName: "Texture Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -22,7 +23,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Textures",
-            order: 400,
+            order: DefaultSectionsOrder.Textures,
             predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
             getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
             getEntityDisplayInfo: (texture) => {

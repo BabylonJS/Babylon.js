@@ -8,10 +8,11 @@ import { Observable } from "core/Misc";
 import { PostProcess } from "core/PostProcesses/postProcess";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Rendering Pipeline Hierarchy",
+    friendlyName: "Post Process Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,7 +22,7 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Post Processes",
-            order: 500,
+            order: DefaultSectionsOrder.PostProcesses,
             predicate: (entity) => entity instanceof PostProcess,
             getRootEntities: () => scene.postProcesses,
             getEntityDisplayInfo: (postProcess) => {

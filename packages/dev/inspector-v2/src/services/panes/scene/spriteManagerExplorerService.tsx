@@ -8,6 +8,7 @@ import { LayerDiagonalPersonRegular, PersonSquareRegular } from "@fluentui/react
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
@@ -21,7 +22,7 @@ function IsSprite(entity: unknown): entity is Sprite {
 }
 
 export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Sprite Manager Hierarchy",
+    friendlyName: "Sprite Manager Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -31,7 +32,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Sprite Managers",
-            order: 800,
+            order: DefaultSectionsOrder.SpriteManagers,
             predicate: (entity) => IsSpriteManager(entity) || IsSprite(entity),
             getRootEntities: () => scene.spriteManagers ?? [],
             getEntityChildren: (spriteEntity) => (IsSpriteManager(spriteEntity) ? spriteEntity.sprites : ([] as ISpriteManager[])),

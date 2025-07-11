@@ -8,6 +8,7 @@ import { AppGenericRegular } from "@fluentui/react-icons";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
@@ -16,7 +17,7 @@ function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTex
 }
 
 export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "GUI Hierarchy",
+    friendlyName: "GUI Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -26,7 +27,7 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "GUI",
-            order: 1000,
+            order: DefaultSectionsOrder.GUIs,
             predicate: IsAdvancedDynamicTexture,
             getRootEntities: () => scene.textures.filter(IsAdvancedDynamicTexture),
             getEntityDisplayInfo: (texture) => {

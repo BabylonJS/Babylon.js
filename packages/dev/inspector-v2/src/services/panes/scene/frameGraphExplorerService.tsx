@@ -8,10 +8,11 @@ import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Frame Graph Hierarchy",
+    friendlyName: "Frame Graph Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,7 +22,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Frame Graph",
-            order: 1100,
+            order: DefaultSectionsOrder.FrameGraphs,
             predicate: (entity) => entity instanceof FrameGraph,
             getRootEntities: () => scene.frameGraphs,
             getEntityDisplayInfo: (frameGraph) => {
