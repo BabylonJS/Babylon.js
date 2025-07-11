@@ -1,5 +1,20 @@
 # Changelog
 
+## 8.16.1
+
+### Core
+
+- Inspector v2: Animation Groups in Scene Explorer - by [ryantrem](https://github.com/ryantrem) ([#16871](https://github.com/BabylonJS/Babylon.js/pull/16871))
+- Inspector v2: Add missing add/remove observables to scene and use ISceneContext for scene explorer sections - by [ryantrem](https://github.com/ryantrem) ([#16869](https://github.com/BabylonJS/Babylon.js/pull/16869))
+
+### Node Editor
+
+- New gradient, list, and gradientList components; Add particleSystemProperties to inspectorv2 - by [georginahalpern](https://github.com/georginahalpern) ([#16863](https://github.com/BabylonJS/Babylon.js/pull/16863))
+
+### Viewer
+
+- Viewer: Align shadow map light with IBL dominant direction - by [cournoll](https://github.com/cournoll) ([#16744](https://github.com/BabylonJS/Babylon.js/pull/16744))
+
 ## 8.16.0
 
 ### Core
