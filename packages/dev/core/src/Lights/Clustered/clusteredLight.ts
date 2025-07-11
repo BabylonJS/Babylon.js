@@ -4,16 +4,20 @@ import type { Effect } from "core/Materials/effect";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color4, TmpColors } from "core/Maths/math.color";
+import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { _WarnImport } from "core/Misc/devTools";
+import { RenderingManager } from "core/Rendering/renderingManager";
 import type { Scene } from "core/scene";
 
-import { LightMaskMaterial } from "./lightMaskMaterial";
+import { LightProxyMaterial } from "./lightProxyMaterial";
 import { Light } from "../light";
 import { LightConstants } from "../lightConstants";
 import { PointLight } from "../pointLight";
 import { SpotLight } from "../spotLight";
+
+import "core/Meshes/thinInstanceMesh";
 
 export class ClusteredLight extends Light {
     private static _GetEngineMaxLights(engine: AbstractEngine): number {
@@ -54,7 +58,7 @@ export class ClusteredLight extends Light {
     }
 
     /** @internal */
-    public static _SceneComponentInitialization: (scene: Scene) => Mesh = () => {
+    public static _SceneComponentInitialization: (scene: Scene) => void = () => {
         throw _WarnImport("ClusteredLightSceneComponent");
     };
 
@@ -71,12 +75,11 @@ export class ClusteredLight extends Light {
 
     /** @internal */
     public readonly _lightMask: RenderTargetTexture;
-    private readonly _sphere: Mesh;
-    private readonly _lightSpheres: Mesh[] = [];
+    private readonly _lightProxy: Mesh;
+    private readonly _matrixBuffer: Float32Array;
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
-        this._sphere = ClusteredLight._SceneComponentInitialization(this._scene);
 
         const engine = this.getEngine();
         this.maxLights = ClusteredLight._GetEngineMaxLights(engine);
@@ -87,11 +90,12 @@ export class ClusteredLight extends Light {
             format: Constants.TEXTUREFORMAT_RED,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         });
+        this._lightProxy = CreateSphere("LightProxy", { diameter: 2, segments: 8 }, scene);
+        this._lightProxy.isVisible = false;
+        this._matrixBuffer = new Float32Array(this.maxLights * 16);
 
         if (this.maxLights > 0) {
-            for (const light of lights) {
-                this.addLight(light);
-            }
+            ClusteredLight._SceneComponentInitialization(this._scene);
 
             this._lightMask.renderParticles = false;
             this._lightMask.renderSprites = false;
@@ -99,7 +103,20 @@ export class ClusteredLight extends Light {
             // Use the default render list
             this._lightMask.renderList = null;
             this._lightMask.clearColor = new Color4();
-            this._lightMask.customRenderFunction = this._renderLightMask;
+            this._lightMask.customRenderFunction = this._renderLightMaskGroup;
+            this._lightMask.onAfterRenderObservable.add(this._afterRenderLightMask);
+
+            // Prevent clearing between render groups
+            for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i += 1) {
+                this._lightMask.setRenderingAutoClearDepthStencil(i, false);
+            }
+
+            this._lightProxy.material = new LightProxyMaterial("LightMaterial", this);
+            this._lightProxy.thinInstanceSetBuffer("matrix", this._matrixBuffer, 16, false);
+
+            for (const light of lights) {
+                this.addLight(light);
+            }
         }
     }
 
@@ -116,6 +133,7 @@ export class ClusteredLight extends Light {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
+        this._lightProxy.dispose(doNotRecurse, disposeMaterialAndTextures);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
@@ -129,21 +147,10 @@ export class ClusteredLight extends Light {
         }
         this._scene.removeLight(light);
         this._lights.push(<PointLight | SpotLight>light);
-
-        const sphere = this._sphere.clone(this._cache);
-        sphere.material = new LightMaskMaterial(light.name, this, this._lights.length - 1, this._scene);
-        sphere.parent = light;
-        this._scene.removeMesh(sphere);
-        this._lightSpheres.push(sphere);
     }
 
     public override _isReady(): boolean {
-        for (const sphere of this._lightSpheres) {
-            if (!sphere.isReady()) {
-                return false;
-            }
-        }
-        return super._isReady();
+        return this._lightProxy.isReady(true, true);
     }
 
     protected _buildUniformLayout(): void {
@@ -223,13 +230,20 @@ export class ClusteredLight extends Light {
         defines["CLUSTLIGHT_MAX"] = this.maxLights;
     }
 
-    private _renderLightMask: RenderTargetTexture["customRenderFunction"] = (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes, beforeTransparents) => {
+    private _renderLightMaskGroup: RenderTargetTexture["customRenderFunction"] = (
+        opaqueSubMeshes,
+        alphaTestSubMeshes,
+        transparentSubMeshes,
+        depthOnlySubMeshes,
+        beforeTransparents
+    ) => {
         const engine = this.getEngine();
         // Draw everything as depth only
         engine.setColorWrite(false);
         for (let i = 0; i < depthOnlySubMeshes.length; i += 1) {
             depthOnlySubMeshes.data[i].render(false);
         }
+        // TODO: skip meshes that were already drawn during `depthOnly`
         for (let i = 0; i < opaqueSubMeshes.length; i += 1) {
             opaqueSubMeshes.data[i].render(false);
         }
@@ -240,18 +254,29 @@ export class ClusteredLight extends Light {
 
         // We don't render any transparent meshes for the light mask
         beforeTransparents?.();
+    };
 
+    private _afterRenderLightMask = () => {
         const len = Math.min(this._lights.length, this.maxLights);
-        const depthWrite = engine.getDepthWrite();
-        engine.setDepthWrite(false);
-
-        // Draw the light meshes
-        // TODO: instancing
-        for (let i = 0; i < len; i += 1) {
-            const sphere = this._lightSpheres[i];
-            sphere.subMeshes[0].render(true);
+        if (len === 0) {
+            // Theres no lights to render
+            return;
         }
 
+        this._lightProxy.thinInstanceCount = len;
+        for (let i = 0; i < len; i += 1) {
+            const light = this._lights[i];
+            // TODO: cache matrices, somehow detect unchanged?
+            // TODO: scale by range of light
+            // TODO: rotate spotlights to face direction
+            light.getWorldMatrix().copyToArray(this._matrixBuffer, i * 16);
+        }
+        this._lightProxy.thinInstanceBufferUpdated("matrix");
+
+        const engine = this.getEngine();
+        const depthWrite = engine.getDepthWrite();
+        engine.setDepthWrite(false);
+        this._lightProxy.render(this._lightProxy.subMeshes[0], true);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
         engine.setDepthWrite(depthWrite);
     };
