@@ -1,9 +1,9 @@
 import type { DirectionalLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 
 import { useColor3Property, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";

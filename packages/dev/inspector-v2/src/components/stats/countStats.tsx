@@ -2,7 +2,7 @@ import type { FunctionComponent } from "react";
 
 import type { Scene } from "core/index";
 
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
 

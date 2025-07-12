@@ -9,10 +9,10 @@ import { useReducer, useState } from "react";
 
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BoundProperty } from "../boundProperty";
 
 export const SkeletonGeneralProperties: FunctionComponent<{ skeleton: Skeleton }> = (props) => {

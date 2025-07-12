@@ -2,7 +2,7 @@ import type { Node } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 export const NodeGeneralProperties: FunctionComponent<{ node: Node; setSelectedEntity: (entity: unknown) => void }> = (props) => {

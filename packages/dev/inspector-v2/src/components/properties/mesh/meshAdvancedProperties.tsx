@@ -2,7 +2,7 @@ import type { AbstractMesh } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 
 import { BoundProperty } from "../boundProperty";
 

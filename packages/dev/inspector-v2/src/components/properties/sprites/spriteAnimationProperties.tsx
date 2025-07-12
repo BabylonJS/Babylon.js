@@ -2,8 +2,8 @@ import type { FunctionComponent } from "react";
 
 import type { Sprite } from "core/index";
 
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { BoundProperty } from "../boundProperty";
 
 export const SpriteAnimationProperties: FunctionComponent<{ sprite: Sprite }> = (props) => {

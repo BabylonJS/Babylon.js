@@ -2,7 +2,7 @@ import type { Sprite } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
+import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { useColor4Property } from "../../../hooks/compoundPropertyHooks";
 
 export const SpriteOtherProperties: FunctionComponent<{ sprite: Sprite }> = (props) => {

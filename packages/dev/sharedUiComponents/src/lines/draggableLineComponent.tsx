@@ -3,7 +3,7 @@ import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { DraggableLine } from "../fluent/primitives/draggable";
 import type { DraggableLineProps } from "../fluent/primitives/draggable";
 
-export const DraggableLineComponent: React.FunctionComponent<DraggableLineProps> = (props) => {
+export const DraggableLineComponent: React.FunctionComponent<Omit<DraggableLineProps, "label">> = (props) => {
     const useFluent = useContext(ToolContext);
     if (useFluent) {
         // When updating the callsites to use fluent directly this label will be clearer since the string replace occurs where the Block_Foo lives where the Block name is

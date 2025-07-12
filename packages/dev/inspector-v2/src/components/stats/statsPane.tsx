@@ -1,7 +1,7 @@
 import type { Scene } from "core/index";
 
 import { AbstractEngine } from "core/Engines/abstractEngine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 import { AccordionPane } from "../accordionPane";
 import { Pane } from "../pane";
