@@ -2,7 +2,8 @@ import { makeStyles, SpinButton as FluentSpinButton } from "@fluentui/react-comp
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 import { useCallback, useState } from "react";
-import { PropertyLine, type BaseComponentProps, type PropertyLineProps } from "../hoc/propertyLine";
+import type { BaseComponentProps, PropertyLineProps } from "../hoc/propertyLines/propertyLine";
+import { PropertyLine } from "../hoc/propertyLines/propertyLine";
 
 const useSpinStyles = makeStyles({
     base: {
@@ -21,7 +22,7 @@ export type SpinButtonProps = BaseComponentProps<number> & {
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const classes = useSpinStyles();
 
-    const [spinButtonValue, setSpinButtonValue] = useState<number>(props.value);
+    const [spinButtonValue, setSpinButtonValue] = useState(props.value);
 
     const onSpinButtonChange = useCallback(
         (_ev: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {

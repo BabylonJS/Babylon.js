@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import { ReadonlyBooleanLine } from "shared-ui-components/fluent/hoc/readonlyBooleanLine";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 export interface IBooleanLineComponentProps {
@@ -16,7 +16,7 @@ export class BooleanLineComponent extends React.Component<IBooleanLineComponentP
         super(props);
     }
     renderFluent() {
-        return <ReadonlyBooleanLine label={this.props.label} value={this.props.value} />;
+        return <BooleanBadgePropertyLine label={this.props.label} value={this.props.value} />;
     }
 
     renderOriginal() {

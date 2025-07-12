@@ -1,8 +1,8 @@
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
-import { NumberInput, TextInput } from "../primitives/input";
-import type { InputProps } from "../primitives/input";
+import { NumberInput, TextInput } from "../../primitives/input";
+import type { InputProps } from "../../primitives/input";
 
 /**
  * Wraps a text input in a property line

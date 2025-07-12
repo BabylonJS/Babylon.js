@@ -3,8 +3,8 @@ import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef } from "react";
-import { copyCommandToClipboard } from "../../copyCommandToClipboard";
-import { ToolContext } from "./fluentToolWrapper";
+import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
+import { ToolContext } from "../fluentToolWrapper";
 
 const usePropertyLineStyles = makeStyles({
     container: {

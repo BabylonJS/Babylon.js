@@ -1,17 +1,12 @@
 import { useContext } from "react";
-import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import { DraggableLine } from "shared-ui-components/fluent/primitives/draggable";
-
-export type DraggableLineProps = {
-    format: string;
-    data: string;
-    tooltip: string;
-};
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { DraggableLine } from "../fluent/primitives/draggable";
+import type { DraggableLineProps } from "../fluent/primitives/draggable";
 
 export const DraggableLineComponent: React.FunctionComponent<DraggableLineProps> = (props) => {
     const useFluent = useContext(ToolContext);
     if (useFluent) {
-        // When updating the callsites to use fluent directly this label will be clearer since the string replace occurs where the Block_Foo lives
+        // When updating the callsites to use fluent directly this label will be clearer since the string replace occurs where the Block_Foo lives where the Block name is
         return <DraggableLine {...props} label={props.data.replace("Block", "")} />;
     }
     return (

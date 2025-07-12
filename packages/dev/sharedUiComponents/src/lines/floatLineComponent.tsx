@@ -8,7 +8,7 @@ import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import copyIcon from "../imgs/copy.svg";
-import { NumberInputPropertyLine } from "../fluent/hoc/inputPropertyLine";
+import { NumberInputPropertyLine } from "../fluent/hoc/propertyLines/inputPropertyLine";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/primitives/spinButton";
 

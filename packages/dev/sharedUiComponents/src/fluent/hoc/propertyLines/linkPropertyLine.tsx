@@ -1,6 +1,6 @@
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
-import { Link } from "../primitives/link";
+import { Link } from "../../primitives/link";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
 

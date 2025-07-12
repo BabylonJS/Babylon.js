@@ -1,6 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { DeleteFilled } from "@fluentui/react-icons";
-import { LineContainer } from "../hoc/propertyLine";
+import { LineContainer } from "../hoc/propertyLines/propertyLine";
 
 export type DraggableLineProps = {
     format: string;

@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
-import { Dropdown } from "../primitives/dropdown";
-import type { AcceptedDropdownValue, DropdownProps } from "../primitives/dropdown";
+import { Dropdown } from "../../primitives/dropdown";
+import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
