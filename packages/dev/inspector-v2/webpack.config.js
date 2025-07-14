@@ -1,7 +1,5 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
     return {
@@ -36,16 +34,12 @@ module.exports = (env) => {
             rules: webpackTools.getRules({
                 sideEffects: true,
                 includeCSS: false,
+                enableFastRefresh: !env.production,
                 tsOptions: {
                     configFile: "tsconfig.build.json",
-                    getCustomTransformers: () => ({
-                        before: [ReactRefreshTypeScript()],
-                    }),
                     transpileOnly: true,
                 },
             }),
         },
-
-        plugins: [new ReactRefreshWebpackPlugin()],
     };
 };

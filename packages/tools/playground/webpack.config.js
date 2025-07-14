@@ -1,8 +1,6 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
     const commonConfig = {
@@ -17,7 +15,13 @@ module.exports = (env) => {
             {
                 static: ["public"],
                 port: process.env.PLAYGROUND_PORT || 1338,
-            }
+            },
+            [
+                new MonacoWebpackPlugin({
+                    // publicPath: "public/",
+                    languages: ["typescript", "javascript"],
+                }),
+            ]
         ),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
@@ -73,19 +77,10 @@ module.exports = (env) => {
                     compilerOptions: {
                         rootDir: "../../",
                     },
-                    getCustomTransformers: () => ({
-                        before: [!env.production && ReactRefreshTypeScript()].filter(Boolean),
-                    }),
                 },
+                enableFastRefresh: !env.production,
             }),
         },
-        plugins: [
-            new MonacoWebpackPlugin({
-                // publicPath: "public/",
-                languages: ["typescript", "javascript"],
-            }),
-            !env.production && new ReactRefreshWebpackPlugin(),
-        ].filter(Boolean),
     };
     return commonConfig;
 };
