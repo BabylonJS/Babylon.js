@@ -2,8 +2,8 @@ import type { FunctionComponent } from "react";
 
 import { useMemo } from "react";
 
-import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor, IsPropertyReadonly } from "../../instrumentation/propertyInstrumentation";
 

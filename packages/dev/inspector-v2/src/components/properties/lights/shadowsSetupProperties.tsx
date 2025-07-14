@@ -4,9 +4,9 @@ import type { FunctionComponent } from "react";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 

@@ -7,9 +7,9 @@ import { useCallback } from "react";
 
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";

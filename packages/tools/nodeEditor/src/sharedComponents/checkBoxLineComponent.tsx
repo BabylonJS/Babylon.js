@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 export interface ICheckBoxLineComponentProps {

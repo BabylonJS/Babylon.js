@@ -1,8 +1,8 @@
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
-import { InputHexField } from "../primitives/colorPicker";
-import type { InputHexProps } from "../primitives/colorPicker";
+import { InputHexField } from "../../primitives/colorPicker";
+import type { InputHexProps } from "../../primitives/colorPicker";
 
 /**
  * Wraps a hex input in a property line

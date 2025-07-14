@@ -3,8 +3,8 @@ import type { FunctionComponent } from "react";
 import type { Sprite } from "core/index";
 import type { ISettingsContext } from "../../../services/settingsContext";
 
-import { SyncedSliderLine } from "shared-ui-components/fluent/hoc/syncedSliderLine";
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
@@ -23,7 +23,7 @@ export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite; sett
         <>
             <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (sprite.position = val)} />
             <BoundProperty
-                component={SyncedSliderLine}
+                component={SyncedSliderPropertyLine}
                 key="Angle2"
                 label="Angle"
                 description="Rotation angle of the sprite"
@@ -35,9 +35,16 @@ export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite; sett
                 convertTo={(angle) => angle * angleMultiplier}
                 convertFrom={(angle) => angle / angleMultiplier}
             />
-            <BoundProperty component={SyncedSliderLine} key="Width" label="Width" description="Width of the sprite (in world space units)" target={sprite} propertyKey="width" />
             <BoundProperty
-                component={SyncedSliderLine}
+                component={SyncedSliderPropertyLine}
+                key="Width"
+                label="Width"
+                description="Width of the sprite (in world space units)"
+                target={sprite}
+                propertyKey="width"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
                 key={"Height"}
                 label="Height"
                 description="Height of the sprite (in world space units)"

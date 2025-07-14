@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/textPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
 

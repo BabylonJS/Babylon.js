@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLine";
+import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**

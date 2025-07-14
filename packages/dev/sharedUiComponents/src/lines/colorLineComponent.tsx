@@ -10,8 +10,8 @@ import { ColorPickerLine } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
-import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { Color3PropertyLine, Color4PropertyLine } from "../fluent/hoc/propertyLines/colorPropertyLine";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 const EmptyColor = new Color4(0, 0, 0, 0);
 

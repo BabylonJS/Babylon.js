@@ -16,7 +16,7 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { ColorStepGradientComponent } from "shared-ui-components/fluent/primitives/gradient";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/dropdownPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
 const TypeOptions = [
