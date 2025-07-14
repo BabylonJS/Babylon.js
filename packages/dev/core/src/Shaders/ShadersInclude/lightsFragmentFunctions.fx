@@ -186,9 +186,9 @@ lightingInfo computeClusteredLighting(sampler2D lightMask, vec3 viewDirectionW, 
 	lightingInfo result;
 	vec4 maskTexel = texelFetch(lightMask, ivec2(gl_FragCoord.xy * lightData.xy), 0);
 	uint mask = uint(maskTexel.r);
-	uint len = uint(lightData.z);
+	int len = int(lightData.z);
 
-	for (uint i = 0u; i < len; i += 1u) {
+	for (int i = 0; i < len; i += 1) {
 		if ((mask & (1u << i)) == 0u) {
 			continue;
 		}
