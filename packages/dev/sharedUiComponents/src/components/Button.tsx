@@ -13,7 +13,7 @@ export type ButtonComponentProps = {
     backgroundColor?: string;
 };
 
-export const Button: React.FC<PropsWithChildren<ButtonComponentProps>> = ({ disabled, active, onClick, children, color, size, title, backgroundColor }) => {
+export const ButtonComponent: React.FC<PropsWithChildren<ButtonComponentProps>> = ({ disabled, active, onClick, children, color, size, title, backgroundColor }) => {
     return (
         <button
             className={ClassNames(

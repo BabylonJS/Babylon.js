@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { DraggableLine } from "../fluent/primitives/draggable";
 
-export type DraggableLineProps = {
+export type DraggableLineWithButtonProps = {
     format: string;
     data: string;
     tooltip: string;
@@ -12,7 +12,7 @@ export type DraggableLineProps = {
     lenSuffixToRemove?: number;
 };
 
-export const DraggableLineWithButtonComponent: React.FunctionComponent<DraggableLineProps> = (props) => {
+export const DraggableLineWithButtonComponent: React.FunctionComponent<DraggableLineWithButtonProps> = (props) => {
     const useFluent = useContext(ToolContext);
     if (useFluent) {
         // When updating the callsites to use fluent directly this label will be clearer since the string replace occurs where the data string lives
