@@ -10,6 +10,7 @@ import { Logger } from "core/Misc/logger";
 import { _WarnImport } from "core/Misc/devTools";
 import { RenderingManager } from "core/Rendering/renderingManager";
 import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 
 import { LightProxyMaterial } from "./lightProxyMaterial";
 import { Light } from "../light";
@@ -62,19 +63,21 @@ export class ClusteredLight extends Light {
         throw _WarnImport("ClusteredLightSceneComponent");
     };
 
-    private readonly _lights: (PointLight | SpotLight)[] = [];
-    public get lights(): readonly Light[] {
-        return this._lights;
-    }
-
     public readonly maxLights: number;
 
     public get isSupported(): boolean {
         return this.maxLights > 0;
     }
 
-    /** @internal */
-    public readonly _lightMask: RenderTargetTexture;
+    private readonly _lights: (PointLight | SpotLight)[] = [];
+    public get lights(): readonly Light[] {
+        return this._lights;
+    }
+
+    public tileWidth = 128;
+    public tileHeight = 128;
+
+    private _lightMask: Nullable<RenderTargetTexture>;
     private readonly _lightProxy: Mesh;
     private readonly _matrixBuffer: Float32Array;
 
@@ -84,32 +87,12 @@ export class ClusteredLight extends Light {
         const engine = this.getEngine();
         this.maxLights = ClusteredLight._GetEngineMaxLights(engine);
 
-        // TODO: make size configurable
-        this._lightMask = new RenderTargetTexture("LightMask", 128, this._scene, {
-            type: engine.isWebGPU ? Constants.TEXTURETYPE_UNSIGNED_INTEGER : Constants.TEXTURETYPE_FLOAT,
-            format: Constants.TEXTUREFORMAT_RED,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        });
         this._lightProxy = CreateSphere("LightProxy", { diameter: 2, segments: 8 }, scene);
         this._lightProxy.isVisible = false;
         this._matrixBuffer = new Float32Array(this.maxLights * 16);
 
         if (this.maxLights > 0) {
             ClusteredLight._SceneComponentInitialization(this._scene);
-
-            this._lightMask.renderParticles = false;
-            this._lightMask.renderSprites = false;
-            this._lightMask.noPrePassRenderer = true;
-            // Use the default render list
-            this._lightMask.renderList = null;
-            this._lightMask.clearColor = new Color4();
-            this._lightMask.customRenderFunction = this._renderLightMaskGroup;
-            this._lightMask.onAfterRenderObservable.add(this._afterRenderLightMask);
-
-            // Prevent clearing between render groups
-            for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i += 1) {
-                this._lightMask.setRenderingAutoClearDepthStencil(i, false);
-            }
 
             this._lightProxy.material = new LightProxyMaterial("LightMaterial", this);
             this._lightProxy.thinInstanceSetBuffer("matrix", this._matrixBuffer, 16, false);
@@ -133,6 +116,7 @@ export class ClusteredLight extends Light {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
+        this._lightMask?.dispose();
         this._lightProxy.dispose(doNotRecurse, disposeMaterialAndTextures);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
@@ -147,6 +131,40 @@ export class ClusteredLight extends Light {
         }
         this._scene.removeLight(light);
         this._lights.push(<PointLight | SpotLight>light);
+    }
+
+    /** @internal */
+    public _getLightMask(): RenderTargetTexture {
+        const engine = this.getEngine();
+        // const width = Math.ceil(engine.getRenderWidth(true) / this.tileWidth);
+        // const height = Math.ceil(engine.getRenderHeight(true) / this.tileHeight);
+        const width = 16;
+        const height = 16;
+        if (this._lightMask && this._lightMask.getRenderWidth() === width && this._lightMask.getRenderHeight() === height) {
+            return this._lightMask;
+        }
+
+        this._lightMask?.dispose();
+        this._lightMask = new RenderTargetTexture("LightMask", { width, height }, this._scene, {
+            type: engine.isWebGPU ? Constants.TEXTURETYPE_UNSIGNED_INTEGER : Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_RED,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        });
+        this._lightMask.renderParticles = false;
+        this._lightMask.renderSprites = false;
+        this._lightMask.noPrePassRenderer = true;
+        // Use the default render list
+        this._lightMask.renderList = null;
+        this._lightMask.clearColor = new Color4();
+
+        this._lightMask.customRenderFunction = this._renderLightMaskGroup;
+        this._lightMask.onAfterRenderObservable.add(this._afterRenderLightMask);
+
+        // Prevent clearing between render groups
+        for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i += 1) {
+            this._lightMask.setRenderingAutoClearDepthStencil(i, false);
+        }
+        return this._lightMask;
     }
 
     public override _isReady(): boolean {
@@ -175,7 +193,7 @@ export class ClusteredLight extends Light {
     }
 
     public transferToEffect(effect: Effect, lightIndex: string): Light {
-        const maskSize = this._lightMask.getSize();
+        const maskSize = this._lightMask?.getSize() ?? { width: 0, height: 0 };
         const engine = this.getEngine();
         const len = Math.min(this._lights.length, this.maxLights);
         this._uniformBuffer.updateFloat4("vLightData", maskSize.width / engine.getRenderWidth(), maskSize.height / engine.getRenderHeight(), len, 0, lightIndex);

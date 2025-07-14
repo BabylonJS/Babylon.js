@@ -23,7 +23,7 @@ class ClusteredLightSceneComponent implements ISceneComponent {
     private _gatherRenderTargets: RenderTargetsStageAction = (renderTargets) => {
         for (const light of this.scene.lights) {
             if (light instanceof ClusteredLight && light.isSupported) {
-                renderTargets.push(light._lightMask);
+                renderTargets.push(light._getLightMask());
             }
         }
     };
