@@ -2,6 +2,7 @@ const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -55,7 +56,7 @@ module.exports = (env) => {
                 includeAssets: true,
                 includeCSS: true,
                 sideEffects: true,
-                enableFastRefresh: !env.production,
+                enableFastRefresh: !production,
             }),
         },
     };
