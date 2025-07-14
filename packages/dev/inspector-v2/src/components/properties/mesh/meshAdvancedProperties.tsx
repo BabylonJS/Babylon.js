@@ -4,7 +4,7 @@ import type { FunctionComponent } from "react";
 
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
 
-import { BoundProperty } from "./boundProperty";
+import { BoundProperty } from "../boundProperty";
 
 export const MeshAdvancedProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
     const { mesh } = props;

@@ -1,5 +1,48 @@
 # Changelog
 
+## 8.16.1
+
+### Core
+
+- Inspector v2: Animation Groups in Scene Explorer - by [ryantrem](https://github.com/ryantrem) ([#16871](https://github.com/BabylonJS/Babylon.js/pull/16871))
+- Inspector v2: Add missing add/remove observables to scene and use ISceneContext for scene explorer sections - by [ryantrem](https://github.com/ryantrem) ([#16869](https://github.com/BabylonJS/Babylon.js/pull/16869))
+
+### Node Editor
+
+- New gradient, list, and gradientList components; Add particleSystemProperties to inspectorv2 - by [georginahalpern](https://github.com/georginahalpern) ([#16863](https://github.com/BabylonJS/Babylon.js/pull/16863))
+
+### Viewer
+
+- Viewer: Align shadow map light with IBL dominant direction - by [cournoll](https://github.com/cournoll) ([#16744](https://github.com/BabylonJS/Babylon.js/pull/16744))
+
+## 8.16.0
+
+### Core
+
+- Inspector v2: Rendering Pipelines in Scene Explorer - by [ryantrem](https://github.com/ryantrem) ([#16864](https://github.com/BabylonJS/Babylon.js/pull/16864))
+- FrameGraph: Fix scene in wrong state when rendering objects with frame graphs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16856](https://github.com/BabylonJS/Babylon.js/pull/16856))
+- WebGPU: Fix wrong instances displayed in custom RTT - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16842](https://github.com/BabylonJS/Babylon.js/pull/16842))
+- Optimize performance of AssetContainer.addToScene - by [kzhsw](https://github.com/kzhsw) ([#16853](https://github.com/BabylonJS/Babylon.js/pull/16853))
+- Fix Thin Instances Memory leak - by [sebavan](https://github.com/sebavan) ([#16851](https://github.com/BabylonJS/Babylon.js/pull/16851))
+- Optimize performance of AnimationGroup.Parse - by [kzhsw](https://github.com/kzhsw) ([#16844](https://github.com/BabylonJS/Babylon.js/pull/16844))
+- Small fixes to the TAA renderer - by [matanui159](https://github.com/matanui159) ([#16850](https://github.com/BabylonJS/Babylon.js/pull/16850))
+- Support for back stencil configuration + blend configuration per target + dual source blending - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#16785](https://github.com/BabylonJS/Babylon.js/pull/16785))
+- Fix overlapping audio parameter ramps - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16839](https://github.com/BabylonJS/Babylon.js/pull/16839))
+
+### Inspector
+
+- Update NME to use fluent accordion for both nodeList and properties pane - by [georginahalpern](https://github.com/georginahalpern) ([#16847](https://github.com/BabylonJS/Babylon.js/pull/16847))
+- Support for back stencil configuration + blend configuration per target + dual source blending - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#16785](https://github.com/BabylonJS/Babylon.js/pull/16785))
+
+### Node Editor
+
+- Update NME to use fluent accordion for both nodeList and properties pane - by [georginahalpern](https://github.com/georginahalpern) ([#16847](https://github.com/BabylonJS/Babylon.js/pull/16847))
+
+### Serializers
+
+- glTF Exporter: Don't modify original quaternion reference! - by [alexchuber](https://github.com/alexchuber) ([#16858](https://github.com/BabylonJS/Babylon.js/pull/16858))
+- glTF Exporter: Replace PBRMaterial -> PBRBaseMaterial - by [alexchuber](https://github.com/alexchuber) ([#16857](https://github.com/BabylonJS/Babylon.js/pull/16857))
+
 ## 8.15.1
 
 ### Core

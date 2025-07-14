@@ -23,9 +23,10 @@ module.exports = (env) => {
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".jsx"],
             alias: {
-                core: path.resolve("../../dev/core/dist"),
-                loaders: path.resolve("../../dev/loaders/dist"),
                 addons: path.resolve("../../dev/addons/dist"),
+                core: path.resolve("../../dev/core/dist"),
+                gui: path.resolve("../../dev/gui/dist"),
+                loaders: path.resolve("../../dev/loaders/dist"),
                 materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },

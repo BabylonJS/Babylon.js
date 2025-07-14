@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 
 import { Skeleton } from "core/Bones/skeleton";
-import { SkeletonGeneralProperties, SkeletonViewerProperties } from "../../../components/properties/skeletonProperties";
+import { SkeletonGeneralProperties, SkeletonViewerProperties } from "../../../components/properties/skeleton/skeletonProperties";
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 

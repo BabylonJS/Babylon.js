@@ -6,7 +6,7 @@ import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 
 import { Material } from "core/Materials";
-import { MaterialTransparencyProperties } from "../../../components/properties/materialTransparencyProperties";
+import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialTransparencyProperties";
 
 export const TransparencyPropertiesSectionIdentity = Symbol("Transparency");
 export const StencilPropertiesSectionItentity = Symbol("Stencil");

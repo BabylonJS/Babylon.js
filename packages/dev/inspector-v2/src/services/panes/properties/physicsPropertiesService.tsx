@@ -4,9 +4,9 @@ import type { IPropertiesService } from "./propertiesService";
 import { TransformNode } from "core/Meshes/transformNode";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { PhysicsBodyProperties } from "../../../components/properties/physicsProperties";
+import { PhysicsBodyProperties } from "../../../components/properties/physics/physicsProperties";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 export const PhysicsPropertiesSectionIdentity = Symbol("Physics");
 
@@ -31,7 +31,14 @@ export const PhysicsPropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                         const physicsBody = useProperty(node, "physicsBody");
 
                         if (!physicsBody) {
-                            return <PlaceholderPropertyLine label="No Physics Body" value={undefined} onChange={() => {}} />;
+                            return (
+                                <MessageBar
+                                    intent="info"
+                                    title="No Physics Body"
+                                    message="To modify physics properties, attach a physics body to this node."
+                                    docLink="https://doc.babylonjs.com/features/featuresDeepDive/physics/rigidBodies"
+                                />
+                            );
                         }
 
                         return <PhysicsBodyProperties physicsBody={physicsBody} />;

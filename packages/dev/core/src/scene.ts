@@ -847,6 +847,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onSkeletonRemovedObservable = new Observable<Skeleton>();
 
     /**
+     * An event triggered when a particle system is created
+     */
+    public onNewParticleSystemAddedObservable = new Observable<IParticleSystem>();
+
+    /**
+     * An event triggered when a particle system is removed
+     */
+    public onParticleSystemRemovedObservable = new Observable<IParticleSystem>();
+
+    /**
+     * An event triggered when an animation group is created
+     */
+    public onNewAnimationGroupAddedObservable = new Observable<AnimationGroup>();
+
+    /**
+     * An event triggered when an animation group is removed
+     */
+    public onAnimationGroupRemovedObservable = new Observable<AnimationGroup>();
+
+    /**
      * An event triggered when a material is created
      */
     public onNewMaterialAddedObservable = new Observable<Material>();
@@ -855,6 +875,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * An event triggered when a multi material is created
      */
     public onNewMultiMaterialAddedObservable = new Observable<MultiMaterial>();
+
+    /**
+     * An event triggered when a post process is created
+     */
+    public onNewPostProcessAddedObservable = new Observable<PostProcess>();
 
     /**
      * An event triggered when a material is removed
@@ -875,6 +900,21 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * An event triggered when a texture is removed
      */
     public onTextureRemovedObservable = new Observable<BaseTexture>();
+
+    /**
+     * An event triggered when a frame graph is created
+     */
+    public onNewFrameGraphAddedObservable = new Observable<FrameGraph>();
+
+    /**
+     * An event triggered when a frame graph is removed
+     */
+    public onFrameGraphRemovedObservable = new Observable<FrameGraph>();
+
+    /**
+     * An event triggered when a post process is removed
+     */
+    public onPostProcessRemovedObservable = new Observable<PostProcess>();
 
     /**
      * An event triggered when render targets are about to be rendered
@@ -2908,6 +2948,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Clean active container
             this._executeActiveContainerCleanup(this._activeParticleSystems);
         }
+        this.onParticleSystemRemovedObservable.notifyObservers(toRemove);
         return index;
     }
 
@@ -2944,6 +2985,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (index !== -1) {
             this.animationGroups.splice(index, 1);
         }
+        this.onAnimationGroupRemovedObservable.notifyObservers(toRemove);
         return index;
     }
 
@@ -3011,6 +3053,36 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this.textures.splice(index, 1);
         }
         this.onTextureRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given frame graph from this scene.
+     * @param toRemove The frame graph to remove
+     * @returns The index of the removed frame graph
+     */
+    public removeFrameGraph(toRemove: FrameGraph): number {
+        const index = this.frameGraphs.indexOf(toRemove);
+        if (index !== -1) {
+            this.frameGraphs.splice(index, 1);
+        }
+        this.onFrameGraphRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given post-process from this scene.
+     * @param toRemove The post-process to remove
+     * @returns The index of the removed post-process
+     */
+    public removePostProcess(toRemove: PostProcess): number {
+        const index = this.postProcesses.indexOf(toRemove);
+        if (index !== -1) {
+            this.postProcesses.splice(index, 1);
+        }
+        this.onPostProcessRemovedObservable.notifyObservers(toRemove);
 
         return index;
     }
@@ -3095,6 +3167,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.particleSystems.push(newParticleSystem);
+
+        Tools.SetImmediate(() => {
+            this.onNewParticleSystemAddedObservable.notifyObservers(newParticleSystem);
+        });
     }
 
     /**
@@ -3117,6 +3193,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.animationGroups.push(newAnimationGroup);
+
+        Tools.SetImmediate(() => {
+            this.onNewAnimationGroupAddedObservable.notifyObservers(newAnimationGroup);
+        });
     }
 
     /**
@@ -3200,6 +3280,31 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
         this.textures.push(newTexture);
         this.onNewTextureAddedObservable.notifyObservers(newTexture);
+    }
+
+    /**
+     * Adds the given frame graph to this scene.
+     * @param newFrameGraph The frame graph to add
+     */
+    public addFrameGraph(newFrameGraph: FrameGraph): void {
+        this.frameGraphs.push(newFrameGraph);
+        Tools.SetImmediate(() => {
+            this.onNewFrameGraphAddedObservable.notifyObservers(newFrameGraph);
+        });
+    }
+
+    /**
+     * Adds the given post process to this scene.
+     * @param newPostProcess The post process to add
+     */
+    public addPostProcess(newPostProcess: PostProcess): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+        this.postProcesses.push(newPostProcess);
+        Tools.SetImmediate(() => {
+            this.onNewPostProcessAddedObservable.notifyObservers(newPostProcess);
+        });
     }
 
     /**

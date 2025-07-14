@@ -2,7 +2,7 @@ import type { HemisphericLight } from "core/index";
 import type { FunctionComponent } from "react";
 
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
 
 import { useColor3Property, useVector3Property } from "../../../hooks/compoundPropertyHooks";
@@ -18,7 +18,7 @@ export const HemisphericLightSetupProperties: FunctionComponent<{ context: Hemis
             <Vector3PropertyLine label="Direction" value={direction} onChange={(val) => (hemisphericLight.direction = val)} />
             <Color3PropertyLine label="Diffuse" value={diffuseColor} onChange={(val) => (hemisphericLight.diffuse = val)} />
             <Color3PropertyLine label="Ground" value={groundColor} onChange={(val) => (hemisphericLight.groundColor = val)} />
-            <BoundProperty component={FloatInputPropertyLine} label="Intensity" target={hemisphericLight} propertyKey="intensity" />
+            <BoundProperty component={NumberInputPropertyLine} label="Intensity" target={hemisphericLight} propertyKey="intensity" />
         </>
     );
 };

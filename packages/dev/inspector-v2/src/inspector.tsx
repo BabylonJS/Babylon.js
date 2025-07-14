@@ -11,7 +11,6 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
-import { BonePropertiesServiceDefinition } from "./services/panes/properties/bonePropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
 import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
@@ -22,17 +21,24 @@ import { SpotLightPropertiesServiceDefinition } from "./services/panes/propertie
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
-import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
-import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
+import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
-import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { NodeExplorerServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
+import { PostProcessExplorerServiceDefinition } from "./services/panes/scene/postProcessExplorerService";
+import { RenderingPipelineExplorerServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
-import { SkeletonHierarchyServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
-import { SpriteManagerHierarchyServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
-import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
@@ -179,21 +185,26 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
-            NodeHierarchyServiceDefinition,
+            NodeExplorerServiceDefinition,
+            SkeletonExplorerServiceDefinition,
             MaterialExplorerServiceDefinition,
-            SkeletonHierarchyServiceDefinition,
-            TextureHierarchyServiceDefinition,
-            SpriteManagerHierarchyServiceDefinition,
+            TextureExplorerServiceDefinition,
+            PostProcessExplorerServiceDefinition,
+            RenderingPipelineExplorerServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
+            SpriteManagerExplorerServiceDefinition,
+            AnimationGroupExplorerServiceDefinition,
+            GuiExplorerServiceDefinition,
+            FrameGraphExplorerServiceDefinition,
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
             NodePropertiesServiceDefinition,
             MeshPropertiesServiceDefinition,
-            TransformNodePropertiesServiceDefinition,
+            TransformPropertiesServiceDefinition,
             PhysicsPropertiesServiceDefinition,
             SkeletonPropertiesServiceDefinition,
-            BonePropertiesServiceDefinition,
             MaterialPropertiesServiceDefinition,
             HemisphericLightPropertiesServiceDefinition,
             AreaLightPropertiesServiceDefinition,
@@ -202,6 +213,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SpotLightPropertiesServiceDefinition,
             ShadowLightPropertiesServiceDefinition,
             SpritePropertiesServiceDefinition,
+            ParticleSystemPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

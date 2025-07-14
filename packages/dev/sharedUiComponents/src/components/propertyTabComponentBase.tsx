@@ -13,25 +13,22 @@ import { Accordion } from "../fluent/primitives/accordion";
  */
 export const PropertyTabComponentBase: FunctionComponent<PropsWithChildren> = (props) => {
     const context = useContext(ToolContext);
-    const fluentWrapper: FunctionComponent<PropsWithChildren> = (props) => {
+
+    if (context.useFluent) {
         return (
             <Pane title={context.toolName}>
                 <Accordion>{props.children}</Accordion>
             </Pane>
         );
-    };
-    const originalWrapper: FunctionComponent<PropsWithChildren> = (props) => {
-        return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">{context.toolName}</div>
-                </div>
-                <div>{props.children}</div>
+    }
+
+    return (
+        <div id="propertyTab">
+            <div id="header">
+                <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                <div id="title">{context.toolName}</div>
             </div>
-        );
-    };
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const Wrapper = context.useFluent ? fluentWrapper : originalWrapper;
-    return <Wrapper>{props.children}</Wrapper>;
+            <div>{props.children}</div>
+        </div>
+    );
 };
