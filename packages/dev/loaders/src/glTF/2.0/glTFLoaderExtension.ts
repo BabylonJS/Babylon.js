@@ -127,10 +127,9 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param context The context when loading the asset
      * @param material The glTF material property
      * @param babylonMaterial The Babylon material
-     * @param useOpenPBR Load materials as OpenPBR materials instead of glTF PBR materials.
      * @returns A promise that resolves when the load is complete or null if not handled
      */
-    loadMaterialPropertiesAsync?(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean): Nullable<Promise<void>>;
+    loadMaterialPropertiesAsync?(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
 
     /**
      * Define this method to modify the default behavior when loading texture infos.
