@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -21,8 +21,6 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_emissive_strength"]: {};
     }
 }
-
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md)
@@ -63,15 +61,8 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, async (extensionContext, extension) => {
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
             // eslint-disable-next-line github/no-then
             return await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
                 this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
@@ -80,7 +71,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     }
 
     private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 

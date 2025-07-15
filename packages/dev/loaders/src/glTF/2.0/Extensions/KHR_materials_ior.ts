@@ -1,6 +1,5 @@
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -21,8 +20,6 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_ior"]: {};
     }
 }
-
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_ior/README.md)
@@ -68,38 +65,26 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsIor>(context, material, this.name, async (extensionContext, extension) => {
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadIorPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
+            promises.push(this._loadIorPropertiesAsync(extensionContext, extension, babylonMaterial));
             // eslint-disable-next-line github/no-then
             return await Promise.all(promises).then(() => {});
         });
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _loadIorPropertiesAsync(context: string, properties: IKHRMaterialsIor, babylonMaterial: Material, useOpenPBR: boolean = false): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadIorPropertiesAsync(context: string, properties: IKHRMaterialsIor, babylonMaterial: Material): Promise<void> {
+        if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        let indexOfRefraction = 1.5;
         if (properties.ior !== undefined) {
-            indexOfRefraction = properties.ior;
+            babylonMaterial.indexOfRefraction = properties.ior;
         } else {
-            indexOfRefraction = KHR_materials_ior._DEFAULT_IOR;
-        }
-
-        if (!useOpenPBR) {
-            (babylonMaterial as PBRMaterial).indexOfRefraction = indexOfRefraction;
+            babylonMaterial.indexOfRefraction = KHR_materials_ior._DEFAULT_IOR;
         }
 
         return Promise.resolve();
