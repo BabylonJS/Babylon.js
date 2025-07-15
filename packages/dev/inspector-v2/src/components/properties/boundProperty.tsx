@@ -1,5 +1,9 @@
 import type { ComponentType } from "react";
+
 import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+
+import { forwardRef } from "react";
+
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
@@ -15,13 +19,7 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
 };
 
-/**
- * Intercepts the passed in component's target[propertyKey] with useInterceptObservable and sets component state using useObservableState.
- * Renders the passed in component with value as the new observableState value and onChange as a callback to set the target[propertyKey] value.
- * @param props
- * @returns
- */
-export function BoundProperty<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object>(props: BoundPropertyProps<TargetT, PropertyKeyT, PropsT>) {
+function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object>(props: BoundPropertyProps<TargetT, PropertyKeyT, PropsT>, ref?: any) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
     const value = useProperty(target, propertyKey);
@@ -29,6 +27,7 @@ export function BoundProperty<TargetT extends object, PropertyKeyT extends keyof
     return (
         <Component
             {...(rest as PropsT)}
+            ref={ref}
             value={convertTo ? convertTo(value) : value}
             onChange={(val: TargetT[PropertyKeyT]) => {
                 target[propertyKey] = convertFrom ? convertFrom(val) : val;
@@ -36,3 +35,11 @@ export function BoundProperty<TargetT extends object, PropertyKeyT extends keyof
         />
     );
 }
+
+/**
+ * Intercepts the passed in component's target[propertyKey] with useInterceptObservable and sets component state using useObservableState.
+ * Renders the passed in component with value as the new observableState value and onChange as a callback to set the target[propertyKey] value.
+ * @param props
+ * @returns
+ */
+export const BoundProperty = forwardRef(BoundPropertyImpl) as unknown as typeof BoundPropertyImpl;
