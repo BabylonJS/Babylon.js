@@ -1,7 +1,6 @@
 /* eslint-disable github/no-then */
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -23,8 +22,6 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_diffuse_transmission"]: {};
     }
 }
-
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
@@ -69,15 +66,8 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDiffuseTransmission>(context, material, this.name, async (extensionContext, extension) => {
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadTranslucentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
@@ -87,71 +77,62 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTranslucentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDiffuseTransmission): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+        if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        let translucencyWeight = 0.0;
-        let translucencyWeightTexture: Nullable<BaseTexture>;
-        let translucencyColor = Color3.White();
-        let translucencyColorTexture: Nullable<BaseTexture>;
+        const pbrMaterial = babylonMaterial;
+
+        // Enables "translucency" texture which represents diffusely-transmitted light.
+        pbrMaterial.subSurface.isTranslucencyEnabled = true;
+
+        // Since this extension models thin-surface transmission only, we must make the
+        // internal IOR == 1.0 and set the thickness to 0.
+        pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        pbrMaterial.subSurface.maximumThickness = 0.0;
+
+        // Tint color will be used for transmission.
+        pbrMaterial.subSurface.useAlbedoToTintTranslucency = false;
 
         if (extension.diffuseTransmissionFactor !== undefined) {
-            translucencyWeight = extension.diffuseTransmissionFactor;
+            pbrMaterial.subSurface.translucencyIntensity = extension.diffuseTransmissionFactor;
+        } else {
+            pbrMaterial.subSurface.translucencyIntensity = 0.0;
+            pbrMaterial.subSurface.isTranslucencyEnabled = false;
+            return Promise.resolve();
         }
 
         const promises = new Array<Promise<any>>();
+
+        pbrMaterial.subSurface.useGltfStyleTextures = true;
 
         if (extension.diffuseTransmissionTexture) {
             (extension.diffuseTransmissionTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionTexture`, extension.diffuseTransmissionTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Transmission)`;
-                    translucencyWeightTexture = texture;
+                    pbrMaterial.subSurface.translucencyIntensityTexture = texture;
                 })
             );
         }
 
         if (extension.diffuseTransmissionColorFactor !== undefined) {
-            translucencyColor = Color3.FromArray(extension.diffuseTransmissionColorFactor);
+            pbrMaterial.subSurface.translucencyColor = Color3.FromArray(extension.diffuseTransmissionColorFactor);
+        } else {
+            pbrMaterial.subSurface.translucencyColor = Color3.White();
         }
 
         if (extension.diffuseTransmissionColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Transmission Color)`;
-                    translucencyColorTexture = texture;
+                    pbrMaterial.subSurface.translucencyColorTexture = texture;
                 })
             );
         }
 
-        return Promise.all(promises).then(() => {
-            const pbrMaterial = babylonMaterial as PBRMaterial;
-
-            // Enables "translucency" texture which represents diffusely-transmitted light.
-            pbrMaterial.subSurface.isTranslucencyEnabled = true;
-
-            // Since this extension models thin-surface transmission only, we must make the
-            // internal IOR == 1.0 and set the thickness to 0.
-            pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
-            pbrMaterial.subSurface.minimumThickness = 0.0;
-            pbrMaterial.subSurface.maximumThickness = 0.0;
-
-            // Tint color will be used for transmission.
-            pbrMaterial.subSurface.useAlbedoToTintTranslucency = false;
-
-            pbrMaterial.subSurface.translucencyIntensity = translucencyWeight;
-            if (translucencyWeight === 0.0) {
-                pbrMaterial.subSurface.isTranslucencyEnabled = false;
-                return;
-            }
-
-            pbrMaterial.subSurface.useGltfStyleTextures = true;
-            pbrMaterial.subSurface.translucencyIntensityTexture = translucencyWeightTexture;
-
-            pbrMaterial.subSurface.translucencyColor = translucencyColor;
-            pbrMaterial.subSurface.translucencyColorTexture = translucencyColorTexture;
-        });
+        return Promise.all(promises).then(() => {});
     }
 }
 
