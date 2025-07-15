@@ -13,7 +13,7 @@ export type DraggableLineWithButtonProps = {
 };
 
 export const DraggableLineWithButtonComponent: React.FunctionComponent<DraggableLineWithButtonProps> = (props) => {
-    const useFluent = useContext(ToolContext);
+    const { useFluent } = useContext(ToolContext);
     if (useFluent) {
         // When updating the callsites to use fluent directly this label will be clearer since the string replace occurs where the data string lives
         return <DraggableLine {...props} label={props.data.substring(0, props.data.length - (props.lenSuffixToRemove ?? 6))} onDelete={() => props.onIconClick(props.data)} />;
