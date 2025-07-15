@@ -10,12 +10,20 @@ import { SettingsContextIdentity } from "../../../services/settingsContext";
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { TransformPropertiesSectionIdentity } from "./transformPropertiesService";
 import { CameraGeneralProperties } from "../../../components/properties/cameras/cameraGeneralProperties";
-import { ArcRotateCameraTransformProperties } from "../../../components/properties/cameras/cameraTransformProperties";
+import { ArcRotateCameraTransformProperties } from "../../../components/properties/cameras/arcRotateCameraTransformProperties";
+import { ArcRotateCameraControlProperties } from "../../../components/properties/cameras/arcRotateCameraControlProperties";
+
+export const ControlPropertiesSectionIdentity = Symbol("Control");
 
 export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Camera Properties",
     consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
     factory: (propertiesService, settingsContext) => {
+        const controlSectionRegistration = propertiesService.addSection({
+            order: 4,
+            identity: ControlPropertiesSectionIdentity,
+        });
+
         const cameraContentRegistration = propertiesService.addSectionContent({
             key: "Camera Properties",
             predicate: (entity: unknown) => entity instanceof Camera,
@@ -39,6 +47,12 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                     order: 2,
                     component: ({ context }) => <ArcRotateCameraTransformProperties camera={context} settings={settingsContext} />,
                 },
+                // "CONTROL" section.
+                {
+                    section: ControlPropertiesSectionIdentity,
+                    order: 0,
+                    component: ({ context }) => <ArcRotateCameraControlProperties camera={context} />,
+                },
             ],
         });
 
@@ -46,6 +60,7 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             dispose: () => {
                 cameraContentRegistration.dispose();
                 arcRotateCameraContentRegistration.dispose();
+                controlSectionRegistration.dispose();
             },
         };
     },
