@@ -4,8 +4,8 @@ import type { FunctionComponent } from "react";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
-import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 

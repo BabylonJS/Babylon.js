@@ -5,7 +5,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { SyncedSliderInput } from "./syncedSlider";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "./colorPicker";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 

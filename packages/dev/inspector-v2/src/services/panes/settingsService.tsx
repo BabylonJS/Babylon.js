@@ -9,7 +9,7 @@ import { SettingsRegular } from "@fluentui/react-icons";
 
 import { DataStorage } from "core/Misc/dataStorage";
 import { Observable } from "core/Misc/observable";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { AccordionPane, AccordionPaneSection } from "../../components/accordionPane";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";

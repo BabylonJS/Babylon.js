@@ -5,7 +5,7 @@ import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
-import { PropertyLine } from "../fluent/hoc/propertyLine";
+import { PropertyLine } from "../fluent/hoc/propertyLines/propertyLine";
 import { Textarea } from "../fluent/primitives/textarea";
 import { TextInput, NumberInput } from "../fluent/primitives/input";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";

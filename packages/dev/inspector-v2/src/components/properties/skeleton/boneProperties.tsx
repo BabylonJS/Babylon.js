@@ -2,7 +2,7 @@ import type { Bone } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 
 export const BoneGeneralProperties: FunctionComponent<{ bone: Bone; setSelectedEntity: (entity: unknown) => void }> = (props) => {
     const { bone, setSelectedEntity } = props;

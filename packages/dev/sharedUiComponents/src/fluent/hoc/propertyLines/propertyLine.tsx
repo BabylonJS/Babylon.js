@@ -3,21 +3,21 @@ import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef } from "react";
-import { copyCommandToClipboard } from "../../copyCommandToClipboard";
-import { ToolContext } from "./fluentToolWrapper";
+import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
+import { ToolContext } from "../fluentToolWrapper";
 
 const usePropertyLineStyles = makeStyles({
     container: {
         width: "100%",
         display: "flex",
         flexDirection: "column", // Stack line + expanded content
+        padding: `${tokens.spacingVerticalXS} 0px`,
         borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
     },
     line: {
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
-        padding: `${tokens.spacingVerticalXS} 0px`,
         width: "100%",
     },
     label: {

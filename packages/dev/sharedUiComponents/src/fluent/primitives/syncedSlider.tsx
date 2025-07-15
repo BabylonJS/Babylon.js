@@ -3,7 +3,7 @@ import { makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { NumberInput } from "./input";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState, useRef } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 
 const useSyncedSliderStyles = makeStyles({
     syncedSlider: {

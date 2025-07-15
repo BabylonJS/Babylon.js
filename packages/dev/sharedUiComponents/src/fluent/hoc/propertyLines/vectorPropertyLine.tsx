@@ -5,7 +5,7 @@ import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
 import type { BaseComponentProps, PropertyLineProps } from "./propertyLine";
 
-import { SyncedSliderLine } from "./syncedSliderLine";
+import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 
 import { Quaternion, Vector4 } from "core/Maths/math.vector";
 import type { Vector3 } from "core/Maths/math.vector";
@@ -63,10 +63,10 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector3 | Ve
             {...props}
             expandedContent={
                 <>
-                    <SyncedSliderLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} />
-                    <SyncedSliderLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} />
-                    <SyncedSliderLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />
-                    {vector instanceof Vector4 && <SyncedSliderLine label="W" value={vector.w} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
+                    <SyncedSliderPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} />
+                    <SyncedSliderPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} />
+                    <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />
+                    {vector instanceof Vector4 && <SyncedSliderPropertyLine label="W" value={vector.w} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
                 </>
             }
         >

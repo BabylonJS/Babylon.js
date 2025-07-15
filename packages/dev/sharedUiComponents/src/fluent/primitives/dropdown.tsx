@@ -1,7 +1,7 @@
 import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
 import { useEffect, useMemo, useState } from "react";
 import type { FunctionComponent } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 import type { Nullable } from "core/types";
 
 const useDropdownStyles = makeStyles({

@@ -12,7 +12,7 @@ import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 import { Tools } from "core/Misc/tools";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { GridMaterial } from "materials/grid/gridMaterial";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 
 import { AccordionPane, AccordionPaneSection } from "../accordionPane";
 import { BoundProperty } from "../properties/boundProperty";
