@@ -71,15 +71,26 @@ export type PropertyLineProps = {
      */
     onCopy?: () => string;
     /**
-     * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
-     */
-    expandedContent?: JSX.Element;
-
-    /**
-     * Link to the documentation for this property, available from the info icon either linked from the description (if provided) or defalt 'docs' text
+     * Link to the documentation for this property, available from the info icon either linked from the description (if provided) or default 'docs' text
      */
     docLink?: string;
-};
+} & (
+    | {
+          expandedContent?: undefined;
+          expandByDefault?: never;
+      }
+    | {
+          /**
+           * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
+           */
+          expandedContent: JSX.Element;
+
+          /**
+           * If true, the expanded content will be shown by default.
+           */
+          expandByDefault?: boolean;
+      }
+);
 
 export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
     const classes = usePropertyLineStyles();
@@ -118,7 +129,7 @@ export type BaseComponentProps<T> = {
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps>>((props, ref) => {
     const classes = usePropertyLineStyles();
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(props.expandByDefault ?? false);
 
     const { label, onCopy, expandedContent, children } = props;
 

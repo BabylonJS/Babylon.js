@@ -62,19 +62,22 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
         if (props.notifyOnlyOnRelease) {
             // Store the value but don't notify parent yet
             pendingValueRef.current = newValue;
-            isDraggingRef.current = true;
         } else {
             // Notify parent as slider changes
             props.onChange(newValue);
         }
     };
 
+    const handleSliderPointerDown = () => {
+        isDraggingRef.current = true;
+    };
+
     const handleSliderPointerUp = () => {
         if (props.notifyOnlyOnRelease && isDraggingRef.current && pendingValueRef.current !== undefined) {
             props.onChange(pendingValueRef.current);
             pendingValueRef.current = undefined;
-            isDraggingRef.current = false;
         }
+        isDraggingRef.current = false;
     };
 
     const handleInputChange = (value: string | number) => {
@@ -97,6 +100,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                     step={undefined}
                     value={value / step}
                     onChange={handleSliderChange}
+                    onPointerDown={handleSliderPointerDown}
                     onPointerUp={handleSliderPointerUp}
                 />
             )}
