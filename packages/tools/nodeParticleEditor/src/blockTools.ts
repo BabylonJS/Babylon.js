@@ -33,6 +33,7 @@ import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShap
 import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
 import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
+import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
 
 /**
  * Static class for BlockTools
@@ -139,6 +140,8 @@ export class BlockTools {
                 return new CustomShapeBlock("Custom shape");
             case "CylinderShapeBlock":
                 return new CylinderShapeBlock("Cylinder shape");
+            case "MeshShapeBlock":
+                return new MeshShapeBlock("Mesh shape");
             case "PositionBlock": {
                 const block = new ParticleInputBlock("Position");
                 block.contextualValue = NodeParticleContextualSources.Position;
