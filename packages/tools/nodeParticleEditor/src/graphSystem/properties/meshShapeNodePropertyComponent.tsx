@@ -3,7 +3,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { LoadSceneAsync } from "core/Loading/sceneLoader";
 import { EngineStore } from "core/Engines/engineStore";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import type { Scene } from "core/scene";
@@ -24,7 +24,7 @@ export class MeshShapePropertyTabComponent extends React.Component<IPropertyComp
     // eslint-disable-next-line @typescript-eslint/naming-convention
     async loadMesh(file: File) {
         this.setState({ isLoading: true });
-        const scene = await SceneLoader.LoadAsync("file:", file, EngineStore.LastCreatedEngine);
+        const scene = await LoadSceneAsync(file, EngineStore.LastCreatedEngine!);
 
         if (!scene) {
             return;
@@ -65,8 +65,6 @@ export class MeshShapePropertyTabComponent extends React.Component<IPropertyComp
 
         if (scene) {
             meshes = scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0);
-            meshes.sort((a, b) => a.name.localeCompare(b.name));
-
             meshes.sort((a, b) => a.name.localeCompare(b.name));
 
             meshOptions.push(
