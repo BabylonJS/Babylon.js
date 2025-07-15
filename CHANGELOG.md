@@ -1,5 +1,23 @@
 # Changelog
 
+## 8.16.2
+
+### Core
+
+- Add support for Mesh Shape - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16879](https://github.com/BabylonJS/Babylon.js/pull/16879))
+- Fix Billboard individual mode in RH - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16878](https://github.com/BabylonJS/Babylon.js/pull/16878))
+- Fix IES texture sampling mode and Mipmaps generation - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#16870](https://github.com/BabylonJS/Babylon.js/pull/16870))
+- Dispose ragdoll resources - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16874](https://github.com/BabylonJS/Babylon.js/pull/16874))
+- Inspector v2: Post Processes in Scene Explorer - by [ryantrem](https://github.com/ryantrem) ([#16875](https://github.com/BabylonJS/Babylon.js/pull/16875))
+
+### Node Editor
+
+- DraggableLine, SpinButton/FLoatLineComponent, FileUploadLine with icon for NME - by [georginahalpern](https://github.com/georginahalpern) ([#16876](https://github.com/BabylonJS/Babylon.js/pull/16876))
+
+### Playground
+
+- Inspector v2: Add GUI and Frame Graphs to Scene Explorer - by [ryantrem](https://github.com/ryantrem) ([#16873](https://github.com/BabylonJS/Babylon.js/pull/16873))
+
 ## 8.16.1
 
 ### Core
