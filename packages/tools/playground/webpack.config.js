@@ -3,6 +3,7 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -10,11 +11,18 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.playground.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
                 port: process.env.PLAYGROUND_PORT || 1338,
-            }
+            },
+            [
+                new MonacoWebpackPlugin({
+                    // publicPath: "public/",
+                    languages: ["typescript", "javascript"],
+                }),
+            ]
         ),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
@@ -71,14 +79,9 @@ module.exports = (env) => {
                         rootDir: "../../",
                     },
                 },
+                enableFastRefresh: !production,
             }),
         },
-        plugins: [
-            new MonacoWebpackPlugin({
-                // publicPath: "public/",
-                languages: ["typescript", "javascript"],
-            }),
-        ],
     };
     return commonConfig;
 };
