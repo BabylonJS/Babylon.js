@@ -35,14 +35,14 @@ let loadScriptAsync = function (url, instantResolve) {
 
 const Versions = {
     dist: [
-        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
-        "https://preview.babylonjs.com/babylon.js",
-        "https://preview.babylonjs.com/addons/babylonjs.addons.min.js",
-        "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
-        "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
-        "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
-        "https://preview.babylonjs.com/gui/babylon.gui.min.js",
-        "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
+        { url: "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), instantResolve: false },
+        { url: "https://preview.babylonjs.com/babylon.js", instantResolve: false },
+        { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false },
+        { url: "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js", instantResolve: false },
+        { url: "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
     ],
     local: [
         `//${window.location.hostname}:1337/babylon.js`,
@@ -60,7 +60,13 @@ let loadInSequence = async function (versions, index, resolve) {
         resolve();
         return;
     }
-    await loadScriptAsync(versions[index], index > 3);
+
+    if (versions[index].url) {
+        await loadScriptAsync(versions[index].url, versions[index].instantResolve);
+    } else {
+        await loadScriptAsync(versions[index], false);
+    }
+
     loadInSequence(versions, index + 1, resolve);
 };
 
