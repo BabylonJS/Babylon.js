@@ -45,13 +45,13 @@ const Versions = {
         { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
     ],
     local: [
-        `//${window.location.hostname}:1337/babylon.js`,
-        `//${window.location.hostname}:1337/addons/babylonjs.addons.js`,
-        `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`,
-        `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`,
-        `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`,
-        `//${window.location.hostname}:1337/gui/babylon.gui.min.js`,
-        `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`,
+        { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
     ],
 };
 
@@ -61,11 +61,7 @@ let loadInSequence = async function (versions, index, resolve) {
         return;
     }
 
-    if (versions[index].url) {
-        await loadScriptAsync(versions[index].url, versions[index].instantResolve);
-    } else {
-        await loadScriptAsync(versions[index], false);
-    }
+    await loadScriptAsync(versions[index].url, versions[index].instantResolve);
 
     loadInSequence(versions, index + 1, resolve);
 };
@@ -96,9 +92,15 @@ let checkBabylonVersionAsync = function () {
 
     let versions = Versions[activeVersion] || Versions["dist"];
     if (snapshot && activeVersion === "dist") {
-        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot));
+        versions = versions.map((v) => ({
+            url: v.url.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot),
+            instantResolve: v.instantResolve,
+        }));
     } else if (version && activeVersion === "dist") {
-        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version));
+        versions = versions.map((v) => ({
+            url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version),
+            instantResolve: v.instantResolve,
+        }));
     }
 
     return new Promise((resolve, _reject) => {
