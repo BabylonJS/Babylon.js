@@ -462,6 +462,24 @@ export class NodeParticleSystemSet {
     }
 
     /**
+     * Makes a duplicate of the current particle system set.
+     * @param name defines the name to use for the new particle system set
+     * @returns the cloned particle system set
+     */
+    public clone(name: string): NodeParticleSystemSet {
+        const serializationObject = this.serialize();
+
+        const clone = SerializationHelper.Clone(() => new NodeParticleSystemSet(name), this);
+        clone.name = name;
+        clone.snippetId = this.snippetId;
+
+        clone.parseSerializedObject(serializationObject);
+        clone._buildId = this._buildId;
+
+        return clone;
+    }
+
+    /**
      * Disposes the resources
      */
     public dispose(): void {

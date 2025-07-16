@@ -44,6 +44,7 @@ import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { AttractorsGridComponent } from "./attractorsGridComponent";
+import { ConvertToNodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet.helper";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -329,15 +330,23 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
     }
 
     view() {
-        // TODO: Convert and open in NPE
+        const systemSet = ConvertToNodeParticleSystemSet("source", [this.props.system as ParticleSystem]);
+
+        if (!systemSet) {
+            return;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        systemSet.editAsync({ nodeEditorConfig: { backgroundColor: this.props.system.getScene()!.clearColor } });
     }
 
     edit() {
         if (!this.props.system.isNodeGenerated) {
             return;
         }
+        const clone = (this.props.system as ParticleSystem).source!.clone("clone");
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        (this.props.system as ParticleSystem).source!.editAsync({ nodeEditorConfig: { backgroundColor: this.props.system.getScene()!.clearColor } });
+        clone.editAsync({ nodeEditorConfig: { backgroundColor: this.props.system.getScene()!.clearColor } });
     }
 
     override render() {
