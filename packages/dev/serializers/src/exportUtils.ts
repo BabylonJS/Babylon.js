@@ -8,7 +8,7 @@ import type { Node } from "core/node";
  * Matrix that converts handedness on the X-axis. Used to convert from LH to RH and vice versa.
  * @internal
  */
-const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+export const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
 /**
  * Checks if a node is a "noop" transform node, usually inserted by the glTF loader to correct handedness.
