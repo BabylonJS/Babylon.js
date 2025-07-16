@@ -36,7 +36,7 @@ import { Attractor } from "./attractor";
 import type { _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
 import type { FlowMap } from "./flowMap";
-import { NodeParticleSystemSet } from "./Node";
+import type { NodeParticleSystemSet } from "./Node/nodeParticleSystemSet";
 
 /**
  * This represents a particle system in Babylon.
