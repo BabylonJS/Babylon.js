@@ -35,7 +35,7 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
                 min={toDisplayAngle(lowerAlphaLimit)}
                 max={toDisplayAngle(upperAlphaLimit)}
                 step={toDisplayAngle(0.01)}
-                convertTo={toDisplayAngle}
+                convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
             <BoundProperty
@@ -47,7 +47,7 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
                 min={toDisplayAngle(lowerBetaLimit)}
                 max={toDisplayAngle(upperBetaLimit)}
                 step={toDisplayAngle(0.01)}
-                convertTo={toDisplayAngle}
+                convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
             {lowerRadiusLimit != null && upperRadiusLimit != null ? (
