@@ -355,7 +355,7 @@ export class NodeParticleSystemSet {
     /**
      * Serializes this geometry in a JSON representation
      * @param selectedBlocks defines the list of blocks to save (if null the whole geometry will be saved)
-     * @returns the serialized geometry object
+     * @returns the serialized particle system set object
      */
     public serialize(selectedBlocks?: NodeParticleBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);

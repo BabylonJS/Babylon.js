@@ -6,11 +6,12 @@ import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { Particle } from "core/Particles/particle";
 import { Vector3 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
+import type { IShapeBlock } from "./IShapeBlock";
 
 /**
  * Block used to provide a flow of particles emitted from a sphere shape.
  */
-export class SphereShapeBlock extends NodeParticleBlock {
+export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
     /**
      * Create a new SphereShapeBlock
      * @param name defines the block name
@@ -18,7 +19,7 @@ export class SphereShapeBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("input", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("radius", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
         this.registerInput("directionRandomizer", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0, 1);
@@ -34,9 +35,9 @@ export class SphereShapeBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the input component
+     * Gets the particle component
      */
-    public get input(): NodeParticleConnectionPoint {
+    public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
@@ -73,7 +74,7 @@ export class SphereShapeBlock extends NodeParticleBlock {
      * @param state defines the build state
      */
     public override _build(state: NodeParticleBuildState) {
-        const system = this.input.getConnectedValue(state);
+        const system = this.particle.getConnectedValue(state);
 
         system._directionCreation.process = (particle: Particle) => {
             state.particleContext = particle;

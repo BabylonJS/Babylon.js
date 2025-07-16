@@ -6,11 +6,12 @@ import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnect
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { Particle } from "core/Particles/particle";
 import { Vector3 } from "core/Maths/math.vector";
+import type { IShapeBlock } from "./IShapeBlock";
 
 /**
  * Block used to provide a flow of particles emitted from a cylinder shape.
  */
-export class CylinderShapeBlock extends NodeParticleBlock {
+export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock {
     private _tempVector = Vector3.Zero();
     /**
      * Create a new CylinderShapeBlock
