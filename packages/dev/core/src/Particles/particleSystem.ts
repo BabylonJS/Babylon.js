@@ -36,6 +36,7 @@ import { Attractor } from "./attractor";
 import type { _IExecutionQueueItem } from "./Queue/executionQueue";
 import { _ConnectAfter, _RemoveFromQueue } from "./Queue/executionQueue";
 import type { FlowMap } from "./flowMap";
+import { NodeParticleSystemSet } from "./Node";
 
 /**
  * This represents a particle system in Babylon.
@@ -114,6 +115,16 @@ export class ParticleSystem extends ThinParticleSystem {
     /** Flow map */
     private _flowMap: Nullable<FlowMap> = null;
     private _flowMapUpdate: Nullable<_IExecutionQueueItem> = null;
+
+    /** @internal */
+    public _source: Nullable<NodeParticleSystemSet> = null;
+
+    /**
+     * Gets the NodeParticleSystemSet that this particle system belongs to.
+     */
+    public get source(): Nullable<NodeParticleSystemSet> {
+        return this._source;
+    }
 
     /**
      * The strength of the flow map

@@ -147,6 +147,7 @@ export class NodeParticleSystemSet {
                 state.verbose = verbose;
 
                 const system = block.createSystem(state);
+                system._source = this;
 
                 // Errors
                 state.emitErrors();
