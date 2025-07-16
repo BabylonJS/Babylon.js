@@ -14,7 +14,7 @@ import { Logger } from "core/Misc/logger";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
-import { ConvertHandednessMatrix } from "serializers/exportUtils";
+import { ConvertHandednessMatrix } from "../../exportUtils";
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.Zero();
