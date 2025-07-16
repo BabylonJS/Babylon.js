@@ -1,19 +1,21 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
 import type { ISettingsContext } from "../../../services/settingsContext";
+import type { IPropertiesService } from "./propertiesService";
 
 // import { Scene } from "core/scene";
-import { Camera } from "core/Cameras/camera";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { Camera } from "core/Cameras/camera";
+import { ArcRotateCameraCollisionProperties } from "../../../components/properties/cameras/arcRotateCameraCollisionProperties";
+import { ArcRotateCameraControlProperties } from "../../../components/properties/cameras/arcRotateCameraControlProperties";
+import { ArcRotateCameraTransformProperties } from "../../../components/properties/cameras/arcRotateCameraTransformProperties";
+import { CameraGeneralProperties } from "../../../components/properties/cameras/cameraGeneralProperties";
 import { SettingsContextIdentity } from "../../../services/settingsContext";
 import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
+import { PropertiesServiceIdentity } from "./propertiesService";
 import { TransformPropertiesSectionIdentity } from "./transformPropertiesService";
-import { CameraGeneralProperties } from "../../../components/properties/cameras/cameraGeneralProperties";
-import { ArcRotateCameraTransformProperties } from "../../../components/properties/cameras/arcRotateCameraTransformProperties";
-import { ArcRotateCameraControlProperties } from "../../../components/properties/cameras/arcRotateCameraControlProperties";
 
 export const ControlPropertiesSectionIdentity = Symbol("Control");
+export const CollisionPropertiesSectionIdentity = Symbol("Collision");
 
 export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Camera Properties",
@@ -22,6 +24,11 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
         const controlSectionRegistration = propertiesService.addSection({
             order: 4,
             identity: ControlPropertiesSectionIdentity,
+        });
+
+        const collisionSectionRegistration = propertiesService.addSection({
+            order: 5,
+            identity: CollisionPropertiesSectionIdentity,
         });
 
         const cameraContentRegistration = propertiesService.addSectionContent({
@@ -53,6 +60,12 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                     order: 0,
                     component: ({ context }) => <ArcRotateCameraControlProperties camera={context} />,
                 },
+                // "COLLISION" section.
+                {
+                    section: CollisionPropertiesSectionIdentity,
+                    order: 0,
+                    component: ({ context }) => <ArcRotateCameraCollisionProperties camera={context} />,
+                },
             ],
         });
 
@@ -61,6 +74,7 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 cameraContentRegistration.dispose();
                 arcRotateCameraContentRegistration.dispose();
                 controlSectionRegistration.dispose();
+                collisionSectionRegistration.dispose();
             },
         };
     },
