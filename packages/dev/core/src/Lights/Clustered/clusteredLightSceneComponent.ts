@@ -17,13 +17,17 @@ class ClusteredLightSceneComponent implements ISceneComponent {
     public rebuild(): void {}
 
     public register(): void {
-        this.scene._gatherRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERRENDERTARGETS_CLUSTEREDLIGHT, this, this._gatherRenderTargets);
+        this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
+            SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHT,
+            this,
+            this._gatherActiveCameraRenderTargets
+        );
     }
 
-    private _gatherRenderTargets: RenderTargetsStageAction = (renderTargets) => {
+    private _gatherActiveCameraRenderTargets: RenderTargetsStageAction = (renderTargets) => {
         for (const light of this.scene.lights) {
             if (light instanceof ClusteredLight && light.isSupported) {
-                renderTargets.push(light._getLightMask());
+                renderTargets.pushNoDuplicate(light._tileMaskTarget);
             }
         }
     };

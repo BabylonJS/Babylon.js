@@ -179,3 +179,36 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 
 // End Area Light
 #endif
+
+fn computeClusteredLighting(
+	tileMask: ptr<storage, array<u32>, read_write>,
+	viewDirectionW: vec3f,
+	vNormal: vec3f,
+	lightData: vec4f,
+	lights: ptr<uniform, array<ClusteredLight, 32>>,
+	diffuseScale: vec3f,
+	specularScale: vec3f,
+	glossiness: f32
+) -> lightingInfo {
+	var result: lightingInfo;
+	let index = tileMaskIndex(lightData, fragmentInputs.position);
+	// TODO: merge subgroups
+	let mask = subgroupOr(tileMask[index]);
+	let len = u32(lightData.w);
+
+	for (var i = 0u; i < len; i += 1u) {
+		if (mask & (1u << i)) == 0 {
+			continue;
+		}
+		let diffuse = lights[i].diffuse.rgb * diffuseScale;
+		let specular = lights[i].specular.rgb * specularScale;
+		let info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse.rgb, specular, lights[i].diffuse.a, glossiness);
+		result.diffuse += info.diffuse;
+		#ifdef SPECULARTERM
+			result.specular += info.specular;
+		#endif
+	}
+
+	// result.diffuse = vec3f(f32(mask >> 9) / f32(0x7fffff), 0, 0);
+	return result;
+}
