@@ -60,7 +60,7 @@ let loadInSequence = async function (versions, index, resolve) {
         resolve();
         return;
     }
-    await loadScriptAsync(versions[index], index > 2);
+    await loadScriptAsync(versions[index], index > 3);
     loadInSequence(versions, index + 1, resolve);
 };
 
