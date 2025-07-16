@@ -46,6 +46,10 @@ export class StorageBuffer {
         return this._buffer;
     }
 
+    public clear(byteOffset?: number, byteLength?: number): void {
+        this._engine.clearStorageBuffer(this._buffer, byteOffset, byteLength);
+    }
+
     /**
      * Updates the storage buffer
      * @param data the data used to update the storage buffer

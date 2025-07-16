@@ -335,7 +335,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
-        const enabledExtensions: string[] = [];
+        // TODO: conditionally enable if needed AND supported
+        const enabledExtensions: string[] = ["subgroups"];
 
         const fragCoordCode =
             fragmentCode.indexOf("fragmentInputs.position") >= 0 && !this.pureMode
