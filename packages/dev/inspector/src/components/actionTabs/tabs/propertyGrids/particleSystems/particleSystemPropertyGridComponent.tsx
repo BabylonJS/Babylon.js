@@ -328,9 +328,16 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         );
     }
 
+    view() {
+        // TODO: Convert and open in NPE
+    }
+
     edit() {
+        if (!this.props.system.isNodeGenerated) {
+            return;
+        }
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        //this.props.material.edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
+        (this.props.system as ParticleSystem).source!.editAsync({ nodeEditorConfig: { backgroundColor: this.props.system.getScene()!.clearColor } });
     }
 
     override render() {
@@ -438,6 +445,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             system.dispose();
                         }}
                     />
+                </LineContainerComponent>
+                <LineContainerComponent title="NODE PARTICLE EDITOR" selection={this.props.globalState}>
+                    {isFromNode && <ButtonLineComponent label="Edit" onClick={() => this.edit()} />}
+                    {!isFromNode && <ButtonLineComponent label="View in NPE" onClick={() => this.view()} />}
                 </LineContainerComponent>
                 {!isFromNode && (
                     <>
@@ -589,7 +600,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="emitRate"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    {isFromNode && <ButtonLineComponent label="Node Particle Editor" onClick={() => this.edit()} />}
                     {!isFromNode && (
                         <>
                             {system instanceof ParticleSystem && (

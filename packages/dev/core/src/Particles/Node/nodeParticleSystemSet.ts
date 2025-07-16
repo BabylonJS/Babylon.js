@@ -20,6 +20,23 @@ import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTelepor
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
+import type { Color4 } from "core/Maths/math.color";
+
+// declare NODEPARTICLEEDITOR namespace for compilation issue
+declare let NODEPARTICLEEDITOR: any;
+declare let BABYLON: any;
+
+/**
+ * Interface used to configure the node particle editor
+ */
+export interface INodeParticleEditorOptions {
+    /** Define the URL to load node editor script from */
+    editorURL?: string;
+    /** Additional configuration for the NPE */
+    nodeEditorConfig?: {
+        backgroundColor?: Color4;
+    };
+}
 
 /**
  * Defines a set of particle systems defined as a node graph.
@@ -122,6 +139,61 @@ export class NodeParticleSystemSet {
                 }
             }
         }
+    }
+
+    private BJSNODEPARTICLEEDITOR = this._getGlobalNodeParticleEditor();
+
+    /** Get the editor from bundle or global
+     * @returns the global NPE
+     */
+    private _getGlobalNodeParticleEditor(): any {
+        // UMD Global name detection from Webpack Bundle UMD Name.
+        if (typeof NODEPARTICLEEDITOR !== "undefined") {
+            return NODEPARTICLEEDITOR;
+        }
+
+        // In case of module let's check the global emitted from the editor entry point.
+        if (typeof BABYLON !== "undefined" && typeof BABYLON.NodeParticleEditor !== "undefined") {
+            return BABYLON;
+        }
+
+        return undefined;
+    }
+
+    /** Creates the node editor window.
+     * @param additionalConfig Define the configuration of the editor
+     */
+    private _createNodeParticleEditor(additionalConfig?: any) {
+        const nodeEditorConfig: any = {
+            nodeParticleSet: this,
+            ...additionalConfig,
+        };
+        this.BJSNODEPARTICLEEDITOR.NodeParticleEditor.Show(nodeEditorConfig);
+    }
+
+    /**
+     * Launch the node particle editor
+     * @param config Define the configuration of the editor
+     * @returns a promise fulfilled when the node editor is visible
+     */
+    public async editAsync(config?: INodeParticleEditorOptions): Promise<void> {
+        return await new Promise((resolve) => {
+            this.BJSNODEPARTICLEEDITOR = this.BJSNODEPARTICLEEDITOR || this._getGlobalNodeParticleEditor();
+            if (typeof this.BJSNODEPARTICLEEDITOR == "undefined") {
+                const editorUrl = config && config.editorURL ? config.editorURL : NodeParticleSystemSet.EditorURL;
+
+                // Load editor and add it to the DOM
+                Tools.LoadBabylonScript(editorUrl, () => {
+                    this.BJSNODEPARTICLEEDITOR = this.BJSNODEPARTICLEEDITOR || this._getGlobalNodeParticleEditor();
+                    this._createNodeParticleEditor(config?.nodeEditorConfig);
+                    resolve();
+                });
+            } else {
+                // Otherwise creates the editor
+                this._createNodeParticleEditor(config?.nodeEditorConfig);
+                resolve();
+            }
+        });
     }
 
     /**
