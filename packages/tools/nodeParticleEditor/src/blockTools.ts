@@ -34,6 +34,7 @@ import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeB
 import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 
 /**
  * Static class for BlockTools
@@ -126,6 +127,8 @@ export class BlockTools {
                 return new UpdateAngleBlock("Update angle");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
+            case "UpdateAttractorBlock":
+                return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
