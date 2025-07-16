@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./nodeParticleBlock";
 export * from "./nodeParticleSystemSet";
+export * from "./nodeParticleSystemSet.helper";
 export * from "./nodeParticleBlockConnectionPoint";
 export * from "./nodeParticleBuildState";
 export * from "./Enums/nodeParticleBlockConnectionPointTypes";

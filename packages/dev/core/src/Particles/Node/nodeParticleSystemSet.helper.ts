@@ -4,7 +4,6 @@ import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { SystemBlock } from "./Blocks/systemBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
-import { CylinderShapeBlock, MeshShapeBlock, ParticleInputBlock, PointShapeBlock, SphereShapeBlock } from "./Blocks";
 import type { IShapeBlock } from "./Blocks/Emitters/IShapeBlock";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
@@ -13,6 +12,11 @@ import type { PointParticleEmitter } from "../EmitterTypes/pointParticleEmitter"
 import type { SphereParticleEmitter } from "../EmitterTypes/sphereParticleEmitter";
 import type { CylinderParticleEmitter, MeshParticleEmitter } from "../EmitterTypes";
 import type { Mesh } from "core/Meshes/mesh";
+import { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
+import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
+import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
+import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 
 function _CreateAndConnectInput(connectionPoint: NodeParticleConnectionPoint, name: string, defaultValue: Vector3 | number) {
     const input = new ParticleInputBlock(name);

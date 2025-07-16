@@ -328,6 +328,11 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         );
     }
 
+    edit() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        //this.props.material.edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
+    }
+
     override render() {
         const system = this.props.system;
 
@@ -584,6 +589,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="emitRate"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    {isFromNode && <ButtonLineComponent label="Node Particle Editor" onClick={() => this.edit()} />}
                     {!isFromNode && (
                         <>
                             {system instanceof ParticleSystem && (
