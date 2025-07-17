@@ -45,6 +45,10 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 }
 
 float getAttenuation(float cosAngle, float exponent) {
+	if (exponent == 0.0) {
+		// Undefined behaviour can occur if exponent is == 0, the result in reality should always be 1
+		return 1.0;
+	}
 	return max(0., pow(cosAngle, exponent));
 }
 
