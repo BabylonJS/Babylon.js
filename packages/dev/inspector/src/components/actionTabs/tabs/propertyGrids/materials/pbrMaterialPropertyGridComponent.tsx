@@ -73,14 +73,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
-                <TextureLinkLineComponent
-                    label="Metallic Roughness"
-                    texture={material.metallicTexture}
-                    propertyName="metallicTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Metallic Roughness"
+                        texture={material.metallicTexture}
+                        propertyName="metallicTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
                 <TextureLinkLineComponent
                     label="Reflection"
                     texture={material.reflectionTexture}
@@ -99,22 +101,26 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                     />
                 )}
-                <TextureLinkLineComponent
-                    label="Reflectivity"
-                    texture={material.reflectivityTexture}
-                    propertyName="reflectivityTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
-                <TextureLinkLineComponent
-                    label="Micro-surface"
-                    texture={material.microSurfaceTexture}
-                    propertyName="microSurfaceTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Reflectivity"
+                        texture={material.reflectivityTexture}
+                        propertyName="reflectivityTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Micro-surface"
+                        texture={material.microSurfaceTexture}
+                        propertyName="microSurfaceTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
                 <TextureLinkLineComponent
                     label="Bump"
                     texture={material.bumpTexture}
@@ -432,24 +438,28 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         propertyName="useOnlyMetallicFromMetallicReflectanceTexture"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <TextureLinkLineComponent
-                        label="MetallicReflectance Texture"
-                        texture={material.metallicReflectanceTexture}
-                        onTextureCreated={(texture) => (material.metallicReflectanceTexture = texture)}
-                        onTextureRemoved={() => (material.metallicReflectanceTexture = null)}
-                        material={material}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
-                    />
-                    <TextureLinkLineComponent
-                        label="Reflectance Texture"
-                        texture={material.reflectanceTexture}
-                        onTextureCreated={(texture) => (material.reflectanceTexture = texture)}
-                        onTextureRemoved={() => (material.reflectanceTexture = null)}
-                        material={material}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
-                    />
+                    {material instanceof PBRMaterial && (
+                        <TextureLinkLineComponent
+                            label="MetallicReflectance Texture"
+                            texture={material.metallicReflectanceTexture}
+                            onTextureCreated={(texture) => (material.metallicReflectanceTexture = texture)}
+                            onTextureRemoved={() => (material.metallicReflectanceTexture = null)}
+                            material={material}
+                            onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                            onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                        />
+                    )}
+                    {material instanceof PBRMaterial && (
+                        <TextureLinkLineComponent
+                            label="Reflectance Texture"
+                            texture={material.reflectanceTexture}
+                            onTextureCreated={(texture) => (material.reflectanceTexture = texture)}
+                            onTextureRemoved={() => (material.reflectanceTexture = null)}
+                            material={material}
+                            onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                            onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                        />
+                    )}
                 </LineContainerComponent>
                 {material instanceof PBRMaterial && (
                     <>
