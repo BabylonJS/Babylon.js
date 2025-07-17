@@ -10,11 +10,12 @@ import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnect
 import type { Particle } from "core/Particles/particle";
 import { TmpVectors, Vector3, Vector4 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
+import type { IShapeBlock } from "./IShapeBlock";
 
 /**
  * Defines a block used to generate particle shape from mesh geometry data
  */
-export class MeshShapeBlock extends NodeParticleBlock {
+export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
     private _mesh: Nullable<Mesh>;
     private _cachedVertexData: Nullable<VertexData> = null;
     private _indices: Nullable<IndicesArray> = null;

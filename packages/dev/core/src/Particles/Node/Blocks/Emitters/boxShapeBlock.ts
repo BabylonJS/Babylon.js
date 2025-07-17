@@ -6,11 +6,12 @@ import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { Particle } from "core/Particles/particle";
 import { RandomRange } from "core/Maths/math.scalar.functions";
+import type { IShapeBlock } from "./IShapeBlock";
 
 /**
  * Block used to provide a flow of particles emitted from a box shape.
  */
-export class BoxShapeBlock extends NodeParticleBlock {
+export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
     /**
      * Create a new BoxShapeBlock
      * @param name defines the block name
