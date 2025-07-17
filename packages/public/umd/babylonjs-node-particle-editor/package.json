@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-particle-editor",
-    "version": "8.16.3",
+    "version": "8.17.0",
     "main": "babylon.nodeParticleEditor.js",
     "types": "babylon.nodeParticleEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^8.16.3"
+        "babylonjs": "^8.17.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
