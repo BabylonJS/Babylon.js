@@ -101,6 +101,7 @@ const abbreviations = [
     "BGR",
     "SFE",
     "BVH",
+    "FSR",
 ];
 
 // Join them into a single regex string
