@@ -5,7 +5,7 @@ import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import type { Effect } from "core/Materials/effect";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { TmpColors } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
@@ -106,6 +106,7 @@ export class ClusteredLight extends Light {
 
     private _proxyMesh: Mesh;
     private readonly _proxyMatrixBuffer: Float32Array;
+    private _proxyRenderId = -1;
 
     private _proxySegments = 4;
     public get proxySegments(): number {
@@ -120,7 +121,19 @@ export class ClusteredLight extends Light {
         this._createProxyMesh();
     }
 
-    public maxRange = 16383;
+    private _maxRange = 16383;
+    public get maxRange(): number {
+        return this._maxRange;
+    }
+
+    public set maxRange(range: number) {
+        if (this._maxRange === range) {
+            return;
+        }
+        this._maxRange = range;
+        // Cause the matrix buffer to update
+        this._proxyRenderId = -1;
+    }
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
@@ -147,6 +160,13 @@ export class ClusteredLight extends Light {
     }
 
     private _updateMatrixBuffer(): void {
+        const renderId = this._scene.getRenderId();
+        if (this._proxyRenderId === renderId) {
+            // Prevent updates in the same render
+            return;
+        }
+        this._proxyRenderId = renderId;
+
         const len = Math.min(this._lights.length, this.maxLights);
         if (len === 0) {
             // Nothing to render
@@ -158,10 +178,15 @@ export class ClusteredLight extends Light {
         this._proxyMesh.thinInstanceCount = len;
         for (let i = 0; i < len; i += 1) {
             const light = this._lights[i];
-            // TODO: cache matrices, somehow detect unchanged?
-            // TODO: scale by range of light
+            let matrix = light.getWorldMatrix();
+
+            // Scale by the range of the light
+            const range = Math.min(light.range, this.maxRange);
+            const scaling = Matrix.ScalingToRef(range, range, range, TmpVectors.Matrix[0]);
+            matrix = scaling.multiplyToRef(matrix, TmpVectors.Matrix[1]);
+
             // TODO: rotate spotlights to face direction
-            light.getWorldMatrix().copyToArray(this._proxyMatrixBuffer, i * 16);
+            matrix.copyToArray(this._proxyMatrixBuffer, i * 16);
         }
         this._proxyMesh.thinInstanceBufferUpdated("matrix");
     }
@@ -243,6 +268,8 @@ export class ClusteredLight extends Light {
         }
         this._scene.removeLight(light);
         this._lights.push(<PointLight | SpotLight>light);
+        // Cause the matrix buffer to update
+        this._proxyRenderId = -1;
     }
 
     protected override _buildUniformLayout(): void {
@@ -293,7 +320,7 @@ export class ClusteredLight extends Light {
 
             const scaledIntensity = light.getScaledIntensity();
             light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], Math.min(light.range, this.maxRange), lightIndex);
+            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], light.range, lightIndex);
             light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
             this._uniformBuffer.updateColor4(struct + "specular", TmpColors.Color3[1], light.radius, lightIndex);
 

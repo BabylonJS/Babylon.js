@@ -27,7 +27,6 @@ fn main(input: VertexInputs) -> FragmentInputs {
     if angle < maxAngle {
         positionUpdated = vertexInputs.position;
     }
-    positionUpdated *= light.diffuse.a;
 
 #include<instancesVertex>
 

@@ -23,7 +23,6 @@ void main(void) {
 
     float angle = acosClamped(dot(DOWN, position));
     vec3 positionUpdated = angle < maxAngle ? position : vec3(0);
-    positionUpdated *= light0.vLights[gl_InstanceID].diffuse.a;
 
 #include<instancesVertex>
 
