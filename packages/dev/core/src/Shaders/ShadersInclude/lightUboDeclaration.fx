@@ -13,7 +13,7 @@
 		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
 		#elif defined(CLUSTLIGHT{X})
-			ClusteredLight vLights[CLUSTLIGHT_MAX];
+			SpotLight vLights[CLUSTLIGHT_MAX];
 		#endif
 		#if defined(AREALIGHT{X})
 			vec4 vLightWidth;
@@ -31,7 +31,7 @@
 #endif
 #ifdef CLUSTLIGHT{X}
 	// Ensure the mask is sampled with high precision
-	uniform highp sampler2D lightMaskTexture{X};
+	uniform highp sampler2D tileMaskTexture{X};
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}

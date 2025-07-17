@@ -22,7 +22,7 @@ varying vColor: vec4f;
 #include<helperFunctions>
 
 // Lights
-#include<clusteredLightFunctions>
+#include<spotLightDeclaration>
 #include<lightUboDeclaration>[0..maxSimultaneousLights]
 
 #include<lightsFragmentFunctions>

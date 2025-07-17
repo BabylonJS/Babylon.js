@@ -1,4 +1,5 @@
 import { StorageBuffer } from "core/Buffers/storageBuffer";
+import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import type { Effect } from "core/Materials/effect";
@@ -9,8 +10,6 @@ import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
 import { Logger } from "core/Misc/logger";
-import type { Observer } from "core/Misc/observable";
-import { CeilingPOT } from "core/Misc/tools.functions";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -76,38 +75,33 @@ export class ClusteredLight extends Light {
         return this._lights;
     }
 
-    /** @internal */
-    public readonly _tileMaskTarget: RenderTargetTexture;
+    private _tileMaskTexture: Nullable<RenderTargetTexture>;
     private _tileMaskBuffer: Nullable<StorageBuffer>;
-    private _tileMaskStride = 0;
-    private readonly _resizeObserver: Observer<AbstractEngine>;
 
-    private _tileWidth = 128;
-    public get tileWidth(): number {
-        return this._tileWidth;
+    private _horizontalTiles = 128; // TODO: 64
+    public get horizontalTiles(): number {
+        return this._horizontalTiles;
     }
 
-    public set tileWidth(width: number) {
-        if (this._tileWidth === width) {
+    public set horizontalTiles(horizontal: number) {
+        if (this._horizontalTiles === horizontal) {
             return;
         }
-        this._tileWidth = width;
-        this._tileMaskBuffer?.dispose();
-        this._tileMaskBuffer = null;
+        this._horizontalTiles = horizontal;
+        this._disposeTileMask();
     }
 
-    private _tileHeight = 128;
-    public get tileHeight(): number {
-        return this._tileHeight;
+    private _verticalTiles = 128;
+    public get verticalTiles(): number {
+        return this._verticalTiles;
     }
 
-    public set tileHeight(height: number) {
-        if (this._tileHeight === height) {
+    public set verticalTiles(vertical: number) {
+        if (this._verticalTiles === vertical) {
             return;
         }
-        this._tileHeight = height;
-        this._tileMaskBuffer?.dispose();
-        this._tileMaskBuffer = null;
+        this._verticalTiles = vertical;
+        this._disposeTileMask();
     }
 
     private readonly _proxyMesh: Mesh;
@@ -115,49 +109,12 @@ export class ClusteredLight extends Light {
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
-
         const engine = this.getEngine();
         this.maxLights = ClusteredLight._GetEngineMaxLights(engine);
-        const getRenderSize = () => ({
-            width: engine.getRenderWidth(true),
-            height: engine.getRenderHeight(true),
-        });
 
-        this._tileMaskTarget = new RenderTargetTexture("TileMask", getRenderSize(), this._scene, {
-            generateDepthBuffer: true,
-            generateStencilBuffer: true,
-            noColorAttachment: true,
-        });
-        this._tileMaskTarget.renderList = null;
-        this._tileMaskTarget.renderParticles = false;
-        this._tileMaskTarget.renderSprites = false;
-        this._tileMaskTarget.noPrePassRenderer = true;
-        // Use the default render list
-        this._tileMaskTarget.renderList = null;
-        this._tileMaskTarget.customRenderFunction = this._renderTileMask;
-
-        this._tileMaskTarget.onClearObservable.add(() => {
-            // If its already created it should be the correct size
-            const buffer = this._tileMaskBuffer ?? this._createTileMaskBuffer();
-            buffer.clear();
-            engine.clear(null, false, true, true);
-        });
-
-        // This forces materials to run as a depth prepass
-        this._tileMaskTarget.onBeforeRenderObservable.add(() => engine.setColorWrite(false));
-        this._tileMaskTarget.onAfterRenderObservable.add(() => engine.setColorWrite(true));
-
-        this._resizeObserver = engine.onResizeObservable.add(() => {
-            this._tileMaskTarget.resize(getRenderSize());
-            if (this._tileMaskBuffer) {
-                // Update the buffer size
-                this._createTileMaskBuffer();
-            }
-        });
-
-        this._proxyMesh = CreateSphere("LightProxy", { diameter: 2, segments: 8 }, this._scene);
-        this._proxyMesh.isVisible = false;
-        this._proxyMesh.material = new LightProxyMaterial("ProxyMaterial", this);
+        this._proxyMesh = CreateSphere("ProxyMesh", { diameter: 2, segments: 8 }, this._scene);
+        this._proxyMesh.material = new LightProxyMaterial("ProxyMeshMaterial", this);
+        this._scene.removeMesh(this._proxyMesh);
 
         this._proxyMatrixBuffer = new Float32Array(this.maxLights * 16);
         this._proxyMesh.thinInstanceSetBuffer("matrix", this._proxyMatrixBuffer, 16, false);
@@ -179,14 +136,76 @@ export class ClusteredLight extends Light {
         return LightConstants.LIGHTTYPEID_CLUSTERED;
     }
 
+    private _updateMatrixBuffer(): void {
+        const len = Math.min(this._lights.length, this.maxLights);
+        if (len === 0) {
+            // Nothing to render
+            this._proxyMesh.isVisible = false;
+            return;
+        }
+
+        this._proxyMesh.isVisible = true;
+        this._proxyMesh.thinInstanceCount = len;
+        for (let i = 0; i < len; i += 1) {
+            const light = this._lights[i];
+            // TODO: cache matrices, somehow detect unchanged?
+            // TODO: scale by range of light
+            // TODO: rotate spotlights to face direction
+            light.getWorldMatrix().copyToArray(this._proxyMatrixBuffer, i * 16);
+        }
+        this._proxyMesh.thinInstanceBufferUpdated("matrix");
+    }
+
+    /** @internal */
+    public _createTileMask(): RenderTargetTexture {
+        if (this._tileMaskTexture) {
+            return this._tileMaskTexture;
+        }
+
+        const engine = this.getEngine();
+        const textureSize = { width: this._horizontalTiles, height: this._verticalTiles };
+        this._tileMaskTexture = new RenderTargetTexture("TileMaskTexture", textureSize, this._scene, {
+            // We don't write anything on WebGPU so make it as small as possible
+            type: engine.isWebGPU ? Constants.TEXTURETYPE_UNSIGNED_BYTE : Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_RED,
+            generateDepthBuffer: false,
+        });
+
+        this._tileMaskTexture.renderParticles = false;
+        this._tileMaskTexture.renderSprites = false;
+        this._tileMaskTexture.noPrePassRenderer = true;
+        this._tileMaskTexture.renderList = [this._proxyMesh];
+
+        this._tileMaskTexture.onBeforeBindObservable.add(() => this._updateMatrixBuffer());
+
+        this._tileMaskTexture.onClearObservable.add(() => {
+            // Clear the storage buffer if it exists
+            this._tileMaskBuffer?.clear();
+            engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
+        });
+
+        if (engine.isWebGPU) {
+            // WebGPU also needs a storage buffer to write to
+            const bufferSize = this._horizontalTiles * this._verticalTiles * 4;
+            this._tileMaskBuffer = new StorageBuffer(<WebGPUEngine>engine, bufferSize);
+        }
+
+        return this._tileMaskTexture;
+    }
+
+    private _disposeTileMask(): void {
+        this._tileMaskTexture?.dispose();
+        this._tileMaskTexture = null;
+        this._tileMaskBuffer?.dispose();
+        this._tileMaskBuffer = null;
+    }
+
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
-        this._tileMaskTarget.dispose();
-        this._tileMaskBuffer?.dispose();
-        this._resizeObserver.remove();
+        this._disposeTileMask();
 
         this._proxyMesh.dispose(doNotRecurse, disposeMaterialAndTextures);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -204,23 +223,7 @@ export class ClusteredLight extends Light {
         this._lights.push(<PointLight | SpotLight>light);
     }
 
-    private _createTileMaskBuffer(): StorageBuffer {
-        const engine = this.getEngine();
-        this._tileMaskStride = Math.ceil(engine.getRenderWidth(true) / this._tileWidth);
-        const tilesY = Math.ceil(engine.getRenderHeight(true) / this._tileHeight);
-        const size = this._tileMaskStride * tilesY * 4;
-        if (!this._tileMaskBuffer || this._tileMaskBuffer.getBuffer().capacity < size) {
-            this._tileMaskBuffer?.dispose();
-            this._tileMaskBuffer = new StorageBuffer(<WebGPUEngine>engine, CeilingPOT(size));
-        }
-        return this._tileMaskBuffer;
-    }
-
-    public override _isReady(): boolean {
-        return this._proxyMesh.isReady(true, true);
-    }
-
-    protected _buildUniformLayout(): void {
+    protected override _buildUniformLayout(): void {
         // We can't use `this.maxLights` since this will get called during construction
         const maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
 
@@ -241,9 +244,13 @@ export class ClusteredLight extends Light {
         this._uniformBuffer.create();
     }
 
-    public transferToEffect(effect: Effect, lightIndex: string): Light {
+    public override transferToEffect(effect: Effect, lightIndex: string): Light {
+        const engine = this.getEngine();
+        const hscale = this._horizontalTiles / engine.getRenderWidth();
+        const vscale = this._verticalTiles / engine.getRenderHeight();
+
         const len = Math.min(this._lights.length, this.maxLights);
-        this._uniformBuffer.updateFloat4("vLightData", this._tileWidth, this._tileHeight, this._tileMaskStride, len, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._horizontalTiles, len, lightIndex);
 
         for (let i = 0; i < len; i += 1) {
             const light = this._lights[i];
@@ -281,50 +288,26 @@ export class ClusteredLight extends Light {
     }
 
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
-        (<WebGPUEngine>this.getEngine()).setStorageBuffer("tileMaskBuffer" + lightIndex, this._tileMaskBuffer);
+        const engine = this.getEngine();
+        if (engine.isWebGPU) {
+            (<WebGPUEngine>this.getEngine()).setStorageBuffer("tileMaskBuffer" + lightIndex, this._tileMaskBuffer);
+        } else {
+            effect.setTexture("tileMaskTexture" + lightIndex, this._tileMaskTexture);
+        }
         return this;
     }
 
-    public transferToNodeMaterialEffect(): Light {
+    public override transferToNodeMaterialEffect(): Light {
         // TODO: ????
         return this;
     }
 
-    public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+    public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["CLUSTLIGHT" + lightIndex] = true;
         defines["CLUSTLIGHT_MAX"] = this.maxLights;
     }
 
-    private _renderTileMask: RenderTargetTexture["customRenderFunction"] = (opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes, beforeTransparents) => {
-        const len = Math.min(this._lights.length, this.maxLights);
-        if (len === 0) {
-            // Theres no lights to render
-            return;
-        }
-
-        for (let i = 0; i < depthOnlySubMeshes.length; i += 1) {
-            depthOnlySubMeshes.data[i].render(false);
-        }
-        // TODO: skip meshes that were already drawn during `depthOnly`
-        for (let i = 0; i < opaqueSubMeshes.length; i += 1) {
-            opaqueSubMeshes.data[i].render(false);
-        }
-        for (let i = 0; i < alphaTestSubMeshes.length; i += 1) {
-            alphaTestSubMeshes.data[i].render(false);
-        }
-
-        beforeTransparents?.();
-        // TODO: draw transparents
-
-        this._proxyMesh.thinInstanceCount = len;
-        for (let i = 0; i < len; i += 1) {
-            const light = this._lights[i];
-            // TODO: cache matrices, somehow detect unchanged?
-            // TODO: scale by range of light
-            // TODO: rotate spotlights to face direction
-            light.getWorldMatrix().copyToArray(this._proxyMatrixBuffer, i * 16);
-        }
-        this._proxyMesh.thinInstanceBufferUpdated("matrix");
-        this._proxyMesh.render(this._proxyMesh.subMeshes[0], false);
-    };
+    public override _isReady(): boolean {
+        return this._proxyMesh.isReady(true, true);
+    }
 }
