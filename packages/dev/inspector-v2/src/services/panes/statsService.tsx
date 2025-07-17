@@ -1,6 +1,6 @@
 import type { IDisposable, Scene } from "core/index";
 
-import type { AccordionSection, AccordionSectionContent } from "../../components/accordionPane";
+import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../sceneContext";
 import type { IShellService } from "../shellService";
@@ -18,10 +18,6 @@ import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
 export const StatsServiceIdentity = Symbol("StatsService");
-export const StatsPerformanceSectionIdentity = Symbol("Performance");
-export const StatsCountSectionIdentity = Symbol("Count");
-export const StatsFrameStepsSectionIdentity = Symbol("Frame Steps Duration");
-export const StatsSystemInfoSectionIdentity = Symbol("System Info");
 
 /**
  * Allows new sections or content to be added to the stats pane.
@@ -31,13 +27,13 @@ export interface IStatsService extends IService<typeof StatsServiceIdentity> {
      * Adds a new section (e.g. "Count", "Frame Steps Duration", etc.).
      * @param section A description of the section to add.
      */
-    addSection(section: AccordionSection): IDisposable;
+    addSection(section: DynamicAccordionSection): IDisposable;
 
     /**
      * Adds content to one or more sections.
      * @param content A description of the content to add.
      */
-    addSectionContent(content: AccordionSectionContent<Scene>): IDisposable;
+    addSectionContent(content: DynamicAccordionSectionContent<Scene>): IDisposable;
 }
 
 /**
@@ -48,8 +44,8 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
     produces: [StatsServiceIdentity],
     consumes: [ShellServiceIdentity, SceneContextIdentity],
     factory: (shellService, sceneContext) => {
-        const sectionsCollection = new ObservableCollection<AccordionSection>();
-        const sectionContentCollection = new ObservableCollection<AccordionSectionContent<Scene>>();
+        const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
+        const sectionContentCollection = new ObservableCollection<DynamicAccordionSectionContent<Scene>>();
 
         const registration = shellService.addSidePane({
             key: "Statistics",
@@ -69,57 +65,57 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
 
         // Default/built-in sections.
         sectionsCollection.add({
-            identity: StatsPerformanceSectionIdentity,
+            identity: "Performance",
             order: 0,
         });
 
         sectionsCollection.add({
-            identity: StatsCountSectionIdentity,
+            identity: "Count",
             order: 1,
         });
 
         sectionsCollection.add({
-            identity: StatsFrameStepsSectionIdentity,
+            identity: "Frame Steps Duration",
             order: 2,
         });
 
         sectionsCollection.add({
-            identity: StatsSystemInfoSectionIdentity,
+            identity: "System Info",
             order: 3,
         });
 
         // Default/built-in content.
         sectionContentCollection.add({
             key: "DefaultPerfStats",
-            section: StatsPerformanceSectionIdentity,
+            section: "Performance",
             order: 0,
             component: PerformanceStats,
         });
 
         sectionContentCollection.add({
             key: "DefaultCountStats",
-            section: StatsCountSectionIdentity,
+            section: "Count",
             order: 1,
             component: CountStats,
         });
 
         sectionContentCollection.add({
             key: "DefaultFrameStats",
-            section: StatsFrameStepsSectionIdentity,
+            section: "Frame Steps Duration",
             order: 2,
             component: FrameStepsStats,
         });
 
         sectionContentCollection.add({
             key: "DefaultSystemStats",
-            section: StatsSystemInfoSectionIdentity,
+            section: "System Info",
             order: 3,
             component: SystemStats,
         });
 
         return {
             addSection: (section) => sectionsCollection.add(section),
-            addSectionContent: (content) => sectionContentCollection.add(content as AccordionSectionContent<Scene>),
+            addSectionContent: (content) => sectionContentCollection.add(content as DynamicAccordionSectionContent<Scene>),
             dispose: () => registration.dispose(),
         };
     },

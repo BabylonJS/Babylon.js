@@ -3,30 +3,21 @@ import type { IPropertiesService } from "./propertiesService";
 
 import { TransformNode } from "core/Meshes/transformNode";
 
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { PhysicsBodyProperties } from "../../../components/properties/physics/physicsProperties";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
-
-export const PhysicsPropertiesSectionIdentity = Symbol("Physics");
+import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const PhysicsPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Physics Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
-        const physicsSectionRegistration = propertiesService.addSection({
-            order: 5,
-            identity: PhysicsPropertiesSectionIdentity,
-        });
-
         const contentRegistration = propertiesService.addSectionContent({
             key: "Physics Properties",
             predicate: (entity: unknown) => entity instanceof TransformNode,
             content: [
-                // "Physics" section.
                 {
-                    section: PhysicsPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Physics",
                     component: ({ context: node }) => {
                         const physicsBody = useProperty(node, "physicsBody");
 
@@ -50,7 +41,6 @@ export const PhysicsPropertiesServiceDefinition: ServiceDefinition<[], [IPropert
         return {
             dispose: () => {
                 contentRegistration.dispose();
-                physicsSectionRegistration.dispose();
             },
         };
     },
