@@ -78,7 +78,7 @@ export class ClusteredLight extends Light {
     private _tileMaskTexture: Nullable<RenderTargetTexture>;
     private _tileMaskBuffer: Nullable<StorageBuffer>;
 
-    private _horizontalTiles = 128; // TODO: 64
+    private _horizontalTiles = 64;
     public get horizontalTiles(): number {
         return this._horizontalTiles;
     }
@@ -91,7 +91,7 @@ export class ClusteredLight extends Light {
         this._disposeTileMask();
     }
 
-    private _verticalTiles = 128;
+    private _verticalTiles = 64;
     public get verticalTiles(): number {
         return this._verticalTiles;
     }
@@ -104,20 +104,30 @@ export class ClusteredLight extends Light {
         this._disposeTileMask();
     }
 
-    private readonly _proxyMesh: Mesh;
+    private _proxyMesh: Mesh;
     private readonly _proxyMatrixBuffer: Float32Array;
+
+    private _proxySegments = 4;
+    public get proxySegments(): number {
+        return this._proxySegments;
+    }
+
+    public set proxySegments(segments: number) {
+        if (this._proxySegments === segments) {
+            return;
+        }
+        this._proxyMesh.dispose(false, true);
+        this._createProxyMesh();
+    }
+
+    public maxRange = 16383;
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
-        const engine = this.getEngine();
-        this.maxLights = ClusteredLight._GetEngineMaxLights(engine);
-
-        this._proxyMesh = CreateSphere("ProxyMesh", { diameter: 2, segments: 8 }, this._scene);
-        this._proxyMesh.material = new LightProxyMaterial("ProxyMeshMaterial", this);
-        this._scene.removeMesh(this._proxyMesh);
+        this.maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
 
         this._proxyMatrixBuffer = new Float32Array(this.maxLights * 16);
-        this._proxyMesh.thinInstanceSetBuffer("matrix", this._proxyMatrixBuffer, 16, false);
+        this._createProxyMesh();
 
         if (this.maxLights > 0) {
             ClusteredLight._SceneComponentInitialization(this._scene);
@@ -200,6 +210,18 @@ export class ClusteredLight extends Light {
         this._tileMaskBuffer = null;
     }
 
+    private _createProxyMesh(): void {
+        this._proxyMesh = CreateSphere("ProxyMesh", { diameter: 2, segments: this._proxySegments }, this._scene);
+        // Make sure it doesn't render for the default scene
+        this._scene.removeMesh(this._proxyMesh);
+        if (this._tileMaskTexture) {
+            this._tileMaskTexture.renderList = [this._proxyMesh];
+        }
+
+        this._proxyMesh.material = new LightProxyMaterial("ProxyMeshMaterial", this);
+        this._proxyMesh.thinInstanceSetBuffer("matrix", this._proxyMatrixBuffer, 16, false);
+    }
+
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -271,7 +293,7 @@ export class ClusteredLight extends Light {
 
             const scaledIntensity = light.getScaledIntensity();
             light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], light.range, lightIndex);
+            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], Math.min(light.range, this.maxRange), lightIndex);
             light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
             this._uniformBuffer.updateColor4(struct + "specular", TmpColors.Color3[1], light.radius, lightIndex);
 
