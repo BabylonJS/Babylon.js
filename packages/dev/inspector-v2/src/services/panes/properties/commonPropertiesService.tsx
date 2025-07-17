@@ -13,17 +13,10 @@ type CommonEntity = {
     getClassName?: () => string;
 };
 
-export const GeneralPropertiesSectionIdentity = Symbol("General");
-
 export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Common Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
-        const generalSectionRegistration = propertiesService.addSection({
-            order: 0,
-            identity: GeneralPropertiesSectionIdentity,
-        });
-
         const contentRegistration = propertiesService.addSectionContent({
             key: "Common Properties",
             predicate: (entity: unknown): entity is CommonEntity => {
@@ -36,10 +29,8 @@ export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 return commonEntity.id !== undefined || commonEntity.name !== undefined || commonEntity.uniqueId !== undefined || commonEntity.getClassName !== undefined;
             },
             content: [
-                // "GENERAL" section.
                 {
-                    section: GeneralPropertiesSectionIdentity,
-                    order: 0,
+                    section: "General",
                     component: ({ context }) => <CommonGeneralProperties commonEntity={context} />,
                 },
             ],
@@ -48,7 +39,6 @@ export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
         return {
             dispose: () => {
                 contentRegistration.dispose();
-                generalSectionRegistration.dispose();
             },
         };
     },

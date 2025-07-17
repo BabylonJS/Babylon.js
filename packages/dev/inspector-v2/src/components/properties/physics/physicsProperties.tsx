@@ -1,16 +1,17 @@
 import type { FunctionComponent } from "react";
 
-import type { PhysicsBody } from "core/index";
+import type { PhysicsBody, TransformNode } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { useCallback } from "react";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
-import { useVector3Property } from "../../../hooks/compoundPropertyHooks";
+import { useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 
@@ -28,12 +29,31 @@ const PrestepOptions = [
     { label: "Action", value: PhysicsPrestepType.ACTION },
 ] as const satisfies readonly DropdownOption[];
 
+export const TransformNodePhysicsProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
+    const { node } = props;
+
+    const physicsBody = useProperty(node, "physicsBody");
+
+    if (!physicsBody) {
+        return (
+            <MessageBar
+                intent="info"
+                title="No Physics Body"
+                message="To modify physics properties, attach a physics body to this node."
+                docLink="https://doc.babylonjs.com/features/featuresDeepDive/physics/rigidBodies"
+            />
+        );
+    }
+
+    return <PhysicsBodyProperties physicsBody={physicsBody} />;
+};
+
 /**
  * Physics properties
  * @param props transform node
  * @returns controls
  */
-export const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (props) => {
+const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (props) => {
     const { physicsBody } = props;
 
     const massProperties = useObservableState(
