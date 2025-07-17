@@ -136,7 +136,6 @@ export abstract class AudioEngineV2 {
      * Creates a new audio bus.
      * @param name - The name of the audio bus.
      * @param options - The options to use when creating the audio bus.
-     * @param engine - The audio engine.
      * @returns A promise that resolves with the created audio bus.
      */
     public abstract createBusAsync(name: string, options?: Partial<IAudioBusOptions>): Promise<AudioBus>;
@@ -174,7 +173,6 @@ export abstract class AudioEngineV2 {
      * Creates a new static sound buffer.
      * @param source - The source of the sound buffer.
      * @param options - The options for the static sound buffer.
-     * @param engine - The audio engine.
      * @returns A promise that resolves to the created static sound buffer.
      */
     public abstract createSoundBufferAsync(
