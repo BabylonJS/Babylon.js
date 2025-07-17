@@ -60,7 +60,7 @@ precision highp float;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-#include<pbrBlockAlbedoOpacity>
+#include<openpbrBlockAlbedoOpacity>
 #include<openpbrBlockReflectivity>
 #include<pbrBlockAmbientOcclusion>
 #include<pbrBlockAlphaFresnel>
@@ -83,7 +83,7 @@ void main(void) {
     // _____________________________ Albedo & Opacity ______________________________
     albedoOpacityOutParams albedoOpacityOut;
 
-#ifdef ALBEDO
+#ifdef BASE_COLOR
     vec4 baseColorFromTexture = texture2D(baseColorSampler, vBaseColorUV + uvOffset);
 #endif
 
@@ -101,7 +101,7 @@ void main(void) {
 
     albedoOpacityOut = albedoOpacityBlock(
         vBaseColor
-    #ifdef ALBEDO
+    #ifdef BASE_COLOR
         , baseColorFromTexture
         , vBaseColorInfos
     #endif
@@ -142,7 +142,6 @@ void main(void) {
 // Mdielectric-base	=mix(Mopaque-base,Stranslucent-base,T)	whereT	=transmission_weight
 // Mopaque-base	=mix(Mglossy-diffuse,Ssubsurface,S)	whereS	=subsurface_weight
 // Mglossy-diffuse	=layer(Sdiffuse,Sgloss)
-
 
 
 
