@@ -16,7 +16,7 @@ export const enum Channel {
 /** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
 export const VolumePrecision = 1;
 
-/* The range of acceptable volume values for realtime audio tests. */
+/** The range of acceptable volume values for realtime audio tests. */
 const RealtimeVolumeRange = 0.2;
 
 export class AudioTestConfig {
