@@ -44,7 +44,7 @@
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-#include<pbrBlockAlbedoOpacity>
+#include<openpbrBlockAlbedoOpacity>
 #include<openpbrBlockReflectivity>
 #include<pbrBlockAmbientOcclusion>
 #include<pbrBlockAlphaFresnel>
@@ -68,7 +68,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Albedo & Opacity ______________________________
     var albedoOpacityOut: albedoOpacityOutParams;
 
-#ifdef ALBEDO
+#ifdef BASE_COLOR
     var baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
 #endif
 
@@ -86,7 +86,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     albedoOpacityOut = albedoOpacityBlock(
         uniforms.vBaseColor
-    #ifdef ALBEDO
+    #ifdef BASE_COLOR
         , baseColorFromTexture
         , uniforms.vBaseColorInfos
     #endif
