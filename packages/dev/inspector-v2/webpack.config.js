@@ -1,9 +1,8 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     return {
         entry: "./test/app/index.ts",
 
@@ -36,16 +35,12 @@ module.exports = (env) => {
             rules: webpackTools.getRules({
                 sideEffects: true,
                 includeCSS: false,
+                enableFastRefresh: !production,
                 tsOptions: {
                     configFile: "tsconfig.build.json",
-                    getCustomTransformers: () => ({
-                        before: [ReactRefreshTypeScript()].filter(Boolean),
-                    }),
                     transpileOnly: true,
                 },
             }),
         },
-
-        plugins: [new ReactRefreshWebpackPlugin()].filter(Boolean),
     };
 };

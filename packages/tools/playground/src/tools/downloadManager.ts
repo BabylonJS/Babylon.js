@@ -146,7 +146,7 @@ export class DownloadManager {
         } while (true);
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._addContentToZipAsync(zip, "index.html", "/zipContent/index.html", zipCode)
+        this._addContentToZipAsync(zip, "index.html", "./zipContent/index.html", zipCode)
             .then(async () => {
                 return await this._addTexturesToZipAsync(zip, 0, textures, null);
             })

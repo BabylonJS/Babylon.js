@@ -1,5 +1,25 @@
 # Changelog
 
+## 8.17.0
+
+### Core
+
+
+## 8.16.3
+
+### Core
+
+- Adding attractor to NPE - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16882](https://github.com/BabylonJS/Babylon.js/pull/16882))
+- Fix missing serialized comments for node editors - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16885](https://github.com/BabylonJS/Babylon.js/pull/16885))
+
+### Playground
+
+- Add React fast refresh to Sandbox and Playground - by [ryantrem](https://github.com/ryantrem) ([#16860](https://github.com/BabylonJS/Babylon.js/pull/16860))
+
+### Serializers
+
+- glTF Exporter: Convert IBM to RH for LH bones - by [alexchuber](https://github.com/alexchuber) ([#16888](https://github.com/BabylonJS/Babylon.js/pull/16888))
+
 ## 8.16.2
 
 ### Core
