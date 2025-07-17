@@ -20,9 +20,7 @@ import { FollowCameraLimitsProperties, FollowCameraTransformProperties } from ".
 import { FreeCameraCollisionProperties, FreeCameraControlProperties, FreeCameraTransformProperties } from "../../../components/properties/cameras/freeCameraProperties";
 import { TargetCameraControlProperties, TargetCameraTransformProperties } from "../../../components/properties/cameras/targetCameraProperties";
 import { SettingsContextIdentity } from "../../../services/settingsContext";
-import { GeneralPropertiesSectionIdentity } from "./commonPropertiesService";
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { TransformPropertiesSectionIdentity } from "./transformPropertiesService";
 
 export const ControlPropertiesSectionIdentity = Symbol("Control");
 export const CollisionPropertiesSectionIdentity = Symbol("Collision");
@@ -33,34 +31,12 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
     friendlyName: "Camera Properties",
     consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
     factory: (propertiesService, settingsContext) => {
-        const controlSectionRegistration = propertiesService.addSection({
-            order: 4,
-            identity: ControlPropertiesSectionIdentity,
-        });
-
-        const collisionSectionRegistration = propertiesService.addSection({
-            order: 5,
-            identity: CollisionPropertiesSectionIdentity,
-        });
-
-        const limitsSectionRegistration = propertiesService.addSection({
-            order: 6,
-            identity: LimitsPropertiesSectionIdentity,
-        });
-
-        const behaviorsSectionRegistration = propertiesService.addSection({
-            order: 7,
-            identity: BehaviorsPropertiesSectionIdentity,
-        });
-
         const cameraContentRegistration = propertiesService.addSectionContent({
             key: "Camera Properties",
             predicate: (entity: unknown) => entity instanceof Camera,
             content: [
-                // "GENERAL" section.
                 {
-                    section: GeneralPropertiesSectionIdentity,
-                    order: 1,
+                    section: "General",
                     component: ({ context }) => <CameraGeneralProperties camera={context} settings={settingsContext} />,
                 },
             ],
@@ -70,16 +46,12 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             key: "Target Camera Properties",
             predicate: (entity: unknown) => entity instanceof TargetCamera,
             content: [
-                // "TRANSFORM" section.
                 {
-                    section: TransformPropertiesSectionIdentity,
-                    order: 2,
+                    section: "Transform",
                     component: ({ context }) => <TargetCameraTransformProperties camera={context} />,
                 },
-                // "CONTROL" section.
                 {
-                    section: ControlPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Control",
                     component: ({ context }) => <TargetCameraControlProperties camera={context} />,
                 },
             ],
@@ -89,34 +61,24 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             key: "Arc Rotate Camera Properties",
             predicate: (entity: unknown) => entity instanceof ArcRotateCamera,
             content: [
-                // "TRANSFORM" section.
                 {
-                    section: TransformPropertiesSectionIdentity,
-                    order: 2,
+                    section: "Transform",
                     component: ({ context }) => <ArcRotateCameraTransformProperties camera={context} settings={settingsContext} />,
                 },
-                // "CONTROL" section.
                 {
-                    section: ControlPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Control",
                     component: ({ context }) => <ArcRotateCameraControlProperties camera={context} />,
                 },
-                // "COLLISION" section.
                 {
-                    section: CollisionPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Collision",
                     component: ({ context }) => <ArcRotateCameraCollisionProperties camera={context} />,
                 },
-                // "LIMITS" section.
                 {
-                    section: LimitsPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Limits",
                     component: ({ context }) => <ArcRotateCameraLimitsProperties camera={context} />,
                 },
-                // "BEHAVIORS" section.
                 {
-                    section: BehaviorsPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Behaviors",
                     component: ({ context }) => <ArcRotateCameraBehaviorsProperties camera={context} />,
                 },
             ],
@@ -126,22 +88,16 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             key: "Free Camera Properties",
             predicate: (entity: unknown) => entity instanceof FreeCamera,
             content: [
-                // "TRANSFORM" section.
                 {
-                    section: TransformPropertiesSectionIdentity,
-                    order: 2,
+                    section: "Transform",
                     component: ({ context }) => <FreeCameraTransformProperties camera={context} settings={settingsContext} />,
                 },
-                // "CONTROL" section.
                 {
-                    section: ControlPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Control",
                     component: ({ context }) => <FreeCameraControlProperties camera={context} />,
                 },
-                // "COLLISION" section.
                 {
-                    section: CollisionPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Collision",
                     component: ({ context }) => <FreeCameraCollisionProperties camera={context} />,
                 },
             ],
@@ -151,16 +107,12 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             key: "Follow Camera Properties",
             predicate: (entity: unknown) => entity instanceof FollowCamera,
             content: [
-                // "TRANSFORM" section.
                 {
-                    section: TransformPropertiesSectionIdentity,
-                    order: 2,
+                    section: "Transform",
                     component: ({ context }) => <FollowCameraTransformProperties camera={context} />,
                 },
-                // "LIMITS" section.
                 {
-                    section: LimitsPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Limits",
                     component: ({ context }) => <FollowCameraLimitsProperties camera={context} />,
                 },
             ],
@@ -173,11 +125,6 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 arcRotateCameraContentRegistration.dispose();
                 freeCameraContentRegistration.dispose();
                 followCameraContentRegistration.dispose();
-
-                controlSectionRegistration.dispose();
-                collisionSectionRegistration.dispose();
-                limitsSectionRegistration.dispose();
-                behaviorsSectionRegistration.dispose();
             },
         };
     },

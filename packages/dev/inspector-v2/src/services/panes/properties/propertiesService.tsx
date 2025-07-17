@@ -1,6 +1,6 @@
 import type { IDisposable } from "core/index";
 
-import type { AccordionSection, AccordionSectionContent } from "../../../components/accordionPane";
+import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
@@ -26,7 +26,7 @@ type PropertiesSectionContent<EntityT> = {
      */
     predicate: (entity: unknown) => entity is EntityT;
 } & {
-    content: readonly Omit<AccordionSectionContent<EntityT>, "key">[];
+    content: readonly Omit<DynamicAccordionSectionContent<EntityT>, "key">[];
 };
 
 /**
@@ -37,7 +37,7 @@ export interface IPropertiesService extends IService<typeof PropertiesServiceIde
      * Adds a new section (e.g. "General", "Transforms", etc.).
      * @param section A description of the section to add.
      */
-    addSection(section: AccordionSection): IDisposable;
+    addSection(section: DynamicAccordionSection): IDisposable;
 
     /**
      * Adds content to one or more sections.
@@ -54,7 +54,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
     produces: [PropertiesServiceIdentity],
     consumes: [ShellServiceIdentity, SelectionServiceIdentity],
     factory: (shellService, selectionService) => {
-        const sectionsCollection = new ObservableCollection<AccordionSection>();
+        const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<PropertiesSectionContent<unknown>>();
 
         const registration = shellService.addSidePane({

@@ -8,27 +8,16 @@ import { SelectionServiceIdentity } from "../../selectionService";
 import { Material } from "core/Materials";
 import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialTransparencyProperties";
 
-export const TransparencyPropertiesSectionIdentity = Symbol("Transparency");
-export const StencilPropertiesSectionItentity = Symbol("Stencil");
-
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService) => {
-        // Transparency
-        const transparencySectionRegistration = propertiesService.addSection({
-            order: 1,
-            identity: TransparencyPropertiesSectionIdentity,
-        });
-
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
             predicate: (entity: unknown): entity is Material => entity instanceof Material,
             content: [
-                // "Transparency" section.
                 {
-                    section: TransparencyPropertiesSectionIdentity,
-                    order: 0,
+                    section: "Transparency",
                     component: ({ context }) => <MaterialTransparencyProperties material={context} />,
                 },
             ],
@@ -37,7 +26,6 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
-                transparencySectionRegistration.dispose();
             },
         };
     },

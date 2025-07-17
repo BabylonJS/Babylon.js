@@ -23,8 +23,6 @@ function IsAnimatableContainer(entity: unknown): entity is IAnimatableContainer 
     return (entity as IAnimatableContainer).getAnimatables !== undefined;
 }
 
-export const AnimationSectionIdentity = Symbol("Animation");
-
 export const AnimationPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISceneContext]> = {
     friendlyName: "Animation Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SceneContextIdentity],
@@ -34,19 +32,12 @@ export const AnimationPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
             return undefined;
         }
 
-        const animationSectionRegistration = propertiesService.addSection({
-            order: 2,
-            identity: AnimationSectionIdentity,
-        });
-
         const animationContentRegistration = propertiesService.addSectionContent({
             key: "Animation Properties",
             predicate: (entity: unknown) => IsAnimatable(entity) || IsAnimationRangeContainer(entity) || IsAnimatableContainer(entity),
             content: [
-                // "Animations" section.
                 {
-                    section: AnimationSectionIdentity,
-                    order: 0,
+                    section: "Animation",
                     component: ({ context }) => <AnimationsProperties scene={scene} entity={context} />,
                 },
             ],
@@ -55,7 +46,6 @@ export const AnimationPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
         return {
             dispose: () => {
                 animationContentRegistration.dispose();
-                animationSectionRegistration.dispose();
             },
         };
     },
