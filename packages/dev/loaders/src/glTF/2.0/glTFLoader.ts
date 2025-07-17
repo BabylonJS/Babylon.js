@@ -2165,8 +2165,13 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             }
 
-            babylonMaterial.metallic = properties.metallicFactor == undefined ? 1 : properties.metallicFactor;
-            babylonMaterial.roughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
+            if (babylonMaterial instanceof PBRMaterial) {
+                babylonMaterial.metallic = properties.metallicFactor == undefined ? 1 : properties.metallicFactor;
+                babylonMaterial.roughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                babylonMaterial.baseMetalness = properties.metallicFactor == undefined ? 1 : properties.metallicFactor;
+                babylonMaterial.specularRoughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
+            }
 
             if (properties.baseColorTexture) {
                 promises.push(
@@ -2186,13 +2191,19 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(
                     this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
-                        babylonMaterial.metallicTexture = texture;
+                        if (babylonMaterial instanceof OpenPBRMaterial) {
+                            babylonMaterial.baseMetalRoughTexture = texture;
+                        } else {
+                            babylonMaterial.metallicTexture = texture;
+                        }
                     })
                 );
 
-                babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
-                babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
-                babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                if (babylonMaterial instanceof PBRMaterial) {
+                    babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
+                    babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
+                    babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                }
             }
         }
 
@@ -2269,8 +2280,10 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
         babylonMaterial.useSpecularOverAlpha = !this._parent.transparencyAsCoverage;
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
-        babylonMaterial.metallic = 1;
-        babylonMaterial.roughness = 1;
+        if (babylonMaterial instanceof PBRMaterial) {
+            babylonMaterial.metallic = 1;
+            babylonMaterial.roughness = 1;
+        }
 
         return babylonMaterial;
     }

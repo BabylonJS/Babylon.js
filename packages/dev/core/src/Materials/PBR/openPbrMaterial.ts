@@ -3,7 +3,7 @@ import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, add
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Color3, Color4, TmpColors } from "../../Maths/math.color";
+import { Color3, Color4 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
@@ -176,7 +176,7 @@ class Sampler {
      * - openpbr.fragment.fx
      */
     public get samplerInfoName(): string {
-        return this.samplerPrefix + "Infos";
+        return "v" + this.samplerPrefix.charAt(0).toUpperCase() + this.samplerPrefix.slice(1) + "Infos";
     }
     /**
      * The name of the matrix used for this sampler in the shader.
@@ -213,15 +213,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
 
-    public ALBEDO = false;
-    public GAMMAALBEDO = false;
-    public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
-
-    public BASE_WEIGHT = false;
-    public BASE_WEIGHTDIRECTUV = 0;
-    public BASE_DIFFUSE_ROUGHNESS = false;
-    public BASE_DIFFUSE_ROUGHNESSDIRECTUV = 0;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
@@ -238,17 +230,12 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public ALPHABLEND = false;
     public ALPHAFROMALBEDO = false;
     public ALPHATESTVALUE = "0.5";
-    public SPECULAROVERALPHA = false;
-    public RADIANCEOVERALPHA = false;
-    public ALPHAFRESNEL = false;
-    public LINEARALPHAFRESNEL = false;
     public PREMULTIPLYALPHA = false;
 
     public EMISSIVE = false;
     public EMISSIVEDIRECTUV = 0;
     public GAMMAEMISSIVE = false;
 
-    public REFLECTIVITY = false;
     public REFLECTIVITY_GAMMA = false;
     public REFLECTIVITYDIRECTUV = 0;
     public SPECULARTERM = false;
@@ -256,21 +243,13 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public MICROSURFACEFROMREFLECTIVITYMAP = false;
     public MICROSURFACEAUTOMATIC = false;
     public LODBASEDMICROSFURACE = false;
-    public MICROSURFACEMAP = false;
-    public MICROSURFACEMAPDIRECTUV = 0;
 
     public METALLICWORKFLOW = true;
     public ROUGHNESSSTOREINMETALMAPALPHA = false;
     public ROUGHNESSSTOREINMETALMAPGREEN = false;
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
-    public METALLIC_REFLECTANCE = false;
-    public METALLIC_REFLECTANCE_GAMMA = false;
-    public METALLIC_REFLECTANCEDIRECTUV = 0;
-    public METALLIC_REFLECTANCE_USE_ALPHA_ONLY = false;
-    public REFLECTANCE = false;
-    public REFLECTANCE_GAMMA = false;
-    public REFLECTANCEDIRECTUV = 0;
+    public SPECULAR_WEIGHT_USE_ALPHA_ONLY = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -525,6 +504,78 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _baseDiffuseRoughnessTexture: Sampler = new Sampler("base_diffuse_roughness", "baseDiffuseRoughness", "BASE_DIFFUSE_ROUGHNESS");
 
     /**
+     * Metalness of the base lobe.
+     * See OpenPBR's specs for base_metalness
+     */
+    public baseMetalness: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalness")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseMetalness: Property<number> = new Property<number>("base_metalness", 0, "vReflectanceInfo", 4, 0);
+
+    /**
+     * Weight of the specular lobe.
+     * See OpenPBR's specs for specular_weight
+     */
+    public specularWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularWeight: Property<number> = new Property<number>("specular_weight", 1, "vReflectanceInfo", 4, 3);
+
+    /**
+     * Roughness of the diffuse lobe.
+     * See OpenPBR's specs for base_diffuse_roughness
+     */
+    public specularWeightTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularWeightTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularWeightTexture: Sampler = new Sampler("specular_weight", "specularWeight", "SPECULAR_WEIGHT");
+
+    /**
+     * Color of the specular lobe.
+     * See OpenPBR's specs for specular_color
+     */
+    public specularColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularColor: Property<Color3> = new Property<Color3>("specular_color", Color3.White(), "vSpecularColor", 4);
+
+    /**
+     * Specular Color Texture property.
+     * See OpenPBR's specs for specular_color
+     */
+    public specularColorTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularColorTexture: Sampler = new Sampler("specular_color", "specularColor", "SPECULAR_COLOR");
+
+    /**
+     * Roughness of the specular lobe.
+     * See OpenPBR's specs for specular_roughness
+     */
+    public specularRoughness: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughness")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRoughness: Property<number> = new Property<number>("specular_roughness", 0, "vReflectanceInfo", 4, 1);
+
+    /**
+     * IOR of the specular lobe.
+     * See OpenPBR's specs for specular_roughness
+     */
+    public specularIor: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularIor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularIor: Property<number> = new Property<number>("specular_ior", 1.5, "vReflectanceInfo", 4, 2);
+
+    /**
+     * Metalness and Roughness texture.
+     * See OpenPBR's specs for base_metalness and specular_roughness
+     */
+    public baseMetalRoughTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalRoughTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseMetalRoughTexture: Sampler = new Sampler("base_metalness_specular_roughness", "baseMetalRough", "METALLIC_ROUGHNESS");
+
+    /**
      * Defines the opacity of the material's geometry. See OpenPBR's specs for geometry_opacity
      */
     public geometryOpacity: number;
@@ -543,6 +594,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _propertyList: { [name: string]: Property<any> };
     private _uniformsList: { [name: string]: Uniform } = {};
     private _samplersList: { [name: string]: Sampler } = {};
+    private _samplerDefines: { [name: string]: { type: string; default: any } } = {};
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -620,95 +672,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public emissiveTexture: Nullable<BaseTexture>;
 
     /**
-     * AKA Specular texture in other nomenclature.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectivityTexture: Nullable<BaseTexture>;
-
-    /**
-     * Used to switch from specular/glossiness to metallic/roughness workflow.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicTexture: Nullable<BaseTexture>;
-
-    /**
-     * Specifies the metallic scalar of the metallic/roughness workflow.
-     * Can also be used to scale the metalness values of the metallic texture.
+     * Specifies that the specular weight is stored in the alpha channel of the specular weight texture.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallic: Nullable<number>;
-
-    /**
-     * Specifies the roughness scalar of the metallic/roughness workflow.
-     * Can also be used to scale the roughness values of the metallic texture.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness: Nullable<number>;
-
-    /**
-     * In metallic workflow, specifies an F0 factor to help configuring the material F0.
-     * By default the indexOfrefraction is used to compute F0;
-     *
-     * This is used as a factor against the default reflectance at normal incidence to tweak it.
-     *
-     * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
-     * F90 = metallicReflectanceColor;
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicF0Factor = 1;
-
-    /**
-     * In metallic workflow, specifies an F0 color.
-     * By default the F90 is always 1;
-     *
-     * Please note that this factor is also used as a factor against the default reflectance at normal incidence.
-     *
-     * F0 = defaultF0_from_IOR * metallicF0Factor * metallicReflectanceColor
-     * F90 = metallicF0Factor;
-     */
-    @serializeAsColor3()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicReflectanceColor = Color3.White();
-
-    /**
-     * Specifies that only the A channel from metallicReflectanceTexture should be used.
-     * If false, both RGB and A channels will be used
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useOnlyMetallicFromMetallicReflectanceTexture = false;
-
-    /**
-     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiplied against the scalar values defined in the material.
-     * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicReflectanceTexture: Nullable<BaseTexture>;
-
-    /**
-     * Defines to store reflectanceColor in RGB
-     * This is multiplied against the scalar values defined in the material.
-     * If both reflectanceTexture and metallicReflectanceTexture textures are provided and useOnlyMetallicFromMetallicReflectanceTexture
-     * is false, metallicReflectanceTexture takes priority and reflectanceTexture is not used
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectanceTexture: Nullable<BaseTexture>;
-
-    /**
-     * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-     * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public microSurfaceTexture: Nullable<BaseTexture>;
+    public useSpecularWeightFromTextureAlpha = false;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
@@ -744,13 +712,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serializeAsColor3("reflection")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionColor = new Color3(1.0, 1.0, 1.0);
-
-    /**
-     * AKA Glossiness in other nomenclature.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public microSurface = 1.0;
 
     /**
      * If true, the light map contains occlusion information instead of lighting info.
@@ -794,28 +755,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMicroSurfaceFromReflectivityMapAlpha = false;
-
-    /**
-     * Specifies if the metallic texture contains the roughness information in its alpha channel.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRoughnessFromMetallicTextureAlpha = true;
-
-    /**
-     * Specifies if the metallic texture contains the roughness information in its green channel.
-     * Needs useRoughnessFromMetallicTextureAlpha to be false.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRoughnessFromMetallicTextureGreen = false;
-
-    /**
-     * Specifies if the metallic texture contains the metallness information in its blue channel.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMetallnessFromMetallicTextureBlue = false;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
@@ -1138,84 +1077,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _emissiveTexture: Nullable<BaseTexture> = null;
 
     /**
-     * AKA Specular texture in other nomenclature.
-     * @internal
-     */
-    public _reflectivityTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Used to switch from specular/glossiness to metallic/roughness workflow.
-     * @internal
-     */
-    public _metallicTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Specifies the metallic scalar of the metallic/roughness workflow.
-     * Can also be used to scale the metalness values of the metallic texture.
-     * @internal
-     */
-    public _metallic: Nullable<number> = null;
-
-    /**
-     * Specifies the roughness scalar of the metallic/roughness workflow.
-     * Can also be used to scale the roughness values of the metallic texture.
-     * @internal
-     */
-    public _roughness: Nullable<number> = null;
-
-    /**
-     * In metallic workflow, specifies an F0 factor to help configuring the material F0.
-     * By default the indexOfrefraction is used to compute F0;
-     *
-     * This is used as a factor against the default reflectance at normal incidence to tweak it.
-     *
-     * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
-     * F90 = metallicReflectanceColor;
-     * @internal
-     */
-    public _metallicF0Factor = 1;
-
-    /**
-     * In metallic workflow, specifies an F0 color.
-     * By default the F90 is always 1;
-     *
-     * Please note that this factor is also used as a factor against the default reflectance at normal incidence.
-     *
-     * F0 = defaultF0_from_IOR * metallicF0Factor * metallicReflectanceColor
-     * F90 = metallicF0Factor;
-     * @internal
-     */
-    public _metallicReflectanceColor = Color3.White();
-
-    /**
      * Specifies that only the A channel from _metallicReflectanceTexture should be used.
      * If false, both RGB and A channels will be used
      * @internal
      */
-    public _useOnlyMetallicFromMetallicReflectanceTexture = false;
-
-    /**
-     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiply against the scalar values defined in the material.
-     * @internal
-     */
-    public _metallicReflectanceTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Defines to store reflectanceColor in RGB
-     * This is multiplied against the scalar values defined in the material.
-     * If both _reflectanceTexture and _metallicReflectanceTexture textures are provided and _useOnlyMetallicFromMetallicReflectanceTexture
-     * is false, _metallicReflectanceTexture takes precedence and _reflectanceTexture is not used
-     * @internal
-     */
-    public _reflectanceTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-     * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-     * @internal
-     */
-    public _microSurfaceTexture: Nullable<BaseTexture> = null;
+    public _useSpecularWeightFromTextureAlpha = false;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
@@ -1246,12 +1112,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _reflectionColor = new Color3(1, 1, 1);
-
-    /**
-     * AKA Glossiness in other nomenclature.
-     * @internal
-     */
-    public _microSurface = 0.9;
 
     /**
      * Specifies that the material will use the light map as a show map.
@@ -1291,24 +1151,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useMicroSurfaceFromReflectivityMapAlpha = false;
-
-    /**
-     * Specifies if the metallic texture contains the roughness information in its alpha channel.
-     * @internal
-     */
-    public _useRoughnessFromMetallicTextureAlpha = true;
-
-    /**
-     * Specifies if the metallic texture contains the roughness information in its green channel.
-     * @internal
-     */
-    public _useRoughnessFromMetallicTextureGreen = false;
-
-    /**
-     * Specifies if the metallic texture contains the metallness information in its blue channel.
-     * @internal
-     */
-    public _useMetallnessFromMetallicTextureBlue = false;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
@@ -1597,6 +1439,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
+        // For each sampler in _samplersList, add defines to be added to OpenPBRMaterialDefines
+        for (const samplerKey in this._samplersList) {
+            const sampler = this._samplersList[samplerKey];
+            const defineName = sampler.textureDefine;
+            this._samplerDefines[defineName] = { type: "boolean", default: false };
+            this._samplerDefines[defineName + "DIRECTUV"] = { type: "number", default: 0 };
+            this._samplerDefines[defineName + "_GAMMA"] = { type: "boolean", default: false };
+        }
+
         // Arg. Why do I have to add these references to get rid of the linting errors?
         this._baseWeight;
         this._baseWeightTexture;
@@ -1604,6 +1455,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._baseColorTexture;
         this._baseDiffuseRoughness;
         this._baseDiffuseRoughnessTexture;
+        this._baseMetalness;
+        this._specularWeight;
+        this._specularWeightTexture;
+        this._specularColor;
+        this._specularColorTexture;
+        this._specularRoughness;
+        this._specularIor;
+        this._baseMetalRoughTexture;
         this._geometryOpacity;
         this._emissionColor;
     }
@@ -1753,7 +1612,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             if (this._breakShaderLoadedCheck) {
                 return;
             }
-            const defines = new OpenPBRMaterialDefines(this._eventInfo.defineNames);
+
+            const defines = new OpenPBRMaterialDefines({
+                ...(this._eventInfo.defineNames || {}),
+                ...(this._samplerDefines || {}),
+            });
             const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -1797,7 +1660,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (!subMesh.materialDefines) {
             this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-            subMesh.materialDefines = new OpenPBRMaterialDefines(this._eventInfo.defineNames);
+            subMesh.materialDefines = new OpenPBRMaterialDefines({
+                ...(this._eventInfo.defineNames || {}),
+                ...(this._samplerDefines || {}),
+            });
         }
 
         const defines = <OpenPBRMaterialDefines>subMesh.materialDefines;
@@ -1835,7 +1701,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                const reflectionTexture = this._getReflectionTexture2();
+                const reflectionTexture = this._getReflectionTexture();
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (!reflectionTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -1861,36 +1727,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                     if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                         return false;
-                    }
-                }
-
-                if (MaterialFlags.SpecularTextureEnabled) {
-                    if (this._metallicTexture) {
-                        if (!this._metallicTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                    } else if (this._reflectivityTexture) {
-                        if (!this._reflectivityTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                    }
-
-                    if (this._metallicReflectanceTexture) {
-                        if (!this._metallicReflectanceTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                    }
-
-                    if (this._reflectanceTexture) {
-                        if (!this._reflectanceTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                    }
-
-                    if (this._microSurfaceTexture) {
-                        if (!this._microSurfaceTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
                     }
                 }
 
@@ -1993,31 +1829,20 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("vOpacityInfos", 2);
         ubo.addUniform("vEmissiveInfos", 2);
         ubo.addUniform("vLightmapInfos", 2);
-        ubo.addUniform("vReflectivityInfos", 3);
-        ubo.addUniform("vMicroSurfaceSamplerInfos", 2);
         ubo.addUniform("vBumpInfos", 3);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("emissiveMatrix", 16);
         ubo.addUniform("lightmapMatrix", 16);
-        ubo.addUniform("reflectivityMatrix", 16);
-        ubo.addUniform("microSurfaceSamplerMatrix", 16);
         ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("pointSize", 1);
-        ubo.addUniform("vReflectivityColor", 4);
         // ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("vAmbientColor", 3);
 
         ubo.addUniform("vDebugMode", 2);
-
-        ubo.addUniform("vMetallicReflectanceFactors", 4);
-        ubo.addUniform("vMetallicReflectanceInfos", 2);
-        ubo.addUniform("metallicReflectanceMatrix", 16);
-        ubo.addUniform("vReflectanceInfos", 2);
-        ubo.addUniform("reflectanceMatrix", 16);
 
         ubo.addUniform("cameraInfo", 4);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
@@ -2134,31 +1959,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
                     }
 
-                    if (MaterialFlags.SpecularTextureEnabled) {
-                        if (this._metallicTexture) {
-                            ubo.updateFloat3("vReflectivityInfos", this._metallicTexture.coordinatesIndex, this._metallicTexture.level, this._ambientTextureStrength);
-                            BindTextureMatrix(this._metallicTexture, ubo, "reflectivity");
-                        } else if (this._reflectivityTexture) {
-                            ubo.updateFloat3("vReflectivityInfos", this._reflectivityTexture.coordinatesIndex, this._reflectivityTexture.level, 1.0);
-                            BindTextureMatrix(this._reflectivityTexture, ubo, "reflectivity");
-                        }
-
-                        if (this._metallicReflectanceTexture) {
-                            ubo.updateFloat2("vMetallicReflectanceInfos", this._metallicReflectanceTexture.coordinatesIndex, this._metallicReflectanceTexture.level);
-                            BindTextureMatrix(this._metallicReflectanceTexture, ubo, "metallicReflectance");
-                        }
-
-                        if (this._reflectanceTexture && defines.REFLECTANCE) {
-                            ubo.updateFloat2("vReflectanceInfos", this._reflectanceTexture.coordinatesIndex, this._reflectanceTexture.level);
-                            BindTextureMatrix(this._reflectanceTexture, ubo, "reflectance");
-                        }
-
-                        if (this._microSurfaceTexture) {
-                            ubo.updateFloat2("vMicroSurfaceSamplerInfos", this._microSurfaceTexture.coordinatesIndex, this._microSurfaceTexture.level);
-                            BindTextureMatrix(this._microSurfaceTexture, ubo, "microSurfaceSampler");
-                        }
-                    }
-
                     if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
                         BindTextureMatrix(this._bumpTexture, ubo, "bump");
@@ -2176,22 +1976,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 // Point size
                 if (this.pointsCloud) {
                     ubo.updateFloat("pointSize", this.pointSize);
-                }
-
-                // Colors
-                if (defines.METALLICWORKFLOW) {
-                    TmpColors.Color4[0].r = this._metallic === undefined || this._metallic === null ? 1 : this._metallic;
-                    TmpColors.Color4[0].g = this._roughness === undefined || this._roughness === null ? 1 : this._roughness;
-                    const ior = 1.5;
-                    const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
-                    TmpColors.Color4[0].b = ior;
-                    // We are here deriving our default reflectance from a common value for none metallic surface.
-                    // Based of the schlick fresnel approximation model
-                    // for dielectrics.
-                    const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
-                    TmpColors.Color4[0].a = f0;
-                    ubo.updateDirectColor4("vReflectivityColor", TmpColors.Color4[0]);
-                    ubo.updateColor4("vMetallicReflectanceFactors", this._metallicReflectanceColor, this._metallicF0Factor);
                 }
 
                 // ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
@@ -2258,26 +2042,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                     ubo.setTexture("lightmapSampler", this._lightmapTexture);
-                }
-
-                if (MaterialFlags.SpecularTextureEnabled) {
-                    if (this._metallicTexture) {
-                        ubo.setTexture("reflectivitySampler", this._metallicTexture);
-                    } else if (this._reflectivityTexture) {
-                        ubo.setTexture("reflectivitySampler", this._reflectivityTexture);
-                    }
-
-                    if (this._metallicReflectanceTexture) {
-                        ubo.setTexture("metallicReflectanceSampler", this._metallicReflectanceTexture);
-                    }
-
-                    if (this._reflectanceTexture && defines.REFLECTANCE) {
-                        ubo.setTexture("reflectanceSampler", this._reflectanceTexture);
-                    }
-
-                    if (this._microSurfaceTexture) {
-                        ubo.setTexture("microSurfaceSampler", this._microSurfaceTexture);
-                    }
                 }
 
                 if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
@@ -2368,30 +2132,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             results.push(this._emissiveTexture);
         }
 
-        if (this._metallicTexture && this._metallicTexture.animations && this._metallicTexture.animations.length > 0) {
-            results.push(this._metallicTexture);
-        } else if (this._reflectivityTexture && this._reflectivityTexture.animations && this._reflectivityTexture.animations.length > 0) {
-            results.push(this._reflectivityTexture);
-        }
-
         if (this._bumpTexture && this._bumpTexture.animations && this._bumpTexture.animations.length > 0) {
             results.push(this._bumpTexture);
         }
 
         if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
             results.push(this._lightmapTexture);
-        }
-
-        if (this._metallicReflectanceTexture && this._metallicReflectanceTexture.animations && this._metallicReflectanceTexture.animations.length > 0) {
-            results.push(this._metallicReflectanceTexture);
-        }
-
-        if (this._reflectanceTexture && this._reflectanceTexture.animations && this._reflectanceTexture.animations.length > 0) {
-            results.push(this._reflectanceTexture);
-        }
-
-        if (this._microSurfaceTexture && this._microSurfaceTexture.animations && this._microSurfaceTexture.animations.length > 0) {
-            results.push(this._microSurfaceTexture);
         }
 
         return results;
@@ -2426,26 +2172,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (this._emissiveTexture) {
             activeTextures.push(this._emissiveTexture);
-        }
-
-        if (this._reflectivityTexture) {
-            activeTextures.push(this._reflectivityTexture);
-        }
-
-        if (this._metallicTexture) {
-            activeTextures.push(this._metallicTexture);
-        }
-
-        if (this._metallicReflectanceTexture) {
-            activeTextures.push(this._metallicReflectanceTexture);
-        }
-
-        if (this._reflectanceTexture) {
-            activeTextures.push(this._reflectanceTexture);
-        }
-
-        if (this._microSurfaceTexture) {
-            activeTextures.push(this._microSurfaceTexture);
         }
 
         if (this._bumpTexture) {
@@ -2493,26 +2219,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             return true;
         }
 
-        if (this._reflectivityTexture === texture) {
-            return true;
-        }
-
-        if (this._metallicTexture === texture) {
-            return true;
-        }
-
-        if (this._metallicReflectanceTexture === texture) {
-            return true;
-        }
-
-        if (this._reflectanceTexture === texture) {
-            return true;
-        }
-
-        if (this._microSurfaceTexture === texture) {
-            return true;
-        }
-
         if (this._bumpTexture === texture) {
             return true;
         }
@@ -2556,13 +2262,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._opacityTexture?.dispose();
             this._reflectionTexture?.dispose();
             this._emissiveTexture?.dispose();
-            this._metallicTexture?.dispose();
-            this._reflectivityTexture?.dispose();
             this._bumpTexture?.dispose();
             this._lightmapTexture?.dispose();
-            this._metallicReflectanceTexture?.dispose();
-            this._reflectanceTexture?.dispose();
-            this._microSurfaceTexture?.dispose();
         }
 
         this._renderTargets.dispose();
@@ -2724,7 +2425,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vEyePosition",
             "vLightsType",
             "vAmbientColor",
-            "vReflectivityColor",
             "vMetallicReflectanceFactors",
             "visibility",
             "vFogInfos",
@@ -2734,10 +2434,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vAmbientInfos",
             "vOpacityInfos",
             "vEmissiveInfos",
-            "vReflectivityInfos",
             "vMetallicReflectanceInfos",
             "vReflectanceInfos",
-            "vMicroSurfaceSamplerInfos",
             "vBumpInfos",
             "vLightmapInfos",
             "mBones",
@@ -2745,9 +2443,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "ambientMatrix",
             "opacityMatrix",
             "emissiveMatrix",
-            "reflectivityMatrix",
             "normalMatrix",
-            "microSurfaceSamplerMatrix",
             "bumpMatrix",
             "lightmapMatrix",
             "metallicReflectanceMatrix",
@@ -2773,7 +2469,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "bumpSampler",
             "lightmapSampler",
             "opacitySampler",
-            "microSurfaceSampler",
             "environmentBrdfSampler",
             "boneSampler",
             "metallicReflectanceSampler",
@@ -2904,14 +2599,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
-                defines.ALBEDODIRECTUV = 0;
-                defines.BASE_WEIGHTDIRECTUV = 0;
-                defines.BASE_DIFFUSE_ROUGHNESSDIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
                 defines.OPACITYDIRECTUV = 0;
                 defines.EMISSIVEDIRECTUV = 0;
                 defines.REFLECTIVITYDIRECTUV = 0;
-                defines.MICROSURFACEMAPDIRECTUV = 0;
                 defines.METALLIC_REFLECTANCEDIRECTUV = 0;
                 defines.REFLECTANCEDIRECTUV = 0;
                 defines.BUMPDIRECTUV = 0;
@@ -2924,10 +2615,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 // TODO - loop through samplers and prepare defines for each texture
                 for (const key in this._samplersList) {
                     const sampler = this._samplersList[key];
-                    defines[sampler.textureDefine + "DIRECTUV"] = 0;
                     if (sampler.value) {
                         PrepareDefinesForMergedUV(sampler.value, defines, sampler.textureDefine);
-                        defines["GAMMA" + sampler.textureDefine] = sampler.value.gammaSpace;
+                        defines[sampler.textureDefine + "_GAMMA"] = sampler.value.gammaSpace;
                     } else {
                         defines[sampler.textureDefine] = false;
                     }
@@ -2947,7 +2637,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.OPACITY = false;
                 }
 
-                const reflectionTexture = this._getReflectionTexture2();
+                const reflectionTexture = this._getReflectionTexture();
                 const useSHInFragment: boolean =
                     this._forceIrradianceInFragment ||
                     this.realTimeFiltering ||
@@ -2973,52 +2663,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
 
                 if (MaterialFlags.SpecularTextureEnabled) {
-                    if (this._metallicTexture) {
-                        PrepareDefinesForMergedUV(this._metallicTexture, defines, "REFLECTIVITY");
-                        defines.ROUGHNESSSTOREINMETALMAPALPHA = this._useRoughnessFromMetallicTextureAlpha;
-                        defines.ROUGHNESSSTOREINMETALMAPGREEN = !this._useRoughnessFromMetallicTextureAlpha && this._useRoughnessFromMetallicTextureGreen;
-                        defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallnessFromMetallicTextureBlue;
+                    if (this._baseMetalRoughTexture) {
                         defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
-                        defines.REFLECTIVITY_GAMMA = false;
-                    } else if (this._reflectivityTexture) {
-                        PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
-                        defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
-                        defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
-                        defines.REFLECTIVITY_GAMMA = this._reflectivityTexture.gammaSpace;
-                    } else {
-                        defines.REFLECTIVITY = false;
                     }
 
-                    if (this._metallicReflectanceTexture || this._reflectanceTexture) {
-                        defines.METALLIC_REFLECTANCE_USE_ALPHA_ONLY = this._useOnlyMetallicFromMetallicReflectanceTexture;
-                        if (this._metallicReflectanceTexture) {
-                            PrepareDefinesForMergedUV(this._metallicReflectanceTexture, defines, "METALLIC_REFLECTANCE");
-                            defines.METALLIC_REFLECTANCE_GAMMA = this._metallicReflectanceTexture.gammaSpace;
-                        } else {
-                            defines.METALLIC_REFLECTANCE = false;
-                        }
-                        if (
-                            this._reflectanceTexture &&
-                            (!this._metallicReflectanceTexture || (this._metallicReflectanceTexture && this._useOnlyMetallicFromMetallicReflectanceTexture))
-                        ) {
-                            PrepareDefinesForMergedUV(this._reflectanceTexture, defines, "REFLECTANCE");
-                            defines.REFLECTANCE_GAMMA = this._reflectanceTexture.gammaSpace;
-                        } else {
-                            defines.REFLECTANCE = false;
-                        }
-                    } else {
-                        defines.METALLIC_REFLECTANCE = false;
-                        defines.REFLECTANCE = false;
-                    }
-
-                    if (this._microSurfaceTexture) {
-                        PrepareDefinesForMergedUV(this._microSurfaceTexture, defines, "MICROSURFACEMAP");
-                    } else {
-                        defines.MICROSURFACEMAP = false;
-                    }
-                } else {
-                    defines.REFLECTIVITY = false;
-                    defines.MICROSURFACEMAP = false;
+                    defines.SPECULAR_WEIGHT_USE_ALPHA_ONLY = this._useSpecularWeightFromTextureAlpha;
                 }
 
                 if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
@@ -3087,8 +2736,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
             defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
             defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
-            defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
-            defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -3130,18 +2777,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
-    }
-
-    /**
-     * Returns the texture used for reflections.
-     * @returns - Reflection texture if present.  Otherwise, returns the environment texture.
-     */
-    private _getReflectionTexture2(): Nullable<BaseTexture> {
-        if (this._reflectionTexture) {
-            return this._reflectionTexture;
-        }
-
-        return this.getScene().environmentTexture;
     }
 }
 

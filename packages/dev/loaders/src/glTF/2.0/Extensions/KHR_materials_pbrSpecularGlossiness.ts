@@ -1,7 +1,6 @@
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -75,7 +74,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadSpecularGlossinessPropertiesAsync(context: string, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
+        if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -85,18 +84,10 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         babylonMaterial.roughness = null;
 
         if (properties.diffuseFactor) {
-            if (babylonMaterial instanceof OpenPBRMaterial) {
-                babylonMaterial.baseColor = Color3.FromArray(properties.diffuseFactor);
-            } else {
-                babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
-            }
+            babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
             babylonMaterial.alpha = properties.diffuseFactor[3];
         } else {
-            if (babylonMaterial instanceof OpenPBRMaterial) {
-                babylonMaterial.baseColor = Color3.White();
-            } else {
-                babylonMaterial.albedoColor = Color3.White();
-            }
+            babylonMaterial.albedoColor = Color3.White();
         }
 
         babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : Color3.White();
@@ -106,11 +97,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse)`;
-                    if (babylonMaterial instanceof OpenPBRMaterial) {
-                        babylonMaterial.baseColorTexture = texture;
-                    } else {
-                        babylonMaterial.albedoTexture = texture;
-                    }
+                    babylonMaterial.albedoTexture = texture;
                 })
             );
         }

@@ -6,19 +6,19 @@ uniform vec4 vEyePosition;
 #endif
 
 #ifdef ALBEDO
-uniform vec2 baseColorInfos;
+uniform vec2 vBaseColorInfos;
 uniform mat4 baseColorMatrix;
 #endif
 
 #ifdef BASE_WEIGHT
 uniform mat4 baseWeightMatrix;
-uniform vec2 baseWeightInfos;
+uniform vec2 vBaseWeightInfos;
 #endif
 
-uniform float baseDiffuseRoughness;
+uniform float vBaseDiffuseRoughness;
 #ifdef BASE_DIFFUSE_ROUGHNESS
 uniform mat4 baseDiffuseRoughnessMatrix;
-uniform vec2 baseDiffuseRoughnessInfos;
+uniform vec2 vBaseDiffuseRoughnessInfos;
 #endif
 
 #ifdef AMBIENT
@@ -41,9 +41,9 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#ifdef REFLECTIVITY
-uniform vec3 vReflectivityInfos;
-uniform mat4 reflectivityMatrix;
+#ifdef METALLIC_ROUGHNESS
+uniform vec2 vBaseMetalRoughInfos;
+uniform mat4 baseMetalRoughMatrix;
 #endif
 
 #ifdef METALLIC_REFLECTANCE
@@ -53,11 +53,6 @@ uniform mat4 reflectivityMatrix;
 #ifdef REFLECTANCE
     uniform vec2 vReflectanceInfos;
     uniform mat4 reflectanceMatrix;
-#endif
-
-#ifdef MICROSURFACEMAP
-uniform vec2 vMicroSurfaceSamplerInfos;
-uniform mat4 microSurfaceSamplerMatrix;
 #endif
 
 #ifdef BUMP
