@@ -3,9 +3,7 @@ import type { IPropertiesService } from "./propertiesService";
 
 import { TransformNode } from "core/Meshes/transformNode";
 
-import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
-import { PhysicsBodyProperties } from "../../../components/properties/physics/physicsProperties";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { TransformNodePhysicsProperties } from "../../../components/properties/physics/physicsProperties";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const PhysicsPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
@@ -18,22 +16,7 @@ export const PhysicsPropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             content: [
                 {
                     section: "Physics",
-                    component: ({ context: node }) => {
-                        const physicsBody = useProperty(node, "physicsBody");
-
-                        if (!physicsBody) {
-                            return (
-                                <MessageBar
-                                    intent="info"
-                                    title="No Physics Body"
-                                    message="To modify physics properties, attach a physics body to this node."
-                                    docLink="https://doc.babylonjs.com/features/featuresDeepDive/physics/rigidBodies"
-                                />
-                            );
-                        }
-
-                        return <PhysicsBodyProperties physicsBody={physicsBody} />;
-                    },
+                    component: ({ context: node }) => <TransformNodePhysicsProperties node={node} />,
                 },
             ],
         });
