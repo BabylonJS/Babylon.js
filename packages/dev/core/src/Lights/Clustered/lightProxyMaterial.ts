@@ -13,13 +13,15 @@ export class LightProxyMaterial extends ShaderMaterial {
     constructor(name: string, clusteredLight: ClusteredLight) {
         const engine = clusteredLight.getEngine();
         const shader = { vertex: "lightProxy", fragment: "lightProxy" };
+        // The angle between two vertical segments on the sphere
+        const segmentAngle = Math.PI / (clusteredLight.proxySegments + 2);
 
         super(name, clusteredLight._scene, shader, {
             attributes: ["position"],
             uniforms: ["world"],
             uniformBuffers: ["Scene", "Mesh", "Light0"],
             storageBuffers: ["tileMaskBuffer0"],
-            defines: ["LIGHT0", "CLUSTLIGHT0", `CLUSTLIGHT_MAX ${clusteredLight.maxLights}`, "CLUSTLIGHT_WRITE"],
+            defines: ["LIGHT0", "CLUSTLIGHT0", "CLUSTLIGHT_WRITE", `CLUSTLIGHT_MAX ${clusteredLight.maxLights}`, `SEGMENT_ANGLE ${segmentAngle}`],
             shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (engine.isWebGPU) {
@@ -34,6 +36,8 @@ export class LightProxyMaterial extends ShaderMaterial {
         this.cullBackFaces = false;
         this.transparencyMode = ShaderMaterial.MATERIAL_ALPHABLEND;
         this.alphaMode = Constants.ALPHA_ADD;
+
+        // this.fillMode = Constants.MATERIAL_WireFrameFillMode;
     }
 
     public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
