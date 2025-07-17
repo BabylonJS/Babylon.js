@@ -2,7 +2,7 @@ import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import { SyncedSliderInput } from "../../primitives/syncedSlider";
 import type { SyncedSliderProps } from "../../primitives/syncedSlider";
-import type { FunctionComponent } from "react";
+import { forwardRef } from "react";
 
 type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps;
 /**
@@ -10,11 +10,11 @@ type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps;
  * @param props
  * @returns
  */
-export const SyncedSliderPropertyLine: FunctionComponent<SyncedSliderPropertyProps> = (props): React.ReactElement => {
+export const SyncedSliderPropertyLine = forwardRef<HTMLDivElement, SyncedSliderPropertyProps>((props, ref): React.ReactElement => {
     const { label, description, ...sliderProps } = props;
     return (
-        <PropertyLine label={label} description={description}>
+        <PropertyLine ref={ref} label={label} description={description}>
             <SyncedSliderInput {...sliderProps} />
         </PropertyLine>
     );
-};
+});

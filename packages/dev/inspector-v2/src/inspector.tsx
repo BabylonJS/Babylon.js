@@ -12,6 +12,7 @@ import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
 import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
@@ -218,6 +219,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SpotLightPropertiesServiceDefinition,
             SpritePropertiesServiceDefinition,
             ParticleSystemPropertiesServiceDefinition,
+            CameraPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
