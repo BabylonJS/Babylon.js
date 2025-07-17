@@ -290,7 +290,7 @@ export async function ExpectValueToBeCloseTo(page: Page, actual: number, expecte
     } else {
         // For "Realtime" contexts, expect larger range due to timing variations.
         const halfRange = realtimeRange / 2;
-        expect(actual).toBeGreaterThan(expected - halfRange);
+        expect(actual).toBeGreaterThanOrEqual(expected - halfRange);
         expect(actual).toBeLessThanOrEqual(expected + halfRange);
     }
 }
