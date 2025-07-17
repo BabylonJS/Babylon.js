@@ -15,7 +15,7 @@ uniform float visibility;
 uniform vec3 vAmbientColor;
 
 // Samplers
-#ifdef ALBEDO
+#ifdef BASE_COLOR
 uniform vec2 vBaseColorInfos;
 #endif
 

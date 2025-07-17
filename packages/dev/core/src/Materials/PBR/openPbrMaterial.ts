@@ -483,7 +483,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public baseColorTexture: BaseTexture;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _baseColorTexture: Sampler = new Sampler("base_color", "baseColor", "ALBEDO");
+    private _baseColorTexture: Sampler = new Sampler("base_color", "baseColor", "BASE_COLOR");
 
     /**
      * Roughness of the diffuse lobe.
