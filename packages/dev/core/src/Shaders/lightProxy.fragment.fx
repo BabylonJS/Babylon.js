@@ -1,4 +1,3 @@
-// Input
 flat varying highp uint vMask;
 
 void main(void) {

@@ -182,12 +182,12 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 
 #if defined(CLUSTLIGHT_MAX) && CLUSTLIGHT_MAX > 0
 #define inline
-lightingInfo computeClusteredLighting(sampler2D lightMask, vec3 viewDirectionW, vec3 vNormal, vec4 lightData, ClusteredLight lights[CLUSTLIGHT_MAX], vec3 diffuseScale, vec3 specularScale, float glossiness) {
+lightingInfo computeClusteredLighting(sampler2D tileMask, vec3 viewDirectionW, vec3 vNormal, vec4 lightData, SpotLight lights[CLUSTLIGHT_MAX], vec3 diffuseScale, vec3 specularScale, float glossiness) {
 	lightingInfo result;
-	vec4 maskTexel = texelFetch(lightMask, ivec2(gl_FragCoord.xy * lightData.xy), 0);
+	vec4 maskTexel = texelFetch(tileMask, ivec2(gl_FragCoord.xy * lightData.xy), 0);
 	uint mask = uint(maskTexel.r);
-	int len = int(lightData.z);
 
+	int len = int(lightData.w);
 	for (int i = 0; i < len; i += 1) {
 		if ((mask & (1u << i)) == 0u) {
 			continue;

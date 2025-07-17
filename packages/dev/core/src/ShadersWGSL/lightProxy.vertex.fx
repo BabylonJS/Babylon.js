@@ -6,7 +6,7 @@ flat varying vMask: u32;
 #include<meshUboDeclaration>
 #include<instancesDeclaration>
 
-#include<clusteredLightFunctions>
+#include<spotLightDeclaration>
 #include<lightVxUboDeclaration>[0..1]
 
 const DOWN = vec3f(0, -1, 0);

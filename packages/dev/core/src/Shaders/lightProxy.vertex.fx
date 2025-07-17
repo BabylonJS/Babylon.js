@@ -1,30 +1,28 @@
-// Uniform Buffers
-#include<sceneUboDeclaration>
-#include<meshUboDeclaration>
-
-#include<lightClusteredDeclaration>
-#include<lightVxUboDeclaration>[0..1]
-
-// Attributes
 attribute vec3 position;
-#include<instancesDeclaration>
-
-// Output
 flat varying highp uint vMask;
 
+// Declarations
+#include<sceneUboDeclaration>
+#include<meshUboDeclaration>
+#include<instancesDeclaration>
+
+#include<spotLightDeclaration>
+#include<lightVxUboDeclaration>[0..1]
+
 // TODO: switch default direction to up??
-const vec3 down = vec3(0, -1, 0);
+const vec3 DOWN = vec3(0, -1, 0);
 
 float acosClamped(float v) {
     return acos(clamp(v, 0.0, 1.0));
 }
 
 void main(void) {
-    float lightAngle = acosClamped(light0.vLights[gl_InstanceID].direction.a);
-    float posAngle = acosClamped(dot(down, position));
-
+    float maxAngle = acosClamped(light0.vLights[gl_InstanceID].direction.a);
     // We allow some wiggle room equal to the rotation of one slice of the sphere
-    vec3 positionUpdated = posAngle - lightAngle < 0.32 ? position : vec3(0);
+    maxAngle += 0.32;
+
+    float angle = acosClamped(dot(DOWN, position));
+    vec3 positionUpdated = angle < maxAngle ? position : vec3(0);
     positionUpdated *= light0.vLights[gl_InstanceID].diffuse.a;
 
 #include<instancesVertex>

@@ -12,7 +12,7 @@
 		#elif defined(HEMILIGHT{X})
 			vLightGround: vec3f,
 		#elif defined(CLUSTLIGHT{X})
-			vLights: array<ClusteredLight, 32>,
+			vLights: array<SpotLight, CLUSTLIGHT_MAX>,
 		#endif
 		#if defined(AREALIGHT{X})
 			vLightWidth: vec4f,
@@ -39,8 +39,7 @@ var<uniform> light{X} : Light{X};
 #ifdef CLUSTLIGHT_WRITE
 	var<storage, read_write> tileMaskBuffer{X}: array<atomic<u32>>;
 #else
-	// TODO: try to make read-only
-	var<storage, read_write> tileMaskBuffer{X}: array<u32>;
+	var<storage, read> tileMaskBuffer{X}: array<u32>;
 #endif
 #endif
 
