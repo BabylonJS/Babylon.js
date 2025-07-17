@@ -27,30 +27,20 @@ uniform Material {
     vec2 vOpacityInfos;
     vec2 vEmissiveInfos;
     vec2 vLightmapInfos;
-    vec3 vReflectivityInfos;
-    vec2 vMicroSurfaceSamplerInfos;
     vec3 vBumpInfos;
     
     mat4 ambientMatrix;
     mat4 opacityMatrix;
     mat4 emissiveMatrix;
     mat4 lightmapMatrix;
-    mat4 reflectivityMatrix;
-    mat4 microSurfaceSamplerMatrix;
     mat4 bumpMatrix;
     vec2 vTangentSpaceParams;
     vec4 vLightingIntensity;
     float pointSize;
-    vec4 vReflectivityColor;
     vec3 vAmbientColor;
 
     vec2 vDebugMode;
 
-    vec4 vMetallicReflectanceFactors;
-    vec2 vMetallicReflectanceInfos;
-    mat4 metallicReflectanceMatrix;
-    vec2 vReflectanceInfos;
-    mat4 reflectanceMatrix;
     vec4 cameraInfo;
 
     vec2 vReflectionInfos;
@@ -84,15 +74,24 @@ uniform Material {
 
     float baseWeight;
     vec4 vBaseColor;
-    float baseDiffuseRoughness;
+    float vBaseDiffuseRoughness;
+    vec4 vReflectanceInfo;
+    vec4 vSpecularColor;
     vec3 vEmissiveColor;
 
-    vec2 baseWeightInfos;
+    vec2 vBaseWeightInfos;
     mat4 baseWeightMatrix;
-    vec2 baseColorInfos;
+    vec2 vBaseColorInfos;
     mat4 baseColorMatrix;
-    vec2 baseDiffuseRoughnessInfos;
+    vec2 vBaseDiffuseRoughnessInfos;
     mat4 baseDiffuseRoughnessMatrix;
+    vec2 vBaseMetalRoughInfos;
+    mat4 baseMetalRoughMatrix;
+    vec2 vSpecularWeightInfos;
+    mat4 specularWeightMatrix;
+    vec2 vSpecularColorInfos;
+    mat4 specularColorMatrix;
+
 #define ADDITIONAL_UBO_DECLARATION
 };
 
