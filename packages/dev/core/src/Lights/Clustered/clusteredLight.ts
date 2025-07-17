@@ -303,20 +303,12 @@ export class ClusteredLight extends Light {
 
         for (let i = 0; i < len; i += 1) {
             const light = this._lights[i];
-            const spotLight = light instanceof SpotLight ? light : null;
             const struct = `vLights[${i}].`;
 
-            let position: Vector3;
-            let direction: Vector3;
-            if (light.computeTransformedInformation()) {
-                position = light.transformedPosition;
-                direction = Vector3.Normalize(light.transformedDirection);
-            } else {
-                position = light.position;
-                direction = Vector3.Normalize(light.direction);
-            }
-            this._uniformBuffer.updateFloat4(struct + "position", position.x, position.y, position.z, spotLight?.exponent ?? 0, lightIndex);
-            this._uniformBuffer.updateFloat4(struct + "direction", direction.x, direction.y, direction.z, spotLight?._cosHalfAngle ?? -1, lightIndex);
+            const computed = light.computeTransformedInformation();
+            const position = computed ? light.transformedPosition : light.position;
+            const exponent = light instanceof SpotLight ? light.exponent : 0;
+            this._uniformBuffer.updateFloat4(struct + "position", position.x, position.y, position.z, exponent, lightIndex);
 
             const scaledIntensity = light.getScaledIntensity();
             light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
@@ -324,14 +316,14 @@ export class ClusteredLight extends Light {
             light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
             this._uniformBuffer.updateColor4(struct + "specular", TmpColors.Color3[1], light.radius, lightIndex);
 
-            this._uniformBuffer.updateFloat4(
-                struct + "falloff",
-                light.range,
-                light._inverseSquaredRange,
-                spotLight?._lightAngleScale ?? 0,
-                spotLight?._lightAngleOffset ?? 0,
-                lightIndex
-            );
+            if (light instanceof SpotLight) {
+                const direction = Vector3.Normalize(computed ? light.transformedDirection : light.direction);
+                this._uniformBuffer.updateFloat4(struct + "direction", direction.x, direction.y, direction.z, light._cosHalfAngle, lightIndex);
+                this._uniformBuffer.updateFloat4(struct + "falloff", light.range, light._inverseSquaredRange, light._lightAngleScale, light._lightAngleOffset, lightIndex);
+            } else {
+                this._uniformBuffer.updateFloat4(struct + "direction", 0, 1, 0, -1, lightIndex);
+                this._uniformBuffer.updateFloat4(struct + "falloff", light.range, light._inverseSquaredRange, 0.5, 0.5, lightIndex);
+            }
         }
         return this;
     }
