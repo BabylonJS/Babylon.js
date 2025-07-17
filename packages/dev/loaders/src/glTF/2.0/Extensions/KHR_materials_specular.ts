@@ -90,32 +90,62 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
         const promises = new Array<Promise<any>>();
 
-        if (properties.specularFactor !== undefined) {
-            babylonMaterial.metallicF0Factor = properties.specularFactor;
-        }
+        if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (properties.specularFactor !== undefined) {
+                babylonMaterial.specularWeight = properties.specularFactor;
+            }
 
-        if (properties.specularColorFactor !== undefined) {
-            babylonMaterial.metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
-        }
+            if (properties.specularColorFactor !== undefined) {
+                babylonMaterial.specularColor = Color3.FromArray(properties.specularColorFactor);
+            }
 
-        if (properties.specularTexture) {
-            (properties.specularTexture as ITextureInfo).nonColorData = true;
-            promises.push(
-                this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Specular)`;
-                    babylonMaterial.metallicReflectanceTexture = texture;
-                    babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
-                })
-            );
-        }
+            if (properties.specularTexture) {
+                (properties.specularTexture as ITextureInfo).nonColorData = true;
+                promises.push(
+                    this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
+                        texture.name = `${babylonMaterial.name} (Specular)`;
+                        babylonMaterial.specularWeightTexture = texture;
+                        babylonMaterial.useSpecularWeightFromTextureAlpha = true;
+                    })
+                );
+            }
 
-        if (properties.specularColorTexture) {
-            promises.push(
-                this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Specular Color)`;
-                    babylonMaterial.reflectanceTexture = texture;
-                })
-            );
+            if (properties.specularColorTexture) {
+                promises.push(
+                    this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
+                        texture.name = `${babylonMaterial.name} (Specular Color)`;
+                        babylonMaterial.specularColorTexture = texture;
+                    })
+                );
+            }
+        } else {
+            if (properties.specularFactor !== undefined) {
+                babylonMaterial.metallicF0Factor = properties.specularFactor;
+            }
+
+            if (properties.specularColorFactor !== undefined) {
+                babylonMaterial.metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
+            }
+
+            if (properties.specularTexture) {
+                (properties.specularTexture as ITextureInfo).nonColorData = true;
+                promises.push(
+                    this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
+                        texture.name = `${babylonMaterial.name} (Specular)`;
+                        babylonMaterial.metallicReflectanceTexture = texture;
+                        babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+                    })
+                );
+            }
+
+            if (properties.specularColorTexture) {
+                promises.push(
+                    this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
+                        texture.name = `${babylonMaterial.name} (Specular Color)`;
+                        babylonMaterial.reflectanceTexture = texture;
+                    })
+                );
+            }
         }
 
         // eslint-disable-next-line github/no-then
