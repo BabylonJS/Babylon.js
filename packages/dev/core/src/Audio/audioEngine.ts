@@ -23,6 +23,7 @@ AbstractEngine.AudioEngineFactory = (
 export class AudioEngine implements IAudioEngine {
     private _audioContext: Nullable<AudioContext> = null;
     private _masterGain: GainNode;
+    private _tryToRun = false;
     private _useCustomUnlockedButton: boolean = false;
 
     /**
@@ -94,6 +95,11 @@ export class AudioEngine implements IAudioEngine {
      * Gets the current AudioContext if available.
      */
     public get audioContext(): Nullable<AudioContext> {
+        if (this._v2.state === "running") {
+            // Do not wait for the promise to unlock.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._triggerRunningStateAsync();
+        }
         return this._v2._audioContext;
     }
 
@@ -123,14 +129,6 @@ export class AudioEngine implements IAudioEngine {
         this._masterGain = new GainNode(v2._audioContext);
         v2._audioDestination = audioDestination;
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-        v2._initAsync({ resumeOnInteraction: false, resumeOnPause: false }).then(() => {
-            v2.mainOut._inNode = this._masterGain;
-        });
-
-        this.isMP3supported = v2.isFormatValid("mp3");
-        this.isOGGsupported = v2.isFormatValid("ogg");
-
         v2.stateChangedObservable.add((state) => {
             if (state === "running") {
                 this.unlocked = true;
@@ -140,6 +138,15 @@ export class AudioEngine implements IAudioEngine {
                 this.onAudioLockedObservable.notifyObservers(this);
             }
         });
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+        v2._initAsync({ resumeOnInteraction: false, resumeOnPause: false }).then(() => {
+            v2.mainOut._inNode = this._masterGain;
+            v2.stateChangedObservable.notifyObservers(v2.state);
+        });
+
+        this.isMP3supported = v2.isFormatValid("mp3");
+        this.isOGGsupported = v2.isFormatValid("ogg");
 
         this._v2 = v2;
     }
@@ -162,8 +169,18 @@ export class AudioEngine implements IAudioEngine {
      * This is helpful to resume play once browser policies have been satisfied.
      */
     public unlock() {
+        if (this._audioContext?.state === "running") {
+            if (!this.unlocked) {
+                // Notify users that the audio stack is unlocked/unmuted
+                this.unlocked = true;
+                this.onAudioUnlockedObservable.notifyObservers(this);
+            }
+
+            return;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._v2.unlockAsync();
+        this._triggerRunningStateAsync();
     }
 
     /** @internal */
@@ -233,5 +250,19 @@ export class AudioEngine implements IAudioEngine {
         this._connectedAnalyser = analyser;
         this.masterGain.disconnect();
         this._connectedAnalyser.connectAudioNodes(this.masterGain, this._v2._audioContext.destination);
+    }
+
+    private async _triggerRunningStateAsync() {
+        if (this._tryToRun) {
+            return;
+        }
+        this._tryToRun = true;
+
+        await this._resumeAudioContextAsync();
+
+        this._tryToRun = false;
+        this.unlocked = true;
+
+        this.onAudioUnlockedObservable.notifyObservers(this);
     }
 }
