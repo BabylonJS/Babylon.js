@@ -286,6 +286,7 @@ export class NativeEngine extends Engine {
             maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
             maxVertexUniformVectors: 16,
+            shaderFloatPrecision: 23, // TODO: is this correct?
             standardDerivatives: true,
             astc: null,
             pvrtc: null,
@@ -297,6 +298,7 @@ export class NativeEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
+            blendFloat: false,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             textureFloat: true,

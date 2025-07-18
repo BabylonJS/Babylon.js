@@ -45,6 +45,10 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 }
 
 fn getAttenuation(cosAngle: f32, exponent: f32) -> f32 {
+	if (exponent == 0.0) {
+		// Undefined behaviour can occur if exponent == 0, the result in reality should always be 1
+		return 1.0;
+	}
 	return max(0., pow(cosAngle, exponent));
 }
 
@@ -179,3 +183,35 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 
 // End Area Light
 #endif
+
+fn computeClusteredLighting(
+	tileMask: ptr<storage, array<u32>>,
+	viewDirectionW: vec3f,
+	vNormal: vec3f,
+	lightData: vec4f,
+	lights: ptr<uniform, array<SpotLight, CLUSTLIGHT_MAX>>,
+	diffuseScale: vec3f,
+	specularScale: vec3f,
+	glossiness: f32
+) -> lightingInfo {
+	var result: lightingInfo;
+	let tilePos = vec2u(fragmentInputs.position.xy * lightData.xy);
+	let strideLen = vec2u(lightData.zw);
+	let mask = tileMask[tilePos.y * strideLen.x + tilePos.x];
+
+	// TODO: merge subgroups
+
+	for (var i = 0u; i < strideLen.y; i += 1u) {
+		if (mask & (1u << i)) == 0 {
+			continue;
+		}
+		let diffuse = lights[i].diffuse.rgb * diffuseScale;
+		let specular = lights[i].specular.rgb * specularScale;
+		let info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse, specular, lights[i].diffuse.a, glossiness);
+		result.diffuse += info.diffuse;
+		#ifdef SPECULARTERM
+			result.specular += info.specular;
+		#endif
+	}
+	return result;
+}

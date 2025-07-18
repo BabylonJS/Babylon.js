@@ -206,6 +206,8 @@
                     uniforms.vReflectionInfos.y
                 #endif
                     );
+            #elif defined(CLUSTLIGHT{X})
+                info = computeClusteredLighting(&tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, &light{X}.vLights, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, glossiness);
             #endif
         #endif
 

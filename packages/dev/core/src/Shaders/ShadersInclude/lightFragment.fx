@@ -205,6 +205,8 @@
                     vReflectionInfos.y
                 #endif
                 );
+            #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_MAX > 0
+                info = computeClusteredLighting{X}(viewDirectionW, normalW, diffuse{X}.rgb, glossiness);
             #endif
         #endif
 

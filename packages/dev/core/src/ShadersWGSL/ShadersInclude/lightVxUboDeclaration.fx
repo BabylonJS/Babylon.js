@@ -11,6 +11,8 @@
 			vLightFalloff: vec4f,
 		#elif defined(HEMILIGHT{X})
 			vLightGround: vec3f,
+		#elif defined(CLUSTLIGHT{X})
+			vLights: array<SpotLight, CLUSTLIGHT_MAX>,
 		#endif
 		#if defined(AREALIGHT{X})
 			vLightWidth: vec4f,
