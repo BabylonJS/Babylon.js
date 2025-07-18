@@ -1,0 +1,111 @@
+uniform mat4 view;
+uniform mat4 viewProjection;
+uniform vec4 vEyePosition;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif
+
+#ifdef BASE_COLOR
+uniform vec2 vBaseColorInfos;
+uniform mat4 baseColorMatrix;
+#endif
+
+#ifdef BASE_WEIGHT
+uniform mat4 baseWeightMatrix;
+uniform vec2 vBaseWeightInfos;
+#endif
+
+uniform float vBaseDiffuseRoughness;
+#ifdef BASE_DIFFUSE_ROUGHNESS
+uniform mat4 baseDiffuseRoughnessMatrix;
+uniform vec2 vBaseDiffuseRoughnessInfos;
+#endif
+
+#ifdef GEOMETRY_OPACITY
+uniform mat4 geometryOpacityMatrix;
+uniform vec2 vGeometryOpacityInfos;
+#endif
+
+#ifdef AMBIENT_OCCLUSION
+uniform vec2 vAmbientOcclusionInfos;
+uniform mat4 ambientOcclusionMatrix;
+#endif
+
+#ifdef EMISSION
+uniform vec2 vEmissionInfos;
+uniform mat4 emissionMatrix;
+#endif
+
+#ifdef LIGHTMAP
+uniform vec2 vLightmapInfos;
+uniform mat4 lightmapMatrix;
+#endif
+
+#ifdef METALLIC_ROUGHNESS
+uniform vec2 vBaseMetalRoughInfos;
+uniform mat4 baseMetalRoughMatrix;
+#endif
+
+#ifdef SPECULAR_WEIGHT
+uniform vec2 vSpecularWeightInfos;
+uniform mat4 specularWeightMatrix;
+#endif
+
+#ifdef SPECULAR_COLOR
+uniform vec2 vSpecularColorInfos;
+uniform mat4 specularColorMatrix;
+#endif
+
+#ifdef BUMP
+uniform vec3 vBumpInfos;
+uniform mat4 bumpMatrix;
+#endif
+
+#ifdef POINTSIZE
+uniform float pointSize;
+#endif
+
+uniform vec4 cameraInfo;
+
+// Reflection
+#ifdef REFLECTION
+    uniform vec2 vReflectionInfos;
+    uniform mat4 reflectionMatrix;
+#endif
+
+#ifdef NORMAL
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
+        #ifdef USESPHERICALFROMREFLECTIONMAP
+            #ifdef SPHERICAL_HARMONICS
+                uniform vec3 vSphericalL00;
+                uniform vec3 vSphericalL1_1;
+                uniform vec3 vSphericalL10;
+                uniform vec3 vSphericalL11;
+                uniform vec3 vSphericalL2_2;
+                uniform vec3 vSphericalL2_1;
+                uniform vec3 vSphericalL20;
+                uniform vec3 vSphericalL21;
+                uniform vec3 vSphericalL22;
+            #else
+                uniform vec3 vSphericalX;
+                uniform vec3 vSphericalY;
+                uniform vec3 vSphericalZ;
+                uniform vec3 vSphericalXX_ZZ;
+                uniform vec3 vSphericalYY_ZZ;
+                uniform vec3 vSphericalZZ;
+                uniform vec3 vSphericalXY;
+                uniform vec3 vSphericalYZ;
+                uniform vec3 vSphericalZX;
+            #endif
+        #endif
+    #endif
+#endif
+
+#ifdef DETAIL
+uniform vec4 vDetailInfos;
+uniform mat4 detailMatrix;
+#endif
+
+#include<decalVertexDeclaration>
+
+#define ADDITIONAL_VERTEX_DECLARATION
