@@ -1,7 +1,7 @@
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -21,6 +21,8 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_unlit"]: {};
     }
 }
+
+let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md)
@@ -61,51 +63,56 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync(context, material, this.name, async () => {
-            return await this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
+            if (useOpenPBR) {
+                const mod = await import("core/Materials/PBR/openPbrMaterial");
+                PBRMaterialClass = mod.OpenPBRMaterial;
+            } else {
+                const mod = await import("core/Materials/PBR/pbrMaterial");
+                PBRMaterialClass = mod.PBRMaterial;
+            }
+            return await this._loadUnlitPropertiesAsync(context, material, babylonMaterial, useOpenPBR);
         });
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
+    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Promise<void> {
+        if (!(babylonMaterial instanceof PBRMaterialClass)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
         babylonMaterial.unlit = true;
-
+        let baseColor: Color3 = Color3.White();
+        let alpha: number = 1;
         const properties = material.pbrMetallicRoughness;
         if (properties) {
             if (properties.baseColorFactor) {
-                if (babylonMaterial instanceof OpenPBRMaterial) {
-                    babylonMaterial.baseColor = Color3.FromArray(properties.baseColorFactor);
-                } else {
-                    babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
-                }
-
-                babylonMaterial.alpha = properties.baseColorFactor[3];
-            } else {
-                if (babylonMaterial instanceof OpenPBRMaterial) {
-                    babylonMaterial.baseColor = Color3.White();
-                } else {
-                    babylonMaterial.albedoColor = Color3.White();
-                }
+                baseColor = Color3.FromArray(properties.baseColorFactor);
+                alpha = properties.baseColorFactor[3];
             }
 
             if (properties.baseColorTexture) {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        if (babylonMaterial instanceof OpenPBRMaterial) {
-                            babylonMaterial.baseColorTexture = texture;
+                        if (useOpenPBR) {
+                            (babylonMaterial as OpenPBRMaterial).baseColorTexture = texture;
                         } else {
-                            babylonMaterial.albedoTexture = texture;
+                            (babylonMaterial as PBRMaterial).albedoTexture = texture;
                         }
                     })
                 );
             }
+        }
+
+        if (useOpenPBR) {
+            (babylonMaterial as OpenPBRMaterial).baseColor = baseColor;
+            (babylonMaterial as OpenPBRMaterial).geometryOpacity = alpha;
+        } else {
+            (babylonMaterial as PBRMaterial).albedoColor = baseColor;
+            (babylonMaterial as PBRMaterial).alpha = alpha;
         }
 
         if (material.doubleSided) {
