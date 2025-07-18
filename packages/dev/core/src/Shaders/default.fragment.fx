@@ -37,6 +37,9 @@ varying vec4 vColor;
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
+// WebGL does not support passing uniform arrays by reference and the copy heavily impacts performance.
+// Bit of a hacky solution but we can just create a function per clustered light that references the uniforms directly.
+#include<clusteredLightFunctions>[0..maxSimultaneousLights]
 
 // Samplers
 #include<samplerFragmentDeclaration>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse,_SAMPLERNAME_,diffuse)

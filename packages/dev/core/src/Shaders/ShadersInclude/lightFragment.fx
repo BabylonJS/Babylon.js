@@ -206,7 +206,7 @@
                 #endif
                 );
             #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_MAX > 0
-                info = computeClusteredLighting(tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, light{X}.vLights, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, glossiness);
+                info = computeClusteredLighting{X}(viewDirectionW, normalW, diffuse{X}.rgb, glossiness);
             #endif
         #endif
 

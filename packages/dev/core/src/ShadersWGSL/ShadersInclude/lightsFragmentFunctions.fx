@@ -45,6 +45,10 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 }
 
 fn getAttenuation(cosAngle: f32, exponent: f32) -> f32 {
+	if (exponent == 0.0) {
+		// Undefined behaviour can occur if exponent == 0, the result in reality should always be 1
+		return 1.0;
+	}
 	return max(0., pow(cosAngle, exponent));
 }
 
@@ -203,7 +207,7 @@ fn computeClusteredLighting(
 		}
 		let diffuse = lights[i].diffuse.rgb * diffuseScale;
 		let specular = lights[i].specular.rgb * specularScale;
-		let info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse.rgb, specular, lights[i].diffuse.a, glossiness);
+		let info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse, specular, lights[i].diffuse.a, glossiness);
 		result.diffuse += info.diffuse;
 		#ifdef SPECULARTERM
 			result.specular += info.specular;
