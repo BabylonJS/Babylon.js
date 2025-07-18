@@ -7,7 +7,6 @@ import type { IWebAudioInNode } from "./webAudioNode";
 
 /** @internal */
 export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
-    private _destinationNode: AudioDestinationNode;
     private _gainNode: GainNode;
     private _volume: _WebAudioParameterComponent;
 
@@ -18,14 +17,7 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        const audioContext = engine._audioContext;
-
-        this._gainNode = new GainNode(audioContext);
-        this._destinationNode = audioContext.destination;
-
-        this._gainNode.connect(this._destinationNode);
-
-        this._volume = new _WebAudioParameterComponent(this.engine, this._gainNode.gain);
+        this._setGainNode(new GainNode(engine._audioContext));
     }
 
     /** @internal */
@@ -38,8 +30,16 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     }
 
     /** @internal */
-    public get _inNode(): AudioNode {
+    public get _inNode(): GainNode {
         return this._gainNode;
+    }
+
+    public set _inNode(value: GainNode) {
+        if (this._gainNode === value) {
+            return;
+        }
+
+        this._setGainNode(value);
     }
 
     /** @internal */
@@ -52,6 +52,10 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
         this._volume.targetValue = value;
     }
 
+    private get _destinationNode(): AudioNode {
+        return this.engine._audioDestination;
+    }
+
     /** @internal */
     public getClassName(): string {
         return "_WebAudioMainOut";
@@ -60,5 +64,18 @@ export class _WebAudioMainOut extends _MainAudioOut implements IWebAudioInNode {
     /** @internal */
     public setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
         this._volume.setTargetValue(value, options);
+    }
+
+    private _setGainNode(gainNode: GainNode): void {
+        if (this._gainNode === gainNode) {
+            return;
+        }
+
+        this._gainNode?.disconnect();
+        gainNode.connect(this._destinationNode);
+
+        this._volume = new _WebAudioParameterComponent(this.engine, gainNode.gain);
+
+        this._gainNode = gainNode;
     }
 }

@@ -11,13 +11,15 @@ import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { AudioTestHelper } from "./helpers/audioTestHelper";
 
-// Required for timers (eg. setTimeout) to work.
-jest.useFakeTimers();
+function createAudioEngine(state: string): AudioEngine {
+    const audioContext = new AudioContext();
+    (audioContext as any).state = state;
+    return (AbstractEngine.audioEngine = new AudioEngine(null, audioContext, null));
+}
 
 describe("AudioEngine", () => {
     AudioTestSamples.Initialize();
 
-    let audioEngine: AudioEngine;
     let engine: NullEngine;
     let mock: MockedAudioObjects;
     let scene: Scene;
@@ -26,7 +28,6 @@ describe("AudioEngine", () => {
         mock = new MockedAudioObjects();
         engine = new NullEngine();
         scene = new Scene(engine);
-        audioEngine = AbstractEngine.audioEngine = new AudioEngine(null, new AudioContext(), null);
     });
 
     afterEach(() => {
@@ -35,24 +36,19 @@ describe("AudioEngine", () => {
 
         engine.dispose();
         (engine as any) = null;
-        (audioEngine as any) = null;
 
         mock.dispose();
         (mock as any) = null;
     });
 
     it("unlocked is initialized to false when browser requires user interaction", () => {
-        mock.audioContext.state = "suspended";
-
-        AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
+        const audioEngine = createAudioEngine("suspended");
 
         expect(audioEngine.unlocked).toBe(false);
     });
 
     it("unlocked is initialized to true when browser does not require user interaction", async () => {
-        mock.audioContext.state = "running";
-
-        AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
+        const audioEngine = createAudioEngine("running");
 
         await new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -69,28 +65,34 @@ describe("AudioEngine", () => {
     });
 
     it("should not show mute button until a sound plays when browser requires user interaction", () => {
-        mock.audioContext.state = "suspended";
+        jest.useFakeTimers();
+
+        const audioEngine = createAudioEngine("suspended");
+
         const arrayBuffer = AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz");
         const sound = new Sound(expect.getState().currentTestName, arrayBuffer);
 
-        expect((audioEngine as any)._muteButton).toBe(null);
+        expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("none");
 
         sound.play();
         AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
 
-        expect((audioEngine as any)._muteButton).not.toBe(null);
+        expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("block");
     });
 
     it("should not show mute button when sound plays and browser does not require user interaction", () => {
-        mock.audioContext.state = "running";
+        jest.useFakeTimers();
+
+        const audioEngine = createAudioEngine("running");
+
         const arrayBuffer = AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz");
         const sound = new Sound(expect.getState().currentTestName, arrayBuffer);
 
-        expect((audioEngine as any)._muteButton).toBe(null);
+        expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("none");
 
         sound.play();
         AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
 
-        expect((audioEngine as any)._muteButton).toBe(null);
+        expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("none");
     });
 });
