@@ -1,6 +1,11 @@
 var textureSampler: texture_2d<f32>;
 var textureSamplerSampler: sampler;
 
+uniform con0: vec4u;
+uniform con1: vec4u;
+uniform con2: vec4u;
+uniform con3: vec4u;
+
 fn AMin3F3(x: vec3f, y: vec3f, z: vec3f) -> vec3f {
     return min(x,min(y,z));
 }
@@ -244,4 +249,12 @@ fn FsrEasuF(
 //------------------------------------------------------------------------------------------------------------------------------
     // Normalize and dering.
     *pix=min(max4,max(min4,aC*vec3f(1.0/aW)));
+}
+
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
+    var pix: vec3f;
+    let ip = vec2u(fragmentInputs.position.xy);
+    FsrEasuF(&pix, ip, uniforms.con0, uniforms.con1, uniforms.con2, uniforms.con3);
+    fragmentOutputs.color = vec4f(pix, 1);
 }

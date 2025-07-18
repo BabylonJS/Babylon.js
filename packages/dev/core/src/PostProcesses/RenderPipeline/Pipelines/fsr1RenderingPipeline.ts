@@ -18,10 +18,11 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
 
         this._thinUpscalePostProcess = new ThinFSR1UpscalePostProcess("FSR1Upscale", engine);
         this._upscalePostProcess = new PostProcess(this._thinUpscalePostProcess.name, ThinFSR1UpscalePostProcess.FragmentUrl, {
-            size: 0.5,
+            size: 1 / 1.5,
             engine,
             effectWrapper: this._thinUpscalePostProcess,
         });
+        this._upscalePostProcess.samples = 4;
 
         this.addEffect(new PostProcessRenderEffect(engine, this.FSR1UpscaleEffect, () => this._upscalePostProcess));
 

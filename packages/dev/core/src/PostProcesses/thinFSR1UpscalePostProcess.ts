@@ -23,4 +23,20 @@ export class ThinFSR1UpscalePostProcess extends EffectWrapper {
             list.push(import("../ShadersWGSL/fsr1Upscale.fragment"));
         }
     }
+
+    public override bind(noDefaultBindings?: boolean): void {
+        super.bind(noDefaultBindings);
+        const engine = this.options.engine;
+        const effect = this.drawWrapper.effect!;
+
+        const outputWidth = engine.getRenderWidth();
+        const outputHeight = engine.getRenderHeight();
+        const inputWidth = outputWidth / 1.5;
+        const inputHeight = outputHeight / 1.5;
+        // TODO: use a uniform buffer
+        effect.setFloat4("con0", inputWidth / outputWidth, inputHeight / outputHeight, (0.5 * inputWidth) / outputWidth - 0.5, (0.5 * inputHeight) / outputHeight - 0.5);
+        effect.setFloat4("con1", 1 / inputWidth, 1 / inputHeight, 1 / inputWidth, -1 / inputHeight);
+        effect.setFloat4("con2", -1 / inputWidth, 2 / inputHeight, 1 / inputWidth, 2 / inputHeight);
+        effect.setFloat4("con3", 0, 4 / inputHeight, 0, 0);
+    }
 }
