@@ -1,18 +1,12 @@
-uniform vAmbientInfos: vec4f;
-uniform vOpacityInfos: vec2f;
-uniform vEmissiveInfos: vec2f;
+
 uniform vLightmapInfos: vec2f;
 uniform vBumpInfos: vec3f;
 
-uniform ambientMatrix: mat4x4f;
-uniform opacityMatrix: mat4x4f;
-uniform emissiveMatrix: mat4x4f;
 uniform lightmapMatrix: mat4x4f;
 uniform bumpMatrix: mat4x4f;
 uniform vTangentSpaceParams: vec2f;
 uniform vLightingIntensity: vec4f;
 uniform pointSize: f32;
-uniform vAmbientColor: vec3f;
 
 uniform vDebugMode: vec2f;
 
@@ -52,7 +46,7 @@ uniform vBaseColor: vec4f;
 uniform vBaseDiffuseRoughness: f32;
 uniform vReflectanceInfo: vec4f;
 uniform vSpecularColor: vec4f;
-uniform vEmissiveColor: vec3f;
+uniform vEmissionColor: vec3f;
 
 uniform vBaseWeightInfos: vec2f;
 uniform baseWeightMatrix: mat4x4f;
@@ -60,12 +54,18 @@ uniform vBaseColorInfos: vec2f;
 uniform baseColorMatrix: mat4x4f;
 uniform vBaseDiffuseRoughnessInfos: vec2f;
 uniform baseDiffuseRoughnessMatrix: mat4x4f;
-uniform vBaseMetalRoughInfos: vec2f;
-uniform baseMetalRoughMatrix: mat4x4f;
 uniform vSpecularWeightInfos: vec2f;
 uniform specularWeightMatrix: mat4x4f;
 uniform vSpecularColorInfos: vec2f;
 uniform specularColorMatrix: mat4x4f;
+uniform vBaseMetalRoughInfos: vec2f;
+uniform baseMetalRoughMatrix: mat4x4f;
+uniform vGeometryOpacityInfos: vec2f;
+uniform geometryOpacityMatrix: mat4x4f;
+uniform vEmissionInfos: vec2f;
+uniform emissionMatrix: mat4x4f;
+uniform vAmbientOcclusionInfos: vec2f;
+uniform ambientOcclusionMatrix: mat4x4f;
 
 #define ADDITIONAL_UBO_DECLARATION
 

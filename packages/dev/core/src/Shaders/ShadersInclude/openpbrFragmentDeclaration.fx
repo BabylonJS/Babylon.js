@@ -8,11 +8,9 @@ uniform float vBaseDiffuseRoughness;
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
 
-uniform vec3 vEmissiveColor;
+uniform vec3 vEmissionColor;
 
 uniform float visibility;
-
-uniform vec3 vAmbientColor;
 
 // Samplers
 #ifdef BASE_COLOR
@@ -27,8 +25,8 @@ uniform vec2 vBaseWeightInfos;
 uniform vec2 vBaseDiffuseRoughnessInfos;
 #endif
 
-#ifdef AMBIENT
-uniform vec4 vAmbientInfos;
+#ifdef AMBIENT_OCCLUSION
+uniform vec4 vAmbientOcclusionInfos;
 #endif
 
 #ifdef BUMP
@@ -36,12 +34,12 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#ifdef OPACITY
-uniform vec2 vOpacityInfos;
+#ifdef GEOMETRY_OPACITY
+uniform vec2 vGeometryOpacityInfos;
 #endif
 
-#ifdef EMISSIVE
-uniform vec2 vEmissiveInfos;
+#ifdef EMISSION
+uniform vec2 vEmissionInfos;
 #endif
 
 #ifdef LIGHTMAP

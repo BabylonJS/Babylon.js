@@ -10,7 +10,6 @@ var finalColor: vec4f =  vec4f(
         finalRadianceScaled +
     #endif
 #endif
-        finalAmbient +
         finalDiffuse,
         alpha);
 
@@ -26,7 +25,7 @@ var finalColor: vec4f =  vec4f(
 #endif
 
 // _____________________________ EmissiveLight _____________________________________
-finalColor = vec4f(finalColor.rgb + finalEmissive, finalColor.a);
+finalColor = vec4f(finalColor.rgb + finalEmission, finalColor.a);
 
 #define CUSTOM_FRAGMENT_BEFORE_FOG
 

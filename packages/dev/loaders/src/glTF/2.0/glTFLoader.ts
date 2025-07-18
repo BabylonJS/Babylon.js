@@ -2281,8 +2281,10 @@ export class GLTFLoader implements IGLTFLoader {
         // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
-        babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
-        babylonMaterial.useSpecularOverAlpha = !this._parent.transparencyAsCoverage;
+        if (!this.parent.useOpenPBR) {
+            (babylonMaterial as PBRMaterial).useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
+            (babylonMaterial as PBRMaterial).useSpecularOverAlpha = !this._parent.transparencyAsCoverage;
+        }
         babylonMaterial.transparencyMode = PBRMaterialClass.PBRMATERIAL_OPAQUE;
 
         return babylonMaterial;
@@ -2375,18 +2377,21 @@ export class GLTFLoader implements IGLTFLoader {
             babylonMaterial.forceIrradianceInFragment = true;
         }
 
+        let aoTexture: BaseTexture;
+        let aoStrength: number = 1.0;
+        let emissionTexture: BaseTexture;
+
         if (material.occlusionTexture) {
             material.occlusionTexture.nonColorData = true;
             promises.push(
                 this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Occlusion)`;
-                    babylonMaterial.ambientTexture = texture;
+                    aoTexture = texture;
                 })
             );
 
-            babylonMaterial.useAmbientInGrayScale = true;
             if (material.occlusionTexture.strength != undefined) {
-                babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
+                aoStrength = material.occlusionTexture.strength;
             }
         }
 
@@ -2394,12 +2399,25 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(
                 this.loadTextureInfoAsync(`${context}/emissiveTexture`, material.emissiveTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Emissive)`;
-                    babylonMaterial.emissiveTexture = texture;
+                    emissionTexture = texture;
                 })
             );
         }
 
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            if (this.parent.useOpenPBR) {
+                (babylonMaterial as OpenPBRMaterial).ambientOcclusionTexture = aoTexture;
+                (babylonMaterial as OpenPBRMaterial).emissionTexture = emissionTexture;
+                if (aoTexture) {
+                    (babylonMaterial as OpenPBRMaterial).ambientOcclusionTexture.level = aoStrength;
+                }
+            } else {
+                (babylonMaterial as PBRMaterial).ambientTexture = aoTexture;
+                (babylonMaterial as PBRMaterial).emissiveTexture = emissionTexture;
+                (babylonMaterial as PBRMaterial).useAmbientInGrayScale = true;
+                (babylonMaterial as PBRMaterial).ambientTextureStrength = aoStrength;
+            }
+        });
     }
 
     /**

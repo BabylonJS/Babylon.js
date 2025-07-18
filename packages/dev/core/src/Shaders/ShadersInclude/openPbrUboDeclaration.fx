@@ -23,21 +23,14 @@ layout(std140, column_major) uniform;
 // }
 
 uniform Material {
-    vec4 vAmbientInfos;
-    vec2 vOpacityInfos;
-    vec2 vEmissiveInfos;
     vec2 vLightmapInfos;
     vec3 vBumpInfos;
     
-    mat4 ambientMatrix;
-    mat4 opacityMatrix;
-    mat4 emissiveMatrix;
     mat4 lightmapMatrix;
     mat4 bumpMatrix;
     vec2 vTangentSpaceParams;
     vec4 vLightingIntensity;
     float pointSize;
-    vec3 vAmbientColor;
 
     vec2 vDebugMode;
 
@@ -77,7 +70,7 @@ uniform Material {
     float vBaseDiffuseRoughness;
     vec4 vReflectanceInfo;
     vec4 vSpecularColor;
-    vec3 vEmissiveColor;
+    vec3 vEmissionColor;
 
     vec2 vBaseWeightInfos;
     mat4 baseWeightMatrix;
@@ -85,12 +78,18 @@ uniform Material {
     mat4 baseColorMatrix;
     vec2 vBaseDiffuseRoughnessInfos;
     mat4 baseDiffuseRoughnessMatrix;
-    vec2 vBaseMetalRoughInfos;
-    mat4 baseMetalRoughMatrix;
     vec2 vSpecularWeightInfos;
     mat4 specularWeightMatrix;
     vec2 vSpecularColorInfos;
     mat4 specularColorMatrix;
+    vec2 vBaseMetalRoughInfos;
+    mat4 baseMetalRoughMatrix;
+    vec2 vGeometryOpacityInfos;
+    mat4 geometryOpacityMatrix;
+    vec2 vEmissionInfos;
+    mat4 emissionMatrix;
+    vec2 vAmbientOcclusionInfos;
+    mat4 ambientOcclusionMatrix;
 
 #define ADDITIONAL_UBO_DECLARATION
 };
