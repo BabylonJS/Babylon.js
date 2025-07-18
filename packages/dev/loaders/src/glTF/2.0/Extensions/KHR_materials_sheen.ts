@@ -68,6 +68,8 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSheen>(context, material, this.name, async (extensionContext, extension) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             if (useOpenPBR) {
                 const mod = await import("core/Materials/PBR/openPbrMaterial");
                 PBRMaterialClass = mod.OpenPBRMaterial;
@@ -75,8 +77,6 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSheenPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
             // eslint-disable-next-line github/no-then
             return await Promise.all(promises).then(() => {});
