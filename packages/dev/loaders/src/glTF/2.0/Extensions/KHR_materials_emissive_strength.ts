@@ -65,6 +65,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, async (extensionContext, extension) => {
+            await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
             if (useOpenPBR) {
                 const mod = await import("core/Materials/PBR/openPbrMaterial");
                 PBRMaterialClass = mod.OpenPBRMaterial;
@@ -72,10 +73,8 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            // eslint-disable-next-line github/no-then
-            return await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
-                this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
-            });
+            this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
+            return await Promise.resolve();
         });
     }
 

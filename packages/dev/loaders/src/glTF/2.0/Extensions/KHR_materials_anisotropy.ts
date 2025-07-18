@@ -65,6 +65,8 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsAnisotropy>(context, material, this.name, async (extensionContext, extension) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             if (useOpenPBR) {
                 const mod = await import("core/Materials/PBR/openPbrMaterial");
                 PBRMaterialClass = mod.OpenPBRMaterial;
@@ -72,8 +74,6 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadIridescencePropertiesAsync(extensionContext, extension, babylonMaterial));
             await Promise.all(promises);
         });

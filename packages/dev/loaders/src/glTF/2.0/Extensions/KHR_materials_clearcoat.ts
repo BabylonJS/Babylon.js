@@ -67,6 +67,8 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsClearcoat>(context, material, this.name, async (extensionContext, extension) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             if (useOpenPBR) {
                 const mod = await import("core/Materials/PBR/openPbrMaterial");
                 PBRMaterialClass = mod.OpenPBRMaterial;
@@ -77,8 +79,6 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             if (!(babylonMaterial instanceof PBRMaterialClass)) {
                 throw new Error(`${context}: Material type not supported`);
             }
-            const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
             await Promise.all(promises);
         });

@@ -67,6 +67,8 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSpecular>(context, material, this.name, async (extensionContext, extension) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             if (useOpenPBR) {
                 const mod = await import("core/Materials/PBR/openPbrMaterial");
                 PBRMaterialClass = mod.OpenPBRMaterial;
@@ -74,8 +76,6 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
             // Handle the EXT_materials_specular_edge_color sub-extension
             // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
@@ -99,13 +99,13 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
         const promises = new Array<Promise<any>>();
 
-        if (babylonMaterial instanceof OpenPBRMaterial) {
+        if (useOpenPBR) {
             if (properties.specularFactor !== undefined) {
-                babylonMaterial.specularWeight = properties.specularFactor;
+                (babylonMaterial as OpenPBRMaterial).specularWeight = properties.specularFactor;
             }
 
             if (properties.specularColorFactor !== undefined) {
-                babylonMaterial.specularColor = Color3.FromArray(properties.specularColorFactor);
+                (babylonMaterial as OpenPBRMaterial).specularColor = Color3.FromArray(properties.specularColorFactor);
             }
 
             if (properties.specularTexture) {
@@ -113,8 +113,8 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Specular)`;
-                        babylonMaterial.specularWeightTexture = texture;
-                        babylonMaterial.useSpecularWeightFromTextureAlpha = true;
+                        (babylonMaterial as OpenPBRMaterial).specularWeightTexture = texture;
+                        (babylonMaterial as OpenPBRMaterial).useSpecularWeightFromTextureAlpha = true;
                     })
                 );
             }
@@ -123,17 +123,17 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Specular Color)`;
-                        babylonMaterial.specularColorTexture = texture;
+                        (babylonMaterial as OpenPBRMaterial).specularColorTexture = texture;
                     })
                 );
             }
         } else {
             if (properties.specularFactor !== undefined) {
-                babylonMaterial.metallicF0Factor = properties.specularFactor;
+                (babylonMaterial as PBRMaterial).metallicF0Factor = properties.specularFactor;
             }
 
             if (properties.specularColorFactor !== undefined) {
-                babylonMaterial.metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
+                (babylonMaterial as PBRMaterial).metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
             }
 
             if (properties.specularTexture) {
@@ -141,8 +141,8 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Specular)`;
-                        babylonMaterial.metallicReflectanceTexture = texture;
-                        babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+                        (babylonMaterial as PBRMaterial).metallicReflectanceTexture = texture;
+                        (babylonMaterial as PBRMaterial).useOnlyMetallicFromMetallicReflectanceTexture = true;
                     })
                 );
             }
@@ -151,7 +151,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Specular Color)`;
-                        babylonMaterial.reflectanceTexture = texture;
+                        (babylonMaterial as PBRMaterial).reflectionTexture = texture;
                     })
                 );
             }

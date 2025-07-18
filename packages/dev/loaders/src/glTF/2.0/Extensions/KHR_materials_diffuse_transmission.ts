@@ -71,6 +71,8 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDiffuseTransmission>(context, material, this.name, async (extensionContext, extension) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             if (useOpenPBR) {
                 const mod = await import("core/Materials/PBR/openPbrMaterial");
                 PBRMaterialClass = mod.OpenPBRMaterial;
@@ -78,8 +80,6 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadTranslucentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return await Promise.all(promises).then(() => {});
         });
