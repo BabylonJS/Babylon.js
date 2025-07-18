@@ -85,10 +85,10 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     }
 
     public override _doOperation(context: FlowGraphContext): P {
-        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const value = accessorContainer.info.get(accessorContainer.object) as P;
-        const object = accessorContainer.info.getTarget?.(accessorContainer.object);
-        const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
+        const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        const value = accessor.info.get(accessor.object, accessor.index) as P;
+        const object = accessor.info.getTarget?.(accessor.object, accessor.index);
+        const propertyName = accessor.info.getPropertyName?.[0](accessor.object);
         if (!object) {
             throw new Error("Object is undefined");
         } else {
@@ -101,18 +101,18 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     }
 
     private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {
-        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const type = accessorContainer.info.type;
+        const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        const type = accessor.info.type;
         if (type.startsWith("Color")) {
             value = ToColor(value as Vector4, type) as unknown as P;
         }
-        accessorContainer.info.set?.(value, accessorContainer.object);
+        accessor.info.set?.(value, accessor.object, accessor.index);
     }
 
     private _getPropertyValue(_target: O, _propertyName: string, context: FlowGraphContext): P | undefined {
-        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const type = accessorContainer.info.type;
-        const value = accessorContainer.info.get(accessorContainer.object);
+        const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        const type = accessor.info.type;
+        const value = accessor.info.get(accessor.object, accessor.index);
         if (type.startsWith("Color")) {
             return FromColor(value as Color3 | Color4) as unknown as P;
         }
@@ -124,11 +124,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         _propertyName: string,
         context: FlowGraphContext
     ): (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => Animation[] {
-        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
         return (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
             // make sure keys are of the right type (in case of float3 color/vector)
-            const type = accessorContainer.info.type;
+            const type = accessor.info.type;
             if (type.startsWith("Color")) {
                 keys = keys.map((key) => {
                     return {
@@ -137,8 +137,8 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                     };
                 });
             }
-            accessorContainer.info.interpolation?.forEach((info, index) => {
-                const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
+            accessor.info.interpolation?.forEach((info, index) => {
+                const name = accessor.info.getPropertyName?.[index](accessor.object) || "Animation-interpolation-" + index;
                 // generate the keys based on interpolation info
                 let newKeys: any[] = keys;
                 if (animationType !== info.type) {
@@ -150,7 +150,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                         };
                     });
                 }
-                const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
+                const animationData = info.buildAnimations(accessor.object, name, 60, newKeys);
                 for (const animation of animationData) {
                     if (easingFunction) {
                         animation.babylonAnimation.setEasingFunction(easingFunction);
