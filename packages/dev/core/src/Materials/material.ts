@@ -239,6 +239,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     protected _forceGLSL = false;
 
+    /**
+     * Tells the engine to draw geometry using vertex pulling instead of index drawing. This will automatically
+     * set the vertex buffers as storage buffers and make them accessible to the vertex shader.
+     */
+    public useVertexPulling = false;
+
     /** @internal */
     public get _supportGlowLayer() {
         return false;

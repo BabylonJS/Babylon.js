@@ -1613,7 +1613,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             view = data;
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst, label);
+        const dataBuffer = this._bufferManager.createBuffer(
+            view,
+            WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Storage,
+            label
+        );
         return dataBuffer;
     }
 
@@ -3693,6 +3697,35 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._currentMaterialContext.textureState = textureState;
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
+
+        // Compare the vertex buffers that we have to the ones that are bound to the pipeline.
+        // If there are vertex buffers that are not bound to the pipeline, AND they're used
+        // by the shader, we will bind them to the current draw context.
+        const availableVertexBuffers: { [key: string]: VertexBuffer } = (this._cacheRenderPipeline as any)._vertexBuffers;
+        const appliedVertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+        const vertexBufferNames = Object.keys(availableVertexBuffers);
+        if (Object.keys(availableVertexBuffers).length !== appliedVertexBuffers.length) {
+            const unboundVertexBuffers: { [key: string]: VertexBuffer } = {};
+            for (let i = 0; i < vertexBufferNames.length; i++) {
+                const name = vertexBufferNames[i];
+                if (appliedVertexBuffers.findIndex((v) => v === availableVertexBuffers[name]) === -1) {
+                    unboundVertexBuffers[name] = availableVertexBuffers[name];
+                }
+            }
+            if (Object.keys(unboundVertexBuffers).length > 0) {
+                for (const unboundVertexBufferName of Object.keys(unboundVertexBuffers)) {
+                    if (webgpuPipelineContext.shaderProcessingContext.bufferNames.findIndex((name) => name === unboundVertexBufferName) !== -1) {
+                        this._currentDrawContext.buffers[unboundVertexBufferName] = unboundVertexBuffers[unboundVertexBufferName].effectiveBuffer as WebGPUDataBuffer;
+                    }
+                }
+            }
+            // TODO - handle binding index buffer.
+            // if (webgpuPipelineContext.shaderProcessingContext.bufferNames.findIndex((name) => name === "indices") !== -1) {
+            //     const indexBuffer = this._currentIndexBuffer ? this._currentIndexBuffer : (this._cacheRenderPipeline as any)._indexBuffer;
+            //     this._currentDrawContext.buffers["indices"] = indexBuffer as WebGPUDataBuffer;
+            // }
+        }
+
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRendering.record) {
