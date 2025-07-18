@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, addAccessorsForMaterialProperty } from "../../Misc/decorators";
+import { serialize, expandToProperty, serializeAsTexture, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -217,24 +217,13 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
-    public AMBIENT = false;
-    public AMBIENTDIRECTUV = 0;
-    public AMBIENTINGRAYSCALE = false;
-
-    public OPACITY = false;
     public VERTEXALPHA = false;
-    public OPACITYDIRECTUV = 0;
-    public OPACITYRGB = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public ALPHABLEND = false;
     public ALPHAFROMALBEDO = false;
     public ALPHATESTVALUE = "0.5";
     public PREMULTIPLYALPHA = false;
-
-    public EMISSIVE = false;
-    public EMISSIVEDIRECTUV = 0;
-    public GAMMAEMISSIVE = false;
 
     public REFLECTIVITY_GAMMA = false;
     public REFLECTIVITYDIRECTUV = 0;
@@ -576,7 +565,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _baseMetalRoughTexture: Sampler = new Sampler("base_metalness_specular_roughness", "baseMetalRough", "METALLIC_ROUGHNESS");
 
     /**
-     * Defines the opacity of the material's geometry. See OpenPBR's specs for geometry_opacity
+     * Defines the opacity of the material's geometry.
+     * See OpenPBR's specs for geometry_opacity
      */
     public geometryOpacity: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryOpacity")
@@ -584,12 +574,39 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _geometryOpacity: Property<number> = new Property<number>("geometry_opacity", 1.0, "vBaseColor", 4, 3);
 
     /**
-     * Defines the color of the material's emission. See OpenPBR's specs for emission_color
+     * Defines the opacity of the material's geometry.
+     * See OpenPBR's specs for geometry_opacity
+     */
+    public geometryOpacityTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryOpacityTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryOpacityTexture: Sampler = new Sampler("geometry_opacity", "geometryOpacity", "GEOMETRY_OPACITY");
+
+    /**
+     * Defines the color of the material's emission.
+     * See OpenPBR's specs for emission_color
      */
     public emissionColor: Color3;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionColor")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _emissionColor: Property<Color3> = new Property<Color3>("emission_color", Color3.Black(), "vEmissiveColor", 3);
+    private _emissionColor: Property<Color3> = new Property<Color3>("emission_color", Color3.Black(), "vEmissionColor", 3);
+
+    /**
+     * Defines the color of the material's emission.
+     * See OpenPBR's specs for emission_color
+     */
+    public emissionTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _emissionTexture: Sampler = new Sampler("emission", "emission", "EMISSION");
+
+    /**
+     * Defines the ambient occlusion texture.
+     */
+    public ambientOcclusionTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "ambientOcclusionTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
 
     private _propertyList: { [name: string]: Property<any> };
     private _uniformsList: { [name: string]: Uniform } = {};
@@ -628,48 +645,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public disableBumpMap: boolean = false;
 
     /**
-     * AKA Occlusion Texture in other nomenclature.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTexture: Nullable<BaseTexture>;
-
-    /**
-     * AKA Occlusion Texture Intensity in other nomenclature.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTextureStrength: number = 1.0;
-
-    /**
-     * Defines how much the AO map is occluding the analytical lights (point spot...).
-     * 1 means it completely occludes it
-     * 0 mean it has no impact
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTextureImpactOnAnalyticalLights: number = OpenPBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
-
-    /**
-     * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public opacityTexture: Nullable<BaseTexture>;
-
-    /**
      * Stores the reflection values in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionTexture: Nullable<BaseTexture>;
-
-    /**
-     * Stores the emissive values in a texture.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies that the specular weight is stored in the alpha channel of the specular weight texture.
@@ -691,27 +671,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
     public lightmapTexture: Nullable<BaseTexture>;
-
-    /**
-     * The color of a material in ambient lighting.
-     */
-    @serializeAsColor3("ambient")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientColor = new Color3(0, 0, 0);
-
-    /**
-     * AKA Specular Color in other nomenclature.
-     */
-    @serializeAsColor3("reflectivity")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectivityColor = new Color3(1, 1, 1);
-
-    /**
-     * The color reflected from the material.
-     */
-    @serializeAsColor3("reflection")
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionColor = new Color3(1.0, 1.0, 1.0);
 
     /**
      * If true, the light map contains occlusion information instead of lighting info.
@@ -740,14 +699,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public alphaCutOff = 0.4;
-
-    /**
-     * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useSpecularOverAlpha = true;
 
     /**
      * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
@@ -831,14 +782,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
     }
-
-    /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRadianceOverAlpha = true;
 
     /**
      * Allows using an object space normal map (instead of tangent space).
@@ -1039,42 +982,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _disableBumpMap: boolean = false;
 
     /**
-     * AKA Occlusion Texture in other nomenclature.
-     * @internal
-     */
-    public _ambientTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * AKA Occlusion Texture Intensity in other nomenclature.
-     * @internal
-     */
-    public _ambientTextureStrength: number = 1.0;
-
-    /**
-     * Defines how much the AO map is occluding the analytical lights (point spot...).
-     * 1 means it completely occludes it
-     * 0 mean it has no impact
-     * @internal
-     */
-    public _ambientTextureImpactOnAnalyticalLights: number = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
-
-    /**
-     * Stores the alpha values in a texture.
-     * @internal
-     */
-    public _opacityTexture: Nullable<BaseTexture> = null;
-
-    /**
      * Stores the reflection values in a texture.
      * @internal
      */
     public _reflectionTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * Stores the emissive values in a texture.
-     * @internal
-     */
-    public _emissiveTexture: Nullable<BaseTexture> = null;
 
     /**
      * Specifies that only the A channel from _metallicReflectanceTexture should be used.
@@ -1324,11 +1235,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _renderTargets = new SmartArray<RenderTargetTexture>(16);
 
     /**
-     * Sets the global ambient color for the material used in lighting calculations.
-     */
-    private _globalAmbientColor = new Color3(0, 0, 0);
-
-    /**
      * If set to true, no lighting calculations will be applied.
      */
     private _unlit = false;
@@ -1464,7 +1370,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._specularIor;
         this._baseMetalRoughTexture;
         this._geometryOpacity;
+        this._geometryOpacityTexture;
         this._emissionColor;
+        this._emissionTexture;
+        this._ambientOcclusionTexture;
     }
 
     /**
@@ -1511,7 +1420,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             return false;
         }
 
-        return this.geometryOpacity < 1.0 || this._opacityTexture != null || this._shouldUseAlphaFromAlbedoTexture();
+        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null || this._shouldUseAlphaFromAlbedoTexture();
     }
 
     /**
@@ -1536,13 +1445,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
-        return this._opacityTexture != null;
+        return this.geometryOpacityTexture != null;
     }
 
     /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
-     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
+     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g baseColor and opacity), only clone it once and reuse it on the other channels. Default false.
      * @param rootUrl defines the root URL to use to load textures
      * @returns cloned material instance
      */
@@ -1689,18 +1598,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                    if (!this._ambientTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
-                if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                    if (!this._opacityTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
                 const reflectionTexture = this._getReflectionTexture();
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (!reflectionTexture.isReadyOrNotBlocking()) {
@@ -1720,12 +1617,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                     if (!this._lightmapTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
-                if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                    if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                 }
@@ -1825,22 +1716,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override buildUniformLayout(): void {
         // Order is important !
         const ubo = this._uniformBuffer;
-        ubo.addUniform("vAmbientInfos", 4);
-        ubo.addUniform("vOpacityInfos", 2);
-        ubo.addUniform("vEmissiveInfos", 2);
         ubo.addUniform("vLightmapInfos", 2);
         ubo.addUniform("vBumpInfos", 3);
-        ubo.addUniform("ambientMatrix", 16);
-        ubo.addUniform("opacityMatrix", 16);
-        ubo.addUniform("emissiveMatrix", 16);
         ubo.addUniform("lightmapMatrix", 16);
         ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("vLightingIntensity", 4);
 
         ubo.addUniform("pointSize", 1);
-        // ubo.addUniform("vEmissiveColor", 3);
-        ubo.addUniform("vAmbientColor", 3);
 
         ubo.addUniform("vDebugMode", 2);
 
@@ -1933,27 +1816,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         }
                     }
 
-                    if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                        ubo.updateFloat4(
-                            "vAmbientInfos",
-                            this._ambientTexture.coordinatesIndex,
-                            this._ambientTexture.level,
-                            this._ambientTextureStrength,
-                            this._ambientTextureImpactOnAnalyticalLights
-                        );
-                        BindTextureMatrix(this._ambientTexture, ubo, "ambient");
-                    }
-
-                    if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                        ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                        BindTextureMatrix(this._opacityTexture, ubo, "opacity");
-                    }
-
-                    if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                        ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                        BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
-                    }
-
                     if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                         ubo.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
                         BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
@@ -1977,8 +1839,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 if (this.pointsCloud) {
                     ubo.updateFloat("pointSize", this.pointSize);
                 }
-
-                // ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
 
                 Object.values(this._uniformsList).forEach((uniform) => {
                     // If the property actually defines a uniform, update it.
@@ -2004,11 +1864,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
 
-                // Colors
-                scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
-
-                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
-
                 ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
 
@@ -2022,22 +1877,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                    ubo.setTexture("ambientSampler", this._ambientTexture);
-                }
-
-                if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                    ubo.setTexture("opacitySampler", this._opacityTexture);
-                }
-
                 BindIBLSamplers(scene, defines, ubo, reflectionTexture, this.realTimeFiltering);
 
                 if (defines.ENVIRONMENTBRDF) {
                     ubo.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
-                }
-
-                if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                    ubo.setTexture("emissiveSampler", this._emissiveTexture);
                 }
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
@@ -2116,20 +1959,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
-        if (this._ambientTexture && this._ambientTexture.animations && this._ambientTexture.animations.length > 0) {
-            results.push(this._ambientTexture);
-        }
-
-        if (this._opacityTexture && this._opacityTexture.animations && this._opacityTexture.animations.length > 0) {
-            results.push(this._opacityTexture);
-        }
-
         if (this._reflectionTexture && this._reflectionTexture.animations && this._reflectionTexture.animations.length > 0) {
             results.push(this._reflectionTexture);
-        }
-
-        if (this._emissiveTexture && this._emissiveTexture.animations && this._emissiveTexture.animations.length > 0) {
-            results.push(this._emissiveTexture);
         }
 
         if (this._bumpTexture && this._bumpTexture.animations && this._bumpTexture.animations.length > 0) {
@@ -2158,20 +1989,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
-        if (this._ambientTexture) {
-            activeTextures.push(this._ambientTexture);
-        }
-
-        if (this._opacityTexture) {
-            activeTextures.push(this._opacityTexture);
-        }
-
         if (this._reflectionTexture) {
             activeTextures.push(this._reflectionTexture);
-        }
-
-        if (this._emissiveTexture) {
-            activeTextures.push(this._emissiveTexture);
         }
 
         if (this._bumpTexture) {
@@ -2203,19 +2022,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
-        if (this._ambientTexture === texture) {
-            return true;
-        }
-
-        if (this._opacityTexture === texture) {
-            return true;
-        }
-
         if (this._reflectionTexture === texture) {
-            return true;
-        }
-
-        if (this._emissiveTexture === texture) {
             return true;
         }
 
@@ -2258,10 +2065,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 sampler.value?.dispose();
             }
 
-            this._ambientTexture?.dispose();
-            this._opacityTexture?.dispose();
             this._reflectionTexture?.dispose();
-            this._emissiveTexture?.dispose();
             this._bumpTexture?.dispose();
             this._lightmapTexture?.dispose();
         }
@@ -2370,14 +2174,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             fallbacks.addFallback(fallbackRank++, "NORMAL");
         }
 
-        if (defines.AMBIENT) {
-            fallbacks.addFallback(fallbackRank++, "AMBIENT");
-        }
-
-        if (defines.EMISSIVE) {
-            fallbacks.addFallback(fallbackRank++, "EMISSIVE");
-        }
-
         if (defines.VERTEXCOLOR) {
             fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
         }
@@ -2424,30 +2220,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "viewProjection",
             "vEyePosition",
             "vLightsType",
-            "vAmbientColor",
-            "vMetallicReflectanceFactors",
             "visibility",
             "vFogInfos",
             "vFogColor",
             "pointSize",
-            "vAlbedoInfos",
-            "vAmbientInfos",
-            "vOpacityInfos",
-            "vEmissiveInfos",
-            "vMetallicReflectanceInfos",
-            "vReflectanceInfos",
             "vBumpInfos",
             "vLightmapInfos",
             "mBones",
-            "albedoMatrix",
-            "ambientMatrix",
-            "opacityMatrix",
-            "emissiveMatrix",
             "normalMatrix",
             "bumpMatrix",
             "lightmapMatrix",
-            "metallicReflectanceMatrix",
-            "reflectanceMatrix",
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vTangentSpaceParams",
@@ -2464,11 +2246,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const samplers = [
             "reflectivitySampler",
-            "ambientSampler",
-            "emissiveSampler",
             "bumpSampler",
             "lightmapSampler",
-            "opacitySampler",
             "environmentBrdfSampler",
             "boneSampler",
             "metallicReflectanceSampler",
@@ -2623,20 +2402,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
-                    defines.AMBIENTINGRAYSCALE = this._useAmbientInGrayScale;
-                } else {
-                    defines.AMBIENT = false;
-                }
-
-                if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
-                    defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
-                } else {
-                    defines.OPACITY = false;
-                }
-
                 const reflectionTexture = this._getReflectionTexture();
                 const useSHInFragment: boolean =
                     this._forceIrradianceInFragment ||
@@ -2653,13 +2418,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
                 } else {
                     defines.LIGHTMAP = false;
-                }
-
-                if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
-                    defines.GAMMAEMISSIVE = this._emissiveTexture.gammaSpace;
-                } else {
-                    defines.EMISSIVE = false;
                 }
 
                 if (MaterialFlags.SpecularTextureEnabled) {

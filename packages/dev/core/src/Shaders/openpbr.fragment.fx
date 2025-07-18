@@ -62,7 +62,7 @@ precision highp float;
 
 #include<openpbrBlockAlbedoOpacity>
 #include<openpbrBlockReflectivity>
-#include<pbrBlockAmbientOcclusion>
+#include<openpbrBlockAmbientOcclusion>
 #include<pbrBlockAlphaFresnel>
 #include<pbrBlockReflection>
 
@@ -148,14 +148,14 @@ void main(void) {
     // _____________________________ AO  _______________________________
     ambientOcclusionOutParams aoOut;
 
-#ifdef AMBIENT
-    vec3 ambientOcclusionColorMap = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb;
+#ifdef AMBIENT_OCCLUSION
+    vec3 ambientOcclusionFromTexture = texture2D(ambientOcclusionSampler, vAmbientOcclusionUV + uvOffset).rgb;
 #endif
 
     aoOut = ambientOcclusionBlock(
-    #ifdef AMBIENT
-        ambientOcclusionColorMap,
-        vAmbientInfos
+    #ifdef AMBIENT_OCCLUSION
+        ambientOcclusionFromTexture,
+        vAmbientOcclusionInfos
     #endif
     );
 
@@ -213,9 +213,9 @@ vec4 specularColor = vSpecularColor;
     #ifdef METALLIC_ROUGHNESS
         , vec3(vBaseMetalRoughInfos, 1.0f)
         , metallicRoughnessFromTexture
-    #endif
-    #if defined(METALLIC_ROUGHNESS)  && defined(AOSTOREINMETALMAPRED)
-        , aoOut.ambientOcclusionColor
+        #ifdef AOSTOREINMETALMAPRED
+            , aoOut.ambientOcclusionColor
+        #endif
     #endif
     #ifdef DETAIL
         , detailColor
@@ -225,8 +225,6 @@ vec4 specularColor = vSpecularColor;
 
     float roughness = reflectivityOut.roughness;
     float diffuseRoughness = reflectivityOut.diffuseRoughness;
-
-    // surfaceAlbedo = reflectivityOut.surfaceAlbedo;
     
     #if defined(METALLIC_ROUGHNESS) && defined(AOSTOREINMETALMAPRED)
         aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
@@ -234,7 +232,6 @@ vec4 specularColor = vSpecularColor;
 
     // _____________________________ Compute Geometry info _________________________________
     #include<pbrBlockGeometryInfo>
-
 
     // _____________________________ Reflection Info _______________________________________
     #ifdef REFLECTION
@@ -312,7 +309,31 @@ vec4 specularColor = vSpecularColor;
     #include<openpbrBlockFinalLitComponents>
 #endif // !UNLIT
 
-    #include<pbrBlockFinalUnlitComponents>
+    // #include<pbrBlockFinalUnlitComponents>
+    // _____________________________ Diffuse ________________________________________
+    vec3 finalDiffuse = diffuseBase;
+    finalDiffuse *= surfaceAlbedo;
+
+    finalDiffuse = max(finalDiffuse, 0.0);
+    finalDiffuse *= vLightingIntensity.x;
+
+    // _____________________________ Emissive ________________________________________
+    vec3 finalEmission = vEmissionColor;
+    #ifdef EMISSION
+        vec3 emissionColorTex = texture2D(emissionSampler, vEmissionUV + uvOffset).rgb;
+        #ifdef EMISSION_GAMMA
+            finalEmission *= toLinearSpace(emissionColorTex.rgb);
+        #else
+            finalEmission *= emissionColorTex.rgb;
+        #endif
+        finalEmission *=  vEmissionInfos.y;
+    #endif
+    finalEmission *= vLightingIntensity.y;
+
+    // ______________________________ Ambient ________________________________________
+    #ifdef AMBIENT_OCCLUSION
+        finalDiffuse *= mix(vec3(1.), aoOut.ambientOcclusionColor, 1.0 - vAmbientOcclusionInfos.y);
+    #endif
 
     #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 

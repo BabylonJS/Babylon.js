@@ -46,7 +46,7 @@
 
 #include<openpbrBlockAlbedoOpacity>
 #include<openpbrBlockReflectivity>
-#include<pbrBlockAmbientOcclusion>
+#include<openpbrBlockAmbientOcclusion>
 #include<pbrBlockAlphaFresnel>
 #include<pbrBlockReflection>
 
@@ -121,14 +121,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ AO  _______________________________
     var aoOut: ambientOcclusionOutParams;
 
-#ifdef AMBIENT
-    var ambientOcclusionColorMap: vec3f = textureSample(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb;
+#ifdef AMBIENT_OCCLUSION
+    var ambientOcclusionFromTexture: vec3f = textureSample(ambientOcclusionSampler, ambientOcclusionSamplerSampler, fragmentInputs.vAmbientOcclusionUV + uvOffset).rgb;
 #endif
 
     aoOut = ambientOcclusionBlock(
-    #ifdef AMBIENT
-        ambientOcclusionColorMap,
-        uniforms.vAmbientInfos
+    #ifdef AMBIENT_OCCLUSION
+        ambientOcclusionFromTexture,
+        uniforms.vAmbientOcclusionInfos
     #endif
     );
 
@@ -286,7 +286,29 @@ var specularColor: vec4f = uniforms.vSpecularColor;
     #include<openpbrBlockFinalLitComponents>
 #endif // UNLIT
 
-    #include<pbrBlockFinalUnlitComponents>
+    // _____________________________ Diffuse ________________________________________
+    var finalDiffuse: vec3f = diffuseBase;
+    finalDiffuse *= surfaceAlbedo;
+    finalDiffuse = max(finalDiffuse, vec3f(0.0));
+    finalDiffuse *= uniforms.vLightingIntensity.x;
+
+    // _____________________________ Emissive ________________________________________
+    var finalEmission: vec3f = uniforms.vEmissionColor;
+    #ifdef EMISSION
+    var emissionColorTex: vec3f = textureSample(emissionSampler, emissionSamplerSampler, fragmentInputs.vEmissionUV + uvOffset).rgb;
+        #ifdef EMISSION_GAMMA
+            finalEmission *= toLinearSpaceVec3(emissionColorTex.rgb);
+        #else
+            finalEmission *= emissionColorTex.rgb;
+        #endif
+        finalEmission *=  uniforms.vEmissionInfos.y;
+    #endif
+    finalEmission *= uniforms.vLightingIntensity.y;
+
+    // ______________________________ Ambient ________________________________________
+    #ifdef AMBIENT_OCCLUSION
+        finalDiffuse *= mix( vec3f(1.), aoOut.ambientOcclusionColor, 1.0 - uniforms.vAmbientOcclusionInfos.y);
+    #endif
 
     #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 
