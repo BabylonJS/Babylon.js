@@ -140,7 +140,7 @@ export class AudioEngine implements IAudioEngine {
         });
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-        v2._initAsync({ resumeOnInteraction: false, resumeOnPause: false }).then(() => {
+        v2._initAsync({ resumeOnInteraction: false }).then(() => {
             v2.mainOut._inNode = this._masterGain;
             v2.stateChangedObservable.notifyObservers(v2.state);
         });
