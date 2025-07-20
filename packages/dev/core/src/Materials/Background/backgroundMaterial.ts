@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "../../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3 } from "../../Misc/decorators";
 import { SmartArray } from "../../Misc/smartArray";
-import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import type { Nullable, int, float } from "../../types";
 import type { Scene } from "../../scene";
@@ -14,11 +13,9 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
-import type { ColorCurves } from "../../Materials/colorCurves";
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
+import { ImageProcessingDefinesMixin } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Texture } from "../../Materials/Textures/texture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
@@ -34,25 +31,33 @@ import {
     BindLights,
     BindLogDepth,
     BindTextureMatrix,
+    BindIBLParameters,
+    BindIBLSamplers,
     HandleFallbacksForShadows,
     PrepareAttributesForBones,
     PrepareAttributesForInstances,
     PrepareDefinesForAttributes,
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForLights,
+    PrepareDefinesForIBL,
     PrepareDefinesForMergedUV,
     PrepareDefinesForMisc,
     PrepareDefinesForMultiview,
     PrepareUniformsAndSamplersList,
+    PrepareUniformsAndSamplersForIBL,
+    PrepareUniformLayoutForIBL,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
+import { ImageProcessingMixin } from "../imageProcessing";
+
+class BackgroundMaterialDefinesBase extends MaterialDefines {}
 
 /**
  * Background material defines definition.
  * @internal Mainly internal Use
  */
-class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+class BackgroundMaterialDefines extends ImageProcessingDefinesMixin(BackgroundMaterialDefinesBase) {
     /**
      * True if the diffuse texture is in use.
      */
@@ -135,23 +140,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
      */
     public PROJECTED_GROUND = false;
 
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = 0;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public EXPOSURE = false;
-    public MULTIVIEW = false;
-
     // Reflection.
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -202,11 +190,12 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     }
 }
 
+class BackgroundMaterialBase extends ImageProcessingMixin(PushMaterial) {}
 /**
  * Background material used to create an efficient environment around your scene.
  * #157MGZ: simple test
  */
-export class BackgroundMaterial extends PushMaterial {
+export class BackgroundMaterial extends BackgroundMaterialBase {
     /**
      * Standard reflectance value at parallel view angle.
      */
@@ -455,168 +444,6 @@ export class BackgroundMaterial extends PushMaterial {
     public shadowOnly: boolean = false;
 
     /**
-     * Default configuration related to image processing available in the Background Material.
-     */
-    @serializeAsImageProcessingConfiguration()
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-
-    /**
-     * Keep track of the image processing observer to allow dispose and replace.
-     */
-    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>> = null;
-
-    /**
-     * Attaches a new image processing configuration to the PBR Material.
-     * @param configuration (if null the scene configuration will be use)
-     */
-    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
-        if (configuration === this._imageProcessingConfiguration) {
-            return;
-        }
-
-        // Detaches observer.
-        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-        }
-
-        // Pick the scene configuration if needed.
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-        } else {
-            this._imageProcessingConfiguration = configuration;
-        }
-
-        // Attaches observer.
-        if (this._imageProcessingConfiguration) {
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
-                this._computePrimaryColorFromPerceptualColor();
-                this._markAllSubMeshesAsImageProcessingDirty();
-            });
-        }
-    }
-
-    /**
-     * Gets the image processing configuration used either in this material.
-     */
-    public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
-        return this._imageProcessingConfiguration;
-    }
-
-    /**
-     * Sets the Default image processing configuration used either in the this material.
-     *
-     * If sets to null, the scene one is in use.
-     */
-    public set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>) {
-        this._attachImageProcessingConfiguration(value);
-
-        // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsTexturesDirty();
-    }
-
-    /**
-     * Gets whether the color curves effect is enabled.
-     */
-    public get cameraColorCurvesEnabled(): boolean {
-        return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurvesEnabled;
-    }
-    /**
-     * Sets whether the color curves effect is enabled.
-     */
-    public set cameraColorCurvesEnabled(value: boolean) {
-        (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurvesEnabled = value;
-    }
-
-    /**
-     * Gets whether the color grading effect is enabled.
-     */
-    public get cameraColorGradingEnabled(): boolean {
-        return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingEnabled;
-    }
-    /**
-     * Gets whether the color grading effect is enabled.
-     */
-    public set cameraColorGradingEnabled(value: boolean) {
-        (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingEnabled = value;
-    }
-
-    /**
-     * Gets whether tonemapping is enabled or not.
-     */
-    public get cameraToneMappingEnabled(): boolean {
-        return this._imageProcessingConfiguration.toneMappingEnabled;
-    }
-    /**
-     * Sets whether tonemapping is enabled or not
-     */
-    public set cameraToneMappingEnabled(value: boolean) {
-        this._imageProcessingConfiguration.toneMappingEnabled = value;
-    }
-
-    /**
-     * The camera exposure used on this material.
-     * This property is here and not in the camera to allow controlling exposure without full screen post process.
-     * This corresponds to a photographic exposure.
-     */
-    public get cameraExposure(): float {
-        return this._imageProcessingConfiguration.exposure;
-    }
-    /**
-     * The camera exposure used on this material.
-     * This property is here and not in the camera to allow controlling exposure without full screen post process.
-     * This corresponds to a photographic exposure.
-     */
-    public set cameraExposure(value: float) {
-        this._imageProcessingConfiguration.exposure = value;
-    }
-
-    /**
-     * Gets The camera contrast used on this material.
-     */
-    public get cameraContrast(): float {
-        return this._imageProcessingConfiguration.contrast;
-    }
-
-    /**
-     * Sets The camera contrast used on this material.
-     */
-    public set cameraContrast(value: float) {
-        this._imageProcessingConfiguration.contrast = value;
-    }
-
-    /**
-     * Gets the Color Grading 2D Lookup Texture.
-     */
-    public get cameraColorGradingTexture(): Nullable<BaseTexture> {
-        return this._imageProcessingConfiguration.colorGradingTexture;
-    }
-    /**
-     * Sets the Color Grading 2D Lookup Texture.
-     */
-    public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
-        (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorGradingTexture = value;
-    }
-
-    /**
-     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
-     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-     */
-    public get cameraColorCurves(): Nullable<ColorCurves> {
-        return (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves;
-    }
-    /**
-     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
-     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-     */
-    public set cameraColorCurves(value: Nullable<ColorCurves>) {
-        (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves = value;
-    }
-
-    /**
      * Due to a bug in iOS10, video tags (which are using the background material) are in BGR and not RGB.
      * Setting this flag to true (not done automatically!) will convert it back to RGB.
      */
@@ -774,57 +601,14 @@ export class BackgroundMaterial extends PushMaterial {
                 }
 
                 const reflectionTexture = this._reflectionTexture;
+                PrepareDefinesForIBL(scene, reflectionTexture, defines);
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (!reflectionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
-
-                    defines.REFLECTION = true;
-                    defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
-                    defines.RGBDREFLECTION = reflectionTexture.isRGBD;
-                    defines.REFLECTIONBLUR = this._reflectionBlur > 0;
-                    defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
                     defines.REFLECTIONBGR = this.switchToBGR;
-
-                    if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
-                        defines.INVERTCUBICMAP = true;
-                    }
-
-                    defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
-                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
-
-                    switch (reflectionTexture.coordinatesMode) {
-                        case Texture.EXPLICIT_MODE:
-                            defines.REFLECTIONMAP_EXPLICIT = true;
-                            break;
-                        case Texture.PLANAR_MODE:
-                            defines.REFLECTIONMAP_PLANAR = true;
-                            break;
-                        case Texture.PROJECTION_MODE:
-                            defines.REFLECTIONMAP_PROJECTION = true;
-                            break;
-                        case Texture.SKYBOX_MODE:
-                            defines.REFLECTIONMAP_SKYBOX = true;
-                            break;
-                        case Texture.SPHERICAL_MODE:
-                            defines.REFLECTIONMAP_SPHERICAL = true;
-                            break;
-                        case Texture.EQUIRECTANGULAR_MODE:
-                            defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
-                            break;
-                        case Texture.FIXED_EQUIRECTANGULAR_MODE:
-                            defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
-                            break;
-                        case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
-                            defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
-                            break;
-                        case Texture.CUBIC_MODE:
-                        case Texture.INVCUBIC_MODE:
-                        default:
-                            defines.REFLECTIONMAP_CUBIC = true;
-                            break;
-                    }
+                    defines.REFLECTIONBLUR = this._reflectionBlur > 0;
 
                     if (this.reflectionFresnel) {
                         defines.REFLECTIONFRESNEL = true;
@@ -839,25 +623,9 @@ export class BackgroundMaterial extends PushMaterial {
                         defines.REFLECTIONFALLOFF = false;
                     }
                 } else {
-                    defines.REFLECTION = false;
                     defines.REFLECTIONFRESNEL = false;
                     defines.REFLECTIONFALLOFF = false;
                     defines.REFLECTIONBLUR = false;
-                    defines.REFLECTIONMAP_3D = false;
-                    defines.REFLECTIONMAP_SPHERICAL = false;
-                    defines.REFLECTIONMAP_PLANAR = false;
-                    defines.REFLECTIONMAP_CUBIC = false;
-                    defines.REFLECTIONMAP_PROJECTION = false;
-                    defines.REFLECTIONMAP_SKYBOX = false;
-                    defines.REFLECTIONMAP_EXPLICIT = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
-                    defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-                    defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-                    defines.INVERTCUBICMAP = false;
-                    defines.REFLECTIONMAP_OPPOSITEZ = false;
-                    defines.LODINREFLECTIONALPHA = false;
-                    defines.GAMMAREFLECTION = false;
-                    defines.RGBDREFLECTION = false;
                 }
             }
 
@@ -956,9 +724,6 @@ export class BackgroundMaterial extends PushMaterial {
 
                 "vPrimaryColor",
                 "vPrimaryColorShadow",
-                "vReflectionInfos",
-                "reflectionMatrix",
-                "vReflectionMicrosurfaceInfos",
                 "fFovMultiplier",
 
                 "shadowLevel",
@@ -975,7 +740,8 @@ export class BackgroundMaterial extends PushMaterial {
             ];
 
             AddClipPlaneUniforms(uniforms);
-            const samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
+            const samplers = ["diffuseSampler"];
+            PrepareUniformsAndSamplersForIBL(uniforms, samplers, false);
             const uniformBuffers = ["Material", "Scene"];
 
             if (ImageProcessingConfiguration) {
@@ -1085,10 +851,7 @@ export class BackgroundMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("vPrimaryColor", 4);
         this._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
         this._uniformBuffer.addUniform("vDiffuseInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionInfos", 2);
         this._uniformBuffer.addUniform("diffuseMatrix", 16);
-        this._uniformBuffer.addUniform("reflectionMatrix", 16);
-        this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
         this._uniformBuffer.addUniform("fFovMultiplier", 1);
         this._uniformBuffer.addUniform("pointSize", 1);
         this._uniformBuffer.addUniform("shadowLevel", 1);
@@ -1096,6 +859,8 @@ export class BackgroundMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("vBackgroundCenter", 3);
         this._uniformBuffer.addUniform("vReflectionControl", 4);
         this._uniformBuffer.addUniform("projectedGroundInfos", 2);
+
+        PrepareUniformLayoutForIBL(this._uniformBuffer, true, false, false);
 
         this._uniformBuffer.create();
     }
@@ -1164,17 +929,7 @@ export class BackgroundMaterial extends PushMaterial {
                         BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                     }
 
-                    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                        this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-                        this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
-
-                        this._uniformBuffer.updateFloat3(
-                            "vReflectionMicrosurfaceInfos",
-                            reflectionTexture.getSize().width,
-                            reflectionTexture.lodGenerationScale,
-                            reflectionTexture.lodGenerationOffset
-                        );
-                    }
+                    BindIBLParameters(scene, defines, this._uniformBuffer, reflectionTexture, false, true);
                 }
 
                 if (this.shadowLevel > 0) {
@@ -1204,15 +959,7 @@ export class BackgroundMaterial extends PushMaterial {
                 }
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                    if (defines.REFLECTIONBLUR && defines.TEXTURELODSUPPORT) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                    } else if (!defines.REFLECTIONBLUR) {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                    } else {
-                        this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
-                        this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
-                    }
+                    BindIBLSamplers(scene, defines, this._uniformBuffer, reflectionTexture);
 
                     if (defines.REFLECTIONFRESNEL) {
                         this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
