@@ -620,6 +620,52 @@ export class Image extends Control {
         }
     }
 
+    private _sanitizeSVG(svgString: string) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgString, "image/svg+xml");
+
+        const dangerousTags = ["script", "iframe", "foreignObject", "object", "embed", "link", "style"];
+        const dangerousAttrs = [/^on/i, /^xlink:href$/, /^href$/];
+
+        // Remove dangerous elements
+        dangerousTags.forEach((tag) => {
+            const elements = doc.getElementsByTagName(tag);
+            for (let i = elements.length - 1; i >= 0; i--) {
+                elements[i].remove();
+            }
+        });
+
+        // Recursively sanitize attributes
+        function sanitizeElement(el: Element) {
+            if (el.attributes) {
+                for (let i = el.attributes.length - 1; i >= 0; i--) {
+                    const attr = el.attributes[i];
+                    const name = attr.name;
+                    const value = attr.value;
+
+                    // Remove dangerous attributes
+                    if (dangerousAttrs.some((regex) => regex.test(name))) {
+                        el.removeAttribute(name);
+                    }
+
+                    // Remove javascript: links
+                    if (typeof value === "string" && value.trim().toLowerCase().startsWith("javascript:")) {
+                        el.removeAttribute(name);
+                    }
+                }
+            }
+
+            // Recursively sanitize children
+            for (let i = 0; i < el.children.length; i++) {
+                sanitizeElement(el.children[i]);
+            }
+        }
+
+        sanitizeElement(doc.documentElement);
+
+        return new XMLSerializer().serializeToString(doc);
+    }
+
     /**
      * Checks for svg document with icon id present
      * @param value the source svg
@@ -630,6 +676,8 @@ export class Image extends Control {
         if (typeof window === "undefined" || typeof document === "undefined" || !window.SVGSVGElement) {
             return value;
         }
+
+        value = this._sanitizeSVG(value);
 
         if (window.SVGSVGElement && value.search(/(\.svg|\.svg?[?|#].*)$/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
