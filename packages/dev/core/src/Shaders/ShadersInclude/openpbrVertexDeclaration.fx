@@ -56,9 +56,9 @@ uniform vec2 vSpecularColorInfos;
 uniform mat4 specularColorMatrix;
 #endif
 
-#ifdef BUMP
-uniform vec3 vBumpInfos;
-uniform mat4 bumpMatrix;
+#ifdef GEOMETRY_NORMAL
+uniform vec2 vGeometryNormalInfos;
+uniform mat4 geometryNormalMatrix;
 #endif
 
 #ifdef POINTSIZE
