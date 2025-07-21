@@ -5,7 +5,9 @@ import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping
 import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
 import * as path from "path";
 import { camelize, copyFile } from "./utils.js";
-import type { RuleSetRule, Configuration, Compiler } from "webpack";
+import type { RuleSetRule, Configuration, Compiler, WebpackPluginInstance } from "webpack";
+import * as ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import ReactRefreshTypeScript from "react-refresh-typescript";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
@@ -65,12 +67,22 @@ export const getRules = (
         resourceType?: "asset/inline" | "asset/resource";
         extraRules?: RuleSetRule[];
         mode?: "development" | "production";
+        enableFastRefresh?: boolean; // for react fast refresh
     } = {
         includeAssets: true,
         includeCSS: true,
         sideEffects: true,
     }
 ) => {
+    const getCustomTransformers = options.enableFastRefresh
+        ? (program: ts.Program) => {
+              const transformers: ts.CustomTransformers = options?.tsOptions?.getCustomTransformers?.(program) ?? {};
+              transformers.before = transformers.before ?? [];
+              transformers.before.push(ReactRefreshTypeScript());
+              return transformers;
+          }
+        : options?.tsOptions?.getCustomTransformers;
+
     const rules: RuleSetRule[] = [
         {
             test: /\.tsx?$/,
@@ -79,7 +91,7 @@ export const getRules = (
             sideEffects: options.sideEffects,
             options: {
                 configFile: "tsconfig.build.json",
-                ...options.tsOptions,
+                ...{ ...options.tsOptions, getCustomTransformers },
             },
         },
         {
@@ -177,9 +189,18 @@ export const commonDevWebpackConfiguration = (
         port: number;
         static?: string[];
         showBuildProgress?: boolean;
-    }
+    },
+    additionalPlugins?: WebpackPluginInstance[]
 ) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
+    const enableHotReload = (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false;
+
+    let plugins: WebpackPluginInstance[] | undefined = additionalPlugins;
+    if (devServerConfig && enableHotReload) {
+        plugins = plugins ?? [];
+        plugins.push(new ReactRefreshWebpackPlugin());
+    }
+
     return {
         mode: production ? "production" : "development",
         devtool: production ? "source-map" : "inline-cheap-module-source-map",
@@ -190,7 +211,7 @@ export const commonDevWebpackConfiguration = (
                   webSocketServer: production ? false : "ws",
                   compress: production,
                   server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-                  hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
+                  hot: enableHotReload,
                   liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
                   headers: {
                       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -217,6 +238,7 @@ export const commonDevWebpackConfiguration = (
                   devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
               }
             : undefined,
+        plugins,
     };
 };
 

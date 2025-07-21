@@ -1,6 +1,6 @@
 import type { IDisposable } from "core/index";
 
-import type { AccordionSection, AccordionSectionContent } from "../../../components/accordionPane";
+import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
@@ -17,10 +17,17 @@ export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
 type PropertiesSectionContent<EntityT> = {
     /**
+     * A unique key for the the content.
+     */
+    key: string;
+
+    /**
      * A predicate function to determine if the content applies to the given entity.
      */
     predicate: (entity: unknown) => entity is EntityT;
-} & AccordionSectionContent<EntityT>;
+} & {
+    content: readonly Omit<DynamicAccordionSectionContent<EntityT>, "key">[];
+};
 
 /**
  * Allows new sections or content to be added to the properties pane.
@@ -30,7 +37,7 @@ export interface IPropertiesService extends IService<typeof PropertiesServiceIde
      * Adds a new section (e.g. "General", "Transforms", etc.).
      * @param section A description of the section to add.
      */
-    addSection(section: AccordionSection): IDisposable;
+    addSection(section: DynamicAccordionSection): IDisposable;
 
     /**
      * Adds content to one or more sections.
@@ -47,7 +54,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
     produces: [PropertiesServiceIdentity],
     consumes: [ShellServiceIdentity, SelectionServiceIdentity],
     factory: (shellService, selectionService) => {
-        const sectionsCollection = new ObservableCollection<AccordionSection>();
+        const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<PropertiesSectionContent<unknown>>();
 
         const registration = shellService.addSidePane({
@@ -61,7 +68,19 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
-                const applicableContent = entity ? sectionContent.filter((content) => content.predicate(entity)) : [];
+                const applicableContent = entity
+                    ? sectionContent
+                          .filter((section) => section.predicate(entity))
+                          .flatMap((section) => {
+                              return section.content.map((content) => {
+                                  return {
+                                      key: section.key,
+                                      section: content.section,
+                                      component: content.component,
+                                  };
+                              });
+                          })
+                    : [];
 
                 return <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />;
             },

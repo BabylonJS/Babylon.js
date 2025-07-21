@@ -10,7 +10,7 @@ import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
-import { Vector3PropertyLine } from "../fluent/hoc/vectorPropertyLine";
+import { Vector3PropertyLine } from "../fluent/hoc/propertyLines/vectorPropertyLine";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 interface IVector3LineComponentProps {

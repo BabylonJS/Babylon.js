@@ -4,7 +4,6 @@ import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
-import { Color3 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import type { Mesh } from "../Meshes/mesh";
 import type { UniformBuffer } from "./uniformBuffer";
@@ -19,9 +18,10 @@ import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+import type { IColor3Like } from "core/Maths";
 
 // Temps
-const TempFogColor = Color3.Black();
+const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
 const TmpMorphInfluencers = {
     NUM_MORPH_INFLUENCERS: 0,
     NORMAL: false,

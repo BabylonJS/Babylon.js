@@ -1,9 +1,9 @@
 import type { DirectionalLight } from "core/index";
 import type { FunctionComponent } from "react";
 
-import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/colorPropertyLine";
-import { FloatInputPropertyLine } from "shared-ui-components/fluent/hoc/inputPropertyLine";
-import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/vectorPropertyLine";
+import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 
 import { useColor3Property, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
@@ -20,7 +20,7 @@ export const DirectionalLightSetupProperties: FunctionComponent<{ context: Direc
             <Vector3PropertyLine label="Direction" value={direction} onChange={(val) => (directionalLight.direction = val)} />
             <Color3PropertyLine label="Diffuse" value={diffuseColor} onChange={(val) => (directionalLight.diffuse = val)} />
             <Color3PropertyLine label="Specular" value={specularColor} onChange={(val) => (directionalLight.specular = val)} />
-            <BoundProperty component={FloatInputPropertyLine} label="Intensity" target={directionalLight} propertyKey="intensity" />
+            <BoundProperty component={NumberInputPropertyLine} label="Intensity" target={directionalLight} propertyKey="intensity" />
         </>
     );
 };

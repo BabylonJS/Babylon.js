@@ -8,6 +8,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import type { NodeMaterialConnectionPoint } from "core/Materials";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials";
 import { GetListOfAcceptedTypes } from "shared-ui-components/nodeGraphSystem/tools";
+import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;
@@ -57,15 +58,9 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
         );
 
         return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">NODE MATERIAL EDITOR</div>
-                </div>
-                <div>
-                    <LineContainerComponent title="GENERAL">{info}</LineContainerComponent>
-                </div>
-            </div>
+            <PropertyTabComponentBase>
+                <LineContainerComponent title="GENERAL">{info}</LineContainerComponent>
+            </PropertyTabComponentBase>
         );
     }
 }

@@ -8,6 +8,7 @@ import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 import "core/Engines/Extensions/engine.multiRender";
 import "core/Engines/WebGPU/Extensions/engine.multiRender";
@@ -40,6 +41,11 @@ export class FrameGraph {
      * Name of the frame graph
      */
     public name = "Frame Graph";
+
+    /**
+     * Gets the unique id of the frame graph
+     */
+    public readonly uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * Gets or sets a boolean indicating that texture allocation should be optimized (that is, reuse existing textures when possible to limit GPU memory usage) (default: true)
@@ -97,7 +103,7 @@ export class FrameGraph {
         this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
 
-        this._scene.frameGraphs.push(this);
+        this._scene.addFrameGraph(this);
     }
 
     /**
@@ -326,9 +332,6 @@ export class FrameGraph {
         this.textureManager._dispose();
         this._renderContext._dispose();
 
-        const index = this._scene.frameGraphs.indexOf(this);
-        if (index !== -1) {
-            this._scene.frameGraphs.splice(index, 1);
-        }
+        this._scene.removeFrameGraph(this);
     }
 }
