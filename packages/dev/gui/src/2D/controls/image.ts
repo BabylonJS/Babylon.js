@@ -677,10 +677,9 @@ export class Image extends Control {
             return value;
         }
 
-        value = this._sanitizeSVG(value);
-
         if (window.SVGSVGElement && value.search(/(\.svg|\.svg?[?|#].*)$/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
+            value = this._sanitizeSVG(value);
             const svgsrc = value.split("#")[0];
             const elemid = value.split("#")[1];
             // check if object alr exist in document
