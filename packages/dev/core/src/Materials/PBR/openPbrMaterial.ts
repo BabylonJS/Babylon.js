@@ -251,12 +251,6 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public PARALLAXOCCLUSION = false;
     public NORMALXYSCALE = true;
 
-    public LIGHTMAP = false;
-    public LIGHTMAPDIRECTUV = 0;
-    public USELIGHTMAPASSHADOWMAP = false;
-    public GAMMALIGHTMAP = false;
-    public RGBDLIGHTMAP = false;
-
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
     public REFLECTIONMAP_SPHERICAL = false;
@@ -278,7 +272,6 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public LODINREFLECTIONALPHA = false;
     public GAMMAREFLECTION = false;
     public RGBDREFLECTION = false;
-    public LINEARSPECULARREFLECTION = false;
     public RADIANCEOCCLUSION = false;
     public HORIZONOCCLUSION = false;
 
@@ -659,20 +652,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public useSpecularWeightFromTextureAlpha = false;
 
     /**
-     * Stores the pre-calculated light information of a mesh in a texture.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
-    public lightmapTexture: Nullable<BaseTexture>;
-
-    /**
-     * If true, the light map contains occlusion information instead of lighting info.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useLightmapAsShadowmap = false;
-
-    /**
      * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
      */
     @serialize()
@@ -980,36 +959,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useSpecularWeightFromTextureAlpha = false;
-
-    /**
-     * Stores the pre-calculated light information of a mesh in a texture.
-     * @internal
-     */
-    public _lightmapTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * The color of a material in ambient lighting.
-     * @internal
-     */
-    public _ambientColor = new Color3(0, 0, 0);
-
-    /**
-     * AKA Specular Color in other nomenclature.
-     * @internal
-     */
-    public _reflectivityColor = new Color3(1, 1, 1);
-
-    /**
-     * The color applied when light is reflected from a material.
-     * @internal
-     */
-    public _reflectionColor = new Color3(1, 1, 1);
-
-    /**
-     * Specifies that the material will use the light map as a show map.
-     * @internal
-     */
-    public _useLightmapAsShadowmap = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -1597,12 +1546,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                    if (!this._lightmapTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     // This is blocking.
                     if (!this._environmentBRDFTexture.isReady()) {
@@ -1691,8 +1634,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override buildUniformLayout(): void {
         // Order is important !
         const ubo = this._uniformBuffer;
-        ubo.addUniform("vLightmapInfos", 2);
-        ubo.addUniform("lightmapMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("vLightingIntensity", 4);
 
@@ -1789,11 +1730,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         }
                     }
 
-                    if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                        ubo.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                        BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
-                    }
-
                     if (this.geometryNormalTexture) {
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
@@ -1851,10 +1787,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (defines.ENVIRONMENTBRDF) {
                     ubo.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
-                }
-
-                if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                    ubo.setTexture("lightmapSampler", this._lightmapTexture);
                 }
             }
 
@@ -1929,10 +1861,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             results.push(this._reflectionTexture);
         }
 
-        if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
-            results.push(this._lightmapTexture);
-        }
-
         return results;
     }
 
@@ -1953,10 +1881,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (this._reflectionTexture) {
             activeTextures.push(this._reflectionTexture);
-        }
-
-        if (this._lightmapTexture) {
-            activeTextures.push(this._lightmapTexture);
         }
 
         return activeTextures;
@@ -1981,10 +1905,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         if (this._reflectionTexture === texture) {
-            return true;
-        }
-
-        if (this._lightmapTexture === texture) {
             return true;
         }
 
@@ -2020,7 +1940,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
 
             this._reflectionTexture?.dispose();
-            this._lightmapTexture?.dispose();
         }
 
         this._renderTargets.dispose();
@@ -2115,10 +2034,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             fallbacks.addFallback(fallbackRank++, "USEIRRADIANCEMAP");
         }
 
-        if (defines.LIGHTMAP) {
-            fallbacks.addFallback(fallbackRank++, "LIGHTMAP");
-        }
-
         if (defines.NORMAL) {
             fallbacks.addFallback(fallbackRank++, "NORMAL");
         }
@@ -2173,10 +2088,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vFogInfos",
             "vFogColor",
             "pointSize",
-            "vLightmapInfos",
             "mBones",
             "normalMatrix",
-            "lightmapMatrix",
             "vLightingIntensity",
             "logarithmicDepthConstant",
             "vTangentSpaceParams",
@@ -2192,7 +2105,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         const samplers = [
-            "lightmapSampler",
             "environmentBrdfSampler",
             "boneSampler",
             "morphTargets",
@@ -2321,7 +2233,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
-                defines.LIGHTMAPDIRECTUV = 0;
 
                 if (engine.getCaps().textureLOD) {
                     defines.LODBASEDMICROSFURACE = true;
@@ -2346,15 +2257,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     engine.getCaps().maxVaryingVectors <= 8 ||
                     this._baseDiffuseRoughnessTexture != null;
                 PrepareDefinesForIBL(scene, reflectionTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
-
-                if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                    PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
-                    defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
-                    defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
-                    defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
-                } else {
-                    defines.LIGHTMAP = false;
-                }
 
                 if (MaterialFlags.SpecularTextureEnabled) {
                     if (this._baseMetalRoughTexture) {

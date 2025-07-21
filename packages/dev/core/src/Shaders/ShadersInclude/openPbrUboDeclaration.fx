@@ -23,8 +23,6 @@ layout(std140, column_major) uniform;
 // }
 
 uniform Material {
-    vec2 vLightmapInfos;
-    mat4 lightmapMatrix;
     vec2 vTangentSpaceParams;
     vec4 vLightingIntensity;
     float pointSize;

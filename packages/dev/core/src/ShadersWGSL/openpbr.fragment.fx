@@ -132,8 +132,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
     );
 
-    #include<pbrBlockLightmapInit>
-
 #ifdef UNLIT
     var diffuseBase: vec3f =  vec3f(1., 1., 1.);
 #else
