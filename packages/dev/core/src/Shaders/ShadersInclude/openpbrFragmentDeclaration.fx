@@ -42,10 +42,6 @@ uniform vec2 vGeometryOpacityInfos;
 uniform vec2 vEmissionInfos;
 #endif
 
-#ifdef LIGHTMAP
-uniform vec2 vLightmapInfos;
-#endif
-
 #ifdef METALLIC_ROUGHNESS
 uniform vec2 vBaseMetalRoughInfos;
 #endif
