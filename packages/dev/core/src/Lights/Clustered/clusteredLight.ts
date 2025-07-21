@@ -104,8 +104,9 @@ export class ClusteredLight extends Light {
         this._disposeTileMask();
     }
 
-    private _proxyMesh: Mesh;
+    private readonly _proxyMaterial: LightProxyMaterial;
     private readonly _proxyMatrixBuffer: Float32Array;
+    private _proxyMesh: Mesh;
     private _proxyRenderId = -1;
 
     private _proxySegments = 4;
@@ -117,8 +118,10 @@ export class ClusteredLight extends Light {
         if (this._proxySegments === segments) {
             return;
         }
-        this._proxyMesh.dispose(false, true);
+        this._proxySegments = segments;
+        this._proxyMesh.dispose();
         this._createProxyMesh();
+        this._proxyMaterial._updateUniforms();
     }
 
     private _maxRange = 16383;
@@ -139,6 +142,7 @@ export class ClusteredLight extends Light {
         super(name, scene);
         this.maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
 
+        this._proxyMaterial = new LightProxyMaterial("ProxyMaterial", this);
         this._proxyMatrixBuffer = new Float32Array(this.maxLights * 16);
         this._createProxyMesh();
 
@@ -225,6 +229,8 @@ export class ClusteredLight extends Light {
             this._tileMaskBuffer = new StorageBuffer(<WebGPUEngine>engine, bufferSize);
         }
 
+        // If the tile mask was disposed it means the tile counts have changed
+        this._proxyMaterial._updateUniforms();
         return this._tileMaskTexture;
     }
 
@@ -236,14 +242,22 @@ export class ClusteredLight extends Light {
     }
 
     private _createProxyMesh(): void {
-        this._proxyMesh = CreateSphere("ProxyMesh", { diameter: 2, segments: this._proxySegments }, this._scene);
+        // Compute the lowest point in the sphere and expand the diameter accordingly
+        const rotationZ = Matrix.RotationZ(-Math.PI / (2 + this._proxySegments));
+        const rotationY = Matrix.RotationY(Math.PI / this._proxySegments);
+        const start = Vector3.Up();
+        const afterRotZ = Vector3.TransformCoordinates(start, rotationZ);
+        const end = Vector3.TransformCoordinates(afterRotZ, rotationY);
+        const midPoint = Vector3.Lerp(start, end, 0.5);
+        this._proxyMesh = CreateSphere("ProxyMesh", { diameter: 2 / midPoint.length(), segments: this._proxySegments }, this._scene);
+
         // Make sure it doesn't render for the default scene
         this._scene.removeMesh(this._proxyMesh);
         if (this._tileMaskTexture) {
             this._tileMaskTexture.renderList = [this._proxyMesh];
         }
 
-        this._proxyMesh.material = new LightProxyMaterial("ProxyMeshMaterial", this);
+        this._proxyMesh.material = this._proxyMaterial;
         this._proxyMesh.thinInstanceSetBuffer("matrix", this._proxyMatrixBuffer, 16, false);
     }
 
