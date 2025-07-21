@@ -1057,6 +1057,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("world", 16);
         this._uniformBuffer.addUniform("visibility", 1);
+        this._uniformBuffer.addUniform("hasIndices", 1);
         this._uniformBuffer.create();
     }
 
