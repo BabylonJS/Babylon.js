@@ -24,10 +24,7 @@ layout(std140, column_major) uniform;
 
 uniform Material {
     vec2 vLightmapInfos;
-    vec3 vBumpInfos;
-    
     mat4 lightmapMatrix;
-    mat4 bumpMatrix;
     vec2 vTangentSpaceParams;
     vec4 vLightingIntensity;
     float pointSize;
@@ -84,6 +81,8 @@ uniform Material {
     mat4 specularColorMatrix;
     vec2 vBaseMetalRoughInfos;
     mat4 baseMetalRoughMatrix;
+    vec2 vGeometryNormalInfos;
+    mat4 geometryNormalMatrix;
     vec2 vGeometryOpacityInfos;
     mat4 geometryOpacityMatrix;
     vec2 vEmissionInfos;
