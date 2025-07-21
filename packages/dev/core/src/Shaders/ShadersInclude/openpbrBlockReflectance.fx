@@ -23,7 +23,7 @@
     #endif
 
     #ifdef HORIZONOCCLUSION
-        #ifdef BUMP
+        #ifdef GEOMETRY_NORMAL
             #ifdef REFLECTIONMAP_3D
                 colorSpecularEnvironmentReflectance *= eho;
             #endif

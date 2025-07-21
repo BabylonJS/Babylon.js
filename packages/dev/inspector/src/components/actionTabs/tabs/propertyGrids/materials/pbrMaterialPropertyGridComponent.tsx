@@ -121,39 +121,47 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                     />
                 )}
-                <TextureLinkLineComponent
-                    label="Bump"
-                    texture={material.bumpTexture}
-                    propertyName="bumpTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
-                <TextureLinkLineComponent
-                    label="Emissive"
-                    texture={material.emissiveTexture}
-                    propertyName="emissiveTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
-                <TextureLinkLineComponent
-                    label="Opacity"
-                    texture={material.opacityTexture}
-                    propertyName="opacityTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
-                <TextureLinkLineComponent
-                    customDebugAction={(state) => this.switchAmbientMode(state)}
-                    label="Ambient"
-                    texture={material.ambientTexture}
-                    propertyName="ambientTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Bump"
+                        texture={material.bumpTexture}
+                        propertyName="bumpTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Emissive"
+                        texture={material.emissiveTexture}
+                        propertyName="emissiveTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Opacity"
+                        texture={material.opacityTexture}
+                        propertyName="opacityTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        customDebugAction={(state) => this.switchAmbientMode(state)}
+                        label="Ambient"
+                        texture={material.ambientTexture}
+                        propertyName="ambientTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
                 <TextureLinkLineComponent
                     label="Lightmap"
                     texture={material.lightmapTexture}
@@ -1085,7 +1093,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    {material.bumpTexture && (
+                    {material instanceof PBRMaterial && material.bumpTexture && (
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Bump strength"
@@ -1097,7 +1105,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    {material.ambientTexture && (
+                    {material instanceof PBRMaterial && material.ambientTexture && (
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Ambient strength"

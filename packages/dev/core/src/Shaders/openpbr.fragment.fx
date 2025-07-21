@@ -2,7 +2,7 @@
 
 #define CUSTOM_FRAGMENT_EXTENSION
 
-#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA)
+#if defined(GEOMETRY_NORMAL) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -51,8 +51,8 @@ precision highp float;
 #include<hdrFilteringFunctions>
 #include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
-#include<bumpFragmentMainFunctions>
-#include<bumpFragmentFunctions>
+#include<openpbrNormalMapFragmentMainFunctions>
+#include<openpbrNormalMapFragmentFunctions>
 
 #ifdef REFLECTION
     #include<reflectionFunction>
@@ -76,7 +76,7 @@ void main(void) {
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>
 
-    #include<bumpFragment>
+    #include<openpbrNormalMapFragment>
 
     #include<pbrBlockNormalFinal>
 
@@ -231,7 +231,7 @@ vec4 specularColor = vSpecularColor;
     #endif
 
     // _____________________________ Compute Geometry info _________________________________
-    #include<pbrBlockGeometryInfo>
+    #include<openpbrBlockGeometryInfo>
 
     // _____________________________ Reflection Info _______________________________________
     #ifdef REFLECTION

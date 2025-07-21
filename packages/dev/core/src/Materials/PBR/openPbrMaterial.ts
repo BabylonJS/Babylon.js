@@ -245,8 +245,6 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public NORMAL = false;
     public TANGENT = false;
-    public BUMP = false;
-    public BUMPDIRECTUV = 0;
     public OBJECTSPACE_NORMALMAP = false;
     public PARALLAX = false;
     public PARALLAX_RHS = false;
@@ -565,6 +563,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _baseMetalRoughTexture: Sampler = new Sampler("base_metalness_specular_roughness", "baseMetalRough", "METALLIC_ROUGHNESS");
 
     /**
+     * Defines the normal of the material's geometry.
+     * See OpenPBR's specs for geometry_normal
+     */
+    public geometryNormalTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryNormalTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryNormalTexture: Sampler = new Sampler("geometry_normal", "geometryNormal", "GEOMETRY_NORMAL");
+
+    /**
      * Defines the opacity of the material's geometry.
      * See OpenPBR's specs for geometry_opacity
      */
@@ -638,13 +645,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public environmentIntensity: number = 1.0;
 
     /**
-     * Debug Control allowing disabling the bump map on this material.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public disableBumpMap: boolean = false;
-
-    /**
      * Stores the reflection values in a texture.
      */
     @serializeAsTexture()
@@ -657,13 +657,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useSpecularWeightFromTextureAlpha = false;
-
-    /**
-     * Stores surface normal data used to displace a mesh in a texture.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
@@ -791,14 +784,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public useObjectSpaceNormalMap = false;
 
     /**
-     * Allows using the bump map in parallax mode.
+     * Allows using the normal map in parallax mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallax = false;
 
     /**
-     * Allows using the bump map in parallax occlusion mode.
+     * Allows using the normal map in parallax occlusion mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -819,7 +812,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public disableLighting = false;
 
     /**
-     * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+     * Force the shader to compute irradiance in the fragment shader in order to take normal mapping into account.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -890,7 +883,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     /**
      * Enables specular anti aliasing in the PBR shader.
      * It will both interacts on the Geometry for analytical and IBL lighting.
-     * It also prefilter the roughness map based on the bump values.
+     * It also prefilter the roughness map based on the normalmap values.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -976,12 +969,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, 1.0);
 
     /**
-     * Debug Control allowing disabling the bump map on this material.
-     * @internal
-     */
-    public _disableBumpMap: boolean = false;
-
-    /**
      * Stores the reflection values in a texture.
      * @internal
      */
@@ -993,12 +980,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useSpecularWeightFromTextureAlpha = false;
-
-    /**
-     * Stores surface normal data used to displace a mesh in a texture.
-     * @internal
-     */
-    public _bumpTexture: Nullable<BaseTexture> = null;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
@@ -1103,13 +1084,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useObjectSpaceNormalMap = false;
 
     /**
-     * Allows using the bump map in parallax mode.
+     * Allows using the normal map in parallax mode.
      * @internal
      */
     public _useParallax = false;
 
     /**
-     * Allows using the bump map in parallax occlusion mode.
+     * Allows using the normal map in parallax occlusion mode.
      * @internal
      */
     public _useParallaxOcclusion = false;
@@ -1179,7 +1160,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _environmentBRDFTexture: Nullable<BaseTexture> = null;
 
     /**
-     * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+     * Force the shader to compute irradiance in the fragment shader in order to take normal mapping into account.
      * @internal
      */
     public _forceIrradianceInFragment = false;
@@ -1224,7 +1205,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     /**
      * Enables specular anti aliasing in the PBR shader.
      * It will both interacts on the Geometry for analytical and IBL lighting.
-     * It also prefilter the roughness map based on the bump values.
+     * It also prefilter the roughness map based on the normalmap values.
      * @internal
      */
     public _enableSpecularAntiAliasing = false;
@@ -1369,6 +1350,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._specularRoughness;
         this._specularIor;
         this._baseMetalRoughTexture;
+        this._geometryNormalTexture;
         this._geometryOpacity;
         this._geometryOpacityTexture;
         this._emissionColor;
@@ -1621,13 +1603,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                    // Bump texture cannot be not blocking.
-                    if (!this._bumpTexture.isReady()) {
-                        return false;
-                    }
-                }
-
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     // This is blocking.
                     if (!this._environmentBRDFTexture.isReady()) {
@@ -1717,9 +1692,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Order is important !
         const ubo = this._uniformBuffer;
         ubo.addUniform("vLightmapInfos", 2);
-        ubo.addUniform("vBumpInfos", 3);
         ubo.addUniform("lightmapMatrix", 16);
-        ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("vLightingIntensity", 4);
 
@@ -1821,10 +1794,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
                     }
 
-                    if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                        ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
-                        BindTextureMatrix(this._bumpTexture, ubo, "bump");
-
+                    if (this.geometryNormalTexture) {
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {
@@ -1885,10 +1855,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                     ubo.setTexture("lightmapSampler", this._lightmapTexture);
-                }
-
-                if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                    ubo.setTexture("bumpSampler", this._bumpTexture);
                 }
             }
 
@@ -1963,10 +1929,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             results.push(this._reflectionTexture);
         }
 
-        if (this._bumpTexture && this._bumpTexture.animations && this._bumpTexture.animations.length > 0) {
-            results.push(this._bumpTexture);
-        }
-
         if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
             results.push(this._lightmapTexture);
         }
@@ -1991,10 +1953,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (this._reflectionTexture) {
             activeTextures.push(this._reflectionTexture);
-        }
-
-        if (this._bumpTexture) {
-            activeTextures.push(this._bumpTexture);
         }
 
         if (this._lightmapTexture) {
@@ -2023,10 +1981,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         if (this._reflectionTexture === texture) {
-            return true;
-        }
-
-        if (this._bumpTexture === texture) {
             return true;
         }
 
@@ -2066,7 +2020,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
 
             this._reflectionTexture?.dispose();
-            this._bumpTexture?.dispose();
             this._lightmapTexture?.dispose();
         }
 
@@ -2148,10 +2101,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             fallbacks.addFallback(fallbackRank++, "TANGENT");
         }
 
-        if (defines.BUMP) {
-            fallbacks.addFallback(fallbackRank++, "BUMP");
-        }
-
         fallbackRank = HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
 
         if (defines.SPECULARTERM) {
@@ -2224,11 +2173,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "vFogInfos",
             "vFogColor",
             "pointSize",
-            "vBumpInfos",
             "vLightmapInfos",
             "mBones",
             "normalMatrix",
-            "bumpMatrix",
             "lightmapMatrix",
             "vLightingIntensity",
             "logarithmicDepthConstant",
@@ -2245,13 +2192,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         const samplers = [
-            "reflectivitySampler",
-            "bumpSampler",
             "lightmapSampler",
             "environmentBrdfSampler",
             "boneSampler",
-            "metallicReflectanceSampler",
-            "reflectanceSampler",
             "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
@@ -2378,13 +2321,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
-                defines.AMBIENTDIRECTUV = 0;
-                defines.OPACITYDIRECTUV = 0;
-                defines.EMISSIVEDIRECTUV = 0;
-                defines.REFLECTIVITYDIRECTUV = 0;
-                defines.METALLIC_REFLECTANCEDIRECTUV = 0;
-                defines.REFLECTANCEDIRECTUV = 0;
-                defines.BUMPDIRECTUV = 0;
                 defines.LIGHTMAPDIRECTUV = 0;
 
                 if (engine.getCaps().textureLOD) {
@@ -2428,9 +2364,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.SPECULAR_WEIGHT_USE_ALPHA_ONLY = this._useSpecularWeightFromTextureAlpha;
                 }
 
-                if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                    PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
-
+                if (this.geometryNormalTexture) {
                     if (this._useParallax && this.baseColorTexture && MaterialFlags.DiffuseTextureEnabled) {
                         defines.PARALLAX = true;
                         defines.PARALLAX_RHS = scene.useRightHandedSystem;
@@ -2438,10 +2372,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     } else {
                         defines.PARALLAX = false;
                     }
-
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
-                    defines.BUMP = false;
                     defines.PARALLAX = false;
                     defines.PARALLAX_RHS = false;
                     defines.PARALLAXOCCLUSION = false;

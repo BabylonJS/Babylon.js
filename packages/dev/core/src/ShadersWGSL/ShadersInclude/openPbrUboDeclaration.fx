@@ -1,9 +1,6 @@
 
 uniform vLightmapInfos: vec2f;
-uniform vBumpInfos: vec3f;
-
 uniform lightmapMatrix: mat4x4f;
-uniform bumpMatrix: mat4x4f;
 uniform vTangentSpaceParams: vec2f;
 uniform vLightingIntensity: vec4f;
 uniform pointSize: f32;
@@ -60,6 +57,8 @@ uniform vSpecularColorInfos: vec2f;
 uniform specularColorMatrix: mat4x4f;
 uniform vBaseMetalRoughInfos: vec2f;
 uniform baseMetalRoughMatrix: mat4x4f;
+uniform vGeometryNormalInfos: vec2f;
+uniform geometryNormalMatrix: mat4x4f;
 uniform vGeometryOpacityInfos: vec2f;
 uniform geometryOpacityMatrix: mat4x4f;
 uniform vEmissionInfos: vec2f;

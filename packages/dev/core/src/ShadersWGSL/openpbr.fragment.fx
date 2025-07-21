@@ -35,8 +35,8 @@
 #include<hdrFilteringFunctions>
 #include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
-#include<bumpFragmentMainFunctions>
-#include<bumpFragmentFunctions>
+#include<openpbrNormalMapFragmentMainFunctions>
+#include<openpbrNormalMapFragmentFunctions>
 
 #ifdef REFLECTION
     #include<reflectionFunction>
@@ -61,7 +61,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>
 
-    #include<bumpFragment>
+    #include<openpbrNormalMapFragment>
 
     #include<pbrBlockNormalFinal>
 
@@ -205,7 +205,7 @@ var specularColor: vec4f = uniforms.vSpecularColor;
     #endif
 
     // _____________________________ Compute Geometry info _________________________________
-    #include<pbrBlockGeometryInfo>
+    #include<openpbrBlockGeometryInfo>
 
     // _____________________________ Reflection Info _______________________________________
     #ifdef REFLECTION

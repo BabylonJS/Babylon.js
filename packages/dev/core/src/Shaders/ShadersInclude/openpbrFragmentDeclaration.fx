@@ -29,8 +29,8 @@ uniform vec2 vBaseDiffuseRoughnessInfos;
 uniform vec4 vAmbientOcclusionInfos;
 #endif
 
-#ifdef BUMP
-uniform vec3 vBumpInfos;
+#ifdef GEOMETRY_NORMAL
+uniform vec2 vGeometryNormalInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 

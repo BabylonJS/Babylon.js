@@ -2364,16 +2364,24 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(
                 this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Normal)`;
-                    babylonMaterial.bumpTexture = texture;
+                    if (this.parent.useOpenPBR) {
+                        const mat = babylonMaterial as OpenPBRMaterial;
+                        mat.geometryNormalTexture = texture;
+                        if (material.normalTexture?.scale != undefined && mat.geometryNormalTexture) {
+                            mat.geometryNormalTexture.level = material.normalTexture.scale;
+                        }
+                    } else {
+                        const mat = babylonMaterial as PBRMaterial;
+                        mat.bumpTexture = texture;
+                        if (material.normalTexture?.scale != undefined && mat.bumpTexture) {
+                            mat.bumpTexture.level = material.normalTexture.scale;
+                        }
+                    }
                 })
             );
 
             babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
             babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
-            if (material.normalTexture.scale != undefined && babylonMaterial.bumpTexture) {
-                babylonMaterial.bumpTexture.level = material.normalTexture.scale;
-            }
-
             babylonMaterial.forceIrradianceInFragment = true;
         }
 
