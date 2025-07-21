@@ -58,40 +58,6 @@
     uniform sampler2D environmentBrdfSampler;
 #endif
 
-// SUBSURFACE
-#ifdef SUBSURFACE
-    #ifdef SS_REFRACTION
-        #ifdef SS_REFRACTIONMAP_3D
-            #define sampleRefraction(s, c) textureCube(s, c)
-
-            uniform samplerCube refractionSampler;
-
-            #ifdef LODBASEDMICROSFURACE
-                #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
-            #else
-                uniform samplerCube refractionSamplerLow;
-                uniform samplerCube refractionSamplerHigh;
-            #endif
-        #else
-            #define sampleRefraction(s, c) texture2D(s, c)
-
-            uniform sampler2D refractionSampler;
-
-            #ifdef LODBASEDMICROSFURACE
-                #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #else
-                uniform sampler2D refractionSamplerLow;
-                uniform sampler2D refractionSamplerHigh;
-            #endif
-        #endif
-    #endif
-
-    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_THICKNESSANDMASK_TEXTURE,_VARYINGNAME_,Thickness,_SAMPLERNAME_,thickness)
-    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_REFRACTIONINTENSITY_TEXTURE,_VARYINGNAME_,RefractionIntensity,_SAMPLERNAME_,refractionIntensity)
-    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYINTENSITY_TEXTURE,_VARYINGNAME_,TranslucencyIntensity,_SAMPLERNAME_,translucencyIntensity)
-    #include<samplerFragmentDeclaration>(_DEFINENAME_,SS_TRANSLUCENCYCOLOR_TEXTURE,_VARYINGNAME_,TranslucencyColor,_SAMPLERNAME_,translucencyColor)
-#endif
-
 #ifdef IBL_CDF_FILTERING
     uniform sampler2D icdfSampler;
 #endif
