@@ -1,5 +1,24 @@
 # Changelog
 
+## 8.17.1
+
+### Core
+
+- Reimplement legacy `AudioEngine` class with AudioEngineV2 `WebAudioEngine` class - by [docEdub](https://github.com/docEdub) ([#16898](https://github.com/BabylonJS/Babylon.js/pull/16898))
+- Remove unwanted dependencies - by [deltakosh](https://github.com/deltakosh) ([#16903](https://github.com/BabylonJS/Babylon.js/pull/16903))
+- Fix some boolean options - by [matanui159](https://github.com/matanui159) ([#16901](https://github.com/BabylonJS/Babylon.js/pull/16901))
+- enum fix for ktx/basis - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16900](https://github.com/BabylonJS/Babylon.js/pull/16900))
+- Fix performance issue on morph targets manager clone - by [littleboarx](https://github.com/littleboarx) ([#16899](https://github.com/BabylonJS/Babylon.js/pull/16899))
+- Inspector v2: Add Effect Layers to Scene Explorer - by [ryantrem](https://github.com/ryantrem) ([#16877](https://github.com/BabylonJS/Babylon.js/pull/16877))
+- Fix setMotionType with Physics instances - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16880](https://github.com/BabylonJS/Babylon.js/pull/16880))
+
+### Inspector
+
+
+### Playground
+
+- playground: allow zip download in self-hosted server with non-root path - by [kzhsw](https://github.com/kzhsw) ([#16892](https://github.com/BabylonJS/Babylon.js/pull/16892))
+
 ## 8.17.0
 
 ### Core
