@@ -1,15 +1,19 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { ISelectionService } from "../../selectionService";
 import type { IPropertiesService } from "./propertiesService";
 
+import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
+import { BoneGeneralProperties } from "../../../components/properties/skeleton/boneProperties";
 import { SkeletonGeneralProperties, SkeletonViewerProperties } from "../../../components/properties/skeleton/skeletonProperties";
+import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
-export const SkeletonPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const SkeletonPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Skeleton Properties",
-    consumes: [PropertiesServiceIdentity],
-    factory: (propertiesService) => {
-        const generalContentRegistration = propertiesService.addSectionContent({
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, selectionService) => {
+        const skeletonGeneralContentRegistration = propertiesService.addSectionContent({
             key: "Skeleton General Properties",
             predicate: (entity) => entity instanceof Skeleton,
             content: [
@@ -20,7 +24,7 @@ export const SkeletonPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
-        const viewerContentRegistration = propertiesService.addSectionContent({
+        const skeletonViewerContentRegistration = propertiesService.addSectionContent({
             key: "Skeleton Viewer Properties",
             predicate: (entity) => entity instanceof Skeleton,
             content: [
@@ -31,10 +35,22 @@ export const SkeletonPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const boneGeneralContentRegistration = propertiesService.addSectionContent({
+            key: "Bone General Properties",
+            predicate: (entity) => entity instanceof Bone,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <BoneGeneralProperties bone={context} setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
-                viewerContentRegistration.dispose();
-                generalContentRegistration.dispose();
+                boneGeneralContentRegistration.dispose();
+                skeletonViewerContentRegistration.dispose();
+                skeletonGeneralContentRegistration.dispose();
             },
         };
     },
