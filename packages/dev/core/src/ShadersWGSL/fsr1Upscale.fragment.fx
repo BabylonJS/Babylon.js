@@ -1,27 +1,15 @@
+#include<ffxFunctions>
+
+struct FsrEasuCon {
+    con0: vec4u,
+    con1: vec4u,
+    con2: vec4u,
+    con3: vec4u,
+}
+
 var textureSampler: texture_2d<f32>;
 var textureSamplerSampler: sampler;
-
-uniform con0: vec4u;
-uniform con1: vec4u;
-uniform con2: vec4u;
-uniform con3: vec4u;
-
-fn AMin3F3(x: vec3f, y: vec3f, z: vec3f) -> vec3f {
-    return min(x,min(y,z));
-}
-
-fn AMax3F3(x: vec3f, y: vec3f, z: vec3f) -> vec3f {
-    return max(x,max(y,z));
-}
-
-// Float approximations
-fn APrxLoRcpF1(a: f32) -> f32 {
-    return bitcast<f32>(0x7ef07ebb-bitcast<u32>(a));
-}
-
-fn APrxLoRsqF1(a: f32) -> f32 {
-    return bitcast<f32>(0x5f347d74-(bitcast<u32>(a)>>1));
-}
+var<uniform> constants: FsrEasuCon;
 
 // Input callback prototypes
 fn FsrEasuRF(p: vec2f) -> vec4f {
@@ -255,6 +243,6 @@ fn FsrEasuF(
 fn main(input: FragmentInputs) -> FragmentOutputs {
     var pix: vec3f;
     let ip = vec2u(fragmentInputs.position.xy);
-    FsrEasuF(&pix, ip, uniforms.con0, uniforms.con1, uniforms.con2, uniforms.con3);
+    FsrEasuF(&pix, ip, constants.con0, constants.con1, constants.con2, constants.con3);
     fragmentOutputs.color = vec4f(pix, 1);
 }
