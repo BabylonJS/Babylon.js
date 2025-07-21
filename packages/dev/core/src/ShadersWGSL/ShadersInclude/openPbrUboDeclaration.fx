@@ -1,6 +1,4 @@
 
-uniform vLightmapInfos: vec2f;
-uniform lightmapMatrix: mat4x4f;
 uniform vTangentSpaceParams: vec2f;
 uniform vLightingIntensity: vec4f;
 uniform pointSize: f32;

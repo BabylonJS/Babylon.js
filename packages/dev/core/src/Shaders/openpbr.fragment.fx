@@ -143,6 +143,19 @@ void main(void) {
 // Mopaque-base	=mix(Mglossy-diffuse,Ssubsurface,S)	whereS	=subsurface_weight
 // Mglossy-diffuse	=layer(Sdiffuse,Sgloss)
 
+// Base roughness is modified by the coat layer
+// rB′ = mix(rB, min(1, rB^4 + 2rC^4)^1/4 , C) where C = coat_weight  (61) in OpenPBR spec
+
+// Sample specular lobe IBL and analytic lights separately from BRDF for each layer
+//    - pass in roughness, anisotropy, sample vector (and tangent?). Same code for reflection and refraction.
+//    - Coat: - one sample - pass in coat_roughness_anisotropy, coat_roughness, geometry_coat_normal
+//    - Base:- one sample - pass in geometry_normal, specular_roughness, specular_anisotropy
+//    - Translucent refraction
+//    - thin-walled refraction - i.e. no refraction
+// Sample diffuse lobe IBL and analytic lights separately from BRDF for each layer
+//    - only Base layer has diffuse lobe
+//    - pass in base_diffuse_roughness, geometry_normal, base_color
+//    - Subsurface - refracted/transmitted diffuse - (geometry_thin_walled with subsurface is the same as glTF diffuse transmission)
 
 
     // _____________________________ AO  _______________________________
@@ -158,8 +171,6 @@ void main(void) {
         vAmbientOcclusionInfos
     #endif
     );
-
-    #include<pbrBlockLightmapInit>
 
 #ifdef UNLIT
     vec3 diffuseBase = vec3(1., 1., 1.);
@@ -233,6 +244,8 @@ vec4 specularColor = vSpecularColor;
     // _____________________________ Compute Geometry info _________________________________
     #include<openpbrBlockGeometryInfo>
 
+// Share code for reflection and refraction
+// Pass in values to select between reflection and refraction, diffuse and specular, anisotropic and isotropic
     // _____________________________ Reflection Info _______________________________________
     #ifdef REFLECTION
         reflectionOutParams reflectionOut;
@@ -250,9 +263,6 @@ vec4 specularColor = vSpecularColor;
             #endif
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 , NdotVUnclamped
-            #endif
-            #ifdef LINEARSPECULARREFLECTION
-                , roughness
             #endif
                 , reflectionSampler
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
