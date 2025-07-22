@@ -348,9 +348,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public override _currentDrawContext: WebGPUDrawContext;
     /** @internal */
     public _currentMaterialContext: WebGPUMaterialContext;
+    private _currentVertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
-    private _dummyIndexBuffer: Nullable<DataBuffer> = null;
+    private _dummyIndexBuffer: WebGPUDataBuffer;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
 
@@ -785,6 +786,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         size: 1,
                         label: "EmptyVertexBuffer",
                     });
+
+                    this._dummyIndexBuffer = this._bufferManager.createBuffer(
+                        new Uint16Array([0, 0, 0, 0]),
+                        WebGPUConstants.BufferUsage.Storage | WebGPUConstants.BufferUsage.CopyDst,
+                        "DummyIndices"
+                    );
 
                     this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
@@ -1798,18 +1805,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Bind a list of vertex buffers with the engine
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
-     * @param effect defines the effect associated with the vertex buffers
+     * @param _effect defines the effect associated with the vertex buffers
      * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
     public bindBuffers(
         vertexBuffers: { [key: string]: Nullable<VertexBuffer> },
         indexBuffer: Nullable<DataBuffer>,
-        effect: Effect,
+        _effect: Effect,
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): void {
+        this._currentVertexBuffers = vertexBuffers;
         this._currentIndexBuffer = indexBuffer;
         this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
+        this._cacheRenderPipeline.setBuffers(this._currentVertexBuffers, this._currentIndexBuffer, this._currentOverrideVertexBuffers);
     }
 
     /**
@@ -2107,7 +2115,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns the new context
      */
     public createDrawContext(): WebGPUDrawContext | undefined {
-        return new WebGPUDrawContext(this._bufferManager);
+        return new WebGPUDrawContext(this._bufferManager, this._dummyIndexBuffer);
     }
 
     /**
@@ -3658,6 +3666,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
+        this._currentDrawContext.setVertexPulling(
+            this._currentMaterialContext.useVertexPulling,
+            webgpuPipelineContext,
+            this._currentVertexBuffers,
+            this._cacheRenderPipeline.indexBuffer, // don't use this._currentIndexBuffer, it will have been set to null by _drawArraysType!
+            this._currentOverrideVertexBuffers
+        );
+
         if (webgpuPipelineContext.uniformBuffer) {
             webgpuPipelineContext.uniformBuffer.update();
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
@@ -3711,59 +3727,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._currentMaterialContext.textureState = textureState;
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
-
-        // Compare the vertex buffers that we have to the ones that are bound to the pipeline.
-        // If there are vertex buffers that are not bound to the pipeline, AND there are storage buffers
-        // used by the shader with the same name, we will bind them to the current draw context because they
-        // are being used to do vertex pulling.
-        const availableVertexBuffers: { [key: string]: VertexBuffer } = (this._cacheRenderPipeline as any)._vertexBuffers;
-        const appliedVertexBuffers = this._cacheRenderPipeline.vertexBuffers;
-        const vertexBufferNames = Object.keys(availableVertexBuffers);
-        if (Object.keys(availableVertexBuffers).length !== appliedVertexBuffers.length) {
-            const unboundVertexBuffers: { [key: string]: VertexBuffer } = {};
-            for (let i = 0; i < vertexBufferNames.length; i++) {
-                const name = vertexBufferNames[i];
-                if (appliedVertexBuffers.findIndex((v) => v === availableVertexBuffers[name]) === -1) {
-                    unboundVertexBuffers[name] = availableVertexBuffers[name];
-                }
-            }
-            if (Object.keys(unboundVertexBuffers).length > 0) {
-                for (const unboundVertexBufferName of Object.keys(unboundVertexBuffers)) {
-                    if (webgpuPipelineContext.shaderProcessingContext.bufferNames.findIndex((name) => name === unboundVertexBufferName) !== -1) {
-                        this._currentDrawContext.buffers[unboundVertexBufferName] = unboundVertexBuffers[unboundVertexBufferName].effectiveBuffer as WebGPUDataBuffer;
-                    }
-                }
-            }
-        }
-        // Handle binding index buffer for vertex pulling. This happens when the index buffer is not already bound
-        // and the shader uses the "indices" buffer.
-        if (!this._currentIndexBuffer && webgpuPipelineContext.shaderProcessingContext.bufferNames.findIndex((name) => name === "indices") !== -1) {
-            const indexBuffer = (this._cacheRenderPipeline as any)._indexBuffer;
-            let is32bits = false;
-            if (indexBuffer) {
-                this._currentDrawContext.buffers["indices"] = indexBuffer as WebGPUDataBuffer;
-                is32bits = indexBuffer.is32Bits;
-            } else {
-                // If no index buffer exists but the vertex shader uses the "indices" buffer, we need
-                // to create a dummy index buffer (of size 4 to avoid WebGPU errors). Then we'll set the
-                // uniform to indicate that indices aren't used by the mesh.
-                if (!this._dummyIndexBuffer) {
-                    this._dummyIndexBuffer = this._bufferManager.createBuffer(
-                        new Uint16Array([0, 0, 0, 0]),
-                        WebGPUConstants.BufferUsage.Storage | WebGPUConstants.BufferUsage.CopyDst,
-                        "DummyIndices"
-                    );
-                }
-                this._currentDrawContext.buffers["indices"] = this._dummyIndexBuffer as WebGPUDataBuffer;
-            }
-            // Set uniforms to indicate that the index buffer is used and whether it is 32-bit or 16-bit.
-            if ((webgpuPipelineContext.uniformBuffer as any)._uniformLocations["hasIndices"] !== undefined) {
-                webgpuPipelineContext.uniformBuffer?.updateInt("hasIndices", indexBuffer !== undefined ? 1 : 0);
-            }
-            if ((webgpuPipelineContext.uniformBuffer as any)._uniformLocations["indicesAre32bit"] !== undefined) {
-                webgpuPipelineContext.uniformBuffer?.updateInt("indicesAre32bit", is32bits ? 1 : 0);
-            }
-        }
 
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 

@@ -52,6 +52,7 @@ import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { IsWrapper } from "./drawWrapper.functions";
 
 declare let BABYLON: any;
 
@@ -1298,7 +1299,13 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
         const reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._getDrawWrapper());
+        const effectiveDrawWrapper = effect ? effect : this._getDrawWrapper();
+
+        if (IsWrapper(effectiveDrawWrapper) && effectiveDrawWrapper.materialContext) {
+            effectiveDrawWrapper.materialContext.useVertexPulling = this.useVertexPulling;
+        }
+
+        engine.enableEffect(effectiveDrawWrapper);
         engine.setState(
             this.backFaceCulling,
             this.zOffset,
