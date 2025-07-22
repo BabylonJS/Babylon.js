@@ -76,7 +76,7 @@ export interface IEffectLayerOptions {
  */
 export abstract class EffectLayer {
     private _effectLayerOptions: IEffectLayerOptions;
-    private _mainTextureCreatedSize: ISize = {width: 0, height: 0};
+    private _mainTextureCreatedSize: ISize = { width: 0, height: 0 };
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
