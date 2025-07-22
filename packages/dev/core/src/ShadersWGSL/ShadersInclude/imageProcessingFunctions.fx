@@ -123,6 +123,7 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 		// Increase contrast: apply simple shoulder-toe high contrast curve
 		rgb = mix(rgb, resultHighContrast, uniforms.contrast - 1.0);
 	}
+	rgb = max(rgb, vec3f(0.));
 #endif
 
 	// Apply Color Transform

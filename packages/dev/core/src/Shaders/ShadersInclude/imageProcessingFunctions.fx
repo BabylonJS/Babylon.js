@@ -170,11 +170,13 @@ vec4 applyImageProcessing(vec4 result) {
 		// Increase contrast: apply simple shoulder-toe high contrast curve
 		result.rgb = mix(result.rgb, resultHighContrast, contrast - 1.0);
 	}
+
+	result.rgb = max(result.rgb, 0.);
 #endif
 
 	// Apply Color Transform
 #ifdef COLORGRADING
-	vec3 colorTransformInput = result.rgb * colorTransformSettings.xxx + colorTransformSettings.yyy;
+	vec3 colorTransformInput = max(result.rgb, 0.) * colorTransformSettings.xxx + colorTransformSettings.yyy;
 	#ifdef COLORGRADING3D
 		vec3 colorTransformOutput = texture(txColorTransform, colorTransformInput).rgb;
 	#else
