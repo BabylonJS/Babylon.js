@@ -1,13 +1,9 @@
 ﻿#ifdef MORPHTARGETS
 	#ifdef MORPHTARGETS_TEXTURE
 		#if {X} == 0
-		float floatIndex = 0.;
 		for (int i = 0; i < NUM_MORPH_INFLUENCERS; i++) {
-#if defined(NATIVE)			
-			if (floatIndex >= morphTargetCount) break;
-#else
-			if (i >= morphTargetCount) break;
-#endif
+			if (float(i) >= morphTargetCount) break;
+
 			vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;
 
 			#ifdef MORPHTARGETS_POSITION
@@ -48,7 +44,6 @@
 			#ifdef MORPHTARGETS_COLOR
 				colorUpdated += (readVector4FromRawSampler(i, vertexID) - color) * morphTargetInfluences[i];
 			#endif
-			floatIndex += 1.;
 		}
 		#endif
 	#else
